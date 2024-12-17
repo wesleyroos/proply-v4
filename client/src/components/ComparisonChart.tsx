@@ -164,6 +164,22 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
               </thead>
               <tbody>
                 <tr className="border-b">
+                  <td className="py-2">Nightly Rate</td>
+                  {Array(12).fill(0).map((_, i) => (
+                    <td key={i} className="text-right py-2">
+                      {formatter.format(getSeasonalNightlyRate(data.shortTermNightly, i))}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2">Fee-Adjusted Rate</td>
+                  {Array(12).fill(0).map((_, i) => (
+                    <td key={i} className="text-right py-2">
+                      {formatter.format(getFeeAdjustedRate(getSeasonalNightlyRate(data.shortTermNightly, i), data.managementFee > 0))}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b">
                   <td className="py-2">Occupancy Low</td>
                   <td className="text-right">65%</td>
                   <td className="text-right">65%</td>
@@ -270,6 +286,29 @@ const OCCUPANCY_RATES = {
   high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
 };
 
+function getSeasonalMultiplier(month: number): number {
+  // Peak season: Dec-Feb (2.2x)
+  if (month === 11 || month === 0 || month === 1) {
+    return 2.2;
+  }
+  // Low season: Jun-Aug (0.65x)
+  if (month >= 5 && month <= 7) {
+    return 0.65;
+  }
+  // Regular season: rest of the year (1x)
+  return 1.0;
+}
+
+function getSeasonalNightlyRate(baseRate: number, month: number): number {
+  return baseRate * getSeasonalMultiplier(month);
+}
+
+function getFeeAdjustedRate(rate: number, hasManagementFee: boolean): number {
+  return hasManagementFee
+    ? rate * 0.85  // 15% Airbnb fee for professionally managed
+    : rate * 0.97; // 3% fee for self-managed
+}
+
 function calculateMonthlyRevenue(
   scenario: 'low' | 'medium' | 'high',
   month: number,
@@ -280,12 +319,11 @@ function calculateMonthlyRevenue(
   const occupancyRate = OCCUPANCY_RATES[scenario][month] / 100;
   const daysInMonth = new Date(2024, month + 1, 0).getDate();
   
-  // Apply platform fee adjustment
-  const adjustedRate = hasManagementFee
-    ? nightly * 0.85  // 15% Airbnb fee for professionally managed
-    : nightly * 0.97; // 3% fee for self-managed
+  // Apply seasonal adjustment and platform fee
+  const seasonalRate = getSeasonalNightlyRate(nightly, month);
+  const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, hasManagementFee);
   
-  let revenue = adjustedRate * daysInMonth * occupancyRate;
+  let revenue = feeAdjustedRate * daysInMonth * occupancyRate;
   
   // Apply management fee if present
   if (hasManagementFee) {
