@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import html2pdf from 'html2pdf.js';
+import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 import { formatter } from '../utils/formatting';
 
 interface PDFReportProps {
@@ -20,7 +21,56 @@ interface PDFReportProps {
   onClose: () => void;
 }
 
-export default function PDFReport({ data, onClose }: PDFReportProps) {
+// Helper functions for revenue calculations
+const OCCUPANCY_RATES = {
+  low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 65],
+  medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 80],
+  high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
+};
+
+const SEASONALITY_FACTORS = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
+
+function calculateMonthlyRevenue(
+  scenario: 'low' | 'medium' | 'high',
+  month: number,
+  nightly: number,
+  hasManagementFee: boolean,
+  managementFeePercent: number
+): number {
+  const occupancyRate = OCCUPANCY_RATES[scenario][month] / 100;
+  const daysInMonth = new Date(2024, month + 1, 0).getDate();
+  const seasonalRate = nightly * SEASONALITY_FACTORS[month];
+  const feeAdjustedRate = hasManagementFee ? seasonalRate * 0.85 : seasonalRate * 0.97;
+
+  let revenue = feeAdjustedRate * daysInMonth * occupancyRate;
+  if (hasManagementFee) {
+    revenue *= (1 - managementFeePercent);
+  }
+  return revenue;
+}
+
+function calculateMonthlyAverage(
+  scenario: 'low' | 'medium' | 'high',
+  nightly: number,
+  hasManagementFee: boolean,
+  managementFeePercent: number
+): number {
+  const total = Array(12).fill(0)
+    .reduce((sum, _, month) => sum + calculateMonthlyRevenue(scenario, month, nightly, hasManagementFee, managementFeePercent), 0);
+  return total / 12;
+}
+
+function calculateAnnualRevenue(
+  scenario: 'low' | 'medium' | 'high',
+  nightly: number,
+  hasManagementFee: boolean,
+  managementFeePercent: number
+): number {
+  return Array(12).fill(0)
+    .reduce((sum, _, month) => sum + calculateMonthlyRevenue(scenario, month, nightly, hasManagementFee, managementFeePercent), 0);
+}
+
+function PDFReport({ data, onClose }: PDFReportProps) {
   const reportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,11 +107,11 @@ export default function PDFReport({ data, onClose }: PDFReportProps) {
 
       {/* Title */}
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        Property Investment Analysis Report
+        Proply Rent Compare
       </h1>
 
       {/* Property Details */}
-      <div className="mb-8">
+      <div className="mb-8 break-inside-avoid">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Details</h2>
         <div className="grid grid-cols-3 gap-6">
           <div>
@@ -80,7 +130,7 @@ export default function PDFReport({ data, onClose }: PDFReportProps) {
       </div>
 
       {/* Executive Summary */}
-      <div className="mb-8">
+      <div className="mb-8 break-inside-avoid">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Executive Summary</h2>
         <div className="bg-gray-50 p-6 rounded-lg">
           <div className="grid grid-cols-2 gap-8">
@@ -163,6 +213,79 @@ export default function PDFReport({ data, onClose }: PDFReportProps) {
         </div>
       </div>
 
+      {/* Short-Term Rental Scenarios */}
+      <div className="mb-8 break-inside-avoid">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Short-Term Rental Scenarios</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="text-left py-2 px-4">Scenario</th>
+                <th className="text-right py-2 px-4">Monthly Average</th>
+                <th className="text-right py-2 px-4">Annual Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b">
+                <td className="py-2 px-4">Conservative (Low)</td>
+                <td className="text-right py-2 px-4">
+                  {formatter.format(calculateMonthlyAverage('low', data.shortTermNightly, data.managementFee > 0, data.managementFee))}
+                </td>
+                <td className="text-right py-2 px-4">
+                  {formatter.format(calculateAnnualRevenue('low', data.shortTermNightly, data.managementFee > 0, data.managementFee))}
+                </td>
+              </tr>
+              <tr className="border-b">
+                <td className="py-2 px-4">Moderate (Medium)</td>
+                <td className="text-right py-2 px-4">
+                  {formatter.format(calculateMonthlyAverage('medium', data.shortTermNightly, data.managementFee > 0, data.managementFee))}
+                </td>
+                <td className="text-right py-2 px-4">
+                  {formatter.format(calculateAnnualRevenue('medium', data.shortTermNightly, data.managementFee > 0, data.managementFee))}
+                </td>
+              </tr>
+              <tr className="border-b">
+                <td className="py-2 px-4">Optimistic (High)</td>
+                <td className="text-right py-2 px-4">
+                  {formatter.format(calculateMonthlyAverage('high', data.shortTermNightly, data.managementFee > 0, data.managementFee))}
+                </td>
+                <td className="text-right py-2 px-4">
+                  {formatter.format(calculateAnnualRevenue('high', data.shortTermNightly, data.managementFee > 0, data.managementFee))}
+                </td>
+              </tr>
+              <tr className="border-b bg-gray-50">
+                <td className="py-2 px-4 font-medium">Long-Term Rental</td>
+                <td className="text-right py-2 px-4 font-medium">{formatter.format(data.longTermMonthly)}</td>
+                <td className="text-right py-2 px-4 font-medium">{formatter.format(data.longTermAnnual)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-8 h-[200px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={Array(12).fill(0).map((_, i) => ({
+                month: new Date(2024, i).toLocaleString('default', { month: 'short' }),
+                low: calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee),
+                medium: calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee),
+                high: calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee),
+                longTerm: data.longTermMonthly,
+              }))}
+            >
+              <XAxis dataKey="month" />
+              <YAxis tickFormatter={(value) => formatter.format(value)} />
+              <RechartsTooltip formatter={(value) => formatter.format(value as number)} />
+              <Legend />
+              <Line type="monotone" dataKey="low" stroke="#FF6B6B" name="Conservative" />
+              <Line type="monotone" dataKey="medium" stroke="#4ECDC4" name="Moderate" />
+              <Line type="monotone" dataKey="high" stroke="#45B7D1" name="Optimistic" />
+              <Line type="monotone" dataKey="longTerm" stroke="#FFE66D" strokeDasharray="5 5" name="Long Term" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       {/* Footer */}
       <div className="mt-12 pt-4 border-t text-sm text-gray-500">
         <p className="mb-2">
@@ -177,3 +300,5 @@ export default function PDFReport({ data, onClose }: PDFReportProps) {
     </div>
   );
 }
+
+export default PDFReport;

@@ -232,7 +232,11 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
           <FormField
               control={form.control}
               name="managementFee"
-              rules={{ required: "Management fee percentage is required" }}
+              rules={{ 
+                required: "Management fee percentage is required",
+                min: { value: 0, message: "Management fee cannot be negative" },
+                max: { value: 100, message: "Management fee cannot exceed 100%" }
+              }}
               render={({ field, fieldState }) => (
                 <FormItem>
                   <div className="flex items-center gap-2">
