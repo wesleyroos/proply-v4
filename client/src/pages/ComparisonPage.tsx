@@ -23,6 +23,14 @@ export default function ComparisonPage() {
   }
 
   const handleCompare = (data: any) => {
+    // Scroll to results after a brief delay to ensure rendering
+    setTimeout(() => {
+      document.getElementById('comparison-results')?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 100);
+
     // Calculate comparison metrics
     // Long term calculation (simple monthly × 12)
     const longTermMonthly = parseFloat(data.longTermRental);
