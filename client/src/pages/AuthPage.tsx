@@ -48,9 +48,9 @@ export default function AuthPage() {
     <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md mb-8">
         <img 
-          src="/proply-logo.svg" 
+          src="/proply-logo.png" 
           alt="Proply" 
-          className="h-8 mx-auto mb-8" 
+          className="h-12 mx-auto mb-8" 
         />
 
         <Card>
