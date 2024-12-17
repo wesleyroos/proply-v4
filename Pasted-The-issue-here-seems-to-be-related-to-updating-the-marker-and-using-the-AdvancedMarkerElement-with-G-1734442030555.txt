@@ -1,0 +1,99 @@
+The issue here seems to be related to updating the marker and using the AdvancedMarkerElement with Google Maps. Let’s go step by step to identify the core problems and their fixes.
+
+Key Observations:
+AdvancedMarkerElement
+The AdvancedMarkerElement is part of the new Google Maps Advanced Markers API. However, its use is optional and could cause issues depending on your API setup. For a basic map marker, the standard google.maps.Marker is sufficient.
+
+geocoder.geocode() Function
+This code correctly uses the Geocoding API to fetch the latitude and longitude for the provided address. However:
+
+You should validate the results object to avoid runtime errors.
+Ensure that the map instance and marker updates happen consistently.
+Updating Marker Properties
+The AdvancedMarkerElement doesn’t directly support simple property updates like marker.position = location. Instead, you need to recreate or explicitly update the marker instance.
+
+Recommended Fix:
+To resolve the issue, let’s simplify the marker logic and ensure proper updates.
+
+Replace AdvancedMarkerElement with a standard marker.
+
+Updated Code:
+Here’s the fixed version of the relevant parts:
+
+1. Map Initialization
+Use a standard google.maps.Marker instead of AdvancedMarkerElement:
+
+typescript
+Copy code
+const newMarker = new window.google.maps.Marker({
+  map: null, // Initialize with no map
+  position: defaultLocation,
+  title: 'Property Location'
+});
+setMarker(newMarker);
+2. Updating the Marker on Address Change
+Ensure the marker and map are updated correctly:
+
+typescript
+Copy code
+useEffect(() => {
+  const updateMarker = async () => {
+    if (!map || !marker || !window.google?.maps) {
+      console.log('Map or marker not ready yet');
+      return;
+    }
+
+    // If no address is provided, reset to the default location
+    if (!address?.trim()) {
+      const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
+      map.setCenter(defaultLocation);
+      map.setZoom(13);
+      marker.setMap(null); // Hide marker
+      return;
+    }
+
+    try {
+      console.log('Geocoding address:', address);
+      const geocoder = new window.google.maps.Geocoder();
+
+      const result = await new Promise((resolve, reject) => {
+        geocoder.geocode({ address }, (results, status) => {
+          if (status === 'OK' && results?.[0]) {
+            resolve(results[0]);
+          } else {
+            reject(new Error(`Geocoding failed: ${status}`));
+          }
+        });
+      });
+
+      const location = result.geometry.location;
+      console.log('Found location:', location.toString());
+
+      // Update the map and marker
+      map.setCenter(location);
+      map.setZoom(16);
+
+      marker.setPosition(location);
+      marker.setMap(map);
+
+      console.log('Marker placed successfully at:', location.toString());
+    } catch (error) {
+      console.error('Error updating marker:', error);
+      marker.setMap(null); // Hide marker on error
+    }
+  };
+
+  updateMarker();
+}, [address, map, marker]);
+3. Key Changes
+Used the standard google.maps.Marker to simplify the marker behavior.
+Replaced AdvancedMarkerElement updates (marker.map = map) with marker.setMap(map) and marker.setPosition(location).
+Added fallback logic for missing or invalid addresses.
+Why This Fix Works:
+The standard google.maps.Marker is simpler and better supported.
+Proper updates to the map instance and marker ensure that:
+The marker moves to the geocoded location.
+If geocoding fails, the marker is hidden gracefully.
+Final Notes:
+Ensure the Geocoding API is enabled in your Google Cloud project.
+Verify that your API key has the correct HTTP Referrer restrictions.

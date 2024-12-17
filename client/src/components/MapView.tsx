@@ -66,15 +66,15 @@ export default function MapView({ address }: MapViewProps) {
         
       setMap(newMap);
         
-      // Create an advanced marker element
-      const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
-        map: null,
+      // Create a standard marker
+      const newMarker = new window.google.maps.Marker({
+        map: null, // Initialize with no map
         position: defaultLocation,
         title: 'Property Location'
       });
       setMarker(newMarker);
 
-      console.log('Map initialized successfully with advanced marker');
+      console.log('Map initialized successfully with marker');
     } catch (error) {
       console.error('Error initializing map:', error);
       setError('Error creating map');
@@ -93,7 +93,7 @@ export default function MapView({ address }: MapViewProps) {
       if (!address?.trim()) {
         const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
         map.setCenter(defaultLocation);
-        marker.map = null; // Hide marker when no address
+        marker.setMap(null); // Hide marker when no address
         return;
       }
 
@@ -118,13 +118,13 @@ export default function MapView({ address }: MapViewProps) {
         map.setZoom(16);
         
         // Update marker properties
-        marker.position = location;
-        marker.map = map;
+        marker.setPosition(location);
+        marker.setMap(map);
         
-        console.log('Advanced marker placed successfully at:', location.toString());
+        console.log('Marker placed successfully at:', location.toString());
       } catch (error) {
         console.error('Error updating marker:', error);
-        marker.map = null;
+        marker.setMap(null);
       }
     };
 
