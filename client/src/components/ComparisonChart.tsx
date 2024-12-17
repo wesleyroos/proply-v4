@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 import { InfoIcon } from "lucide-react";
 import {
   Tooltip,
@@ -238,9 +238,17 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
 
           <div className="mt-6 h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart>
+              <LineChart
+                data={Array(12).fill(0).map((_, i) => ({
+                  month: new Date(2024, i).toLocaleString('default', { month: 'short' }),
+                  low: calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee),
+                  medium: calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee),
+                  high: calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee),
+                  longTerm: data.longTermMonthly,
+                }))}
+              >
                 <XAxis dataKey="month" />
-                <YAxis />
+                <YAxis tickFormatter={(value) => formatter.format(value)} />
                 <RechartsTooltip formatter={(value) => formatter.format(value as number)} />
                 <Legend />
                 <Line type="monotone" dataKey="low" stroke="#FF6B6B" name="Revenue Low" />
