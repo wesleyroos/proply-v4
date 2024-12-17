@@ -90,15 +90,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                 <p className="text-xl font-bold mt-1">{formatter.format(data.longTermAnnual)}</p>
               </div>
 
-              {/* View Calculation Details Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full mt-4"
-                onClick={() => setShowCalculations(true)}
-              >
-                View Calculation Details
-              </Button>
+              
             </div>
           </div>
 
@@ -172,15 +164,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                   <p className="text-xl font-bold mt-1">{formatter.format(data.shortTermAfterFees)}</p>
                 </div>
 
-                {/* Calculation Details Button */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full mt-4"
-                  onClick={() => setShowCalculations(true)}
-                >
-                  View Calculation Details
-                </Button>
+                
 
                 {/* Calculation Details Modal */}
                 <Dialog open={showCalculations} onOpenChange={setShowCalculations}>
@@ -240,6 +224,14 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
             </div>
           </div>
         </div>
+
+        <Button
+          variant="link"
+          className="text-sm text-gray-600 hover:text-gray-900 underline decoration-gray-600 hover:decoration-gray-900 -mt-2 mb-4"
+          onClick={() => setShowCalculations(true)}
+        >
+          How do we calculate this?
+        </Button>
 
         <div className="p-4 bg-gray-50 rounded-lg">
           <h3 className="text-lg font-semibold mb-4">Occupancy Analysis</h3>
