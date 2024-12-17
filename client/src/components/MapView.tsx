@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 
 // Fix the marker icon issue in React
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+const icon = L.icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  tooltipAnchor: [16, -28],
+  shadowSize: [41, 41]
 });
 
 interface MapViewProps {
@@ -54,7 +57,7 @@ export default function MapView({ address }: MapViewProps) {
     async function geocodeAddress() {
       try {
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`
         );
         const data = await response.json();
         
@@ -75,15 +78,16 @@ export default function MapView({ address }: MapViewProps) {
   return (
     <div className="h-[300px] w-full rounded-lg overflow-hidden border">
       <MapContainer
-        center={[-33.918861, 18.423300]} // Default center (Cape Town)
+        center={location || [-33.918861, 18.423300]} // Default center (Cape Town)
         zoom={13}
-        style={{ height: '100%', width: '100%' }}
+        scrollWheelZoom={false}
+        className="h-full w-full"
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        {location && <Marker position={location} />}
+        {location && <Marker position={location} icon={icon} />}
         <MapUpdater address={address} />
       </MapContainer>
     </div>
