@@ -240,13 +240,43 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                     </td>
                   ))}
                 </tr>
-                <tr>
+                <tr className="border-b">
                   <td className="py-2">Revenue High</td>
                   {Array(12).fill(0).map((_, i) => (
                     <td key={i} className="text-right py-2">
                       {formatter.format(calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                     </td>
                   ))}
+                </tr>
+                <tr className="border-t bg-gray-50 font-semibold">
+                  <td className="py-3">Total Revenue Low</td>
+                  <td colSpan={11}></td>
+                  <td className="text-right py-3">
+                    {formatter.format(
+                      Array(12).fill(0)
+                        .reduce((sum, _, i) => sum + calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
+                    )}
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 font-semibold">
+                  <td className="py-3">Total Revenue Medium</td>
+                  <td colSpan={11}></td>
+                  <td className="text-right py-3">
+                    {formatter.format(
+                      Array(12).fill(0)
+                        .reduce((sum, _, i) => sum + calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
+                    )}
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 font-semibold">
+                  <td className="py-3">Total Revenue High</td>
+                  <td colSpan={11}></td>
+                  <td className="text-right py-3">
+                    {formatter.format(
+                      Array(12).fill(0)
+                        .reduce((sum, _, i) => sum + calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
+                    )}
+                  </td>
                 </tr>
               </tbody>
             </table>
