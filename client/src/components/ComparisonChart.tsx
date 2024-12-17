@@ -51,7 +51,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                     <InfoIcon className="h-4 w-4 text-gray-400" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    Base monthly rental income before annual escalation
+                    Monthly rental income
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -64,7 +64,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                     <InfoIcon className="h-4 w-4 text-gray-400" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    Total yearly income including annual escalation rate
+                    Annual rental income (monthly × 12)
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -72,7 +72,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
               
               <div className="mt-2 text-xs text-gray-500">
                 <p>Calculation:</p>
-                <p>Monthly × 12 × (1 + Escalation Rate)</p>
+                <p>Monthly × 12</p>
               </div>
             </div>
           </div>
@@ -87,7 +87,10 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                     <InfoIcon className="h-4 w-4 text-gray-400" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    Average monthly income based on nightly rate and occupancy
+                    Average monthly income based on fee-adjusted nightly rate and occupancy.
+                    {data.managementFee > 0 
+                      ? "Professional management: 15% Airbnb fee applied"
+                      : "Self-managed: 3% platform fee applied"}
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -108,8 +111,13 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
               
               <div className="mt-2 text-xs text-gray-500">
                 <p>Calculation:</p>
-                <p>Nightly Rate × 365 × Occupancy Rate ÷ 12</p>
-                <p>Annual = Monthly × 12 × (1 - Management Fee)</p>
+                <p>Adjusted Nightly Rate = {data.managementFee > 0 
+                  ? "Nightly Rate × 0.85 (15% Airbnb fee)"
+                  : "Nightly Rate × 0.97 (3% platform fee)"}</p>
+                <p>Monthly = (Adjusted Rate × 365 × Occupancy Rate) ÷ 12</p>
+                {data.managementFee > 0 && (
+                  <p>Annual = Monthly × 12 × (1 - Management Fee)</p>
+                )}
               </div>
             </div>
           </div>
