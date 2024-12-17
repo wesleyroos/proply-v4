@@ -66,19 +66,15 @@ export default function MapView({ address }: MapViewProps) {
     };
   }, []);
 
-  // Update marker when address changes
+  // Update the marker when the address changes
   useEffect(() => {
     const updateMarker = async () => {
       if (!map || !window.google?.maps) {
-        console.log("Map or Google Maps not ready yet");
+        console.log("Map not ready yet");
         return;
       }
 
-      // Remove existing marker
-      if (marker) {
-        marker.map = null;
-        setMarker(null);
-      }
+      cleanupMarker(); // Remove existing marker
 
       if (!address?.trim()) {
         console.log("No address provided, centering on default location");
@@ -90,34 +86,39 @@ export default function MapView({ address }: MapViewProps) {
 
       try {
         console.log("Geocoding address:", address);
-        const geocoder = new window.google.maps.Geocoder();
+        const geocoder = new google.maps.Geocoder();
 
-        const result = await new Promise<google.maps.GeocoderResult>((resolve, reject) => {
-          geocoder.geocode({ address }, (results, status) => {
-            if (status === "OK" && results?.[0]) {
-              resolve(results[0]);
-            } else {
-              reject(new Error(`Geocoding failed: ${status}`));
-            }
-          });
-        });
+        const result = await new Promise<google.maps.GeocoderResult>(
+          (resolve, reject) => {
+            geocoder.geocode({ address }, (results, status) => {
+              if (status === "OK" && results?.[0]) {
+                resolve(results[0]);
+              } else {
+                reject(new Error(`Geocoding failed: ${status}`));
+              }
+            });
+          },
+        );
 
         const location = result.geometry.location;
-        console.log("Geocoding successful, found location:", location.toString());
+        console.log(
+          "Geocoding successful, found location:",
+          location.toString(),
+        );
 
         // Update map view
         map.setCenter(location);
         map.setZoom(16);
 
-        // Create a new AdvancedMarkerElement
-        const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
+        // Create a basic marker
+        const newMarker = new google.maps.Marker({
           map: map,
           position: location,
-          title: "Property Location"
+          title: "Property Location",
         });
 
         setMarker(newMarker);
-        console.log("Advanced marker placed at:", location.toString());
+        console.log("Marker placed at:", location.toString());
       } catch (error) {
         console.error("Error updating marker:", error);
         setError("Error placing marker on map");
@@ -125,6 +126,8 @@ export default function MapView({ address }: MapViewProps) {
     };
 
     updateMarker();
+
+    return () => cleanupMarker();
   }, [address, map]);
 
   // Display any errors

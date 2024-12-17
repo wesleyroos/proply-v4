@@ -88,8 +88,8 @@ export default function PDFReport({ data, onClose }: PDFReportProps) {
               ["Property Address", data.address],
               ["Bedrooms", data.bedrooms],
               ["Bathrooms", data.bathrooms],
-              ["Monthly Long-Term Revenue", formatter.format(data.longTermMonthly)],
-              ["Annual Long-Term Revenue", formatter.format(data.longTermAnnual)],
+              ["Monthly Bond Repayment", formatter.format(data.longTermMonthly)],
+              ["Annual Bond Repayment", formatter.format(data.longTermAnnual)],
               ["Short Term Annual Revenue", formatter.format(data.shortTermAnnual)],
               ["Break-even Occupancy", `${data.breakEvenOccupancy}%`],
             ].map(([label, value], idx) => (
@@ -117,21 +117,18 @@ export default function PDFReport({ data, onClose }: PDFReportProps) {
         </table>
       </section>
 
-      {/* Revenue Analysis */}
+      {/* Size and Rates */}
       <section style={{ marginBottom: "2rem" }}>
         <h2 style={{ fontSize: "1.2rem", color: "#007bff", marginBottom: "0.5rem" }}>
-          Revenue Analysis
+          Size and Rate/m²
         </h2>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <tbody>
             {[
-              ["Average Nightly Rate", formatter.format(data.shortTermNightly)],
-              ["Monthly Short-Term Revenue", formatter.format(data.shortTermMonthly)],
-              ["Monthly Long-Term Revenue", formatter.format(data.longTermMonthly)],
-              ["Annual Short-Term Revenue", formatter.format(data.shortTermAfterFees)],
-              ["Annual Long-Term Revenue", formatter.format(data.longTermAnnual)],
-              ["Current Occupancy Rate", `${data.annualOccupancy}%`],
-              ["Management Fee", data.managementFee ? `${(data.managementFee * 100).toFixed(1)}%` : "N/A"],
+              ["Floor Area", "258 m²"],
+              ["Avg. Rate per m²", "R368,217/m²"],
+              ["CMA Avg Rate per m²", "R85,000/m²"],
+              ["Rate/m² Difference", "R283,217/m² more (333.20%)"],
             ].map(([label, value], idx) => (
               <tr
                 key={label}
@@ -155,23 +152,6 @@ export default function PDFReport({ data, onClose }: PDFReportProps) {
             ))}
           </tbody>
         </table>
-      </section>
-
-      {/* Analysis Summary */}
-      <section style={{ marginBottom: "2rem" }}>
-        <h2 style={{ fontSize: "1.2rem", color: "#007bff", marginBottom: "0.5rem" }}>
-          Analysis Summary
-        </h2>
-        <div style={{ backgroundColor: "#f8f9fa", padding: "1rem", borderRadius: "4px" }}>
-          <p style={{ marginBottom: "1rem", lineHeight: "1.5" }}>
-            {data.annualOccupancy > data.breakEvenOccupancy
-              ? `At ${data.annualOccupancy}% projected occupancy, short-term rental strategy shows higher potential returns than long-term rental.`
-              : `At ${data.annualOccupancy}% projected occupancy, long-term rental strategy may be more suitable for this property.`}
-          </p>
-          <p style={{ marginBottom: "1rem", lineHeight: "1.5" }}>
-            Break-even analysis shows that {data.breakEvenOccupancy}% occupancy is needed to match long-term rental income.
-          </p>
-        </div>
       </section>
 
       {/* Footer */}
