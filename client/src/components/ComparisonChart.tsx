@@ -91,7 +91,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                 <p className="text-xl font-bold mt-1">{formatter.format(data.longTermAnnual)}</p>
               </div>
 
-              
+
             </div>
           </div>
 
@@ -185,7 +185,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                   <p className="text-xl font-bold mt-1">{formatter.format(data.shortTermAfterFees)}</p>
                 </div>
 
-                
+
 
                 {/* Calculation Details Modal */}
                 <Dialog open={showCalculations} onOpenChange={setShowCalculations}>
@@ -221,7 +221,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                               )}
                             </ul>
                           </div>
-                          
+
                           <div>
                             <h5 className="text-sm font-medium mb-2">Calculation Steps:</h5>
                             <ol className="list-decimal list-inside text-sm space-y-1 text-gray-600">
@@ -272,148 +272,148 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
 
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-4">Short-Term Rental Scenarios</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm table-fixed">
-              <thead>
+          <div className="overflow-x-auto border rounded-lg shadow-sm">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 sticky top-0">
                 <tr className="border-b">
-                  <th className="text-left py-2">Metric</th>
-                  <th className="text-right py-2">Jan</th>
-                  <th className="text-right py-2">Feb</th>
-                  <th className="text-right py-2">Mar</th>
-                  <th className="text-right py-2">Apr</th>
-                  <th className="text-right py-2">May</th>
-                  <th className="text-right py-2">Jun</th>
-                  <th className="text-right py-2">Jul</th>
-                  <th className="text-right py-2">Aug</th>
-                  <th className="text-right py-2">Sep</th>
-                  <th className="text-right py-2">Oct</th>
-                  <th className="text-right py-2">Nov</th>
-                  <th className="text-right py-2">Dec</th>
-                  <th className="text-right py-2 border-l">Total</th>
-                  <th className="text-right py-2">Monthly Avg</th>
+                  <th className="text-left py-3 px-6 min-w-[120px] bg-gray-50">Metric</th>
+                  <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">Jan</th>
+                  <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">Feb</th>
+                  <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">Mar</th>
+                  <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">Apr</th>
+                  <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">May</th>
+                  <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">Jun</th>
+                  <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">Jul</th>
+                  <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">Aug</th>
+                  <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">Sep</th>
+                  <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">Oct</th>
+                  <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">Nov</th>
+                  <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">Dec</th>
+                  <th className="text-right py-3 px-6 min-w-[120px] bg-gray-50 border-l">Total</th>
+                  <th className="text-right py-3 px-6 min-w-[120px] bg-gray-50">Monthly Avg</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b">
-                  <td className="py-2">Nightly Rate</td>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="py-3 px-6">Nightly Rate</td>
+                    {Array(12).fill(0).map((_, i) => (
+                      <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
+                        {formatter.format(getSeasonalNightlyRate(data.shortTermNightly, i))}
+                      </td>
+                    ))}
+                    <td colSpan={2}></td>
+                  </tr>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="py-3 px-6">Fee-Adjusted Rate</td>
+                    {Array(12).fill(0).map((_, i) => (
+                      <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
+                        {formatter.format(getFeeAdjustedRate(getSeasonalNightlyRate(data.shortTermNightly, i), data.managementFee > 0))}
+                      </td>
+                    ))}
+                    <td colSpan={2}></td>
+                  </tr>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="py-3 px-6">Occupancy Low</td>
+                    <td className="text-right py-3 px-6 whitespace-nowrap">65%</td>
+                    <td className="text-right py-3 px-6 whitespace-nowrap">65%</td>
+                    <td className="text-right py-3 px-6 whitespace-nowrap">60%</td>
+                    <td className="text-right py-3 px-6 whitespace-nowrap">55%</td>
+                    <td className="text-right py-3 px-6 whitespace-nowrap">50%</td>
+                    <td className="text-right py-3 px-6 whitespace-nowrap">50%</td>
+                    <td className="text-right py-3 px-6 whitespace-nowrap">50%</td>
+                    <td className="text-right py-3 px-6 whitespace-nowrap">50%</td>
+                    <td className="text-right py-3 px-6 whitespace-nowrap">60%</td>
+                    <td className="text-right py-3 px-6 whitespace-nowrap">65%</td>
+                    <td className="text-right py-3 px-6 whitespace-nowrap">65%</td>
+                    <td className="text-right py-3 px-6 whitespace-nowrap">70%</td>
+                    <td colSpan={2}></td>
+                  </tr>
+                <tr className="border-b hover:bg-gray-50">
+                  <td className="py-3 px-6">Occupancy Medium</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">80%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">78%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">73%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">68%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">63%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">60%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">60%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">60%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">70%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">75%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">75%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">85%</td>
+                  <td colSpan={2}></td>
+                </tr>
+                <tr className="border-b hover:bg-gray-50">
+                  <td className="py-3 px-6">Occupancy High</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">95%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">90%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">85%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">80%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">75%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">70%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">70%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">70%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">80%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">85%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">85%</td>
+                  <td className="text-right py-3 px-6 whitespace-nowrap">95%</td>
+                  <td colSpan={2}></td>
+                </tr>
+                <tr className="border-b bg-[#FF6B6B]/10 hover:bg-[#FF6B6B]/20">
+                  <td className="py-3 px-6 text-[#FF6B6B] font-medium">Revenue Low</td>
                   {Array(12).fill(0).map((_, i) => (
-                    <td key={i} className="text-right py-2">
-                      {formatter.format(getSeasonalNightlyRate(data.shortTermNightly, i))}
-                    </td>
-                  ))}
-                  <td colSpan={2}></td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">Fee-Adjusted Rate</td>
-                  {Array(12).fill(0).map((_, i) => (
-                    <td key={i} className="text-right py-2">
-                      {formatter.format(getFeeAdjustedRate(getSeasonalNightlyRate(data.shortTermNightly, i), data.managementFee > 0))}
-                    </td>
-                  ))}
-                  <td colSpan={2}></td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">Occupancy Low</td>
-                  <td className="text-right">65%</td>
-                  <td className="text-right">65%</td>
-                  <td className="text-right">60%</td>
-                  <td className="text-right">55%</td>
-                  <td className="text-right">50%</td>
-                  <td className="text-right">50%</td>
-                  <td className="text-right">50%</td>
-                  <td className="text-right">50%</td>
-                  <td className="text-right">60%</td>
-                  <td className="text-right">65%</td>
-                  <td className="text-right">65%</td>
-                  <td className="text-right">70%</td>
-                  <td colSpan={2}></td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">Occupancy Medium</td>
-                  <td className="text-right">80%</td>
-                  <td className="text-right">78%</td>
-                  <td className="text-right">73%</td>
-                  <td className="text-right">68%</td>
-                  <td className="text-right">63%</td>
-                  <td className="text-right">60%</td>
-                  <td className="text-right">60%</td>
-                  <td className="text-right">60%</td>
-                  <td className="text-right">70%</td>
-                  <td className="text-right">75%</td>
-                  <td className="text-right">75%</td>
-                  <td className="text-right">85%</td>
-                  <td colSpan={2}></td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">Occupancy High</td>
-                  <td className="text-right">95%</td>
-                  <td className="text-right">90%</td>
-                  <td className="text-right">85%</td>
-                  <td className="text-right">80%</td>
-                  <td className="text-right">75%</td>
-                  <td className="text-right">70%</td>
-                  <td className="text-right">70%</td>
-                  <td className="text-right">70%</td>
-                  <td className="text-right">80%</td>
-                  <td className="text-right">85%</td>
-                  <td className="text-right">85%</td>
-                  <td className="text-right">95%</td>
-                  <td colSpan={2}></td>
-                </tr>
-                <tr className="border-b bg-[#FF6B6B]/10">
-                  <td className="py-2 text-[#FF6B6B] font-medium">Revenue Low</td>
-                  {Array(12).fill(0).map((_, i) => (
-                    <td key={i} className="text-right py-2">
+                    <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
                       {formatter.format(calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                     </td>
                   ))}
-                  <td className="text-right py-2 border-l font-semibold">
+                  <td className="text-right py-3 px-6 border-l font-semibold">
                     {formatter.format(
                       Array(12).fill(0)
                         .reduce((sum, _, i) => sum + calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
                     )}
                   </td>
-                  <td className="text-right py-2 font-semibold">
+                  <td className="text-right py-3 px-6 font-semibold">
                     {formatter.format(
                       Array(12).fill(0)
                         .reduce((sum, _, i) => sum + calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0) / 12
                     )}
                   </td>
                 </tr>
-                <tr className="border-b bg-[#4ECDC4]/10">
-                  <td className="py-2 text-[#4ECDC4] font-medium">Revenue Medium</td>
+                <tr className="border-b bg-[#4ECDC4]/10 hover:bg-[#4ECDC4]/20">
+                  <td className="py-3 px-6 text-[#4ECDC4] font-medium">Revenue Medium</td>
                   {Array(12).fill(0).map((_, i) => (
-                    <td key={i} className="text-right py-2">
+                    <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
                       {formatter.format(calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                     </td>
                   ))}
-                  <td className="text-right py-2 border-l font-semibold">
+                  <td className="text-right py-3 px-6 border-l font-semibold">
                     {formatter.format(
                       Array(12).fill(0)
                         .reduce((sum, _, i) => sum + calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
                     )}
                   </td>
-                  <td className="text-right py-2 font-semibold">
+                  <td className="text-right py-3 px-6 font-semibold">
                     {formatter.format(
                       Array(12).fill(0)
                         .reduce((sum, _, i) => sum + calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0) / 12
                     )}
                   </td>
                 </tr>
-                <tr className="border-b bg-[#45B7D1]/10">
-                  <td className="py-2 text-[#45B7D1] font-medium">Revenue High</td>
+                <tr className="border-b bg-[#45B7D1]/10 hover:bg-[#45B7D1]/20">
+                  <td className="py-3 px-6 text-[#45B7D1] font-medium">Revenue High</td>
                   {Array(12).fill(0).map((_, i) => (
-                    <td key={i} className="text-right py-2">
+                    <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
                       {formatter.format(calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                     </td>
                   ))}
-                  <td className="text-right py-2 border-l font-semibold">
+                  <td className="text-right py-3 px-6 border-l font-semibold">
                     {formatter.format(
                       Array(12).fill(0)
                         .reduce((sum, _, i) => sum + calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
                     )}
                   </td>
-                  <td className="text-right py-2 font-semibold">
+                  <td className="text-right py-3 px-6 font-semibold">
                     {formatter.format(
                       Array(12).fill(0)
                         .reduce((sum, _, i) => sum + calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0) / 12
@@ -454,7 +454,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
           >
             {showDisclaimer ? "Hide Disclaimer ▴" : "Show Disclaimer ▾"}
           </Button>
-          
+
           {showDisclaimer && (
             <div className="mt-4 text-sm text-gray-600 space-y-4">
               <p>
