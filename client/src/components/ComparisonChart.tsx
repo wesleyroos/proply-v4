@@ -114,15 +114,25 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
               <p className="text-xl font-bold">{formatter.format(data.shortTermAnnual)}</p>
 
               <div className="mt-2 text-xs text-gray-500">
-                <p>Calculation:</p>
-                <p>Adjusted Nightly Rate = {data.managementFee > 0
-                  ? "Nightly Rate × 0.85 (15% Airbnb fee)"
-                  : "Nightly Rate × 0.97 (3% platform fee)"}</p>
-                <p>Monthly = (Adjusted Rate × 365 × Occupancy Rate) ÷ 12</p>
-                {data.managementFee > 0 && (
-                  <p>Annual = Monthly × 12 × (1 - Management Fee)</p>
-                )}
-              </div>
+                  <p className="font-medium mb-1">Fee Breakdown:</p>
+                  <p>Platform Fee: {data.managementFee > 0 ? "15%" : "3%"}</p>
+                  {data.managementFee > 0 && (
+                    <p>Management Fee: {(data.managementFee * 100).toFixed(1)}%</p>
+                  )}
+                  
+                  <p className="font-medium mt-2 mb-1">Calculation Steps:</p>
+                  <ol className="list-decimal list-inside space-y-1">
+                    <li>Base nightly rate: {formatter.format(data.shortTermNightly)}</li>
+                    <li>After platform fees: {formatter.format(data.shortTermNightly * (data.managementFee > 0 ? 0.85 : 0.97))}</li>
+                    <li>Annual revenue: {formatter.format(data.shortTermAnnual)}</li>
+                    {data.managementFee > 0 && (
+                      <>
+                        <li>Management fee amount: {formatter.format(data.shortTermAnnual * data.managementFee)}</li>
+                        <li>Final annual revenue: {formatter.format(data.shortTermAnnual * (1 - data.managementFee))}</li>
+                      </>
+                    )}
+                  </ol>
+                </div>
             </div>
           </div>
         </div>

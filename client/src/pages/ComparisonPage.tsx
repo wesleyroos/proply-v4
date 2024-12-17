@@ -30,19 +30,17 @@ export default function ComparisonPage() {
     const occupancyRate = parseFloat(data.annualOccupancy) / 100;
     const managementFee = parseFloat(data.managementFee) / 100;
     
-    // Adjust nightly rate based on management fee presence
-    const feeAdjustedNightlyRate = managementFee > 0 
-      ? shortTermNightly * 0.85  // 15% Airbnb fee for professionally managed
-      : shortTermNightly * 0.97; // 3% fee for self-managed
+    // Calculate platform fees (Airbnb/booking fees)
+    const platformFeeRate = managementFee > 0 ? 0.15 : 0.03; // 15% if managed, 3% if self-managed
+    const feeAdjustedNightlyRate = shortTermNightly * (1 - platformFeeRate);
     
-    // Calculate monthly and annual revenue
+    // Calculate base annual revenue after platform fees
     const shortTermMonthly = (feeAdjustedNightlyRate * 365 * occupancyRate) / 12;
     const shortTermAnnual = shortTermMonthly * 12;
     
-    // Apply management fee if present
-    const shortTermAfterFees = managementFee > 0 
-      ? shortTermAnnual * (1 - managementFee)
-      : shortTermAnnual;
+    // Calculate and apply management fee if present
+    const managementFeeAmount = managementFee > 0 ? shortTermAnnual * managementFee : 0;
+    const shortTermAfterFees = shortTermAnnual - managementFeeAmount;
     
     // Calculate break-even occupancy
     const breakEvenOccupancy = (longTermAnnual / (shortTermNightly * 365)) * 100;

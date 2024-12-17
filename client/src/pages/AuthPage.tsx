@@ -3,7 +3,14 @@ import { useForm } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "../hooks/use-user";
 import type { InsertUser } from "@db/schema";
@@ -47,16 +54,16 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md mb-8">
-        <img 
-          src="/proply-logo.png" 
-          alt="Proply" 
-          className="h-12 mx-auto mb-8" 
+        <img
+          src="/proply-logo.png"
+          alt="Proply"
+          className="h-12 mx-auto mb-8"
         />
 
         <Card>
           <CardHeader>
             <CardTitle className="text-center text-[#262626]">
-              Property Investment Made Easy
+              Get started with Proply
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -68,7 +75,10 @@ export default function AuthPage() {
 
               <TabsContent value="login">
                 <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
+                  <form
+                    onSubmit={loginForm.handleSubmit(handleLogin)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={loginForm.control}
                       name="username"
@@ -76,11 +86,11 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>Username</FormLabel>
                           <FormControl>
-                            <Input 
-                              {...field} 
+                            <Input
+                              {...field}
                               autoComplete="username"
                               disabled={isLoading}
-                              required 
+                              required
                             />
                           </FormControl>
                           <FormMessage />
@@ -95,7 +105,7 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>Password</FormLabel>
                           <FormControl>
-                            <Input 
+                            <Input
                               {...field}
                               type="password"
                               autoComplete="current-password"
@@ -108,8 +118,8 @@ export default function AuthPage() {
                       )}
                     />
 
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
                       disabled={isLoading}
                     >
@@ -121,7 +131,10 @@ export default function AuthPage() {
 
               <TabsContent value="register">
                 <Form {...registerForm}>
-                  <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
+                  <form
+                    onSubmit={registerForm.handleSubmit(handleRegister)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={registerForm.control}
                       name="username"
@@ -129,7 +142,7 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>Username</FormLabel>
                           <FormControl>
-                            <Input 
+                            <Input
                               {...field}
                               autoComplete="username"
                               disabled={isLoading}
@@ -148,7 +161,7 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>Password</FormLabel>
                           <FormControl>
-                            <Input 
+                            <Input
                               {...field}
                               type="password"
                               autoComplete="new-password"
@@ -161,7 +174,7 @@ export default function AuthPage() {
                       )}
                     />
 
-                    <Button 
+                    <Button
                       type="submit"
                       className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
                       disabled={isLoading}
