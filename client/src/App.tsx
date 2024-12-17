@@ -2,8 +2,11 @@ import { Switch, Route } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
 import ComparisonPage from "./pages/ComparisonPage";
+import PropertiesPage from "./pages/PropertiesPage";
+import SettingsPage from "./pages/SettingsPage";
 import AuthPage from "./pages/AuthPage";
 import { useUser } from "./hooks/use-user";
+import Sidebar from "./components/Sidebar";
 
 function App() {
   const { user, isLoading } = useUser();
@@ -21,10 +24,17 @@ function App() {
   }
 
   return (
-    <Switch>
-      <Route path="/" component={ComparisonPage} />
-      <Route component={NotFound} />
-    </Switch>
+    <div className="flex min-h-screen">
+      <Sidebar />
+      <main className="flex-1">
+        <Switch>
+          <Route path="/" component={ComparisonPage} />
+          <Route path="/properties" component={PropertiesPage} />
+          <Route path="/settings" component={SettingsPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
+    </div>
   );
 }
 
