@@ -168,31 +168,57 @@ export default function PropertyForm({ onSubmit }) {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="shortTermNightly"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Short Term Nightly Rate</FormLabel>
-                <FormControl>
-                  <Input {...field} type="number" min="0" />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="annualOccupancy"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Annual Occupancy (%)</FormLabel>
-                <FormControl>
-                  <Input {...field} type="number" min="0" max="100" />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+          <div className="space-y-4 p-4 bg-gray-50 rounded-lg border">
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <FormField
+                  control={form.control}
+                  name="shortTermNightly"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Short Term Nightly Rate</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="number" min="0" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="flex-1">
+                <FormField
+                  control={form.control}
+                  name="annualOccupancy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Annual Occupancy (%)</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="number" min="0" max="100" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-8"
+                onClick={fetchRevenueData}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Getting Data...
+                  </>
+                ) : (
+                  'Get Revenue Data'
+                )}
+              </Button>
+            </div>
+            <p className="text-sm text-gray-500">
+              Click to automatically get revenue data or enter manually.
+            </p>
+          </div>
 
           <FormField
             control={form.control}
@@ -208,23 +234,6 @@ export default function PropertyForm({ onSubmit }) {
           />
 
           <div className="space-y-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={fetchRevenueData}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Getting Revenue Data...
-                </>
-              ) : (
-                'Get Revenue Data'
-              )}
-            </Button>
-
             <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]">
               Compare Options
             </Button>
