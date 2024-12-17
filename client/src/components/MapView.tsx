@@ -59,7 +59,8 @@ export default function MapView({ address }: MapViewProps) {
         
         setMap(newMap);
         
-        const newMarker = new google.maps.Marker({
+        const newMarker = new window.google.maps.Marker({
+          position: defaultLocation,
           map: newMap,
           visible: false
         });
@@ -92,13 +93,20 @@ export default function MapView({ address }: MapViewProps) {
         geocoder.geocode({ address }, (results: any, status: any) => {
           console.log('Geocoding response:', { status, results: results?.[0]?.geometry?.location });
           
-          if (status === google.maps.GeocoderStatus.OK && results?.[0]) {
+          if (status === window.google.maps.GeocoderStatus.OK && results?.[0]) {
             const location = results[0].geometry.location;
+            console.log('Setting marker position to:', location.toString());
+            
             map.setCenter(location);
             map.setZoom(16);
+            
+            // Ensure marker is properly configured
+            marker.setMap(map);
             marker.setPosition(location);
             marker.setVisible(true);
-            console.log('Location updated:', location.toString());
+            
+            console.log('Marker visibility:', marker.getVisible());
+            console.log('Marker position:', marker.getPosition()?.toString());
           } else {
             console.error('Geocoding failed:', status);
             marker.setVisible(false);
