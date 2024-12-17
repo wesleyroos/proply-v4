@@ -57,8 +57,11 @@ export default function ComparisonPage() {
     const managementFeeAmount = managementFee > 0 ? shortTermAnnual * managementFee : 0;
     const shortTermAfterFees = shortTermAnnual - managementFeeAmount;
     
-    // Calculate break-even occupancy
-    const breakEvenOccupancy = (longTermAnnual / (shortTermNightly * 365)) * 100;
+    // Calculate break-even occupancy based on net revenue after all fees
+    const platformFeeMultiplier = managementFee > 0 ? 0.85 : 0.97; // 15% or 3% platform fee
+    const managementFeeMultiplier = 1 - managementFee;
+    const netDailyRateNeeded = longTermAnnual / (365 * platformFeeMultiplier * managementFeeMultiplier);
+    const breakEvenOccupancy = (netDailyRateNeeded / shortTermNightly) * 100;
 
     setComparisonData({
       longTermMonthly,
