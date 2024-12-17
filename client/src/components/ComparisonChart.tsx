@@ -98,36 +98,56 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
             <h3 className="text-lg font-semibold text-[#114D9D] mb-2">Short-Term Rental</h3>
             <div className="space-y-2">
               <div className="space-y-6">
-                {/* Monthly Revenue */}
+                {/* Annual Revenue */}
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-semibold text-gray-900">Monthly Revenue (Average)</h3>
+                    <h3 className="text-base font-semibold text-gray-900">Annual Revenue</h3>
                     <Tooltip>
                       <TooltipTrigger>
                         <InfoIcon className="h-4 w-4 text-gray-400" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        Average monthly income based on fee-adjusted nightly rate and occupancy
+                        Total annual revenue before fees
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <p className="text-xl font-bold mt-1">{formatter.format(data.shortTermAnnual)}</p>
+                </div>
+
+                {/* Monthly Revenue */}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-gray-900">Monthly Revenue</h3>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <InfoIcon className="h-4 w-4 text-gray-400" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Average monthly income before fees
                       </TooltipContent>
                     </Tooltip>
                   </div>
                   <p className="text-xl font-bold mt-1">{formatter.format(data.shortTermMonthly)}</p>
                 </div>
 
-                {/* Annual Revenue */}
+                {/* Airbnb Fee */}
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-semibold text-gray-900">Annual Revenue (Before Fees)</h3>
+                    <h3 className="text-base font-semibold text-gray-900">
+                      Airbnb Fee ({data.managementFee > 0 ? "15.0%" : "3.0%"})
+                    </h3>
                     <Tooltip>
                       <TooltipTrigger>
                         <InfoIcon className="h-4 w-4 text-gray-400" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        Total annual revenue before management fees
+                        Platform fee based on management type
                       </TooltipContent>
                     </Tooltip>
                   </div>
-                  <p className="text-xl font-bold mt-1">{formatter.format(data.shortTermAnnual)}</p>
+                  <p className="text-xl font-bold mt-1 text-red-600">
+                    -{formatter.format(data.shortTermAnnual * (data.managementFee > 0 ? 0.15 : 0.03))}
+                  </p>
                 </div>
 
                 {/* Management Fee if applicable */}
@@ -140,7 +160,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                           <InfoIcon className="h-4 w-4 text-gray-400" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          Annual management fee amount
+                          Property management fee amount
                         </TooltipContent>
                       </Tooltip>
                     </div>
@@ -157,7 +177,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                         <InfoIcon className="h-4 w-4 text-gray-400" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        Total annual revenue after all fees
+                        Total annual revenue after all fees and deductions
                       </TooltipContent>
                     </Tooltip>
                   </div>
