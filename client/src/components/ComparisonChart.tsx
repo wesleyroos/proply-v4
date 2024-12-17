@@ -468,6 +468,20 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
                     )}
                   </td>
                 </tr>
+                <tr className="border-b bg-[#FFE66D]/10 hover:bg-[#FFE66D]/20">
+                  <td className="py-3 px-6 text-[#B8860B] font-medium">Long Term Rental</td>
+                  {Array(12).fill(0).map((_, i) => (
+                    <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
+                      {formatter.format(data.longTermMonthly)}
+                    </td>
+                  ))}
+                  <td className="text-right py-3 px-6 border-l font-semibold">
+                    {formatter.format(data.longTermAnnual)}
+                  </td>
+                  <td className="text-right py-3 px-6 font-semibold">
+                    {formatter.format(data.longTermMonthly)}
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
