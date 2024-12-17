@@ -62,14 +62,7 @@ export default function MapView({ address }: MapViewProps) {
           mapId: '8c097f85efc9c75f', // Required for AdvancedMarkerElement
           mapTypeControl: false,
           streetViewControl: false,
-          fullscreenControl: false,
-          styles: [
-            {
-              featureType: "poi",
-              elementType: "labels",
-              stylers: [{ visibility: "off" }]
-            }
-          ]
+          fullscreenControl: false
         });
         
         setMap(newMap);
