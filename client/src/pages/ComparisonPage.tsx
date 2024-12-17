@@ -69,6 +69,8 @@ export default function ComparisonPage() {
       breakEvenOccupancy: Math.round(breakEvenOccupancy * 10) / 10,
       shortTermNightly, 
       managementFee,
+      bedrooms: data.bedrooms,
+      bathrooms: data.bathrooms,
     });
   };
 

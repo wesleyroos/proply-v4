@@ -29,7 +29,10 @@ interface ComparisonData {
 }
 
 interface ComparisonChartProps {
-  data: ComparisonData;
+  data: ComparisonData & {
+    bedrooms?: string;
+    bathrooms?: string;
+  };
   address: string;
 }
 
@@ -62,6 +65,23 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
     <TooltipProvider>
       <div id="comparison-results" className="space-y-6">
         <MapView address={address} />
+        <div className="p-4 bg-gray-50 rounded-lg">
+          <h3 className="text-lg font-semibold mb-4">Property Details</h3>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm text-gray-600">Address</p>
+              <p className="font-medium">{address}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Bedrooms</p>
+              <p className="font-medium">{data.bedrooms || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Bathrooms</p>
+              <p className="font-medium">{data.bathrooms || 'N/A'}</p>
+            </div>
+          </div>
+        </div>
         <div className="grid grid-cols-2 gap-8">
           <div className="p-4 bg-blue-50 rounded-lg">
             <h3 className="text-lg font-semibold text-[#1BA3FF] mb-2">Long-Term Rental</h3>
