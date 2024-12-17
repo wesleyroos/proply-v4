@@ -2,6 +2,8 @@ import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 import { InfoIcon } from "lucide-react";
 import MapView from './MapView';
+import PDFReport from './PDFReport';
+import { formatter } from '../utils/formatting';
 import {
   Tooltip,
   TooltipContent,
@@ -53,43 +55,23 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
     },
   ];
 
-  const formatter = new Intl.NumberFormat('en-ZA', {
-    style: 'currency',
-    currency: 'ZAR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
+  const [showPDFReport, setShowPDFReport] = useState(false);
 
-  // Removed unused functions as calculations are now done inline
+  // State and calculations for comparison data
 
   return (
-    <TooltipProvider>
-      <div id="comparison-results" className="space-y-6">
-        <div className="flex justify-end">
-          <Button
-            onClick={() => {
-              const element = document.getElementById('comparison-results');
-              if (!element) return;
-              
-              import('html2pdf.js').then(module => {
-                const html2pdf = module.default;
-                const opt = {
-                  margin: 1,
-                  filename: `Property-Comparison-${address.split(',')[0]}.pdf`,
-                  image: { type: 'jpeg', quality: 0.98 },
-                  html2canvas: { scale: 2 },
-                  jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-                };
-                
-                html2pdf().set(opt).from(element).save();
-              });
-            }}
-            className="bg-[#1BA3FF] hover:bg-[#114D9D]"
-          >
-            Download PDF Report
-          </Button>
-        </div>
-        <MapView address={address} />
+    <>
+      <TooltipProvider>
+        <div id="comparison-results" className="space-y-6">
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setShowPDFReport(true)}
+              className="bg-[#1BA3FF] hover:bg-[#114D9D]"
+            >
+              Download PDF Report
+            </Button>
+          </div>
+          <MapView address={address} />
         <div className="p-4 bg-gray-50 rounded-lg">
           <h3 className="text-lg font-semibold mb-4">Property Details</h3>
           <div className="grid grid-cols-3 gap-4">
@@ -561,8 +543,15 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
             </p>
           </div>
         )}
-      </div>
-    </TooltipProvider>
+        </div>
+      </TooltipProvider>
+      {showPDFReport && (
+        <PDFReport
+          data={{ ...data, address }}
+          onClose={() => setShowPDFReport(false)}
+        />
+      )}
+    </>
   );
 }
 
