@@ -1,0 +1,127 @@
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+use-user.ts:41 
+        
+        
+       GET https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/api/user 401 (Unauthorized)
+fetchUser @ use-user.ts:41
+fetchFn @ @tanstack_react-query.js?v=1f98eda5:840
+run @ @tanstack_react-query.js?v=1f98eda5:494
+start @ @tanstack_react-query.js?v=1f98eda5:536
+fetch @ @tanstack_react-query.js?v=1f98eda5:926
+executeFetch_fn @ @tanstack_react-query.js?v=1f98eda5:2211
+onSubscribe @ @tanstack_react-query.js?v=1f98eda5:1898
+subscribe @ @tanstack_react-query.js?v=1f98eda5:24
+(anonymous) @ @tanstack_react-query.js?v=1f98eda5:3022
+subscribeToStore @ chunk-WERSD76P.js?v=1f98eda5:11984
+commitHookEffectListMount @ chunk-WERSD76P.js?v=1f98eda5:16915
+commitPassiveMountOnFiber @ chunk-WERSD76P.js?v=1f98eda5:18156
+commitPassiveMountEffects_complete @ chunk-WERSD76P.js?v=1f98eda5:18129
+commitPassiveMountEffects_begin @ chunk-WERSD76P.js?v=1f98eda5:18119
+commitPassiveMountEffects @ chunk-WERSD76P.js?v=1f98eda5:18109
+flushPassiveEffectsImpl @ chunk-WERSD76P.js?v=1f98eda5:19490
+flushPassiveEffects @ chunk-WERSD76P.js?v=1f98eda5:19447
+performSyncWorkOnRoot @ chunk-WERSD76P.js?v=1f98eda5:18868
+flushSyncCallbacks @ chunk-WERSD76P.js?v=1f98eda5:9119
+commitRootImpl @ chunk-WERSD76P.js?v=1f98eda5:19432
+commitRoot @ chunk-WERSD76P.js?v=1f98eda5:19277
+finishConcurrentRender @ chunk-WERSD76P.js?v=1f98eda5:18805
+performConcurrentWorkOnRoot @ chunk-WERSD76P.js?v=1f98eda5:18718
+workLoop @ chunk-WERSD76P.js?v=1f98eda5:197
+flushWork @ chunk-WERSD76P.js?v=1f98eda5:176
+performWorkUntilDeadline @ chunk-WERSD76P.js?v=1f98eda5:384Understand this errorAI
+MapView.tsx:26 MapView mounted, initializing Google Maps...
+maps.ts:4 Initializing Google Maps...
+maps.ts:5 API Key available: true
+maps.ts:6 API Key length: 39
+MapView.tsx:88 Map or marker not ready yet
+MapView.tsx:26 MapView mounted, initializing Google Maps...
+maps.ts:4 Initializing Google Maps...
+maps.ts:5 API Key available: true
+maps.ts:6 API Key length: 39
+MapView.tsx:88 Map or marker not ready yet
+VM10290 js:1031 Google Maps JavaScript API has been loaded directly without loading=async. This can result in suboptimal performance. For best-practice loading patterns please see https://goo.gle/js-api-loading
+vga @ VM10290 js:1031
+google.maps.Load @ VM10290 js:14
+(anonymous) @ VM10290 js:1260
+(anonymous) @ VM10290 js:1260Understand this warningAI
+maps.ts:15 Google Maps script loaded successfully
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961 Element with name "gmp-internal-element-support-verification" already defined.
+_.fm @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961
+oga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1039
+vga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1031
+google.maps.Load @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:14
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260Understand this warningAI
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1039 You have included the Google Maps JavaScript API multiple times on this page. This may cause unexpected errors.
+pga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1039
+vga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1031
+google.maps.Load @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:14
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260Understand this errorAI
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1031 Google Maps JavaScript API has been loaded directly without loading=async. This can result in suboptimal performance. For best-practice loading patterns please see https://goo.gle/js-api-loading
+vga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1031
+google.maps.Load @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:14
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260Understand this warningAI
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961 Element with name "gmp-internal-dialog" already defined.
+_.fm @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:738
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:925
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:927
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:925
+init @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1069
+init @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1068
+hga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1027
+vga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1033
+google.maps.Load @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:14
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260Understand this warningAI
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961 Element with name "gmp-internal-pin" already defined.
+_.fm @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:345
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:925
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:927
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:925
+wj @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:926
+$ca @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:925
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:925
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:927
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:925
+init @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1069
+init @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1068
+hga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1027
+vga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1033
+google.maps.Load @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:14
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260Understand this warningAI
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961 Element with name "gmp-internal-use-am" already defined.
+_.fm @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:402
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:925
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:927
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:925
+wj @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:926
+$ca @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:925
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:925
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:927
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:925
+init @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1069
+init @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1068
+hga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1027
+vga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1033
+google.maps.Load @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:14
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260Understand this warningAI
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961 Element with name "gmp-internal-am" already defined.
+_.fm @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961
+connectForExplicitThirdPartyLoad @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:403
+Sfa @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1023
+await in Sfa
+vga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1035
+google.maps.Load @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:14
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260
+(anonymous) @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1260Understand this warningAI
+maps.ts:15 Google Maps script loaded successfully
+MapView.tsx:31 Google Maps initialization successful
+MapView.tsx:50 Creating map instance...
+MapView.tsx:77 Map initialized successfully

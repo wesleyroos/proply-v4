@@ -50,35 +50,35 @@ export default function MapView({ address }: MapViewProps) {
       console.log('Creating map instance...');
       const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
       const newMap = new window.google.maps.Map(mapRef.current, {
-          center: defaultLocation,
-          zoom: 13,
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: false,
-          styles: [
-            {
-              featureType: "poi",
-              elementType: "labels",
-              stylers: [{ visibility: "off" }]
-            }
-          ]
-        });
+        center: defaultLocation,
+        zoom: 13,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+        styles: [
+          {
+            featureType: "poi",
+            elementType: "labels",
+            stylers: [{ visibility: "off" }]
+          }
+        ]
+      });
         
-        setMap(newMap);
+      setMap(newMap);
         
-        // Create a marker element using the new AdvancedMarkerElement
-        const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
-          map: null, // Initially not shown on map
-          position: defaultLocation,
-          title: 'Property Location'
-        });
-        setMarker(newMarker);
+      // Create a standard marker instead of AdvancedMarkerElement
+      const newMarker = new window.google.maps.Marker({
+        position: defaultLocation,
+        map: null,
+        title: 'Property Location'
+      });
+      setMarker(newMarker);
 
-        console.log('Map initialized successfully');
-      } catch (error) {
-        console.error('Error initializing map:', error);
-        setError('Error creating map');
-      }
+      console.log('Map initialized successfully');
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      setError('Error creating map');
+    }
   }, [isLoaded]);
 
   // Update marker when address changes or map/marker become available
@@ -93,7 +93,7 @@ export default function MapView({ address }: MapViewProps) {
       if (!address?.trim()) {
         const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
         map.setCenter(defaultLocation);
-        marker.map = null; // Hide marker when no address
+        marker.setMap(null); // Hide marker when no address
         return;
       }
 
@@ -117,13 +117,13 @@ export default function MapView({ address }: MapViewProps) {
         map.setCenter(location);
         map.setZoom(16);
         
-        marker.position = location;
-        marker.map = map;
+        marker.setPosition(location);
+        marker.setMap(map);
         
         console.log('Marker placed successfully');
       } catch (error) {
         console.error('Error updating marker:', error);
-        marker.map = null;
+        marker.setMap(null);
       }
     };
 
