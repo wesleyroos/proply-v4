@@ -9,14 +9,39 @@ import { useUser } from "../hooks/use-user";
 export default function ComparisonPage() {
   const [, setLocation] = useLocation();
   const { user } = useUser();
-  const [comparisonData, setComparisonData] = useState(null);
+  const [comparisonData, setComparisonData] = useState<ComparisonData | null>(null);
 
-  const handleCompare = (data) => {
-    if (user?.subscriptionStatus === "free") {
-      setLocation("/subscription");
-      return;
-    }
-    setComparisonData(data);
+  interface ComparisonData {
+    longTermMonthly: number;
+    shortTermMonthly: number;
+    longTermAnnual: number;
+    shortTermAnnual: number;
+    breakEvenOccupancy: number;
+  }
+
+  const handleCompare = (data: any) => {
+    // Calculate comparison metrics
+    const longTermMonthly = parseFloat(data.longTermRental);
+    const longTermAnnual = longTermMonthly * 12 * (1 + parseFloat(data.annualEscalation) / 100);
+    
+    const shortTermNightly = parseFloat(data.shortTermNightly);
+    const occupancyRate = parseFloat(data.annualOccupancy) / 100;
+    const shortTermMonthly = (shortTermNightly * 365 * occupancyRate) / 12;
+    const shortTermAnnual = shortTermMonthly * 12;
+    
+    const managementFee = parseFloat(data.managementFee) / 100;
+    const shortTermAfterFees = shortTermAnnual * (1 - managementFee);
+    
+    // Calculate break-even occupancy
+    const breakEvenOccupancy = (longTermAnnual / (shortTermNightly * 365)) * 100;
+
+    setComparisonData({
+      longTermMonthly,
+      shortTermMonthly,
+      longTermAnnual,
+      shortTermAnnual: shortTermAfterFees,
+      breakEvenOccupancy: Math.round(breakEvenOccupancy * 10) / 10,
+    });
   };
 
   return (
