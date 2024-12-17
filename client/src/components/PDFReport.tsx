@@ -85,7 +85,9 @@ function PDFReport({ data, onClose }: PDFReportProps) {
       };
 
       html2pdf().set(opt).from(reportRef.current).save().then(() => {
-        onClose();
+        setTimeout(() => {
+          onClose();
+        }, 500); // Small delay to ensure PDF is fully generated
       });
     }
   }, []);

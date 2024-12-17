@@ -56,6 +56,7 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
   ];
 
   const [showPDFReport, setShowPDFReport] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // State and calculations for comparison data
 
@@ -65,10 +66,21 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
         <div id="comparison-results" className="space-y-6">
           <div className="flex justify-end">
             <Button
-              onClick={() => setShowPDFReport(true)}
+              onClick={() => {
+                setIsGeneratingPDF(true);
+                setShowPDFReport(true);
+              }}
               className="bg-[#1BA3FF] hover:bg-[#114D9D]"
+              disabled={isGeneratingPDF}
             >
-              Download PDF Report
+              {isGeneratingPDF ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating Report...
+                </>
+              ) : (
+                'Download PDF Report'
+              )}
             </Button>
           </div>
           <MapView address={address} />
