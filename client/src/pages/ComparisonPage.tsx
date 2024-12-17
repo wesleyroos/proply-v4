@@ -16,7 +16,10 @@ export default function ComparisonPage() {
     shortTermMonthly: number;
     longTermAnnual: number;
     shortTermAnnual: number;
+    shortTermAfterFees: number;
     breakEvenOccupancy: number;
+    shortTermNightly: number;
+    managementFee: number;
   }
 
   const handleCompare = (data: any) => {
@@ -49,9 +52,10 @@ export default function ComparisonPage() {
       longTermMonthly,
       shortTermMonthly,
       longTermAnnual,
-      shortTermAnnual: shortTermAfterFees,
+      shortTermAnnual,
+      shortTermAfterFees,
       breakEvenOccupancy: Math.round(breakEvenOccupancy * 10) / 10,
-      shortTermNightly, // Add these new properties
+      shortTermNightly, 
       managementFee,
     });
   };

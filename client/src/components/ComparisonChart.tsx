@@ -21,6 +21,7 @@ interface ComparisonData {
   shortTermMonthly: number;
   longTermAnnual: number;
   shortTermAnnual: number;
+  shortTermAfterFees: number;
   breakEvenOccupancy: number;
   shortTermNightly: number;
   managementFee: number;
