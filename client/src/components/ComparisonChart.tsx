@@ -233,8 +233,8 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                   <td className="text-right">95%</td>
                   <td colSpan={2}></td>
                 </tr>
-                <tr className="border-b">
-                  <td className="py-2">Revenue Low</td>
+                <tr className="border-b bg-[#FF6B6B]/10">
+                  <td className="py-2 text-[#FF6B6B] font-medium">Revenue Low</td>
                   {Array(12).fill(0).map((_, i) => (
                     <td key={i} className="text-right py-2">
                       {formatter.format(calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
@@ -253,8 +253,8 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                     )}
                   </td>
                 </tr>
-                <tr className="border-b">
-                  <td className="py-2">Revenue Medium</td>
+                <tr className="border-b bg-[#4ECDC4]/10">
+                  <td className="py-2 text-[#4ECDC4] font-medium">Revenue Medium</td>
                   {Array(12).fill(0).map((_, i) => (
                     <td key={i} className="text-right py-2">
                       {formatter.format(calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
@@ -273,8 +273,8 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                     )}
                   </td>
                 </tr>
-                <tr className="border-b">
-                  <td className="py-2">Revenue High</td>
+                <tr className="border-b bg-[#45B7D1]/10">
+                  <td className="py-2 text-[#45B7D1] font-medium">Revenue High</td>
                   {Array(12).fill(0).map((_, i) => (
                     <td key={i} className="text-right py-2">
                       {formatter.format(calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
