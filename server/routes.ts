@@ -4,9 +4,40 @@ import { setupAuth } from "./auth";
 import { db } from "@db";
 import { properties } from "@db/schema";
 import { eq } from "drizzle-orm";
+import fetch from "node-fetch";
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
+
+  // PriceLabs API proxy endpoint
+  app.get("/api/revenue-data", async (req, res) => {
+    const { address, bedrooms } = req.query;
+
+    if (!address || !bedrooms) {
+      return res.status(400).json({ error: "Address and bedrooms are required" });
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(String(address))}&currency=ZAR&bedroom_category=${bedrooms}`,
+        {
+          headers: {
+            'X-API-Key': 'sNYmBNptl4gcLSlDl5GXuUtkGVVGIxiMcUjQI1MV'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`PriceLabs API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Error fetching from PriceLabs:', error);
+      res.status(500).json({ error: "Failed to fetch revenue data" });
+    }
+  });
 
   // Property comparison routes
   app.post("/api/properties", async (req, res) => {

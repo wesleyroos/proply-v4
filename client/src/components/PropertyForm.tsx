@@ -46,11 +46,7 @@ export default function PropertyForm({ onSubmit }) {
         return;
       }
 
-      const response = await fetch(`https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(address)}&currency=ZAR&bedroom_category=${bedrooms}`, {
-        headers: {
-          'X-API-Key': 'sNYmBNptl4gcLSlDl5GXuUtkGVVGIxiMcUjQI1MV'
-        }
-      });
+      const response = await fetch(`/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`);
 
       const data = await response.json();
 
