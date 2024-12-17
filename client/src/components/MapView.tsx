@@ -8,8 +8,20 @@ interface MapViewProps {
 // Add type definitions for Google Maps
 declare global {
   interface Window {
-    google: any;
-    initMap: () => void;
+    google: typeof google;
+    _googleMapsCallback?: () => void;
+  }
+}
+
+declare namespace google.maps.marker {
+  class AdvancedMarkerElement {
+    constructor(options: {
+      map: google.maps.Map;
+      position: google.maps.LatLng | google.maps.LatLngLiteral;
+      title?: string;
+    });
+    map: google.maps.Map | null;
+    position: google.maps.LatLng | google.maps.LatLngLiteral;
   }
 }
 
@@ -33,67 +45,61 @@ export default function MapView({ address }: MapViewProps) {
     let isMounted = true;
     console.log('MapView mounted, initializing Google Maps...');
     
-    initGoogleMaps()
-      .then(() => {
-        if (!isMounted) return;
+    async function initializeMap() {
+      try {
+        await initGoogleMaps();
+        
+        if (!isMounted || !mapRef.current) return;
+        
         console.log('Google Maps initialization successful');
-        setIsLoaded(true);
-      })
-      .catch((err) => {
-        if (!isMounted) return;
-        console.error('Failed to initialize Google Maps:', err);
-        setError('Failed to load Google Maps');
-      });
+        
+        // Create map instance
+        console.log('Creating map instance...');
+        const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
+        const newMap = new google.maps.Map(mapRef.current, {
+          center: defaultLocation,
+          zoom: 13,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+          styles: [
+            {
+              featureType: "poi",
+              elementType: "labels",
+              stylers: [{ visibility: "off" }]
+            }
+          ]
+        });
+        
+        setMap(newMap);
+        
+        // Create an advanced marker element
+        if (!window.google.maps.marker) {
+          console.error('Advanced Marker library not loaded');
+          setError('Error: Advanced Marker library not available');
+          return;
+        }
+
+        const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
+          map: newMap,
+          position: defaultLocation,
+          title: 'Property Location',
+        });
+        setMarker(newMarker);
+
+        console.log('Map initialized successfully with advanced marker');
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        setError('Error creating map');
+      }
+    }
+    initializeMap();
 
     return () => {
       isMounted = false;
+      cleanupMarker();
     };
   }, []);
-
-  // Initialize the map once Google Maps is loaded
-  useEffect(() => {
-    if (!isLoaded || !mapRef.current) return;
-
-    try {
-      console.log('Creating map instance...');
-      const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
-      const newMap = new window.google.maps.Map(mapRef.current, {
-        center: defaultLocation,
-        zoom: 13,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false,
-        styles: [
-          {
-            featureType: "poi",
-            elementType: "labels",
-            stylers: [{ visibility: "off" }]
-          }
-        ]
-      });
-        
-      setMap(newMap);
-        
-      // Create an advanced marker element
-      if (!window.google.maps.marker) {
-        console.error('Advanced Marker library not loaded');
-        setError('Error: Advanced Marker library not available');
-        return;
-      }
-
-      const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
-        map: newMap,
-        position: defaultLocation,
-        title: 'Property Location',
-      });
-      setMarker(newMarker);
-
-      console.log('Map initialized successfully with advanced marker');
-    } catch (error) {
-      console.error('Error initializing map:', error);
-      setError('Error creating map');
-    }
-  }, [isLoaded]);
 
   // Update marker when address changes
   useEffect(() => {
