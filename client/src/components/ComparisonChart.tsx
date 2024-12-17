@@ -39,6 +39,8 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
     maximumFractionDigits: 0,
   });
 
+  // Removed unused functions as calculations are now done inline
+
   return (
     <TooltipProvider>
       <div className="space-y-6">
@@ -58,7 +60,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                 </Tooltip>
               </div>
               <p className="text-xl font-bold">{formatter.format(data.longTermMonthly)}</p>
-              
+
               <div className="flex items-center gap-2">
                 <p className="text-sm text-gray-600">Annual Revenue</p>
                 <Tooltip>
@@ -71,14 +73,14 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                 </Tooltip>
               </div>
               <p className="text-xl font-bold">{formatter.format(data.longTermAnnual)}</p>
-              
+
               <div className="mt-2 text-xs text-gray-500">
                 <p>Calculation:</p>
                 <p>Monthly × 12</p>
               </div>
             </div>
           </div>
-          
+
           <div className="p-4 bg-indigo-50 rounded-lg">
             <h3 className="text-lg font-semibold text-[#114D9D] mb-2">Short-Term Rental</h3>
             <div className="space-y-2">
@@ -90,14 +92,14 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                   </TooltipTrigger>
                   <TooltipContent>
                     Average monthly income based on fee-adjusted nightly rate and occupancy.
-                    {data.managementFee > 0 
+                    {data.managementFee > 0
                       ? "Professional management: 15% Airbnb fee applied"
                       : "Self-managed: 3% platform fee applied"}
                   </TooltipContent>
                 </Tooltip>
               </div>
               <p className="text-xl font-bold">{formatter.format(data.shortTermMonthly)}</p>
-              
+
               <div className="flex items-center gap-2">
                 <p className="text-sm text-gray-600">Annual Revenue (After Fees)</p>
                 <Tooltip>
@@ -110,10 +112,10 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                 </Tooltip>
               </div>
               <p className="text-xl font-bold">{formatter.format(data.shortTermAnnual)}</p>
-              
+
               <div className="mt-2 text-xs text-gray-500">
                 <p>Calculation:</p>
-                <p>Adjusted Nightly Rate = {data.managementFee > 0 
+                <p>Adjusted Nightly Rate = {data.managementFee > 0
                   ? "Nightly Rate × 0.85 (15% Airbnb fee)"
                   : "Nightly Rate × 0.97 (3% platform fee)"}</p>
                 <p>Monthly = (Adjusted Rate × 365 × Occupancy Rate) ÷ 12</p>
@@ -160,6 +162,8 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                   <th className="text-right py-2">Oct</th>
                   <th className="text-right py-2">Nov</th>
                   <th className="text-right py-2">Dec</th>
+                  <th className="text-right py-2 border-l">Total</th>
+                  <th className="text-right py-2">Monthly Avg</th>
                 </tr>
               </thead>
               <tbody>
@@ -170,6 +174,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                       {formatter.format(getSeasonalNightlyRate(data.shortTermNightly, i))}
                     </td>
                   ))}
+                  <td colSpan={2}></td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">Fee-Adjusted Rate</td>
@@ -178,6 +183,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                       {formatter.format(getFeeAdjustedRate(getSeasonalNightlyRate(data.shortTermNightly, i), data.managementFee > 0))}
                     </td>
                   ))}
+                  <td colSpan={2}></td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">Occupancy Low</td>
@@ -193,6 +199,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                   <td className="text-right">65%</td>
                   <td className="text-right">65%</td>
                   <td className="text-right">70%</td>
+                  <td colSpan={2}></td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">Occupancy Medium</td>
@@ -208,6 +215,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                   <td className="text-right">75%</td>
                   <td className="text-right">75%</td>
                   <td className="text-right">85%</td>
+                  <td colSpan={2}></td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">Occupancy High</td>
@@ -223,6 +231,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                   <td className="text-right">85%</td>
                   <td className="text-right">85%</td>
                   <td className="text-right">95%</td>
+                  <td colSpan={2}></td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">Revenue Low</td>
@@ -231,6 +240,18 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                       {formatter.format(calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                     </td>
                   ))}
+                  <td className="text-right py-2 border-l font-semibold">
+                    {formatter.format(
+                      Array(12).fill(0)
+                        .reduce((sum, _, i) => sum + calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
+                    )}
+                  </td>
+                  <td className="text-right py-2 font-semibold">
+                    {formatter.format(
+                      Array(12).fill(0)
+                        .reduce((sum, _, i) => sum + calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0) / 12
+                    )}
+                  </td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">Revenue Medium</td>
@@ -239,6 +260,18 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                       {formatter.format(calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                     </td>
                   ))}
+                  <td className="text-right py-2 border-l font-semibold">
+                    {formatter.format(
+                      Array(12).fill(0)
+                        .reduce((sum, _, i) => sum + calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
+                    )}
+                  </td>
+                  <td className="text-right py-2 font-semibold">
+                    {formatter.format(
+                      Array(12).fill(0)
+                        .reduce((sum, _, i) => sum + calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0) / 12
+                    )}
+                  </td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">Revenue High</td>
@@ -247,34 +280,16 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                       {formatter.format(calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                     </td>
                   ))}
-                </tr>
-                <tr className="border-t bg-gray-50 font-semibold">
-                  <td className="py-3">Total Revenue Low</td>
-                  <td colSpan={11}></td>
-                  <td className="text-right py-3">
-                    {formatter.format(
-                      Array(12).fill(0)
-                        .reduce((sum, _, i) => sum + calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
-                    )}
-                  </td>
-                </tr>
-                <tr className="bg-gray-50 font-semibold">
-                  <td className="py-3">Total Revenue Medium</td>
-                  <td colSpan={11}></td>
-                  <td className="text-right py-3">
-                    {formatter.format(
-                      Array(12).fill(0)
-                        .reduce((sum, _, i) => sum + calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
-                    )}
-                  </td>
-                </tr>
-                <tr className="bg-gray-50 font-semibold">
-                  <td className="py-3">Total Revenue High</td>
-                  <td colSpan={11}></td>
-                  <td className="text-right py-3">
+                  <td className="text-right py-2 border-l font-semibold">
                     {formatter.format(
                       Array(12).fill(0)
                         .reduce((sum, _, i) => sum + calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
+                    )}
+                  </td>
+                  <td className="text-right py-2 font-semibold">
+                    {formatter.format(
+                      Array(12).fill(0)
+                        .reduce((sum, _, i) => sum + calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0) / 12
                     )}
                   </td>
                 </tr>
@@ -342,17 +357,17 @@ function calculateMonthlyRevenue(
 ): number {
   const occupancyRate = OCCUPANCY_RATES[scenario][month] / 100;
   const daysInMonth = new Date(2024, month + 1, 0).getDate();
-  
+
   // Apply seasonal adjustment and platform fee
   const seasonalRate = getSeasonalNightlyRate(nightly, month);
   const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, hasManagementFee);
-  
+
   let revenue = feeAdjustedRate * daysInMonth * occupancyRate;
-  
+
   // Apply management fee if present
   if (hasManagementFee) {
     revenue *= (1 - managementFeePercent);
   }
-  
+
   return revenue;
 }
