@@ -230,17 +230,29 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
           </div>
 
           <FormField
-            control={form.control}
-            name="managementFee"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Management Fee (%)</FormLabel>
-                <FormControl>
-                  <Input {...field} type="number" min="0" max="100" />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+              control={form.control}
+              name="managementFee"
+              rules={{ required: "Management fee percentage is required" }}
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <div className="flex items-center gap-2">
+                    <FormLabel>Management Fee (%)</FormLabel>
+                    <span className="text-sm text-muted-foreground">
+                      (0% if self-managed)
+                    </span>
+                  </div>
+                  <FormControl>
+                    <Input {...field} type="number" min="0" max="100" placeholder="0" />
+                  </FormControl>
+                  {fieldState.error && (
+                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
+                  )}
+                  <p className="text-sm text-muted-foreground">
+                    Enter 0 for self-managed properties or the percentage charged by your property manager
+                  </p>
+                </FormItem>
+              )}
+            />
 
           <div className="space-y-4">
             <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]">
