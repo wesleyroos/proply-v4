@@ -115,19 +115,19 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                 </div>
 
                 {/* Monthly Revenue */}
-                <div>
+                <div className="mt-1 mb-4">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-semibold text-gray-900">Monthly Revenue</h3>
+                    <h3 className="text-sm text-gray-600">Monthly Revenue</h3>
                     <Tooltip>
                       <TooltipTrigger>
-                        <InfoIcon className="h-4 w-4 text-gray-400" />
+                        <InfoIcon className="h-3 w-3 text-gray-400" />
                       </TooltipTrigger>
                       <TooltipContent>
                         Average monthly income before fees
                       </TooltipContent>
                     </Tooltip>
                   </div>
-                  <p className="text-xl font-bold mt-1">{formatter.format(data.shortTermMonthly)}</p>
+                  <p className="text-base text-gray-900">{formatter.format(data.shortTermMonthly)}</p>
                 </div>
 
                 {/* Airbnb Fee */}
