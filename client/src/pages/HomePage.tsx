@@ -9,7 +9,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#FFFFFF] p-4">
       <nav className="flex justify-between items-center mb-8">
-        <img src="/proply-logo.svg" alt="Proply" className="h-8" />
+        <img src="/proply-logo.png" alt="Proply" className="h-8" />
         <Button variant="ghost" onClick={() => logout()}>
           Logout
         </Button>
