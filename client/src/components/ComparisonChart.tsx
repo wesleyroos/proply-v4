@@ -319,6 +319,25 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
               </LineChart>
             </ResponsiveContainer>
           </div>
+
+          <div className="mt-8 text-sm text-gray-600 space-y-4 border-t pt-8">
+            <p className="font-semibold mb-2">DISCLAIMER:</p>
+            <p>
+              The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.
+            </p>
+            <p>
+              This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice. Property rental strategy decisions should be made after careful consideration of all relevant factors, including but not limited to local market conditions, regulations, and personal circumstances.
+            </p>
+            <p>
+              Proply Tech (Pty) Ltd and its affiliates expressly disclaim any and all liability for any direct, indirect, incidental, or consequential damages arising from the use of this information. Actual rental income, occupancy rates, and management costs may vary significantly from the projections and estimates presented.
+            </p>
+            <p>
+              By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to seasonal demand, regulatory changes, platform policies, and economic conditions, may impact actual outcomes.
+            </p>
+            <p className="text-xs mt-4">
+              © Proply Tech (Pty) Ltd. All rights reserved.
+            </p>
+          </div>
         </div>
       </div>
     </TooltipProvider>
