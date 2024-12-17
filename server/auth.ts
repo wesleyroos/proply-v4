@@ -36,7 +36,7 @@ declare global {
       id: number;
       username: string;
       subscriptionStatus: string;
-      subscriptionExpiryDate?: Date;
+      subscriptionExpiryDate: Date | null;
     }
   }
 }

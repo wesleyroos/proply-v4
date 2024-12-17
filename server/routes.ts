@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { properties } from "@db/schema";
+import { properties, users } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
 
@@ -11,6 +11,10 @@ export function registerRoutes(app: Express): Server {
 
   // PriceLabs API proxy endpoint
   app.get("/api/revenue-data", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
     const { address, bedrooms } = req.query;
 
     if (!address || !bedrooms) {
