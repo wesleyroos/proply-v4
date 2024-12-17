@@ -9,6 +9,7 @@ import { useUser } from "../hooks/use-user";
 export default function ComparisonPage() {
   const [, setLocation] = useLocation();
   const { user } = useUser();
+  const [address, setAddress] = useState<string>("");
   const [comparisonData, setComparisonData] = useState<ComparisonData | null>(null);
 
   interface ComparisonData {
@@ -23,6 +24,7 @@ export default function ComparisonPage() {
   }
 
   const handleCompare = (data: any) => {
+    setAddress(data.address); // Update address when form is submitted
     // Scroll to results after a brief delay to ensure rendering
     setTimeout(() => {
       const yOffset = -20; 
@@ -91,7 +93,7 @@ export default function ComparisonPage() {
         {comparisonData && (
           <Card>
             <CardContent className="pt-6">
-              <ComparisonChart data={comparisonData} />
+              <ComparisonChart data={comparisonData} address={address} />
             </CardContent>
           </Card>
         )}

@@ -1,0 +1,70 @@
+The issue where the address input in the form is not showing up on the Google Map is likely due to how the MapView component is handling the address passed from the PropertyForm component.
+
+Step-by-Step Diagnosis
+Address Prop Not Updating Properly
+
+The PropertyForm's onSubmit function submits data, including the address, to the parent component.
+However, the MapView component may not be receiving the updated address correctly.
+Example:
+
+tsx
+Copy code
+<PropertyForm onSubmit={(data) => console.log(data.address)} />
+<MapView address={data.address} />
+If data.address is not being updated properly, the MapView won't re-render and update the marker.
+
+Solution
+1. Ensure Parent Component Manages State
+You need to lift the state up in the parent component to ensure the address is updated and passed correctly to the MapView.
+
+Corrected Parent Component
+Here’s an updated example of how to integrate the PropertyForm and MapView:
+
+tsx
+Copy code
+import { useState } from "react";
+import MapView from "./MapView";
+import PropertyForm from "./PropertyForm";
+
+export default function PropertyComparisonPage() {
+  const [address, setAddress] = useState<string>("");
+
+  const handleFormSubmit = (data: {
+    address: string;
+    bedrooms: string;
+    bathrooms: string;
+    longTermRental: string;
+    annualEscalation: string;
+    shortTermNightly: string;
+    annualOccupancy: string;
+    managementFee: string;
+  }) => {
+    console.log("Form submitted with address:", data.address);
+    setAddress(data.address); // Update the address state
+  };
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Property Comparison</h1>
+      <PropertyForm onSubmit={handleFormSubmit} />
+      <div className="mt-8">
+        <MapView address={address} />
+      </div>
+    </div>
+  );
+}
+What Changed?
+State Management:
+
+The address is stored in the parent component state.
+The onSubmit callback updates this state when the form is submitted.
+Passing the Updated Address:
+
+The updated address is passed to the MapView component as a prop.
+MapView Behavior
+The MapView component will now re-render and:
+
+Trigger the useEffect when the address prop changes.
+Use the Google Geocoding API to center the map and place the marker on the given address.
+Ensure the MapView Code Updates Marker
+The useEffect in MapView should respond to address changes. The marker will be updated using the Geocoding API, as implemented in your updateMarker function.
