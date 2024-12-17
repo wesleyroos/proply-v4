@@ -1,0 +1,1700 @@
+{% extends "base.html" %}
+
+{% block title %}Airbnb Management Comparison Tool - Proply{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container {
+        max-width: 80%;
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-left: 0;
+    }
+    #wrapper {
+        overflow-x: visible;
+    }
+    #content-wrapper {
+        padding-left: 15px;
+    }
+    @media (min-width: 992px) {
+        .container {
+            margin-left: 15px;
+        }
+    }
+    .main-content {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    #loadingSpinner {
+        display: none;
+    }
+    .chart-container {
+        margin-top: 20px;
+    }
+    .card {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    .card-header {
+        background: linear-gradient(135deg, #1BA3FF, #114D9D);
+        color: #ffffff;
+        border-radius: 5px 5px 0 0;
+        padding: 5px 10px;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    .card-header h3 {
+        margin: 0;
+        font-size: inherit;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #1BA3FF, #114D9D);
+        border: none;
+        transition: background 0.3s ease;
+    }
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #114D9D, #1BA3FF);
+    }
+    .animated-fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    }
+    .appear {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    #shortTermRentalTable {
+        font-size: 0.8rem;
+    }
+    #shortTermRentalTable th,
+    #shortTermRentalTable td {
+        padding: 0.3rem 0.5rem;
+        white-space: nowrap;
+    }
+    .revenue-low {
+        background-color: rgba(231, 76, 60, 0.2);
+    }
+    .revenue-medium {
+        background-color: rgba(52, 152, 219, 0.2);
+    }
+    .revenue-high {
+        background-color: rgba(46, 204, 113, 0.2);
+    }
+    .rental-heading {
+        font-weight: bold;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+    .rental-heading.long-term {
+        color: #ffffff;
+        background-color: #3498db;
+    }
+    .rental-heading.short-term {
+        color: #ffffff;
+        background-color: #2ecc71;
+    }
+    #breakeven-gauge-container {
+        text-align: center;
+        font-family: Arial, sans-serif;
+    }
+    #gauge-label {
+        margin-top: 10px;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    #breakeven-gauge {
+        max-width: 100%;
+        height: auto;
+    }
+    .chart-container {
+        position: relative;
+        height: 400px;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    #fiveYearProjectionChart {
+        max-width: 100%;
+    }
+    .seasonal-chart-container {
+        position: relative;
+        height: 400px;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    #seasonalRevenueChart {
+        max-width: 100%;
+    }
+    #exportPdf {
+        background: linear-gradient(135deg, #1BA3FF, #114D9D);
+        border: none;
+        transition: background 0.3s ease;
+    }
+    #exportPdf:hover {
+        background: linear-gradient(135deg, #114D9D, #1BA3FF);
+    }
+    @media (max-width: 768px) {
+        .card {
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            height: 300px;
+        }
+    }
+    #managementFeeContainer,
+    #managementFee {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* Styles for the bullet graph */
+    #bullet-graph-container {
+        position: relative;
+        width: 80%;
+        height: 50px;
+        margin: 20px auto;
+    }
+
+    #bullet-bar {
+        position: relative;
+        width: 100%;
+        height: 20px;
+        background-color: #e0e0e0; /* Base bar color */
+        border-radius: 10px;
+    }
+
+    /* Break-even bar */
+    #break-even-bar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        background-color: #1BA3FF; /* Light blue */
+        width: 0%;
+        border-radius: 10px;
+        transition: width 1s ease-in-out;
+    }
+
+    /* Projected occupancy bar */
+    #projected-bar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        background-color: #1BA3FF; /* Light blue */
+        width: 0%;
+        border-radius: 10px;
+        transition: width 1s ease-in-out, background-color 0.5s;
+    }
+
+    /* Labels */
+    #bullet-labels {
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+    }
+    #break-even-marker {
+        position: absolute;
+        top: -5px;
+        height: 30px;
+        width: 2px;
+        background-color: #e74c3c; /* Red color */
+        left: 0%;
+        transition: left 1s ease-in-out;
+    }
+
+    #break-even-label,
+    #projected-occupancy-label {
+        font-weight: bold;
+    }
+
+    #break-even-label {
+        color: #e74c3c;
+    }
+
+    #projected-occupancy-label {
+        color: #1BA3FF;
+    }
+    /* Add this to your existing CSS */
+    .tooltip-icon {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        background-color: #1BA3FF;
+        color: white;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 16px;
+        font-size: 12px;
+        cursor: help;
+        margin-left: 5px;
+    }
+
+    /* Improve default tooltip */
+    [title] {
+        position: relative;
+    }
+
+    [title]:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 14px;
+        white-space: nowrap;
+        z-index: 1000;
+    }
+
+    /* Add styles for the new button */
+    .revenue-data-container {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    #getRevenueData {
+        background-color: transparent;
+        border: 1px solid #6c757d;
+        color: #6c757d;
+        font-size: 0.9rem;
+        padding: 0.375rem 0.75rem;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    #getRevenueData:hover {
+        background-color: #f8f9fa;
+        border-color: #5a6268;
+        color: #5a6268;
+    }
+
+    .revenue-data-helper-text {
+        font-size: 0.9rem;
+        color: #6c757d;
+        flex-grow: 1;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 767px) {
+        .revenue-data-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        #getRevenueData {
+            width: 100%;
+        }
+
+        .revenue-data-helper-text {
+            margin-top: 0.5rem;
+        }
+    }
+
+    .card h2 {
+        margin-bottom: 0.5rem;
+    }
+
+    .text-muted {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Style for the modal */
+    .modal-body table {
+        width: 100%;
+    }
+    .modal-body th, .modal-body td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    .modal-body tr:hover {
+        background-color: #f5f5f5;
+    }
+    .modal-body button {
+        margin: 5px;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %} 
+
+    <!-- Main content -->
+    <div id="content-wrapper" class="flex-grow-1 main-content">
+        <section class="py-5">
+            <div class="container">
+                <h1 class="mb-4">Airbnb Rent Compare Tool</h1>
+                <p class="lead">Compare long and short-term rental income and earning potential.</p>
+
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="text-center" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Fetching property details...</p>
+                </div>
+
+                <form id="comparisonForm" novalidate>
+                    <div class="row">
+                        <!-- Property Details -->
+                        <div class="col-md-6">
+                            <div class="card p-4 mb-4">
+                                <h3>Property Details</h3>
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">
+                                        <i class="fas fa-map-marker-alt"></i> Property Address
+                                    </label>
+                                    <input type="text" class="form-control" id="address" name="address" required>
+                                    <div class="invalid-feedback">
+                                        Please provide a property address.
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="bedrooms" class="form-label">
+                                        <i class="fas fa-bed"></i> Number of Bedrooms (Enter 0.5 for a studio)
+                                    </label>
+                                    <input type="number" class="form-control" id="bedrooms" name="bedrooms" required min="0" step="1">
+                                    <div class="invalid-feedback">
+                                        Please enter the number of bedrooms.
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="bathrooms" class="form-label">
+                                        <i class="fas fa-bath"></i> Number of Bathrooms 
+                                    </label>
+                                    <input type="number" class="form-control" id="bathrooms" name="bathrooms" required min="0" step="1">
+                                    <div class="invalid-feedback">
+                                        Please enter the number of bathrooms.
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="currentRent" class="form-label">
+                                        <i class="fas fa-money-bill-wave"></i> Long-Term Rental Amount
+                                    </label>
+                                    <input type="number" class="form-control" id="currentRent" name="currentRent" required min="0" step="0.01">
+                                    <div class="invalid-feedback">
+                                        Please enter the current monthly rent.
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="rentalEscalation" class="form-label">
+                                        <i class="fas fa-percentage"></i> Annual Income Escalation (%)
+                                    </label>
+                                    <input type="number" class="form-control" id="rentalEscalation" name="rentalEscalation" required min="0" max="100" step="0.1" value="5">
+                                    <div class="invalid-feedback">
+                                        Please enter a valid escalation percentage (0-100).
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Short-Term Rental Projections -->
+                        <div class="col-md-6">
+                            <div class="card p-4 mb-4">
+                                <h2>Short-Term Rental Projections</h2>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="averageNightlyRate" class="form-label">
+                                            <i class="fas fa-dollar-sign"></i> Average Nightly Rate
+                                        </label>
+                                        <input type="number" class="form-control" id="averageNightlyRate" name="averageNightlyRate" required min="0" step="0.01">
+                                        <div class="invalid-feedback">
+                                            Please enter the average nightly rate.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="projectedOccupancy" class="form-label">
+                                            <i class="fas fa-percentage"></i> Annual Occupancy Rate (%)
+                                        </label>
+                                        <input type="number" class="form-control" id="projectedOccupancy" name="projectedOccupancy" required min="0" max="100" step="0.1">
+                                        <div class="invalid-feedback">
+                                            Please enter a valid occupancy rate (0-100).
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 revenue-data-container">
+                                    <button type="button" id="getRevenueData" class="btn btn-outline-secondary">
+                                        <i class="fas fa-sync-alt"></i> Get Revenue Data
+                                    </button>
+                                    <span class="revenue-data-info">Click to automatically get revenue data or enter manually.</span>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="managementFee" class="form-label">
+                                        <i class="fas fa-user-tie"></i> Management Fee (%)
+                                    </label>
+                                    <input type="number" class="form-control" id="managementFee" name="managementFee" required min="0" max="100" step="0.1">
+                                    <div class="invalid-feedback">
+                                        Please enter a valid management fee percentage (0-100).
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Generate Comparison</button>
+                </form>
+
+                <div id="results" class="mt-5 animated-fade-in" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-chart-pie"></i> COMPARISON RESULTS</h2>
+                        <div class="d-flex">
+                            <button id="exportComprehensivePdf" class="btn btn-primary me-2" data-bs-toggle="tooltip" data-bs-placement="top" title="This report is intended for property investors and includes detailed analysis, comparison summaries, long-term vs short-term projections, and break-even analysis.">
+                                <i class="fas fa-file-pdf"></i> Export Comprehensive PDF
+                            </button>
+                            <button id="exportLitePdf" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="This report is intended for Airbnb hosts and includes key performance metrics and a seasonal revenue chart.">
+                                <i class="fas fa-file-pdf"></i> Export Lite PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+
+                    <!-- New Property Details Section -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-map-marker-alt"></i> Address:</strong> <span id="resultAddress"></span></p>
+                            <p><strong><i class="fas fa-bed"></i> Bedrooms:</strong> <span id="resultBedrooms"></span></p>
+                            <p><strong><i class="fas fa-bath"></i> Bathrooms:</strong> <span id="resultBathrooms"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Average Nightly Rate:</strong> <span id="resultAvgNightlyRate"></span></p>
+                            <p><strong>Occupancy:</strong> <span id="resultOccupancy"></span>%</p>
+                            <p><strong>Management Fee:</strong> <span id="resultManagementFee"></span>%</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <h3 class="mb-0"><i class="fas fa-building"></i> Long-Term Rental (LTR)</h3>
+                                </div>
+                                <div class="card-body" id="ltrResults">
+                                    <p>Annual Revenue: <span id="longTermAnnualRevenue"></span></p>
+                                    <p>Monthly Revenue: <span id="longTermMonthlyRevenue"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-success text-white">
+                                    <h3 class="mb-0"><i class="fas fa-calendar-alt"></i> Short-Term Rental (STR)</h3>
+                                </div>
+                                <div class="card-body" id="strResults">
+                                    <p data-result="shortTermAnnualRevenue">Projected Annual Revenue: <span id="shortTermAnnualRevenue"></span></p>
+                                    <p data-result="shortTermMonthlyRevenue">Projected Monthly Revenue: <span id="shortTermMonthlyRevenue"></span></p>
+                                    <p data-result="airbnbFee">
+                                        Airbnb Fee: <span id="airbnbFee"></span> (<span id="airbnbFeePercentage"></span>)
+                                        <span class="tooltip-icon" title="Airbnb fee is 3% when there's no management fee, and 15% when a management fee is applied.">ⓘ</span>
+                                    </p>
+                                    <!-- The management fee element will be inserted here by JavaScript -->
+                                    <p data-result="ownerNetIncome">Owner's Net Annual Income: <span id="ownerNetIncome"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h3 class="mb-0"><i class="fas fa-balance-scale"></i> Summary and Comparison</h3>
+                        </div>
+                        <div class="card-body">
+                            <!-- Bullet Graph Container -->
+                            <div id="bullet-graph-container">
+                                <div id="bullet-bar">
+                                    <!-- Projected occupancy bar -->
+                                    <div id="projected-bar"></div>
+                                </div>
+                                <!-- Red line representing break-even occupancy -->
+                                <div id="break-even-marker"></div>
+                                <div id="bullet-labels">
+                                    <span id="projected-occupancy-label"></span>
+                                    <span id="break-even-label"></span>
+                                </div>
+                            </div>
+                        </div>                        
+                    </div>
+
+                    <!-- Charts and Tables -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h3 class="mb-0"><i class="fas fa-chart-bar"></i> Charts and Tables</h3>
+                        </div>
+                        <div class="card-body">
+                            <!-- Seasonal Revenue Chart -->
+                            <div class="chart-container mt-4">
+                                <h4>Seasonal Revenue Chart</h4>
+                                <canvas id="seasonalRevenueChart"></canvas>
+                            </div>
+
+                            <!-- Short-Term Rental Table -->
+                            <div class="mt-4">
+                                <h3>Short-Term Rental - Year 1</h3>
+                                <div class="table-responsive">
+                                    <table id="shortTermRentalTable" class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Metric</th>
+                                                <th>Jan</th>
+                                                <th>Feb</th>
+                                                <th>Mar</th>
+                                                <th>Apr</th>
+                                                <th>May</th>
+                                                <th>Jun</th>
+                                                <th>Jul</th>
+                                                <th>Aug</th>
+                                                <th>Sep</th>
+                                                <th>Oct</th>
+                                                <th>Nov</th>
+                                                <th>Dec</th>
+                                                <th>Total Annual</th>
+                                                <th>Total Monthly</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr id="nightlyRateRow"><th>Nightly Rate</th>
+                                            </tr>
+                                            <tr id="feeAdjustedRateRow"><th>Fee-Adjusted Nightly Rate</th>
+                                            </tr>
+                                            <tr id="occupancyLowRow"><th>Occupancy Low</th>
+                                            </tr>
+                                            <tr id="occupancyMediumRow"><th>Occupancy Medium</th>
+                                            </tr>
+                                            <tr id="occupancyHighRow"><th>Occupancy High</th>
+                                            </tr>
+                                            <tr id="revenueLowRow">
+                                                <th><i class="fas fa-dollar-sign"></i> Revenue Low</th>
+                                            </tr>
+                                            <tr id="revenueMediumRow">
+                                                <th><i class="fas fa-dollar-sign"></i> Revenue Medium</th>
+                                            </tr>
+                                            <tr id="revenueHighRow">
+                                                <th><i class="fas fa-dollar-sign"></i> Revenue High</th>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 5 Year Projection Chart -->
+                            <div class="chart-container mt-4">
+                                <h4>5-Year Projection</h4>
+                                <canvas id="fiveYearProjectionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Add the disclaimer section here, before the closing div -->
+            <div class="mt-5 mb-4">
+                <hr class="mb-4">
+                <div class="disclaimer-section" style="font-size: 0.8rem; color: #666;">
+                    <p class="mb-2"><strong>DISCLAIMER:</strong> The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.</p>
+                    
+                    <p class="mb-2">This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice. Property rental strategy decisions should be made after careful consideration of all relevant factors, including but not limited to local market conditions, regulations, and personal circumstances.</p>
+                    
+                    <p class="mb-2">Proply Tech (Pty) Ltd and its affiliates expressly disclaim any and all liability for any direct, indirect, incidental, or consequential damages arising from the use of this information. Actual rental income, occupancy rates, and management costs may vary significantly from the projections and estimates presented.</p>
+                    
+                    <p class="mb-2">By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to seasonal demand, regulatory changes, platform policies, and economic conditions, may impact actual outcomes.</p>
+                    
+                    <p class="mb-0">© {{ current_year }} Proply Tech (Pty) Ltd. All rights reserved.</p>
+                </div>
+            </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Add the new modal for PriceLabs data -->
+<div class="modal fade" id="priceLabs" tabindex="-1" aria-labelledby="priceLabsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="priceLabsModalLabel">Revenue Performance Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Select an ADR percentile to use for the analysis:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Percentile</th>
+                            <th>ADR</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="percentileTableBody">
+                        <!-- This will be populated by JavaScript -->
+                    </tbody>
+                </table>
+                <p>Occupancy: <span id="occupancyValue"></span>%</p>
+                <p>Average Monthly Revenue: <span id="avgMonthlyRevenue"></span></p>
+                <p>Number of Listings: <span id="numListings"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Fetched Property Details -->
+<div class="modal fade" id="propertyDetailsModal" tabindex="-1" aria-labelledby="propertyDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="propertyDetailsModalLabel">Fetched Property Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row" id="propertyDetailsList"></dl>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="useFetchedDataBtn">Use Fetched Data</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded and parsed');
+    const fetchPropertyBtn = document.getElementById('fetchProperty');
+    // const property24LinkInput = document.getElementById('property24Link');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const propertyDetailsModal = new bootstrap.Modal(document.getElementById('propertyDetailsModal'));
+    const comparisonForm = document.getElementById('comparisonForm');
+    const resultsDiv = document.getElementById('results');
+    const getRevenueDataBtn = document.getElementById('getRevenueData');
+    const priceLabsModal = new bootstrap.Modal(document.getElementById('priceLabs'));
+    
+    let fetchedData = null;
+    let gauge; // Declare gauge variable in a higher scope
+    let fiveYearProjectionChart = null; // Declare this at the top of your script, outside any function
+    let lastFormData = null;
+
+
+    getRevenueDataBtn.addEventListener('click', async function() {
+        const address = document.getElementById('address').value;
+        const bedrooms = document.getElementById('bedrooms').value;
+        const averageNightlyRateInput = document.getElementById('averageNightlyRate');
+        const projectedOccupancyInput = document.getElementById('projectedOccupancy');
+
+        if (!address || !bedrooms) {
+            alert('Please enter the address and number of bedrooms first.');
+            return;
+        }
+
+        try {
+            this.disabled = true;
+            this.textContent = 'Loading...';
+
+            const response = await fetch('/get_revenue_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ address, bedrooms })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || `HTTP error! status: ${response.status}`);
+            }
+
+            populatePriceLabsModal(data, averageNightlyRateInput, projectedOccupancyInput);
+            priceLabsModal.show();
+
+        } catch (error) {
+            console.error('Error in getRevenueData:', error);
+            alert('Failed to fetch revenue performance data: ' + error.message);
+        } finally {
+            this.disabled = false;
+            this.textContent = 'Get Revenue Data';
+        }
+    });
+    
+
+    function populatePriceLabsModal(data, averageNightlyRateInput, projectedOccupancyInput) {
+        const percentileTableBody = document.getElementById('percentileTableBody');
+        percentileTableBody.innerHTML = '';
+
+        const percentiles = ['25', '50', '75', '90'];
+        percentiles.forEach(percentile => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${percentile}th Percentile</td>
+                <td>${formatCurrency(data.percentiles[`ADR${percentile}`])}</td>
+                <td><button class="btn btn-sm btn-primary select-percentile" data-percentile="${percentile}">Select</button></td>
+            `;
+            percentileTableBody.appendChild(row);
+        });
+
+        // Fix for occupancy display
+        const occupancyValue = data.percentiles.occupancy;
+        const displayOccupancy = occupancyValue > 1 ? occupancyValue.toFixed(2) : (occupancyValue * 100).toFixed(2);
+        document.getElementById('occupancyValue').textContent = displayOccupancy;
+
+        document.getElementById('avgMonthlyRevenue').textContent = formatCurrency(data.revenue_monthly_avg);
+        document.getElementById('numListings').textContent = data.no_of_listings;
+
+        // Add event listeners to the "Select" buttons
+        document.querySelectorAll('.select-percentile').forEach(button => {
+            button.addEventListener('click', function() {
+                const percentile = this.getAttribute('data-percentile');
+                averageNightlyRateInput.value = data.percentiles[`ADR${percentile}`].toFixed(2);
+                // Fix for setting occupancy in the form
+                projectedOccupancyInput.value = displayOccupancy;
+                priceLabsModal.hide();
+            });
+        });
+    }
+
+    // Initialize all tooltips on the page
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Set up event listeners for PDF export
+    const exportComprehensivePdf = document.getElementById('exportComprehensivePdf');
+    const exportLitePdf = document.getElementById('exportLitePdf');
+
+    function trackReportGeneration(reportType) {
+        fetch('/track_report_generation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ report_type: reportType })
+        })
+        .then(response => response.json())
+        .then(data => console.log('Report tracked:', data))
+        .catch((error) => console.error('Error:', error));
+    }
+
+    if (exportComprehensivePdf) {
+        console.log('Comprehensive PDF export button found');
+        exportComprehensivePdf.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Comprehensive PDF export clicked');
+            generatePDF('Comprehensive');
+            trackReportGeneration('rent_compare_comprehensive');
+        });
+    } else {
+        console.error("Element with id 'exportComprehensivePdf' not found");
+    }
+
+    if (exportLitePdf) {
+        console.log('Lite PDF export button found');
+        exportLitePdf.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Lite PDF export clicked');
+            generatePDF('Lite');
+            trackReportGeneration('rent_compare_lite');
+        });
+    } else {
+        console.error("Element with id 'exportLitePdf' not found");
+    }
+
+    // Helper functions
+    function addSectionTitle(doc, title, y) {
+        doc.setFontSize(16);
+        doc.setTextColor(17, 77, 157);
+        doc.text(title, 14, y);
+        doc.setLineWidth(0.5);
+        doc.line(14, y + 1, 196, y + 1);
+        return y + 10;
+    }
+
+    function addChartToPDF(doc, chartId, y, version) {
+        const canvas = document.getElementById(chartId);
+        if (canvas) {
+            let chart;
+
+            // Access the chart instance
+            if (chartId === 'seasonalRevenueChart') {
+                chart = window.seasonalRevenueChart;
+            } else if (chartId === 'fiveYearProjectionChart') {
+                chart = window.fiveYearChart;
+            } else {
+                console.warn(`No chart instance found for id ${chartId}`);
+                return y;
+            }
+
+            let originalDatasets;
+
+            if (chartId === 'seasonalRevenueChart' && version === 'Lite') {
+                // Store original datasets (deep copy)
+                originalDatasets = JSON.parse(JSON.stringify(chart.data.datasets));
+                console.log('Original datasets:', originalDatasets);
+
+                // Remove the Long Term Rental dataset
+                chart.data.datasets = chart.data.datasets.filter(dataset => dataset.label !== 'Long Term Rental');
+                console.log('Modified datasets for Lite version:', chart.data.datasets);
+
+                // Disable animations during update
+                chart.update('none'); // Immediate update without animation
+            }
+
+            const imgData = canvas.toDataURL('image/png');
+            const imgWidth = 180;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            if (y + imgHeight > 280) {
+                doc.addPage();
+                y = 20;
+            }
+
+            doc.addImage(imgData, 'PNG', 15, y, imgWidth, imgHeight);
+
+            if (chartId === 'seasonalRevenueChart' && version === 'Lite' && originalDatasets) {
+                // Restore original datasets
+                chart.data.datasets = originalDatasets;
+
+                // Disable animations during update
+                chart.update('none'); // Immediate update without animation
+            }
+
+            return y + imgHeight + 10;
+        } else {
+            console.warn(`Chart with id ${chartId} not found`);
+            return y;
+        }
+    }
+
+
+
+    function addPropertyDetails(doc, y, version) {
+        const details = [
+            ['Property Address', document.getElementById('address').value],
+            ['Bedrooms', document.getElementById('bedrooms').value],
+            ['Bathrooms', document.getElementById('bathrooms').value]
+        ];
+
+        if (version === 'Comprehensive') {
+            details.push(['Current Monthly Rent', formatCurrency(parseFloat(document.getElementById('currentRent').value))]);
+        }
+
+        doc.autoTable({
+            startY: y,
+            head: [['Item', 'Value']],
+            body: details,
+            theme: 'grid',
+            headStyles: {fillColor: [17, 77, 157]},
+            alternateRowStyles: {fillColor: [240, 240, 240]},
+            margin: {left: 14}
+        });
+
+        return doc.lastAutoTable.finalY + 10;
+    }
+
+
+    function addComparisonSummary(doc, y) {
+        const summary = [
+            ['Long-Term Annual Revenue', document.getElementById('longTermAnnualRevenue').textContent],
+            ['Short-Term Annual Revenue', document.getElementById('shortTermAnnualRevenue').textContent],
+            ['Long-Term Monthly Revenue', document.getElementById('longTermMonthlyRevenue').textContent],
+            ['Short-Term Monthly Revenue', document.getElementById('shortTermMonthlyRevenue').textContent],
+            ['Owner\'s Net Annual Income', document.getElementById('ownerNetIncome').textContent],
+            
+        ];
+
+        doc.autoTable({
+            startY: y,
+            head: [['Metric', 'Value']],
+            body: summary,
+            theme: 'grid',
+            headStyles: {fillColor: [17, 77, 157]},
+            alternateRowStyles: {fillColor: [240, 240, 240]},
+            margin: {left: 14}
+        });
+
+        return doc.lastAutoTable.finalY + 10;
+    }
+
+    function addShortTermRentalAnalysis(doc, y) {
+            const table = document.getElementById('shortTermRentalTable');
+            const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent);
+            const rows = Array.from(table.querySelectorAll('tr')).slice(1);
+            
+            // Transpose the data
+            const transposedData = [];
+            for (let i = 0; i < 14; i++) { // 12 months + Total Annual + Total Monthly
+                const rowData = [headers[i+1]]; // Start with the month/total label
+                rows.forEach(row => {
+                    rowData.push(row.cells[i+1].textContent);
+                });
+                transposedData.push(rowData);
+            }
+
+            // Prepare the header row
+            const tableHeaders = ['Month/Total', 'Nightly Rate', 'Fee-Adjusted Rate', 'Occupancy Low', 'Occupancy Medium', 'Occupancy High', 'Revenue Low', 'Revenue Medium', 'Revenue High'];
+
+            doc.autoTable({
+                startY: y,
+                head: [tableHeaders],
+                body: transposedData,
+                theme: 'grid',
+                headStyles: {fillColor: [17, 77, 157], textColor: [255, 255, 255]},
+                alternateRowStyles: {fillColor: [240, 240, 240]},
+                margin: {left: 14},
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2
+                },
+                columnStyles: {
+                    0: {fontStyle: 'bold'}
+                }
+            });
+
+            return doc.lastAutoTable.finalY + 10;
+        }
+
+
+    function addBreakEvenAnalysis(doc, y) {
+            const breakEvenOccupancyElement = document.getElementById('breakEvenOccupancy');
+            const projectedOccupancyElement = document.getElementById('projectedOccupancy');
+            
+            const breakEvenOccupancy = breakEvenOccupancyElement ? breakEvenOccupancyElement.textContent : 'N/A';
+            const projectedOccupancy = projectedOccupancyElement ? projectedOccupancyElement.value + '%' : 'N/A';
+
+            const data = [
+                ['Break-Even Occupancy Rate', breakEvenOccupancy],
+                ['Projected Occupancy Rate', projectedOccupancy]
+            ];
+
+            doc.autoTable({
+                startY: y,
+                head: [['Metric', 'Value']],
+                body: data,
+                theme: 'grid',
+                headStyles: {fillColor: [17, 77, 157]},
+                alternateRowStyles: {fillColor: [240, 240, 240]},
+                margin: {left: 14}
+            });
+
+            return doc.lastAutoTable.finalY + 10;
+        }
+
+    function updateBulletGraph(projectedOccupancy, breakEvenOccupancy) {
+        const projectedBar = document.getElementById('projected-bar');
+        const breakEvenMarker = document.getElementById('break-even-marker');
+        const projectedOccupancyLabel = document.getElementById('projected-occupancy-label');
+        const breakEvenLabel = document.getElementById('break-even-label');
+
+        // Ensure values are within 0 to 100%
+        const projectedOccupancyPercent = Math.min(Math.max(projectedOccupancy, 0), 100);
+        const breakEvenOccupancyPercent = Math.min(Math.max(breakEvenOccupancy, 0), 100);
+
+        // Update projected bar width
+        projectedBar.style.width = projectedOccupancyPercent + '%';
+
+        // Update break-even marker position
+        breakEvenMarker.style.left = breakEvenOccupancyPercent + '%';
+
+        // Update labels
+        projectedOccupancyLabel.textContent = 'Projected Occupancy: ' + projectedOccupancyPercent.toFixed(2) + '%';
+        breakEvenLabel.textContent = 'Break-even Occupancy: ' + breakEvenOccupancyPercent.toFixed(2) + '%';
+
+        // Change projected bar color based on whether projected occupancy is above or below break-even
+        if (projectedOccupancyPercent >= breakEvenOccupancyPercent) {
+            projectedBar.style.backgroundColor = '#1BA3FF'; // Light blue
+        } else {
+            projectedBar.style.backgroundColor = '#1BA3FF'; // Light blue
+        }
+    }
+
+
+
+
+    // Export PDF
+    function addLogoToPDF(doc, logoUrl, x, y, maxWidth, maxHeight) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = function() {
+                let width = img.width;
+                let height = img.height;
+                
+                // Calculate aspect ratio
+                const aspectRatio = width / height;
+
+                // Adjust dimensions to fit within maxWidth and maxHeight while maintaining aspect ratio
+                if (width > maxWidth) {
+                    width = maxWidth;
+                    height = width / aspectRatio;
+                }
+                if (height > maxHeight) {
+                    height = maxHeight;
+                    width = height * aspectRatio;
+                }
+
+                doc.addImage(this, 'PNG', x, y, width, height);
+                resolve(doc);
+            };
+            img.onerror = reject;
+            img.src = logoUrl;
+        });
+    }
+
+    function generatePDF(version) {
+        console.log(`Generating ${version} PDF`);
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Set font
+        doc.setFont("helvetica");
+
+        // Use the correct path for the logo
+        const logoUrl = "{{ url_for('static', filename='images/Proply Logo 1.png') }}";
+
+        // Get the property address for the filename
+        const propertyAddress = document.getElementById('address').value || 'Unknown Property';
+        const fileName = `Proply Rent Comparison - ${propertyAddress} - ${version}.pdf`;
+
+        // Add logo with maintained aspect ratio
+        addLogoToPDF(doc, logoUrl, 170, 10, 30, 20)
+            .then(() => {
+                try {
+                    // Determine the title based on the version
+                    let title = '';
+                    if (version === 'Lite') {
+                        title = `Airbnb Performance Report - ${version}`;
+                    } else {
+                        title = `Rent Comparison Analysis - ${version}`;
+                    }
+
+                    // Add title
+                    doc.setFontSize(20);
+                    doc.setTextColor(17, 77, 157); // Proply blue color
+                    doc.text(title, 14, 30);
+
+                    let y = 40;
+
+                    // Add Property Details for both versions
+                    y = addSectionTitle(doc, 'Property Details', y);
+                    y = addPropertyDetails(doc, y, version);
+
+                    if (version === 'Comprehensive') {
+                        y = addSectionTitle(doc, 'Comparison Summary', y + 10);
+                        y = addComparisonSummary(doc, y);
+
+                        doc.addPage();
+                        y = 20;
+                    }
+
+                    // Proceed with the rest of the content
+                    y = addSectionTitle(doc, 'Short-Term Rental Analysis', y + 10);
+                    y = addShortTermRentalAnalysis(doc, y, version);
+
+                    y = addSectionTitle(doc, 'Seasonal Revenue Chart', y + 10);
+                    y = addChartToPDF(doc, 'seasonalRevenueChart', y, version);
+
+                    if (version === 'Comprehensive') {
+                        doc.addPage();
+                        y = 20;
+                        y = addSectionTitle(doc, 'Long-Term vs Short-Term Projection', y);
+                        y = addChartToPDF(doc, 'fiveYearProjectionChart', y);
+
+                        y = addSectionTitle(doc, 'Break-Even Analysis', y + 10);
+                        y = addBreakEvenAnalysis(doc, y);
+                    }
+
+                    // Save the PDF
+                    doc.save(fileName);
+                    console.log(`${version} PDF generated successfully`);
+                } catch (error) {
+                    console.error('Error in PDF content generation:', error);
+                    alert('An error occurred while generating the PDF content. Please check the console for details.');
+                }
+            })
+            .catch(error => {
+                console.error('Error in logo addition:', error);
+                alert('An error occurred while adding the logo to the PDF. Please check the console for details.');
+            });
+    }
+
+
+
+    // Modify the addShortTermRentalAnalysis function to exclude long-term rental data for Lite version
+    function addShortTermRentalAnalysis(doc, y, version) {
+        const table = document.getElementById('shortTermRentalTable');
+        const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent);
+        const rows = Array.from(table.querySelectorAll('tr')).slice(1);
+
+        // Filter out the long-term rental row if version is 'Lite'
+        const filteredRows = version === 'Lite' ? rows.filter(row => row.id !== 'longTermRentalRow') : rows;
+
+        // Transpose the data
+        const transposedData = [];
+        for (let i = 0; i < 14; i++) { // 12 months + Total Annual + Total Monthly
+            const rowData = [headers[i + 1]]; // Start with the month/total label
+            filteredRows.forEach(row => {
+                rowData.push(row.cells[i + 1].textContent);
+            });
+            transposedData.push(rowData);
+        }
+
+        // Prepare the header row
+        const tableHeaders = ['Month/Total', ...filteredRows.map(row => row.querySelector('th').textContent)];
+
+        doc.autoTable({
+            startY: y,
+            head: [tableHeaders],
+            body: transposedData,
+            theme: 'grid',
+            headStyles: { fillColor: [17, 77, 157], textColor: [255, 255, 255] },
+            alternateRowStyles: { fillColor: [240, 240, 240] },
+            margin: { left: 14 },
+            styles: {
+                fontSize: 8,
+                cellPadding: 2
+            },
+            columnStyles: {
+                0: { fontStyle: 'bold' }
+            }
+        });
+
+        return doc.lastAutoTable.finalY + 10;
+    }
+
+
+
+    // fetchPropertyBtn.addEventListener('click', function() {
+    //     const url = property24LinkInput.value.trim();
+    //     if (!url) {
+    //         alert('Please enter a valid Property24 URL');
+    //         return;
+    //     }
+
+    //     loadingSpinner.style.display = 'block';
+
+    //     fetch('/fetch_property24', {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify({ url: url })
+    //     })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         loadingSpinner.style.display = 'none';
+    //         fetchedData = data;
+    //         updateModalContent(data);
+    //         propertyDetailsModal.show();
+    //     })
+    //     .catch(error => {
+    //         loadingSpinner.style.display = 'none';
+    //         console.error('Error:', error);
+    //         alert('An error occurred while fetching the property details. Please try again.');
+    //     });
+    // });
+
+    function updateModalContent(data) {
+        const detailsList = document.getElementById('propertyDetailsList');
+        detailsList.innerHTML = '';
+        for (const [key, value] of Object.entries(data)) {
+            const dt = document.createElement('dt');
+            dt.className = 'col-sm-3';
+            dt.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+            
+            const dd = document.createElement('dd');
+            dd.className = 'col-sm-9';
+            dd.textContent = value;
+            
+            detailsList.appendChild(dt);
+            detailsList.appendChild(dd);
+        }
+    }
+
+    document.getElementById('useFetchedDataBtn').addEventListener('click', function() {
+        if (fetchedData) {
+            document.getElementById('address').value = fetchedData.address || '';
+            document.getElementById('bedrooms').value = fetchedData.bedrooms || '';
+            document.getElementById('bathrooms').value = fetchedData.bathrooms || '';
+            document.getElementById('currentRent').value = fetchedData.price || '';
+            propertyDetailsModal.hide();
+        }
+    });
+
+    function updateOrInsertManagementFee(amount, percentage) {
+        const strResultsBody = document.getElementById('strResults');
+        if (!strResultsBody) {
+            console.error('STR results body not found');
+            return;
+        }
+
+        // Remove any existing management fee elements from LTR section
+        const ltrResultsBody = document.getElementById('ltrResults');
+        if (ltrResultsBody) {
+            const ltrManagementFee = ltrResultsBody.querySelector('[data-result="managementFee"]');
+            if (ltrManagementFee) {
+                ltrManagementFee.remove();
+            }
+        }
+
+        // Update or insert management fee in STR section
+        let managementFeeElement = strResultsBody.querySelector('[data-result="managementFee"]');
+        if (!managementFeeElement) {
+            managementFeeElement = document.createElement('p');
+            managementFeeElement.setAttribute('data-result', 'managementFee');
+            managementFeeElement.classList.add('str-result-item');
+            
+            // Insert before Owner's Net Annual Income
+            const ownerNetIncomeElement = strResultsBody.querySelector('[data-result="ownerNetIncome"]');
+            if (ownerNetIncomeElement) {
+                strResultsBody.insertBefore(managementFeeElement, ownerNetIncomeElement);
+            } else {
+                // If Owner's Net Annual Income element is not found, append to the end
+                strResultsBody.appendChild(managementFeeElement);
+            }
+        }
+
+        managementFeeElement.innerHTML = `Management Fee: <span>${formatCurrency(amount)} (${percentage.toFixed(1)}%)</span>`;
+        console.log('Management fee updated in STR section:', managementFeeElement.outerHTML);
+    }
+
+    comparisonForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Form submitted');
+            const formData = new FormData(comparisonForm);
+            const data = Object.fromEntries(formData.entries());
+            console.log('Form data:', data);
+
+            // Parse input values
+            const currentRent = parseFloat(data.currentRent);
+            const averageNightlyRate = parseFloat(data.averageNightlyRate);
+            const projectedOccupancy = parseFloat(data.projectedOccupancy);
+            const rentalEscalation = parseFloat(data.rentalEscalation) / 100;
+            const managementFeePercent = parseFloat(data.managementFee);
+
+            // Perform calculations
+            const longTermAnnual = currentRent * 12;
+            const shortTermAnnual = averageNightlyRate * 365 * (projectedOccupancy / 100);
+
+            // Calculate fees
+            const airbnbFeeRate = managementFeePercent > 0 ? 0.15 : 0.03;
+            const airbnbFee = shortTermAnnual * airbnbFeeRate;
+            const netAfterPlatformFee = shortTermAnnual - airbnbFee;
+            const managementFeeAmount = netAfterPlatformFee * (managementFeePercent / 100);
+
+            // Calculate net income
+            const ownerNetIncome = netAfterPlatformFee - managementFeeAmount;
+
+            // Calculate break-even occupancy
+            const breakEvenOccupancy = (longTermAnnual / ownerNetIncome) * projectedOccupancy;
+
+            // Update UI elements
+            document.getElementById('longTermAnnualRevenue').textContent = formatCurrency(longTermAnnual);
+            document.getElementById('longTermMonthlyRevenue').textContent = formatCurrency(currentRent);
+            document.getElementById('shortTermAnnualRevenue').textContent = formatCurrency(shortTermAnnual);
+            document.getElementById('shortTermMonthlyRevenue').textContent = formatCurrency(shortTermAnnual / 12);
+            document.getElementById('airbnbFee').textContent = formatCurrency(airbnbFee);
+            document.getElementById('airbnbFeePercentage').textContent = (airbnbFeeRate * 100).toFixed(1) + '%';
+            document.getElementById('ownerNetIncome').textContent = formatCurrency(ownerNetIncome);
+
+            // Update management fee
+            updateOrInsertManagementFee(managementFeeAmount, managementFeePercent);
+
+            // Update the bullet graph
+            updateBulletGraph(projectedOccupancy, breakEvenOccupancy);
+
+            // Add break-even occupancy to the results
+            const breakEvenOccupancyElement = document.getElementById('breakEvenOccupancy') || document.createElement('span');
+            breakEvenOccupancyElement.id = 'breakEvenOccupancy';
+            breakEvenOccupancyElement.textContent = breakEvenOccupancy.toFixed(2) + '%';
+            document.getElementById('results').appendChild(breakEvenOccupancyElement);
+
+            // Create charts
+            createSeasonalRevenueChart(data);
+            createFiveYearProjectionChart(longTermAnnual, ownerNetIncome, rentalEscalation);
+
+            // Populate the short-term rental table
+            populateShortTermRentalTable(data);
+
+            // Display the property details in the results section
+            document.getElementById('resultAddress').textContent = data.address || 'N/A';
+            document.getElementById('resultBedrooms').textContent = data.bedrooms || 'N/A';
+            document.getElementById('resultBathrooms').textContent = data.bathrooms || 'N/A';
+            document.getElementById('resultAvgNightlyRate').textContent = formatCurrency(averageNightlyRate) || 'N/A';
+            document.getElementById('resultOccupancy').textContent = projectedOccupancy || 'N/A';
+            document.getElementById('resultManagementFee').textContent = managementFeePercent || 'N/A';
+
+            // Show results with animation
+            resultsDiv.style.display = 'block';
+            setTimeout(() => {
+                resultsDiv.classList.add('appear');
+            }, 50);
+        });
+
+
+        // Debug: Check management fee location
+        setTimeout(() => {
+            const ltrSection = document.getElementById('ltrResults');
+            const strSection = document.getElementById('strResults');
+            
+            if (ltrSection && ltrSection.querySelector('[data-result="managementFee"]')) {
+                console.error('Management fee found in LTR section - this is incorrect');
+            }
+            
+            if (strSection && strSection.querySelector('[data-result="managementFee"]')) {
+                console.log('Management fee correctly found in STR section');
+            } else {
+                console.error('Management fee not found in STR section');
+            }
+            
+            const allManagementFees = document.querySelectorAll('[data-result="managementFee"]');
+            console.log(`Total management fee elements found: ${allManagementFees.length}`);
+            allManagementFees.forEach((el, index) => {
+                console.log(`Management fee element ${index + 1}:`, el.outerHTML);
+            });
+        }, 100);
+    });
+
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(amount);
+    }
+
+    function formatNumber(num, decimals = 2) {
+        return num.toLocaleString('en-US', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+    }
+
+    function createSeasonalRevenueChart(data) {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const seasonalityFactors = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
+        const occupancyLowValues = [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 65];
+        const occupancyMediumValues = [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 80];
+        const occupancyHighValues = [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95];
+        const nightlyRate = parseFloat(data.averageNightlyRate);
+        const monthlyRent = parseFloat(data.currentRent);
+
+        const revenueLowData = [];
+        const revenueMediumData = [];
+        const revenueHighData = [];
+        const longTermRentalData = Array(12).fill(monthlyRent);
+
+        months.forEach((month, index) => {
+            const monthlyRate = nightlyRate * seasonalityFactors[index];
+            const daysInMonth = new Date(2023, index + 1, 0).getDate();
+
+            revenueLowData.push(monthlyRate * (occupancyLowValues[index] / 100) * daysInMonth);
+            revenueMediumData.push(monthlyRate * (occupancyMediumValues[index] / 100) * daysInMonth);
+            revenueHighData.push(monthlyRate * (occupancyHighValues[index] / 100) * daysInMonth);
+        });
+
+        const ctx = document.getElementById('seasonalRevenueChart');
+        if (ctx) {
+            // Destroy existing chart if it exists
+            if (window.seasonalRevenueChart instanceof Chart) {
+                window.seasonalRevenueChart.destroy();
+            }
+
+            window.seasonalRevenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Revenue Low',
+                            data: revenueLowData,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                            fill: false
+                        },
+                        {
+                            label: 'Revenue Medium',
+                            data: revenueMediumData,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                            fill: false
+                        },
+                        {
+                            label: 'Revenue High',
+                            data: revenueHighData,
+                            borderColor: '#2ecc71',
+                            backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                            fill: false
+                        },
+                        {
+                            label: 'Long Term Rental',
+                            data: longTermRentalData,
+                            borderColor: '#f1c40f',
+                            backgroundColor: 'rgba(241, 196, 15, 0.2)',
+                            fill: false,
+                            borderDash: [5, 5] // Add a dashed line style
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Revenue (R)'
+                            },
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return 'R' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += 'R' + context.parsed.y.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            console.error('Cannot find canvas element with id "seasonalRevenueChart"');
+        }
+    }
+
+    function populateShortTermRentalTable(data) {
+            const table = document.getElementById('shortTermRentalTable');
+            const tbody = table.querySelector('tbody');
+
+            const rowIds = ['nightlyRateRow', 'feeAdjustedRateRow', 'occupancyLowRow', 'occupancyMediumRow', 'occupancyHighRow', 'revenueLowRow', 'revenueMediumRow', 'revenueHighRow', 'longTermRentalRow'];
+            
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const seasonalityFactors = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
+            const occupancyLowValues = [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 65];
+            const occupancyMediumValues = [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 80];
+            const occupancyHighValues = [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95];
+            const nightlyRate = parseFloat(data.averageNightlyRate);
+            const feeAdjustmentFactor = 0.85;
+            const monthlyRent = parseFloat(data.currentRent);
+
+            let totalLowRevenue = 0;
+            let totalMediumRevenue = 0;
+            let totalHighRevenue = 0;
+
+            const updateOrCreateRow = (id, label) => {
+                let row = tbody.querySelector('#' + id);
+                if (!row) {
+                    row = tbody.insertRow();
+                    row.id = id;
+                    row.insertCell().outerHTML = `<th>${label}</th>`;
+                }
+                while (row.cells.length > 1) {
+                    row.deleteCell(1);
+                }
+                return row;
+            };
+
+            const addCell = (row, value) => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            };
+
+            const nightlyRateRow = updateOrCreateRow('nightlyRateRow', 'Nightly Rate');
+            const feeAdjustedRateRow = updateOrCreateRow('feeAdjustedRateRow', 'Fee-Adjusted Nightly Rate');
+            const occupancyLowRow = updateOrCreateRow('occupancyLowRow', 'Occupancy Low');
+            const occupancyMediumRow = updateOrCreateRow('occupancyMediumRow', 'Occupancy Medium');
+            const occupancyHighRow = updateOrCreateRow('occupancyHighRow', 'Occupancy High');
+            const revenueLowRow = updateOrCreateRow('revenueLowRow', '$ Revenue Low');
+            const revenueMediumRow = updateOrCreateRow('revenueMediumRow', '$ Revenue Medium');
+            const revenueHighRow = updateOrCreateRow('revenueHighRow', '$ Revenue High');
+
+            months.forEach((month, index) => {
+                const monthlyRate = nightlyRate * seasonalityFactors[index];
+                const feeAdjustedRate = monthlyRate * feeAdjustmentFactor;
+                const daysInMonth = new Date(2023, index + 1, 0).getDate();
+
+                addCell(nightlyRateRow, formatCurrency(monthlyRate));
+                addCell(feeAdjustedRateRow, formatCurrency(feeAdjustedRate));
+                addCell(occupancyLowRow, occupancyLowValues[index] + '%');
+                addCell(occupancyMediumRow, occupancyMediumValues[index] + '%');
+                addCell(occupancyHighRow, occupancyHighValues[index] + '%');
+
+                const calculateRevenue = (occupancyRate) => feeAdjustedRate * (occupancyRate / 100) * daysInMonth;
+
+                const lowRevenue = calculateRevenue(occupancyLowValues[index]);
+                const mediumRevenue = calculateRevenue(occupancyMediumValues[index]);
+                const highRevenue = calculateRevenue(occupancyHighValues[index]);
+
+                addCell(revenueLowRow, formatCurrency(lowRevenue));
+                addCell(revenueMediumRow, formatCurrency(mediumRevenue));
+                addCell(revenueHighRow, formatCurrency(highRevenue));
+
+                totalLowRevenue += lowRevenue;
+                totalMediumRevenue += mediumRevenue;
+                totalHighRevenue += highRevenue;
+            });
+
+            // Add Total Annual and Total Monthly columns
+            ['Total Annual', 'Total Monthly'].forEach((label) => {
+                addCell(nightlyRateRow, label);
+                addCell(feeAdjustedRateRow, '-');
+                addCell(occupancyLowRow, '-');
+                addCell(occupancyMediumRow, '-');
+                addCell(occupancyHighRow, '-');
+            });
+
+            addCell(revenueLowRow, formatCurrency(totalLowRevenue));
+            addCell(revenueMediumRow, formatCurrency(totalMediumRevenue));
+            addCell(revenueHighRow, formatCurrency(totalHighRevenue));
+            addCell(revenueLowRow, formatCurrency(totalLowRevenue / 12));
+            addCell(revenueMediumRow, formatCurrency(totalMediumRevenue / 12));
+            addCell(revenueHighRow, formatCurrency(totalHighRevenue / 12));
+
+            // Update or create Long Term Rental row
+            const longTermRentalRow = updateOrCreateRow('longTermRentalRow', 'Long Term Rental');
+            for (let i = 0; i < 12; i++) {
+                addCell(longTermRentalRow, formatCurrency(monthlyRent));
+            }
+            addCell(longTermRentalRow, formatCurrency(monthlyRent * 12)); // Annual
+            addCell(longTermRentalRow, formatCurrency(monthlyRent)); // Monthly
+
+            // Apply color coding classes
+            revenueLowRow.classList.add('revenue-low');
+            revenueMediumRow.classList.add('revenue-medium');
+            revenueHighRow.classList.add('revenue-high');
+        }
+
+    function createFiveYearProjectionChart(longTermAnnual, shortTermAnnual, escalationRate) {
+        const years = 5;
+        const labels = Array.from({length: years}, (_, i) => `Year ${i + 1}`);
+        const longTermData = [longTermAnnual];
+        const shortTermData = [shortTermAnnual];
+
+        for (let i = 1; i < years; i++) {
+            longTermData.push(longTermData[i-1] * (1 + escalationRate));
+            shortTermData.push(shortTermData[i-1] * (1 + escalationRate));
+        }
+
+        const ctx = document.getElementById('fiveYearProjectionChart');
+
+        // Destroy existing chart if it exists
+        if (window.fiveYearChart instanceof Chart) {
+            window.fiveYearChart.destroy();
+        }
+
+        window.fiveYearChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Long-Term Rental',
+                        data: longTermData,
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Short-Term Rental (Managed)',
+                        data: shortTermData,
+                        backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                        borderColor: 'rgba(46, 204, 113, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        stacked: false,
+                        title: {
+                            display: true,
+                            text: 'Year'
+                        }
+                    },
+                    y: {
+                        stacked: false,
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Revenue (R)'
+                        },
+                        ticks: {
+                            callback: function(value, index, values) {
+                                return 'R' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += 'R' + context.parsed.y.toLocaleString();
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+</script>
+{% endblock %}
+
