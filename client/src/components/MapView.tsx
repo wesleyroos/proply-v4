@@ -66,15 +66,21 @@ export default function MapView({ address }: MapViewProps) {
         
       setMap(newMap);
         
-      // Create a standard marker
-      const newMarker = new window.google.maps.Marker({
-        map: null, // Initialize with no map
+      // Create an advanced marker element
+      if (!window.google.maps.marker) {
+        console.error('Advanced Marker library not loaded');
+        setError('Error: Advanced Marker library not available');
+        return;
+      }
+
+      const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
+        map: newMap,
         position: defaultLocation,
-        title: 'Property Location'
+        title: 'Property Location',
       });
       setMarker(newMarker);
 
-      console.log('Map initialized successfully with marker');
+      console.log('Map initialized successfully with advanced marker');
     } catch (error) {
       console.error('Error initializing map:', error);
       setError('Error creating map');
@@ -93,7 +99,7 @@ export default function MapView({ address }: MapViewProps) {
       if (!address?.trim()) {
         const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
         map.setCenter(defaultLocation);
-        marker.setMap(null); // Hide marker when no address
+        marker.map = null; // Hide marker when no address using AdvancedMarkerElement property
         return;
       }
 
@@ -117,14 +123,14 @@ export default function MapView({ address }: MapViewProps) {
         map.setCenter(location);
         map.setZoom(16);
         
-        // Update marker properties
-        marker.setPosition(location);
-        marker.setMap(map);
+        // Update advanced marker properties
+        marker.position = location;
+        marker.map = map;
         
-        console.log('Marker placed successfully at:', location.toString());
+        console.log('Advanced marker placed successfully at:', location.toString());
       } catch (error) {
         console.error('Error updating marker:', error);
-        marker.setMap(null);
+        marker.map = null;
       }
     };
 
