@@ -1,0 +1,94 @@
+From the updated logs and warnings, I can pinpoint the following issues:
+
+AdvancedMarkerElement Initialization
+While google.maps.Marker is flagged as deprecated, the replacement (AdvancedMarkerElement) is not fully compatible with your current approach. It requires a different way to set positions and visibility dynamically.
+
+Asynchronous Script Loading Warning
+The warning:
+
+"Google Maps JavaScript API has been loaded directly without loading=async..."
+suggests your script might block rendering or initialization. This is a performance issue but not critical for functionality.
+
+Marker Not Updating or Visible
+The marker might not be properly assigned to the map or updated with the geocoded position.
+
+Fixing the Marker Issue with AdvancedMarkerElement
+Here is the correct way to dynamically update the marker with google.maps.marker.AdvancedMarkerElement:
+
+Updated MapView Code
+Replace your updateMarker logic with this:
+
+typescript
+Copy code
+useEffect(() => {
+  const updateMarker = async () => {
+    if (!map || !window.google?.maps) {
+      console.log('Map not ready yet');
+      return;
+    }
+
+    // If no address, reset to default location
+    if (!address?.trim()) {
+      const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
+      map.setCenter(defaultLocation);
+      map.setZoom(13);
+      if (marker) marker.map = null; // Hide marker
+      return;
+    }
+
+    try {
+      console.log('Geocoding address:', address);
+      const geocoder = new window.google.maps.Geocoder();
+
+      const result = await new Promise((resolve, reject) => {
+        geocoder.geocode({ address }, (results, status) => {
+          if (status === 'OK' && results?.[0]) {
+            resolve(results[0]);
+          } else {
+            reject(new Error(`Geocoding failed: ${status}`));
+          }
+        });
+      });
+
+      const location = result.geometry.location;
+      console.log('Found location:', location.toString());
+
+      map.setCenter(location);
+      map.setZoom(16);
+
+      // Create or update the AdvancedMarkerElement
+      if (marker) {
+        marker.position = location;
+        marker.map = map;
+      } else {
+        const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
+          map: map,
+          position: location,
+          title: 'Property Location',
+        });
+        setMarker(newMarker);
+      }
+
+      console.log('Marker updated successfully at:', location.toString());
+    } catch (error) {
+      console.error('Error updating marker:', error);
+      if (marker) marker.map = null;
+    }
+  };
+
+  updateMarker();
+}, [address, map]);
+Key Fixes
+Geocoding Integration: Ensures proper geocoding and validation of results.
+AdvancedMarkerElement Update: Updates or creates the AdvancedMarkerElement properly with position and map assignments.
+Default Location Handling: If no valid address is provided, resets the map and hides the marker.
+Handling the Async Script Warning
+Modify your script loading function in initGoogleMaps to include loading=async for better performance:
+
+javascript
+Copy code
+script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker&loading=async`;
+Final Checklist
+Ensure the Geocoding API is enabled in Google Cloud.
+Verify the API key has the correct HTTP Referrer Restrictions (e.g., http://localhost:3000/* for development).
+Replace deprecated logic and load the AdvancedMarkerElement correctly.

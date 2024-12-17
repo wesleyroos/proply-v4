@@ -15,10 +15,18 @@ declare global {
 
 export default function MapView({ address }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<any>(null);
-  const [marker, setMarker] = useState<any>(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [marker, setMarker] = useState<google.maps.marker.AdvancedMarkerElement | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Cleanup function to remove marker from map
+  const cleanupMarker = () => {
+    if (marker) {
+      marker.map = null;
+      setMarker(null);
+    }
+  };
 
   // Initialize map when component mounts
   useEffect(() => {
@@ -87,19 +95,22 @@ export default function MapView({ address }: MapViewProps) {
     }
   }, [isLoaded]);
 
-  // Update marker when address changes or map/marker become available
+  // Update marker when address changes
   useEffect(() => {
     const updateMarker = async () => {
-      if (!map || !marker || !window.google?.maps) {
-        console.log('Map or marker not ready yet');
+      if (!map || !window.google?.maps) {
+        console.log('Map not ready yet');
         return;
       }
+
+      // Clean up existing marker
+      cleanupMarker();
 
       // If no address is provided, center on default location
       if (!address?.trim()) {
         const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
         map.setCenter(defaultLocation);
-        marker.map = null; // Hide marker when no address using AdvancedMarkerElement property
+        map.setZoom(13);
         return;
       }
 
@@ -107,8 +118,8 @@ export default function MapView({ address }: MapViewProps) {
         console.log('Geocoding address:', address);
         const geocoder = new window.google.maps.Geocoder();
         
-        const result = await new Promise((resolve, reject) => {
-          geocoder.geocode({ address }, (results: any, status: any) => {
+        const result = await new Promise<google.maps.GeocoderResult>((resolve, reject) => {
+          geocoder.geocode({ address }, (results, status) => {
             if (status === 'OK' && results?.[0]) {
               resolve(results[0]);
             } else {
@@ -120,22 +131,36 @@ export default function MapView({ address }: MapViewProps) {
         const location = result.geometry.location;
         console.log('Found location:', location.toString());
         
+        // Update map view
         map.setCenter(location);
         map.setZoom(16);
         
-        // Update advanced marker properties
-        marker.position = location;
-        marker.map = map;
-        
-        console.log('Advanced marker placed successfully at:', location.toString());
+        // Create new marker
+        if (window.google.maps.marker) {
+          const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
+            map: map,
+            position: location,
+            title: 'Property Location',
+          });
+          setMarker(newMarker);
+          console.log('New advanced marker created at:', location.toString());
+        } else {
+          console.error('Advanced Marker library not available');
+          setError('Error: Advanced Marker library not available');
+        }
       } catch (error) {
         console.error('Error updating marker:', error);
-        marker.map = null;
+        setError('Error placing marker on map');
       }
     };
 
     updateMarker();
-  }, [address, map, marker]);
+
+    // Cleanup on unmount or address change
+    return () => {
+      cleanupMarker();
+    };
+  }, [address, map]);
 
   if (error) {
     return (
