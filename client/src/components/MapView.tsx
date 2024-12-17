@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
 
 const containerStyle = {
   width: '100%',
@@ -12,33 +12,72 @@ interface MapViewProps {
 
 export default function MapView({ address }: MapViewProps) {
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    libraries: ['places'],
+  });
 
   useEffect(() => {
-    if (!address) return;
+    if (!isLoaded || !address) return;
 
-    // Create a Geocoder to convert address to coordinates
-    const geocoder = new google.maps.Geocoder();
+    const geocoder = new window.google.maps.Geocoder();
     geocoder.geocode({ address }, (results, status) => {
       if (status === 'OK' && results && results[0]) {
         const { lat, lng } = results[0].geometry.location;
         setCoordinates({ lat: lat(), lng: lng() });
+        setError(null);
+      } else {
+        setError('Could not find location on map');
+        console.error('Geocoding error:', status);
       }
-      setIsLoading(false);
     });
-  }, [address]);
+  }, [address, isLoaded]);
 
-  if (!coordinates || isLoading) {
-    return <div className="w-full h-[300px] bg-gray-100 animate-pulse rounded-lg" />;
+  if (loadError) {
+    return (
+      <div className="w-full h-[300px] bg-gray-50 rounded-lg flex items-center justify-center">
+        <p className="text-red-500">Error loading map</p>
+      </div>
+    );
   }
 
-  return (
-    <GoogleMap
-      mapContainerStyle={containerStyle}
-      center={coordinates}
-      zoom={15}
-    >
-      <Marker position={coordinates} />
-    </GoogleMap>
+  if (!isLoaded) {
+    return (
+      <div className="w-full h-[300px] bg-gray-100 animate-pulse rounded-lg flex items-center justify-center">
+        <p className="text-gray-500">Loading map...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-[300px] bg-gray-50 rounded-lg flex items-center justify-center">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
+
+  return coordinates ? (
+    <div className="relative rounded-lg overflow-hidden">
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={coordinates}
+        zoom={15}
+        options={{
+          zoomControl: true,
+          streetViewControl: false,
+          mapTypeControl: false,
+          fullscreenControl: false,
+        }}
+      >
+        <Marker position={coordinates} />
+      </GoogleMap>
+    </div>
+  ) : (
+    <div className="w-full h-[300px] bg-gray-100 animate-pulse rounded-lg flex items-center justify-center">
+      <p className="text-gray-500">Locating address...</p>
+    </div>
   );
 }
