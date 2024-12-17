@@ -65,6 +65,30 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
   return (
     <TooltipProvider>
       <div id="comparison-results" className="space-y-6">
+        <div className="flex justify-end">
+          <Button
+            onClick={() => {
+              const element = document.getElementById('comparison-results');
+              if (!element) return;
+              
+              import('html2pdf.js').then(module => {
+                const html2pdf = module.default;
+                const opt = {
+                  margin: 1,
+                  filename: `Property-Comparison-${address.split(',')[0]}.pdf`,
+                  image: { type: 'jpeg', quality: 0.98 },
+                  html2canvas: { scale: 2 },
+                  jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                };
+                
+                html2pdf().set(opt).from(element).save();
+              });
+            }}
+            className="bg-[#1BA3FF] hover:bg-[#114D9D]"
+          >
+            Download PDF Report
+          </Button>
+        </div>
         <MapView address={address} />
         <div className="p-4 bg-gray-50 rounded-lg">
           <h3 className="text-lg font-semibold mb-4">Property Details</h3>
