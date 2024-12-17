@@ -7,9 +7,18 @@
       // Load Google Maps script dynamically
       function loadGoogleMapsScript() {
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`;
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+        console.log('Loading Google Maps with API key length:', apiKey?.length || 'No API key found');
+        
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
         script.async = true;
         script.defer = true;
+        script.onerror = () => {
+          console.error('Failed to load Google Maps API');
+        };
+        script.onload = () => {
+          console.log('Google Maps API script loaded');
+        };
         document.head.appendChild(script);
       }
       window.addEventListener('load', loadGoogleMapsScript);

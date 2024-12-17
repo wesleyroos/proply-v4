@@ -22,6 +22,7 @@ export default function MapView({ address }: MapViewProps) {
   useEffect(() => {
     const checkGoogleMapsLoaded = setInterval(() => {
       if (window.google?.maps) {
+        console.log('Google Maps API loaded successfully');
         setIsLoaded(true);
         clearInterval(checkGoogleMapsLoaded);
       }
