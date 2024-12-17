@@ -1,0 +1,50 @@
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+/api/user:1 
+        
+        
+       Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this errorAI
+MapView.tsx:25 MapView mounted, initializing Google Maps...
+ Initializing Google Maps...
+ API Key available: true
+ API Key length: 39
+MapView.tsx:82 Skipping marker update, dependencies not ready: Object
+MapView.tsx:25 MapView mounted, initializing Google Maps...
+ Initializing Google Maps...
+ API Key available: true
+ API Key length: 39
+MapView.tsx:82 Skipping marker update, dependencies not ready: Object
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1031 Google Maps JavaScript API has been loaded directly without loading=async. This can result in suboptimal performance. For best-practice loading patterns please see https://goo.gle/js-api-loading
+vga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1031Understand this warningAI
+ Google Maps script loaded successfully
+MapView.tsx:29 Google Maps initialization successful
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961 Element with name "gmp-internal-element-support-verification" already defined.
+_.fm @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961Understand this warningAI
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1039 You have included the Google Maps JavaScript API multiple times on this page. This may cause unexpected errors.
+pga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1039Understand this errorAI
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1031 Google Maps JavaScript API has been loaded directly without loading=async. This can result in suboptimal performance. For best-practice loading patterns please see https://goo.gle/js-api-loading
+vga @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1031Understand this warningAI
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961 Element with name "gmp-internal-dialog" already defined.
+_.fm @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961Understand this warningAI
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961 Element with name "gmp-internal-pin" already defined.
+_.fm @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961Understand this warningAI
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961 Element with name "gmp-internal-use-am" already defined.
+_.fm @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961Understand this warningAI
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961 Element with name "gmp-internal-am" already defined.
+_.fm @ js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:961Understand this warningAI
+ Google Maps script loaded successfully
+MapView.tsx:29 Google Maps initialization successful
+MapView.tsx:43 Creating map instance...
+MapView.tsx:73 Error initializing map: InvalidValueError: Unknown property 'visible' of AdvancedMarkerElement
+    at _.bk (js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:932:373)
+    at rk (js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:937:145)
+    at UP.lj (js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1155:128)
+    at new UP (js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:386:415)
+    at MapView.tsx:63:27
+    at commitHookEffectListMount (chunk-WERSD76P.js?v=1f98eda5:16915:34)
+    at commitPassiveMountOnFiber (chunk-WERSD76P.js?v=1f98eda5:18156:19)
+    at commitPassiveMountEffects_complete (chunk-WERSD76P.js?v=1f98eda5:18129:17)
+    at commitPassiveMountEffects_begin (chunk-WERSD76P.js?v=1f98eda5:18119:15)
+    at commitPassiveMountEffects (chunk-WERSD76P.js?v=1f98eda5:18109:11)
+(anonymous) @ MapView.tsx:73Understand this errorAI
+MapView.tsx:82 Skipping marker update, dependencies not ready: Object
+js?key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M&libraries=marker:1173 The map is initialised without a valid Map ID, which will prevent use of Advanced Markers.

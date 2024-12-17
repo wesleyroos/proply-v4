@@ -61,9 +61,8 @@ export default function MapView({ address }: MapViewProps) {
         
         // Create a marker element using the new AdvancedMarkerElement
         const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
-          map: newMap,
+          map: null, // Initially not shown on map
           position: defaultLocation,
-          visible: false,
           title: 'Property Location'
         });
         setMarker(newMarker);
@@ -115,12 +114,12 @@ export default function MapView({ address }: MapViewProps) {
             }
           } else {
             console.error('Geocoding failed:', status);
-            marker.setVisible(false);
+            marker.map = null;  // Hide the marker
           }
         });
       } catch (error) {
         console.error('Geocoding error:', error);
-        marker.setVisible(false);
+        marker.map = null;  // Hide the marker
       }
     };
 
