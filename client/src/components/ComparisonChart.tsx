@@ -57,37 +57,48 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
         <div className="grid grid-cols-2 gap-4">
           <div className="p-4 bg-blue-50 rounded-lg">
             <h3 className="text-lg font-semibold text-[#1BA3FF] mb-2">Long-Term Rental</h3>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-gray-600">Monthly Revenue</p>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <InfoIcon className="h-4 w-4 text-gray-400" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Monthly rental income
-                  </TooltipContent>
-                </Tooltip>
+            <div className="space-y-6">
+              {/* Monthly Revenue */}
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-semibold text-gray-900">Monthly Revenue</h3>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Monthly rental income
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <p className="text-xl font-bold mt-1">{formatter.format(data.longTermMonthly)}</p>
               </div>
-              <p className="text-xl font-bold">{formatter.format(data.longTermMonthly)}</p>
 
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-gray-600">Annual Revenue</p>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <InfoIcon className="h-4 w-4 text-gray-400" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Annual rental income (monthly × 12)
-                  </TooltipContent>
-                </Tooltip>
+              {/* Annual Revenue */}
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-semibold text-gray-900">Annual Revenue</h3>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Annual rental income
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <p className="text-xl font-bold mt-1">{formatter.format(data.longTermAnnual)}</p>
               </div>
-              <p className="text-xl font-bold">{formatter.format(data.longTermAnnual)}</p>
 
-              <div className="mt-2 text-xs text-gray-500">
-                <p>Calculation:</p>
-                <p>Monthly × 12</p>
-              </div>
+              {/* View Calculation Details Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full mt-4"
+                onClick={() => setShowCalculations(true)}
+              >
+                View Calculation Details
+              </Button>
             </div>
           </div>
 
@@ -177,30 +188,50 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                     <DialogHeader>
                       <DialogTitle>Calculation Details</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
+                    <div className="space-y-6">
+                      {/* Long Term Calculations */}
                       <div>
-                        <h4 className="font-medium mb-2">Fee Breakdown:</h4>
-                        <ul className="space-y-1 text-sm">
-                          <li>Platform Fee: {data.managementFee > 0 ? "15%" : "3%"}</li>
-                          {data.managementFee > 0 && (
-                            <li>Management Fee: {(data.managementFee * 100).toFixed(1)}%</li>
-                          )}
-                        </ul>
+                        <h4 className="font-semibold text-[#1BA3FF] mb-3">Long-Term Rental Calculations</h4>
+                        <div className="space-y-4">
+                          <div>
+                            <p className="text-sm mb-2">Simple annual calculation based on monthly rental income:</p>
+                            <ul className="list-disc list-inside text-sm space-y-1 text-gray-600">
+                              <li>Monthly Revenue: {formatter.format(data.longTermMonthly)}</li>
+                              <li>Annual Revenue = Monthly × 12 = {formatter.format(data.longTermAnnual)}</li>
+                            </ul>
+                          </div>
+                        </div>
                       </div>
-                      
+
+                      {/* Short Term Calculations */}
                       <div>
-                        <h4 className="font-medium mb-2">Calculation Steps:</h4>
-                        <ol className="list-decimal list-inside space-y-1 text-sm">
-                          <li>Base nightly rate: {formatter.format(data.shortTermNightly)}</li>
-                          <li>After platform fees: {formatter.format(data.shortTermNightly * (data.managementFee > 0 ? 0.85 : 0.97))}</li>
-                          <li>Annual revenue: {formatter.format(data.shortTermAnnual)}</li>
-                          {data.managementFee > 0 && (
-                            <>
-                              <li>Management fee amount: {formatter.format(data.shortTermAnnual * data.managementFee)}</li>
-                              <li>Final annual revenue: {formatter.format(data.shortTermAfterFees)}</li>
-                            </>
-                          )}
-                        </ol>
+                        <h4 className="font-semibold text-[#114D9D] mb-3">Short-Term Rental Calculations</h4>
+                        <div className="space-y-4">
+                          <div>
+                            <h5 className="text-sm font-medium mb-2">Fee Structure:</h5>
+                            <ul className="list-disc list-inside text-sm space-y-1 text-gray-600">
+                              <li>Platform Fee: {data.managementFee > 0 ? "15%" : "3%"}</li>
+                              {data.managementFee > 0 && (
+                                <li>Management Fee: {(data.managementFee * 100).toFixed(1)}%</li>
+                              )}
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <h5 className="text-sm font-medium mb-2">Calculation Steps:</h5>
+                            <ol className="list-decimal list-inside text-sm space-y-1 text-gray-600">
+                              <li>Base nightly rate: {formatter.format(data.shortTermNightly)}</li>
+                              <li>After platform fees: {formatter.format(data.shortTermNightly * (data.managementFee > 0 ? 0.85 : 0.97))}</li>
+                              <li>Annual revenue: {formatter.format(data.shortTermAnnual)}</li>
+                              {data.managementFee > 0 && (
+                                <>
+                                  <li>Management fee amount: {formatter.format(data.shortTermAnnual * data.managementFee)}</li>
+                                  <li>Final annual revenue: {formatter.format(data.shortTermAfterFees)}</li>
+                                </>
+                              )}
+                            </ol>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </DialogContent>
