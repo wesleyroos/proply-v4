@@ -59,6 +59,7 @@ export default function MapView({ address }: MapViewProps) {
         const newMap = new google.maps.Map(mapRef.current, {
           center: defaultLocation,
           zoom: 13,
+          mapId: '8c097f85efc9c75f', // Required for AdvancedMarkerElement
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
