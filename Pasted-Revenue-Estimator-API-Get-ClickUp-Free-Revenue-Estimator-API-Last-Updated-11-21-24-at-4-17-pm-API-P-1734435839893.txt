@@ -1,0 +1,296 @@
+Revenue Estimator API
+Get ClickUp Free
+Revenue Estimator API
+Last Updated:
+11/21/24 at 4:17 pm
+API Pricing
+Contact support@pricelabs.co for Pricing.
+
+
+
+API Documentation
+Input to the API
+
+Address or Latitude, Longitude
+
+You can type the address, or give Latitude, Longitude of the location. For most accurate results, Latitude and Longitude is recommended
+
+Bedroom Category
+
+The Bedroom Category for which you want the result. If your bedroom category is studio, it will translate to 0 and if its Room it will translate to -1 in the input. For 1BR, its 1, for 2BR its 2, and so on and so forth
+
+Currency
+
+The currency for which you want the results. Please use standard short-form of the currency to get the results. So USD, CAD, AUD, etc.
+
+Filters
+
+pool: 0 or 1; 0 means pool=no, 1 means pool=yes
+
+hottub: 0 or 1; 0 means hottub=no, 1 means hottub=yes
+
+ratings: using this parameter, apply filter for ratings of properties you want to consider
+
+review_counts: using this parameter, apply filter for review counts on properties
+
+bathroom: using this parameter, filter for properties more than or less than certain bathroom count
+
+max_guests: using this parameter, filter for properties more than or less than certain max_guest count
+
+
+
+Output of the API
+
+Revenue
+
+Revenue50PercentileSum ➝ This is the estimated annual revenue, if you want to share with anyone one number, this would be it
+
+RevenueMonthlyAvg ➝ This is average revenue per month. Achieved by dividing Revenue50PercentileSum by 12
+
+Revenue25PercentileSum ➝ This is lower bound of the annual revenue number. This is an estimate for listings that are in 25th percentile bracket
+
+Revenue75PercentileSum ➝ This is upper bound of the annual revenue number. This is an estimate for listings that are in 75th percentile bracket
+
+Revenue90PercentileSum ➝ This is upper bound of the annual revenue number. This is an estimate for listings that are in 90th percentile bracket
+
+ADR
+
+ADR50PercentileAvg ➝ This is average over 12 months for listings with ADR in 50th percentile. This is also the average number that you want to use at high-level
+
+ADR75PercentileAvg ➝ This is average over 12 months for listings with ADR in 75th percentile
+
+ADR25PercentileAvg ➝ This is average over 12 months for listings with ADR in 75th percentile
+
+ADR90PercentileAvg ➝ This is average over 12 months for listings with ADR in 90th percentile
+
+Occupancy
+
+AvgAdjustedOccupancy ➝ This is average occupancy for the year adjusted for owner blocks
+
+Number of listings used
+
+Number of listings used to arrive at the estimate. Its a mix of active and inactive listings.
+
+
+
+Calling the API:
+
+curl --location --request GET 'https://api.pricelabs.co/v1/revenue/estimator?version=2&lat=38.8998367&lng=-77.1000401&currency=USD&bedroom_category=2&filters={%27bathroom%27%3A{%27gt%27%3A4}}' --header 'X-API-Key: <insert API key>'
+
+
+Usage Example in Curl (replace ***** with the API key in the request text)
+
+Example 1: Lat/lng as input:
+
+curl --location --request GET 'https://api.pricelabs.co/v1/revenue/estimator?version=2&lat=38.8998367&lng=-77.1000401&currency=USD&bedroom_category=3&filters={%27bathroom%27%3A{%27gt%27%3A4}}' --header 'X-API-Key: *********'
+Response:
+
+{"KPIsByBedroomCategory": {"3":{
+    "RevenueMonthlyAvg":2508,
+    "Revenue25PercentileSum":8300, 
+    "Revenue50PercentileSum":30000,
+    "Revenue75PercentileSum":52600,
+    "Revenue90PercentileSum":112500,
+    "ADR90PercentileAvg":443,
+    "ADR75PercentileAvg":244,
+    "ADR50PercentileAvg":168,
+    "ADR25PercentileAvg":64,
+    "AvgAdjustedOccupancy&nbsp;":45,
+    "NoOfListings":493,
+    "bedrooms_considered": ['2']}
+}}
+
+
+Example 2: Address an input
+
+curl --location --request GET 'https://api.pricelabs.co/v1/revenue/estimator?version=2&address=****&currency=USD&bedroom_category=2&filters={%27bathroom%27%3A{%27gt%27%3A4}}' --header 'X-API-Key: *********'
+Response:
+
+{"KPIsByBedroomCategory":{"3":{
+    "RevenueMonthlyAvg":2508,
+    "Revenue25PercentileSum":8300, 
+    "Revenue50PercentileSum":30000,
+    "Revenue75PercentileSum":52600,
+    "Revenue90PercentileSum":112500,
+    "ADR90PercentileAvg":443,
+    "ADR75PercentileAvg":244,
+    "ADR50PercentileAvg":168,
+    "ADR25PercentileAvg":64,
+    "AvgAdjustedOccupancy":45,
+    "NoOfListings":493,
+    "bedrooms_considered": ['2']}
+}}
+
+
+
+
+Usage Example in Python 
+
+Example 1: Using address as input
+
+import requests
+api_url = "https://api.pricelabs.co/v1/revenue/estimator"
+filters_ = '''{"pool":0, 
+            "hottub":0, 
+            "ratings":{"gt":2,"lt":5},
+            "review_count":{"gt":5},
+            "bathroom":{"gt":1},
+            "max_guest":{"gt":1}}'''
+query_string = {
+                "version": 2,
+                "currency": "USD",
+                "bedroom_category": 2,
+                "address": "540 W Madison St, Chicago IL",
+                "filters": filters_
+                }
+headers = {"X-API-Key":"*********"}
+
+response = requests.get(api_url, headers=headers, params=query_string)
+
+
+Response
+
+{'KPIsByBedroomCategory': {'2': {
+    'RevenueMonthlyAvg': 3807, 
+    'Revenue25PercentileSum': 8800, 
+    'Revenue50PercentileSum': 45600, 
+    'Revenue75PercentileSum': 74500, 
+    'Revenue90PercentileSum': 112500,
+    'ADR90PercentileAvg': 443,
+    'ADR75PercentileAvg': 325, 
+    'ADR50PercentileAvg': 211, 
+    'ADR25PercentileAvg': 52, 
+    'AvgAdjustedOccupancy ': 51, 
+    'NoOfListings': 173,
+    'bedrooms_considered': ['2']}
+}}
+
+
+Explanation of filters_ parameter
+
+pool: can be 0 or 1
+
+hottub: can be 0 or 1
+
+"ratings":{"gt":2,"lt":5} 
+
+This means filter for ratings "greater than or equal to 2" and "less than or equal to 5"
+
+Note: "gt" is "greater than equal to" and "lt" is "less than equal to" 
+
+This filter format is also applicable for review_count, bathroom and max_guest
+
+
+
+Example 2: Using Latitude / Longitude as input
+
+import requests
+api_url = "https://api.pricelabs.co/v1/revenue/estimator"
+filters_ = '''{"pool":0, 
+            "hottub":0, 
+            "ratings":{"gt":2,"lt":5},
+            "review_count":{"gt":5},
+            "bathroom":{"gt":1},
+            "max_guest":{"gt":1}}'''
+query_string = {
+                "version": 2,
+                "currency": "USD",
+                "bedroom_category": 2,
+                "lat": 33.53803890,
+                "lng": -112.05869860,
+                "filters": filters_
+               }
+headers = {"X-API-Key":"*********"}
+
+response = requests.get(api_url, headers=headers, params=query_string)
+
+
+Response
+
+{'KPIsByBedroomCategory': {'2': {
+    'RevenueMonthlyAvg': 1952, 
+    'Revenue25PercentileSum': 8300, 
+    'Revenue50PercentileSum': 23400, 
+    'Revenue75PercentileSum': 36100, 
+    'Revenue90PercentileSum': 112500,
+    'ADR90PercentileAvg': 443,
+    'ADR75PercentileAvg': 150, 
+    'ADR50PercentileAvg': 114, 
+    'ADR25PercentileAvg': 56, 
+    'AvgAdjustedOccupancy ': 52, 
+    'NoOfListings': 445,
+    'bedrooms_considered': ['2']}
+}}
+
+
+Frequently Asked Questions (FAQs)
+
+
+Calculation Methodologies
+
+How is Annual Revenue Calculated?
+
+We begin by calculating monthly revenue. For every month, we consider listings which are active for more than 75% of the times in the month, and are available to book for more than 50% of the times in the month (i.e. owner blocks < 50%)
+
+
+
+In a given month, for every listing, we know when they got booked, and what price they got booked. We then calculate monthly revenue for these each of these listings. Once we have monthly revenue numbers for these listings, we calculate 25th, 50th, 75th percentile revenue numbers.
+
+
+
+These percentile numbers we get for every month of the year.
+
+The annual revenue number is sum of 50th percentile number for every month.
+
+The lower range of annual revenue number is sum of 25th percentile number for every month.
+
+The upper range of annual revenue number is sum of 75th percentile number for every month.
+
+
+
+Does the revenue calculation includes any cleaning fee, taxes etc.
+
+No, the revenue calculation is based on nightly rates. This means that we don't have any taxes, cleaning fee etc. except for the cases where host include their commission into nightly rates.
+
+
+
+Other
+
+How fast is the API call?
+
+It depends on how much data we pull in. Typically for 350 listings, it takes about 6-8 seconds to estimate revenue.
+
+
+
+What is the max number of bedroom category we can pass as a parameter in the API?
+
+There is no capping on the bedroom category. We try to pull all available nearby listings data for a given bedroom category.
+
+
+
+Will there ever be no revenue data for an address?
+
+It is only possible if the given address (& nearby area) doesn't have any property listed on airbnb. In this case, we will send a zero response, and it will look like below -
+
+{'KPIsByBedroomCategory': {'2': {
+    'RevenueMonthlyAvg': 0, 
+    'Revenue25PercentileSum': 0, 
+    'Revenue50PercentileSum': 0, 
+    'Revenue75PercentileSum': 0,
+    'Revenue90PercentileSum': 0, 
+    'ADR90PercentileAvg': 0, 
+    'ADR75PercentileAvg': 0, 
+    'ADR50PercentileAvg': 0, 
+    'ADR25PercentileAvg': 0, 
+    'AvgAdjustedOccupancy ': 0, 
+    'NoOfListings': 0}
+}}
+
+
+In case you see any other error response, you can reach out to support@pricelabs.co
+
+
+
+4. What are the error codes associated with the API?
+
+A successful API response has the 200 code associated with it. The other codes are the error codes (400, 500, 403, 502, 404)

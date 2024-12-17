@@ -1,9 +1,27 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Loader2 } from "lucide-react";
+
+interface RevenueData {
+  adr: number;
+  occupancy: number;
+  percentile: number;
+}
 
 export default function PropertyForm({ onSubmit }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPercentileDialog, setShowPercentileDialog] = useState(false);
+  const [revenueData, setRevenueData] = useState<{
+    '25': RevenueData;
+    '50': RevenueData;
+    '75': RevenueData;
+    '90': RevenueData;
+  } | null>(null);
+
   const form = useForm({
     defaultValues: {
       address: "",
@@ -17,29 +35,119 @@ export default function PropertyForm({ onSubmit }) {
     },
   });
 
+  const fetchRevenueData = async () => {
+    setIsLoading(true);
+    try {
+      const address = form.getValues("address");
+      const bedrooms = form.getValues("bedrooms");
+      
+      if (!address || !bedrooms) {
+        alert("Please enter the property address and number of bedrooms first.");
+        return;
+      }
+
+      const response = await fetch(`https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(address)}&currency=ZAR&bedroom_category=${bedrooms}`, {
+        headers: {
+          'X-API-Key': 'sNYmBNptl4gcLSlDl5GXuUtkGVVGIxiMcUjQI1MV'
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.KPIsByBedroomCategory?.[bedrooms]) {
+        const result = data.KPIsByBedroomCategory[bedrooms];
+        setRevenueData({
+          '25': {
+            adr: result.ADR25PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 25
+          },
+          '50': {
+            adr: result.ADR50PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 50
+          },
+          '75': {
+            adr: result.ADR75PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 75
+          },
+          '90': {
+            adr: result.ADR90PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 90
+          }
+        });
+        setShowPercentileDialog(true);
+      }
+    } catch (error) {
+      console.error('Error fetching revenue data:', error);
+      alert('Failed to fetch revenue data. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const applyPercentileData = (percentile: '25' | '50' | '75' | '90') => {
+    if (!revenueData) return;
+    
+    const data = revenueData[percentile];
+    form.setValue("shortTermNightly", data.adr.toString());
+    form.setValue("annualOccupancy", data.occupancy.toString());
+    setShowPercentileDialog(false);
+  };
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Property Address</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="123 Main St" />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-2 gap-4">
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
-            name="bedrooms"
+            name="address"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Bedrooms</FormLabel>
+                <FormLabel>Property Address</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="123 Main St" />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="bedrooms"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bedrooms</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="number" min="0" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="bathrooms"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bathrooms</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="number" min="0" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="longTermRental"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Long Term Monthly Rental</FormLabel>
                 <FormControl>
                   <Input {...field} type="number" min="0" />
                 </FormControl>
@@ -49,87 +157,128 @@ export default function PropertyForm({ onSubmit }) {
 
           <FormField
             control={form.control}
-            name="bathrooms"
+            name="annualEscalation"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Bathrooms</FormLabel>
+                <FormLabel>Annual Escalation (%)</FormLabel>
+                <FormControl>
+                  <Input {...field} type="number" min="0" max="100" />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="shortTermNightly"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Short Term Nightly Rate</FormLabel>
                 <FormControl>
                   <Input {...field} type="number" min="0" />
                 </FormControl>
               </FormItem>
             )}
           />
-        </div>
 
-        <FormField
-          control={form.control}
-          name="longTermRental"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Long Term Monthly Rental</FormLabel>
-              <FormControl>
-                <Input {...field} type="number" min="0" />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="annualOccupancy"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Annual Occupancy (%)</FormLabel>
+                <FormControl>
+                  <Input {...field} type="number" min="0" max="100" />
+                </FormControl>
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="annualEscalation"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Annual Escalation (%)</FormLabel>
-              <FormControl>
-                <Input {...field} type="number" min="0" max="100" />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="managementFee"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Management Fee (%)</FormLabel>
+                <FormControl>
+                  <Input {...field} type="number" min="0" max="100" />
+                </FormControl>
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="shortTermNightly"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Short Term Nightly Rate</FormLabel>
-              <FormControl>
-                <Input {...field} type="number" min="0" />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+          <div className="space-y-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={fetchRevenueData}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Getting Revenue Data...
+                </>
+              ) : (
+                'Get Revenue Data'
+              )}
+            </Button>
 
-        <FormField
-          control={form.control}
-          name="annualOccupancy"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Annual Occupancy (%)</FormLabel>
-              <FormControl>
-                <Input {...field} type="number" min="0" max="100" />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+            <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]">
+              Compare Options
+            </Button>
+          </div>
+        </form>
+      </Form>
 
-        <FormField
-          control={form.control}
-          name="managementFee"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Management Fee (%)</FormLabel>
-              <FormControl>
-                <Input {...field} type="number" min="0" max="100" />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]">
-          Compare Options
-        </Button>
-      </form>
-    </Form>
+      <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Revenue Performance Data</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-500 mb-4">
+              Select an ADR percentile to use for the analysis:
+            </p>
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left py-2 px-4">Percentile</th>
+                  <th className="text-right py-2 px-4">ADR</th>
+                  <th className="text-right py-2 px-4">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {revenueData && Object.entries(revenueData).map(([percentile, data]) => (
+                  <tr key={percentile} className="border-b">
+                    <td className="py-2 px-4">{percentile}th Percentile</td>
+                    <td className="text-right py-2 px-4">
+                      {new Intl.NumberFormat('en-ZA', {
+                        style: 'currency',
+                        currency: 'ZAR'
+                      }).format(data.adr)}
+                    </td>
+                    <td className="text-right py-2 px-4">
+                      <Button
+                        onClick={() => applyPercentileData(percentile as '25' | '50' | '75' | '90')}
+                        variant="secondary"
+                        size="sm"
+                      >
+                        Select
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="mt-4 text-sm text-gray-500">
+              <p>Occupancy: {revenueData?.['50'].occupancy.toFixed(1)}%</p>
+              <p className="mt-1">Number of Listings: {revenueData?.['50'].occupancy}</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
