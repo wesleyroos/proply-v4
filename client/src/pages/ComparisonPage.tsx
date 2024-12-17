@@ -81,7 +81,7 @@ export default function ComparisonPage() {
         </h1>
       </nav>
 
-      <div className="max-w-lg mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         <Card>
           <CardContent className="pt-6">
             <PropertyForm onSubmit={handleCompare} />

@@ -55,7 +55,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
   return (
     <TooltipProvider>
       <div id="comparison-results" className="space-y-6">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-8">
           <div className="p-4 bg-blue-50 rounded-lg">
             <h3 className="text-lg font-semibold text-[#1BA3FF] mb-2">Long-Term Rental</h3>
             <div className="space-y-6">
@@ -273,7 +273,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-4">Short-Term Rental Scenarios</h3>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm table-fixed">
               <thead>
                 <tr className="border-b">
                   <th className="text-left py-2">Metric</th>
