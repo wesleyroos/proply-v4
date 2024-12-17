@@ -1,0 +1,40 @@
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+use-user.ts:41 
+        
+        
+       GET https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/api/user 401 (Unauthorized)
+fetchUser @ use-user.ts:41
+fetchFn @ @tanstack_react-query.js?v=1f98eda5:840
+run @ @tanstack_react-query.js?v=1f98eda5:494
+start @ @tanstack_react-query.js?v=1f98eda5:536
+fetch @ @tanstack_react-query.js?v=1f98eda5:926
+executeFetch_fn @ @tanstack_react-query.js?v=1f98eda5:2211
+onSubscribe @ @tanstack_react-query.js?v=1f98eda5:1898
+subscribe @ @tanstack_react-query.js?v=1f98eda5:24
+(anonymous) @ @tanstack_react-query.js?v=1f98eda5:3022
+subscribeToStore @ chunk-WERSD76P.js?v=1f98eda5:11984
+commitHookEffectListMount @ chunk-WERSD76P.js?v=1f98eda5:16915
+commitPassiveMountOnFiber @ chunk-WERSD76P.js?v=1f98eda5:18156
+commitPassiveMountEffects_complete @ chunk-WERSD76P.js?v=1f98eda5:18129
+commitPassiveMountEffects_begin @ chunk-WERSD76P.js?v=1f98eda5:18119
+commitPassiveMountEffects @ chunk-WERSD76P.js?v=1f98eda5:18109
+flushPassiveEffectsImpl @ chunk-WERSD76P.js?v=1f98eda5:19490
+flushPassiveEffects @ chunk-WERSD76P.js?v=1f98eda5:19447
+performSyncWorkOnRoot @ chunk-WERSD76P.js?v=1f98eda5:18868
+flushSyncCallbacks @ chunk-WERSD76P.js?v=1f98eda5:9119
+commitRootImpl @ chunk-WERSD76P.js?v=1f98eda5:19432
+commitRoot @ chunk-WERSD76P.js?v=1f98eda5:19277
+finishConcurrentRender @ chunk-WERSD76P.js?v=1f98eda5:18805
+performConcurrentWorkOnRoot @ chunk-WERSD76P.js?v=1f98eda5:18718
+workLoop @ chunk-WERSD76P.js?v=1f98eda5:197
+flushWork @ chunk-WERSD76P.js?v=1f98eda5:176
+performWorkUntilDeadline @ chunk-WERSD76P.js?v=1f98eda5:384Understand this errorAI
+MapView.tsx:46 MapView mounted, initializing Google Maps...
+maps.ts:14 Initializing Google Maps...
+MapView.tsx:102 Map not ready yet
+MapView.tsx:46 MapView mounted, initializing Google Maps...
+MapView.tsx:102 Map not ready yet
+maps.ts:27 Google Maps script loaded successfully
+MapView.tsx:54 Google Maps initialization successful
+MapView.tsx:57 Creating map instance...
+MapView.tsx:84 Map initialized successfully with advanced marker

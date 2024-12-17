@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
-import { initGoogleMaps } from '../lib/maps';
+import { useEffect, useState, useRef } from "react";
+import { initGoogleMaps } from "../lib/maps";
 
 interface MapViewProps {
   address: string;
@@ -13,80 +13,51 @@ declare global {
   }
 }
 
-declare namespace google.maps.marker {
-  class AdvancedMarkerElement {
-    constructor(options: {
-      map: google.maps.Map;
-      position: google.maps.LatLng | google.maps.LatLngLiteral;
-      title?: string;
-    });
-    map: google.maps.Map | null;
-    position: google.maps.LatLng | google.maps.LatLngLiteral;
-  }
-}
-
 export default function MapView({ address }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [marker, setMarker] = useState<google.maps.marker.AdvancedMarkerElement | null>(null);
+  const [marker, setMarker] = useState<google.maps.Marker | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Cleanup function to remove marker from map
   const cleanupMarker = () => {
     if (marker) {
-      marker.map = null;
+      marker.setMap(null);
       setMarker(null);
     }
   };
 
-  // Initialize map when component mounts
+  // Initialize the Google Maps script and map instance
   useEffect(() => {
     let isMounted = true;
-    console.log('MapView mounted, initializing Google Maps...');
-    
+    console.log("MapView mounted, initializing Google Maps...");
+
     async function initializeMap() {
       try {
         await initGoogleMaps();
-        
+        console.log("Google Maps script loaded successfully");
+
         if (!isMounted || !mapRef.current) return;
-        
-        console.log('Google Maps initialization successful');
-        
-        // Create map instance
-        console.log('Creating map instance...');
-        const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
+
+        const defaultLocation = { lat: -33.918861, lng: 18.4233 }; // Cape Town
         const newMap = new google.maps.Map(mapRef.current, {
           center: defaultLocation,
           zoom: 13,
-          mapId: '8c097f85efc9c75f', // Required for AdvancedMarkerElement
+          mapId: "8c097f85efc9c75f", // Use Map ID for the project
           mapTypeControl: false,
           streetViewControl: false,
-          fullscreenControl: false
+          fullscreenControl: false,
         });
-        
+
         setMap(newMap);
-        
-        // Create an advanced marker element
-        if (!window.google.maps.marker) {
-          console.error('Advanced Marker library not loaded');
-          setError('Error: Advanced Marker library not available');
-          return;
-        }
-
-        const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
-          map: newMap,
-          position: defaultLocation,
-          title: 'Property Location',
-        });
-        setMarker(newMarker);
-
-        console.log('Map initialized successfully with advanced marker');
+        console.log("Map initialized successfully");
       } catch (error) {
-        console.error('Error initializing map:', error);
-        setError('Error creating map');
+        console.error("Error initializing Google Maps:", error);
+        setError("Failed to load Google Maps");
       }
     }
+
     initializeMap();
 
     return () => {
@@ -99,28 +70,31 @@ export default function MapView({ address }: MapViewProps) {
   useEffect(() => {
     const updateMarker = async () => {
       if (!map || !window.google?.maps) {
-        console.log('Map not ready yet');
+        console.log("Map or Google Maps not ready yet");
         return;
       }
 
-      // Clean up existing marker
-      cleanupMarker();
+      // Remove existing marker
+      if (marker) {
+        marker.map = null;
+        setMarker(null);
+      }
 
-      // If no address is provided, center on default location
       if (!address?.trim()) {
-        const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
+        console.log("No address provided, centering on default location");
+        const defaultLocation = { lat: -33.918861, lng: 18.4233 }; // Cape Town
         map.setCenter(defaultLocation);
         map.setZoom(13);
         return;
       }
 
       try {
-        console.log('Geocoding address:', address);
+        console.log("Geocoding address:", address);
         const geocoder = new window.google.maps.Geocoder();
-        
+
         const result = await new Promise<google.maps.GeocoderResult>((resolve, reject) => {
           geocoder.geocode({ address }, (results, status) => {
-            if (status === 'OK' && results?.[0]) {
+            if (status === "OK" && results?.[0]) {
               resolve(results[0]);
             } else {
               reject(new Error(`Geocoding failed: ${status}`));
@@ -129,39 +103,31 @@ export default function MapView({ address }: MapViewProps) {
         });
 
         const location = result.geometry.location;
-        console.log('Found location:', location.toString());
-        
+        console.log("Geocoding successful, found location:", location.toString());
+
         // Update map view
         map.setCenter(location);
         map.setZoom(16);
-        
-        // Create new marker
-        if (window.google.maps.marker) {
-          const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
-            map: map,
-            position: location,
-            title: 'Property Location',
-          });
-          setMarker(newMarker);
-          console.log('New advanced marker created at:', location.toString());
-        } else {
-          console.error('Advanced Marker library not available');
-          setError('Error: Advanced Marker library not available');
-        }
+
+        // Create a new AdvancedMarkerElement
+        const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
+          map: map,
+          position: location,
+          title: "Property Location"
+        });
+
+        setMarker(newMarker);
+        console.log("Advanced marker placed at:", location.toString());
       } catch (error) {
-        console.error('Error updating marker:', error);
-        setError('Error placing marker on map');
+        console.error("Error updating marker:", error);
+        setError("Error placing marker on map");
       }
     };
 
     updateMarker();
-
-    // Cleanup on unmount or address change
-    return () => {
-      cleanupMarker();
-    };
   }, [address, map]);
 
+  // Display any errors
   if (error) {
     return (
       <div className="h-[300px] w-full rounded-lg overflow-hidden border bg-gray-100 flex items-center justify-center">
@@ -170,9 +136,10 @@ export default function MapView({ address }: MapViewProps) {
     );
   }
 
+  // Render the map container
   return (
-    <div 
-      ref={mapRef} 
+    <div
+      ref={mapRef}
       className="h-[300px] w-full rounded-lg overflow-hidden border"
     />
   );
