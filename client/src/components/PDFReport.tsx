@@ -22,13 +22,14 @@ interface PDFReportProps {
 }
 
 // Helper functions for revenue calculations
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const SEASONALITY_FACTORS = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
+
 const OCCUPANCY_RATES = {
   low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 65],
   medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 80],
   high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
 };
-
-const SEASONALITY_FACTORS = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
 
 function calculateMonthlyRevenue(
   scenario: 'low' | 'medium' | 'high',
@@ -130,7 +131,7 @@ function PDFReport({ data, onClose }: PDFReportProps) {
       </div>
 
       {/* Executive Summary */}
-      <div className="mb-8 break-inside-avoid">
+      <div className="mb-12 break-inside-avoid page-break-inside-avoid">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Executive Summary</h2>
         <div className="bg-gray-50 p-6 rounded-lg">
           <div className="grid grid-cols-2 gap-8">
@@ -165,7 +166,7 @@ function PDFReport({ data, onClose }: PDFReportProps) {
       </div>
 
       {/* Detailed Analysis */}
-      <div className="mb-8">
+      <div className="mb-12 break-inside-avoid page-break-inside-avoid">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Detailed Analysis</h2>
         <div className="space-y-6">
           <div className="bg-gray-50 p-6 rounded-lg">
@@ -214,15 +215,15 @@ function PDFReport({ data, onClose }: PDFReportProps) {
       </div>
 
       {/* Short-Term Rental Scenarios */}
-      <div className="mb-8 break-inside-avoid">
+      <div className="mb-12 break-inside-avoid page-break-inside-avoid">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Short-Term Rental Scenarios</h2>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto border rounded-lg shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 sticky top-0">
               <tr>
-                <th className="text-left py-2 px-4">Scenario</th>
-                <th className="text-right py-2 px-4">Monthly Average</th>
-                <th className="text-right py-2 px-4">Annual Revenue</th>
+                <th className="text-left py-3 px-6 min-w-[120px] bg-gray-50">Scenario</th>
+                <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">Monthly Average</th>
+                <th className="text-right py-3 px-6 min-w-[120px] bg-gray-50">Annual Revenue</th>
               </tr>
             </thead>
             <tbody>
@@ -231,32 +232,32 @@ function PDFReport({ data, onClose }: PDFReportProps) {
                 <td className="text-right py-3 px-6">
                   {formatter.format(calculateMonthlyAverage('low', data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                 </td>
-                <td className="text-right py-2 px-4">
+                <td className="text-right py-3 px-6">
                   {formatter.format(calculateAnnualRevenue('low', data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                 </td>
               </tr>
-              <tr className="border-b">
-                <td className="py-2 px-4">Moderate (Medium)</td>
-                <td className="text-right py-2 px-4">
+              <tr className="border-b bg-[#4ECDC4]/10">
+                <td className="py-3 px-6 text-[#4ECDC4] font-medium">Moderate (Medium)</td>
+                <td className="text-right py-3 px-6">
                   {formatter.format(calculateMonthlyAverage('medium', data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                 </td>
-                <td className="text-right py-2 px-4">
+                <td className="text-right py-3 px-6">
                   {formatter.format(calculateAnnualRevenue('medium', data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                 </td>
               </tr>
-              <tr className="border-b">
-                <td className="py-2 px-4">Optimistic (High)</td>
-                <td className="text-right py-2 px-4">
+              <tr className="border-b bg-[#45B7D1]/10">
+                <td className="py-3 px-6 text-[#45B7D1] font-medium">Optimistic (High)</td>
+                <td className="text-right py-3 px-6">
                   {formatter.format(calculateMonthlyAverage('high', data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                 </td>
-                <td className="text-right py-2 px-4">
+                <td className="text-right py-3 px-6">
                   {formatter.format(calculateAnnualRevenue('high', data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                 </td>
               </tr>
-              <tr className="border-b bg-gray-50">
-                <td className="py-2 px-4 font-medium">Long-Term Rental</td>
-                <td className="text-right py-2 px-4 font-medium">{formatter.format(data.longTermMonthly)}</td>
-                <td className="text-right py-2 px-4 font-medium">{formatter.format(data.longTermAnnual)}</td>
+              <tr className="border-b bg-[#FFE66D]/10">
+                <td className="py-3 px-6 text-[#B8860B] font-medium">Long Term Rental</td>
+                <td className="text-right py-3 px-6 font-medium">{formatter.format(data.longTermMonthly)}</td>
+                <td className="text-right py-3 px-6 font-medium">{formatter.format(data.longTermAnnual)}</td>
               </tr>
             </tbody>
           </table>
