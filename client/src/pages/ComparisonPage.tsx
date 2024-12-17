@@ -21,6 +21,7 @@ export default function ComparisonPage() {
     breakEvenOccupancy: number;
     shortTermNightly: number;
     managementFee: number;
+    annualOccupancy: number;
   }
 
   const handleCompare = (data: any) => {
@@ -72,6 +73,7 @@ export default function ComparisonPage() {
       breakEvenOccupancy: Math.round(breakEvenOccupancy * 10) / 10,
       shortTermNightly, 
       managementFee,
+      annualOccupancy: parseFloat(data.annualOccupancy),
       bedrooms: data.bedrooms,
       bathrooms: data.bathrooms,
     });

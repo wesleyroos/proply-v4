@@ -26,6 +26,7 @@ interface ComparisonData {
   breakEvenOccupancy: number;
   shortTermNightly: number;
   managementFee: number;
+  annualOccupancy: number;
 }
 
 interface ComparisonChartProps {
