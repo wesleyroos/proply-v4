@@ -18,47 +18,29 @@ export default function MapView({ address }: MapViewProps) {
   useEffect(() => {
     if (!mapRef.current || !address) return;
 
-    // Initialize Google Maps using dynamic import as recommended
-    const initializeMap = async () => {
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&callback=initMap`;
+    script.async = true;
+    script.defer = true;
+
+    // Define the initMap function that Google Maps will call
+    window.initMap = async () => {
       try {
-        // Bootstrap loader script
-        const loader = ((g) => {
-          let h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary",
-              q = "__ib__", m = document, b = window;
-          b = b[c] || (b[c] = {});
-          const d = b.maps || (b.maps = {});
-          const r = new Set();
-          const e = new URLSearchParams;
-          const u = () => h || (h = new Promise(async (f, n) => {
-            await (a = m.createElement("script"));
-            e.set("libraries", [...r] + "");
-            for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]);
-            e.set("callback", c + ".maps." + q);
-            a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
-            d[q] = f;
-            a.onerror = () => h = n(Error(p + " could not load."));
-            a.nonce = m.querySelector("script[nonce]")?.nonce || "";
-            m.head.append(a)
-          }));
-          d[l] ? console.warn(p + " only loads once. Ignoring:", g) :
-              d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n));
-          return u();
-        })({
-          key: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-          v: "weekly"
+        const geocoder = new google.maps.Geocoder();
+        
+        const results = await new Promise<google.maps.GeocoderResponse>((resolve, reject) => {
+          geocoder.geocode({ address }, (results, status) => {
+            if (status === google.maps.GeocoderStatus.OK) {
+              resolve({ results } as google.maps.GeocoderResponse);
+            } else {
+              reject(new Error(`Geocoding failed: ${status}`));
+            }
+          });
         });
 
-        await loader;
-        const { Map } = await window.google.maps.importLibrary("maps") as google.maps.MapsLibrary;
-        const { Geocoder } = await window.google.maps.importLibrary("geocoding") as google.maps.GeocodingLibrary;
-
-        const geocoder = new Geocoder();
-        const results = await geocoder.geocode({ address });
-
         if (results.results.length > 0) {
-          const { location } = results.results[0].geometry;
-          
-          const map = new Map(mapRef.current, {
+          const location = results.results[0].geometry.location;
+          const map = new google.maps.Map(mapRef.current!, {
             center: location,
             zoom: 14,
             zoomControl: true,
@@ -82,7 +64,13 @@ export default function MapView({ address }: MapViewProps) {
       }
     };
 
-    initializeMap();
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup
+      document.head.removeChild(script);
+      delete window.initMap;
+    };
   }, [address]);
 
   if (error) {
