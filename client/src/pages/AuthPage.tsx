@@ -56,7 +56,7 @@ export default function AuthPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-center text-[#262626]">
-              Property Investment Made Easy
+              Get started with Proply
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -82,36 +82,88 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
           </div>
 
           <div className="p-4 bg-indigo-50 rounded-lg">
-            <h3 className="text-lg font-semibold text-[#114D9D] mb-2">Short-Term Rental</h3>
+            <h3 className="text-lg font-semibold text-[#114D9D] mb-2">Short-Term Rental (STR)</h3>
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-gray-600">Monthly Revenue (Average)</p>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <InfoIcon className="h-4 w-4 text-gray-400" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Average monthly income based on fee-adjusted nightly rate and occupancy.
-                    {data.managementFee > 0
-                      ? "Professional management: 15% Airbnb fee applied"
-                      : "Self-managed: 3% platform fee applied"}
-                  </TooltipContent>
-                </Tooltip>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-gray-600">Projected Annual Revenue</p>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Total annual revenue before fees
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <p className="text-sm font-semibold">{formatter.format(data.shortTermAnnual)}</p>
               </div>
-              <p className="text-xl font-bold">{formatter.format(data.shortTermMonthly)}</p>
 
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-gray-600">Annual Revenue (After Fees)</p>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <InfoIcon className="h-4 w-4 text-gray-400" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Total yearly income after management fees
-                  </TooltipContent>
-                </Tooltip>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-gray-600">Projected Monthly Revenue</p>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Average monthly revenue before fees
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <p className="text-sm font-semibold">{formatter.format(data.shortTermMonthly)}</p>
               </div>
-              <p className="text-xl font-bold">{formatter.format(data.shortTermAnnual)}</p>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-gray-600">Airbnb Fee</p>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      15% platform fee
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <p className="text-sm font-semibold">{formatter.format(data.shortTermAnnual * 0.15)} (15.0%)</p>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-gray-600">Management Fee</p>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Professional property management fee
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <p className="text-sm font-semibold">
+                  {formatter.format(data.shortTermAnnual * (data.managementFee / 100))} ({data.managementFee}%)
+                </p>
+              </div>
+
+              <div className="pt-2 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-gray-700">Owner's Net Annual Income</p>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <InfoIcon className="h-4 w-4 text-gray-400" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Annual revenue after all fees
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <p className="text-sm font-bold">
+                    {formatter.format(data.shortTermAnnual * (1 - 0.15 - data.managementFee / 100))}
+                  </p>
+                </div>
+              </div>
 
               <div className="mt-2 text-xs text-gray-500">
                 <p>Calculation:</p>
