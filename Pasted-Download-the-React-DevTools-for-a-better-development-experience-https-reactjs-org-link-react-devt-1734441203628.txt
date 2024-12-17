@@ -1,0 +1,46 @@
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+/api/user:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+MapView.tsx:25 MapView mounted, initializing Google Maps...
+maps.ts:4 Initializing Google Maps...
+maps.ts:5 API Key available: true
+maps.ts:6 API Key length: 39
+MapView.tsx:81 Skipping marker update, dependencies not ready: 
+Object
+MapView.tsx:25 MapView mounted, initializing Google Maps...
+maps.ts:4 Initializing Google Maps...
+maps.ts:5 API Key available: true
+maps.ts:6 API Key length: 39
+MapView.tsx:81 Skipping marker update, dependencies not ready: 
+Object
+js?key=AIzaSyDFkk-vj…braries=marker:1031 Google Maps JavaScript API has been loaded directly without loading=async. This can result in suboptimal performance. For best-practice loading patterns please see https://goo.gle/js-api-loading
+maps.ts:15 Google Maps script loaded successfully
+MapView.tsx:29 Google Maps initialization successful
+js?key=AIzaSyDFkk-vj…ibraries=marker:961 Element with name "gmp-internal-element-support-verification" already defined.
+js?key=AIzaSyDFkk-vj…braries=marker:1039 You have included the Google Maps JavaScript API multiple times on this page. This may cause unexpected errors.
+js?key=AIzaSyDFkk-vj…braries=marker:1031 Google Maps JavaScript API has been loaded directly without loading=async. This can result in suboptimal performance. For best-practice loading patterns please see https://goo.gle/js-api-loading
+js?key=AIzaSyDFkk-vj…ibraries=marker:961 Element with name "gmp-internal-dialog" already defined.
+js?key=AIzaSyDFkk-vj…ibraries=marker:961 Element with name "gmp-internal-pin" already defined.
+js?key=AIzaSyDFkk-vj…ibraries=marker:961 Element with name "gmp-internal-use-am" already defined.
+js?key=AIzaSyDFkk-vj…ibraries=marker:961 Element with name "gmp-internal-am" already defined.
+maps.ts:15 Google Maps script loaded successfully
+MapView.tsx:29 Google Maps initialization successful
+MapView.tsx:43 Creating map instance...
+MapView.tsx:70 Map initialized successfully
+MapView.tsx:81 Skipping marker update, dependencies not ready: 
+Object
+addressProvided
+: 
+false
+googleMapsReady
+: 
+true
+mapReady
+: 
+true
+markerReady
+: 
+true
+[[Prototype]]
+: 
+Object

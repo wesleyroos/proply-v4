@@ -77,49 +77,48 @@ export default function MapView({ address }: MapViewProps) {
   // Update marker when address changes
   useEffect(() => {
     const updateMarker = async () => {
-      if (!map || !marker || !address || !window.google?.maps) {
+      // Only proceed if we have all required dependencies and a non-empty address
+      if (!map || !marker || !address?.trim() || !window.google?.maps) {
         console.log('Skipping marker update, dependencies not ready:', {
           mapReady: !!map,
           markerReady: !!marker,
-          addressProvided: !!address,
+          addressProvided: !!address?.trim(),
           googleMapsReady: !!window.google?.maps
         });
         return;
       }
 
       try {
-        console.log('Geocoding address:', address);
+        console.log('Starting geocoding for address:', address);
         const geocoder = new window.google.maps.Geocoder();
         
-        geocoder.geocode({ address }, (results: any, status: any) => {
-          console.log('Geocoding response:', { status, results: results?.[0]?.geometry?.location });
-          
-          if (status === window.google.maps.GeocoderStatus.OK && results?.[0]) {
-            const location = results[0].geometry.location;
-            console.log('Setting marker position to:', location.toString());
-            
-            map.setCenter(location);
-            map.setZoom(16);
-            
-            // Ensure marker is properly configured
-            // Update marker with new position
-            marker.position = location;
-            marker.map = map;
-            
-            console.log('Setting marker at location:', location.toString());
-            
-            // Make marker visible
-            if (marker.map === null) {
-              marker.map = map;
+        // Use Promise-based approach for better error handling
+        const geocodeAddress = () => new Promise((resolve, reject) => {
+          geocoder.geocode({ address }, (results: any, status: any) => {
+            if (status === window.google.maps.GeocoderStatus.OK && results?.[0]) {
+              resolve(results[0]);
+            } else {
+              reject(new Error(`Geocoding failed: ${status}`));
             }
-          } else {
-            console.error('Geocoding failed:', status);
-            marker.map = null;  // Hide the marker
-          }
+          });
         });
+
+        const result = await geocodeAddress();
+        const location = result.geometry.location;
+        console.log('Successfully geocoded address to:', location.toString());
+        
+        // Center the map
+        map.setCenter(location);
+        map.setZoom(16);
+        
+        // Update marker
+        marker.position = location;
+        marker.map = map;
+        
+        console.log('Marker placed successfully at:', location.toString());
       } catch (error) {
-        console.error('Geocoding error:', error);
-        marker.map = null;  // Hide the marker
+        console.error('Error updating marker:', error);
+        marker.map = null; // Hide the marker
       }
     };
 
