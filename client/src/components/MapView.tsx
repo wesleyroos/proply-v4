@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { initGoogleMaps } from '../lib/maps';
 
 interface MapViewProps {
   address: string;
@@ -17,18 +18,21 @@ export default function MapView({ address }: MapViewProps) {
   const [map, setMap] = useState<any>(null);
   const [marker, setMarker] = useState<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Initialize map when Google Maps script is loaded
   useEffect(() => {
-    const checkGoogleMapsLoaded = setInterval(() => {
-      if (window.google?.maps) {
-        console.log('Google Maps API loaded successfully');
+    console.log('MapView mounted, initializing Google Maps...');
+    
+    initGoogleMaps()
+      .then(() => {
+        console.log('Google Maps initialization successful');
         setIsLoaded(true);
-        clearInterval(checkGoogleMapsLoaded);
-      }
-    }, 100);
-
-    return () => clearInterval(checkGoogleMapsLoaded);
+      })
+      .catch((err) => {
+        console.error('Failed to initialize Google Maps:', err);
+        setError('Failed to load Google Maps');
+      });
   }, []);
 
   // Initialize the map once Google Maps is loaded
@@ -36,6 +40,7 @@ export default function MapView({ address }: MapViewProps) {
     if (!isLoaded || !mapRef.current) return;
 
     try {
+      console.log('Creating map instance...');
       const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
       const newMap = new window.google.maps.Map(mapRef.current, {
           center: defaultLocation,
@@ -63,15 +68,25 @@ export default function MapView({ address }: MapViewProps) {
         console.log('Map initialized successfully');
       } catch (error) {
         console.error('Error initializing map:', error);
+        setError('Error creating map');
       }
   }, [isLoaded]);
 
   // Update marker when address changes
   useEffect(() => {
     const updateMarker = async () => {
-      if (!map || !marker || !address || !window.google?.maps) return;
+      if (!map || !marker || !address || !window.google?.maps) {
+        console.log('Skipping marker update, dependencies not ready:', {
+          mapReady: !!map,
+          markerReady: !!marker,
+          addressProvided: !!address,
+          googleMapsReady: !!window.google?.maps
+        });
+        return;
+      }
 
       try {
+        console.log('Geocoding address:', address);
         const geocoder = new google.maps.Geocoder();
         
         geocoder.geocode({ address }, (results, status) => {
@@ -95,6 +110,14 @@ export default function MapView({ address }: MapViewProps) {
 
     updateMarker();
   }, [address, map, marker]);
+
+  if (error) {
+    return (
+      <div className="h-[300px] w-full rounded-lg overflow-hidden border bg-gray-100 flex items-center justify-center">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div 
