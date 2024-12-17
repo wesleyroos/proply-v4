@@ -90,28 +90,28 @@ function PDFReport({ data, onClose }: PDFReportProps) {
   }, []);
 
   return (
-    <div ref={reportRef} className="bg-white p-8 w-[210mm]">
+    <div ref={reportRef} className="bg-white p-12 w-[210mm] min-h-[297mm] relative">
       {/* Header with logos */}
-      <div className="flex justify-between items-center mb-8 pb-4 border-b">
+      <div className="flex justify-between items-center mb-12 pb-6 border-b">
         <div className="flex-1">
           {/* Placeholder for client logo */}
-          <div className="w-32 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-400">
+          <div className="w-40 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 border border-gray-200">
             Your Logo
           </div>
         </div>
         <div className="flex-1 text-right">
-          <img src="/proply-logo.png" alt="Powered by Proply" className="h-8 ml-auto" />
-          <div className="text-sm text-gray-500 mt-1">Powered by Proply</div>
+          <img src="/proply-logo.png" alt="Powered by Proply" className="h-10 ml-auto" />
+          <div className="text-sm text-gray-500 mt-2">Powered by Proply</div>
         </div>
       </div>
 
       {/* Title */}
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">
         Proply Rent Compare
       </h1>
 
       {/* Property Details */}
-      <div className="mb-8 break-inside-avoid">
+      <div className="mb-12 break-inside-avoid page-break-inside-avoid">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Details</h2>
         <div className="grid grid-cols-3 gap-6">
           <div>
@@ -226,9 +226,9 @@ function PDFReport({ data, onClose }: PDFReportProps) {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b">
-                <td className="py-2 px-4">Conservative (Low)</td>
-                <td className="text-right py-2 px-4">
+              <tr className="border-b bg-[#FF6B6B]/10">
+                <td className="py-3 px-6 text-[#FF6B6B] font-medium">Conservative (Low)</td>
+                <td className="text-right py-3 px-6">
                   {formatter.format(calculateMonthlyAverage('low', data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                 </td>
                 <td className="text-right py-2 px-4">
@@ -262,7 +262,7 @@ function PDFReport({ data, onClose }: PDFReportProps) {
           </table>
         </div>
 
-        <div className="mt-8 h-[200px]">
+        <div className="mt-12 h-[300px] break-inside-avoid page-break-inside-avoid">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={Array(12).fill(0).map((_, i) => ({
@@ -287,15 +287,20 @@ function PDFReport({ data, onClose }: PDFReportProps) {
       </div>
 
       {/* Footer */}
-      <div className="mt-12 pt-4 border-t text-sm text-gray-500">
-        <p className="mb-2">
+      <div className="mt-16 pt-6 border-t text-sm text-gray-500">
+        <p className="mb-3">
           Report generated on {new Date().toLocaleDateString()} by Proply
         </p>
-        <p className="text-xs">
+        <p className="text-xs leading-relaxed max-w-3xl">
           Disclaimer: This analysis is based on current market data and projections. 
           Actual results may vary based on market conditions, property management, 
           and other factors beyond our control.
         </p>
+      </div>
+      
+      {/* Page Number */}
+      <div className="absolute bottom-8 right-8 text-sm text-gray-400">
+        Page 1
       </div>
     </div>
   );
