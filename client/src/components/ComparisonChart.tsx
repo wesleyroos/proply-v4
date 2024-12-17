@@ -560,7 +560,10 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
       {showPDFReport && (
         <PDFReport
           data={{ ...data, address }}
-          onClose={() => setShowPDFReport(false)}
+          onClose={() => {
+            setShowPDFReport(false);
+            setIsGeneratingPDF(false);
+          }}
         />
       )}
     </>

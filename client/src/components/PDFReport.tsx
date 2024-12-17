@@ -84,11 +84,15 @@ function PDFReport({ data, onClose }: PDFReportProps) {
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
 
-      html2pdf().set(opt).from(reportRef.current).save().then(() => {
-        setTimeout(() => {
-          onClose();
-        }, 500); // Small delay to ensure PDF is fully generated
-      });
+      html2pdf()
+        .set(opt)
+        .from(reportRef.current)
+        .save()
+        .then(() => onClose())
+        .catch((error) => {
+          console.error('PDF generation failed:', error);
+          onClose(); // Make sure we still close even if there's an error
+        });
     }
   }, []);
 
