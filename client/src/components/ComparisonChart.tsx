@@ -228,7 +228,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                   <td className="py-2">Revenue Low</td>
                   {Array(12).fill(0).map((_, i) => (
                     <td key={i} className="text-right py-2">
-                      {formatter.format(calculateMonthlyRevenue('low', i))}
+                      {formatter.format(calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                     </td>
                   ))}
                 </tr>
@@ -236,7 +236,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                   <td className="py-2">Revenue Medium</td>
                   {Array(12).fill(0).map((_, i) => (
                     <td key={i} className="text-right py-2">
-                      {formatter.format(calculateMonthlyRevenue('medium', i))}
+                      {formatter.format(calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                     </td>
                   ))}
                 </tr>
@@ -244,7 +244,7 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
                   <td className="py-2">Revenue High</td>
                   {Array(12).fill(0).map((_, i) => (
                     <td key={i} className="text-right py-2">
-                      {formatter.format(calculateMonthlyRevenue('high', i))}
+                      {formatter.format(calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
                     </td>
                   ))}
                 </tr>

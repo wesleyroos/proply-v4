@@ -53,6 +53,8 @@ export default function ComparisonPage() {
       longTermAnnual,
       shortTermAnnual: shortTermAfterFees,
       breakEvenOccupancy: Math.round(breakEvenOccupancy * 10) / 10,
+      shortTermNightly, // Add these new properties
+      managementFee,
     });
   };
 
