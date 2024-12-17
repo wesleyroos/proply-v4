@@ -1,95 +1,60 @@
-import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
-import L from 'leaflet';
-
-// Fix the marker icon issue in React
-const icon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  tooltipAnchor: [16, -28],
-  shadowSize: [41, 41]
-});
+import { useEffect, useState, useRef } from 'react';
 
 interface MapViewProps {
   address: string;
 }
 
-// Component to handle map center updates
-function MapUpdater({ address }: { address: string }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (!address) return;
-
-    async function updateMapLocation() {
-      try {
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
-        );
-        const data = await response.json();
-        
-        if (data && data.length > 0) {
-          const { lat, lon } = data[0];
-          const location: L.LatLngTuple = [parseFloat(lat), parseFloat(lon)];
-          map.setView(location, 16);
-        }
-      } catch (error) {
-        console.error('Error geocoding address:', error);
-      }
-    }
-
-    updateMapLocation();
-  }, [address, map]);
-
-  return null;
-}
-
 export default function MapView({ address }: MapViewProps) {
-  const [location, setLocation] = useState<[number, number] | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [marker, setMarker] = useState<google.maps.Marker | null>(null);
 
+  // Initialize the map
   useEffect(() => {
-    if (!address) return;
+    if (!mapRef.current) return;
 
-    async function geocodeAddress() {
-      try {
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`
-        );
-        const data = await response.json();
-        
-        if (data && data.length > 0) {
-          const { lat, lon } = data[0];
-          setLocation([parseFloat(lat), parseFloat(lon)]);
-        }
-      } catch (error) {
-        console.error('Error geocoding address:', error);
+    const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
+    const newMap = new google.maps.Map(mapRef.current, {
+      center: defaultLocation,
+      zoom: 13,
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false
+    });
+    
+    setMap(newMap);
+    
+    // Create a marker but don't set its position yet
+    const newMarker = new google.maps.Marker({
+      map: newMap,
+      visible: false
+    });
+    setMarker(newMarker);
+  }, []);
+
+  // Update marker when address changes
+  useEffect(() => {
+    if (!map || !marker || !address) return;
+
+    const geocoder = new google.maps.Geocoder();
+    
+    geocoder.geocode({ address }, (results, status) => {
+      if (status === 'OK' && results && results[0]) {
+        const location = results[0].geometry.location;
+        map.setCenter(location);
+        marker.setPosition(location);
+        marker.setVisible(true);
+      } else {
+        console.error('Geocoding failed:', status);
+        marker.setVisible(false);
       }
-    }
-
-    geocodeAddress();
-  }, [address]);
-
-  if (!address) return null;
+    });
+  }, [address, map, marker]);
 
   return (
-    <div className="h-[300px] w-full rounded-lg overflow-hidden border">
-      <MapContainer
-        center={location || [-33.918861, 18.423300]} // Default center (Cape Town)
-        zoom={13}
-        scrollWheelZoom={false}
-        className="h-full w-full"
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        {location && <Marker position={location} icon={icon} />}
-        <MapUpdater address={address} />
-      </MapContainer>
-    </div>
+    <div 
+      ref={mapRef} 
+      className="h-[300px] w-full rounded-lg overflow-hidden border"
+    />
   );
 }
