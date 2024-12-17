@@ -25,10 +25,12 @@ export default function ComparisonPage() {
   const handleCompare = (data: any) => {
     // Scroll to results after a brief delay to ensure rendering
     setTimeout(() => {
-      document.getElementById('comparison-results')?.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
+      const yOffset = -20; 
+      const element = document.getElementById('comparison-results');
+      if (element) {
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
     }, 100);
 
     // Calculate comparison metrics
