@@ -7,7 +7,7 @@ export function initGoogleMaps() {
 
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker`;
     script.async = true;
     script.defer = true;
     

@@ -59,10 +59,12 @@ export default function MapView({ address }: MapViewProps) {
         
         setMap(newMap);
         
-        const newMarker = new window.google.maps.Marker({
-          position: defaultLocation,
+        // Create a marker element using the new AdvancedMarkerElement
+        const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
           map: newMap,
-          visible: false
+          position: defaultLocation,
+          visible: false,
+          title: 'Property Location'
         });
         setMarker(newMarker);
 
@@ -101,12 +103,16 @@ export default function MapView({ address }: MapViewProps) {
             map.setZoom(16);
             
             // Ensure marker is properly configured
-            marker.setMap(map);
-            marker.setPosition(location);
-            marker.setVisible(true);
+            // Update marker with new position
+            marker.position = location;
+            marker.map = map;
             
-            console.log('Marker visibility:', marker.getVisible());
-            console.log('Marker position:', marker.getPosition()?.toString());
+            console.log('Setting marker at location:', location.toString());
+            
+            // Make marker visible
+            if (marker.map === null) {
+              marker.map = map;
+            }
           } else {
             console.error('Geocoding failed:', status);
             marker.setVisible(false);
