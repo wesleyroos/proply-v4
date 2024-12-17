@@ -87,10 +87,12 @@ export default function MapView({ address }: MapViewProps) {
 
       try {
         console.log('Geocoding address:', address);
-        const geocoder = new google.maps.Geocoder();
+        const geocoder = new window.google.maps.Geocoder();
         
-        geocoder.geocode({ address }, (results, status) => {
-          if (status === 'OK' && results && results[0]) {
+        geocoder.geocode({ address }, (results: any, status: any) => {
+          console.log('Geocoding response:', { status, results: results?.[0]?.geometry?.location });
+          
+          if (status === google.maps.GeocoderStatus.OK && results?.[0]) {
             const location = results[0].geometry.location;
             map.setCenter(location);
             map.setZoom(16);
