@@ -280,23 +280,17 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
   );
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const SEASONALITY_FACTORS = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
+
 const OCCUPANCY_RATES = {
-  low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70],
-  medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85],
+  low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 65],
+  medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 80],
   high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
 };
 
 function getSeasonalMultiplier(month: number): number {
-  // Peak season: Dec-Feb (2.2x)
-  if (month === 11 || month === 0 || month === 1) {
-    return 2.2;
-  }
-  // Low season: Jun-Aug (0.65x)
-  if (month >= 5 && month <= 7) {
-    return 0.65;
-  }
-  // Regular season: rest of the year (1x)
-  return 1.0;
+  return SEASONALITY_FACTORS[month];
 }
 
 function getSeasonalNightlyRate(baseRate: number, month: number): number {
