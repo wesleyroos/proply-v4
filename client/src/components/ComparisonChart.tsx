@@ -286,13 +286,33 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
           <div className="space-y-4">
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-sm text-gray-600">Break-even Occupancy</span>
-                <span className="text-sm font-medium">{data.breakEvenOccupancy}%</span>
+                <span className="text-sm text-gray-600">Projected Occupancy</span>
+                <span className="text-sm font-medium">{data.annualOccupancy}%</span>
               </div>
-              <Progress value={data.breakEvenOccupancy} className="h-2" />
+              <div className="relative">
+                <Progress value={data.annualOccupancy} className="h-2" />
+                <div 
+                  className="absolute top-0 h-4 w-0.5 bg-red-500 transform -translate-y-1" 
+                  style={{ left: `${data.breakEvenOccupancy}%` }}
+                  title="Break-even point"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-2 bg-primary rounded-full"></div>
+                <span>Projected {data.annualOccupancy}%</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-0.5 h-3 bg-red-500"></div>
+                <span>Break-even {data.breakEvenOccupancy}%</span>
+              </div>
             </div>
             <p className="text-sm text-gray-600">
-              To match long-term rental income, your short-term rental needs to maintain at least {data.breakEvenOccupancy}% occupancy throughout the year.
+              Your short-term rental needs {data.breakEvenOccupancy}% occupancy to match long-term rental income. 
+              {data.annualOccupancy > data.breakEvenOccupancy 
+                ? ` At ${data.annualOccupancy}% projected occupancy, short-term rental is more profitable.`
+                : ` At ${data.annualOccupancy}% projected occupancy, long-term rental may be more suitable.`}
             </p>
           </div>
         </div>
