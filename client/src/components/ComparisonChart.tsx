@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LoadScript } from '@react-google-maps/api';
+import MapView from './MapView';
 import { InfoIcon } from "lucide-react";
 import {
   Tooltip,
@@ -27,7 +29,12 @@ interface ComparisonData {
   managementFee: number;
 }
 
-export default function ComparisonChart({ data }: { data: ComparisonData }) {
+interface ComparisonChartProps {
+  data: ComparisonData;
+  address: string;
+}
+
+export default function ComparisonChart({ data, address }: ComparisonChartProps) {
   const [showCalculations, setShowCalculations] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const chartData = [
@@ -55,6 +62,9 @@ export default function ComparisonChart({ data }: { data: ComparisonData }) {
   return (
     <TooltipProvider>
       <div id="comparison-results" className="space-y-6">
+        <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+          <MapView address={address} />
+        </LoadScript>
         <div className="grid grid-cols-2 gap-8">
           <div className="p-4 bg-blue-50 rounded-lg">
             <h3 className="text-lg font-semibold text-[#1BA3FF] mb-2">Long-Term Rental</h3>

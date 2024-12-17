@@ -12,7 +12,20 @@ interface RevenueData {
   percentile: number;
 }
 
-export default function PropertyForm({ onSubmit }) {
+interface PropertyFormProps {
+  onSubmit: (data: {
+    address: string;
+    bedrooms: string;
+    bathrooms: string;
+    longTermRental: string;
+    annualEscalation: string;
+    shortTermNightly: string;
+    annualOccupancy: string;
+    managementFee: string;
+  }) => void;
+}
+
+export default function PropertyForm({ onSubmit }: PropertyFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showPercentileDialog, setShowPercentileDialog] = useState(false);
   const [revenueData, setRevenueData] = useState<{
