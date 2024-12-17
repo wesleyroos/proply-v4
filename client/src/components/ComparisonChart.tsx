@@ -61,7 +61,7 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
   return (
     <TooltipProvider>
       <div id="comparison-results" className="space-y-6">
-        {address && <MapView address={address} />}
+        <MapView address={address} />
         <div className="grid grid-cols-2 gap-8">
           <div className="p-4 bg-blue-50 rounded-lg">
             <h3 className="text-lg font-semibold text-[#1BA3FF] mb-2">Long-Term Rental</h3>

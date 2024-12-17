@@ -20,19 +20,26 @@ export default function MapView({ address }: MapViewProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize map when Google Maps script is loaded
+  // Initialize map when component mounts
   useEffect(() => {
+    let isMounted = true;
     console.log('MapView mounted, initializing Google Maps...');
     
     initGoogleMaps()
       .then(() => {
+        if (!isMounted) return;
         console.log('Google Maps initialization successful');
         setIsLoaded(true);
       })
       .catch((err) => {
+        if (!isMounted) return;
         console.error('Failed to initialize Google Maps:', err);
         setError('Failed to load Google Maps');
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Initialize the map once Google Maps is loaded
@@ -74,28 +81,29 @@ export default function MapView({ address }: MapViewProps) {
       }
   }, [isLoaded]);
 
-  // Update marker when address changes
+  // Update marker when address changes or map/marker become available
   useEffect(() => {
     const updateMarker = async () => {
-      // Only proceed if we have all required dependencies and a non-empty address
-      if (!map || !marker || !address?.trim() || !window.google?.maps) {
-        console.log('Skipping marker update, dependencies not ready:', {
-          mapReady: !!map,
-          markerReady: !!marker,
-          addressProvided: !!address?.trim(),
-          googleMapsReady: !!window.google?.maps
-        });
+      if (!map || !marker || !window.google?.maps) {
+        console.log('Map or marker not ready yet');
+        return;
+      }
+
+      // If no address is provided, center on default location
+      if (!address?.trim()) {
+        const defaultLocation = { lat: -33.918861, lng: 18.423300 }; // Cape Town
+        map.setCenter(defaultLocation);
+        marker.map = null; // Hide marker when no address
         return;
       }
 
       try {
-        console.log('Starting geocoding for address:', address);
+        console.log('Geocoding address:', address);
         const geocoder = new window.google.maps.Geocoder();
         
-        // Use Promise-based approach for better error handling
-        const geocodeAddress = () => new Promise((resolve, reject) => {
+        const result = await new Promise((resolve, reject) => {
           geocoder.geocode({ address }, (results: any, status: any) => {
-            if (status === window.google.maps.GeocoderStatus.OK && results?.[0]) {
+            if (status === 'OK' && results?.[0]) {
               resolve(results[0]);
             } else {
               reject(new Error(`Geocoding failed: ${status}`));
@@ -103,22 +111,19 @@ export default function MapView({ address }: MapViewProps) {
           });
         });
 
-        const result = await geocodeAddress();
         const location = result.geometry.location;
-        console.log('Successfully geocoded address to:', location.toString());
+        console.log('Found location:', location.toString());
         
-        // Center the map
         map.setCenter(location);
         map.setZoom(16);
         
-        // Update marker
         marker.position = location;
         marker.map = map;
         
-        console.log('Marker placed successfully at:', location.toString());
+        console.log('Marker placed successfully');
       } catch (error) {
         console.error('Error updating marker:', error);
-        marker.map = null; // Hide the marker
+        marker.map = null;
       }
     };
 
