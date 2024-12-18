@@ -248,17 +248,35 @@ export function registerRoutes(app: Express): Server {
     res.json(userProperties);
   });
 
-  app.get("/api/properties", async (req, res) => {
+  app.delete("/api/properties/:id", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
     }
 
-    const userProperties = await db.select()
-      .from(properties)
-      .where(eq(properties.userId, req.user!.id))
-      .orderBy(properties.createdAt);
+    const propertyId = parseInt(req.params.id);
     
-    res.json(userProperties);
+    try {
+      // First check if the property belongs to the user
+      const [property] = await db.select()
+        .from(properties)
+        .where(eq(properties.id, propertyId))
+        .where(eq(properties.userId, req.user!.id))
+        .limit(1);
+
+      if (!property) {
+        return res.status(404).send("Property not found or unauthorized");
+      }
+
+      // Delete the property
+      await db.delete(properties)
+        .where(eq(properties.id, propertyId))
+        .where(eq(properties.userId, req.user!.id));
+
+      res.json({ message: "Property deleted successfully" });
+    } catch (error) {
+      console.error('Error deleting property:', error);
+      res.status(500).json({ error: "Failed to delete property" });
+    }
   });
 
   // Payment webhook for PayFast

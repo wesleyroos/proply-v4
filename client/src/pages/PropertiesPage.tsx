@@ -1,8 +1,20 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatter } from "../utils/formatting";
+import { Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Property {
   id: number;
@@ -20,9 +32,34 @@ interface Property {
 }
 
 export default function PropertiesPage() {
+  const queryClient = useQueryClient();
   const { data: properties, isLoading } = useQuery<Property[]>({
     queryKey: ['/api/properties'],
   });
+  const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleDelete = async () => {
+    if (!propertyToDelete) return;
+    
+    try {
+      const response = await fetch(`/api/properties/${propertyToDelete.id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      // Invalidate and refetch properties
+      queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
+      setPropertyToDelete(null);
+      setDeleteError(null);
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : 'Failed to delete property');
+    }
+  };
 
   return (
     <div className="p-8">
@@ -45,6 +82,7 @@ export default function PropertiesPage() {
                   <th className="py-3 px-4 text-right">Short-Term Annual</th>
                   <th className="py-3 px-4 text-right">Break-even</th>
                   <th className="py-3 px-4 text-right">Added</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -85,6 +123,16 @@ export default function PropertiesPage() {
                       <td className="py-3 px-4 text-right whitespace-nowrap">
                         {new Date(property.createdAt).toLocaleDateString()}
                       </td>
+                      <td className="py-3 px-4 text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => setPropertyToDelete(property)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -93,6 +141,31 @@ export default function PropertiesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!propertyToDelete} onOpenChange={() => setPropertyToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the property
+              {propertyToDelete && ` "${propertyToDelete.title}"`} and remove it from our servers.
+              {deleteError && (
+                <p className="mt-2 text-red-600">{deleteError}</p>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 hover:bg-red-600"
+              onClick={handleDelete}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
