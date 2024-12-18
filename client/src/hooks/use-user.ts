@@ -86,6 +86,7 @@ export function useUser() {
 
       const data = await response.json();
       
+      // Always throw error if login was not successful
       if (!data.success) {
         throw new Error(data.message || "Login failed");
       }
@@ -94,13 +95,17 @@ export function useUser() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
+      toast({
+        title: "Success",
+        description: "Successfully logged in",
+      });
     },
     onError: (error: Error) => {
       toast({
         title: "Login Failed",
         description: error.message,
         variant: "destructive",
-        duration: 5000
+        duration: 7000, // Longer duration for error messages
       });
     }
   });

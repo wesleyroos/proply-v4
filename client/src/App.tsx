@@ -1,6 +1,7 @@
 import { Switch, Route } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { Toaster } from "@/components/ui/toaster";
 import ComparisonPage from "./pages/ComparisonPage";
 import PropertiesPage from "./pages/PropertiesPage";
 import SettingsPage from "./pages/SettingsPage";
