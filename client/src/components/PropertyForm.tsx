@@ -223,37 +223,41 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                   </FormItem>
                 )}
               />
-              <div className="space-y-2">
-                <div className="text-sm font-medium text-foreground">Not sure about the rates?</div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    if (hasProAccess) {
-                      fetchRevenueData();
-                    } else {
-                      setShowUpgradeModal(true);
-                    }
-                  }}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Getting Data...
-                    </>
-                  ) : (
-                    <>
-                      Get Revenue Data
-                      <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
-                    </>
-                  )}
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  Get accurate rates from Airbnb listings in your area
-                </p>
-              </div>
+              <FormItem>
+                <FormLabel>Market Data</FormLabel>
+                <FormControl>
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full h-10"
+                      onClick={() => {
+                        if (hasProAccess) {
+                          fetchRevenueData();
+                        } else {
+                          setShowUpgradeModal(true);
+                        }
+                      }}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Getting Data...
+                        </>
+                      ) : (
+                        <>
+                          Get Revenue Data
+                          <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Get accurate rates from Airbnb listings in your area
+                    </p>
+                  </div>
+                </FormControl>
+              </FormItem>
             </div>
           </div>
 
