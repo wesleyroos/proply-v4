@@ -38,6 +38,44 @@ export default function PropertiesPage() {
   });
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Property;
+    direction: 'asc' | 'desc';
+  } | null>(null);
+
+  const filteredProperties = properties?.filter(property => 
+    property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    property.address.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const sortedProperties = filteredProperties?.sort((a, b) => {
+    if (!sortConfig) return 0;
+    
+    const aValue = a[sortConfig.key];
+    const bValue = b[sortConfig.key];
+    
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortConfig.direction === 'asc' 
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    }
+    
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return sortConfig.direction === 'asc'
+        ? aValue - bValue
+        : bValue - aValue;
+    }
+    
+    return 0;
+  });
+
+  const handleSort = (key: keyof Property) => {
+    setSortConfig(current => ({
+      key,
+      direction: current?.key === key && current.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
 
   const handleDelete = async () => {
     if (!propertyToDelete) return;
@@ -63,11 +101,23 @@ export default function PropertiesPage() {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">My Properties</h1>
-        <Link href="/compare">
-          <Button>Compare New Property</Button>
-        </Link>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">My Properties</h1>
+          <Link href="/compare">
+            <Button>Compare New Property</Button>
+          </Link>
+        </div>
+        
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search properties..."
+            className="w-full px-4 py-2 border rounded-lg"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
 
       <Card>
@@ -79,6 +129,7 @@ export default function PropertiesPage() {
                   <th className="py-3 px-4 text-left">Property</th>
                   <th className="py-3 px-4 text-right">Short-Term Rate</th>
                   <th className="py-3 px-4 text-right">Long-Term Monthly</th>
+                  <th className="py-3 px-4 text-right">Long-Term Annual</th>
                   <th className="py-3 px-4 text-right">Short-Term Annual</th>
                   <th className="py-3 px-4 text-right">Break-even</th>
                   <th className="py-3 px-4 text-right">Added</th>
@@ -102,7 +153,7 @@ export default function PropertiesPage() {
                     </td>
                   </tr>
                 ) : (
-                  properties.map((property) => (
+                  sortedProperties?.map((property) => (
                     <tr key={property.id} className="border-b hover:bg-muted/50">
                       <td className="py-3 px-4">
                         <div>
@@ -118,6 +169,7 @@ export default function PropertiesPage() {
                         <div className="text-sm text-muted-foreground">{property.annualOccupancy}% occupancy</div>
                       </td>
                       <td className="py-3 px-4 text-right">{formatter.format(property.longTermMonthly)}</td>
+                      <td className="py-3 px-4 text-right">{formatter.format(property.longTermMonthly * 12)}</td>
                       <td className="py-3 px-4 text-right">{formatter.format(property.shortTermAfterFees)}</td>
                       <td className="py-3 px-4 text-right">{property.breakEvenOccupancy}%</td>
                       <td className="py-3 px-4 text-right whitespace-nowrap">
