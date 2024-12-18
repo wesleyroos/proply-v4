@@ -225,10 +225,13 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
               />
               <div className="flex flex-col">
                 <FormLabel>Market Data</FormLabel>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Get accurate rates from Airbnb listings in your area
+                </p>
                 <Button
                   type="button"
                   variant="outline"
-                  className="h-10 mt-[2px]"
+                  className="h-10"
                   onClick={() => {
                     if (hasProAccess) {
                       fetchRevenueData();
@@ -250,9 +253,6 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                     </>
                   )}
                 </Button>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Get accurate rates from Airbnb listings in your area
-                </p>
               </div>
             </div>
           </div>
