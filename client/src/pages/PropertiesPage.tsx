@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function PropertiesPage() {
   return (
-    <div className="container py-6">
+    <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">My Properties</h1>
       <Card>
         <CardHeader>

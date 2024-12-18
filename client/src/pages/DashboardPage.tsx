@@ -5,7 +5,7 @@ export default function DashboardPage() {
   const { user } = useUser();
 
   return (
-    <div className="container py-6">
+    <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">Welcome, {user?.username}!</h1>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
