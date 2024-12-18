@@ -147,9 +147,16 @@ export default function SettingsPage() {
       <div className="p-6">
         <h1 className="text-2xl font-bold text-[#262626] mb-6">Settings</h1>
         
-        <div className="max-w-4xl space-y-6">
-          {/* Profile Information */}
-          <Card>
+        <div className="max-w-4xl">
+          <Tabs defaultValue="profile" className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
+              <TabsTrigger value="billing">Billing</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="profile">
+              <Card>
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
               <CardDescription>Update your personal information</CardDescription>
@@ -228,9 +235,10 @@ export default function SettingsPage() {
               </Form>
             </CardContent>
           </Card>
+            </TabsContent>
 
-          {/* Password Change */}
-          <Card>
+            <TabsContent value="security">
+              <Card>
             <CardHeader>
               <CardTitle>Change Password</CardTitle>
               <CardDescription>Update your password</CardDescription>
@@ -289,9 +297,10 @@ export default function SettingsPage() {
               </Form>
             </CardContent>
           </Card>
+            </TabsContent>
 
-          {/* Subscription Information */}
-          <Card>
+            <TabsContent value="billing">
+              <Card>
             <CardHeader>
               <CardTitle>Subscription</CardTitle>
               <CardDescription>Your current subscription details</CardDescription>
@@ -313,6 +322,8 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>

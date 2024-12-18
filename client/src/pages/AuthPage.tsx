@@ -30,6 +30,9 @@ export default function AuthPage() {
     defaultValues: {
       username: "",
       password: "",
+      email: "",
+      userType: "individual", // default value
+      company: "",
       firstName: "",
       lastName: "",
     },
@@ -137,6 +140,65 @@ export default function AuthPage() {
                     onSubmit={registerForm.handleSubmit(handleRegister)}
                     className="space-y-4"
                   >
+                    <FormField
+                      control={registerForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="email"
+                              autoComplete="email"
+                              disabled={isLoading}
+                              required
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={registerForm.control}
+                      name="userType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Account Type</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            disabled={isLoading}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select account type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="individual">Individual</SelectItem>
+                              <SelectItem value="company">Company</SelectItem>
+                              <SelectItem value="agent">Real Estate Agent</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={registerForm.control}
+                      name="company"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Company Name (Optional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              disabled={isLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <FormField
                         control={registerForm.control}
