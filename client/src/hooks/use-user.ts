@@ -75,14 +75,13 @@ export function useUser() {
         const password = userData.password;
 
         if (!email || !password) {
-          const error = new Error("Email and password are required");
           toast({
             title: "Login Error",
             description: "Email and password are required",
             variant: "destructive",
             duration: 5000
           });
-          throw error;
+          throw new Error("Email and password are required");
         }
 
         console.log("Attempting login with email:", email);
@@ -94,18 +93,29 @@ export function useUser() {
           credentials: 'include'
         });
 
-        if (!response.ok) {
-          const message = await response.text();
-          toast({
-            title: "Authentication Error",
-            description: message,
-            variant: "destructive",
-            duration: 5000
-          });
-          throw new Error(message);
+        const text = await response.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { message: text };
         }
 
-        const data = await response.json();
+        if (!response.ok) {
+          let description = data.message || text;
+          if (description.includes("suspended")) {
+            description = "Your account has been suspended. Please contact support@proply.co.za for assistance.";
+          }
+          
+          toast({
+            title: "Authentication Error",
+            description,
+            variant: "destructive",
+            duration: 7000
+          });
+          throw new Error(description);
+        }
+
         return data;
       } catch (error) {
         console.error("Login error:", error);

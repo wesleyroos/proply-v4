@@ -86,9 +86,26 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      const allUsers = await db.select().from(users);
+      const allUsers = await db
+        .select({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          userType: users.userType,
+          company: users.company,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          subscriptionStatus: users.subscriptionStatus,
+          subscriptionExpiryDate: users.subscriptionExpiryDate,
+          isAdmin: users.isAdmin,
+          accessCode: accessCodes.code,
+          accessCodeUsedAt: accessCodes.usedAt
+        })
+        .from(users)
+        .leftJoin(accessCodes, eq(users.accessCodeId, accessCodes.id));
       res.json(allUsers);
     } catch (error) {
+      console.error('Error fetching users:', error);
       res.status(500).json({ error: "Failed to fetch users" });
     }
   });
