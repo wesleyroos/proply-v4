@@ -281,11 +281,15 @@ export function registerRoutes(app: Express): Server {
       return res.status(401).send("Not authenticated");
     }
 
-    const userProperties = await db.select()
-      .from(properties)
-      .where(eq(properties.userId, req.user!.id))
-      .orderBy(properties.createdAt);
+    // Admin users can see all properties, regular users only see their own
+    const query = req.user!.isAdmin
+      ? db.select().from(properties).orderBy(properties.createdAt)
+      : db.select()
+          .from(properties)
+          .where(eq(properties.userId, req.user!.id))
+          .orderBy(properties.createdAt);
     
+    const userProperties = await query;
     res.json(userProperties);
   });
 

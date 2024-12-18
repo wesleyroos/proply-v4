@@ -33,8 +33,10 @@ interface Property {
 
 export default function PropertiesPage() {
   const queryClient = useQueryClient();
+  const { user } = useUser();
   const { data: properties, isLoading } = useQuery<Property[]>({
     queryKey: ['/api/properties'],
+    enabled: !!user,
   });
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
