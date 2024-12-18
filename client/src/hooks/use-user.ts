@@ -87,6 +87,14 @@ export function useUser() {
         credentials: 'include'
       });
 
+      if (!response.ok) {
+        const text = await response.text();
+        return {
+          success: false,
+          message: text || 'Login failed'
+        };
+      }
+
       const data = await response.json();
       
       if (data.success) {
@@ -94,6 +102,13 @@ export function useUser() {
       }
       
       return data;
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Login Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   });
 

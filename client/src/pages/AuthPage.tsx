@@ -49,6 +49,8 @@ export default function AuthPage() {
     },
   });
 
+  const [, setLocation] = useLocation();
+  
   const handleLogin = async (data: InsertUser) => {
     try {
       setIsLoading(true);
@@ -56,6 +58,8 @@ export default function AuthPage() {
       const result = await login(data);
       if (!result.success) {
         setError(result.message);
+      } else {
+        setLocation('/dashboard');
       }
     } catch (error) {
       console.error('Login error:', error);
