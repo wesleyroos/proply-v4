@@ -5,6 +5,7 @@ import ComparisonPage from "./pages/ComparisonPage";
 import PropertiesPage from "./pages/PropertiesPage";
 import SettingsPage from "./pages/SettingsPage";
 import AuthPage from "./pages/AuthPage";
+import DashboardPage from "./pages/DashboardPage";
 import { useUser } from "./hooks/use-user";
 import Sidebar from "./components/Sidebar";
 
@@ -28,7 +29,8 @@ function App() {
       <Sidebar />
       <main className="flex-1">
         <Switch>
-          <Route path="/" component={ComparisonPage} />
+          <Route path="/" component={DashboardPage} />
+          <Route path="/compare" component={ComparisonPage} />
           <Route path="/properties" component={PropertiesPage} />
           <Route path="/settings" component={SettingsPage} />
           <Route component={NotFound} />

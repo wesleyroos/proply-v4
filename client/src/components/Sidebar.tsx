@@ -24,6 +24,11 @@ export default function Sidebar() {
       href: "/",
     },
     {
+      title: "Rent Compare",
+      icon: Building2,
+      href: "/compare",
+    },
+    {
       title: "Properties",
       icon: Building2,
       href: "/properties",
