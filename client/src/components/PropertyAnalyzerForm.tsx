@@ -748,13 +748,12 @@ export default function PropertyAnalyzerForm() {
 
                   <div className="col-span-3">
                     <FormItem>
-                      <FormLabel>Market Data</FormLabel>
                       <FormControl>
-                        <div>
+                        <div className="flex flex-col">
                           <Button
                             type="button"
                             variant="outline"
-                            className="w-full h-10"
+                            className="w-full h-[40px]"
                             onClick={() => {
                               if (hasProAccess) {
                                 fetchRevenueData();
