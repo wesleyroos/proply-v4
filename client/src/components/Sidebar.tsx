@@ -139,12 +139,12 @@ export default function Sidebar() {
             <div
               className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center"
             >
-              {user?.username.charAt(0).toUpperCase()}
+              {user?.firstName ? user.firstName.charAt(0).toUpperCase() : user?.username.charAt(0).toUpperCase()}
             </div>
             {expanded && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-white truncate">
-                  {user?.username}
+                  {user?.firstName || user?.username}
                 </p>
                 <Button
                   variant="ghost"
