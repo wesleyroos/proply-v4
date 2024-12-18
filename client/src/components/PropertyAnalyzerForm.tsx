@@ -393,46 +393,72 @@ export default function PropertyAnalyzerForm() {
                   )}
                 />
 
-                {form.watch("depositType") === "amount" ? (
-                  <FormField
-                    control={form.control}
-                    name="depositAmount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Deposit Amount (R)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number"
-                            min="0"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ) : (
-                  <FormField
-                    control={form.control}
-                    name="depositPercentage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Deposit Percentage (%)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number"
-                            min="0"
-                            max="100"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
+                <div className="grid grid-cols-5 gap-4 items-end">
+                  <div className="col-span-2">
+                    <FormField
+                      control={form.control}
+                      name="depositAmount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Deposit Amount (R)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number"
+                              min="0"
+                              {...field}
+                              onChange={(e) => {
+                                const amount = e.target.valueAsNumber;
+                                field.onChange(amount);
+                                // Calculate percentage based on amount
+                                const purchasePrice = form.getValues("purchasePrice");
+                                if (purchasePrice && amount) {
+                                  const percentage = (amount / purchasePrice) * 100;
+                                  form.setValue("depositPercentage", Number(percentage.toFixed(2)));
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="flex justify-center items-center">
+                    <span className="text-sm font-medium text-gray-500">OR</span>
+                  </div>
+
+                  <div className="col-span-2">
+                    <FormField
+                      control={form.control}
+                      name="depositPercentage"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Deposit Percentage (%)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number"
+                              min="0"
+                              max="100"
+                              {...field}
+                              onChange={(e) => {
+                                const percentage = e.target.valueAsNumber;
+                                field.onChange(percentage);
+                                // Calculate amount based on percentage
+                                const purchasePrice = form.getValues("purchasePrice");
+                                if (purchasePrice && percentage) {
+                                  const amount = (percentage / 100) * purchasePrice;
+                                  form.setValue("depositAmount", Number(amount.toFixed(0)));
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
 
                 <FormField
                   control={form.control}
