@@ -29,6 +29,7 @@ interface PropertyFormProps {
 export default function PropertyForm({ onSubmit }: PropertyFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showPercentileDialog, setShowPercentileDialog] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [demoClicks, setDemoClicks] = useState(0);
   const [revenueData, setRevenueData] = useState<{
     '25': RevenueData;
@@ -223,26 +224,39 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                   )}
                 />
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="mt-8"
-                onClick={fetchRevenueData}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Getting Data...
-                  </>
-                ) : (
-                  'Get Revenue Data'
-                )}
-              </Button>
+              <div className="flex-1 space-y-2">
+                <p className="text-sm font-medium text-gray-700">Not sure about the rates?</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    const isPremiumUser = false; // TODO: Replace with actual premium check
+                    if (isPremiumUser) {
+                      fetchRevenueData();
+                    } else {
+                      setShowUpgradeModal(true);
+                    }
+                  }}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Getting Data...
+                    </>
+                  ) : (
+                    <>
+                      Get Revenue Data
+                      <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-gray-500">
+                  Get accurate nightly rates and occupancy data from Airbnb listings in your area
+                </p>
+              </div>
             </div>
-            <p className="text-sm text-gray-500">
-              Click to automatically get revenue data or enter manually.
-            </p>
           </div>
 
           <FormField
@@ -308,6 +322,58 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
         className="fixed bottom-4 right-4 w-4 h-4 opacity-5 hover:opacity-10 bg-gray-500 rounded-full"
         aria-hidden="true"
       />
+
+      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upgrade to Pro</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+              <div className="p-3 bg-blue-100 rounded-full">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-semibold text-blue-900">Accurate Revenue Data</h4>
+                <p className="text-sm text-blue-700">Get real-time nightly rates and occupancy data from actual Airbnb listings in your area</p>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="font-medium">With Pro, you get:</h4>
+              <ul className="space-y-2">
+                <li className="flex items-center gap-2 text-sm">
+                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Accurate nightly rates based on local market data
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Real occupancy rates from similar properties
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Seasonal pricing trends and recommendations
+                </li>
+              </ul>
+            </div>
+
+            <Button onClick={() => setShowUpgradeModal(false)} className="w-full">
+              Upgrade Now
+            </Button>
+            <Button variant="outline" onClick={() => setShowUpgradeModal(false)} className="w-full">
+              Continue with Manual Entry
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
         <DialogContent>
