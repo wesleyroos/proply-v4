@@ -9,7 +9,8 @@ import {
   LogOut,
   Building2,
   Library,
-  Users
+  Users,
+  Ticket
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
@@ -97,16 +98,28 @@ export default function Sidebar() {
         {/* Admin and Settings links */}
         <div className="mt-auto p-2 space-y-1">
           {user?.isAdmin && (
-            <Link
-              href="/admin"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                "hover:bg-white/10 text-white/80"
-              )}
-            >
-              <Users className="h-5 w-5 text-white" />
-              {expanded && <span className="text-white">User Management</span>}
-            </Link>
+            <>
+              <Link
+                href="/admin"
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                  "hover:bg-white/10 text-white/80"
+                )}
+              >
+                <Users className="h-5 w-5 text-white" />
+                {expanded && <span className="text-white">User Management</span>}
+              </Link>
+              <Link
+                href="/access-codes"
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                  "hover:bg-white/10 text-white/80"
+                )}
+              >
+                <Ticket className="h-5 w-5 text-white" />
+                {expanded && <span className="text-white">Access Codes</span>}
+              </Link>
+            </>
           )}
           <Link
             href="/settings"

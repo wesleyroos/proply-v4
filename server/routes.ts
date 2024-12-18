@@ -22,6 +22,54 @@ export function registerRoutes(app: Express): Server {
     next();
   });
 
+  // Access code routes
+  app.get("/api/access-codes", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    try {
+      const codes = await db
+        .select()
+        .from(accessCodes)
+        .orderBy(accessCodes.createdAt);
+    
+      res.json(codes);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch access codes" });
+    }
+  });
+
+  app.post("/api/access-codes", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    try {
+      const { expiryDays } = req.body;
+      const code = Array.from({ length: 8 }, () => 
+        Math.random().toString(36).charAt(2)
+      ).join('').toUpperCase();
+
+      const expiresAt = expiryDays 
+        ? new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000)
+        : null;
+
+      const [accessCode] = await db
+        .insert(accessCodes)
+        .values({
+          code,
+          createdBy: req.user.id,
+          expiresAt,
+        })
+        .returning();
+
+      res.json(accessCode);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate access code" });
+    }
+  });
+
   // Admin routes
   app.get("/api/admin/users", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
