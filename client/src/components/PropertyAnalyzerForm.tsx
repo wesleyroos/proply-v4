@@ -66,6 +66,7 @@ const STEPS = [
 export default function PropertyAnalyzerForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [demoClicks, setDemoClicks] = useState(0);
   const { toast } = useToast();
 
   const form = useForm<PropertyAnalyzerFormValues>({
@@ -817,6 +818,50 @@ export default function PropertyAnalyzerForm() {
           </div>
         </form>
       </Form>
+
+      {/* Hidden demo data button */}
+      <button
+        type="button"
+        onClick={() => {
+          setDemoClicks(prev => {
+            if (prev === 2) {
+              // Fill demo data after triple click
+              form.reset({
+                address: "27 Leeuwen St, Cape Town City Centre, 8001",
+                propertyUrl: "https://property24.com/apartments-for-sale/cape-town-city-centre/western-cape/7925/3142089",
+                purchasePrice: 3500000,
+                floorArea: 85,
+                bedrooms: 2,
+                bathrooms: 2,
+                parkingSpaces: 1,
+                depositType: "percentage",
+                depositAmount: 350000,
+                depositPercentage: 10,
+                interestRate: 11.75,
+                loanTerm: 20,
+                monthlyLevies: 2500,
+                monthlyRatesTaxes: 1800,
+                otherMonthlyExpenses: 500,
+                maintenancePercentage: 8,
+                managementFee: 15,
+                airbnbNightlyRate: 2500,
+                occupancyRate: 65,
+                longTermRental: 25000,
+                leaseCycleGap: 7,
+                annualIncomeGrowth: 8,
+                annualExpenseGrowth: 6,
+                annualPropertyAppreciation: 12,
+                cmaRatePerSqm: 45000,
+                comments: "Prime location in Cape Town CBD. Close to amenities and tourist attractions. High potential for both short-term and long-term rentals."
+              });
+              return 0;
+            }
+            return prev + 1;
+          });
+        }}
+        className="fixed bottom-4 right-4 w-4 h-4 opacity-5 hover:opacity-10 bg-gray-500 rounded-full"
+        aria-hidden="true"
+      />
     </div>
   );
 }

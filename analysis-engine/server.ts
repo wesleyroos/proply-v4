@@ -15,26 +15,52 @@ app.use((req, res, next) => {
 // Property analysis endpoint
 app.post("/analyze", (req, res) => {
   try {
+    console.log("\nReceived property analysis request:", req.body);
+    
     const propertyData: PropertyData = req.body;
     
     // Validate required fields
     if (!propertyData.purchasePrice || !propertyData.monthlyRent) {
+      console.error("Validation error: Missing required fields");
       return res.status(400).json({
         error: "Missing required fields: purchasePrice and monthlyRent are required"
       });
     }
 
-    // Calculate gross yield
-    const grossYield = calculateGrossYield(propertyData);
+    if (isNaN(propertyData.purchasePrice) || isNaN(propertyData.monthlyRent)) {
+      console.error("Validation error: Invalid number format");
+      return res.status(400).json({
+        error: "Purchase price and monthly rent must be valid numbers"
+      });
+    }
 
-    res.json({
+    if (propertyData.purchasePrice <= 0 || propertyData.monthlyRent <= 0) {
+      console.error("Validation error: Values must be positive");
+      return res.status(400).json({
+        error: "Purchase price and monthly rent must be positive numbers"
+      });
+    }
+
+    // Calculate gross yield
+    console.log("Calculating gross yield for:", {
+      purchasePrice: `R${propertyData.purchasePrice.toLocaleString()}`,
+      monthlyRent: `R${propertyData.monthlyRent.toLocaleString()}`
+    });
+    
+    const grossYield = calculateGrossYield(propertyData);
+    console.log("Calculation result: Gross Yield =", grossYield.toFixed(2) + "%");
+
+    const response = {
       grossYield,
       analysis: {
         purchasePrice: propertyData.purchasePrice,
         monthlyRent: propertyData.monthlyRent,
         annualRent: propertyData.monthlyRent * 12
       }
-    });
+    };
+
+    console.log("Sending response:", response);
+    res.json(response);
   } catch (error) {
     console.error("Analysis error:", error);
     res.status(500).json({ error: "Failed to analyze property data" });
