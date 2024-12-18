@@ -70,47 +70,50 @@ export function useUser() {
 
   const loginMutation = useMutation({
     mutationFn: async (userData: InsertUser) => {
-      try {
-        const email = userData.email?.trim();
-        const password = userData.password;
+      const email = userData.email?.trim();
+      const password = userData.password;
 
-        if (!email || !password) {
-          throw new Error("Email and password are required");
-        }
+      if (!email || !password) {
+        throw new Error("Email and password are required");
+      }
 
-        console.log("Attempting login with email:", email);
-        
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-          credentials: 'include'
-        });
+      console.log("Attempting login with email:", email);
+      
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
+      });
 
-        const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.message || "Login failed");
-        }
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return { success: false, error: data.message || "Login failed" };
+      }
 
-        return data;
-      } catch (error: any) {
-        // Prevent runtime error overlay by handling the error here
-        const message = error?.message || "An unexpected error occurred";
+      return { success: true, data };
+    },
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ['user'] });
+      } else {
         toast({
           title: "Authentication Error",
-          description: message,
+          description: result.error,
           variant: "destructive",
           duration: 7000
         });
-        return null;
       }
     },
-    onSuccess: (data) => {
-      if (data) {
-        queryClient.invalidateQueries({ queryKey: ['user'] });
-      }
-    },
+    onError: (error: Error) => {
+      toast({
+        title: "Authentication Error",
+        description: error.message,
+        variant: "destructive",
+        duration: 7000
+      });
+    }
   });
 
   const logoutMutation = useMutation({
