@@ -57,6 +57,7 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
 
   const [showPDFReport, setShowPDFReport] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   // State and calculations for comparison data
 
@@ -65,8 +66,16 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
       <TooltipProvider>
         <div id="comparison-results" className="space-y-6">
           <div className="flex justify-end gap-4">
-            <Button
-              onClick={async () => {
+            <div className="flex items-center gap-4">
+              {saveMessage && (
+                <div className={`px-4 py-2 rounded ${
+                  saveMessage.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {saveMessage.text}
+                </div>
+              )}
+              <Button
+                onClick={async () => {
                 try {
                   const response = await fetch('/api/properties', {
                     method: 'POST',
@@ -97,23 +106,19 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
                     throw new Error('Failed to save property');
                   }
                   
-                  toast({
-                    title: "Success",
-                    description: "Property saved successfully",
-                  });
+                  setSaveMessage({ type: 'success', text: 'Property saved successfully' });
+                  setTimeout(() => setSaveMessage(null), 3000);
                 } catch (error) {
                   console.error('Error saving property:', error);
-                  toast({
-                    title: "Error",
-                    description: "Failed to save property",
-                    variant: "destructive",
-                  });
+                  setSaveMessage({ type: 'error', text: 'Failed to save property' });
+                  setTimeout(() => setSaveMessage(null), 3000);
                 }
               }}
               className="bg-green-600 hover:bg-green-700"
             >
               Save Property
-            </Button>
+              </Button>
+            </div>
             <Button
               onClick={() => {
                 setIsGeneratingPDF(true);
@@ -135,7 +140,11 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
           <MapView address={address} />
         <div className="p-4 bg-gray-50 rounded-lg">
           <h3 className="text-lg font-semibold mb-4">Property Details</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 mb-4">
+            <div>
+              <p className="text-sm text-gray-600">Title</p>
+              <p className="font-medium">{data.title}</p>
+            </div>
             <div>
               <p className="text-sm text-gray-600">Address</p>
               <p className="font-medium">{address}</p>
