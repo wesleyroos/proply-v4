@@ -72,12 +72,19 @@ export function useUser() {
     mutationFn: async (userData: InsertUser) => {
       const result = await handleRequest('/api/login', 'POST', userData);
       if (!result.ok) {
+        const errorMessage = result.message.includes("Incorrect password") 
+          ? "The password you entered is incorrect. Please try again."
+          : result.message.includes("Incorrect username")
+          ? "We couldn't find an account with that username."
+          : "Login failed. Please check your credentials and try again.";
+        
         toast({
-          title: "Login failed",
-          description: result.message,
-          variant: "destructive"
+          title: "Authentication Error",
+          description: errorMessage,
+          variant: "destructive",
+          duration: 5000
         });
-        throw new Error(result.message);
+        throw new Error(errorMessage);
       }
       return result;
     },

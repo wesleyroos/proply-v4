@@ -132,6 +132,8 @@ export function setupAuth(app: Express) {
         .values({
           username,
           password: hashedPassword,
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
           subscriptionStatus: "free",
         })
         .returning();

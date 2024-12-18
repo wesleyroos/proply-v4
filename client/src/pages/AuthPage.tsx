@@ -30,6 +30,8 @@ export default function AuthPage() {
     defaultValues: {
       username: "",
       password: "",
+      firstName: "",
+      lastName: "",
     },
   });
 
@@ -135,6 +137,44 @@ export default function AuthPage() {
                     onSubmit={registerForm.handleSubmit(handleRegister)}
                     className="space-y-4"
                   >
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <FormField
+                        control={registerForm.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>First Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                autoComplete="given-name"
+                                disabled={isLoading}
+                                required
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={registerForm.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Last Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                autoComplete="family-name"
+                                disabled={isLoading}
+                                required
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     <FormField
                       control={registerForm.control}
                       name="username"
