@@ -113,8 +113,9 @@ export function setupAuth(app: Express) {
           .send("Invalid input: " + result.error.issues.map(i => i.message).join(", "));
       }
 
-      const { username, password } = result.data;
+      const { username, password, email, userType, company, firstName, lastName } = result.data;
 
+      // Check if user already exists
       const [existingUser] = await db
         .select()
         .from(users)
@@ -125,15 +126,31 @@ export function setupAuth(app: Express) {
         return res.status(400).send("Username already exists");
       }
 
+      // Check if email already exists
+      const [existingEmail] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+
+      if (existingEmail) {
+        return res.status(400).send("Email already exists");
+      }
+
+      // Hash the password
       const hashedPassword = await crypto.hash(password);
 
+      // Create the new user
       const [newUser] = await db
         .insert(users)
         .values({
           username,
           password: hashedPassword,
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
+          email,
+          userType,
+          company,
+          firstName,
+          lastName,
           subscriptionStatus: "free",
         })
         .returning();

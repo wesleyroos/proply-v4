@@ -70,23 +70,43 @@ export function useUser() {
 
   const loginMutation = useMutation({
     mutationFn: async (userData: InsertUser) => {
-      const result = await handleRequest('/api/login', 'POST', userData);
-      if (!result.ok) {
-        const errorMessage = result.message.includes("Incorrect password") 
-          ? "The password you entered is incorrect. Please try again."
-          : result.message.includes("Incorrect username")
-          ? "We couldn't find an account with that username."
-          : "Login failed. Please check your credentials and try again.";
-        
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userData),
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          const message = await response.text();
+          const errorMessage = message.includes("Incorrect password") 
+            ? "The password you entered is incorrect. Please try again."
+            : message.includes("Incorrect username")
+            ? "We couldn't find an account with that username."
+            : "Login failed. Please check your credentials and try again.";
+          
+          toast({
+            title: "Authentication Error",
+            description: errorMessage,
+            variant: "destructive",
+            duration: 5000
+          });
+          throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
         toast({
           title: "Authentication Error",
           description: errorMessage,
           variant: "destructive",
           duration: 5000
         });
-        throw new Error(errorMessage);
+        throw error;
       }
-      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
