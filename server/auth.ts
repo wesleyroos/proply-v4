@@ -5,7 +5,7 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
-import { users, insertUserSchema } from "@db/schema";
+import { users, insertUserSchema, accessCodes } from "@db/schema";
 import { db } from "@db";
 import { eq } from "drizzle-orm";
 
@@ -136,7 +136,23 @@ export function setupAuth(app: Express) {
           .send("Invalid input: " + result.error.issues.map(i => i.message).join(", "));
       }
 
-      const { username, password, email, userType, company, firstName, lastName } = result.data;
+      const { username, password, email, userType, company, firstName, lastName, accessCode } = result.data;
+
+      // Validate access code
+      const [validCode] = await db
+        .select()
+        .from(accessCodes)
+        .where(eq(accessCodes.code, accessCode))
+        .where(eq(accessCodes.isUsed, false))
+        .limit(1);
+
+      if (!validCode) {
+        return res.status(400).send("Invalid or already used access code");
+      }
+
+      if (validCode.expiresAt && new Date(validCode.expiresAt) < new Date()) {
+        return res.status(400).send("Access code has expired");
+      }
 
       // Check if user already exists
       const [existingUser] = await db
@@ -164,6 +180,7 @@ export function setupAuth(app: Express) {
       const hashedPassword = await crypto.hash(password);
 
       // Create the new user
+      // Create the new user with access code reference
       const [newUser] = await db
         .insert(users)
         .values({
@@ -174,9 +191,20 @@ export function setupAuth(app: Express) {
           company,
           firstName,
           lastName,
-          subscriptionStatus: "free",
+          subscriptionStatus: "active",
+          accessCodeId: validCode.id,
         })
         .returning();
+
+      // Mark the access code as used
+      await db
+        .update(accessCodes)
+        .set({
+          isUsed: true,
+          usedAt: new Date(),
+          usedBy: newUser.id,
+        })
+        .where(eq(accessCodes.id, validCode.id));
 
       req.login(newUser, (err) => {
         if (err) {

@@ -33,7 +33,7 @@ export default function AuthPage() {
     },
   });
 
-  const registerForm = useForm<InsertUser>({
+  const registerForm = useForm<InsertUser & { accessCode: string }>({
     defaultValues: {
       username: "",
       password: "",
@@ -42,6 +42,7 @@ export default function AuthPage() {
       company: "",
       firstName: "",
       lastName: "",
+      accessCode: "",
     },
   });
 
@@ -148,6 +149,24 @@ export default function AuthPage() {
                     onSubmit={registerForm.handleSubmit(handleRegister)}
                     className="space-y-4"
                   >
+                    <FormField
+                      control={registerForm.control}
+                      name="accessCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Access Code</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="Enter your access code"
+                              disabled={isLoading}
+                              required
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <FormField
                       control={registerForm.control}
                       name="email"
