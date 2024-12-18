@@ -4,8 +4,10 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useProAccess } from "@/hooks/use-pro-access";
+import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -63,11 +65,97 @@ const STEPS = [
   "Miscellaneous"
 ];
 
+interface RevenueData {
+  adr: number;
+  occupancy: number;
+  percentile: number;
+}
+
 export default function PropertyAnalyzerForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPercentileDialog, setShowPercentileDialog] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [demoClicks, setDemoClicks] = useState(0);
+  const [revenueData, setRevenueData] = useState<{
+    '25': RevenueData;
+    '50': RevenueData;
+    '75': RevenueData;
+    '90': RevenueData;
+  } | null>(null);
+  const hasProAccess = useProAccess();
   const { toast } = useToast();
+
+  const fetchRevenueData = async () => {
+    setIsLoading(true);
+    try {
+      const address = form.getValues("address");
+      const bedrooms = form.getValues("bedrooms");
+      
+      if (!address || !bedrooms) {
+        toast({
+          title: "Missing Information",
+          description: "Please enter the property address and number of bedrooms first.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const response = await fetch(`/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.KPIsByBedroomCategory?.[bedrooms]) {
+        const result = data.KPIsByBedroomCategory[bedrooms];
+        setRevenueData({
+          '25': {
+            adr: result.ADR25PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 25
+          },
+          '50': {
+            adr: result.ADR50PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 50
+          },
+          '75': {
+            adr: result.ADR75PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 75
+          },
+          '90': {
+            adr: result.ADR90PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 90
+          }
+        });
+        setShowPercentileDialog(true);
+      }
+    } catch (error) {
+      console.error('Error fetching revenue data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch revenue data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const applyPercentileData = (percentile: '25' | '50' | '75' | '90') => {
+    if (!revenueData) return;
+    
+    const data = revenueData[percentile];
+    form.setValue("airbnbNightlyRate", data.adr);
+    form.setValue("occupancyRate", data.occupancy);
+    setShowPercentileDialog(false);
+  };
 
   const form = useForm<PropertyAnalyzerFormValues>({
     resolver: zodResolver(formSchema),
@@ -657,16 +745,41 @@ export default function PropertyAnalyzerForm() {
                   />
                 </div>
 
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => {
-                    // TODO: Implement revenue data fetching
-                  }}
-                >
-                  Get Revenue Data
-                </Button>
+                <FormItem>
+                  <FormLabel>Market Data</FormLabel>
+                  <FormControl>
+                    <div className="space-y-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full h-10"
+                        onClick={() => {
+                          if (hasProAccess) {
+                            fetchRevenueData();
+                          } else {
+                            setShowUpgradeModal(true);
+                          }
+                        }}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Getting Data...
+                          </>
+                        ) : (
+                          <>
+                            Get Revenue Data
+                            <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
+                          </>
+                        )}
+                      </Button>
+                      <p className="text-xs text-muted-foreground">
+                        Get accurate rates from Airbnb listings in your area
+                      </p>
+                    </div>
+                  </FormControl>
+                </FormItem>
 
                 <FormField
                   control={form.control}
