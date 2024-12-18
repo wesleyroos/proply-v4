@@ -51,24 +51,7 @@ export default function AuthPage() {
   const handleLogin = async (data: InsertUser) => {
     try {
       setIsLoading(true);
-      const result = await login(data);
-      console.log('Login result:', result);
-      if (!result?.success) {
-        toast({
-          title: "Login Failed",
-          description: result?.message || "An unexpected error occurred",
-          variant: "destructive",
-          duration: 7000,
-        });
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast({
-        title: "Login Error",
-        description: "Failed to complete login request",
-        variant: "destructive",
-        duration: 7000,
-      });
+      await login(data);
     } finally {
       setIsLoading(false);
     }

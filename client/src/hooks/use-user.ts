@@ -110,6 +110,13 @@ export function useUser() {
     onSuccess: (result) => {
       if (result.success && result.user) {
         queryClient.invalidateQueries({ queryKey: ['user'] });
+      } else if (!result.success) {
+        toast({
+          title: "Login Failed",
+          description: result.message || "An unexpected error occurred",
+          variant: "destructive",
+          duration: 5000
+        });
       }
     }
   });
