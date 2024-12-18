@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Form,
   FormControl,
@@ -20,13 +22,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useUser } from "../hooks/use-user";
-import { useToast } from "@/hooks/use-toast";
 import type { InsertUser } from "@db/schema";
 
 export default function AuthPage() {
   const { login, register } = useUser();
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const loginForm = useForm<InsertUser>({
     defaultValues: {
@@ -50,15 +51,11 @@ export default function AuthPage() {
 
   const handleLogin = async (data: InsertUser) => {
     try {
+      setError(null);
       setIsLoading(true);
       await login(data);
     } catch (error) {
-      toast({
-        title: "Login Error",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
-        variant: "destructive",
-        duration: 5000
-      });
+      setError(error instanceof Error ? error.message : "An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -96,6 +93,12 @@ export default function AuthPage() {
               </TabsList>
 
               <TabsContent value="login">
+                {error && (
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
                 <Form {...loginForm}>
                   <form
                     onSubmit={loginForm.handleSubmit(handleLogin)}

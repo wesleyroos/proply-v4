@@ -95,18 +95,6 @@ export function useUser() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
-      toast({
-        title: "Success",
-        description: "Successfully logged in",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Login Failed",
-        description: error.message,
-        variant: "destructive",
-        duration: 7000, // Longer duration for error messages
-      });
     }
   });
 
