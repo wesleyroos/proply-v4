@@ -91,8 +91,16 @@ export function useUser() {
         });
 
         const data = await response.json();
-        return data;
+        console.log('Login response:', data);
+        
+        // Ensure we always return a consistent format
+        return {
+          success: data.success ?? false,
+          message: data.message || "An unexpected error occurred",
+          user: data.user
+        };
       } catch (error) {
+        console.error('Fetch error:', error);
         return {
           success: false,
           message: "Connection error. Please try again."
@@ -100,15 +108,8 @@ export function useUser() {
       }
     },
     onSuccess: (result) => {
-      if (result.success) {
+      if (result.success && result.user) {
         queryClient.invalidateQueries({ queryKey: ['user'] });
-      } else {
-        toast({
-          title: "Authentication Failed",
-          description: result.message,
-          variant: "destructive",
-          duration: 7000
-        });
       }
     }
   });
