@@ -5,6 +5,9 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").unique().notNull(),
   password: text("password").notNull(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  companyLogo: text("company_logo"),
   subscriptionStatus: text("subscription_status").default("free").notNull(),
   subscriptionExpiryDate: timestamp("subscription_expiry_date"),
 });
