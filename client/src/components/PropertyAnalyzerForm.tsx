@@ -158,32 +158,57 @@ export default function PropertyAnalyzerForm() {
   return (
     <div className="space-y-8 max-w-2xl">
       {/* Step indicator */}
-      <div className="flex justify-between mb-8">
-        {STEPS.map((step, index) => (
-          <div
-            key={step}
-            className={`flex items-center ${
-              index === currentStep
-                ? "text-primary"
-                : index < currentStep
-                ? "text-muted-foreground"
-                : "text-muted"
-            }`}
-          >
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center border ${
-                index === currentStep
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : index < currentStep
-                  ? "border-muted-foreground bg-muted-foreground text-primary-foreground"
-                  : "border-muted bg-background"
-              }`}
-            >
-              {index + 1}
-            </div>
-            <span className="hidden sm:inline-block ml-2">{step}</span>
-          </div>
-        ))}
+      <div className="mb-12">
+        <nav aria-label="Progress">
+          <ol className="flex items-center justify-between w-full">
+            {STEPS.map((step, index) => {
+              const fields = getFieldsForStep(index);
+              const isStepComplete = fields.every(
+                field => !form.getFieldState(field).error && form.getValues(field)
+              );
+              
+              return (
+                <li key={step} className="relative flex flex-col items-center">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(index)}
+                    className="flex flex-col items-center text-sm"
+                  >
+                    <span className="flex items-center justify-center">
+                      <span
+                        className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold ring-2 ring-offset-2 ${
+                          index === currentStep
+                            ? "bg-blue-600 text-white ring-blue-600"
+                            : isStepComplete
+                            ? "bg-green-500 text-white ring-green-500"
+                            : "bg-white text-gray-500 ring-gray-300"
+                        }`}
+                      >
+                        {isStepComplete ? (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          index + 1
+                        )}
+                      </span>
+                    </span>
+                    <span className="mt-2 text-xs font-medium text-gray-700">{step}</span>
+                  </button>
+
+                  {index !== STEPS.length - 1 && (
+                    <div
+                      className={`absolute top-4 left-0 -translate-y-1/2 w-full h-[2px] ${
+                        index < currentStep || isStepComplete ? "bg-blue-600" : "bg-gray-300"
+                      }`}
+                      style={{ left: "50%" }}
+                    />
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
       </div>
 
       <Form {...form}>
