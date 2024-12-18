@@ -51,7 +51,8 @@ export function setupAuth(app: Express) {
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     },
     store: new MemoryStore({
       checkPeriod: 86400000,

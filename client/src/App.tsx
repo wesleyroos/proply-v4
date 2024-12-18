@@ -18,16 +18,17 @@ import Sidebar from "./components/Sidebar";
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
   const [, setLocation] = useLocation();
-  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !user && !redirecting) {
-      setRedirecting(true);
+    if (!isLoading && !user) {
+      // Store the attempted URL to redirect back after login
+      const currentPath = window.location.pathname;
+      sessionStorage.setItem('redirectUrl', currentPath);
       setLocation("/login");
     }
-  }, [user, isLoading, setLocation, redirecting]);
+  }, [user, isLoading, setLocation]);
 
-  if (isLoading || redirecting) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-border" />

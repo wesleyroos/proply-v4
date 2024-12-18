@@ -64,12 +64,13 @@ export function useUser() {
   const { data: user, error, isLoading } = useQuery<SelectUser | null, Error>({
     queryKey: ['user'],
     queryFn: fetchUser,
-    staleTime: 30000, // Cache for 30 seconds to prevent excessive refetches
+    staleTime: Infinity, // Keep the data fresh unless explicitly invalidated
+    cacheTime: Infinity,
     retry: false,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: false, // Don't refetch on window focus to prevent unwanted logouts
-    refetchOnReconnect: true,
-    refetchInterval: 60000, // Refresh auth state every minute
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false
   });
 
   const loginMutation = useMutation({
@@ -98,8 +99,6 @@ export function useUser() {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['user'], data);
-      // Force a refetch of user data after login
-      queryClient.invalidateQueries({ queryKey: ['user'] });
     },
     onError: (error: Error) => {
       toast({
