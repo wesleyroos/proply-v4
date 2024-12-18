@@ -173,7 +173,7 @@ export default function PropertyAnalyzerForm() {
                   {index !== STEPS.length - 1 && (
                     <div
                       className={`absolute top-5 w-[calc(200%_-_2.5rem)] h-[2px] ${
-                        index < currentStep || isStepComplete ? "bg-blue-600" : "bg-gray-300"
+                        index < currentStep || isStepComplete ? "bg-[#3B82F6]" : "bg-gray-300"
                       }`}
                       style={{ left: '4rem' }}
                     />
@@ -182,10 +182,12 @@ export default function PropertyAnalyzerForm() {
                   <div className="relative flex flex-col items-center">
                     {/* Checkmark for completed steps */}
                     {isStepComplete && (
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2">
-                        <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20">
+                        <div className="bg-white rounded-full p-1">
+                          <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
                       </div>
                     )}
                     
@@ -198,7 +200,7 @@ export default function PropertyAnalyzerForm() {
                       <span
                         className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-semibold ring-2 ring-offset-2 ${
                           index === currentStep
-                            ? "bg-blue-600 text-white ring-blue-600"
+                            ? "bg-[#3B82F6] text-white ring-[#3B82F6]"
                             : isStepComplete
                             ? "bg-white text-green-500 ring-green-500"
                             : "bg-white text-gray-500 ring-gray-300"
