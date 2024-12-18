@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import { useLocation } from "wouter";
 import { Ban, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface User {
   id: number;
@@ -36,6 +37,9 @@ interface User {
   subscriptionStatus: string;
   subscriptionExpiryDate: string | null;
   isAdmin: boolean;
+  accessCode: string | null;
+  accessCodeId: number | null; // Added accessCodeId
+  accessCodeUsedAt: string | null;
 }
 
 export default function AdminPage() {
@@ -121,7 +125,7 @@ export default function AdminPage() {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">User Management</h1>
-      
+
       <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle>All Users</CardTitle>
@@ -138,10 +142,9 @@ export default function AdminPage() {
                   <TableHead>Name</TableHead>
                   <TableHead>User Type</TableHead>
                   <TableHead>Company</TableHead>
-                  <TableHead>Subscription</TableHead>
-                  <TableHead>Access Code</TableHead>
-                  <TableHead>Code Used At</TableHead>
-                  <TableHead>Admin</TableHead>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Access Method</TableHead>
+                  <TableHead>Status Details</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -155,21 +158,43 @@ export default function AdminPage() {
                     </TableCell>
                     <TableCell className="capitalize">{userData.userType}</TableCell>
                     <TableCell>{userData.company || "-"}</TableCell>
-                    <TableCell className="capitalize">
-                      {userData.subscriptionStatus}
-                      {userData.subscriptionExpiryDate && (
-                        <span className="block text-xs text-muted-foreground">
-                          Expires: {new Date(userData.subscriptionExpiryDate).toLocaleDateString()}
+                    <TableCell>
+                      <span className={cn(
+                        "px-2 py-1 rounded-full text-xs font-medium",
+                        (userData.isAdmin || userData.subscriptionStatus === "pro" || userData.accessCodeId)
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      )}>
+                        {(userData.isAdmin || userData.subscriptionStatus === "pro" || userData.accessCodeId) ? "Pro" : "Free"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {userData.isAdmin ? "Admin" :
+                        userData.subscriptionStatus === "pro" ? "Subscription" :
+                          userData.accessCodeId ? "Access Code" : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {userData.subscriptionStatus === "pro" && userData.subscriptionExpiryDate && (
+                        <span className="block text-xs">
+                          Subscription expires: {new Date(userData.subscriptionExpiryDate).toLocaleDateString()}
+                        </span>
+                      )}
+                      {userData.accessCodeId && (
+                        <span className="block text-xs">
+                          Access code: {userData.accessCode}
+                        </span>
+                      )}
+                      {userData.isAdmin && (
+                        <span className="block text-xs text-blue-600 font-medium">
+                          Full admin access
+                        </span>
+                      )}
+                      {!userData.isAdmin && userData.subscriptionStatus !== "pro" && !userData.accessCodeId && (
+                        <span className="block text-xs text-gray-500">
+                          Free plan
                         </span>
                       )}
                     </TableCell>
-                    <TableCell>{userData.accessCode || "-"}</TableCell>
-                    <TableCell>
-                      {userData.accessCodeUsedAt 
-                        ? new Date(userData.accessCodeUsedAt).toLocaleString()
-                        : "-"}
-                    </TableCell>
-                    <TableCell>{userData.isAdmin ? "Yes" : "No"}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button
@@ -185,7 +210,7 @@ export default function AdminPage() {
                           <Ban className="h-4 w-4 mr-1" />
                           {userData.subscriptionStatus === 'suspended' ? 'Unsuspend' : 'Suspend'}
                         </Button>
-                        
+
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
