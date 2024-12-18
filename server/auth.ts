@@ -225,11 +225,12 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/login", (req, res, next) => {
+  app.post("/api/login", (req, res) => {
     const { email, password } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({
+        success: false,
         message: "Email and password are required"
       });
     }
@@ -238,20 +239,23 @@ export function setupAuth(app: Express) {
       if (err) {
         console.error("Login error:", err);
         return res.status(500).json({
+          success: false,
           message: "An unexpected error occurred during login"
         });
       }
 
       if (!user) {
         console.log("Login failed:", info.message);
-        // For suspended accounts, return 403
+        // For suspended accounts
         if (info.message?.includes('suspended')) {
-          return res.status(403).json({
+          return res.status(200).json({
+            success: false,
             message: info.message
           });
         }
-        // For other auth failures, return 401
-        return res.status(401).json({
+        // For other auth failures
+        return res.status(200).json({
+          success: false,
           message: info.message ?? "Invalid credentials"
         });
       }
@@ -259,12 +263,14 @@ export function setupAuth(app: Express) {
       req.logIn(user, (err) => {
         if (err) {
           console.error("Login session error:", err);
-          return res.status(500).json({
+          return res.status(200).json({
+            success: false,
             message: "Failed to create login session"
           });
         }
 
         return res.json({
+          success: true,
           message: "Login successful",
           user: {
             id: user.id,
@@ -279,7 +285,7 @@ export function setupAuth(app: Express) {
           },
         });
       });
-    })(req, res, next);
+    })(req, res);
   });
 
   app.post("/api/logout", (req, res) => {
