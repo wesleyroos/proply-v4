@@ -248,6 +248,19 @@ export function registerRoutes(app: Express): Server {
     res.json(userProperties);
   });
 
+  app.get("/api/properties", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const userProperties = await db.select()
+      .from(properties)
+      .where(eq(properties.userId, req.user!.id))
+      .orderBy(properties.createdAt);
+    
+    res.json(userProperties);
+  });
+
   // Payment webhook for PayFast
   app.post("/api/payment-webhook", async (req, res) => {
     // Validate PayFast signature and update subscription
