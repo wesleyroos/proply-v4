@@ -175,12 +175,18 @@ export function registerRoutes(app: Express): Server {
       }
 
       try {
-        // First, delete any associated access codes
+        // First, remove the access code reference from the user
+        await db
+          .update(users)
+          .set({ accessCodeId: null })
+          .where(eq(users.id, userId));
+
+        // Then delete any associated access codes
         await db
           .delete(accessCodes)
           .where(eq(accessCodes.usedBy, userId));
 
-        // Then, delete any properties owned by the user
+        // Delete any properties owned by the user
         await db
           .delete(properties)
           .where(eq(properties.userId, userId));

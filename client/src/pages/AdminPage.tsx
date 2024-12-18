@@ -94,11 +94,11 @@ export default function AdminPage() {
       if (!response.ok) throw new Error(await response.text());
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
-        title: "User Deleted",
-        description: "The user has been deleted successfully.",
+        title: "Success",
+        description: data.message || "User deleted successfully",
       });
     },
     onError: (error) => {
