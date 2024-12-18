@@ -14,7 +14,7 @@ import { useUser } from "./hooks/use-user";
 import Sidebar from "./components/Sidebar";
 
 // Protected route wrapper
-function ProtectedRoute({ component: Component, ...rest }: { component: React.ComponentType<any> }) {
+function ProtectedRoute({ component: Component }: { component: React.ComponentType<any> }) {
   const { user, isLoading } = useUser();
   const [, setLocation] = useLocation();
 
@@ -35,13 +35,39 @@ function ProtectedRoute({ component: Component, ...rest }: { component: React.Co
     <div className="flex min-h-screen">
       <Sidebar />
       <main className="flex-1">
-        <Component {...rest} />
+        <Component />
       </main>
     </div>
   );
 }
 
+// Create a higher-order component for protected routes
+const withProtection = (Component: React.ComponentType) => () => (
+  <ProtectedRoute component={Component} />
+);
+
 function App() {
+  const { user, isLoading } = useUser();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-border" />
+      </div>
+    );
+  }
+
+  // Check auth status for protected routes
+  const currentPath = window.location.pathname;
+  const isPublicRoute = currentPath === "/" || 
+    currentPath.startsWith("/login") || 
+    currentPath.startsWith("/register");
+
+  if (!user && !isPublicRoute) {
+    window.location.href = "/login";
+    return null;
+  }
+
   return (
     <>
       <Switch>
@@ -51,12 +77,12 @@ function App() {
         <Route path="/register" component={AuthPage} />
 
         {/* Protected routes */}
-        <Route path="/dashboard" component={(props) => <ProtectedRoute component={DashboardPage} {...props} />} />
-        <Route path="/compare" component={(props) => <ProtectedRoute component={ComparisonPage} {...props} />} />
-        <Route path="/properties" component={(props) => <ProtectedRoute component={PropertiesPage} {...props} />} />
-        <Route path="/settings" component={(props) => <ProtectedRoute component={SettingsPage} {...props} />} />
-        <Route path="/admin" component={(props) => <ProtectedRoute component={AdminPage} {...props} />} />
-        <Route path="/access-codes" component={(props) => <ProtectedRoute component={AccessCodePage} {...props} />} />
+        <Route path="/dashboard" component={withProtection(DashboardPage)} />
+        <Route path="/compare" component={withProtection(ComparisonPage)} />
+        <Route path="/properties" component={withProtection(PropertiesPage)} />
+        <Route path="/settings" component={withProtection(SettingsPage)} />
+        <Route path="/admin" component={withProtection(AdminPage)} />
+        <Route path="/access-codes" component={withProtection(AccessCodePage)} />
         <Route component={NotFound} />
       </Switch>
       <Toaster />
