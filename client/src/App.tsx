@@ -11,6 +11,7 @@ import AccessCodePage from "./pages/AccessCodePage";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
+import PropertyAnalyzerPage from "./pages/PropertyAnalyzerPage";
 import { useUser } from "./hooks/use-user";
 import Sidebar from "./components/Sidebar";
 
@@ -82,6 +83,10 @@ function App() {
         <Route 
           path="/dashboard" 
           component={() => <ProtectedRoute component={DashboardPage} />} 
+        />
+        <Route 
+          path="/analyzer" 
+          component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} 
         />
         <Route 
           path="/compare" 

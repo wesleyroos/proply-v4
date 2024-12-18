@@ -27,6 +27,11 @@ export default function Sidebar() {
       href: "/dashboard",
     },
     {
+      title: "Property Analyzer",
+      icon: Building2,
+      href: "/analyzer",
+    },
+    {
       title: "Rent Compare",
       icon: Building2,
       href: "/compare",
