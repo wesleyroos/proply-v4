@@ -93,14 +93,15 @@ export default function AuthPage() {
                   >
                     <FormField
                       control={loginForm.control}
-                      name="username"
+                      name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>Email</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
-                              autoComplete="username"
+                              type="email"
+                              autoComplete="email"
                               disabled={isLoading}
                               required
                             />

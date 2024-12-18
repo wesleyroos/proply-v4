@@ -70,19 +70,22 @@ export function setupAuth(app: Express) {
   app.use(passport.session());
 
   passport.use(
-    new LocalStrategy(async (username, password, done) => {
+    new LocalStrategy({
+      usernameField: 'email',
+      passwordField: 'password'
+    }, async (email, password, done) => {
       try {
-        console.log("Login attempt for username:", username);
+        console.log("Login attempt for email:", email);
 
         const [user] = await db
           .select()
           .from(users)
-          .where(eq(users.username, username))
+          .where(eq(users.email, email))
           .limit(1);
 
         if (!user) {
-          console.log("User not found in database for username:", username);
-          return done(null, false, { message: "Incorrect username." });
+          console.log("User not found in database for email:", email);
+          return done(null, false, { message: "No account found with this email address." });
         }
 
         console.log("User found:", user.id);

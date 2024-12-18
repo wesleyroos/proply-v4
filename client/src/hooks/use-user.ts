@@ -72,14 +72,14 @@ export function useUser() {
     mutationFn: async (userData: InsertUser) => {
       try {
         const loginData = {
-          username: userData.username?.trim(),
+          email: userData.email?.trim(),
           password: userData.password
         };
         
-        console.log("Attempting login with username:", loginData.username);
+        console.log("Attempting login with email:", loginData.email);
         
-        if (!loginData.username || !loginData.password) {
-          throw new Error("Username and password are required");
+        if (!loginData.email || !loginData.password) {
+          throw new Error("Email and password are required");
         }
         
         const response = await fetch('/api/login', {
