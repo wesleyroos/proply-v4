@@ -38,6 +38,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
     '75': RevenueData;
     '90': RevenueData;
   } | null>(null);
+  const hasProAccess = useProAccess();
 
   const form = useForm({
     defaultValues: {
@@ -232,13 +233,12 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                   variant="outline"
                   className="w-full"
                   onClick={() => {
-                    const isPremiumUser = useProAccess();
-                    if (isPremiumUser) {
-                      fetchRevenueData();
-                    } else {
-                      setShowUpgradeModal(true);
-                    }
-                  }}
+                      if (hasProAccess) {
+                        fetchRevenueData();
+                      } else {
+                        setShowUpgradeModal(true);
+                      }
+                    }}
                   disabled={isLoading}
                 >
                   {isLoading ? (
