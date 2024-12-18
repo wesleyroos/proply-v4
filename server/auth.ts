@@ -90,7 +90,7 @@ export function setupAuth(app: Express) {
 
         if (user.subscriptionStatus === 'suspended') {
           console.log("Suspended account attempt:", email);
-          return done(null, false, { 
+          return res.status(403).json({ 
             message: "Your account has been suspended. Please contact support@proply.co.za for assistance." 
           });
         }

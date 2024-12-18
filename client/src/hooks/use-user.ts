@@ -93,28 +93,19 @@ export function useUser() {
           credentials: 'include'
         });
 
-        const text = await response.text();
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch {
-          data = { message: text };
-        }
-
+        const responseData = await response.json();
+        
         if (!response.ok) {
-          let description = data.message || text;
-          if (description.includes("suspended")) {
-            description = "Your account has been suspended. Please contact support@proply.co.za for assistance.";
-          }
-          
+          const errorMessage = responseData.message || "Login failed";
           toast({
             title: "Authentication Error",
-            description,
+            description: errorMessage,
             variant: "destructive",
             duration: 7000
           });
-          throw new Error(description);
+          return { ok: false, message: errorMessage };
         }
+        return { ok: true, data: responseData };
 
         return data;
       } catch (error) {
