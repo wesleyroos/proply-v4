@@ -702,8 +702,8 @@ export default function PropertyAnalyzerForm() {
             {/* Step 4: Revenue Performance */}
             {currentStep === 3 && (
               <div className="space-y-4">
-                <div className="grid grid-cols-7 gap-4 items-end mb-4">
-                  <div className="col-span-2">
+                <div className="p-4 bg-gray-50 rounded-lg border">
+                  <div className="grid grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
                       name="airbnbNightlyRate"
@@ -722,9 +722,6 @@ export default function PropertyAnalyzerForm() {
                         </FormItem>
                       )}
                     />
-                  </div>
-
-                  <div className="col-span-2">
                     <FormField
                       control={form.control}
                       name="occupancyRate"
@@ -744,16 +741,14 @@ export default function PropertyAnalyzerForm() {
                         </FormItem>
                       )}
                     />
-                  </div>
-
-                  <div className="col-span-3">
                     <FormItem>
+                      <FormLabel>Market Data</FormLabel>
                       <FormControl>
-                        <div className="flex flex-col">
+                        <div className="space-y-2">
                           <Button
                             type="button"
                             variant="outline"
-                            className="w-full h-[40px]"
+                            className="w-full h-10"
                             onClick={() => {
                               if (hasProAccess) {
                                 fetchRevenueData();
@@ -775,7 +770,7 @@ export default function PropertyAnalyzerForm() {
                               </>
                             )}
                           </Button>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-xs text-muted-foreground">
                             Get accurate rates from Airbnb listings in your area
                           </p>
                         </div>
