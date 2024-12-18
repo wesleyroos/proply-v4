@@ -1,0 +1,119 @@
+Please create a multi-step form with to put on this page with the following specs:
+
+The form will guide users through different stages of property data collection and analysis, structured as 6 steps with the following input fields:
+
+Form Flow and Requirements
+Step 1: Property Details
+Capture key property information:
+
+Address
+Input: Text field
+Required: Yes
+Placeholder: “Enter the full property address”
+Link to Property
+Input: URL field
+Required: No
+Placeholder: “Enter URL of the property listing (optional)”
+Purchase Price
+Input: Number field
+Required: Yes
+Placeholder: “Enter purchase price (R)”
+Floor Area (m²)
+Input: Number field
+Required: Yes
+Placeholder: “Enter floor area in m²”
+Bedrooms
+Input: Number field (step 0.5, min 0.5)
+Required: Yes
+Placeholder: “Enter 0.5 for studio apartments”
+Bathrooms
+Input: Number field (step 0.5, min 0)
+Required: Yes
+Parking Spaces
+Input: Number field
+Required: No
+Step 2: Financing Details
+Provide details for property financing:
+
+Deposit
+Input: Two options: Amount or Percentage
+Option 1: Amount (R)
+Option 2: Percentage (%)
+Required: Yes (one must be filled)
+Placeholder: “Enter either amount or percentage.”
+Interest Rate (%)
+Input: Number field (step 0.01)
+Required: Yes
+Loan Term (Years)
+Input: Number field
+Required: Yes
+Step 3: Operating Expenses
+Capture ongoing monthly expenses:
+
+Monthly Levies
+Input: Number field
+Required: Yes
+Monthly Rates & Taxes
+Input: Number field
+Required: Yes
+Other Monthly Expenses
+Input: Number field
+Required: Yes
+Description: WiFi, electricity, subscriptions, etc.
+Maintenance (%)
+Input: Number field (step 0.1)
+Required: Yes
+Default Value Suggestion: 5-10% based on rental type.
+Management Fee (%)
+Input: Number field (step 0.1)
+Required: Yes
+Description: Leave at 0% if no management fee applies.
+Step 4: Revenue Performance
+Allow users to input and fetch revenue data:
+
+Get Revenue Data Button Description: Fetch real-time revenue data (e.g., occupancy and nightly rate). (This is the same functionality already setup in the rent compare page).  Airbnb Nightly Rate Input: Number field Required: No Placeholder: “Enter average annualised nightly rate.” Occupancy (%) Input: Number field Required: No Placeholder: “Enter average annualised occupancy rate.” Long Term Rental (Monthly) Input: Number field Required: No Placeholder: “Enter monthly long-term rental income.” Lease Cycle Gap (Days) Input: Number field Required: No Description: Average days between lease cycles. Step 5: Escalations Capture annual growth assumptions:
+
+Annual Income Growth (%)
+Input: Number field (step 0.1)
+Required: Yes
+Annual Expense Growth (%)
+Input: Number field (step 0.1)
+Required: Yes
+Annual Property Appreciation (%)
+Input: Number field (step 0.1)
+Required: Yes
+Step 6: Miscellaneous
+Additional property-specific fields:
+
+CMA Avg Rate per m²
+Input: Number field
+Required: Yes
+Description: Average rate per m² for similar properties in the area.
+Comments
+Input: Textarea
+Required: No
+Placeholder: “Add any description or comments about the property.”
+Technical Specifications
+Multi-Step Form
+
+Use a step navigation system with Previous, Next, and Submit buttons.
+Submit button is visible only in the last step.
+Input Validation
+
+Required fields must be validated with appropriate error messages.
+UI Considerations
+
+Clean, responsive UI using a consistent design system.
+Placeholders and help text should improve user clarity.
+Real-Time Revenue Fetching
+
+The “Get Revenue Data” button should call an API to fetch real-time revenue data (e.g., nightly rate and occupancy).
+Data Persistence
+
+Store form state locally as users navigate between steps.
+Ensure that no data is lost if users move back and forth between steps.
+Goal of the Form
+The goal is to allow users to analyze a property for investment purposes, including purchase details, financing terms, operating expenses, revenue performance, and growth assumptions.
+
+This form is crucial for generating detailed property analysis reports that reflect investment metrics.
+This is basically the starting point for a property analyser engine. The form input makes up the SaaS component of the product, but there is also an API-as-a-service which we will work on later.
