@@ -13,6 +13,7 @@ export const users = pgTable("users", {
   companyLogo: text("company_logo"),
   subscriptionStatus: text("subscription_status").default("free").notNull(),
   subscriptionExpiryDate: timestamp("subscription_expiry_date"),
+  isAdmin: boolean("is_admin").default(false).notNull(),
 });
 
 export const properties = pgTable("properties", {

@@ -8,7 +8,8 @@ import {
   Settings,
   LogOut,
   Building2,
-  Library
+  Library,
+  Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
@@ -19,6 +20,11 @@ export default function Sidebar() {
   const { user, logout } = useUser();
 
   const navItems = [
+    ...(user?.isAdmin ? [{
+      title: "User Management",
+      icon: Users,
+      href: "/admin",
+    }] : []),
     {
       title: "Dashboard",
       icon: LayoutDashboard,

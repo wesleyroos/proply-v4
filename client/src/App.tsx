@@ -4,6 +4,7 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import ComparisonPage from "./pages/ComparisonPage";
 import PropertiesPage from "./pages/PropertiesPage";
 import SettingsPage from "./pages/SettingsPage";
+import AdminPage from "./pages/AdminPage";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
 import { useUser } from "./hooks/use-user";
@@ -33,6 +34,7 @@ function App() {
           <Route path="/compare" component={ComparisonPage} />
           <Route path="/properties" component={PropertiesPage} />
           <Route path="/settings" component={SettingsPage} />
+          <Route path="/admin" component={AdminPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

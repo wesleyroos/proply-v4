@@ -22,6 +22,20 @@ export function registerRoutes(app: Express): Server {
     next();
   });
 
+  // Admin routes
+  app.get("/api/admin/users", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    try {
+      const allUsers = await db.select().from(users);
+      res.json(allUsers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
   // PriceLabs API proxy endpoint
   app.get("/api/revenue-data", async (req, res) => {
     if (!req.isAuthenticated()) {
