@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatter } from "../utils/formatting";
-import { Trash2 } from "lucide-react";
+import { Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -126,13 +126,83 @@ export default function PropertiesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/50">
-                  <th className="py-3 px-4 text-left">Property</th>
-                  <th className="py-3 px-4 text-right">Short-Term Rate</th>
-                  <th className="py-3 px-4 text-right">Long-Term Monthly</th>
-                  <th className="py-3 px-4 text-right">Long-Term Annual</th>
-                  <th className="py-3 px-4 text-right">Short-Term Annual</th>
-                  <th className="py-3 px-4 text-right">Break-even</th>
-                  <th className="py-3 px-4 text-right">Added</th>
+                  <th 
+                    className="py-3 px-4 text-left cursor-pointer hover:bg-muted/80"
+                    onClick={() => handleSort('title')}
+                  >
+                    <div className="flex items-center gap-2">
+                      Property
+                      {sortConfig?.key === 'title' && (
+                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
+                    onClick={() => handleSort('shortTermNightly')}
+                  >
+                    <div className="flex items-center justify-end gap-2">
+                      Short-Term Rate
+                      {sortConfig?.key === 'shortTermNightly' && (
+                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
+                    onClick={() => handleSort('longTermMonthly')}
+                  >
+                    <div className="flex items-center justify-end gap-2">
+                      Long-Term Monthly
+                      {sortConfig?.key === 'longTermMonthly' && (
+                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
+                    onClick={() => handleSort('longTermAnnual')}
+                  >
+                    <div className="flex items-center justify-end gap-2">
+                      Long-Term Annual
+                      {sortConfig?.key === 'longTermAnnual' && (
+                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
+                    onClick={() => handleSort('shortTermAfterFees')}
+                  >
+                    <div className="flex items-center justify-end gap-2">
+                      Short-Term Annual
+                      {sortConfig?.key === 'shortTermAfterFees' && (
+                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
+                    onClick={() => handleSort('breakEvenOccupancy')}
+                  >
+                    <div className="flex items-center justify-end gap-2">
+                      Break-even
+                      {sortConfig?.key === 'breakEvenOccupancy' && (
+                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
+                    onClick={() => handleSort('createdAt')}
+                  >
+                    <div className="flex items-center justify-end gap-2">
+                      Added
+                      {sortConfig?.key === 'createdAt' && (
+                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
