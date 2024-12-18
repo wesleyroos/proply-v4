@@ -20,10 +20,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useUser } from "../hooks/use-user";
+import { useToast } from "@/hooks/use-toast";
 import type { InsertUser } from "@db/schema";
 
 export default function AuthPage() {
   const { login, register } = useUser();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const loginForm = useForm<InsertUser>({
