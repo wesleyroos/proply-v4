@@ -291,7 +291,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
               // Fill demo data after triple click
               form.reset({
                 title: "The Sentinel Unit 1209",
-                address: "1209 Sentinel, Cape Town",
+                address: "27 Leeuwen St, Cape Town City Centre, 8001",
                 bedrooms: "2",
                 bathrooms: "2",
                 longTermRental: "18000",
