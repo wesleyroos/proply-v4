@@ -198,7 +198,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
           />
 
           <div className="p-4 bg-gray-50 rounded-lg border">
-            <div className="grid grid-cols-3 gap-4 items-end">
+            <div className="grid grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="shortTermNightly"
@@ -206,7 +206,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                   <FormItem>
                     <FormLabel>Short Term Nightly Rate</FormLabel>
                     <FormControl>
-                      <Input {...field} type="number" min="0" />
+                      <Input {...field} type="number" min="0" className="h-10" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -218,44 +218,42 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                   <FormItem>
                     <FormLabel>Annual Occupancy (%)</FormLabel>
                     <FormControl>
-                      <Input {...field} type="number" min="0" max="100" />
+                      <Input {...field} type="number" min="0" max="100" className="h-10" />
                     </FormControl>
                   </FormItem>
                 )}
               />
-              <FormItem>
+              <div className="flex flex-col">
                 <FormLabel>Market Data</FormLabel>
-                <FormControl>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full h-10"
-                    onClick={() => {
-                      if (hasProAccess) {
-                        fetchRevenueData();
-                      } else {
-                        setShowUpgradeModal(true);
-                      }
-                    }}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Getting Data...
-                      </>
-                    ) : (
-                      <>
-                        Get Revenue Data
-                        <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
-                      </>
-                    )}
-                  </Button>
-                </FormControl>
-                <p className="text-xs text-muted-foreground">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-10 mt-[2px]"
+                  onClick={() => {
+                    if (hasProAccess) {
+                      fetchRevenueData();
+                    } else {
+                      setShowUpgradeModal(true);
+                    }
+                  }}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Getting Data...
+                    </>
+                  ) : (
+                    <>
+                      Get Revenue Data
+                      <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-muted-foreground mt-1">
                   Get accurate rates from Airbnb listings in your area
                 </p>
-              </FormItem>
+              </div>
             </div>
           </div>
 
