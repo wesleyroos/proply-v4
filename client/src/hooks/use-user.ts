@@ -71,60 +71,44 @@ export function useUser() {
   const loginMutation = useMutation({
     mutationFn: async (userData: InsertUser) => {
       try {
-        const loginData = {
-          email: userData.email?.trim(),
-          password: userData.password
-        };
-        
-        console.log("Attempting login with email:", loginData.email);
-        
-        if (!loginData.email || !loginData.password) {
-          throw new Error("Email and password are required");
+        const email = userData.email?.trim();
+        const password = userData.password;
+
+        if (!email || !password) {
+          const error = new Error("Email and password are required");
+          toast({
+            title: "Login Error",
+            description: "Email and password are required",
+            variant: "destructive",
+            duration: 5000
+          });
+          throw error;
         }
+
+        console.log("Attempting login with email:", email);
         
         const response = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(loginData),
+          body: JSON.stringify({ email, password }),
           credentials: 'include'
         });
 
-        let data;
-        const responseText = await response.text();
-        try {
-          data = JSON.parse(responseText);
-        } catch {
-          data = responseText;
-        }
-        
         if (!response.ok) {
-          let errorMessage = typeof data === 'string' ? data : "Login failed. Please check your credentials and try again.";
-          
-          if (errorMessage.includes("Incorrect password")) {
-            errorMessage = "The password you entered is incorrect. Please try again.";
-          } else if (errorMessage.includes("Incorrect username")) {
-            errorMessage = "We couldn't find an account with that username.";
-          }
-          
+          const message = await response.text();
           toast({
             title: "Authentication Error",
-            description: errorMessage,
+            description: message,
             variant: "destructive",
             duration: 5000
           });
-          throw new Error(errorMessage);
+          throw new Error(message);
         }
 
+        const data = await response.json();
         return data;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
         console.error("Login error:", error);
-        toast({
-          title: "Authentication Error",
-          description: errorMessage,
-          variant: "destructive",
-          duration: 5000
-        });
         throw error;
       }
     },

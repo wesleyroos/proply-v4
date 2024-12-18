@@ -1,0 +1,106 @@
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+api/user:1 
+        
+        
+       Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this errorAI
+chunk-UPELNCPK.js?v=644421d5:521 Warning: A component is changing an uncontrolled input to be controlled. This is likely caused by the value changing from undefined to a defined value, which should not happen. Decide between using a controlled or uncontrolled input element for the lifetime of the component. More info: https://reactjs.org/link/controlled-components
+    at input
+    at _c (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/components/ui/input.tsx:20:11)
+    at https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/RentalROI-Compare/node_modules/.vite/deps/chunk-5HD3E6E6.js?v=644421d5:52:11
+    at https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/RentalROI-Compare/node_modules/.vite/deps/chunk-5HD3E6E6.js?v=644421d5:33:11
+    at https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/components/ui/form.tsx:127:9
+    at div
+    at https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/components/ui/form.tsx:71:6
+    at Controller (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/RentalROI-Compare/node_modules/.vite/deps/react-hook-form.js?v=644421d5:313:35)
+    at FormField (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/components/ui/form.tsx:32:6)
+    at form
+    at FormProvider (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/RentalROI-Compare/node_modules/.vite/deps/react-hook-form.js?v=644421d5:102:11)
+    at div
+    at https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/RentalROI-Compare/node_modules/.vite/deps/chunk-FB7P5H5K.js?v=644421d5:41:13
+    at Presence (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/RentalROI-Compare/node_modules/.vite/deps/chunk-EUXDOQDG.js?v=644421d5:24:11)
+    at https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/RentalROI-Compare/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=644421d5:446:13
+    at _c5 (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/components/ui/tabs.tsx:68:12)
+    at div
+    at https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/RentalROI-Compare/node_modules/.vite/deps/chunk-FB7P5H5K.js?v=644421d5:41:13
+    at Provider (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/RentalROI-Compare/node_modules/.vite/deps/chunk-ZLK6P5VQ.js?v=644421d5:48:15)
+    at https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/RentalROI-Compare/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=644421d5:324:7
+    at div
+    at _c9 (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/components/ui/card.tsx:106:12)
+    at div
+    at _c (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at div
+    at AuthPage (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/pages/AuthPage.tsx:42:31)
+    at App (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/App.tsx:31:31)
+    at QueryClientProvider (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/RentalROI-Compare/node_modules/.vite/deps/@tanstack_react-query.js?v=644421d5:2805:3)
+printWarning @ chunk-UPELNCPK.js?v=644421d5:521Understand this errorAI
+use-user.ts:79 Attempting login with email: wesley@proply.co.za
+api/login:1 
+        
+        
+       Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this errorAI
+use-user.ts:121 Login error: Error: Username and password are required
+    at Object.mutationFn (use-user.ts:115:17)
+mutationFn @ use-user.ts:121Understand this errorAI
+use-user.ts:115 Uncaught (in promise) Error: Username and password are required
+    at Object.mutationFn (use-user.ts:115:17)Understand this errorAI
+use-user.ts:79 Attempting login with email: wesley@proply.co.za
+use-user.ts:85 
+        
+        
+       POST https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/api/login 400 (Bad Request)
+mutationFn @ use-user.ts:85
+fn @ @tanstack_react-query.js?v=644421d5:1189
+run @ @tanstack_react-query.js?v=644421d5:494
+start @ @tanstack_react-query.js?v=644421d5:536
+execute @ @tanstack_react-query.js?v=644421d5:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=644421d5:2630
+handleLogin @ AuthPage.tsx:51
+(anonymous) @ react-hook-form.js?v=644421d5:1675
+await in (anonymous)
+callCallback2 @ chunk-UPELNCPK.js?v=644421d5:3674
+invokeGuardedCallbackDev @ chunk-UPELNCPK.js?v=644421d5:3699
+invokeGuardedCallback @ chunk-UPELNCPK.js?v=644421d5:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-UPELNCPK.js?v=644421d5:3736
+executeDispatch @ chunk-UPELNCPK.js?v=644421d5:7014
+processDispatchQueueItemsInOrder @ chunk-UPELNCPK.js?v=644421d5:7034
+processDispatchQueue @ chunk-UPELNCPK.js?v=644421d5:7043
+dispatchEventsForPlugins @ chunk-UPELNCPK.js?v=644421d5:7051
+(anonymous) @ chunk-UPELNCPK.js?v=644421d5:7174
+batchedUpdates$1 @ chunk-UPELNCPK.js?v=644421d5:18913
+batchedUpdates @ chunk-UPELNCPK.js?v=644421d5:3579
+dispatchEventForPluginEventSystem @ chunk-UPELNCPK.js?v=644421d5:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-UPELNCPK.js?v=644421d5:5478
+dispatchEvent @ chunk-UPELNCPK.js?v=644421d5:5472
+dispatchDiscreteEvent @ chunk-UPELNCPK.js?v=644421d5:5449Understand this errorAI
+use-user.ts:121 Login error: Error: Username and password are required
+    at Object.mutationFn (use-user.ts:115:17)
+mutationFn @ use-user.ts:121
+await in mutationFn
+fn @ @tanstack_react-query.js?v=644421d5:1189
+run @ @tanstack_react-query.js?v=644421d5:494
+start @ @tanstack_react-query.js?v=644421d5:536
+execute @ @tanstack_react-query.js?v=644421d5:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=644421d5:2630
+handleLogin @ AuthPage.tsx:51
+(anonymous) @ react-hook-form.js?v=644421d5:1675
+await in (anonymous)
+callCallback2 @ chunk-UPELNCPK.js?v=644421d5:3674
+invokeGuardedCallbackDev @ chunk-UPELNCPK.js?v=644421d5:3699
+invokeGuardedCallback @ chunk-UPELNCPK.js?v=644421d5:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-UPELNCPK.js?v=644421d5:3736
+executeDispatch @ chunk-UPELNCPK.js?v=644421d5:7014
+processDispatchQueueItemsInOrder @ chunk-UPELNCPK.js?v=644421d5:7034
+processDispatchQueue @ chunk-UPELNCPK.js?v=644421d5:7043
+dispatchEventsForPlugins @ chunk-UPELNCPK.js?v=644421d5:7051
+(anonymous) @ chunk-UPELNCPK.js?v=644421d5:7174
+batchedUpdates$1 @ chunk-UPELNCPK.js?v=644421d5:18913
+batchedUpdates @ chunk-UPELNCPK.js?v=644421d5:3579
+dispatchEventForPluginEventSystem @ chunk-UPELNCPK.js?v=644421d5:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-UPELNCPK.js?v=644421d5:5478
+dispatchEvent @ chunk-UPELNCPK.js?v=644421d5:5472
+dispatchDiscreteEvent @ chunk-UPELNCPK.js?v=644421d5:5449Understand this errorAI
+react-hook-form.js?v=644421d5:1696 Uncaught (in promise) Error: Username and password are required
+    at Object.mutationFn (use-user.ts:115:17)
