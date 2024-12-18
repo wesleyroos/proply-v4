@@ -88,6 +88,13 @@ export function setupAuth(app: Express) {
           return done(null, false, { message: "No account found with this email address." });
         }
 
+        if (user.subscriptionStatus === 'suspended') {
+          console.log("Suspended account attempt:", email);
+          return done(null, false, { 
+            message: "Your account has been suspended. Please contact support@proply.co.za for assistance." 
+          });
+        }
+
         const isMatch = await crypto.compare(password, user.password);
         if (!isMatch) {
           console.log("Password mismatch for email:", email);

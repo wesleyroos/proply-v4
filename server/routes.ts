@@ -36,7 +36,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.post("/api/admin/users/:id/suspend", async (req, res) => {
+  app.post("/api/admin/users/:id/:action(suspend|unsuspend)", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
       return res.status(403).send("Not authorized");
     }
@@ -62,12 +62,13 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).send("Cannot suspend yourself");
       }
 
+      const action = req.params.action as 'suspend' | 'unsuspend';
       await db
         .update(users)
-        .set({ subscriptionStatus: 'suspended' })
+        .set({ subscriptionStatus: action === 'suspend' ? 'suspended' : 'active' })
         .where(eq(users.id, userId));
 
-      res.json({ message: "User suspended successfully" });
+      res.json({ message: `User ${action}ed successfully` });
     } catch (error) {
       res.status(500).json({ error: "Failed to suspend user" });
     }

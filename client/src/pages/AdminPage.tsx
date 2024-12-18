@@ -57,25 +57,25 @@ export default function AdminPage() {
   });
 
   const suspendMutation = useMutation({
-    mutationFn: async (userId: number) => {
-      const response = await fetch(`/api/admin/users/${userId}/suspend`, {
+    mutationFn: async ({ userId, action }: { userId: number; action: 'suspend' | 'unsuspend' }) => {
+      const response = await fetch(`/api/admin/users/${userId}/${action}`, {
         method: 'POST',
         credentials: 'include'
       });
       if (!response.ok) throw new Error(await response.text());
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, { action }) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
-        title: "User Suspended",
-        description: "The user has been suspended successfully.",
+        title: action === 'suspend' ? "User Suspended" : "User Unsuspended",
+        description: `The user has been ${action}ed successfully.`,
       });
     },
-    onError: (error) => {
+    onError: (error, { action }) => {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to suspend user",
+        description: error instanceof Error ? error.message : `Failed to ${action} user`,
         variant: "destructive",
       });
     },
@@ -119,10 +119,10 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="container py-6">
+    <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-2xl font-bold mb-6">User Management</h1>
       
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle>All Users</CardTitle>
         </CardHeader>
@@ -167,11 +167,15 @@ export default function AdminPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => suspendMutation.mutate(userData.id)}
+                          onClick={() => suspendMutation.mutate({
+                            userId: userData.id,
+                            action: userData.subscriptionStatus === 'suspended' ? 'unsuspend' : 'suspend'
+                          })}
                           disabled={userData.isAdmin || userData.id === user.id}
+                          className={userData.subscriptionStatus === 'suspended' ? 'text-green-600 hover:text-green-600' : ''}
                         >
                           <Ban className="h-4 w-4 mr-1" />
-                          Suspend
+                          {userData.subscriptionStatus === 'suspended' ? 'Unsuspend' : 'Suspend'}
                         </Button>
                         
                         <AlertDialog>
