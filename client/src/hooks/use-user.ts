@@ -74,7 +74,10 @@ export function useUser() {
       const password = userData.password;
 
       if (!email || !password) {
-        throw new Error("Email and password are required");
+        return {
+          success: false,
+          message: "Email and password are required"
+        };
       }
 
       const response = await fetch('/api/login', {
@@ -86,15 +89,11 @@ export function useUser() {
 
       const data = await response.json();
       
-      // Always throw error if login was not successful
-      if (!data.success) {
-        throw new Error(data.message || "Login failed");
+      if (data.success) {
+        queryClient.invalidateQueries({ queryKey: ['user'] });
       }
-
+      
       return data;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
     }
   });
 

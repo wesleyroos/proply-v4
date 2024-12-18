@@ -53,7 +53,10 @@ export default function AuthPage() {
     try {
       setError(null);
       setIsLoading(true);
-      await login(data);
+      const result = await login(data);
+      if (!result.success) {
+        setError(result.message);
+      }
     } catch (error) {
       setError(error instanceof Error ? error.message : "An unexpected error occurred");
     } finally {
