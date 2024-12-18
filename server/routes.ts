@@ -5,6 +5,7 @@ import { db } from "@db";
 import { properties, users } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
+import { crypto } from "./auth";
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
@@ -89,6 +90,62 @@ export function registerRoutes(app: Express): Server {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to update subscription" });
+    }
+  });
+
+  // Update user profile
+  app.post("/api/profile", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const { firstName, lastName, companyLogo } = req.body;
+    
+    try {
+      const [updatedUser] = await db.update(users)
+        .set({ 
+          firstName,
+          lastName,
+          companyLogo
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning();
+      
+      res.json(updatedUser);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update profile" });
+    }
+  });
+
+  // Change password
+  app.post("/api/change-password", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    try {
+      // Verify current password
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
+
+      const isMatch = await crypto.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).send("Current password is incorrect");
+      }
+
+      // Hash new password and update
+      const hashedPassword = await crypto.hash(newPassword);
+      await db.update(users)
+        .set({ password: hashedPassword })
+        .where(eq(users.id, req.user!.id));
+
+      res.json({ message: "Password updated successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to change password" });
     }
   });
 

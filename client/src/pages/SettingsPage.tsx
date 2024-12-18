@@ -14,6 +14,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import type { SelectUser } from "@db/schema";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ProfileFormData {
   firstName: string;
@@ -27,6 +28,7 @@ interface ProfileFormData {
 export default function SettingsPage() {
   const { user } = useUser();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
 
@@ -51,11 +53,27 @@ export default function SettingsPage() {
     }
   };
 
-  const onSubmit = async (data: ProfileFormData) => {
+  const handleProfileUpdate = async (data: ProfileFormData) => {
     setIsUpdating(true);
     try {
-      // TODO: Implement profile update API
-      console.log("Updating profile:", data);
+      const response = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          companyLogo: previewLogo
+        }),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const updatedUser = await response.json();
+      queryClient.setQueryData(['user'], updatedUser);
+      
       toast({
         title: "Success",
         description: "Profile updated successfully",
@@ -63,7 +81,56 @@ export default function SettingsPage() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update profile",
+        description: error instanceof Error ? error.message : "Failed to update profile",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handlePasswordChange = async (data: ProfileFormData) => {
+    if (data.newPassword !== data.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      const response = await fetch('/api/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword
+        }),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      toast({
+        title: "Success",
+        description: "Password changed successfully",
+      });
+
+      // Reset password fields
+      form.reset({
+        ...form.getValues(),
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to change password",
         variant: "destructive",
       });
     } finally {
@@ -85,7 +152,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(handleProfileUpdate)} className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -166,7 +233,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(handlePasswordChange)} className="space-y-4">
                   <FormField
                     control={form.control}
                     name="currentPassword"
