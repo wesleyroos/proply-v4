@@ -90,8 +90,8 @@ export function setupAuth(app: Express) {
 
         if (user.subscriptionStatus === 'suspended') {
           console.log("Suspended account attempt:", email);
-          return res.status(403).json({ 
-            message: "Your account has been suspended. Please contact support@proply.co.za for assistance." 
+          return done(null, false, { 
+            message: "Your account has been suspended. Please contact support@proply.co.za for assistance."
           });
         }
 
@@ -229,24 +229,39 @@ export function setupAuth(app: Express) {
     const { email, password } = req.body;
     
     if (!email || !password) {
-      return res.status(400).send("Email and password are required");
+      return res.status(400).json({
+        message: "Email and password are required"
+      });
     }
 
     passport.authenticate("local", (err: any, user: Express.User, info: IVerifyOptions) => {
       if (err) {
         console.error("Login error:", err);
-        return next(err);
+        return res.status(500).json({
+          message: "An unexpected error occurred during login"
+        });
       }
 
       if (!user) {
         console.log("Login failed:", info.message);
-        return res.status(400).send(info.message ?? "Login failed");
+        // For suspended accounts, return 403
+        if (info.message?.includes('suspended')) {
+          return res.status(403).json({
+            message: info.message
+          });
+        }
+        // For other auth failures, return 401
+        return res.status(401).json({
+          message: info.message ?? "Invalid credentials"
+        });
       }
 
       req.logIn(user, (err) => {
         if (err) {
           console.error("Login session error:", err);
-          return next(err);
+          return res.status(500).json({
+            message: "Failed to create login session"
+          });
         }
 
         return res.json({
