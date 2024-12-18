@@ -141,20 +141,25 @@ export function setupAuth(app: Express) {
 
       const { email: username, password, email, userType, company, firstName, lastName, accessCode } = req.body;
 
-      // Validate access code
-      const [validCode] = await db
-        .select()
-        .from(accessCodes)
-        .where(eq(accessCodes.code, accessCode))
-        .where(eq(accessCodes.isUsed, false))
-        .limit(1);
+      let validCode = null;
+      if (accessCode) {
+        // Only validate access code if one is provided
+        const [code] = await db
+          .select()
+          .from(accessCodes)
+          .where(eq(accessCodes.code, accessCode))
+          .where(eq(accessCodes.isUsed, false))
+          .limit(1);
 
-      if (!validCode) {
-        return res.status(400).send("Invalid or already used access code");
-      }
+        if (!code) {
+          return res.status(400).send("Invalid or already used access code");
+        }
 
-      if (validCode.expiresAt && new Date(validCode.expiresAt) < new Date()) {
-        return res.status(400).send("Access code has expired");
+        if (code.expiresAt && new Date(code.expiresAt) < new Date()) {
+          return res.status(400).send("Access code has expired");
+        }
+        
+        validCode = code;
       }
 
       // Check if user already exists
@@ -183,7 +188,7 @@ export function setupAuth(app: Express) {
       const hashedPassword = await crypto.hash(password);
 
       // Create the new user
-      // Create the new user with access code reference
+      // Create the new user
       const [newUser] = await db
         .insert(users)
         .values({
@@ -194,8 +199,8 @@ export function setupAuth(app: Express) {
           company,
           firstName,
           lastName,
-          subscriptionStatus: "pro",
-          accessCodeId: validCode.id,
+          subscriptionStatus: validCode ? "pro" : "free",
+          accessCodeId: validCode?.id || null,
         })
         .returning();
 

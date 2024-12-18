@@ -202,9 +202,8 @@ export default function AuthPage() {
                           <FormControl>
                             <Input
                               {...field}
-                              placeholder="Enter your access code"
+                              placeholder="Enter your access code (optional)"
                               disabled={isLoading}
-                              required
                             />
                           </FormControl>
                           <FormMessage />
