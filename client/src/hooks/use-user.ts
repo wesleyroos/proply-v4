@@ -71,14 +71,21 @@ export function useUser() {
   const loginMutation = useMutation({
     mutationFn: async (userData: InsertUser) => {
       try {
-        console.log("Attempting login with username:", userData.username);
+        const loginData = {
+          username: userData.username?.trim(),
+          password: userData.password
+        };
+        
+        console.log("Attempting login with username:", loginData.username);
+        
+        if (!loginData.username || !loginData.password) {
+          throw new Error("Username and password are required");
+        }
+        
         const response = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: userData.username,
-            password: userData.password
-          }),
+          body: JSON.stringify(loginData),
           credentials: 'include'
         });
 

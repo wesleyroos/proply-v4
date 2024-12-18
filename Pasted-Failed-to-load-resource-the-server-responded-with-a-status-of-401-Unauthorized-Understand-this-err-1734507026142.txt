@@ -1,0 +1,61 @@
+Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this errorAI
+use-user.ts:74 Attempting login with username: wesley
+use-user.ts:75 
+        
+        
+       POST https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/api/login 400 (Bad Request)
+mutationFn @ use-user.ts:75
+fn @ @tanstack_react-query.js?v=644421d5:1189
+run @ @tanstack_react-query.js?v=644421d5:494
+start @ @tanstack_react-query.js?v=644421d5:536
+execute @ @tanstack_react-query.js?v=644421d5:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=644421d5:2630
+handleLogin @ AuthPage.tsx:51
+(anonymous) @ react-hook-form.js?v=644421d5:1675
+await in (anonymous)
+callCallback2 @ chunk-UPELNCPK.js?v=644421d5:3674
+invokeGuardedCallbackDev @ chunk-UPELNCPK.js?v=644421d5:3699
+invokeGuardedCallback @ chunk-UPELNCPK.js?v=644421d5:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-UPELNCPK.js?v=644421d5:3736
+executeDispatch @ chunk-UPELNCPK.js?v=644421d5:7014
+processDispatchQueueItemsInOrder @ chunk-UPELNCPK.js?v=644421d5:7034
+processDispatchQueue @ chunk-UPELNCPK.js?v=644421d5:7043
+dispatchEventsForPlugins @ chunk-UPELNCPK.js?v=644421d5:7051
+(anonymous) @ chunk-UPELNCPK.js?v=644421d5:7174
+batchedUpdates$1 @ chunk-UPELNCPK.js?v=644421d5:18913
+batchedUpdates @ chunk-UPELNCPK.js?v=644421d5:3579
+dispatchEventForPluginEventSystem @ chunk-UPELNCPK.js?v=644421d5:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-UPELNCPK.js?v=644421d5:5478
+dispatchEvent @ chunk-UPELNCPK.js?v=644421d5:5472
+dispatchDiscreteEvent @ chunk-UPELNCPK.js?v=644421d5:5449Understand this errorAI
+use-user.ts:114 Login error: Error: We couldn't find an account with that username.
+    at Object.mutationFn (use-user.ts:108:17)
+mutationFn @ use-user.ts:114
+await in mutationFn
+fn @ @tanstack_react-query.js?v=644421d5:1189
+run @ @tanstack_react-query.js?v=644421d5:494
+start @ @tanstack_react-query.js?v=644421d5:536
+execute @ @tanstack_react-query.js?v=644421d5:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=644421d5:2630
+handleLogin @ AuthPage.tsx:51
+(anonymous) @ react-hook-form.js?v=644421d5:1675
+await in (anonymous)
+callCallback2 @ chunk-UPELNCPK.js?v=644421d5:3674
+invokeGuardedCallbackDev @ chunk-UPELNCPK.js?v=644421d5:3699
+invokeGuardedCallback @ chunk-UPELNCPK.js?v=644421d5:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-UPELNCPK.js?v=644421d5:3736
+executeDispatch @ chunk-UPELNCPK.js?v=644421d5:7014
+processDispatchQueueItemsInOrder @ chunk-UPELNCPK.js?v=644421d5:7034
+processDispatchQueue @ chunk-UPELNCPK.js?v=644421d5:7043
+dispatchEventsForPlugins @ chunk-UPELNCPK.js?v=644421d5:7051
+(anonymous) @ chunk-UPELNCPK.js?v=644421d5:7174
+batchedUpdates$1 @ chunk-UPELNCPK.js?v=644421d5:18913
+batchedUpdates @ chunk-UPELNCPK.js?v=644421d5:3579
+dispatchEventForPluginEventSystem @ chunk-UPELNCPK.js?v=644421d5:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-UPELNCPK.js?v=644421d5:5478
+dispatchEvent @ chunk-UPELNCPK.js?v=644421d5:5472
+dispatchDiscreteEvent @ chunk-UPELNCPK.js?v=644421d5:5449Understand this errorAI
+react-hook-form.js?v=644421d5:1696 Uncaught (in promise) Error: We couldn't find an account with that username.
+    at Object.mutationFn (use-user.ts:108:17)

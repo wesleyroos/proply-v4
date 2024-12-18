@@ -67,6 +67,8 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        console.log("Login attempt for username:", username);
+
         const [user] = await db
           .select()
           .from(users)
@@ -74,9 +76,11 @@ export function setupAuth(app: Express) {
           .limit(1);
 
         if (!user) {
+          console.log("User not found in database for username:", username);
           return done(null, false, { message: "Incorrect username." });
         }
 
+        console.log("User found:", user.id);
         try {
           const isMatch = await crypto.compare(password, user.password);
           if (!isMatch) {
