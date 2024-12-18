@@ -52,6 +52,13 @@ export default function AuthPage() {
     try {
       setIsLoading(true);
       await login(data);
+    } catch (error) {
+      toast({
+        title: "Login Error",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+        duration: 5000
+      });
     } finally {
       setIsLoading(false);
     }

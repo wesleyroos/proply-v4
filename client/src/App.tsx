@@ -27,20 +27,23 @@ function App() {
   }
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="flex-1">
-        <Switch>
-          <Route path="/" component={DashboardPage} />
-          <Route path="/compare" component={ComparisonPage} />
-          <Route path="/properties" component={PropertiesPage} />
-          <Route path="/settings" component={SettingsPage} />
-          <Route path="/admin" component={AdminPage} />
-          <Route path="/access-codes" component={AccessCodePage} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-    </div>
+    <>
+      <div className="flex min-h-screen">
+        <Sidebar />
+        <main className="flex-1">
+          <Switch>
+            <Route path="/" component={DashboardPage} />
+            <Route path="/compare" component={ComparisonPage} />
+            <Route path="/properties" component={PropertiesPage} />
+            <Route path="/settings" component={SettingsPage} />
+            <Route path="/admin" component={AdminPage} />
+            <Route path="/access-codes" component={AccessCodePage} />
+            <Route component={NotFound} />
+          </Switch>
+        </main>
+      </div>
+      <Toaster />
+    </>
   );
 }
 

@@ -70,54 +70,38 @@ export function useUser() {
 
   const loginMutation = useMutation({
     mutationFn: async (userData: InsertUser) => {
-      try {
-        const email = userData.email?.trim();
-        const password = userData.password;
+      const email = userData.email?.trim();
+      const password = userData.password;
 
-        if (!email || !password) {
-          return {
-            success: false,
-            message: "Email and password are required"
-          };
-        }
-
-        console.log("Attempting login with email:", email);
-        
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-          credentials: 'include'
-        });
-
-        const data = await response.json();
-        console.log('Login response:', data);
-        
-        // Ensure we always return a consistent format
-        return {
-          success: data.success ?? false,
-          message: data.message || "An unexpected error occurred",
-          user: data.user
-        };
-      } catch (error) {
-        console.error('Fetch error:', error);
-        return {
-          success: false,
-          message: "Connection error. Please try again."
-        };
+      if (!email || !password) {
+        throw new Error("Email and password are required");
       }
+
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      return data;
     },
-    onSuccess: (result) => {
-      if (result.success && result.user) {
-        queryClient.invalidateQueries({ queryKey: ['user'] });
-      } else if (!result.success) {
-        toast({
-          title: "Login Failed",
-          description: result.message || "An unexpected error occurred",
-          variant: "destructive",
-          duration: 5000
-        });
-      }
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Login Failed",
+        description: error.message,
+        variant: "destructive",
+        duration: 5000
+      });
     }
   });
 
