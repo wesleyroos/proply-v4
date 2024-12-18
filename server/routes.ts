@@ -8,7 +8,19 @@ import fetch from "node-fetch";
 import { crypto } from "./auth";
 
 export function registerRoutes(app: Express): Server {
+  // Setup authentication first
   setupAuth(app);
+
+  // Require authentication for all /api routes except login/register
+  app.use('/api', (req, res, next) => {
+    if (req.path === '/login' || req.path === '/register' || req.path === '/user') {
+      return next();
+    }
+    if (!req.isAuthenticated()) {
+      return res.status(401).send('Not authenticated');
+    }
+    next();
+  });
 
   // PriceLabs API proxy endpoint
   app.get("/api/revenue-data", async (req, res) => {
