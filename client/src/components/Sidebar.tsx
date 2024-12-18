@@ -24,7 +24,7 @@ export default function Sidebar() {
     {
       title: "Dashboard",
       icon: LayoutDashboard,
-      href: "/",
+      href: "/dashboard",
     },
     {
       title: "Rent Compare",
