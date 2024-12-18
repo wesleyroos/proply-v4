@@ -393,18 +393,19 @@ export default function PropertyAnalyzerForm() {
                   )}
                 />
 
-                <div className="grid grid-cols-5 gap-4 items-end">
-                  <div className="col-span-2">
+                <div className="flex gap-4 items-end">
+                  <div className="flex-1">
                     <FormField
                       control={form.control}
                       name="depositAmount"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Deposit Amount (R)</FormLabel>
+                          <FormLabel>R</FormLabel>
                           <FormControl>
                             <Input 
                               type="number"
                               min="0"
+                              placeholder="250000,00"
                               {...field}
                               onChange={(e) => {
                                 const amount = e.target.valueAsNumber;
@@ -424,22 +425,23 @@ export default function PropertyAnalyzerForm() {
                     />
                   </div>
 
-                  <div className="flex justify-center items-center">
-                    <span className="text-sm font-medium text-gray-500">OR</span>
+                  <div className="flex items-center justify-center px-4">
+                    <span className="text-sm font-medium text-gray-600">OR</span>
                   </div>
 
-                  <div className="col-span-2">
+                  <div className="flex-1">
                     <FormField
                       control={form.control}
                       name="depositPercentage"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Deposit Percentage (%)</FormLabel>
+                          <FormLabel>%</FormLabel>
                           <FormControl>
                             <Input 
                               type="number"
                               min="0"
                               max="100"
+                              placeholder="10"
                               {...field}
                               onChange={(e) => {
                                 const percentage = e.target.valueAsNumber;
