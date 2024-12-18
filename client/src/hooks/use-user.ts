@@ -133,22 +133,44 @@ export function useUser() {
 
   const registerMutation = useMutation({
     mutationFn: async (userData: InsertUser) => {
-      const result = await handleRequest('/api/register', 'POST', userData);
-      if (!result.ok) {
-        toast({
-          title: "Registration failed",
-          description: result.message,
-          variant: "destructive"
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userData),
+          credentials: 'include'
         });
-        throw new Error(result.message);
+
+        if (!response.ok) {
+          const message = await response.text();
+          toast({
+            title: "Registration Failed",
+            description: message,
+            variant: "destructive",
+            duration: 5000
+          });
+          throw new Error(message);
+        }
+
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Registration failed";
+        toast({
+          title: "Registration Error",
+          description: errorMessage,
+          variant: "destructive",
+          duration: 5000
+        });
+        throw error;
       }
-      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
       toast({
         title: "Registration successful",
         description: "Welcome to Proply!",
+        duration: 3000
       });
     },
   });
