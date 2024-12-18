@@ -70,48 +70,37 @@ export function useUser() {
 
   const loginMutation = useMutation({
     mutationFn: async (userData: InsertUser) => {
-      try {
-        const email = userData.email?.trim();
-        const password = userData.password;
+      const email = userData.email?.trim();
+      const password = userData.password;
 
-        if (!email || !password) {
-          toast({
-            title: "Login Error",
-            description: "Email and password are required",
-            variant: "destructive",
-            duration: 5000
-          });
-          throw new Error("Email and password are required");
-        }
-
-        console.log("Attempting login with email:", email);
-        
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-          credentials: 'include'
-        });
-
-        const responseData = await response.json();
-        
-        if (!response.ok) {
-          const errorMessage = responseData.message || "Login failed";
-          toast({
-            title: "Authentication Error",
-            description: errorMessage,
-            variant: "destructive",
-            duration: 7000
-          });
-          return { ok: false, message: errorMessage };
-        }
-        return { ok: true, data: responseData };
-
-        return data;
-      } catch (error) {
-        console.error("Login error:", error);
-        throw error;
+      if (!email || !password) {
+        throw new Error("Email and password are required");
       }
+
+      console.log("Attempting login with email:", email);
+      
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
+      });
+
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(responseData.message || "Login failed");
+      }
+
+      return responseData;
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Authentication Error",
+        description: error.message,
+        variant: "destructive",
+        duration: 7000
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
