@@ -70,40 +70,46 @@ export function useUser() {
 
   const loginMutation = useMutation({
     mutationFn: async (userData: InsertUser) => {
-      const email = userData.email?.trim();
-      const password = userData.password;
+      try {
+        const email = userData.email?.trim();
+        const password = userData.password;
 
-      if (!email || !password) {
-        throw new Error("Email and password are required");
+        if (!email || !password) {
+          throw new Error("Email and password are required");
+        }
+
+        console.log("Attempting login with email:", email);
+        
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || "Login failed");
+        }
+
+        return data;
+      } catch (error: any) {
+        // Prevent runtime error overlay by handling the error here
+        const message = error?.message || "An unexpected error occurred";
+        toast({
+          title: "Authentication Error",
+          description: message,
+          variant: "destructive",
+          duration: 7000
+        });
+        return null;
       }
-
-      console.log("Attempting login with email:", email);
-      
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include'
-      });
-
-      const responseData = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(responseData.message || "Login failed");
+    },
+    onSuccess: (data) => {
+      if (data) {
+        queryClient.invalidateQueries({ queryKey: ['user'] });
       }
-
-      return responseData;
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Authentication Error",
-        description: error.message,
-        variant: "destructive",
-        duration: 7000
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
 
@@ -135,37 +141,34 @@ export function useUser() {
           credentials: 'include'
         });
 
+        const data = await response.json();
+        
         if (!response.ok) {
-          const message = await response.text();
-          toast({
-            title: "Registration Failed",
-            description: message,
-            variant: "destructive",
-            duration: 5000
-          });
-          throw new Error(message);
+          throw new Error(data.message || "Registration failed");
         }
 
-        const data = await response.json();
         return data;
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Registration failed";
+      } catch (error: any) {
+        // Prevent runtime error overlay by handling the error here
+        const message = error?.message || "An unexpected error occurred";
         toast({
           title: "Registration Error",
-          description: errorMessage,
+          description: message,
           variant: "destructive",
-          duration: 5000
+          duration: 7000
         });
-        throw error;
+        return null;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-      toast({
-        title: "Registration successful",
-        description: "Welcome to Proply!",
-        duration: 3000
-      });
+    onSuccess: (data) => {
+      if (data) {
+        queryClient.invalidateQueries({ queryKey: ['user'] });
+        toast({
+          title: "Registration successful",
+          description: "Welcome to Proply!",
+          duration: 3000
+        });
+      }
     },
   });
 
