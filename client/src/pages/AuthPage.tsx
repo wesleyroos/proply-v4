@@ -51,13 +51,14 @@ export default function AuthPage() {
 
   const handleLogin = async (data: InsertUser) => {
     try {
-      setError(null);
       setIsLoading(true);
+      setError(null);
       const result = await login(data);
       if (!result.success) {
         setError(result.message);
       }
     } catch (error) {
+      console.error('Login error:', error);
       setError(error instanceof Error ? error.message : "An unexpected error occurred");
     } finally {
       setIsLoading(false);
