@@ -282,15 +282,12 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Admin users can see all properties, regular users only see their own
-      const query = req.user!.isAdmin
-        ? db.select().from(properties).orderBy(properties.createdAt)
-        : db.select()
-            .from(properties)
-            .where(eq(properties.userId, req.user!.id))
-            .orderBy(properties.createdAt);
+      // All users can only see their own properties
+      const userProperties = await db.select()
+        .from(properties)
+        .where(eq(properties.userId, req.user!.id))
+        .orderBy(properties.createdAt);
       
-      const userProperties = await query;
       res.json(userProperties);
     } catch (error) {
       console.error('Error fetching properties:', error);
