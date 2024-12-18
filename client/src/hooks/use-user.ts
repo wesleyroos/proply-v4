@@ -74,17 +74,23 @@ export function useUser() {
         const response = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(userData),
+          body: JSON.stringify({
+            username: userData.username,
+            password: userData.password
+          }),
           credentials: 'include'
         });
 
+        const data = await response.text();
+        
         if (!response.ok) {
-          const message = await response.text();
-          const errorMessage = message.includes("Incorrect password") 
-            ? "The password you entered is incorrect. Please try again."
-            : message.includes("Incorrect username")
-            ? "We couldn't find an account with that username."
-            : "Login failed. Please check your credentials and try again.";
+          let errorMessage = "Login failed. Please check your credentials and try again.";
+          
+          if (data.includes("Incorrect password")) {
+            errorMessage = "The password you entered is incorrect. Please try again.";
+          } else if (data.includes("Incorrect username")) {
+            errorMessage = "We couldn't find an account with that username.";
+          }
           
           toast({
             title: "Authentication Error",
@@ -95,8 +101,7 @@ export function useUser() {
           throw new Error(errorMessage);
         }
 
-        const data = await response.json();
-        return data;
+        return JSON.parse(data);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
         toast({

@@ -76,11 +76,17 @@ export function setupAuth(app: Express) {
         if (!user) {
           return done(null, false, { message: "Incorrect username." });
         }
-        const isMatch = await crypto.compare(password, user.password);
-        if (!isMatch) {
-          return done(null, false, { message: "Incorrect password." });
+
+        try {
+          const isMatch = await crypto.compare(password, user.password);
+          if (!isMatch) {
+            return done(null, false, { message: "Incorrect password." });
+          }
+          return done(null, user);
+        } catch (error) {
+          console.error('Password comparison error:', error);
+          return done(error);
         }
-        return done(null, user);
       } catch (err) {
         return done(err);
       }
