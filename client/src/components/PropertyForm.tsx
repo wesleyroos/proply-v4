@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useProAccess } from "../hooks/use-pro-access";
 import { useForm } from "react-hook-form";
+import { useUser } from "../hooks/use-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
@@ -196,38 +197,34 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             )}
           />
 
-          <div className="space-y-4 p-4 bg-gray-50 rounded-lg border">
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <FormField
-                  control={form.control}
-                  name="shortTermNightly"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Short Term Nightly Rate</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="number" min="0" />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="flex-1">
-                <FormField
-                  control={form.control}
-                  name="annualOccupancy"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Annual Occupancy (%)</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="number" min="0" max="100" />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="flex-1 space-y-2">
-                <p className="text-sm font-medium text-gray-700">Not sure about the rates?</p>
+          <div className="p-4 bg-gray-50 rounded-lg border">
+            <div className="grid grid-cols-3 gap-4 items-end">
+              <FormField
+                control={form.control}
+                name="shortTermNightly"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Short Term Nightly Rate</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="number" min="0" />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="annualOccupancy"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Annual Occupancy (%)</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="number" min="0" max="100" />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-2">Not sure about the rates?</p>
                 <Button
                   type="button"
                   variant="outline"
@@ -253,7 +250,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                     </>
                   )}
                 </Button>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground mt-2">
                   Get accurate nightly rates and occupancy data from Airbnb listings in your area
                 </p>
               </div>
