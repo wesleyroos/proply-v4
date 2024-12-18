@@ -140,7 +140,7 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
           <MapView address={address} />
         <div className="p-4 bg-gray-50 rounded-lg">
           <h3 className="text-lg font-semibold mb-4">Property Details</h3>
-          <div className="grid grid-cols-1 gap-4 mb-4">
+          <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <p className="text-sm text-gray-600">Title</p>
               <p className="font-medium">{data.title}</p>
