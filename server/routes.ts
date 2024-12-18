@@ -281,16 +281,21 @@ export function registerRoutes(app: Express): Server {
       return res.status(401).send("Not authenticated");
     }
 
-    // Admin users can see all properties, regular users only see their own
-    const query = req.user!.isAdmin
-      ? db.select().from(properties).orderBy(properties.createdAt)
-      : db.select()
-          .from(properties)
-          .where(eq(properties.userId, req.user!.id))
-          .orderBy(properties.createdAt);
-    
-    const userProperties = await query;
-    res.json(userProperties);
+    try {
+      // Admin users can see all properties, regular users only see their own
+      const query = req.user!.isAdmin
+        ? db.select().from(properties).orderBy(properties.createdAt)
+        : db.select()
+            .from(properties)
+            .where(eq(properties.userId, req.user!.id))
+            .orderBy(properties.createdAt);
+      
+      const userProperties = await query;
+      res.json(userProperties);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+      res.status(500).json({ error: "Failed to fetch properties" });
+    }
   });
 
   app.delete("/api/properties/:id", async (req, res) => {
