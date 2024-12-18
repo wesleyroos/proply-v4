@@ -69,7 +69,17 @@ export default function AuthPage() {
   const handleRegister = async (data: InsertUser) => {
     try {
       setIsLoading(true);
+      setError(null);
       await register(data);
+      // After successful registration, log in with the same credentials
+      await login({
+        email: data.email,
+        password: data.password
+      });
+      setLocation('/dashboard');
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError(error instanceof Error ? error.message : "An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
