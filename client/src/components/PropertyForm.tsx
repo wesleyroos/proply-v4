@@ -198,7 +198,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
           />
 
           <div className="p-4 bg-gray-50 rounded-lg border">
-            <div className="grid grid-cols-3 gap-4 items-end">
+            <div className="grid grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="shortTermNightly"
@@ -223,39 +223,37 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                   </FormItem>
                 )}
               />
-              <FormItem>
-                <FormLabel>Market Data</FormLabel>
-                <FormControl>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full h-10"
-                    onClick={() => {
-                      if (hasProAccess) {
-                        fetchRevenueData();
-                      } else {
-                        setShowUpgradeModal(true);
-                      }
-                    }}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Getting Data...
-                      </>
-                    ) : (
-                      <>
-                        Get Revenue Data
-                        <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
-                      </>
-                    )}
-                  </Button>
-                </FormControl>
+              <div className="space-y-2">
+                <div className="text-sm font-medium text-foreground">Not sure about the rates?</div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    if (hasProAccess) {
+                      fetchRevenueData();
+                    } else {
+                      setShowUpgradeModal(true);
+                    }
+                  }}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Getting Data...
+                    </>
+                  ) : (
+                    <>
+                      Get Revenue Data
+                      <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
+                    </>
+                  )}
+                </Button>
                 <p className="text-xs text-muted-foreground">
                   Get accurate rates from Airbnb listings in your area
                 </p>
-              </FormItem>
+              </div>
             </div>
           </div>
 
