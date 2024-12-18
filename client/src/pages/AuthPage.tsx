@@ -32,7 +32,7 @@ export default function AuthPage() {
 
   const loginForm = useForm<InsertUser>({
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
@@ -287,14 +287,15 @@ export default function AuthPage() {
                     </div>
                     <FormField
                       control={registerForm.control}
-                      name="username"
+                      name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>Email</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
-                              autoComplete="username"
+                              type="email"
+                              autoComplete="email"
                               disabled={isLoading}
                               required
                             />
