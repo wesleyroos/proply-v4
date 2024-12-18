@@ -33,11 +33,6 @@ export default function Sidebar() {
       icon: Building2,
       href: "/properties",
     },
-    {
-      title: "Settings",
-      icon: Settings,
-      href: "/settings",
-    },
   ];
 
   return (
@@ -79,23 +74,37 @@ export default function Sidebar() {
             const isActive = location === item.href;
 
             return (
-              <Link key={item.href} href={item.href}>
-                <a
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                    "hover:bg-white/10",
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : "text-white/80"
-                  )}
-                >
-                  <Icon className="h-5 w-5 text-white" />
-                  {expanded && <span className="text-white">{item.title}</span>}
-                </a>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                  "hover:bg-white/10",
+                  isActive
+                    ? "bg-white/20 text-white"
+                    : "text-white/80"
+                )}
+              >
+                <Icon className="h-5 w-5 text-white" />
+                {expanded && <span className="text-white">{item.title}</span>}
               </Link>
             );
           })}
         </nav>
+
+        {/* Settings link */}
+        <div className="mt-auto p-2">
+          <Link
+            href="/settings"
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+              "hover:bg-white/10 text-white/80"
+            )}
+          >
+            <Settings className="h-5 w-5 text-white" />
+            {expanded && <span className="text-white">Settings</span>}
+          </Link>
+        </div>
 
         {/* User section */}
         <div className="p-4">
@@ -113,7 +122,7 @@ export default function Sidebar() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-xs text-white/80 hover:text-white -ml-3"
+                  className="text-xs text-white/80 -ml-3"
                   onClick={() => logout()}
                 >
                   <LogOut className="h-3 w-3 mr-1 text-white" />
