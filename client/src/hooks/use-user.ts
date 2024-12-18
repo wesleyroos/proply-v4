@@ -69,40 +69,46 @@ export function useUser() {
   });
 
   const loginMutation = useMutation({
-    mutationFn: async (userData: InsertUser) => {
-      const email = userData.email?.trim();
-      const password = userData.password;
+      mutationFn: async (userData: InsertUser) => {
+        const email = userData.email?.trim();
+        const password = userData.password;
 
-      if (!email || !password) {
-        throw new Error("Email and password are required");
+        if (!email || !password) {
+          throw new Error("Email and password are required");
+        }
+
+        try {
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+            credentials: 'include'
+          });
+
+          const data = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(data.message || 'Login failed');
+          }
+
+          return data;
+        } catch (error) {
+          console.error('Login error:', error);
+          throw error;
+        }
+      },
+      onSuccess: (data) => {
+        queryClient.setQueryData(['user'], data);
+        queryClient.invalidateQueries({ queryKey: ['user'] });
+      },
+      onError: (error: Error) => {
+        toast({
+          title: "Login Error",
+          description: error.message,
+          variant: "destructive",
+        });
       }
-
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include'
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-
-      return data;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Login Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
+    });
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
