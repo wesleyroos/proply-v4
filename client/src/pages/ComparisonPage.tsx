@@ -80,17 +80,13 @@ export default function ComparisonPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] p-4">
-      <nav className="flex items-center mb-8">
-        <Button variant="ghost" onClick={() => setLocation("/")}>
-          Back
-        </Button>
-        <h1 className="text-xl font-bold text-[#262626] ml-4">
+    <div className="min-h-screen bg-[#FFFFFF]">
+      <div className="p-6">
+        <h1 className="text-2xl font-bold text-[#262626] mb-6">
           Property Comparison
         </h1>
-      </nav>
 
-      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl space-y-6">
         <Card>
           <CardContent className="pt-6">
             <PropertyForm onSubmit={handleCompare} />
@@ -104,6 +100,7 @@ export default function ComparisonPage() {
             </CardContent>
           </Card>
         )}
+      </div>
       </div>
     </div>
   );
