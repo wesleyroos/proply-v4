@@ -282,11 +282,36 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // All users can only see their own properties
-      const userProperties = await db.select()
+      // Log the current user and their ID for debugging
+      console.log('Fetching properties for user:', {
+        userId: req.user!.id,
+        email: req.user!.email,
+        userType: req.user!.userType
+      });
+
+      // Strictly filter by userId for all users
+      const userProperties = await db
+        .select({
+          id: properties.id,
+          userId: properties.userId,
+          title: properties.title,
+          address: properties.address,
+          bedrooms: properties.bedrooms,
+          bathrooms: properties.bathrooms,
+          longTermMonthly: properties.longTermMonthly,
+          shortTermAnnual: properties.shortTermAnnual,
+          shortTermAfterFees: properties.shortTermAfterFees,
+          breakEvenOccupancy: properties.breakEvenOccupancy,
+          shortTermNightly: properties.shortTermNightly,
+          annualOccupancy: properties.annualOccupancy,
+          createdAt: properties.createdAt
+        })
         .from(properties)
         .where(eq(properties.userId, req.user!.id))
         .orderBy(properties.createdAt);
+      
+      // Log the number of properties found
+      console.log(`Found ${userProperties.length} properties for user ${req.user!.id}`);
       
       res.json(userProperties);
     } catch (error) {

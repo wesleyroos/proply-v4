@@ -36,7 +36,7 @@ export default function PropertiesPage() {
   const queryClient = useQueryClient();
   const { user } = useUser();
   const { data: properties, isLoading } = useQuery<Property[]>({
-    queryKey: ['/api/properties'],
+    queryKey: ['/api/properties', user?.id],
     enabled: !!user,
     queryFn: async () => {
       const response = await fetch('/api/properties', {
@@ -45,7 +45,9 @@ export default function PropertiesPage() {
       if (!response.ok) {
         throw new Error('Failed to fetch properties');
       }
-      return response.json();
+      const data = await response.json();
+      console.log(`Fetched ${data.length} properties for user ${user?.id}`);
+      return data;
     }
   });
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
