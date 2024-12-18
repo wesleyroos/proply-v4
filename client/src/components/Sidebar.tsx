@@ -46,7 +46,7 @@ export default function Sidebar() {
         {/* Header with logo */}
         <div className="p-4 flex justify-between items-center">
           <img
-            src={expanded ? "/Proply Logo 1.png" : "/Proply Favicon 1.png"}
+            src={expanded ? "/proply-logo.png" : "/proply-favicon.png"}
             alt="Proply"
             className={cn(
               "transition-all duration-300",
