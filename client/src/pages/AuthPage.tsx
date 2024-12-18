@@ -55,7 +55,7 @@ export default function AuthPage() {
     <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md mb-8">
         <img
-          src="/Proply Logo 1.png"
+          src="./Proply Logo 1.png"
           alt="Proply"
           className="h-12 mx-auto mb-8"
         />
