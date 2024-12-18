@@ -130,14 +130,16 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
+      console.log("Registration payload:", req.body);
       const result = insertUserSchema.safeParse(req.body);
       if (!result.success) {
+        console.log("Validation errors:", result.error.issues);
         return res
           .status(400)
           .send("Invalid input: " + result.error.issues.map(i => i.message).join(", "));
       }
 
-      const { username, password, email, userType, company, firstName, lastName, accessCode } = result.data;
+      const { email: username, password, email, userType, company, firstName, lastName, accessCode } = req.body;
 
       // Validate access code
       const [validCode] = await db

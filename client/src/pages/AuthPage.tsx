@@ -66,16 +66,31 @@ export default function AuthPage() {
     }
   };
 
-  const handleRegister = async (data: InsertUser) => {
+  const handleRegister = async (data: any) => {
     try {
       setIsLoading(true);
       setError(null);
-      await register(data);
-      // After successful registration, log in with the same credentials
+      
+      // Prepare registration data
+      const registrationData = {
+        username: data.email, // Use email as username
+        email: data.email,
+        password: data.password,
+        userType: data.userType,
+        company: data.company,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        accessCode: data.accessCode
+      };
+
+      await register(registrationData);
+      
+      // After successful registration, log in
       await login({
         email: data.email,
         password: data.password
       });
+      
       setLocation('/dashboard');
     } catch (error) {
       console.error('Registration error:', error);
