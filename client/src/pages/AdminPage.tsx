@@ -139,6 +139,8 @@ export default function AdminPage() {
                   <TableHead>User Type</TableHead>
                   <TableHead>Company</TableHead>
                   <TableHead>Subscription</TableHead>
+                  <TableHead>Access Code</TableHead>
+                  <TableHead>Code Used At</TableHead>
                   <TableHead>Admin</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -160,6 +162,12 @@ export default function AdminPage() {
                           Expires: {new Date(userData.subscriptionExpiryDate).toLocaleDateString()}
                         </span>
                       )}
+                    </TableCell>
+                    <TableCell>{userData.accessCode || "-"}</TableCell>
+                    <TableCell>
+                      {userData.accessCodeUsedAt 
+                        ? new Date(userData.accessCodeUsedAt).toLocaleString()
+                        : "-"}
                     </TableCell>
                     <TableCell>{userData.isAdmin ? "Yes" : "No"}</TableCell>
                     <TableCell>
