@@ -75,8 +75,8 @@ export function setupAuth(app: Express) {
       passwordField: 'password'
     }, async (email, password, done) => {
       try {
-        console.log("Login attempt for email:", email);
-
+        console.log("Login attempt with email:", email);
+        
         const [user] = await db
           .select()
           .from(users)
@@ -84,22 +84,20 @@ export function setupAuth(app: Express) {
           .limit(1);
 
         if (!user) {
-          console.log("User not found in database for email:", email);
+          console.log("No user found with email:", email);
           return done(null, false, { message: "No account found with this email address." });
         }
 
-        console.log("User found:", user.id);
-        try {
-          const isMatch = await crypto.compare(password, user.password);
-          if (!isMatch) {
-            return done(null, false, { message: "Incorrect password." });
-          }
-          return done(null, user);
-        } catch (error) {
-          console.error('Password comparison error:', error);
-          return done(error);
+        const isMatch = await crypto.compare(password, user.password);
+        if (!isMatch) {
+          console.log("Password mismatch for email:", email);
+          return done(null, false, { message: "Incorrect password." });
         }
+
+        console.log("Login successful for user:", user.id);
+        return done(null, user);
       } catch (err) {
+        console.error("Login error:", err);
         return done(err);
       }
     })
@@ -193,10 +191,10 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
     
-    if (!username || !password) {
-      return res.status(400).send("Username and password are required");
+    if (!email || !password) {
+      return res.status(400).send("Email and password are required");
     }
 
     passport.authenticate("local", (err: any, user: Express.User, info: IVerifyOptions) => {
@@ -220,9 +218,14 @@ export function setupAuth(app: Express) {
           message: "Login successful",
           user: {
             id: user.id,
-            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            userType: user.userType,
+            company: user.company,
             subscriptionStatus: user.subscriptionStatus,
-            subscriptionExpiryDate: user.subscriptionExpiryDate
+            subscriptionExpiryDate: user.subscriptionExpiryDate,
+            isAdmin: user.isAdmin
           },
         });
       });
