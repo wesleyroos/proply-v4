@@ -64,51 +64,53 @@ export function useUser() {
   const { data: user, error, isLoading } = useQuery<SelectUser | null, Error>({
     queryKey: ['user'],
     queryFn: fetchUser,
-    staleTime: Infinity,
-    retry: false
+    staleTime: 30000, // Cache for 30 seconds to prevent excessive refetches
+    retry: false,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false, // Don't refetch on window focus to prevent unwanted logouts
+    refetchOnReconnect: true,
+    refetchInterval: 60000, // Refresh auth state every minute
   });
 
   const loginMutation = useMutation({
-      mutationFn: async (userData: InsertUser) => {
-        const email = userData.email?.trim();
-        const password = userData.password;
+    mutationFn: async (userData: InsertUser) => {
+      const email = userData.email?.trim();
+      const password = userData.password;
 
-        if (!email || !password) {
-          throw new Error("Email and password are required");
-        }
-
-        try {
-          const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-            credentials: 'include'
-          });
-
-          const data = await response.json();
-          
-          if (!response.ok) {
-            throw new Error(data.message || 'Login failed');
-          }
-
-          return data;
-        } catch (error) {
-          console.error('Login error:', error);
-          throw error;
-        }
-      },
-      onSuccess: (data) => {
-        queryClient.setQueryData(['user'], data);
-        queryClient.invalidateQueries({ queryKey: ['user'] });
-      },
-      onError: (error: Error) => {
-        toast({
-          title: "Login Error",
-          description: error.message,
-          variant: "destructive",
-        });
+      if (!email || !password) {
+        throw new Error("Email and password are required");
       }
-    });
+
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['user'], data);
+      // Force a refetch of user data after login
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Login Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      // Clear user data on error
+      queryClient.setQueryData(['user'], null);
+    }
+  });
 
   const logoutMutation = useMutation({
     mutationFn: async () => {

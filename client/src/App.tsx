@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
@@ -14,11 +15,19 @@ import { useUser } from "./hooks/use-user";
 import Sidebar from "./components/Sidebar";
 
 // Protected route wrapper
-function ProtectedRoute({ component: Component }: { component: React.ComponentType<any> }) {
+function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
   const [, setLocation] = useLocation();
+  const [redirecting, setRedirecting] = useState(false);
 
-  if (isLoading) {
+  useEffect(() => {
+    if (!isLoading && !user && !redirecting) {
+      setRedirecting(true);
+      setLocation("/login");
+    }
+  }, [user, isLoading, setLocation, redirecting]);
+
+  if (isLoading || redirecting) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-border" />
@@ -27,7 +36,6 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   }
 
   if (!user) {
-    setLocation("/login");
     return null;
   }
 
@@ -41,33 +49,26 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   );
 }
 
-// Create a higher-order component for protected routes
-const withProtection = (Component: React.ComponentType) => () => (
-  <ProtectedRoute component={Component} />
-);
+// fallback 404 not found page
+function NotFound() {
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md mx-4">
+        <CardContent className="pt-6">
+          <div className="flex mb-4 gap-2">
+            <AlertCircle className="h-8 w-8 text-red-500" />
+            <h1 className="text-2xl font-bold text-gray-900">404 Page Not Found</h1>
+          </div>
+          <p className="mt-4 text-sm text-gray-600">
+            The page you're looking for doesn't exist.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 function App() {
-  const { user, isLoading } = useUser();
-  const [, setLocation] = useLocation();
-  const currentPath = window.location.pathname;
-  const isPublicRoute = currentPath === "/" || 
-    currentPath.startsWith("/login") || 
-    currentPath.startsWith("/register");
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-border" />
-      </div>
-    );
-  }
-
-  // Check auth status for protected routes
-  if (!user && !isPublicRoute) {
-    setLocation("/login");
-    return null;
-  }
-
   return (
     <>
       <Switch>
@@ -77,34 +78,34 @@ function App() {
         <Route path="/register" component={AuthPage} />
 
         {/* Protected routes */}
-        <Route path="/dashboard" component={withProtection(DashboardPage)} />
-        <Route path="/compare" component={withProtection(ComparisonPage)} />
-        <Route path="/properties" component={withProtection(PropertiesPage)} />
-        <Route path="/settings" component={withProtection(SettingsPage)} />
-        <Route path="/admin" component={withProtection(AdminPage)} />
-        <Route path="/access-codes" component={withProtection(AccessCodePage)} />
+        <Route 
+          path="/dashboard" 
+          component={() => <ProtectedRoute component={DashboardPage} />} 
+        />
+        <Route 
+          path="/compare" 
+          component={() => <ProtectedRoute component={ComparisonPage} />} 
+        />
+        <Route 
+          path="/properties" 
+          component={() => <ProtectedRoute component={PropertiesPage} />} 
+        />
+        <Route 
+          path="/settings" 
+          component={() => <ProtectedRoute component={SettingsPage} />} 
+        />
+        <Route 
+          path="/admin" 
+          component={() => <ProtectedRoute component={AdminPage} />} 
+        />
+        <Route 
+          path="/access-codes" 
+          component={() => <ProtectedRoute component={AccessCodePage} />} 
+        />
         <Route component={NotFound} />
       </Switch>
       <Toaster />
     </>
-  );
-}
-
-function NotFound() {
-  return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md mx-4">
-        <CardContent className="pt-6">
-          <div className="flex mb-4 gap-2">
-            <AlertCircle className="h-8 w-8 text-red-500" />
-            <h1 className="text-2xl font-bold text-[#262626]">404 Page Not Found</h1>
-          </div>
-          <p className="mt-4 text-sm text-gray-600">
-            The page you're looking for doesn't exist.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
   );
 }
 
