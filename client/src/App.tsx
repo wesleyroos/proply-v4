@@ -48,6 +48,11 @@ const withProtection = (Component: React.ComponentType) => () => (
 
 function App() {
   const { user, isLoading } = useUser();
+  const [, setLocation] = useLocation();
+  const currentPath = window.location.pathname;
+  const isPublicRoute = currentPath === "/" || 
+    currentPath.startsWith("/login") || 
+    currentPath.startsWith("/register");
 
   if (isLoading) {
     return (
@@ -58,13 +63,8 @@ function App() {
   }
 
   // Check auth status for protected routes
-  const currentPath = window.location.pathname;
-  const isPublicRoute = currentPath === "/" || 
-    currentPath.startsWith("/login") || 
-    currentPath.startsWith("/register");
-
   if (!user && !isPublicRoute) {
-    window.location.href = "/login";
+    setLocation("/login");
     return null;
   }
 
