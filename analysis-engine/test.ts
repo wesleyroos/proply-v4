@@ -1,20 +1,43 @@
-import { calculateGrossYield } from "./calculations";
+import fetch from 'node-fetch';
 
-// Test case
-const testData = {
-  purchasePrice: 1000000,
-  monthlyRent: 8000
-};
-
-const grossYield = calculateGrossYield(testData);
-console.log("Test Results:");
-console.log("Input:", testData);
-console.log("Gross Yield:", grossYield, "%");
-
-// Expected: (8000 * 12 / 1000000) * 100 = 9.6%
-const expectedYield = 9.6;
-if (grossYield === expectedYield) {
-  console.log("✅ Test passed!");
-} else {
-  console.log("❌ Test failed! Expected:", expectedYield, "Got:", grossYield);
+async function testAnalysisEngine() {
+  console.log("🏠 Property Analysis Engine Test");
+  console.log("===============================");
+  
+  // Get test data from command line arguments or use defaults
+  const purchasePrice = process.argv[2] ? parseInt(process.argv[2]) : 1000000;
+  const monthlyRent = process.argv[3] ? parseInt(process.argv[3]) : 8000;
+  
+  const testData = {
+    purchasePrice,
+    monthlyRent
+  };
+  
+  console.log("\n📊 Test Data:");
+  console.log("Purchase Price: R", testData.purchasePrice.toLocaleString());
+  console.log("Monthly Rent: R", testData.monthlyRent.toLocaleString());
+  
+  try {
+    console.log("\n🔄 Sending request to analysis engine...");
+    const response = await fetch('http://localhost:3001/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(testData)
+    });
+    
+    const result = await response.json();
+    
+    console.log("\n📈 Analysis Results:");
+    console.log("Gross Yield:", result.grossYield.toFixed(2) + "%");
+    console.log("Annual Rent: R", result.analysis.annualRent.toLocaleString());
+    
+    console.log("\n✅ Test completed successfully!");
+  } catch (error) {
+    console.error("\n❌ Test failed:", error.message);
+    console.log("\nMake sure the analysis engine server is running on port 3001");
+  }
 }
+
+testAnalysisEngine();
