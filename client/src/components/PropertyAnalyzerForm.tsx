@@ -156,7 +156,7 @@ export default function PropertyAnalyzerForm() {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
+    <div className="space-y-8 max-w-full">
       {/* Step indicator */}
       <div className="mb-12">
         <nav aria-label="Progress">

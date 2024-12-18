@@ -10,7 +10,7 @@ export default function PropertyAnalyzerPage() {
   const [showForm, setShowForm] = useState(false);
 
   return (
-    <div className="p-6 max-w-6xl">
+    <div className="px-4 py-6">
       {!showForm ? (
         <>
           <div className="flex justify-between items-center mb-8">
