@@ -24,7 +24,18 @@ interface Property {
 export default function DashboardPage() {
   const { user } = useUser();
   const { data: properties, isLoading } = useQuery<Property[]>({
-    queryKey: ['/api/properties'],
+    queryKey: ['/api/properties', user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const response = await fetch('/api/properties', {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch properties');
+      }
+      const data = await response.json();
+      return data;
+    }
   });
 
   // Calculate portfolio metrics
