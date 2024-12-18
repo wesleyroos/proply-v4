@@ -10,7 +10,7 @@ export default function HomePage() {
       <nav className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md z-50 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <img src="/proply-logo.png" alt="Proply" className="h-8" />
+            <img src="/proply-logo-1.png" alt="Proply" className="h-8" />
             <div className="flex gap-4">
               <Link href="/login">
                 <Button variant="ghost">Login</Button>
