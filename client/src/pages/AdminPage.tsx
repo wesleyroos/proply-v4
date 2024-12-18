@@ -7,6 +7,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,29 +32,20 @@ import { useUser } from "@/hooks/use-user";
 import { useLocation } from "wouter";
 import { Ban, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { SelectUser } from "@db/schema";
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  userType: string;
-  company: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  subscriptionStatus: string;
-  subscriptionExpiryDate: string | null;
+interface AdminUser extends SelectUser {
   isAdmin: boolean;
   accessCode: string | null;
-  accessCodeId: number | null; // Added accessCodeId
   accessCodeUsedAt: string | null;
 }
 
 export default function AdminPage() {
   const { user } = useUser();
   const [, setLocation] = useLocation();
-
+  
   // Redirect if not admin
-  if (user && !user.isAdmin) {
+  if (!user?.isAdmin) {
     setLocation("/");
     return null;
   }
@@ -55,31 +53,41 @@ export default function AdminPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: users, isLoading } = useQuery<User[]>({
+  const { data: users, isLoading } = useQuery<AdminUser[]>({
     queryKey: ["/api/admin/users"],
     enabled: !!user?.isAdmin,
   });
 
-  const suspendMutation = useMutation({
-    mutationFn: async ({ userId, action }: { userId: number; action: 'suspend' | 'unsuspend' }) => {
+  const userActionMutation = useMutation({
+    mutationFn: async ({ 
+      userId, 
+      action, 
+      plan 
+    }: { 
+      userId: number; 
+      action: 'suspend' | 'unsuspend' | 'change-plan';
+      plan?: 'free' | 'pro';
+    }) => {
       const response = await fetch(`/api/admin/users/${userId}/${action}`, {
         method: 'POST',
+        headers: plan ? { 'Content-Type': 'application/json' } : undefined,
+        body: plan ? JSON.stringify({ plan }) : undefined,
         credentials: 'include'
       });
       if (!response.ok) throw new Error(await response.text());
       return response.json();
     },
-    onSuccess: (_, { action }) => {
+    onSuccess: (data, { action }) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
-        title: action === 'suspend' ? "User Suspended" : "User Unsuspended",
-        description: `The user has been ${action}ed successfully.`,
+        title: "Success",
+        description: data.message || "User updated successfully",
       });
     },
-    onError: (error, { action }) => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : `Failed to ${action} user`,
+        description: error instanceof Error ? error.message : "Failed to update user",
         variant: "destructive",
       });
     },
@@ -162,11 +170,11 @@ export default function AdminPage() {
                     <TableCell>
                       <span className={cn(
                         "px-2 py-1 rounded-full text-xs font-medium",
-                        (userData.isAdmin || userData.subscriptionStatus === "pro" || userData.accessCodeId)
+                        (userData.isAdmin || userData.subscriptionStatus === "pro")
                           ? "bg-green-100 text-green-800"
                           : "bg-gray-100 text-gray-800"
                       )}>
-                        {(userData.isAdmin || userData.subscriptionStatus === "pro" || userData.accessCodeId) ? "Pro" : "Free"}
+                        {(userData.isAdmin || userData.subscriptionStatus === "pro") ? "Pro" : "Free"}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -178,17 +186,12 @@ export default function AdminPage() {
                         : "-"}
                     </TableCell>
                     <TableCell>
-                      {userData.isAdmin ? "Admin" :
-                        userData.subscriptionStatus === "pro" ? "Subscription" :
-                          userData.accessCodeId ? "Access Code" : "-"}
-                    </TableCell>
-                    <TableCell>
                       {userData.subscriptionStatus === "pro" && userData.subscriptionExpiryDate && (
                         <span className="block text-xs">
                           Subscription expires: {new Date(userData.subscriptionExpiryDate).toLocaleDateString()}
                         </span>
                       )}
-                      {userData.accessCodeId && (
+                      {userData.accessCode && (
                         <span className="block text-xs">
                           Access code: {userData.accessCode}
                         </span>
@@ -198,7 +201,7 @@ export default function AdminPage() {
                           Full admin access
                         </span>
                       )}
-                      {!userData.isAdmin && userData.subscriptionStatus !== "pro" && !userData.accessCodeId && (
+                      {!userData.isAdmin && userData.subscriptionStatus !== "pro" && !userData.accessCode && (
                         <span className="block text-xs text-gray-500">
                           Free plan
                         </span>
@@ -206,10 +209,30 @@ export default function AdminPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
+                        <Select
+                          defaultValue={userData.subscriptionStatus}
+                          onValueChange={(value) => 
+                            userActionMutation.mutate({
+                              userId: userData.id,
+                              action: 'change-plan',
+                              plan: value as 'free' | 'pro'
+                            })
+                          }
+                          disabled={userData.isAdmin || userData.id === user.id}
+                        >
+                          <SelectTrigger className="w-[100px]">
+                            <SelectValue placeholder="Select plan" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="free">Free Plan</SelectItem>
+                            <SelectItem value="pro">Pro Plan</SelectItem>
+                          </SelectContent>
+                        </Select>
+
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => suspendMutation.mutate({
+                          onClick={() => userActionMutation.mutate({
                             userId: userData.id,
                             action: userData.subscriptionStatus === 'suspended' ? 'unsuspend' : 'suspend'
                           })}

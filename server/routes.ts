@@ -110,7 +110,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.post("/api/admin/users/:id/:action(suspend|unsuspend)", async (req, res) => {
+  app.post("/api/admin/users/:id/:action(suspend|unsuspend|change-plan)", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
       return res.status(403).send("Not authorized");
     }
@@ -136,13 +136,31 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).send("Cannot suspend yourself");
       }
 
-      const action = req.params.action as 'suspend' | 'unsuspend';
-      await db
-        .update(users)
-        .set({ subscriptionStatus: action === 'suspend' ? 'suspended' : 'active' })
-        .where(eq(users.id, userId));
+      const action = req.params.action as 'suspend' | 'unsuspend' | 'change-plan';
+      
+      if (action === 'change-plan') {
+        const { plan } = req.body;
+        if (!plan || !['free', 'pro'].includes(plan)) {
+          return res.status(400).send("Invalid plan specified");
+        }
+        
+        await db
+          .update(users)
+          .set({ 
+            subscriptionStatus: plan,
+            subscriptionExpiryDate: plan === 'pro' ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : null
+          })
+          .where(eq(users.id, userId));
 
-      res.json({ message: `User ${action}ed successfully` });
+        res.json({ message: `User plan updated to ${plan} successfully` });
+      } else {
+        await db
+          .update(users)
+          .set({ subscriptionStatus: action === 'suspend' ? 'suspended' : 'free' })
+          .where(eq(users.id, userId));
+
+        res.json({ message: `User ${action}ed successfully` });
+      }
     } catch (error) {
       res.status(500).json({ error: "Failed to suspend user" });
     }
