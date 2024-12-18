@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { properties, users } from "@db/schema";
+import { properties, users, accessCodes } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
@@ -47,25 +47,34 @@ export function registerRoutes(app: Express): Server {
 
     try {
       const { expiryDays } = req.body;
+      
+      if (!expiryDays || isNaN(parseInt(expiryDays))) {
+        return res.status(400).json({ error: "Valid expiry days required" });
+      }
+
+      // Generate a random 8-character code
       const code = Array.from({ length: 8 }, () => 
         Math.random().toString(36).charAt(2)
       ).join('').toUpperCase();
 
-      const expiresAt = expiryDays 
-        ? new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000)
-        : null;
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + parseInt(expiryDays));
 
+      // Insert the new access code
       const [accessCode] = await db
         .insert(accessCodes)
         .values({
           code,
+          isUsed: false,
           createdBy: req.user.id,
           expiresAt,
+          createdAt: new Date(),
         })
         .returning();
 
       res.json(accessCode);
     } catch (error) {
+      console.error('Error generating access code:', error);
       res.status(500).json({ error: "Failed to generate access code" });
     }
   });
