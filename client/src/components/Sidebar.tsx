@@ -7,7 +7,8 @@ import {
   LayoutDashboard,
   Settings,
   LogOut,
-  Building2
+  Building2,
+  Library
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
@@ -30,7 +31,7 @@ export default function Sidebar() {
     },
     {
       title: "Properties",
-      icon: Building2,
+      icon: Library,
       href: "/properties",
     },
   ];
