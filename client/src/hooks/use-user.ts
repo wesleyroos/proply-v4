@@ -71,6 +71,7 @@ export function useUser() {
   const loginMutation = useMutation({
     mutationFn: async (userData: InsertUser) => {
       try {
+        console.log("Attempting login with username:", userData.username);
         const response = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -81,14 +82,20 @@ export function useUser() {
           credentials: 'include'
         });
 
-        const data = await response.text();
+        let data;
+        const responseText = await response.text();
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          data = responseText;
+        }
         
         if (!response.ok) {
-          let errorMessage = "Login failed. Please check your credentials and try again.";
+          let errorMessage = typeof data === 'string' ? data : "Login failed. Please check your credentials and try again.";
           
-          if (data.includes("Incorrect password")) {
+          if (errorMessage.includes("Incorrect password")) {
             errorMessage = "The password you entered is incorrect. Please try again.";
-          } else if (data.includes("Incorrect username")) {
+          } else if (errorMessage.includes("Incorrect username")) {
             errorMessage = "We couldn't find an account with that username.";
           }
           
@@ -101,9 +108,10 @@ export function useUser() {
           throw new Error(errorMessage);
         }
 
-        return JSON.parse(data);
+        return data;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+        console.error("Login error:", error);
         toast({
           title: "Authentication Error",
           description: errorMessage,

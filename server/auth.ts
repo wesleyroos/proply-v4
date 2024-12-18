@@ -181,24 +181,26 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    const result = insertUserSchema.safeParse(req.body);
-    if (!result.success) {
-      return res
-        .status(400)
-        .send("Invalid input: " + result.error.issues.map(i => i.message).join(", "));
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).send("Username and password are required");
     }
 
     passport.authenticate("local", (err: any, user: Express.User, info: IVerifyOptions) => {
       if (err) {
+        console.error("Login error:", err);
         return next(err);
       }
 
       if (!user) {
+        console.log("Login failed:", info.message);
         return res.status(400).send(info.message ?? "Login failed");
       }
 
       req.logIn(user, (err) => {
         if (err) {
+          console.error("Login session error:", err);
           return next(err);
         }
 
