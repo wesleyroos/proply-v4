@@ -157,6 +157,20 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
               <p className="text-sm text-gray-600">Bathrooms</p>
               <p className="font-medium">{data.bathrooms || 'N/A'}</p>
             </div>
+            <div>
+              <p className="text-sm text-gray-600">Short-Term Nightly Rate</p>
+              <p className="font-medium">{formatter.format(data.shortTermNightly)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Annual Occupancy</p>
+              <p className="font-medium">{data.annualOccupancy}%</p>
+            </div>
+            {data.managementFee > 0 && (
+              <div>
+                <p className="text-sm text-gray-600">Management Fee</p>
+                <p className="font-medium">{(data.managementFee * 100).toFixed(1)}%</p>
+              </div>
+            )}
           </div>
         </div>
         <div className="grid grid-cols-2 gap-8">
