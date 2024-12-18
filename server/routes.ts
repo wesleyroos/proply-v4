@@ -301,27 +301,29 @@ export function registerRoutes(app: Express): Server {
     }
 
     const propertyId = parseInt(req.params.id);
+    if (isNaN(propertyId)) {
+      return res.status(400).send("Invalid property ID");
+    }
     
     try {
-      // First check if the property belongs to the user
-      const [property] = await db.select()
+      // First check if the property exists and belongs to the user
+      const [property] = await db
+        .select()
         .from(properties)
-        .where(and(
-          eq(properties.id, propertyId),
-          eq(properties.userId, req.user!.id)
-        ))
-        .limit(1);
+        .where(eq(properties.id, propertyId));
 
       if (!property) {
-        return res.status(404).send("Property not found or unauthorized");
+        return res.status(404).send("Property not found");
+      }
+
+      if (property.userId !== req.user!.id) {
+        return res.status(403).send("Not authorized to delete this property");
       }
 
       // Delete the property
-      await db.delete(properties)
-        .where(and(
-          eq(properties.id, propertyId),
-          eq(properties.userId, req.user!.id)
-        ));
+      await db
+        .delete(properties)
+        .where(eq(properties.id, propertyId));
 
       res.json({ message: "Property deleted successfully" });
     } catch (error) {

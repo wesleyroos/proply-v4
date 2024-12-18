@@ -38,6 +38,15 @@ export default function PropertiesPage() {
   const { data: properties, isLoading } = useQuery<Property[]>({
     queryKey: ['/api/properties'],
     enabled: !!user,
+    queryFn: async () => {
+      const response = await fetch('/api/properties', {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch properties');
+      }
+      return response.json();
+    }
   });
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
