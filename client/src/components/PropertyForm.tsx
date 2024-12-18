@@ -29,6 +29,7 @@ interface PropertyFormProps {
 export default function PropertyForm({ onSubmit }: PropertyFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showPercentileDialog, setShowPercentileDialog] = useState(false);
+  const [demoClicks, setDemoClicks] = useState(0);
   const [revenueData, setRevenueData] = useState<{
     '25': RevenueData;
     '50': RevenueData;
@@ -280,6 +281,33 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
           </div>
         </form>
       </Form>
+
+      {/* Hidden demo data button */}
+      <button
+        type="button"
+        onClick={() => {
+          setDemoClicks(prev => {
+            if (prev === 2) {
+              // Fill demo data after triple click
+              form.reset({
+                title: "The Sentinel Unit 1209",
+                address: "1209 Sentinel, Cape Town",
+                bedrooms: "2",
+                bathrooms: "2",
+                longTermRental: "18000",
+                annualEscalation: "8",
+                shortTermNightly: "2500",
+                annualOccupancy: "65",
+                managementFee: "15",
+              });
+              return 0;
+            }
+            return prev + 1;
+          });
+        }}
+        className="fixed bottom-4 right-4 w-4 h-4 opacity-5 hover:opacity-10 bg-gray-500 rounded-full"
+        aria-hidden="true"
+      />
 
       <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
         <DialogContent>
