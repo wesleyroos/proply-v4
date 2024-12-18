@@ -1,14 +1,23 @@
 import { useState } from "react";
-import { useState } from "react";
-import { useProAccess } from "../hooks/use-pro-access";
+import { z } from "zod";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+
+// Hooks
+import { useProAccess } from "@/hooks/use-pro-access";
+import { useToast } from "@/hooks/use-toast";
+
+// UI Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2 } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
+// Types
 interface RevenueData {
   adr: number;
   occupancy: number;
@@ -43,19 +52,6 @@ interface PropertyAnalyzerFormData {
   cmaRatePerSqm: number;
   comments: string;
 }
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useProAccess } from "@/hooks/use-pro-access";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
 
 // Form schema
 const formSchema = z.object({
@@ -883,114 +879,6 @@ export default function PropertyAnalyzerForm() {
                           {...field}
                           onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         />
-                        </FormControl>
-                      </FormMessage>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-
-            {/* Add Upgrade and Percentile Selection Dialogs */}
-            <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Upgrade to Pro</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
-                    <div className="p-3 bg-blue-100 rounded-full">
-                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-blue-900">Accurate Revenue Data</h4>
-                      <p className="text-sm text-blue-700">Get real-time nightly rates and occupancy data from actual Airbnb listings in your area</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h4 className="font-medium">With Pro, you get:</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-center gap-2 text-sm">
-                        <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Accurate nightly rates based on local market data
-                      </li>
-                      <li className="flex items-center gap-2 text-sm">
-                        <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Real occupancy rates from similar properties
-                      </li>
-                      <li className="flex items-center gap-2 text-sm">
-                        <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Seasonal pricing trends and recommendations
-                      </li>
-                    </ul>
-                  </div>
-
-                  <Button onClick={() => setShowUpgradeModal(false)} className="w-full">
-                    Upgrade Now
-                  </Button>
-                  <Button variant="outline" onClick={() => setShowUpgradeModal(false)} className="w-full">
-                    Continue with Manual Entry
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Revenue Performance Data</DialogTitle>
-                </DialogHeader>
-                <div className="py-4">
-                  <p className="text-sm text-gray-500 mb-4">
-                    Select an ADR percentile to use for the analysis:
-                  </p>
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="text-left py-2 px-4">Percentile</th>
-                        <th className="text-right py-2 px-4">ADR</th>
-                        <th className="text-right py-2 px-4">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {revenueData && Object.entries(revenueData).map(([percentile, data]) => (
-                        <tr key={percentile} className="border-b">
-                          <td className="py-2 px-4">{percentile}th Percentile</td>
-                          <td className="text-right py-2 px-4">
-                            {new Intl.NumberFormat('en-ZA', {
-                              style: 'currency',
-                              currency: 'ZAR'
-                            }).format(data.adr)}
-                          </td>
-                          <td className="text-right py-2 px-4">
-                            <Button
-                              onClick={() => applyPercentileData(percentile as '25' | '50' | '75' | '90')}
-                              variant="secondary"
-                              size="sm"
-                            >
-                              Select
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <div className="mt-4 text-sm text-gray-500">
-                    <p>Occupancy: {revenueData?.['50'].occupancy.toFixed(1)}%</p>
-                    <p className="mt-1">Number of Listings: {revenueData?.['50'].occupancy}</p>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1110,13 +998,114 @@ export default function PropertyAnalyzerForm() {
         </form>
       </Form>
 
+      {/* Upgrade Modal */}
+      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upgrade to Pro</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+              <div className="p-3 bg-blue-100 rounded-full">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-semibold text-blue-900">Accurate Revenue Data</h4>
+                <p className="text-sm text-blue-700">Get real-time nightly rates and occupancy data from actual Airbnb listings in your area</p>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="font-medium">With Pro, you get:</h4>
+              <ul className="space-y-2">
+                <li className="flex items-center gap-2 text-sm">
+                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Accurate nightly rates based on local market data
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Real occupancy rates from similar properties
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Seasonal pricing trends and recommendations
+                </li>
+              </ul>
+            </div>
+
+            <Button onClick={() => setShowUpgradeModal(false)} className="w-full">
+              Upgrade Now
+            </Button>
+            <Button variant="outline" onClick={() => setShowUpgradeModal(false)} className="w-full">
+              Continue with Manual Entry
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Percentile Selection Modal */}
+      <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Revenue Performance Data</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-500 mb-4">
+              Select an ADR percentile to use for the analysis:
+            </p>
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left py-2 px-4">Percentile</th>
+                  <th className="text-right py-2 px-4">ADR</th>
+                  <th className="text-right py-2 px-4">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {revenueData && Object.entries(revenueData).map(([percentile, data]) => (
+                  <tr key={percentile} className="border-b">
+                    <td className="py-2 px-4">{percentile}th Percentile</td>
+                    <td className="text-right py-2 px-4">
+                      {new Intl.NumberFormat('en-ZA', {
+                        style: 'currency',
+                        currency: 'ZAR'
+                      }).format(data.adr)}
+                    </td>
+                    <td className="text-right py-2 px-4">
+                      <Button
+                        onClick={() => applyPercentileData(percentile as '25' | '50' | '75' | '90')}
+                        variant="secondary"
+                        size="sm"
+                      >
+                        Select
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="mt-4 text-sm text-gray-500">
+              <p>Occupancy: {revenueData?.['50'].occupancy.toFixed(1)}%</p>
+              <p className="mt-1">Number of Listings: {revenueData?.['50'].occupancy}</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Hidden demo data button */}
       <button
         type="button"
         onClick={() => {
           setDemoClicks(prev => {
             if (prev === 2) {
-              // Fill demo data after triple click
               form.reset({
                 address: "27 Leeuwen St, Cape Town City Centre, 8001",
                 propertyUrl: "https://property24.com/apartments-for-sale/cape-town-city-centre/western-cape/7925/3142089",
