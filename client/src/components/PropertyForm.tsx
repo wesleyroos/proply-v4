@@ -14,6 +14,7 @@ interface RevenueData {
 
 interface PropertyFormProps {
   onSubmit: (data: {
+    title: string;
     address: string;
     bedrooms: string;
     bathrooms: string;
@@ -37,6 +38,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
 
   const form = useForm({
     defaultValues: {
+      title: "",
       address: "",
       bedrooms: "",
       bathrooms: "",
@@ -110,6 +112,19 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Property Title</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="e.g. The Sentinel Unit 1209" />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="address"

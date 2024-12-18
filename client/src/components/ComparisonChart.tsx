@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
 interface ComparisonData {
+  title: string;
   longTermMonthly: number;
   shortTermMonthly: number;
   longTermAnnual: number;
@@ -29,13 +30,12 @@ interface ComparisonData {
   shortTermNightly: number;
   managementFee: number;
   annualOccupancy: number;
+  bedrooms?: string;
+  bathrooms?: string;
 }
 
 interface ComparisonChartProps {
-  data: ComparisonData & {
-    bedrooms?: string;
-    bathrooms?: string;
-  };
+  data: ComparisonData;
   address: string;
 }
 
@@ -64,7 +64,56 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
     <>
       <TooltipProvider>
         <div id="comparison-results" className="space-y-6">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-4">
+            <Button
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/properties', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                      title: data.title,
+                      address,
+                      bedrooms: data.bedrooms || '',
+                      bathrooms: data.bathrooms || '',
+                      longTermRental: data.longTermMonthly.toString(),
+                      annualEscalation: '0',
+                      shortTermNightly: data.shortTermNightly.toString(),
+                      annualOccupancy: data.annualOccupancy.toString(),
+                      managementFee: (data.managementFee * 100).toString(),
+                      longTermMonthly: data.longTermMonthly,
+                      longTermAnnual: data.longTermAnnual,
+                      shortTermMonthly: data.shortTermMonthly,
+                      shortTermAnnual: data.shortTermAnnual,
+                      shortTermAfterFees: data.shortTermAfterFees,
+                      breakEvenOccupancy: data.breakEvenOccupancy,
+                    }),
+                  });
+                  
+                  if (!response.ok) {
+                    throw new Error('Failed to save property');
+                  }
+                  
+                  toast({
+                    title: "Success",
+                    description: "Property saved successfully",
+                  });
+                } catch (error) {
+                  console.error('Error saving property:', error);
+                  toast({
+                    title: "Error",
+                    description: "Failed to save property",
+                    variant: "destructive",
+                  });
+                }
+              }}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Save Property
+            </Button>
             <Button
               onClick={() => {
                 setIsGeneratingPDF(true);
