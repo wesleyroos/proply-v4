@@ -10,7 +10,8 @@ import {
   Building2,
   Library,
   Users,
-  Ticket
+  Ticket,
+  Calculator
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
@@ -28,7 +29,7 @@ export default function Sidebar() {
     },
     {
       title: "Property Analyzer",
-      icon: Building2,
+      icon: Calculator,
       href: "/analyzer",
     },
     {
