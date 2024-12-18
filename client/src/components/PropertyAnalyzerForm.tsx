@@ -702,84 +702,88 @@ export default function PropertyAnalyzerForm() {
             {/* Step 4: Revenue Performance */}
             {currentStep === 3 && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <FormField
-                    control={form.control}
-                    name="airbnbNightlyRate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Airbnb Nightly Rate</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number"
-                            min="0"
-                            placeholder="Average annualised nightly rate"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="grid grid-cols-7 gap-4 items-end mb-4">
+                  <div className="col-span-2">
+                    <FormField
+                      control={form.control}
+                      name="airbnbNightlyRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Short Term Nightly Rate</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number"
+                              min="0"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                  <FormField
-                    control={form.control}
-                    name="occupancyRate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Occupancy Rate (%)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number"
-                            min="0"
-                            max="100"
-                            placeholder="Average annualised occupancy rate"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="col-span-2">
+                    <FormField
+                      control={form.control}
+                      name="occupancyRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Annual Occupancy (%)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number"
+                              min="0"
+                              max="100"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="col-span-3">
+                    <FormItem>
+                      <FormLabel>Market Data</FormLabel>
+                      <FormControl>
+                        <div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full h-10"
+                            onClick={() => {
+                              if (hasProAccess) {
+                                fetchRevenueData();
+                              } else {
+                                setShowUpgradeModal(true);
+                              }
+                            }}
+                            disabled={isLoading}
+                          >
+                            {isLoading ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Getting Data...
+                              </>
+                            ) : (
+                              <>
+                                Get Revenue Data
+                                <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
+                              </>
+                            )}
+                          </Button>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Get accurate rates from Airbnb listings in your area
+                          </p>
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  </div>
                 </div>
-
-                <FormItem>
-                  <FormLabel>Market Data</FormLabel>
-                  <FormControl>
-                    <div className="space-y-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full h-10"
-                        onClick={() => {
-                          if (hasProAccess) {
-                            fetchRevenueData();
-                          } else {
-                            setShowUpgradeModal(true);
-                          }
-                        }}
-                        disabled={isLoading}
-                      >
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Getting Data...
-                          </>
-                        ) : (
-                          <>
-                            Get Revenue Data
-                            <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
-                          </>
-                        )}
-                      </Button>
-                      <p className="text-xs text-muted-foreground">
-                        Get accurate rates from Airbnb listings in your area
-                      </p>
-                    </div>
-                  </FormControl>
-                </FormItem>
 
                 <FormField
                   control={form.control}
