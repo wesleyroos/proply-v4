@@ -7,115 +7,18 @@ import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 
 export default function PropertyAnalyzerPage() {
   const { user } = useUser();
-  const [showForm, setShowForm] = useState(false);
 
   return (
     <div className="px-4 py-6">
-      {!showForm ? (
-        <>
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold">Property Analyzer</h1>
-              <p className="text-muted-foreground mt-1">
-                Analyze and compare different property investment scenarios
-              </p>
-            </div>
-            <Button className="gap-2" onClick={() => setShowForm(true)}>
-              <PlusCircle className="h-4 w-4" />
-              New Analysis
-            </Button>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">12</div>
-                <p className="text-xs text-muted-foreground">
-                  Properties analyzed this month
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Average ROI</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">8.2%</div>
-                <p className="text-xs text-muted-foreground">
-                  Across all analyzed properties
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Market Analysis</CardTitle>
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">3</div>
-                <p className="text-xs text-muted-foreground">
-                  Active market comparisons
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Analysis</CardTitle>
-                <CardDescription>
-                  Your most recently analyzed properties
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* This will be populated with actual data later */}
-                  <div className="text-sm text-muted-foreground">
-                    No recent analysis available
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Market Insights</CardTitle>
-                <CardDescription>
-                  Current market trends and analytics
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* This will be populated with actual data later */}
-                  <div className="text-sm text-muted-foreground">
-                    Market data will be displayed here
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold">New Property Analysis</h1>
-              <p className="text-muted-foreground mt-1">
-                Enter property details to generate analysis
-              </p>
-            </div>
-            <Button variant="outline" className="gap-2" onClick={() => setShowForm(false)}>
-              Cancel
-            </Button>
-          </div>
-          <PropertyAnalyzerForm />
-        </>
-      )}
+      <div className="flex items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Property Analysis</h1>
+          <p className="text-muted-foreground mt-1">
+            Enter property details to generate analysis
+          </p>
+        </div>
+      </div>
+      <PropertyAnalyzerForm />
     </div>
   );
 }
