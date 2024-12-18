@@ -143,7 +143,8 @@ export default function AdminPage() {
                   <TableHead>User Type</TableHead>
                   <TableHead>Company</TableHead>
                   <TableHead>Plan</TableHead>
-                  <TableHead>Access Method</TableHead>
+                  <TableHead>Access Code</TableHead>
+                  <TableHead>Redeemed At</TableHead>
                   <TableHead>Status Details</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -167,6 +168,14 @@ export default function AdminPage() {
                       )}>
                         {(userData.isAdmin || userData.subscriptionStatus === "pro" || userData.accessCodeId) ? "Pro" : "Free"}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      {userData.accessCode || "-"}
+                    </TableCell>
+                    <TableCell>
+                      {userData.accessCodeUsedAt 
+                        ? new Date(userData.accessCodeUsedAt).toLocaleDateString() 
+                        : "-"}
                     </TableCell>
                     <TableCell>
                       {userData.isAdmin ? "Admin" :
