@@ -103,6 +103,112 @@ export default function PropertyAnalyzerForm() {
       }
 
       const response = await fetch(`/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.KPIsByBedroomCategory?.[bedrooms]) {
+        const result = data.KPIsByBedroomCategory[bedrooms];
+        setRevenueData({
+          '25': {
+            adr: result.ADR25PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 25
+          },
+          '50': {
+            adr: result.ADR50PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 50
+          },
+          '75': {
+            adr: result.ADR75PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 75
+          },
+          '90': {
+            adr: result.ADR90PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 90
+          }
+        });
+        setShowPercentileDialog(true);
+      }
+    } catch (error) {
+      console.error('Error fetching revenue data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch revenue data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+        });
+        return;
+      }
+
+      const response = await fetch(`/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.KPIsByBedroomCategory?.[bedrooms]) {
+        const result = data.KPIsByBedroomCategory[bedrooms];
+        setRevenueData({
+          '25': {
+            adr: result.ADR25PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 25
+          },
+          '50': {
+            adr: result.ADR50PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 50
+          },
+          '75': {
+            adr: result.ADR75PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 75
+          },
+          '90': {
+            adr: result.ADR90PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 90
+          }
+        });
+        setShowPercentileDialog(true);
+      }
+    } catch (error) {
+      console.error('Error fetching revenue data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch revenue data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const applyPercentileData = (percentile: '25' | '50' | '75' | '90') => {
+    if (!revenueData) return;
+    
+    const data = revenueData[percentile];
+    form.setValue("airbnbNightlyRate", data.adr);
+    form.setValue("occupancyRate", data.occupancy);
+    setShowPercentileDialog(false);
+  };
+        });
+        return;
+      }
+
+      const response = await fetch(`/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
@@ -703,7 +809,7 @@ export default function PropertyAnalyzerForm() {
             {currentStep === 3 && (
               <div className="space-y-4">
                 <div className="p-4 bg-gray-50 rounded-lg border">
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-4 items-end">
                     <FormField
                       control={form.control}
                       name="airbnbNightlyRate"
@@ -1004,3 +1110,50 @@ export default function PropertyAnalyzerForm() {
     </div>
   );
 }
+      <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Revenue Performance Data</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-500 mb-4">
+              Select an ADR percentile to use for the analysis:
+            </p>
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left py-2 px-4">Percentile</th>
+                  <th className="text-right py-2 px-4">ADR</th>
+                  <th className="text-right py-2 px-4">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {revenueData && Object.entries(revenueData).map(([percentile, data]) => (
+                  <tr key={percentile} className="border-b">
+                    <td className="py-2 px-4">{percentile}th Percentile</td>
+                    <td className="text-right py-2 px-4">
+                      {new Intl.NumberFormat('en-ZA', {
+                        style: 'currency',
+                        currency: 'ZAR'
+                      }).format(data.adr)}
+                    </td>
+                    <td className="text-right py-2 px-4">
+                      <Button
+                        onClick={() => applyPercentileData(percentile as '25' | '50' | '75' | '90')}
+                        variant="secondary"
+                        size="sm"
+                      >
+                        Select
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="mt-4 text-sm text-gray-500">
+              <p>Occupancy: {revenueData?.['50'].occupancy.toFixed(1)}%</p>
+              <p className="mt-1">Number of Listings: {revenueData?.['50'].occupancy}</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
