@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useProAccess } from "../hooks/use-pro-access";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -231,7 +232,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                   variant="outline"
                   className="w-full"
                   onClick={() => {
-                    const isPremiumUser = false; // TODO: Replace with actual premium check
+                    const isPremiumUser = useProAccess();
                     if (isPremiumUser) {
                       fetchRevenueData();
                     } else {
