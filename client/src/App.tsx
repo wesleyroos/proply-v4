@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
@@ -8,12 +8,15 @@ import SettingsPage from "./pages/SettingsPage";
 import AdminPage from "./pages/AdminPage";
 import AccessCodePage from "./pages/AccessCodePage";
 import AuthPage from "./pages/AuthPage";
+import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
 import { useUser } from "./hooks/use-user";
 import Sidebar from "./components/Sidebar";
 
-function App() {
+// Protected route wrapper
+function ProtectedRoute({ component: Component, ...rest }: { component: React.ComponentType<any> }) {
   const { user, isLoading } = useUser();
+  const [, setLocation] = useLocation();
 
   if (isLoading) {
     return (
@@ -24,25 +27,38 @@ function App() {
   }
 
   if (!user) {
-    return <AuthPage />;
+    setLocation("/login");
+    return null;
   }
 
   return (
+    <div className="flex min-h-screen">
+      <Sidebar />
+      <main className="flex-1">
+        <Component {...rest} />
+      </main>
+    </div>
+  );
+}
+
+function App() {
+  return (
     <>
-      <div className="flex min-h-screen">
-        <Sidebar />
-        <main className="flex-1">
-          <Switch>
-            <Route path="/" component={DashboardPage} />
-            <Route path="/compare" component={ComparisonPage} />
-            <Route path="/properties" component={PropertiesPage} />
-            <Route path="/settings" component={SettingsPage} />
-            <Route path="/admin" component={AdminPage} />
-            <Route path="/access-codes" component={AccessCodePage} />
-            <Route component={NotFound} />
-          </Switch>
-        </main>
-      </div>
+      <Switch>
+        {/* Public routes */}
+        <Route path="/" component={HomePage} />
+        <Route path="/login" component={AuthPage} />
+        <Route path="/register" component={AuthPage} />
+
+        {/* Protected routes */}
+        <Route path="/dashboard" component={(props) => <ProtectedRoute component={DashboardPage} {...props} />} />
+        <Route path="/compare" component={(props) => <ProtectedRoute component={ComparisonPage} {...props} />} />
+        <Route path="/properties" component={(props) => <ProtectedRoute component={PropertiesPage} {...props} />} />
+        <Route path="/settings" component={(props) => <ProtectedRoute component={SettingsPage} {...props} />} />
+        <Route path="/admin" component={(props) => <ProtectedRoute component={AdminPage} {...props} />} />
+        <Route path="/access-codes" component={(props) => <ProtectedRoute component={AccessCodePage} {...props} />} />
+        <Route component={NotFound} />
+      </Switch>
       <Toaster />
     </>
   );
