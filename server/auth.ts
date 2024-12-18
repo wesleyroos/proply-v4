@@ -192,7 +192,7 @@ export function setupAuth(app: Express) {
           company,
           firstName,
           lastName,
-          subscriptionStatus: "active",
+          subscriptionStatus: "pro",
           accessCodeId: validCode.id,
         })
         .returning();
