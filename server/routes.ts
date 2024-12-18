@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
 import { properties, users, accessCodes } from "@db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 
@@ -259,8 +259,10 @@ export function registerRoutes(app: Express): Server {
       // First check if the property belongs to the user
       const [property] = await db.select()
         .from(properties)
-        .where(eq(properties.id, propertyId))
-        .where(eq(properties.userId, req.user!.id))
+        .where(and(
+          eq(properties.id, propertyId),
+          eq(properties.userId, req.user!.id)
+        ))
         .limit(1);
 
       if (!property) {
@@ -269,8 +271,10 @@ export function registerRoutes(app: Express): Server {
 
       // Delete the property
       await db.delete(properties)
-        .where(eq(properties.id, propertyId))
-        .where(eq(properties.userId, req.user!.id));
+        .where(and(
+          eq(properties.id, propertyId),
+          eq(properties.userId, req.user!.id)
+        ));
 
       res.json({ message: "Property deleted successfully" });
     } catch (error) {
