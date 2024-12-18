@@ -36,6 +36,79 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  app.post("/api/admin/users/:id/suspend", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    const userId = parseInt(req.params.id);
+    
+    try {
+      const [targetUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      if (!targetUser) {
+        return res.status(404).send("User not found");
+      }
+
+      if (targetUser.isAdmin) {
+        return res.status(400).send("Cannot suspend admin users");
+      }
+
+      if (targetUser.id === req.user.id) {
+        return res.status(400).send("Cannot suspend yourself");
+      }
+
+      await db
+        .update(users)
+        .set({ subscriptionStatus: 'suspended' })
+        .where(eq(users.id, userId));
+
+      res.json({ message: "User suspended successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to suspend user" });
+    }
+  });
+
+  app.delete("/api/admin/users/:id", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    const userId = parseInt(req.params.id);
+    
+    try {
+      const [targetUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      if (!targetUser) {
+        return res.status(404).send("User not found");
+      }
+
+      if (targetUser.isAdmin) {
+        return res.status(400).send("Cannot delete admin users");
+      }
+
+      if (targetUser.id === req.user.id) {
+        return res.status(400).send("Cannot delete yourself");
+      }
+
+      await db
+        .delete(users)
+        .where(eq(users.id, userId));
+
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete user" });
+    }
+  });
+
   // PriceLabs API proxy endpoint
   app.get("/api/revenue-data", async (req, res) => {
     if (!req.isAuthenticated()) {

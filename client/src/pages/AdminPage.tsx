@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Table,
   TableBody,
@@ -8,8 +8,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import { useLocation } from "wouter";
+import { Ban, Trash2 } from "lucide-react";
 
 interface User {
   id: number;
@@ -34,9 +48,62 @@ export default function AdminPage() {
     return null;
   }
 
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const { data: users, isLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
     enabled: !!user?.isAdmin,
+  });
+
+  const suspendMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await fetch(`/api/admin/users/${userId}/suspend`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error(await response.text());
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({
+        title: "User Suspended",
+        description: "The user has been suspended successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to suspend user",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error(await response.text());
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({
+        title: "User Deleted",
+        description: "The user has been deleted successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete user",
+        variant: "destructive",
+      });
+    },
   });
 
   if (!user?.isAdmin) {
@@ -73,27 +140,73 @@ export default function AdminPage() {
                   <TableHead>Company</TableHead>
                   <TableHead>Subscription</TableHead>
                   <TableHead>Admin</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users?.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>{user.id}</TableCell>
-                    <TableCell>{user.email}</TableCell>
+                {users?.map((userData) => (
+                  <TableRow key={userData.id}>
+                    <TableCell>{userData.id}</TableCell>
+                    <TableCell>{userData.email}</TableCell>
                     <TableCell>
-                      {user.firstName} {user.lastName}
+                      {userData.firstName} {userData.lastName}
                     </TableCell>
-                    <TableCell className="capitalize">{user.userType}</TableCell>
-                    <TableCell>{user.company || "-"}</TableCell>
+                    <TableCell className="capitalize">{userData.userType}</TableCell>
+                    <TableCell>{userData.company || "-"}</TableCell>
                     <TableCell className="capitalize">
-                      {user.subscriptionStatus}
-                      {user.subscriptionExpiryDate && (
+                      {userData.subscriptionStatus}
+                      {userData.subscriptionExpiryDate && (
                         <span className="block text-xs text-muted-foreground">
-                          Expires: {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
+                          Expires: {new Date(userData.subscriptionExpiryDate).toLocaleDateString()}
                         </span>
                       )}
                     </TableCell>
-                    <TableCell>{user.isAdmin ? "Yes" : "No"}</TableCell>
+                    <TableCell>{userData.isAdmin ? "Yes" : "No"}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => suspendMutation.mutate(userData.id)}
+                          disabled={userData.isAdmin || userData.id === user.id}
+                        >
+                          <Ban className="h-4 w-4 mr-1" />
+                          Suspend
+                        </Button>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={userData.isAdmin || userData.id === user.id}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the user
+                                account and all associated data.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteMutation.mutate(userData.id)}
+                                className="bg-destructive hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

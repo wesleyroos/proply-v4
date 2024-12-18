@@ -20,11 +20,6 @@ export default function Sidebar() {
   const { user, logout } = useUser();
 
   const navItems = [
-    ...(user?.isAdmin ? [{
-      title: "User Management",
-      icon: Users,
-      href: "/admin",
-    }] : []),
     {
       title: "Dashboard",
       icon: LayoutDashboard,
@@ -99,8 +94,20 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Settings link */}
-        <div className="mt-auto p-2">
+        {/* Admin and Settings links */}
+        <div className="mt-auto p-2 space-y-1">
+          {user?.isAdmin && (
+            <Link
+              href="/admin"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                "hover:bg-white/10 text-white/80"
+              )}
+            >
+              <Users className="h-5 w-5 text-white" />
+              {expanded && <span className="text-white">User Management</span>}
+            </Link>
+          )}
           <Link
             href="/settings"
             className={cn(
