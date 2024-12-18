@@ -257,7 +257,24 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             </div>
           </div>
 
-          <FormField
+          <div className={`relative ${!hasProAccess ? 'blur-sm' : ''}`}>
+            {!hasProAccess && (
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-lg text-center">
+                  <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm font-medium">PRO</span>
+                  <p className="mt-2 font-medium">Upgrade to access advanced analysis</p>
+                  <Button
+                    variant="outline"
+                    className="mt-2"
+                    onClick={() => setShowUpgradeModal(true)}
+                  >
+                    Upgrade Now
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <FormField
               control={form.control}
               name="managementFee"
               rules={{ 
@@ -285,6 +302,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                 </FormItem>
               )}
             />
+          </div>
 
           <div className="space-y-4">
             <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]">
