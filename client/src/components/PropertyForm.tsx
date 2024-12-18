@@ -223,37 +223,39 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                   </FormItem>
                 )}
               />
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">Not sure about the rates?</p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
+              <FormItem>
+                <FormLabel>Market Data</FormLabel>
+                <FormControl>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-10"
+                    onClick={() => {
                       if (hasProAccess) {
                         fetchRevenueData();
                       } else {
                         setShowUpgradeModal(true);
                       }
                     }}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Getting Data...
-                    </>
-                  ) : (
-                    <>
-                      Get Revenue Data
-                      <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
-                    </>
-                  )}
-                </Button>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Get accurate nightly rates and occupancy data from Airbnb listings in your area
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Getting Data...
+                      </>
+                    ) : (
+                      <>
+                        Get Revenue Data
+                        <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
+                      </>
+                    )}
+                  </Button>
+                </FormControl>
+                <p className="text-xs text-muted-foreground">
+                  Get accurate rates from Airbnb listings in your area
                 </p>
-              </div>
+              </FormItem>
             </div>
           </div>
 
