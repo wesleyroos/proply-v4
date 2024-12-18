@@ -75,8 +75,10 @@ export default function SettingsPage() {
       queryClient.setQueryData(['user'], updatedUser);
       
       toast({
-        title: "Success",
-        description: "Profile updated successfully",
+        title: "Profile Updated",
+        description: "Your profile information has been successfully saved.",
+        variant: "default",
+        duration: 3000,
       });
     } catch (error) {
       toast({
@@ -116,8 +118,10 @@ export default function SettingsPage() {
       }
 
       toast({
-        title: "Success",
-        description: "Password changed successfully",
+        title: "Password Changed",
+        description: "Your password has been successfully updated.",
+        variant: "default",
+        duration: 3000,
       });
 
       // Reset password fields
