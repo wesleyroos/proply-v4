@@ -326,12 +326,19 @@ export default function PropertyAnalyzerPage() {
                           checked={!includeTransferDuty}
                           onCheckedChange={(checked) => setIncludeTransferDuty(!checked)}
                         />
-                        <label
-                          htmlFor="noTransferDuty"
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          No transfer duty
-                        </label>
+                        <Tooltip delayDuration={0}>
+                          <TooltipTrigger asChild>
+                            <label
+                              htmlFor="noTransferDuty"
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-help"
+                            >
+                              No transfer duty
+                            </label>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[300px] text-sm">
+                            Check this if you qualify for transfer duty exemption, such as when purchasing property through a VAT-registered developer or if the purchase price is below the SARS threshold.
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
                       <div className="flex items-center space-x-2 mt-2">
                         <Checkbox 
@@ -339,12 +346,19 @@ export default function PropertyAnalyzerPage() {
                           checked={!includeVAT}
                           onCheckedChange={(checked) => setIncludeVAT(!checked)}
                         />
-                        <label
-                          htmlFor="removeVAT"
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          Remove VAT
-                        </label>
+                        <Tooltip delayDuration={0}>
+                          <TooltipTrigger asChild>
+                            <label
+                              htmlFor="removeVAT"
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-help"
+                            >
+                              Remove VAT
+                            </label>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[300px] text-sm">
+                            Check this if you're a VAT-registered entity purchasing the property. You'll be able to claim back the VAT component of the transfer costs.
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
                     </div>
 
