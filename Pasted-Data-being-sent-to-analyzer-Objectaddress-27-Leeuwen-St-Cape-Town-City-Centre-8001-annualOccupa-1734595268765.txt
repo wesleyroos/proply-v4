@@ -1,0 +1,16 @@
+Data being sent to analyzer: Objectaddress: "27 Leeuwen St, Cape Town City Centre, 8001"annualOccupancy: 65deposit: 350000floorArea: 85interestRate: 11.75leaseCycleGap: 7longTermRental: 25000propertyDescription: "Prime location in Cape Town CBD. Close to amenities and tourist attractions. High potential for both short-term and long-term rentals."purchasePrice: 3500000ratePerSquareMeter: 45000shortTermNightlyRate: 2500[[Prototype]]: Object
+PropertyAnalyzerPage.tsx:56 Sending analysis request with body: {
+  "purchasePrice": 3500000,
+  "shortTermNightlyRate": 2500,
+  "annualOccupancy": 65,
+  "longTermRental": 25000,
+  "leaseCycleGap": 7,
+  "propertyDescription": "Prime location in Cape Town CBD. Close to amenities and tourist attractions. High potential for both short-term and long-term rentals.",
+  "address": "27 Leeuwen St, Cape Town City Centre, 8001",
+  "deposit": 350000,
+  "interestRate": 11.75,
+  "floorArea": 85,
+  "ratePerSquareMeter": 45000
+}
+PropertyAnalyzerPage.tsx:67 Raw response from analyzer: Responsebody: (...)bodyUsed: trueheaders: Headers {}[[Prototype]]: Headersok: trueredirected: falsestatus: 200statusText: "OK"type: "basic"url: "https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/api/analyze"[[Prototype]]: ResponsearrayBuffer: ƒ arrayBuffer()blob: ƒ blob()body: (...)bodyUsed: (...)clone: ƒ clone()formData: ƒ formData()headers: (...)json: ƒ json()ok: (...)redirected: (...)status: (...)statusText: (...)text: ƒ text()type: (...)url: (...)constructor: ƒ Response()Symbol(Symbol.toStringTag): "Response"get body: ƒ body()get bodyUsed: ƒ bodyUsed()get headers: ƒ headers()get ok: ƒ ok()get redirected: ƒ redirected()get status: ƒ status()get statusText: ƒ statusText()get type: ƒ type()get url: ƒ url()[[Prototype]]: Object
+PropertyAnalyzerPage.tsx:68 Parsed response data: Objectaddress: "27 Leeuwen St, Cape Town City Centre, 8001"analysis: {shortTermAnnualRevenue: 593125, longTermAnnualRevenue: 294246.5753424657, purchasePrice: 3500000}deposit: 350000depositPercentage: 10floorArea: 85interestRate: 11.75longTermGrossYield: 8.41monthlyBondRepayment: 34136.77propertyDescription: "Prime location in Cape Town CBD. Close to amenities and tourist attractions. High potential for both short-term and long-term rentals."ratePerSquareMeter: 45000shortTermGrossYield: 16.95[[Prototype]]: Object

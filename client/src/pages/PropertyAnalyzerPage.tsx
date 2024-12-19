@@ -73,7 +73,12 @@ export default function PropertyAnalyzerPage() {
         throw new Error(errorMessage);
       }
 
-      setAnalysisResult(data);
+      // Include the nightly rate and occupancy from the request in the analysis result
+      setAnalysisResult({
+        ...data,
+        shortTermNightlyRate: requestBody.shortTermNightlyRate,
+        annualOccupancy: requestBody.annualOccupancy
+      });
     } catch (error) {
       console.error('Analysis failed:', error);
       setAnalysisError(error instanceof Error ? error.message : 'Failed to analyze property data');
