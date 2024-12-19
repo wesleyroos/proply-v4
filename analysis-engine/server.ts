@@ -33,7 +33,7 @@ app.post("/analyze", (req, res) => {
       deposit: req.body.deposit,
       interestRate: req.body.interestRate,
       floorArea: req.body.floorArea,
-      ratePerSquareMeter: req.body.ratePerSquareMeter
+      ratePerSquareMeter: req.body.cmaRatePerSqm // Changed to match the form field name
     };
     
     // Validate required fields
