@@ -32,26 +32,31 @@ export default function PropertyAnalyzerPage() {
       setAnalysisError(null);
       setFormData(formData);
       
+      const requestBody = {
+        purchasePrice: formData.purchasePrice,
+        airbnbNightlyRate: formData.airbnbNightlyRate,
+        occupancyRate: formData.occupancyRate,
+        longTermRental: formData.longTermRental,
+        leaseCycleGap: formData.leaseCycleGap,
+        propertyDescription: formData.comments,
+        deposit: formData.depositAmount,
+        interestRate: formData.interestRate,
+        floorArea: formData.floorArea,
+        ratePerSquareMeter: formData.areaRatePerSquareMeter 
+      };
+      
+      console.log('Data being sent to analyzer:', requestBody);
+      
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          purchasePrice: formData.purchasePrice,
-          airbnbNightlyRate: formData.airbnbNightlyRate,
-          occupancyRate: formData.occupancyRate,
-          longTermRental: formData.longTermRental,
-          leaseCycleGap: formData.leaseCycleGap,
-          propertyDescription: formData.comments,
-          deposit: formData.depositAmount,
-          interestRate: formData.interestRate,
-          floorArea: formData.floorArea,
-          ratePerSquareMeter: formData.areaRatePerSquareMeter 
-        })
+        body: JSON.stringify(requestBody)
       });
 
       const data = await response.json();
+      console.log('Response from analyzer:', data);
       
       if (!response.ok) {
         throw new Error(data.error || `Analysis failed: ${response.statusText}`);
@@ -181,6 +186,8 @@ export default function PropertyAnalyzerPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
+                      {console.log('Analysis Result:', analysisResult)}
+                      {console.log('Form Data:', formData)}
                       <p className="text-sm">Floor Area: {formData?.floorArea || "0"} m²</p>
                       <p className="text-sm mt-2">Rate/m²: R{analysisResult?.ratePerSquareMeter?.toLocaleString() || "0"}</p>
                     </div>
