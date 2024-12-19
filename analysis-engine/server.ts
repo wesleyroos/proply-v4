@@ -55,6 +55,8 @@ app.post("/analyze", (req, res) => {
 
     // Convert and validate all input fields
     console.log("Converting and validating input fields...");
+    console.log("Raw term value:", req.body.term, typeof req.body.term);
+    console.log("Converted term value:", Number(req.body.term) || 20);
     const propertyData: PropertyData = {
       purchasePrice: Number(req.body.purchasePrice),
       shortTermNightlyRate: req.body.shortTermNightlyRate ? Number(req.body.shortTermNightlyRate) : undefined,
@@ -62,11 +64,12 @@ app.post("/analyze", (req, res) => {
       longTermRental: req.body.longTermRental ? Number(req.body.longTermRental) : undefined,
       leaseCycleGap: req.body.leaseCycleGap ? Number(req.body.leaseCycleGap) : undefined,
       propertyDescription: req.body.propertyDescription || null,
+      address: req.body.address,
       deposit: Number(req.body.deposit),
       interestRate: Number(req.body.interestRate),
+      term: Number(req.body.term) || 20, // Default to 20 years if not specified
       floorArea: Number(req.body.floorArea),
-      ratePerSquareMeter: Number(req.body.ratePerSquareMeter),
-      term: req.body.term ? Number(req.body.term) : 20 // Default to 20 years if not specified
+      ratePerSquareMeter: Number(req.body.ratePerSquareMeter)
 
     };
 
