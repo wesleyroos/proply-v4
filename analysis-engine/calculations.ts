@@ -4,11 +4,19 @@ export interface PropertyData {
   annualOccupancy?: number;
   longTermRental?: number;
   leaseCycleGap?: number;
+  propertyDescription?: string;
+  deposit?: number;
+  interestRate?: number;
 }
 
 export interface YieldAnalysis {
   shortTermGrossYield: number | null;
   longTermGrossYield: number | null;
+  propertyDescription: string | null;
+  deposit: number | null;
+  depositPercentage: number | null;
+  interestRate: number | null;
+  monthlyBondRepayment: number | null;
   analysis: {
     shortTermAnnualRevenue: number | null;
     longTermAnnualRevenue: number | null;
@@ -39,9 +47,26 @@ export function calculateYields(data: PropertyData): YieldAnalysis {
     longTermGrossYield = (longTermAnnualRevenue / data.purchasePrice) * 100;
   }
 
+  // Calculate monthly bond repayment if we have both deposit and interest rate
+  let monthlyBondRepayment = null;
+  if (data.deposit !== undefined && data.interestRate !== undefined) {
+    const loanAmount = data.purchasePrice - data.deposit;
+    const monthlyRate = (data.interestRate / 100) / 12;
+    const numberOfPayments = 20 * 12; // 20-year term
+    monthlyBondRepayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+  }
+
+  // Calculate deposit percentage if deposit is provided
+  const depositPercentage = data.deposit ? (data.deposit / data.purchasePrice) * 100 : null;
+
   return {
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
     longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
+    propertyDescription: data.propertyDescription || null,
+    deposit: data.deposit || null,
+    depositPercentage: depositPercentage !== null ? Number(depositPercentage.toFixed(2)) : null,
+    interestRate: data.interestRate || null,
+    monthlyBondRepayment: monthlyBondRepayment !== null ? Number(monthlyBondRepayment.toFixed(2)) : null,
     analysis: {
       shortTermAnnualRevenue,
       longTermAnnualRevenue,
