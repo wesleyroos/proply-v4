@@ -42,7 +42,10 @@ export default function PropertyAnalyzerPage() {
           airbnbNightlyRate: formData.airbnbNightlyRate,
           occupancyRate: formData.occupancyRate,
           longTermRental: formData.longTermRental,
-          leaseCycleGap: formData.leaseCycleGap
+          leaseCycleGap: formData.leaseCycleGap,
+          propertyDescription: formData.comments,
+          deposit: formData.depositAmount,
+          interestRate: formData.interestRate
         })
       });
 
@@ -109,7 +112,7 @@ export default function PropertyAnalyzerPage() {
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Property Description</h3>
                     <p className="mt-1">
-                      {analysisResult.propertyDescription || "No description available"}
+                      {formData?.comments || "No description available"}
                     </p>
                   </div>
                   
@@ -123,14 +126,14 @@ export default function PropertyAnalyzerPage() {
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Deposit</h3>
                     <p className="mt-1">
-                      R{analysisResult.deposit?.toLocaleString() || "0"} 
-                      ({analysisResult.depositPercentage || "0"}%)
+                      R{formData?.depositAmount?.toLocaleString() || "0"} 
+                      ({formData?.depositPercentage || "0"}%)
                     </p>
                   </div>
 
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Interest Rate</h3>
-                    <p className="mt-1">{analysisResult.interestRate || "0"}%</p>
+                    <p className="mt-1">{formData?.interestRate || "0"}%</p>
                   </div>
 
                   <div>
