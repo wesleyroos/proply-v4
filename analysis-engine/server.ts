@@ -23,18 +23,21 @@ app.post("/analyze", (req, res) => {
   try {
     console.log("\nReceived property analysis request:", req.body);
     
+    // Convert and validate the incoming data
     const propertyData: PropertyData = {
-      purchasePrice: req.body.purchasePrice,
-      shortTermNightlyRate: req.body.airbnbNightlyRate,
-      annualOccupancy: req.body.occupancyRate,
-      longTermRental: req.body.longTermRental,
-      leaseCycleGap: req.body.leaseCycleGap,
-      propertyDescription: req.body.propertyDescription,
-      deposit: req.body.deposit,
-      interestRate: req.body.interestRate,
-      floorArea: req.body.floorArea,
-      ratePerSquareMeter: req.body.cmaRatePerSqm // Changed to match the form field name
+      purchasePrice: Number(req.body.purchasePrice),
+      shortTermNightlyRate: req.body.airbnbNightlyRate ? Number(req.body.airbnbNightlyRate) : undefined,
+      annualOccupancy: req.body.occupancyRate ? Number(req.body.occupancyRate) : undefined,
+      longTermRental: req.body.longTermRental ? Number(req.body.longTermRental) : undefined,
+      leaseCycleGap: req.body.leaseCycleGap ? Number(req.body.leaseCycleGap) : undefined,
+      propertyDescription: req.body.propertyDescription || null,
+      deposit: req.body.deposit ? Number(req.body.deposit) : undefined,
+      interestRate: req.body.interestRate ? Number(req.body.interestRate) : undefined,
+      floorArea: req.body.floorArea ? Number(req.body.floorArea) : undefined,
+      ratePerSquareMeter: req.body.cmaRatePerSqm ? Number(req.body.cmaRatePerSqm) : undefined
     };
+    
+    console.log('Property data after conversion:', propertyData);
     
     // Validate required fields
     if (!propertyData.purchasePrice) {

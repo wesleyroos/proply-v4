@@ -80,12 +80,12 @@ export function calculateYields(data: PropertyData): YieldAnalysis {
     monthlyBondRepayment: monthlyBondRepayment !== null ? Number(monthlyBondRepayment.toFixed(2)) : null,
     depositPercentage: depositPercentage !== null ? Number(depositPercentage.toFixed(2)) : null,
 
-    // Pass-through values from form (maintaining null if undefined)
-    propertyDescription: data.propertyDescription || null,
-    deposit: data.deposit || null,
-    interestRate: data.interestRate || null,
-    floorArea: data.floorArea || null,
-    ratePerSquareMeter: data.ratePerSquareMeter || null,
+    // Pass-through values from form (with explicit null handling)
+    propertyDescription: data.propertyDescription ?? null,
+    deposit: data.deposit ?? null,
+    interestRate: data.interestRate ?? null,
+    floorArea: data.floorArea ?? null,
+    ratePerSquareMeter: typeof data.ratePerSquareMeter !== 'undefined' ? data.ratePerSquareMeter : null,
 
     // Analysis summary
     analysis: {
