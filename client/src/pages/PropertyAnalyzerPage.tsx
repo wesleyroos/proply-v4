@@ -166,8 +166,8 @@ export default function PropertyAnalyzerPage() {
                       <MapPin className="h-5 w-5 text-indigo-500" />
                       Location & Photo
                     </CardTitle>
-                    <CardDescription className="text-sm text-slate-600">
-                      {analysisResult.address}
+                    <CardDescription className="text-sm font-semibold text-slate-600">
+                      <strong className="font-bold">{analysisResult.address}</strong>
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -263,9 +263,16 @@ export default function PropertyAnalyzerPage() {
 
                   <div className="grid grid-cols-2 gap-6 mb-6">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Monthly Bond Repayment
-                      </h3>
+                      <Tooltip delayDuration={0}>
+                        <TooltipTrigger asChild>
+                          <h3 className="text-sm font-semibold text-slate-600 cursor-help">
+                            Monthly Bond Repayment
+                          </h3>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[300px] text-sm">
+                          Calculated using the standard bond repayment formula: PMT = P × r(1 + r)ⁿ/((1 + r)ⁿ - 1), where P is the principal (loan amount), r is monthly interest rate, and n is total number of payments.
+                        </TooltipContent>
+                      </Tooltip>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         R
                         {analysisResult.monthlyBondRepayment?.toLocaleString() ||
@@ -274,18 +281,37 @@ export default function PropertyAnalyzerPage() {
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Bond Registration
-                      </h3>
+                      <Tooltip delayDuration={0}>
+                        <TooltipTrigger asChild>
+                          <h3 className="text-sm font-semibold text-slate-600 cursor-help">
+                            Bond Registration
+                          </h3>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[300px] text-sm">
+                          Bond registration costs are calculated based on the purchase price according to the Law Society's recommended fee guidelines, including VAT and deeds office fees.
+                        </TooltipContent>
+                      </Tooltip>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         R{findCostFromTable(analysisResult.analysis.purchasePrice, bondCostsTable).total.toLocaleString()}
                       </p>
+                      <div className="mt-4">
+                        <button className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 rounded-md hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                          Connect with a transfer attorney for the best deal
+                        </button>
+                      </div>
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Transfer Costs
-                      </h3>
+                      <Tooltip delayDuration={0}>
+                        <TooltipTrigger asChild>
+                          <h3 className="text-sm font-semibold text-slate-600 cursor-help">
+                            Transfer Costs
+                          </h3>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[300px] text-sm">
+                          Transfer costs include attorney fees, deeds office fees, and transfer duty (if applicable). These are calculated according to SARS guidelines and the Law Society's recommended fee structure.
+                        </TooltipContent>
+                      </Tooltip>
                       <div className="mt-2 flex items-center gap-4">
                         <p className="text-lg font-bold text-slate-800">
                           R{(() => {
