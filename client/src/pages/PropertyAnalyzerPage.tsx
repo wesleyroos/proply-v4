@@ -12,13 +12,13 @@ interface AnalysisResult {
   depositPercentage: number | null;
   interestRate: number | null;
   monthlyBondRepayment: number | null;
+  floorArea: number | null;
+  ratePerSquareMeter: number | null;
   analysis: {
     shortTermAnnualRevenue: number | null;
     longTermAnnualRevenue: number | null;
     purchasePrice: number;
   };
-  floorArea?: number;
-  ratePerSquareMeter?: number;
 }
 
 export default function PropertyAnalyzerPage() {
@@ -45,7 +45,11 @@ export default function PropertyAnalyzerPage() {
           leaseCycleGap: formData.leaseCycleGap,
           propertyDescription: formData.comments,
           deposit: formData.depositAmount,
-          interestRate: formData.interestRate
+          interestRate: formData.interestRate,
+          floorArea: formData.floorArea,
+          ratePerSquareMeter: formData.ratePerSquareMeter,
+          floorArea: formData.floorArea, 
+          ratePerSquareMeter: formData.ratePerSquareMeter 
         })
       });
 
@@ -179,8 +183,8 @@ export default function PropertyAnalyzerPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      <p>Floor Area: {analysisResult.floorArea || "0"} m²</p>
-                      <p>Rate/m²: R{analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}</p>
+                      <p className="text-sm">Floor Area: {formData?.floorArea || "0"} m²</p>
+                      <p className="text-sm mt-2">Rate/m²: R{formData?.ratePerSquareMeter?.toLocaleString() || "0"}</p>
                     </div>
                   </CardContent>
                 </Card>
