@@ -32,13 +32,14 @@ export default function PropertyAnalyzerPage() {
       setAnalysisError(null);
       setFormData(formData);
       
+      // Ensure all numbers are properly parsed and validated
       const requestBody = {
         purchasePrice: Number(formData.purchasePrice),
-        airbnbNightlyRate: Number(formData.airbnbNightlyRate),
-        occupancyRate: Number(formData.occupancyRate),
-        longTermRental: Number(formData.longTermRental),
-        leaseCycleGap: Number(formData.leaseCycleGap),
-        propertyDescription: formData.comments,
+        shortTermNightlyRate: Number(formData.airbnbNightlyRate) || undefined,
+        annualOccupancy: Number(formData.occupancyRate) || undefined,
+        longTermRental: Number(formData.longTermRental) || undefined,
+        leaseCycleGap: Number(formData.leaseCycleGap) || undefined,
+        propertyDescription: formData.comments || null,
         deposit: Number(formData.depositAmount),
         interestRate: Number(formData.interestRate),
         floorArea: Number(formData.floorArea),
