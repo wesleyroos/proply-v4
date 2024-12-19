@@ -6,9 +6,11 @@ import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 
 interface AnalysisResult {
-  grossYield: number;
+  shortTermGrossYield: number | null;
+  longTermGrossYield: number | null;
   analysis: {
-    annualRent: number;
+    shortTermAnnualRevenue: number | null;
+    longTermAnnualRevenue: number | null;
     purchasePrice: number;
   };
 }
@@ -68,43 +70,67 @@ export default function PropertyAnalyzerPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Gross Yield
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Building2 className="h-4 w-4" />
+                      Short-Term Rental Yield
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">
-                      {analysisResult.grossYield.toFixed(2)}%
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Annual Rental Income ÷ Purchase Price
-                    </p>
+                    {analysisResult.shortTermGrossYield !== null ? (
+                      <>
+                        <div className="text-2xl font-bold">
+                          {analysisResult.shortTermGrossYield.toFixed(2)}%
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Annual Revenue: R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Based on nightly rate × occupancy
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Not enough data for short-term calculation
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
                 
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Annual Rental Income
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      Long-Term Rental Yield
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">
-                      R{analysisResult.analysis.annualRent.toLocaleString()}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Monthly Rent × 12
-                    </p>
+                    {analysisResult.longTermGrossYield !== null ? (
+                      <>
+                        <div className="text-2xl font-bold">
+                          {analysisResult.longTermGrossYield.toFixed(2)}%
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Annual Revenue: R{analysisResult.analysis.longTermAnnualRevenue?.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Adjusted for lease cycle gap
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Not enough data for long-term calculation
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="md:col-span-2">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">
-                      Purchase Price
+                      Property Value
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

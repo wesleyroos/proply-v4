@@ -439,24 +439,28 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      const { purchasePrice, monthlyRent } = req.body;
+      const {
+        purchasePrice,
+        airbnbNightlyRate,
+        occupancyRate,
+        longTermRental,
+        leaseCycleGap
+      } = req.body;
       
-      if (!purchasePrice || !monthlyRent) {
-        return res.status(400).json({ error: "Purchase price and monthly rent are required" });
+      if (!purchasePrice) {
+        return res.status(400).json({ error: "Purchase price is required" });
       }
 
-      const grossYield = (monthlyRent * 12 / purchasePrice) * 100;
-      
-      const response = {
-        grossYield,
-        analysis: {
-          purchasePrice,
-          monthlyRent,
-          annualRent: monthlyRent * 12
-        }
+      const propertyData = {
+        purchasePrice,
+        shortTermNightlyRate: airbnbNightlyRate || null,
+        annualOccupancy: occupancyRate || null,
+        longTermRental: longTermRental || null,
+        leaseCycleGap: leaseCycleGap || 0
       };
 
-      res.json(response);
+      const yields = calculateYields(propertyData);
+      res.json(yields);
     } catch (error) {
       console.error('Analysis error:', error);
       res.status(500).json({ error: "Failed to analyze property data" });
