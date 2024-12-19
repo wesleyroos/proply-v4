@@ -212,7 +212,7 @@ export default function PropertyAnalyzerPage() {
                         
                         return (
                           <>
-                            <p className="text-sm mt-2">Rate per Square Metre: R{actualRate.toLocaleString()}</p>
+                            <p className="text-sm mt-2">Rate/m²: R{actualRate.toLocaleString()}</p>
                             <p className="text-sm mt-2">
                               Rate per Square Metre Difference:{' '}
                               <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
