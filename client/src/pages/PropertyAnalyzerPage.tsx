@@ -30,7 +30,7 @@ interface AnalysisResult {
   deposit: number | null;
   depositPercentage: number | null;
   interestRate: number | null;
-  term: number | null;
+  loanTerm: number | null;
   monthlyBondRepayment: number | null;
   floorArea: number | null;
   ratePerSquareMeter: number | null;
@@ -256,7 +256,7 @@ export default function PropertyAnalyzerPage() {
                         Term
                       </h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
-                        {analysisResult.term || "0"} years
+                        {analysisResult.loanTerm || "0"} years
                       </p>
                     </div>
                   </div>
