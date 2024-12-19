@@ -45,7 +45,9 @@ app.post("/analyze", (req, res) => {
       deposit: Number(req.body.deposit),
       interestRate: Number(req.body.interestRate),
       floorArea: Number(req.body.floorArea),
-      ratePerSquareMeter: Number(req.body.ratePerSquareMeter)
+      ratePerSquareMeter: Number(req.body.ratePerSquareMeter),
+      term: req.body.term ? Number(req.body.term) : 20 // Default to 20 years if not specified
+
     };
 
     // Validate numeric fields
@@ -70,9 +72,15 @@ app.post("/analyze", (req, res) => {
 
     console.log("All validations passed, calculating yields...");
     const analysisResult = calculateYields(propertyData);
-    console.log("Analysis complete. Result:", JSON.stringify(analysisResult, null, 2));
+    // Include term in the response
+    const result = {
+        ...analysisResult,
+        term: req.body.term ? Number(req.body.term) : 20
+      };
 
-    return res.json(analysisResult);
+    console.log("Analysis complete. Result:", JSON.stringify(result, null, 2));
+
+    return res.json(result);
   } catch (error) {
     console.error("=== Analysis Error ===");
     console.error("Error details:", error);
