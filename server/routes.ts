@@ -450,6 +450,7 @@ export function registerRoutes(app: Express): Server {
         longTermRental: req.body.longTermRental ? Number(req.body.longTermRental) : null,
         leaseCycleGap: req.body.leaseCycleGap ? Number(req.body.leaseCycleGap) : null,
         propertyDescription: req.body.propertyDescription || null,
+        address: req.body.address,
         deposit: Number(req.body.deposit),
         interestRate: Number(req.body.interestRate),
         floorArea: Number(req.body.floorArea),

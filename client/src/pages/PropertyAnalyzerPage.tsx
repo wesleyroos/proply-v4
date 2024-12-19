@@ -40,6 +40,7 @@ export default function PropertyAnalyzerPage() {
         longTermRental: Number(formData.longTermRental) || undefined,
         leaseCycleGap: Number(formData.leaseCycleGap) || undefined,
         propertyDescription: formData.comments || null,
+        address: formData.address,
         deposit: Number(formData.depositAmount),
         interestRate: Number(formData.interestRate),
         floorArea: Number(formData.floorArea),

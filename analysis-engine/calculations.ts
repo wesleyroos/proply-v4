@@ -80,7 +80,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Calculate deposit percentage
   const depositPercentage = (data.deposit / data.purchasePrice) * 100;
 
-  const result: AnalysisResult = {
+  return {
     // Financial calculations with precise number formatting
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
     longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
@@ -89,6 +89,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
 
     // Property details (passing through validated data)
     propertyDescription: data.propertyDescription,
+    address: data.address,
     deposit: data.deposit,
     interestRate: data.interestRate,
     floorArea: data.floorArea,
@@ -101,7 +102,4 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       purchasePrice: data.purchasePrice
     }
   };
-
-  console.log('Analysis result:', result);
-  return result;
 }
