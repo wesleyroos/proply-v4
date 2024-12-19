@@ -25,10 +25,12 @@ export default function PropertyAnalyzerPage() {
   const { user } = useUser();
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<any>(null);
 
   const handleAnalysisComplete = async (formData: any) => {
     try {
       setAnalysisError(null);
+      setFormData(formData);
       
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -152,6 +154,8 @@ export default function PropertyAnalyzerPage() {
                         <div className="mt-2">
                           <p className="text-lg font-semibold">R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}</p>
                           <p className="text-sm text-muted-foreground">Gross Yield: {analysisResult.shortTermGrossYield?.toFixed(2) || "0"}%</p>
+                          <p className="text-xs text-muted-foreground mt-1">Nightly Rate: R{formData?.airbnbNightlyRate || "0"}</p>
+                          <p className="text-xs text-muted-foreground">Occupancy: {formData?.occupancyRate || "0"}%</p>
                         </div>
                       </div>
                       <div>
