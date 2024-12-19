@@ -6,6 +6,13 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AlertCircle, BarChart3, TrendingUp, Building2, MapPin } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
@@ -45,6 +52,7 @@ export default function PropertyAnalyzerPage() {
   );
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(null);
+  const [includeTransferDuty, setIncludeTransferDuty] = useState<boolean>(true);
 
   const handleAnalysisComplete = async (formData: any) => {
     try {
@@ -262,9 +270,28 @@ export default function PropertyAnalyzerPage() {
                     <h3 className="text-sm font-semibold text-slate-600">
                       Transfer Costs
                     </h3>
-                    <p className="mt-2 text-lg font-bold text-slate-800">
-                      R{findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable).total.toLocaleString()}
-                    </p>
+                    <div className="mt-2 space-y-2">
+                      <p className="text-lg font-bold text-slate-800">
+                        R{(() => {
+                          const costs = findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable);
+                          return includeTransferDuty 
+                            ? costs.total.toLocaleString()
+                            : (costs.total - costs.transferDuty).toLocaleString();
+                        })()}
+                      </p>
+                      <Select
+                        value={includeTransferDuty ? "with" : "without"}
+                        onValueChange={(value) => setIncludeTransferDuty(value === "with")}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Transfer duty option" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="with">With Transfer Duty</SelectItem>
+                          <SelectItem value="without">No Transfer Duty</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div>
@@ -272,11 +299,12 @@ export default function PropertyAnalyzerPage() {
                       Total Capital Required
                     </h3>
                     <p className="mt-2 text-lg font-bold text-slate-800">
-                      R{(
-                        (analysisResult.deposit || 0) +
-                        findCostFromTable(analysisResult.analysis.purchasePrice, bondCostsTable).total +
-                        findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable).total
-                      ).toLocaleString()}
+                      R{(() => {
+                        const bondCosts = findCostFromTable(analysisResult.analysis.purchasePrice, bondCostsTable).total;
+                        const transferCosts = findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable);
+                        const transferTotal = includeTransferDuty ? transferCosts.total : (transferCosts.total - transferCosts.transferDuty);
+                        return ((analysisResult.deposit || 0) + bondCosts + transferTotal).toLocaleString();
+                      })()}
                     </p>
                   </div>
                 </CardContent>
