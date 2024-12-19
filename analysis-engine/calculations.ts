@@ -4,23 +4,28 @@ export interface PropertyData {
   annualOccupancy?: number;
   longTermRental?: number;
   leaseCycleGap?: number;
-  propertyDescription?: string;
+  propertyDescription?: string | null;
   deposit?: number;
   interestRate?: number;
   floorArea?: number;
-  ratePerSquareMeter: number | undefined; // Changed to be explicit about undefined
+  ratePerSquareMeter?: number;
 }
 
 export interface YieldAnalysis {
+  // Financial calculations
   shortTermGrossYield: number | null;
   longTermGrossYield: number | null;
+  monthlyBondRepayment: number | null;
+  depositPercentage: number | null;
+
+  // Pass-through property details
   propertyDescription: string | null;
   deposit: number | null;
-  depositPercentage: number | null;
   interestRate: number | null;
-  monthlyBondRepayment: number | null;
   floorArea: number | null;
   ratePerSquareMeter: number | null;
+
+  // Analysis summary
   analysis: {
     shortTermAnnualRevenue: number | null;
     longTermAnnualRevenue: number | null;
@@ -29,10 +34,13 @@ export interface YieldAnalysis {
 }
 
 export function calculateYields(data: PropertyData): YieldAnalysis {
+  // Initialize calculation variables
   let shortTermGrossYield = null;
   let longTermGrossYield = null;
   let shortTermAnnualRevenue = null;
   let longTermAnnualRevenue = null;
+  let monthlyBondRepayment = null;
+  let depositPercentage = null;
 
   // Calculate short-term rental yield if data is available
   if (data.shortTermNightlyRate && data.annualOccupancy) {
@@ -52,7 +60,6 @@ export function calculateYields(data: PropertyData): YieldAnalysis {
   }
 
   // Calculate monthly bond repayment if we have both deposit and interest rate
-  let monthlyBondRepayment = null;
   if (data.deposit !== undefined && data.interestRate !== undefined) {
     const loanAmount = data.purchasePrice - data.deposit;
     const monthlyRate = (data.interestRate / 100) / 12;
@@ -61,23 +68,25 @@ export function calculateYields(data: PropertyData): YieldAnalysis {
   }
 
   // Calculate deposit percentage if deposit is provided
-  const depositPercentage = data.deposit ? (data.deposit / data.purchasePrice) * 100 : null;
+  if (data.deposit !== undefined) {
+    depositPercentage = (data.deposit / data.purchasePrice) * 100;
+  }
 
-  // Return calculated values along with passed-through form data
+  // Return both calculated values and pass-through form data
   return {
-    // Calculated values
+    // Calculated values (with proper number formatting)
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
     longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
     monthlyBondRepayment: monthlyBondRepayment !== null ? Number(monthlyBondRepayment.toFixed(2)) : null,
     depositPercentage: depositPercentage !== null ? Number(depositPercentage.toFixed(2)) : null,
-    
-    // Pass-through values from form
+
+    // Pass-through values from form (maintaining null if undefined)
     propertyDescription: data.propertyDescription || null,
     deposit: data.deposit || null,
     interestRate: data.interestRate || null,
     floorArea: data.floorArea || null,
-    ratePerSquareMeter: data.ratePerSquareMeter, // Removed the || null to ensure the value is passed through
-    
+    ratePerSquareMeter: data.ratePerSquareMeter || null,
+
     // Analysis summary
     analysis: {
       shortTermAnnualRevenue,
