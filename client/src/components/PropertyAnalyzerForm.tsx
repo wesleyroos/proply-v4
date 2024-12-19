@@ -75,11 +75,11 @@ const formSchema = z.object({
   // Step 1: Property Details
   address: z.string().min(1, "Address is required"),
   propertyUrl: z.string().url().optional().or(z.literal("")),
-  purchasePrice: z.coerce.number().min(0, "Purchase price must be positive"),
-  floorArea: z.coerce.number().min(0, "Floor area must be positive"),
-  bedrooms: z.coerce.number().min(0.5, "Minimum 0.5 bedrooms required"),
-  bathrooms: z.coerce.number().min(0, "Bathrooms cannot be negative"),
-  parkingSpaces: z.coerce
+  purchasePrice: z.number().min(0, "Purchase price must be positive"),
+  floorArea: z.number().min(0, "Floor area must be positive"),
+  bedrooms: z.number().min(0.5, "Minimum 0.5 bedrooms required"),
+  bathrooms: z.number().min(0, "Bathrooms cannot be negative"),
+  parkingSpaces: z
     .number()
     .min(0, "Parking spaces cannot be negative")
     .optional(),
@@ -87,16 +87,16 @@ const formSchema = z.object({
 
   // Step 2: Financing Details
   depositType: z.enum(["amount", "percentage"]),
-  depositAmount: z.coerce.number().min(0, "Deposit must be positive"),
-  depositPercentage: z.coerce
+  depositAmount: z.number().min(0, "Deposit must be positive"),
+  depositPercentage: z
     .number()
     .min(0, "Deposit percentage must be positive")
     .max(100, "Deposit percentage cannot exceed 100"),
-  interestRate: z.coerce
+  interestRate: z
     .number()
     .min(0, "Interest rate must be positive")
     .max(100, "Interest rate cannot exceed 100"),
-  term: z.coerce.number().min(1, "Loan term must be at least 1 year"),
+  term: z.number().min(1, "Loan term must be at least 1 year"),
 
   // Step 3: Operating Expenses
   monthlyLevies: z.coerce.number().min(0, "Monthly levies must be positive"),
