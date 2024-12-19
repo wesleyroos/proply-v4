@@ -73,8 +73,8 @@ function NotFound() {
 
 function App() {
   return (
-    <TooltipProvider>
-      <>
+    <>
+      <TooltipProvider>
         <Switch>
           {/* Public routes */}
           <Route path="/" component={HomePage} />
@@ -112,9 +112,9 @@ function App() {
           />
           <Route component={NotFound} />
         </Switch>
-        <Toaster />
-      </>
-    </TooltipProvider>
+      </TooltipProvider>
+      <Toaster />
+    </>
   );
 }
 

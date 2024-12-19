@@ -234,43 +234,58 @@ export default function PropertyAnalyzerPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
-                      <div>
-                        <h3 className="text-sm font-semibold text-slate-600">Floor Area</h3>
-                        <p className="mt-2 text-lg font-bold text-slate-800">{analysisResult.floorArea || "0"} m²</p>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-600">Floor Area</h3>
+                          <p className="mt-2 text-lg font-bold text-slate-800">{analysisResult.floorArea || "0"} m²</p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-600">Current Property Rate/m²</h3>
+                          <p className="mt-2 text-lg font-bold text-slate-800">
+                            R{(analysisResult.analysis.purchasePrice / (analysisResult.floorArea || 1)).toLocaleString()}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-sm font-semibold text-slate-600">Area Rate/m²</h3>
-                        <p className="mt-2 text-lg font-bold text-slate-800">R{analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}</p>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-600">Area Rate/m²</h3>
+                          <p className="mt-2 text-lg font-bold text-slate-800">R{analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}</p>
+                        </div>
+                        <div>
+                          {(() => {
+                            const actualRate = analysisResult.analysis.purchasePrice / (analysisResult.floorArea || 1);
+                            const areaRate = analysisResult.ratePerSquareMeter || 0;
+                            const difference = areaRate - actualRate;
+                            const isPositive = difference > 0;
+                          
+                            return (
+                              <div>
+                                <h3 className="text-sm font-semibold text-slate-600">Rate/m² Difference</h3>
+                                <Tooltip delayDuration={0}>
+                                  <TooltipTrigger className="cursor-help">
+                                    <p className="mt-2 text-lg font-bold">
+                                      <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
+                                        R{Math.abs(difference).toLocaleString()}
+                                        {' '}
+                                        {isPositive ? 'above' : 'below'}
+                                        {' '}
+                                        area rate
+                                        {' '}
+                                        ({((Math.abs(difference) / actualRate) * 100).toFixed(1)}%)
+                                      </span>
+                                    </p>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-[300px] text-sm">
+                                    This shows how the property's price per square meter compares to the average rate in the area. 
+                                    A lower rate ({isPositive ? 'currently higher' : 'currently lower'}) than the area average might indicate 
+                                    better value for money, while a higher rate could suggest premium features or location.
+                                  </TooltipContent>
+                                </Tooltip>
+                              </div>
+                            );
+                          })()}
+                        </div>
                       </div>
-                      {(() => {
-                        const actualRate = analysisResult.analysis.purchasePrice / (analysisResult.floorArea || 1);
-                        const areaRate = analysisResult.ratePerSquareMeter || 0;
-                        const difference = areaRate - actualRate;
-                        const isPositive = difference > 0;
-                        
-                        return (
-                          <>
-                            <p className="text-sm mt-2">Current Property Rate/m²: R{actualRate.toLocaleString()}</p>
-                            <Tooltip delayDuration={0}>
-                              <TooltipTrigger className="cursor-help">
-                                <p className="text-sm mt-2">
-                                  Rate/m² Difference:{' '}
-                                  <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
-                                    R{Math.abs(difference).toLocaleString()}
-                                    {isPositive ? ' above' : ' below'} area rate
-                                    {' '}({((Math.abs(difference) / actualRate) * 100).toFixed(1)}%)
-                                  </span>
-                                </p>
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-[300px] text-sm">
-                                This shows how the property's price per square meter compares to the average rate in the area. 
-                                A lower rate ({isPositive ? 'currently higher' : 'currently lower'}) than the area average might indicate 
-                                better value for money, while a higher rate could suggest premium features or location.
-                              </TooltipContent>
-                            </Tooltip>
-                          </>
-                        );
-                      })()}
                     </div>
                   </CardContent>
                 </Card>
