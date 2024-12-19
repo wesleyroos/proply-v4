@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { BarChart3, TrendingUp, Building2 } from "lucide-react";
+import { AlertCircle, BarChart3, TrendingUp, Building2 } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 
