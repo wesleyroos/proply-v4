@@ -213,9 +213,13 @@ export default function PropertyAnalyzerPage() {
                         return (
                           <>
                             <p className="text-sm mt-2">Rate per Square Meter: R{actualRate.toLocaleString()}</p>
-                            <p className={`text-sm mt-2 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                              Rate/m² Difference: R{Math.abs(difference).toLocaleString()}
-                              {isPositive ? ' above' : ' below'} area rate
+                            <p className="text-sm mt-2">
+                              Rate per Square Metre Difference:{' '}
+                              <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
+                                R{Math.abs(difference).toLocaleString()}
+                                {isPositive ? ' above' : ' below'} area rate
+                                {' '}({((Math.abs(difference) / actualRate) * 100).toFixed(1)}%)
+                              </span>
                             </p>
                           </>
                         );
