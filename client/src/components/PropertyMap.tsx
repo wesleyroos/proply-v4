@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
+import { useEffect, useRef, useState } from 'react';
+import { initGoogleMaps } from '../lib/maps';
 
 interface PropertyMapProps {
   address: string;
@@ -7,41 +7,77 @@ interface PropertyMapProps {
 
 export default function PropertyMap({ address }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    const loadMap = async () => {
-      const loader = new Loader({
-        apiKey: "AIzaSyAqp2MBbZHl0uZsq6qSNFtHDt0hP_kkTa4",
-        version: "weekly",
-        libraries: ["places"]
-      });
+    let isMounted = true;
+    let map: google.maps.Map | null = null;
+    let marker: google.maps.Marker | null = null;
 
+    const initializeMap = async () => {
       try {
-        const google = await loader.load();
-        const geocoder = new google.maps.Geocoder();
-        
-        geocoder.geocode({ address }, (results, status) => {
-          if (status === "OK" && results?.[0]) {
-            const map = new google.maps.Map(mapRef.current!, {
-              center: results[0].geometry.location,
-              zoom: 15
-            });
+        await initGoogleMaps();
 
-            new google.maps.Marker({
-              map,
-              position: results[0].geometry.location
-            });
-          }
+        if (!isMounted || !mapRef.current || !address) return;
+
+        // Initialize map with default location
+        const defaultLocation = { lat: -33.918861, lng: 18.4233 }; // Cape Town
+        map = new google.maps.Map(mapRef.current, {
+          center: defaultLocation,
+          zoom: 13,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
         });
+
+        // Geocode the address
+        const geocoder = new google.maps.Geocoder();
+        const result = await new Promise<google.maps.GeocoderResult>((resolve, reject) => {
+          geocoder.geocode({ address }, (results, status) => {
+            if (status === "OK" && results?.[0]) {
+              resolve(results[0]);
+            } else {
+              reject(new Error(`Geocoding failed: ${status}`));
+            }
+          });
+        });
+
+        const location = result.geometry.location;
+        
+        // Update map view
+        map.setCenter(location);
+        map.setZoom(16);
+
+        // Create marker
+        marker = new google.maps.Marker({
+          map: map,
+          position: location,
+          title: "Property Location",
+        });
+
       } catch (error) {
-        console.error('Error loading map:', error);
+        console.error('Error initializing map:', error);
+        setError('Failed to load property location on map');
       }
     };
 
-    if (mapRef.current) {
-      loadMap();
-    }
+    initializeMap();
+
+    return () => {
+      isMounted = false;
+      if (marker) {
+        marker.setMap(null);
+      }
+    };
   }, [address]);
 
-  return <div ref={mapRef} className="w-full h-full min-h-[300px] rounded-lg" />;
+  if (error) {
+    return (
+      <div className="h-[300px] w-full rounded-lg overflow-hidden border bg-gray-100 flex items-center justify-center">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
+
+  return <div ref={mapRef} className="h-[300px] w-full rounded-lg overflow-hidden border" />;
 }
