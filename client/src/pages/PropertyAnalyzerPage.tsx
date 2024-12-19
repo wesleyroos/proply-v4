@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { AlertCircle, BarChart3, TrendingUp, Building2 } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
+import PropertyMap from "@/components/PropertyMap";
 
 interface AnalysisResult {
   shortTermGrossYield: number | null;
