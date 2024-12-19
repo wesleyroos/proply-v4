@@ -13,8 +13,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 // Types
@@ -66,35 +78,76 @@ const formSchema = z.object({
   floorArea: z.number().min(0, "Floor area must be positive"),
   bedrooms: z.number().min(0.5, "Minimum 0.5 bedrooms required"),
   bathrooms: z.number().min(0, "Bathrooms cannot be negative"),
-  parkingSpaces: z.number().min(0, "Parking spaces cannot be negative").optional(),
-  
+  parkingSpaces: z
+    .number()
+    .min(0, "Parking spaces cannot be negative")
+    .optional(),
+
   // Step 2: Financing Details
   depositType: z.enum(["amount", "percentage"]),
   depositAmount: z.number().min(0, "Deposit must be positive"),
-  depositPercentage: z.number().min(0, "Deposit percentage must be positive").max(100, "Deposit percentage cannot exceed 100"),
-  interestRate: z.number().min(0, "Interest rate must be positive").max(100, "Interest rate cannot exceed 100"),
+  depositPercentage: z
+    .number()
+    .min(0, "Deposit percentage must be positive")
+    .max(100, "Deposit percentage cannot exceed 100"),
+  interestRate: z
+    .number()
+    .min(0, "Interest rate must be positive")
+    .max(100, "Interest rate cannot exceed 100"),
   loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
-  
+
   // Step 3: Operating Expenses
   monthlyLevies: z.number().min(0, "Monthly levies must be positive"),
-  monthlyRatesTaxes: z.number().min(0, "Monthly rates and taxes must be positive"),
-  otherMonthlyExpenses: z.number().min(0, "Other monthly expenses must be positive"),
-  maintenancePercentage: z.number().min(0, "Maintenance percentage must be positive").max(100, "Maintenance percentage cannot exceed 100"),
-  managementFee: z.number().min(0, "Management fee must be positive").max(100, "Management fee cannot exceed 100"),
-  
+  monthlyRatesTaxes: z
+    .number()
+    .min(0, "Monthly rates and taxes must be positive"),
+  otherMonthlyExpenses: z
+    .number()
+    .min(0, "Other monthly expenses must be positive"),
+  maintenancePercentage: z
+    .number()
+    .min(0, "Maintenance percentage must be positive")
+    .max(100, "Maintenance percentage cannot exceed 100"),
+  managementFee: z
+    .number()
+    .min(0, "Management fee must be positive")
+    .max(100, "Management fee cannot exceed 100"),
+
   // Step 4: Revenue Performance
-  airbnbNightlyRate: z.number().min(0, "Nightly rate must be positive").optional(),
-  occupancyRate: z.number().min(0, "Occupancy rate must be positive").max(100, "Occupancy rate cannot exceed 100").optional(),
-  longTermRental: z.number().min(0, "Long term rental must be positive").optional(),
-  leaseCycleGap: z.number().min(0, "Lease cycle gap must be positive").optional(),
-  
+  airbnbNightlyRate: z
+    .number()
+    .min(0, "Nightly rate must be positive")
+    .optional(),
+  occupancyRate: z
+    .number()
+    .min(0, "Occupancy rate must be positive")
+    .max(100, "Occupancy rate cannot exceed 100")
+    .optional(),
+  longTermRental: z
+    .number()
+    .min(0, "Long term rental must be positive")
+    .optional(),
+  leaseCycleGap: z
+    .number()
+    .min(0, "Lease cycle gap must be positive")
+    .optional(),
+
   // Step 5: Escalations
-  annualIncomeGrowth: z.number().min(0, "Annual income growth must be positive").max(100, "Annual income growth cannot exceed 100"),
-  annualExpenseGrowth: z.number().min(0, "Annual expense growth must be positive").max(100, "Annual expense growth cannot exceed 100"),
-  annualPropertyAppreciation: z.number().min(0, "Annual property appreciation must be positive").max(100, "Annual property appreciation cannot exceed 100"),
-  
+  annualIncomeGrowth: z
+    .number()
+    .min(0, "Annual income growth must be positive")
+    .max(100, "Annual income growth cannot exceed 100"),
+  annualExpenseGrowth: z
+    .number()
+    .min(0, "Annual expense growth must be positive")
+    .max(100, "Annual expense growth cannot exceed 100"),
+  annualPropertyAppreciation: z
+    .number()
+    .min(0, "Annual property appreciation must be positive")
+    .max(100, "Annual property appreciation cannot exceed 100"),
+
   // Step 6: Miscellaneous
-  cmaRatePerSqm: z.number().min(0, "CMA rate per m² must be positive"),
+  cmaRatePerSqm: z.number().min(0, "Area rate per m² must be positive"),
   comments: z.string().optional(),
 });
 
@@ -106,7 +159,7 @@ const STEPS = [
   "Operating Expenses",
   "Revenue Performance",
   "Escalations",
-  "Miscellaneous"
+  "Miscellaneous",
 ];
 
 interface RevenueData {
@@ -123,10 +176,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [demoClicks, setDemoClicks] = useState(0);
   const [revenueData, setRevenueData] = useState<{
-    '25': RevenueData;
-    '50': RevenueData;
-    '75': RevenueData;
-    '90': RevenueData;
+    "25": RevenueData;
+    "50": RevenueData;
+    "75": RevenueData;
+    "90": RevenueData;
   } | null>(null);
   const hasProAccess = useProAccess();
   const { toast } = useToast();
@@ -136,17 +189,20 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     try {
       const address = form.getValues("address");
       const bedrooms = form.getValues("bedrooms");
-      
+
       if (!address || !bedrooms) {
         toast({
           title: "Missing Information",
-          description: "Please enter the property address and number of bedrooms first.",
+          description:
+            "Please enter the property address and number of bedrooms first.",
           variant: "destructive",
         });
         return;
       }
 
-      const response = await fetch(`/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`);
+      const response = await fetch(
+        `/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`,
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
@@ -157,31 +213,31 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       if (data.KPIsByBedroomCategory?.[bedrooms]) {
         const result = data.KPIsByBedroomCategory[bedrooms];
         setRevenueData({
-          '25': {
+          "25": {
             adr: result.ADR25PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
-            percentile: 25
+            percentile: 25,
           },
-          '50': {
+          "50": {
             adr: result.ADR50PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
-            percentile: 50
+            percentile: 50,
           },
-          '75': {
+          "75": {
             adr: result.ADR75PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
-            percentile: 75
+            percentile: 75,
           },
-          '90': {
+          "90": {
             adr: result.ADR90PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
-            percentile: 90
-          }
+            percentile: 90,
+          },
         });
         setShowPercentileDialog(true);
       }
     } catch (error) {
-      console.error('Error fetching revenue data:', error);
+      console.error("Error fetching revenue data:", error);
       toast({
         title: "Error",
         description: "Failed to fetch revenue data. Please try again.",
@@ -192,9 +248,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     }
   };
 
-  const applyPercentileData = (percentile: '25' | '50' | '75' | '90') => {
+  const applyPercentileData = (percentile: "25" | "50" | "75" | "90") => {
     if (!revenueData) return;
-    
+
     const data = revenueData[percentile];
     form.setValue("airbnbNightlyRate", data.adr);
     form.setValue("occupancyRate", data.occupancy);
@@ -256,13 +312,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
   const nextStep = () => {
     const fields = getFieldsForStep(currentStep);
-    const isStepValid = fields.every(field => !form.getFieldState(field).error);
-    
+    const isStepValid = fields.every(
+      (field) => !form.getFieldState(field).error,
+    );
+
     if (isStepValid) {
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
     } else {
       // Trigger validation for the current step's fields
-      fields.forEach(field => form.trigger(field));
+      fields.forEach((field) => form.trigger(field));
     }
   };
 
@@ -270,20 +328,51 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
 
-  const getFieldsForStep = (step: number): (keyof PropertyAnalyzerFormValues)[] => {
+  const getFieldsForStep = (
+    step: number,
+  ): (keyof PropertyAnalyzerFormValues)[] => {
     switch (step) {
       case 0:
-        return ['address', 'propertyUrl', 'purchasePrice', 'floorArea', 'bedrooms', 'bathrooms', 'parkingSpaces'];
+        return [
+          "address",
+          "propertyUrl",
+          "purchasePrice",
+          "floorArea",
+          "bedrooms",
+          "bathrooms",
+          "parkingSpaces",
+        ];
       case 1:
-        return ['depositType', 'depositAmount', 'depositPercentage', 'interestRate', 'loanTerm'];
+        return [
+          "depositType",
+          "depositAmount",
+          "depositPercentage",
+          "interestRate",
+          "loanTerm",
+        ];
       case 2:
-        return ['monthlyLevies', 'monthlyRatesTaxes', 'otherMonthlyExpenses', 'maintenancePercentage', 'managementFee'];
+        return [
+          "monthlyLevies",
+          "monthlyRatesTaxes",
+          "otherMonthlyExpenses",
+          "maintenancePercentage",
+          "managementFee",
+        ];
       case 3:
-        return ['airbnbNightlyRate', 'occupancyRate', 'longTermRental', 'leaseCycleGap'];
+        return [
+          "airbnbNightlyRate",
+          "occupancyRate",
+          "longTermRental",
+          "leaseCycleGap",
+        ];
       case 4:
-        return ['annualIncomeGrowth', 'annualExpenseGrowth', 'annualPropertyAppreciation'];
+        return [
+          "annualIncomeGrowth",
+          "annualExpenseGrowth",
+          "annualPropertyAppreciation",
+        ];
       case 5:
-        return ['cmaRatePerSqm', 'comments'];
+        return ["cmaRatePerSqm", "comments"];
       default:
         return [];
     }
@@ -298,33 +387,46 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
             {STEPS.map((step, index) => {
               const fields = getFieldsForStep(index);
               const isStepComplete = fields.every(
-                field => !form.getFieldState(field).error && form.getValues(field)
+                (field) =>
+                  !form.getFieldState(field).error && form.getValues(field),
               );
-              
+
               return (
                 <li key={step} className="relative flex flex-col items-center">
                   {/* Connecting line */}
                   {index !== STEPS.length - 1 && (
                     <div
                       className={`absolute top-5 w-[calc(200%_-_2.5rem)] h-[2px] ${
-                        index < currentStep || isStepComplete ? "bg-[#3B82F6]" : "bg-gray-300"
+                        index < currentStep || isStepComplete
+                          ? "bg-[#3B82F6]"
+                          : "bg-gray-300"
                       }`}
-                      style={{ left: '4rem' }}
+                      style={{ left: "4rem" }}
                     />
                   )}
-                  
+
                   <div className="relative flex flex-col items-center">
                     {/* Checkmark for completed steps */}
                     {isStepComplete && (
                       <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20">
                         <div className="bg-white rounded-full p-1">
-                          <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          <svg
+                            className="w-4 h-4 text-green-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
                           </svg>
                         </div>
                       </div>
                     )}
-                    
+
                     {/* Step button */}
                     <button
                       type="button"
@@ -336,13 +438,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           index === currentStep
                             ? "bg-[#3B82F6] text-white ring-[#3B82F6]"
                             : isStepComplete
-                            ? "bg-white text-green-500 ring-green-500"
-                            : "bg-white text-gray-500 ring-gray-300"
+                              ? "bg-white text-green-500 ring-green-500"
+                              : "bg-white text-gray-500 ring-gray-300"
                         }`}
                       >
                         {index + 1}
                       </span>
-                      <span className="mt-2 text-sm font-medium text-gray-900">{step}</span>
+                      <span className="mt-2 text-sm font-medium text-gray-900">
+                        {step}
+                      </span>
                     </button>
                   </div>
                 </li>
@@ -365,13 +469,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Property Address</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter the full property address" {...field} />
+                        <Input
+                          placeholder="Enter the full property address"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="propertyUrl"
@@ -379,7 +486,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Property URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter URL of the property listing (optional)" {...field} />
+                        <Input
+                          placeholder="Enter URL of the property listing (optional)"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -393,11 +503,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Purchase Price (R)</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="Enter purchase price" 
+                        <Input
+                          type="number"
+                          placeholder="Enter purchase price"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -412,11 +524,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Floor Area (m²)</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="Enter floor area in m²" 
+                        <Input
+                          type="number"
+                          placeholder="Enter floor area in m²"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -432,13 +546,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <FormItem>
                         <FormLabel>Bedrooms</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
+                          <Input
+                            type="number"
                             step="0.5"
                             min="0.5"
-                            placeholder="0.5 for studio" 
+                            placeholder="0.5 for studio"
                             {...field}
-                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -453,12 +569,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <FormItem>
                         <FormLabel>Bathrooms</FormLabel>
                         <FormControl>
-                          <Input 
+                          <Input
                             type="number"
                             step="0.5"
                             min="0"
                             {...field}
-                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -473,11 +591,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <FormItem>
                         <FormLabel>Parking Spaces</FormLabel>
                         <FormControl>
-                          <Input 
+                          <Input
                             type="number"
                             min="0"
                             {...field}
-                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -535,7 +655,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <FormItem>
                           <FormLabel>R</FormLabel>
                           <FormControl>
-                            <Input 
+                            <Input
                               type="number"
                               min="0"
                               placeholder="250000,00"
@@ -544,10 +664,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                                 const amount = e.target.valueAsNumber;
                                 field.onChange(amount);
                                 // Calculate percentage based on amount
-                                const purchasePrice = form.getValues("purchasePrice");
+                                const purchasePrice =
+                                  form.getValues("purchasePrice");
                                 if (purchasePrice && amount) {
-                                  const percentage = (amount / purchasePrice) * 100;
-                                  form.setValue("depositPercentage", Number(percentage.toFixed(2)));
+                                  const percentage =
+                                    (amount / purchasePrice) * 100;
+                                  form.setValue(
+                                    "depositPercentage",
+                                    Number(percentage.toFixed(2)),
+                                  );
                                 }
                               }}
                             />
@@ -559,7 +684,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   </div>
 
                   <div className="flex items-center justify-center px-4">
-                    <span className="text-sm font-medium text-gray-600">OR</span>
+                    <span className="text-sm font-medium text-gray-600">
+                      OR
+                    </span>
                   </div>
 
                   <div className="flex-1">
@@ -570,7 +697,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <FormItem>
                           <FormLabel>%</FormLabel>
                           <FormControl>
-                            <Input 
+                            <Input
                               type="number"
                               min="0"
                               max="100"
@@ -580,10 +707,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                                 const percentage = e.target.valueAsNumber;
                                 field.onChange(percentage);
                                 // Calculate amount based on percentage
-                                const purchasePrice = form.getValues("purchasePrice");
+                                const purchasePrice =
+                                  form.getValues("purchasePrice");
                                 if (purchasePrice && percentage) {
-                                  const amount = (percentage / 100) * purchasePrice;
-                                  form.setValue("depositAmount", Number(amount.toFixed(0)));
+                                  const amount =
+                                    (percentage / 100) * purchasePrice;
+                                  form.setValue(
+                                    "depositAmount",
+                                    Number(amount.toFixed(0)),
+                                  );
                                 }
                               }}
                             />
@@ -602,13 +734,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Interest Rate (%)</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="number"
                           step="0.01"
                           min="0"
                           max="100"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -623,11 +757,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Loan Term (Years)</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="number"
                           min="1"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -647,11 +783,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Monthly Levies</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="number"
                           min="0"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -666,11 +804,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Monthly Rates & Taxes</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="number"
                           min="0"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -685,12 +825,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Other Monthly Expenses</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="number"
                           min="0"
                           placeholder="WiFi, electricity, subscriptions, etc."
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -705,14 +847,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Maintenance (%)</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="number"
                           step="0.1"
                           min="0"
                           max="100"
                           placeholder="5-10% based on rental type"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -727,14 +871,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Management Fee (%)</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="number"
                           step="0.1"
                           min="0"
                           max="100"
                           placeholder="0% if self-managed"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -756,11 +902,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <FormItem>
                           <FormLabel>Short Term Nightly Rate</FormLabel>
                           <FormControl>
-                            <Input 
+                            <Input
                               type="number"
                               min="0"
                               {...field}
-                              onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                              onChange={(e) =>
+                                field.onChange(e.target.valueAsNumber)
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -774,12 +922,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <FormItem>
                           <FormLabel>Annual Occupancy (%)</FormLabel>
                           <FormControl>
-                            <Input 
+                            <Input
                               type="number"
                               min="0"
                               max="100"
                               {...field}
-                              onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                              onChange={(e) =>
+                                field.onChange(e.target.valueAsNumber)
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -811,7 +961,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             ) : (
                               <>
                                 Get Revenue Data
-                                <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
+                                <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                                  PRO
+                                </span>
                               </>
                             )}
                           </Button>
@@ -831,12 +983,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Long Term Rental (Monthly)</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="number"
                           min="0"
                           placeholder="Monthly long-term rental income"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -851,12 +1005,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Lease Cycle Gap (Days)</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="number"
                           min="0"
                           placeholder="Average days between lease cycles"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -876,13 +1032,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Annual Income Growth (%)</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="number"
                           step="0.1"
                           min="0"
                           max="100"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -897,13 +1055,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Annual Expense Growth (%)</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="number"
                           step="0.1"
                           min="0"
                           max="100"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -918,13 +1078,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Annual Property Appreciation (%)</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="number"
                           step="0.1"
                           min="0"
                           max="100"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -944,12 +1106,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>CMA Rate per m²</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="number"
                           min="0"
                           placeholder="Average rate per m² for similar properties"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -964,7 +1128,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Comments</FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <Textarea
                           placeholder="Add any description or comments about the property"
                           className="min-h-[100px]"
                           {...field}
@@ -988,10 +1152,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
             >
               Previous
             </Button>
-            
+
             {currentStep === STEPS.length - 1 ? (
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Submit
               </Button>
             ) : (
@@ -1012,44 +1178,96 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
               <div className="p-3 bg-blue-100 rounded-full">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                <svg
+                  className="w-6 h-6 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
                 </svg>
               </div>
               <div>
-                <h4 className="font-semibold text-blue-900">Accurate Revenue Data</h4>
-                <p className="text-sm text-blue-700">Get real-time nightly rates and occupancy data from actual Airbnb listings in your area</p>
+                <h4 className="font-semibold text-blue-900">
+                  Accurate Revenue Data
+                </h4>
+                <p className="text-sm text-blue-700">
+                  Get real-time nightly rates and occupancy data from actual
+                  Airbnb listings in your area
+                </p>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <h4 className="font-medium">With Pro, you get:</h4>
               <ul className="space-y-2">
                 <li className="flex items-center gap-2 text-sm">
-                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
+                  <svg
+                    className="w-4 h-4 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                   Accurate nightly rates based on local market data
                 </li>
                 <li className="flex items-center gap-2 text-sm">
-                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
+                  <svg
+                    className="w-4 h-4 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                   Real occupancy rates from similar properties
                 </li>
                 <li className="flex items-center gap-2 text-sm">
-                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
+                  <svg
+                    className="w-4 h-4 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                   Seasonal pricing trends and recommendations
                 </li>
               </ul>
             </div>
 
-            <Button onClick={() => setShowUpgradeModal(false)} className="w-full">
+            <Button
+              onClick={() => setShowUpgradeModal(false)}
+              className="w-full"
+            >
               Upgrade Now
             </Button>
-            <Button variant="outline" onClick={() => setShowUpgradeModal(false)} className="w-full">
+            <Button
+              variant="outline"
+              onClick={() => setShowUpgradeModal(false)}
+              className="w-full"
+            >
               Continue with Manual Entry
             </Button>
           </div>
@@ -1057,7 +1275,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       </Dialog>
 
       {/* Percentile Selection Modal */}
-      <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
+      <Dialog
+        open={showPercentileDialog}
+        onOpenChange={setShowPercentileDialog}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Revenue Performance Data</DialogTitle>
@@ -1075,31 +1296,38 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 </tr>
               </thead>
               <tbody>
-                {revenueData && Object.entries(revenueData).map(([percentile, data]) => (
-                  <tr key={percentile} className="border-b">
-                    <td className="py-2 px-4">{percentile}th Percentile</td>
-                    <td className="text-right py-2 px-4">
-                      {new Intl.NumberFormat('en-ZA', {
-                        style: 'currency',
-                        currency: 'ZAR'
-                      }).format(data.adr)}
-                    </td>
-                    <td className="text-right py-2 px-4">
-                      <Button
-                        onClick={() => applyPercentileData(percentile as '25' | '50' | '75' | '90')}
-                        variant="secondary"
-                        size="sm"
-                      >
-                        Select
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                {revenueData &&
+                  Object.entries(revenueData).map(([percentile, data]) => (
+                    <tr key={percentile} className="border-b">
+                      <td className="py-2 px-4">{percentile}th Percentile</td>
+                      <td className="text-right py-2 px-4">
+                        {new Intl.NumberFormat("en-ZA", {
+                          style: "currency",
+                          currency: "ZAR",
+                        }).format(data.adr)}
+                      </td>
+                      <td className="text-right py-2 px-4">
+                        <Button
+                          onClick={() =>
+                            applyPercentileData(
+                              percentile as "25" | "50" | "75" | "90",
+                            )
+                          }
+                          variant="secondary"
+                          size="sm"
+                        >
+                          Select
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
             <div className="mt-4 text-sm text-gray-500">
-              <p>Occupancy: {revenueData?.['50'].occupancy.toFixed(1)}%</p>
-              <p className="mt-1">Number of Listings: {revenueData?.['50'].occupancy}</p>
+              <p>Occupancy: {revenueData?.["50"].occupancy.toFixed(1)}%</p>
+              <p className="mt-1">
+                Number of Listings: {revenueData?.["50"].occupancy}
+              </p>
             </div>
           </div>
         </DialogContent>
@@ -1109,11 +1337,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       <button
         type="button"
         onClick={() => {
-          setDemoClicks(prev => {
+          setDemoClicks((prev) => {
             if (prev === 2) {
               form.reset({
                 address: "27 Leeuwen St, Cape Town City Centre, 8001",
-                propertyUrl: "https://property24.com/apartments-for-sale/cape-town-city-centre/western-cape/7925/3142089",
+                propertyUrl:
+                  "https://property24.com/apartments-for-sale/cape-town-city-centre/western-cape/7925/3142089",
                 purchasePrice: 3500000,
                 floorArea: 85,
                 bedrooms: 2,
@@ -1137,7 +1366,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 annualExpenseGrowth: 6,
                 annualPropertyAppreciation: 12,
                 cmaRatePerSqm: 45000,
-                comments: "Prime location in Cape Town CBD. Close to amenities and tourist attractions. High potential for both short-term and long-term rentals."
+                comments:
+                  "Prime location in Cape Town CBD. Close to amenities and tourist attractions. High potential for both short-term and long-term rentals.",
               });
               return 0;
             }

@@ -31,10 +31,10 @@ app.post("/analyze", (req, res) => {
       longTermRental: req.body.longTermRental ? Number(req.body.longTermRental) : undefined,
       leaseCycleGap: req.body.leaseCycleGap ? Number(req.body.leaseCycleGap) : undefined,
       propertyDescription: req.body.propertyDescription || null,
-      deposit: req.body.deposit ? Number(req.body.deposit) : undefined,
-      interestRate: req.body.interestRate ? Number(req.body.interestRate) : undefined,
-      floorArea: req.body.floorArea ? Number(req.body.floorArea) : undefined,
-      ratePerSquareMeter: req.body.ratePerSquareMeter !== undefined ? Number(req.body.ratePerSquareMeter) : undefined
+      deposit: typeof req.body.deposit === 'number' ? Number(req.body.deposit) : null,
+      interestRate: typeof req.body.interestRate === 'number' ? Number(req.body.interestRate) : null,
+      floorArea: typeof req.body.floorArea === 'number' ? Number(req.body.floorArea) : null,
+      ratePerSquareMeter: typeof req.body.ratePerSquareMeter === 'number' ? Number(req.body.ratePerSquareMeter) : null
     };
     
     console.log('Debug - Property Analysis Input:', {

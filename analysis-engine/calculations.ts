@@ -84,9 +84,9 @@ export function calculateYields(data: PropertyData): YieldAnalysis {
 
     // Pass-through values from form (with explicit null handling)
     propertyDescription: data.propertyDescription ?? null,
-    deposit: data.deposit ?? null,
-    interestRate: data.interestRate ?? null,
-    floorArea: data.floorArea ?? null,
+    deposit: typeof data.deposit === 'number' ? Number(data.deposit) : null,
+    interestRate: typeof data.interestRate === 'number' ? Number(data.interestRate) : null,
+    floorArea: typeof data.floorArea === 'number' ? Number(data.floorArea) : null,
     ratePerSquareMeter: typeof data.ratePerSquareMeter === 'number' ? Number(data.ratePerSquareMeter) : null,
 
     // Analysis summary
