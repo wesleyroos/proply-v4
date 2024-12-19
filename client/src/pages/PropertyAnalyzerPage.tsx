@@ -119,7 +119,7 @@ export default function PropertyAnalyzerPage() {
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Property Description</h3>
                     <p className="mt-1">
-                      {formData?.comments || "No description available"}
+                      {analysisResult.propertyDescription || "No description available"}
                     </p>
                   </div>
                   
@@ -133,14 +133,14 @@ export default function PropertyAnalyzerPage() {
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Deposit</h3>
                     <p className="mt-1">
-                      R{formData?.depositAmount?.toLocaleString() || "0"} 
-                      ({formData?.depositPercentage || "0"}%)
+                      R{analysisResult.deposit?.toLocaleString() || "0"} 
+                      ({analysisResult.depositPercentage || "0"}%)
                     </p>
                   </div>
 
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Interest Rate</h3>
-                    <p className="mt-1">{formData?.interestRate || "0"}%</p>
+                    <p className="mt-1">{analysisResult.interestRate || "0"}%</p>
                   </div>
 
                   <div>
@@ -164,8 +164,7 @@ export default function PropertyAnalyzerPage() {
                         <div className="mt-2">
                           <p className="text-lg font-semibold">R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}</p>
                           <p className="text-sm text-muted-foreground">Gross Yield: {analysisResult.shortTermGrossYield?.toFixed(2) || "0"}%</p>
-                          <p className="text-xs text-muted-foreground mt-1">Nightly Rate: R{formData?.airbnbNightlyRate || "0"}</p>
-                          <p className="text-xs text-muted-foreground">Occupancy: {formData?.occupancyRate || "0"}%</p>
+                          {/* Removed formData usage here */}
                         </div>
                       </div>
                       <div>
@@ -186,10 +185,8 @@ export default function PropertyAnalyzerPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {console.log('Analysis Result:', analysisResult)}
-                      {console.log('Form Data:', formData)}
-                      <p className="text-sm">Floor Area: {formData?.floorArea || "0"} m²</p>
-                      <p className="text-sm mt-2">Rate/m²: R{analysisResult?.ratePerSquareMeter?.toLocaleString() || "0"}</p>
+                      <p className="text-sm">Floor Area: {analysisResult.floorArea || "0"} m²</p>
+                      <p className="text-sm mt-2">Rate/m²: R{analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}</p>
                     </div>
                   </CardContent>
                 </Card>
