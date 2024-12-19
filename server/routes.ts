@@ -6,6 +6,7 @@ import { properties, users, accessCodes } from "@db/schema";
 import { eq, and } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
+import { calculateYields, type PropertyData } from "../analysis-engine/calculations";
 
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
