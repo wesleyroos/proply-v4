@@ -33,16 +33,16 @@ export default function PropertyAnalyzerPage() {
       setFormData(formData);
       
       const requestBody = {
-        purchasePrice: formData.purchasePrice,
-        airbnbNightlyRate: formData.airbnbNightlyRate,
-        occupancyRate: formData.occupancyRate,
-        longTermRental: formData.longTermRental,
-        leaseCycleGap: formData.leaseCycleGap,
+        purchasePrice: Number(formData.purchasePrice),
+        airbnbNightlyRate: Number(formData.airbnbNightlyRate),
+        occupancyRate: Number(formData.occupancyRate),
+        longTermRental: Number(formData.longTermRental),
+        leaseCycleGap: Number(formData.leaseCycleGap),
         propertyDescription: formData.comments,
-        deposit: formData.depositAmount,
-        interestRate: formData.interestRate,
-        floorArea: formData.floorArea,
-        ratePerSquareMeter: formData.cmaRatePerSqm 
+        deposit: Number(formData.depositAmount),
+        interestRate: Number(formData.interestRate),
+        floorArea: Number(formData.floorArea),
+        cmaRatePerSqm: Number(formData.cmaRatePerSqm)
       };
       
       console.log('Data being sent to analyzer:', requestBody);

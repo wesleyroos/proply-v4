@@ -1,5 +1,5 @@
 import express from "express";
-import { calculateGrossYield, type PropertyData } from "./calculations";
+import { calculateYields, type PropertyData } from "./calculations";
 
 const app = express();
 app.use(express.json());
@@ -34,10 +34,19 @@ app.post("/analyze", (req, res) => {
       deposit: req.body.deposit ? Number(req.body.deposit) : undefined,
       interestRate: req.body.interestRate ? Number(req.body.interestRate) : undefined,
       floorArea: req.body.floorArea ? Number(req.body.floorArea) : undefined,
-      ratePerSquareMeter: req.body.cmaRatePerSqm ? Number(req.body.cmaRatePerSqm) : undefined
+      ratePerSquareMeter: req.body.cmaRatePerSqm !== undefined ? Number(req.body.cmaRatePerSqm) : undefined
     };
     
-    console.log('Property data after conversion:', propertyData);
+    console.log('Debug - Property Analysis Input:', {
+      raw: {
+        cmaRatePerSqm: req.body.cmaRatePerSqm,
+        floorArea: req.body.floorArea
+      },
+      converted: {
+        ratePerSquareMeter: propertyData.ratePerSquareMeter,
+        floorArea: propertyData.floorArea
+      }
+    });
     
     // Validate required fields
     if (!propertyData.purchasePrice) {
@@ -55,12 +64,6 @@ app.post("/analyze", (req, res) => {
     }
 
     // Calculate yields and get analysis results
-    console.log("Calculating yields for property:", {
-      purchasePrice: `R${propertyData.purchasePrice.toLocaleString()}`,
-      shortTermRate: propertyData.shortTermNightlyRate ? `R${propertyData.shortTermNightlyRate.toLocaleString()}` : 'N/A',
-      longTermRental: propertyData.longTermRental ? `R${propertyData.longTermRental.toLocaleString()}` : 'N/A'
-    });
-    
     const analysisResult = calculateYields(propertyData);
     console.log("Analysis result:", analysisResult);
 
@@ -71,7 +74,7 @@ app.post("/analyze", (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Analysis engine running on port ${PORT}`);
 });

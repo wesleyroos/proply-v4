@@ -34,6 +34,8 @@ export interface YieldAnalysis {
 }
 
 export function calculateYields(data: PropertyData): YieldAnalysis {
+  console.log('Calculating yields with data:', data);
+  
   // Initialize calculation variables
   let shortTermGrossYield = null;
   let longTermGrossYield = null;
@@ -72,8 +74,8 @@ export function calculateYields(data: PropertyData): YieldAnalysis {
     depositPercentage = (data.deposit / data.purchasePrice) * 100;
   }
 
-  // Return both calculated values and pass-through form data
-  return {
+  // Format the result with proper type handling
+  const result = {
     // Calculated values (with proper number formatting)
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
     longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
@@ -85,7 +87,7 @@ export function calculateYields(data: PropertyData): YieldAnalysis {
     deposit: data.deposit ?? null,
     interestRate: data.interestRate ?? null,
     floorArea: data.floorArea ?? null,
-    ratePerSquareMeter: typeof data.ratePerSquareMeter !== 'undefined' ? data.ratePerSquareMeter : null,
+    ratePerSquareMeter: data.ratePerSquareMeter ?? null,
 
     // Analysis summary
     analysis: {
@@ -94,4 +96,7 @@ export function calculateYields(data: PropertyData): YieldAnalysis {
       purchasePrice: data.purchasePrice
     }
   };
+
+  console.log('Analysis result:', result);
+  return result;
 }
