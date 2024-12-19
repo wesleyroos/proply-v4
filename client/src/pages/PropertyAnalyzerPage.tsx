@@ -172,26 +172,39 @@ export default function PropertyAnalyzerPage() {
                 {/* Revenue Performance */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg font-semibold">Revenue Performance</CardTitle>
+                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-emerald-500" />
+                      Revenue Performance
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h3 className="text-sm font-medium text-muted-foreground">Short-Term Rental (Year 1)</h3>
-                        <div className="mt-2">
-                          <p className="text-lg font-semibold">R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}</p>
-                          <p className="text-sm text-muted-foreground">Gross Yield: {analysisResult.shortTermGrossYield?.toFixed(2) || "0"}%</p>
-                          <p className="text-sm text-muted-foreground">Nightly Rate: R{analysisResult.shortTermNightlyRate?.toLocaleString() || "0"}</p>
-                          <p className="text-sm text-muted-foreground">Occupancy: {analysisResult.annualOccupancy || "0"}%</p>
+                      <div className="p-4 rounded-lg bg-blue-50/50">
+                          <h3 className="text-sm font-bold text-blue-600 mb-3">Short-Term Rental (Year 1)</h3>
+                          <div className="space-y-2">
+                            <p className="text-2xl font-bold text-slate-800">R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}</p>
+                            <p className="text-sm flex items-center gap-2">
+                              <span className="font-semibold text-emerald-600 text-base">
+                                {analysisResult.shortTermGrossYield?.toFixed(2) || "0"}% Gross Yield
+                              </span>
+                            </p>
+                            <div className="pt-2 border-t border-blue-100">
+                              <p className="text-sm text-slate-600">Nightly Rate: <span className="font-medium">R{analysisResult.shortTermNightlyRate?.toLocaleString() || "0"}</span></p>
+                              <p className="text-sm text-slate-600">Occupancy: <span className="font-medium">{analysisResult.annualOccupancy || "0"}%</span></p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-muted-foreground">Long-Term Rental (Year 1)</h3>
-                        <div className="mt-2">
-                          <p className="text-lg font-semibold">R{analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() || "0"}</p>
-                          <p className="text-sm text-muted-foreground">Gross Yield: {analysisResult.longTermGrossYield?.toFixed(2) || "0"}%</p>
+                        <div className="p-4 rounded-lg bg-purple-50/50">
+                          <h3 className="text-sm font-bold text-purple-600 mb-3">Long-Term Rental (Year 1)</h3>
+                          <div className="space-y-2">
+                            <p className="text-2xl font-bold text-slate-800">R{analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() || "0"}</p>
+                            <p className="text-sm flex items-center gap-2">
+                              <span className="font-semibold text-emerald-600 text-base">
+                                {analysisResult.longTermGrossYield?.toFixed(2) || "0"}% Gross Yield
+                              </span>
+                            </p>
+                          </div>
                         </div>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
