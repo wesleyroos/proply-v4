@@ -182,7 +182,7 @@ export default function PropertyAnalyzerPage() {
                   <CardContent>
                     <div className="space-y-2">
                       <p className="text-sm">Floor Area: {formData?.floorArea || "0"} m²</p>
-                      <p className="text-sm mt-2">Rate/m²: R{formData?.areaRatePerSquareMeter?.toLocaleString() || "0"}</p>
+                      <p className="text-sm mt-2">Rate/m²: R{analysisResult?.ratePerSquareMeter?.toLocaleString() || "0"}</p>
                     </div>
                   </CardContent>
                 </Card>

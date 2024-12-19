@@ -7,6 +7,8 @@ export interface PropertyData {
   propertyDescription?: string;
   deposit?: number;
   interestRate?: number;
+  floorArea?: number;
+  ratePerSquareMeter?: number;
 }
 
 export interface YieldAnalysis {
@@ -17,6 +19,8 @@ export interface YieldAnalysis {
   depositPercentage: number | null;
   interestRate: number | null;
   monthlyBondRepayment: number | null;
+  floorArea: number | null;
+  ratePerSquareMeter: number | null;
   analysis: {
     shortTermAnnualRevenue: number | null;
     longTermAnnualRevenue: number | null;
@@ -67,6 +71,8 @@ export function calculateYields(data: PropertyData): YieldAnalysis {
     depositPercentage: depositPercentage !== null ? Number(depositPercentage.toFixed(2)) : null,
     interestRate: data.interestRate || null,
     monthlyBondRepayment: monthlyBondRepayment !== null ? Number(monthlyBondRepayment.toFixed(2)) : null,
+    floorArea: data.floorArea || null,
+    ratePerSquareMeter: data.ratePerSquareMeter || null,
     analysis: {
       shortTermAnnualRevenue,
       longTermAnnualRevenue,
