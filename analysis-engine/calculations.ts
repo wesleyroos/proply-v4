@@ -8,7 +8,7 @@ export interface PropertyData {
   deposit?: number;
   interestRate?: number;
   floorArea?: number;
-  ratePerSquareMeter?: number;
+  ratePerSquareMeter: number | undefined; // Changed to be explicit about undefined
 }
 
 export interface YieldAnalysis {
@@ -76,7 +76,7 @@ export function calculateYields(data: PropertyData): YieldAnalysis {
     deposit: data.deposit || null,
     interestRate: data.interestRate || null,
     floorArea: data.floorArea || null,
-    ratePerSquareMeter: data.ratePerSquareMeter || null,
+    ratePerSquareMeter: data.ratePerSquareMeter, // Removed the || null to ensure the value is passed through
     
     // Analysis summary
     analysis: {
