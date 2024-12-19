@@ -286,7 +286,7 @@ export default function PropertyAnalyzerPage() {
                       <h3 className="text-sm font-semibold text-slate-600">
                         Transfer Costs
                       </h3>
-                      <div className="mt-2 space-y-2">
+                      <div className="mt-2 flex items-center gap-4">
                         <p className="text-lg font-bold text-slate-800">
                           R{(() => {
                             const costs = findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable);
