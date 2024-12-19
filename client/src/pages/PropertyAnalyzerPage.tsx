@@ -71,7 +71,7 @@ export default function PropertyAnalyzerPage() {
         address: formData.address,
         deposit: Number(formData.depositAmount),
         interestRate: Number(formData.interestRate),
-        term: formData.term ? Number(formData.term) : 20, // Default to 20 years if not provided
+        term: Number(formData.term),
         floorArea: Number(formData.floorArea),
         ratePerSquareMeter: Number(formData.cmaRatePerSqm),
       };
