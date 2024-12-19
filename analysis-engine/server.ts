@@ -23,52 +23,45 @@ app.post("/analyze", (req, res) => {
   try {
     console.log("\nReceived property analysis request:", req.body);
     
-    const propertyData: PropertyData = req.body;
+    const propertyData: PropertyData = {
+      purchasePrice: req.body.purchasePrice,
+      shortTermNightlyRate: req.body.airbnbNightlyRate,
+      annualOccupancy: req.body.occupancyRate,
+      longTermRental: req.body.longTermRental,
+      leaseCycleGap: req.body.leaseCycleGap,
+      propertyDescription: req.body.propertyDescription,
+      deposit: req.body.deposit,
+      interestRate: req.body.interestRate,
+      floorArea: req.body.floorArea,
+      ratePerSquareMeter: req.body.ratePerSquareMeter
+    };
     
     // Validate required fields
-    if (!propertyData.purchasePrice || !propertyData.monthlyRent) {
+    if (!propertyData.purchasePrice) {
       console.error("Validation error: Missing required fields");
       return res.status(400).json({
-        error: "Missing required fields: purchasePrice and monthlyRent are required"
+        error: "Missing required field: purchasePrice is required"
       });
     }
 
-    if (isNaN(propertyData.purchasePrice) || isNaN(propertyData.monthlyRent)) {
-      console.error("Validation error: Invalid number format");
+    if (isNaN(propertyData.purchasePrice) || propertyData.purchasePrice <= 0) {
+      console.error("Validation error: Invalid purchase price");
       return res.status(400).json({
-        error: "Purchase price and monthly rent must be valid numbers"
+        error: "Purchase price must be a positive number"
       });
     }
 
-    if (propertyData.purchasePrice <= 0 || propertyData.monthlyRent <= 0) {
-      console.error("Validation error: Values must be positive");
-      return res.status(400).json({
-        error: "Purchase price and monthly rent must be positive numbers"
-      });
-    }
-
-    // Calculate gross yield
-    console.log("Calculating gross yield for:", {
+    // Calculate yields and get analysis results
+    console.log("Calculating yields for property:", {
       purchasePrice: `R${propertyData.purchasePrice.toLocaleString()}`,
-      monthlyRent: `R${propertyData.monthlyRent.toLocaleString()}`
+      shortTermRate: propertyData.shortTermNightlyRate ? `R${propertyData.shortTermNightlyRate.toLocaleString()}` : 'N/A',
+      longTermRental: propertyData.longTermRental ? `R${propertyData.longTermRental.toLocaleString()}` : 'N/A'
     });
     
-    const grossYield = calculateGrossYield(propertyData);
-    console.log("Calculation result: Gross Yield =", grossYield.toFixed(2) + "%");
+    const analysisResult = calculateYields(propertyData);
+    console.log("Analysis result:", analysisResult);
 
-    const response = {
-      grossYield,
-      floorArea: propertyData.floorArea,
-      ratePerSquareMeter: propertyData.ratePerSquareMeter,
-      analysis: {
-        purchasePrice: propertyData.purchasePrice,
-        monthlyRent: propertyData.monthlyRent,
-        annualRent: propertyData.monthlyRent * 12
-      }
-    };
-
-    console.log("Sending response:", response);
-    res.json(response);
+    res.json(analysisResult);
   } catch (error) {
     console.error("Analysis error:", error);
     res.status(500).json({ error: "Failed to analyze property data" });

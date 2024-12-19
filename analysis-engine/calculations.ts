@@ -63,16 +63,22 @@ export function calculateYields(data: PropertyData): YieldAnalysis {
   // Calculate deposit percentage if deposit is provided
   const depositPercentage = data.deposit ? (data.deposit / data.purchasePrice) * 100 : null;
 
+  // Return calculated values along with passed-through form data
   return {
+    // Calculated values
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
     longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
+    monthlyBondRepayment: monthlyBondRepayment !== null ? Number(monthlyBondRepayment.toFixed(2)) : null,
+    depositPercentage: depositPercentage !== null ? Number(depositPercentage.toFixed(2)) : null,
+    
+    // Pass-through values from form
     propertyDescription: data.propertyDescription || null,
     deposit: data.deposit || null,
-    depositPercentage: depositPercentage !== null ? Number(depositPercentage.toFixed(2)) : null,
     interestRate: data.interestRate || null,
-    monthlyBondRepayment: monthlyBondRepayment !== null ? Number(monthlyBondRepayment.toFixed(2)) : null,
     floorArea: data.floorArea || null,
     ratePerSquareMeter: data.ratePerSquareMeter || null,
+    
+    // Analysis summary
     analysis: {
       shortTermAnnualRevenue,
       longTermAnnualRevenue,
