@@ -96,7 +96,7 @@ const formSchema = z.object({
     .number()
     .min(0, "Interest rate must be positive")
     .max(100, "Interest rate cannot exceed 100"),
-  loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
+  
 
   // Step 3: Operating Expenses
   monthlyLevies: z.number().min(0, "Monthly levies must be positive"),
@@ -273,7 +273,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       depositAmount: 0,
       depositPercentage: 0,
       interestRate: 0,
-      loanTerm: 20,
+      
       monthlyLevies: 0,
       monthlyRatesTaxes: 0,
       otherMonthlyExpenses: 0,
@@ -350,7 +350,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
           "depositAmount",
           "depositPercentage",
           "interestRate",
-          "loanTerm",
+          
         ];
       case 2:
         return [
@@ -787,26 +787,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="loanTerm"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Loan Term (Years)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="1"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                
               </div>
             )}
 
