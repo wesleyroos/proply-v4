@@ -128,6 +128,40 @@ export default function PropertyAnalyzerPage() {
 
             {/* Deal Summary Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {/* Location and Photo Column */}
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                      <Building2 className="h-5 w-5 text-indigo-500" />
+                      Location & Property
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {analysisResult && (
+                      <>
+                        <div className="rounded-lg overflow-hidden">
+                          <PropertyMap address={analysisResult.address} />
+                        </div>
+                        
+                        {formData?.propertyPhoto && (
+                          <div className="mt-4">
+                            <h3 className="text-sm font-semibold text-slate-600">Property Photo</h3>
+                            <div className="rounded-lg overflow-hidden mt-2">
+                              <img
+                                src={URL.createObjectURL(formData.propertyPhoto)}
+                                alt="Property"
+                                className="w-full h-auto object-cover"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
               {/* Deal Structure */}
               <Card>
                   <CardHeader>
@@ -292,30 +326,7 @@ export default function PropertyAnalyzerPage() {
                 </Card>
               </div>
 
-              {/* Location and Photo Column */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold">Location & Property</h2>
-                {analysisResult && (
-                  <>
-                    <div className="rounded-lg overflow-hidden bg-gray-100">
-                      <PropertyMap address={analysisResult.address} />
-                    </div>
-                    
-                    {formData?.propertyPhoto && (
-                      <div className="mt-4">
-                        <h3 className="text-sm font-semibold mb-2">Property Photo</h3>
-                        <div className="rounded-lg overflow-hidden">
-                          <img
-                            src={URL.createObjectURL(formData.propertyPhoto)}
-                            alt="Property"
-                            className="w-full h-auto object-cover"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+              
             </div>
           </>
         )}
