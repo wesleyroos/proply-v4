@@ -24,6 +24,10 @@ interface RevenueData {
   percentile: number;
 }
 
+interface PropertyAnalyzerFormProps {
+  onAnalysisComplete?: (data: PropertyAnalyzerFormValues) => Promise<void>;
+}
+
 interface PropertyAnalyzerFormData {
   address: string;
   propertyUrl: string;
@@ -111,7 +115,7 @@ interface RevenueData {
   percentile: number;
 }
 
-export default function PropertyAnalyzerForm() {
+export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -232,16 +236,17 @@ export default function PropertyAnalyzerForm() {
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
     try {
-      // TODO: Handle form submission
-      console.log(data);
+      if (props.onAnalysisComplete) {
+        await props.onAnalysisComplete(data);
+      }
       toast({
         title: "Success",
-        description: "Property analysis has been saved.",
+        description: "Property analysis completed successfully.",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to save property analysis.",
+        description: "Failed to analyze property data.",
         variant: "destructive",
       });
     } finally {
