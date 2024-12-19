@@ -85,6 +85,17 @@ export default function PropertyAnalyzerPage() {
 
         {analysisResult && (
           <>
+            {/* Analysis Results Header */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <BarChart3 className="h-6 w-6" />
+                Analysis Results
+              </h2>
+              <p className="text-muted-foreground">
+                Based on your provided property details
+              </p>
+            </div>
+
             {/* Deal Summary Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               {/* Deal Structure */}
@@ -135,16 +146,20 @@ export default function PropertyAnalyzerPage() {
                     <CardTitle className="text-lg font-semibold">Revenue Performance</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <h3 className="text-sm font-medium text-muted-foreground">Short-Term Rental (Year 1)</h3>
-                        <p className="mt-1">Revenue: R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}</p>
-                        <p className="text-sm text-muted-foreground">Gross Yield: {analysisResult.shortTermGrossYield?.toFixed(2) || "0"}%</p>
+                        <div className="mt-2">
+                          <p className="text-lg font-semibold">R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}</p>
+                          <p className="text-sm text-muted-foreground">Gross Yield: {analysisResult.shortTermGrossYield?.toFixed(2) || "0"}%</p>
+                        </div>
                       </div>
-                      <div className="mt-4">
+                      <div>
                         <h3 className="text-sm font-medium text-muted-foreground">Long-Term Rental (Year 1)</h3>
-                        <p className="mt-1">Revenue: R{analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() || "0"}</p>
-                        <p className="text-sm text-muted-foreground">Gross Yield: {analysisResult.longTermGrossYield?.toFixed(2) || "0"}%</p>
+                        <div className="mt-2">
+                          <p className="text-lg font-semibold">R{analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() || "0"}</p>
+                          <p className="text-sm text-muted-foreground">Gross Yield: {analysisResult.longTermGrossYield?.toFixed(2) || "0"}%</p>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -172,91 +187,6 @@ export default function PropertyAnalyzerPage() {
                 </div>
               </div>
             </div>
-
-            {/* Analysis Results Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Analysis Results
-                </CardTitle>
-                <CardDescription>
-                  Based on your provided property details
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium flex items-center gap-2">
-                        <Building2 className="h-4 w-4" />
-                        Short-Term Rental Yield
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {analysisResult.shortTermGrossYield !== null ? (
-                        <>
-                          <div className="text-2xl font-bold">
-                            {analysisResult.shortTermGrossYield.toFixed(2)}%
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Annual Revenue: R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString()}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Based on nightly rate × occupancy
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          Not enough data for short-term calculation
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4" />
-                        Long-Term Rental Yield
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {analysisResult.longTermGrossYield !== null ? (
-                        <>
-                          <div className="text-2xl font-bold">
-                            {analysisResult.longTermGrossYield.toFixed(2)}%
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Annual Revenue: R{analysisResult.analysis.longTermAnnualRevenue?.toLocaleString()}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Adjusted for lease cycle gap
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          Not enough data for long-term calculation
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card className="md:col-span-2">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        Property Value
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">
-                        R{analysisResult.analysis.purchasePrice.toLocaleString()}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
           </>
         )}
       </div>
