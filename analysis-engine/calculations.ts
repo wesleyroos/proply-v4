@@ -8,6 +8,7 @@ const propertyDataSchema = z.object({
   longTermRental: z.number().positive().nullable().optional(),
   leaseCycleGap: z.number().min(0).nullable().optional(),
   propertyDescription: z.string().nullable().optional(),
+  address: z.string(),
   deposit: z.number().positive(),
   interestRate: z.number().min(0).max(100),
   floorArea: z.number().positive(),
@@ -26,6 +27,7 @@ export interface AnalysisResult {
 
   // Property details
   propertyDescription: string | null;
+  address: string;
   deposit: number;
   interestRate: number;
   floorArea: number;

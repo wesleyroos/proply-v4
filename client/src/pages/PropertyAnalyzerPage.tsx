@@ -201,9 +201,11 @@ export default function PropertyAnalyzerPage() {
               {/* Location Column */}
               <div>
                 <h2 className="text-lg font-semibold mb-4">Location</h2>
-                <div className="rounded-lg overflow-hidden bg-gray-100 h-[300px]">
-                  {/* Map will be inserted here */}
-                </div>
+                {analysisResult && (
+                  <div className="rounded-lg overflow-hidden bg-gray-100">
+                    <PropertyMap address={analysisResult.address} />
+                  </div>
+                )}
               </div>
             </div>
           </>
