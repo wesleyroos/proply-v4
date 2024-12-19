@@ -68,6 +68,8 @@ export default function PropertyAnalyzerPage() {
       </div>
 
       <div className="space-y-6">
+        <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+
         {/* Deal Summary Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Deal Structure */}
@@ -110,28 +112,37 @@ export default function PropertyAnalyzerPage() {
             </CardContent>
           </Card>
 
-          {/* Revenue Performance - Placeholder */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Revenue Performance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* To be implemented */}
-            </CardContent>
-          </Card>
+          {/* Middle Column with Revenue and Size/Rate */}
+          <div className="space-y-4">
+            {/* Revenue Performance */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Revenue Performance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Revenue details will go here */}
+              </CardContent>
+            </Card>
 
-          {/* Location - Placeholder */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Location</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* To be implemented */}
-            </CardContent>
-          </Card>
+            {/* Size and Rate */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Size and Rate/m²</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Size and rate details will go here */}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Location Column */}
+          <div>
+            <h2 className="text-lg font-semibold mb-4">Location</h2>
+            <div className="rounded-lg overflow-hidden bg-gray-100 h-[300px]">
+              {/* Map will be inserted here */}
+            </div>
+          </div>
         </div>
-
-        <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
 
         {analysisError && (
           <Card className="border-red-200 bg-red-50">
