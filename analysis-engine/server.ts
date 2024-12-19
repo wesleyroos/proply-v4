@@ -44,6 +44,7 @@ app.post("/analyze", (req, res) => {
       propertyDescription: req.body.propertyDescription || null,
       deposit: Number(req.body.deposit),
       interestRate: Number(req.body.interestRate),
+      loanTerm: Number(req.body.loanTerm),
       floorArea: Number(req.body.floorArea),
       ratePerSquareMeter: Number(req.body.ratePerSquareMeter)
     };
