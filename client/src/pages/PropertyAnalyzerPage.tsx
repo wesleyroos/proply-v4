@@ -319,18 +319,19 @@ export default function PropertyAnalyzerPage() {
                             return total.toLocaleString();
                           })()}
                         </p>
-                        <Select
-                          value={includeTransferDuty ? "with" : "without"}
-                          onValueChange={(value) => setIncludeTransferDuty(value === "with")}
+                        </div>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <Checkbox 
+                          id="noTransferDuty"
+                          checked={!includeTransferDuty}
+                          onCheckedChange={(checked) => setIncludeTransferDuty(!checked)}
+                        />
+                        <label
+                          htmlFor="noTransferDuty"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Transfer duty option" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="with">With Transfer Duty</SelectItem>
-                            <SelectItem value="without">No Transfer Duty</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          No transfer duty
+                        </label>
                       </div>
                       <div className="flex items-center space-x-2 mt-2">
                         <Checkbox 
