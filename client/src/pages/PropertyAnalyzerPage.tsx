@@ -203,7 +203,8 @@ export default function PropertyAnalyzerPage() {
                   <CardContent>
                     <div className="space-y-2">
                       <p className="text-sm">Floor Area: {analysisResult.floorArea || "0"} m²</p>
-                      <p className="text-sm mt-2">Rate/m²: R{analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}</p>
+                      <p className="text-sm mt-2">Area Rate/m²: R{analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}</p>
+                      <p className="text-sm mt-2">Rate per Square Meter: R{(analysisResult.analysis.purchasePrice / (analysisResult.floorArea || 1)).toLocaleString()}</p>
                     </div>
                   </CardContent>
                 </Card>
