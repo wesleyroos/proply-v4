@@ -99,57 +99,57 @@ const formSchema = z.object({
   term: z.coerce.number().min(1, "Loan term must be at least 1 year"),
 
   // Step 3: Operating Expenses
-  monthlyLevies: z.number().min(0, "Monthly levies must be positive"),
-  monthlyRatesTaxes: z
+  monthlyLevies: z.coerce.number().min(0, "Monthly levies must be positive"),
+  monthlyRatesTaxes: z.coerce
     .number()
     .min(0, "Monthly rates and taxes must be positive"),
-  otherMonthlyExpenses: z
+  otherMonthlyExpenses: z.coerce
     .number()
     .min(0, "Other monthly expenses must be positive"),
-  maintenancePercentage: z
+  maintenancePercentage: z.coerce
     .number()
     .min(0, "Maintenance percentage must be positive")
     .max(100, "Maintenance percentage cannot exceed 100"),
-  managementFee: z
+  managementFee: z.coerce
     .number()
     .min(0, "Management fee must be positive")
     .max(100, "Management fee cannot exceed 100"),
 
   // Step 4: Revenue Performance
-  airbnbNightlyRate: z
+  airbnbNightlyRate: z.coerce
     .number()
     .min(0, "Nightly rate must be positive")
     .optional(),
-  occupancyRate: z
+  occupancyRate: z.coerce
     .number()
     .min(0, "Occupancy rate must be positive")
     .max(100, "Occupancy rate cannot exceed 100")
     .optional(),
-  longTermRental: z
+  longTermRental: z.coerce
     .number()
     .min(0, "Long term rental must be positive")
     .optional(),
-  leaseCycleGap: z
+  leaseCycleGap: z.coerce
     .number()
     .min(0, "Lease cycle gap must be positive")
     .optional(),
 
   // Step 5: Escalations
-  annualIncomeGrowth: z
+  annualIncomeGrowth: z.coerce
     .number()
     .min(0, "Annual income growth must be positive")
     .max(100, "Annual income growth cannot exceed 100"),
-  annualExpenseGrowth: z
+  annualExpenseGrowth: z.coerce
     .number()
     .min(0, "Annual expense growth must be positive")
     .max(100, "Annual expense growth cannot exceed 100"),
-  annualPropertyAppreciation: z
+  annualPropertyAppreciation: z.coerce
     .number()
     .min(0, "Annual property appreciation must be positive")
     .max(100, "Annual property appreciation cannot exceed 100"),
 
   // Step 6: Miscellaneous
-  cmaRatePerSqm: z.number().min(0, "Area rate per m² must be positive"),
+  cmaRatePerSqm: z.coerce.number().min(0, "Area rate per m² must be positive"),
   comments: z.string().optional(),
 });
 
@@ -312,23 +312,21 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     }
   };
 
-  const nextStep = () => {
+  const nextStep = async () => {
     const fields = getFieldsForStep(currentStep);
     console.log("Current step fields:", fields);
     console.log("Form values:", form.getValues());
     console.log("Form errors:", form.formState.errors);
     
-    const isStepValid = fields.every((field) => {
-      const state = form.getFieldState(field);
-      console.log(`Field ${field} state:`, state);
-      return !state.error;
-    });
+    // Trigger validation for all fields in the current step
+    const results = await Promise.all(fields.map(field => form.trigger(field)));
+    const isStepValid = results.every(isValid => isValid);
+    
+    console.log("Validation results:", results);
+    console.log("Step valid:", isStepValid);
 
     if (isStepValid) {
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
-    } else {
-      // Trigger validation for the current step's fields
-      fields.forEach((field) => form.trigger(field));
     }
   };
 
