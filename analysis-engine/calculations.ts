@@ -11,7 +11,7 @@ const propertyDataSchema = z.object({
   address: z.string(),
   deposit: z.number().positive(),
   interestRate: z.number().min(0).max(100),
-  loanTerm: z.number().min(1),
+  loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
   floorArea: z.number().positive(),
   ratePerSquareMeter: z.number().positive()
 });
@@ -74,7 +74,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Calculate bond repayment
   const loanAmount = data.purchasePrice - data.deposit;
   const monthlyRate = (data.interestRate / 100) / 12;
-  const numberOfPayments = 20 * 12; // 20-year term
+  const numberOfPayments = data.loanTerm * 12; // Use actual loan term from input
   const monthlyBondRepayment = loanAmount * 
     (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / 
     (Math.pow(1 + monthlyRate, numberOfPayments) - 1);

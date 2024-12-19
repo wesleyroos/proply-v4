@@ -453,6 +453,7 @@ export function registerRoutes(app: Express): Server {
         address: req.body.address,
         deposit: Number(req.body.deposit),
         interestRate: Number(req.body.interestRate),
+        loanTerm: Number(req.body.loanTerm),
         floorArea: Number(req.body.floorArea),
         ratePerSquareMeter: Number(req.body.ratePerSquareMeter)
       };
