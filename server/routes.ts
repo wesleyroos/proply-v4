@@ -432,6 +432,38 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Property analysis endpoint
+  app.post("/api/analyze", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const { purchasePrice, monthlyRent } = req.body;
+      
+      if (!purchasePrice || !monthlyRent) {
+        return res.status(400).json({ error: "Purchase price and monthly rent are required" });
+      }
+
+      const grossYield = (monthlyRent * 12 / purchasePrice) * 100;
+      
+      const response = {
+        grossYield,
+        analysis: {
+          purchasePrice,
+          monthlyRent,
+          annualRent: monthlyRent * 12
+        }
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error('Analysis error:', error);
+      res.status(500).json({ error: "Failed to analyze property data" });
+    }
+  });
+
+
   const httpServer = createServer(app);
   return httpServer;
 }
