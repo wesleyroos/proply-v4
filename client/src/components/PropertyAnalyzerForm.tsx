@@ -75,11 +75,11 @@ const formSchema = z.object({
   // Step 1: Property Details
   address: z.string().min(1, "Address is required"),
   propertyUrl: z.string().url().optional().or(z.literal("")),
-  purchasePrice: z.number().min(0, "Purchase price must be positive"),
-  floorArea: z.number().min(0, "Floor area must be positive"),
-  bedrooms: z.number().min(0.5, "Minimum 0.5 bedrooms required"),
-  bathrooms: z.number().min(0, "Bathrooms cannot be negative"),
-  parkingSpaces: z
+  purchasePrice: z.coerce.number().min(0, "Purchase price must be positive"),
+  floorArea: z.coerce.number().min(0, "Floor area must be positive"),
+  bedrooms: z.coerce.number().min(0.5, "Minimum 0.5 bedrooms required"),
+  bathrooms: z.coerce.number().min(0, "Bathrooms cannot be negative"),
+  parkingSpaces: z.coerce
     .number()
     .min(0, "Parking spaces cannot be negative")
     .optional(),
@@ -87,16 +87,16 @@ const formSchema = z.object({
 
   // Step 2: Financing Details
   depositType: z.enum(["amount", "percentage"]),
-  depositAmount: z.number().min(0, "Deposit must be positive"),
-  depositPercentage: z
+  depositAmount: z.coerce.number().min(0, "Deposit must be positive"),
+  depositPercentage: z.coerce
     .number()
     .min(0, "Deposit percentage must be positive")
     .max(100, "Deposit percentage cannot exceed 100"),
-  interestRate: z
+  interestRate: z.coerce
     .number()
     .min(0, "Interest rate must be positive")
     .max(100, "Interest rate cannot exceed 100"),
-  term: z.number().min(1, "Loan term must be at least 1 year"),
+  term: z.coerce.number().min(1, "Loan term must be at least 1 year"),
 
   // Step 3: Operating Expenses
   monthlyLevies: z.number().min(0, "Monthly levies must be positive"),
@@ -314,9 +314,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
   const nextStep = () => {
     const fields = getFieldsForStep(currentStep);
-    const isStepValid = fields.every(
-      (field) => !form.getFieldState(field).error,
-    );
+    console.log("Current step fields:", fields);
+    console.log("Form values:", form.getValues());
+    console.log("Form errors:", form.formState.errors);
+    
+    const isStepValid = fields.every((field) => {
+      const state = form.getFieldState(field);
+      console.log(`Field ${field} state:`, state);
+      return !state.error;
+    });
 
     if (isStepValid) {
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
