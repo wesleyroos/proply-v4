@@ -128,29 +128,29 @@ export default function PropertyAnalyzerPage() {
             {/* Deal Summary Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               {/* Deal Structure */}
-              <Card className="bg-gradient-to-br from-slate-50 to-white">
+              <Card>
                   <CardHeader>
                     <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
                       <Building2 className="h-5 w-5 text-indigo-500" />
                       Deal Structure
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-white rounded-lg p-4 border border-slate-100">
+                  <CardContent className="space-y-6">
+                    <div>
                       <h3 className="text-sm font-semibold text-slate-600">Property Description</h3>
                       <p className="mt-2 text-slate-700">
                         {analysisResult.propertyDescription || "No description available"}
                       </p>
                     </div>
                     
-                    <div className="bg-white rounded-lg p-4 border border-slate-100">
+                    <div>
                       <h3 className="text-sm font-semibold text-slate-600">Purchase Price</h3>
                       <p className="mt-2 text-2xl font-bold text-slate-800">
                         R{analysisResult.analysis.purchasePrice.toLocaleString()}
                       </p>
                     </div>
 
-                    <div className="bg-white rounded-lg p-4 border border-slate-100">
+                    <div>
                       <h3 className="text-sm font-semibold text-slate-600">Deposit</h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         R{analysisResult.deposit?.toLocaleString() || "0"}
@@ -160,14 +160,14 @@ export default function PropertyAnalyzerPage() {
                       </p>
                     </div>
 
-                    <div className="bg-white rounded-lg p-4 border border-slate-100">
+                    <div>
                       <h3 className="text-sm font-semibold text-slate-600">Interest Rate</h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         {analysisResult.interestRate || "0"}%
                       </p>
                     </div>
 
-                    <div className="bg-white rounded-lg p-4 border border-slate-100">
+                    <div>
                       <h3 className="text-sm font-semibold text-slate-600">Monthly Bond Repayment</h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         R{analysisResult.monthlyBondRepayment?.toLocaleString() || "0"}
@@ -225,7 +225,7 @@ export default function PropertyAnalyzerPage() {
                 </Card>
 
                 {/* Size and Rate */}
-                <Card className="bg-gradient-to-br from-slate-50 to-white">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
                       <BarChart3 className="h-5 w-5 text-cyan-500" />
@@ -233,12 +233,12 @@ export default function PropertyAnalyzerPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="bg-white rounded-lg p-4 border border-slate-100">
+                    <div className="space-y-6">
+                      <div>
                         <h3 className="text-sm font-semibold text-slate-600">Floor Area</h3>
                         <p className="mt-2 text-lg font-bold text-slate-800">{analysisResult.floorArea || "0"} m²</p>
                       </div>
-                      <div className="bg-white rounded-lg p-4 border border-slate-100">
+                      <div>
                         <h3 className="text-sm font-semibold text-slate-600">Area Rate/m²</h3>
                         <p className="mt-2 text-lg font-bold text-slate-800">R{analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}</p>
                       </div>
