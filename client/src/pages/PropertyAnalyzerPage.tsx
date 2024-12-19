@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { AlertCircle, BarChart3, TrendingUp, Building2, MapPin } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
@@ -54,6 +55,7 @@ export default function PropertyAnalyzerPage() {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(null);
   const [includeTransferDuty, setIncludeTransferDuty] = useState<boolean>(true);
+  const [includeVAT, setIncludeVAT] = useState<boolean>(true);
 
   const handleAnalysisComplete = async (formData: any) => {
     try {
@@ -274,8 +276,7 @@ export default function PropertyAnalyzerPage() {
                         </TooltipContent>
                       </Tooltip>
                       <p className="mt-2 text-lg font-bold text-slate-800">
-                        R
-                        {analysisResult.monthlyBondRepayment?.toLocaleString() ||
+                        R{analysisResult.monthlyBondRepayment?.toLocaleString() ||
                           "0"}
                       </p>
                     </div>
@@ -304,7 +305,7 @@ export default function PropertyAnalyzerPage() {
                       </div>
                     </div>
 
-                    <div>
+                    <div className="flex flex-col">
                       <Tooltip delayDuration={0}>
                         <TooltipTrigger asChild>
                           <h3 className="text-sm font-semibold text-slate-600 cursor-help">
@@ -315,13 +316,15 @@ export default function PropertyAnalyzerPage() {
                           Transfer costs include attorney fees, deeds office fees, and transfer duty (if applicable). These are calculated according to SARS guidelines and the Law Society's recommended fee structure.
                         </TooltipContent>
                       </Tooltip>
-                      <div className="mt-2 flex items-center gap-4">
+                      <div className="flex items-center gap-4">
                         <p className="text-lg font-bold text-slate-800">
                           R{(() => {
                             const costs = findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable);
-                            return includeTransferDuty 
-                              ? costs.total.toLocaleString()
-                              : (costs.total - costs.transferDuty).toLocaleString();
+                            let total = includeTransferDuty ? costs.total : (costs.total - costs.transferDuty);
+                            if (!includeVAT) {
+                              total = total / 1.15; // Remove VAT (15%)
+                            }
+                            return total.toLocaleString();
                           })()}
                         </p>
                         <Select
@@ -337,6 +340,19 @@ export default function PropertyAnalyzerPage() {
                           </SelectContent>
                         </Select>
                       </div>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <Checkbox 
+                          id="removeVAT"
+                          checked={!includeVAT}
+                          onCheckedChange={(checked) => setIncludeVAT(!checked)}
+                        />
+                        <label
+                          htmlFor="removeVAT"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Remove VAT
+                        </label>
+                      </div>
                     </div>
                   </div>
 
@@ -348,7 +364,10 @@ export default function PropertyAnalyzerPage() {
                       R{(() => {
                         const bondCosts = findCostFromTable(analysisResult.analysis.purchasePrice, bondCostsTable).total;
                         const transferCosts = findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable);
-                        const transferTotal = includeTransferDuty ? transferCosts.total : (transferCosts.total - transferCosts.transferDuty);
+                        let transferTotal = includeTransferDuty ? transferCosts.total : (transferCosts.total - transferCosts.transferDuty);
+                        if (!includeVAT) {
+                          transferTotal = transferTotal / 1.15; // Remove VAT (15%)
+                        }
                         return ((analysisResult.deposit || 0) + bondCosts + transferTotal).toLocaleString();
                       })()}
                     </p>
