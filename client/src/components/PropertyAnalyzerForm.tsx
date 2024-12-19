@@ -607,6 +607,41 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="propertyPhoto"
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <FormItem>
+                      <FormLabel>Property Photo (Optional)</FormLabel>
+                      <FormControl>
+                        <div className="space-y-2">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                onChange(file);
+                              }
+                            }}
+                            {...field}
+                          />
+                          {value && (
+                            <div className="mt-2">
+                              <img
+                                src={URL.createObjectURL(value)}
+                                alt="Property Preview"
+                                className="max-w-xs rounded-lg"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             )}
 
