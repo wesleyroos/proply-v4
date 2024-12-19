@@ -18,32 +18,45 @@ app.use((req, res, next) => {
 
 app.post("/analyze", (req, res) => {
   try {
-    console.log("\nReceived property analysis request:", req.body);
+    console.log("\nReceived property analysis request:", JSON.stringify(req.body, null, 2));
     
+    // Validate and convert all input fields
     const propertyData: PropertyData = {
       purchasePrice: Number(req.body.purchasePrice),
-      shortTermNightlyRate: req.body.airbnbNightlyRate ? Number(req.body.airbnbNightlyRate) : undefined,
-      annualOccupancy: req.body.occupancyRate ? Number(req.body.occupancyRate) : undefined,
+      shortTermNightlyRate: req.body.shortTermNightlyRate ? Number(req.body.shortTermNightlyRate) : undefined,
+      annualOccupancy: req.body.annualOccupancy ? Number(req.body.annualOccupancy) : undefined,
       longTermRental: req.body.longTermRental ? Number(req.body.longTermRental) : undefined,
       leaseCycleGap: req.body.leaseCycleGap ? Number(req.body.leaseCycleGap) : undefined,
       propertyDescription: req.body.propertyDescription || null,
-      deposit: Number(req.body.deposit),
-      interestRate: Number(req.body.interestRate),
-      floorArea: Number(req.body.floorArea),
-      ratePerSquareMeter: Number(req.body.ratePerSquareMeter)
+      deposit: Number(req.body.deposit || 0),
+      interestRate: Number(req.body.interestRate || 0),
+      floorArea: Number(req.body.floorArea || 0),
+      ratePerSquareMeter: Number(req.body.ratePerSquareMeter || 0)
     };
-    
-    console.log('Property data after conversion:', propertyData);
+
+    // Log the converted data for debugging
+    console.log('Property data after conversion:', JSON.stringify(propertyData, null, 2));
+
+    // Validate required fields manually before calculation
+    const requiredFields = ['purchasePrice', 'deposit', 'interestRate', 'floorArea', 'ratePerSquareMeter'];
+    const missingFields = requiredFields.filter(field => {
+      const value = propertyData[field as keyof PropertyData];
+      return value === undefined || value === null || isNaN(value as number) || (value as number) <= 0;
+    });
+
+    if (missingFields.length > 0) {
+      throw new Error(`Missing or invalid required fields: ${missingFields.join(', ')}`);
+    }
     
     const analysisResult = calculateYields(propertyData);
-    console.log("Analysis result:", analysisResult);
+    console.log("Analysis result:", JSON.stringify(analysisResult, null, 2));
 
     res.json(analysisResult);
   } catch (error) {
     console.error("Analysis error:", error);
-    res.status(500).json({ 
-      error: error instanceof Error ? error.message : "Failed to analyze property data" 
-    });
+    const errorMessage = error instanceof Error ? error.message : "Failed to analyze property data";
+    console.error("Detailed error:", errorMessage);
+    res.status(500).json({ error: errorMessage });
   }
 });
 
