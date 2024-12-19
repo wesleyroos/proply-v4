@@ -136,6 +136,9 @@ export default function PropertyAnalyzerPage() {
                       <Building2 className="h-5 w-5 text-indigo-500" />
                       Location & Property
                     </CardTitle>
+                    <CardDescription className="text-sm text-slate-600">
+                      {analysisResult.address}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {analysisResult && (
