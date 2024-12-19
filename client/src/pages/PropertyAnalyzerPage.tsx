@@ -18,9 +18,12 @@ interface AnalysisResult {
 export default function PropertyAnalyzerPage() {
   const { user } = useUser();
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   const handleAnalysisComplete = async (formData: any) => {
     try {
+      setAnalysisError(null); // Clear any previous errors
+      
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
@@ -28,19 +31,24 @@ export default function PropertyAnalyzerPage() {
         },
         body: JSON.stringify({
           purchasePrice: formData.purchasePrice,
-          monthlyRent: formData.longTermRental // Using long term rental as monthly rent
+          airbnbNightlyRate: formData.airbnbNightlyRate,
+          occupancyRate: formData.occupancyRate,
+          longTermRental: formData.longTermRental,
+          leaseCycleGap: formData.leaseCycleGap
         })
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        throw new Error(`Analysis failed: ${response.statusText}`);
+        throw new Error(data.error || `Analysis failed: ${response.statusText}`);
       }
 
-      const result = await response.json();
-      setAnalysisResult(result);
+      setAnalysisResult(data);
     } catch (error) {
       console.error('Analysis failed:', error);
-      // TODO: Show error toast
+      setAnalysisError(error instanceof Error ? error.message : 'Failed to analyze property data');
+      setAnalysisResult(null);
     }
   };
 
@@ -57,6 +65,17 @@ export default function PropertyAnalyzerPage() {
 
       <div className="space-y-6">
         <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+
+        {analysisError && (
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 text-red-800">
+                <AlertCircle className="h-5 w-5" />
+                <p className="text-sm font-medium">Error: {analysisError}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {analysisResult && (
           <Card>
