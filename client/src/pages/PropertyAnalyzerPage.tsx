@@ -30,6 +30,7 @@ interface AnalysisResult {
   deposit: number | null;
   depositPercentage: number | null;
   interestRate: number | null;
+  term: number | null;
   monthlyBondRepayment: number | null;
   floorArea: number | null;
   ratePerSquareMeter: number | null;
@@ -70,6 +71,7 @@ export default function PropertyAnalyzerPage() {
         address: formData.address,
         deposit: Number(formData.depositAmount),
         interestRate: Number(formData.interestRate),
+        term: Number(formData.term),
         floorArea: Number(formData.floorArea),
         ratePerSquareMeter: Number(formData.cmaRatePerSqm),
       };
@@ -216,34 +218,47 @@ export default function PropertyAnalyzerPage() {
                     </p>
                   </div>
 
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-600">
-                      Purchase Price
-                    </h3>
-                    <p className="mt-2 text-2xl font-bold text-slate-800">
-                      R{analysisResult.analysis.purchasePrice.toLocaleString()}
-                    </p>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-600">
+                        Purchase Price
+                      </h3>
+                      <p className="mt-2 text-2xl font-bold text-slate-800">
+                        R{analysisResult.analysis.purchasePrice.toLocaleString()}
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-600">
+                        Deposit
+                      </h3>
+                      <p className="mt-2 text-lg font-bold text-slate-800">
+                        R{analysisResult.deposit?.toLocaleString() || "0"}
+                        <span className="ml-2 text-base font-semibold text-indigo-600">
+                          ({analysisResult.depositPercentage || "0"}%)
+                        </span>
+                      </p>
+                    </div>
                   </div>
 
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-600">
-                      Deposit
-                    </h3>
-                    <p className="mt-2 text-lg font-bold text-slate-800">
-                      R{analysisResult.deposit?.toLocaleString() || "0"}
-                      <span className="ml-2 text-base font-semibold text-indigo-600">
-                        ({analysisResult.depositPercentage || "0"}%)
-                      </span>
-                    </p>
-                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-600">
+                        Interest Rate
+                      </h3>
+                      <p className="mt-2 text-lg font-bold text-slate-800">
+                        {analysisResult.interestRate || "0"}%
+                      </p>
+                    </div>
 
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-600">
-                      Interest Rate
-                    </h3>
-                    <p className="mt-2 text-lg font-bold text-slate-800">
-                      {analysisResult.interestRate || "0"}%
-                    </p>
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-600">
+                        Term
+                      </h3>
+                      <p className="mt-2 text-lg font-bold text-slate-800">
+                        {analysisResult.term || "0"} years
+                      </p>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6 mb-6">
