@@ -204,7 +204,22 @@ export default function PropertyAnalyzerPage() {
                     <div className="space-y-2">
                       <p className="text-sm">Floor Area: {analysisResult.floorArea || "0"} m²</p>
                       <p className="text-sm mt-2">Area Rate/m²: R{analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}</p>
-                      <p className="text-sm mt-2">Rate per Square Meter: R{(analysisResult.analysis.purchasePrice / (analysisResult.floorArea || 1)).toLocaleString()}</p>
+                      {(() => {
+                        const actualRate = analysisResult.analysis.purchasePrice / (analysisResult.floorArea || 1);
+                        const areaRate = analysisResult.ratePerSquareMeter || 0;
+                        const difference = areaRate - actualRate;
+                        const isPositive = difference > 0;
+                        
+                        return (
+                          <>
+                            <p className="text-sm mt-2">Rate per Square Meter: R{actualRate.toLocaleString()}</p>
+                            <p className={`text-sm mt-2 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                              Rate/m² Difference: R{Math.abs(difference).toLocaleString()}
+                              {isPositive ? ' above' : ' below'} area rate
+                            </p>
+                          </>
+                        );
+                      })()}
                     </div>
                   </CardContent>
                 </Card>
