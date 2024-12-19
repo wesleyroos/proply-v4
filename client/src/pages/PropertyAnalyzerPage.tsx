@@ -7,11 +7,11 @@ import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 interface AnalysisResult {
   shortTermGrossYield: number | null;
   longTermGrossYield: number | null;
-  propertyDescription?: string;
-  deposit?: number;
-  depositPercentage?: number;
-  interestRate?: number;
-  monthlyBondRepayment?: number;
+  propertyDescription: string | null;
+  deposit: number | null;
+  depositPercentage: number | null;
+  interestRate: number | null;
+  monthlyBondRepayment: number | null;
   analysis: {
     shortTermAnnualRevenue: number | null;
     longTermAnnualRevenue: number | null;
@@ -28,7 +28,7 @@ export default function PropertyAnalyzerPage() {
 
   const handleAnalysisComplete = async (formData: any) => {
     try {
-      setAnalysisError(null); // Clear any previous errors
+      setAnalysisError(null);
       
       const response = await fetch('/api/analyze', {
         method: 'POST',
