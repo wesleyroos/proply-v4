@@ -15,11 +15,14 @@ interface AnalysisResult {
   monthlyBondRepayment: number | null;
   floorArea: number | null;
   ratePerSquareMeter: number | null;
+  shortTermNightlyRate: number | null;
+  annualOccupancy: number | null;
   analysis: {
     shortTermAnnualRevenue: number | null;
     longTermAnnualRevenue: number | null;
     purchasePrice: number;
   };
+  address: string;
 }
 
 export default function PropertyAnalyzerPage() {
@@ -172,7 +175,8 @@ export default function PropertyAnalyzerPage() {
                         <div className="mt-2">
                           <p className="text-lg font-semibold">R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}</p>
                           <p className="text-sm text-muted-foreground">Gross Yield: {analysisResult.shortTermGrossYield?.toFixed(2) || "0"}%</p>
-                          {/* Removed formData usage here */}
+                          <p className="text-sm text-muted-foreground">Nightly Rate: R{analysisResult.shortTermNightlyRate?.toLocaleString() || "0"}</p>
+                          <p className="text-sm text-muted-foreground">Occupancy: {analysisResult.annualOccupancy || "0"}%</p>
                         </div>
                       </div>
                       <div>
