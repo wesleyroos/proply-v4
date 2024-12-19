@@ -191,7 +191,10 @@ export default function PropertyAnalyzerPage() {
                       <div className="p-4 rounded-lg bg-blue-50/50">
                           <h3 className="text-sm font-bold text-blue-600 mb-3">Short-Term Rental (Year 1)</h3>
                           <div className="space-y-2">
-                            <p className="text-2xl font-bold text-slate-800">R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}</p>
+                            <div>
+                              <p className="text-2xl font-bold text-slate-800">R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}</p>
+                              <p className="text-base text-slate-600">R{Math.round((analysisResult.analysis.shortTermAnnualRevenue || 0) / 12).toLocaleString()}/month</p>
+                            </div>
                             <p className="text-sm flex items-center gap-2">
                               <span className="font-semibold text-emerald-600 text-base">
                                 {analysisResult.shortTermGrossYield?.toFixed(2) || "0"}% Gross Yield
@@ -206,7 +209,10 @@ export default function PropertyAnalyzerPage() {
                         <div className="p-4 rounded-lg bg-purple-50/50">
                           <h3 className="text-sm font-bold text-purple-600 mb-3">Long-Term Rental (Year 1)</h3>
                           <div className="space-y-2">
-                            <p className="text-2xl font-bold text-slate-800">R{analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() || "0"}</p>
+                            <div>
+                              <p className="text-2xl font-bold text-slate-800">R{analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() || "0"}</p>
+                              <p className="text-base text-slate-600">R{Math.round((analysisResult.analysis.longTermAnnualRevenue || 0) / 12).toLocaleString()}/month</p>
+                            </div>
                             <p className="text-sm flex items-center gap-2">
                               <span className="font-semibold text-emerald-600 text-base">
                                 {analysisResult.longTermGrossYield?.toFixed(2) || "0"}% Gross Yield
