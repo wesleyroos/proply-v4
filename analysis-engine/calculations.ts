@@ -11,6 +11,7 @@ const propertyDataSchema = z.object({
   address: z.string(),
   deposit: z.number().positive(),
   interestRate: z.number().min(0).max(100),
+  loanTerm: z.number().min(1),
   floorArea: z.number().positive(),
   ratePerSquareMeter: z.number().positive()
 });
@@ -30,6 +31,7 @@ export interface AnalysisResult {
   address: string;
   deposit: number;
   interestRate: number;
+  loanTerm: number;
   floorArea: number;
   ratePerSquareMeter: number;
 
@@ -92,6 +94,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     address: data.address,
     deposit: data.deposit,
     interestRate: data.interestRate,
+    loanTerm: data.loanTerm,
     floorArea: data.floorArea,
     ratePerSquareMeter: data.ratePerSquareMeter,
 
