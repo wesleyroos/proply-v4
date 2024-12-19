@@ -1,76 +1,160 @@
 export interface PropertyData {
+  // Property Details
+  address: string;
+  propertyLink?: string;
   purchasePrice: number;
-  shortTermNightlyRate?: number;
-  annualOccupancy?: number;
-  longTermRental?: number;
-  leaseCycleGap?: number;
-  propertyDescription?: string;
-  deposit?: number;
-  interestRate?: number;
+  floorArea: number;
+  beds: number;
+  baths: number;
+  parkings: number;
+
+  // Financing Details
+  depositAmount: number;
+  depositPercentage: number;
+  interestRate: number;
+  termYears: number;
+
+  // Operating Expenses
+  levies: number;
+  ratesTaxes: number;
+  otherExpenses: number;
+  maintenance: number;  // percentage
+  managementFee: number;  // percentage
+
+  // Revenue Performance
+  nightlyRate: number;
+  occupancy: number;  // percentage
+  longTermRental: number;
+  leaseCycleGap: number;  // in days
+
+  // Escalations
+  incomeGrowth: number;  // percentage
+  expenseGrowth: number;  // percentage
+  annualAppreciation: number;  // percentage
+
+  // Miscellaneous
+  avgRatePerM2: number;
+  comments?: string;
 }
 
 export interface YieldAnalysis {
+  // Property Details
+  address: string;
+  propertyLink: string | null;
+  purchasePrice: number;
+  floorArea: number;
+  beds: number;
+  baths: number;
+  parkings: number;
+  avgRatePerM2: number;
+
+  // Financial Analysis
   shortTermGrossYield: number | null;
   longTermGrossYield: number | null;
-  propertyDescription: string | null;
-  deposit: number | null;
-  depositPercentage: number | null;
-  interestRate: number | null;
-  monthlyBondRepayment: number | null;
-  analysis: {
-    shortTermAnnualRevenue: number | null;
-    longTermAnnualRevenue: number | null;
-    purchasePrice: number;
-  };
+  depositAmount: number;
+  depositPercentage: number;
+  interestRate: number;
+  monthlyBondRepayment: number;
+  termYears: number;
+
+  // Operating Costs
+  monthlyLevies: number;
+  monthlyRatesTaxes: number;
+  monthlyOtherExpenses: number;
+  maintenancePercentage: number;
+  managementFeePercentage: number;
+  totalMonthlyExpenses: number;
+
+  // Revenue Analysis
+  shortTermMonthly: number | null;
+  shortTermAnnual: number | null;
+  longTermMonthly: number | null;
+  longTermAnnual: number | null;
+  occupancyRate: number;
+  nightlyRate: number | null;
+  leaseCycleGap: number;
+
+  // Growth Projections
+  incomeGrowth: number;
+  expenseGrowth: number;
+  annualAppreciation: number;
+
+  // Miscellaneous
+  comments: string | null;
 }
 
 export function calculateYields(data: PropertyData): YieldAnalysis {
-  let shortTermGrossYield = null;
-  let longTermGrossYield = null;
-  let shortTermAnnualRevenue = null;
-  let longTermAnnualRevenue = null;
+  // Calculate short-term revenue
+  const shortTermMonthly = data.nightlyRate * 30 * (data.occupancy / 100);
+  const shortTermAnnual = shortTermMonthly * 12;
+  const shortTermGrossYield = (shortTermAnnual / data.purchasePrice) * 100;
 
-  // Calculate short-term rental yield if data is available
-  if (data.shortTermNightlyRate && data.annualOccupancy) {
-    shortTermAnnualRevenue = data.shortTermNightlyRate * 365 * (data.annualOccupancy / 100);
-    shortTermGrossYield = (shortTermAnnualRevenue / data.purchasePrice) * 100;
-  }
+  // Calculate long-term revenue with lease cycle gap adjustment
+  const occupiedDays = 365 - data.leaseCycleGap;
+  const occupancyRatio = occupiedDays / 365;
+  const longTermMonthly = data.longTermRental;
+  const longTermAnnual = longTermMonthly * 12 * occupancyRatio;
+  const longTermGrossYield = (longTermAnnual / data.purchasePrice) * 100;
 
-  // Calculate long-term rental yield if data is available
-  if (data.longTermRental) {
-    // Calculate days of vacancy due to lease cycle gap
-    const vacancyDays = data.leaseCycleGap || 0;
-    const occupiedDays = 365 - vacancyDays;
-    const occupancyRatio = occupiedDays / 365;
-    
-    longTermAnnualRevenue = data.longTermRental * 12 * occupancyRatio;
-    longTermGrossYield = (longTermAnnualRevenue / data.purchasePrice) * 100;
-  }
+  // Calculate monthly bond repayment
+  const loanAmount = data.purchasePrice - data.depositAmount;
+  const monthlyRate = (data.interestRate / 100) / 12;
+  const numberOfPayments = data.termYears * 12;
+  const monthlyBondRepayment = loanAmount * 
+    (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / 
+    (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
 
-  // Calculate monthly bond repayment if we have both deposit and interest rate
-  let monthlyBondRepayment = null;
-  if (data.deposit !== undefined && data.interestRate !== undefined) {
-    const loanAmount = data.purchasePrice - data.deposit;
-    const monthlyRate = (data.interestRate / 100) / 12;
-    const numberOfPayments = 20 * 12; // 20-year term
-    monthlyBondRepayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
-  }
-
-  // Calculate deposit percentage if deposit is provided
-  const depositPercentage = data.deposit ? (data.deposit / data.purchasePrice) * 100 : null;
+  // Calculate total monthly expenses
+  const totalMonthlyExpenses = 
+    data.levies + 
+    data.ratesTaxes + 
+    data.otherExpenses + 
+    (data.purchasePrice * (data.maintenance / 100) / 12) +
+    (shortTermMonthly * (data.managementFee / 100));
 
   return {
-    shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
-    longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
-    propertyDescription: data.propertyDescription || null,
-    deposit: data.deposit || null,
-    depositPercentage: depositPercentage !== null ? Number(depositPercentage.toFixed(2)) : null,
-    interestRate: data.interestRate || null,
-    monthlyBondRepayment: monthlyBondRepayment !== null ? Number(monthlyBondRepayment.toFixed(2)) : null,
-    analysis: {
-      shortTermAnnualRevenue,
-      longTermAnnualRevenue,
-      purchasePrice: data.purchasePrice
-    }
+    // Property Details
+    address: data.address,
+    propertyLink: data.propertyLink || null,
+    purchasePrice: data.purchasePrice,
+    floorArea: data.floorArea,
+    beds: data.beds,
+    baths: data.baths,
+    parkings: data.parkings,
+    avgRatePerM2: data.avgRatePerM2,
+
+    // Financial Analysis
+    shortTermGrossYield: Number(shortTermGrossYield.toFixed(2)),
+    longTermGrossYield: Number(longTermGrossYield.toFixed(2)),
+    depositAmount: data.depositAmount,
+    depositPercentage: data.depositPercentage,
+    interestRate: data.interestRate,
+    monthlyBondRepayment: Number(monthlyBondRepayment.toFixed(2)),
+    termYears: data.termYears,
+
+    // Operating Costs
+    monthlyLevies: data.levies,
+    monthlyRatesTaxes: data.ratesTaxes,
+    monthlyOtherExpenses: data.otherExpenses,
+    maintenancePercentage: data.maintenance,
+    managementFeePercentage: data.managementFee,
+    totalMonthlyExpenses: Number(totalMonthlyExpenses.toFixed(2)),
+
+    // Revenue Analysis
+    shortTermMonthly: Number(shortTermMonthly.toFixed(2)),
+    shortTermAnnual: Number(shortTermAnnual.toFixed(2)),
+    longTermMonthly: Number(longTermMonthly.toFixed(2)),
+    longTermAnnual: Number(longTermAnnual.toFixed(2)),
+    occupancyRate: data.occupancy,
+    nightlyRate: data.nightlyRate,
+    leaseCycleGap: data.leaseCycleGap,
+
+    // Growth Projections
+    incomeGrowth: data.incomeGrowth,
+    expenseGrowth: data.expenseGrowth,
+    annualAppreciation: data.annualAppreciation,
+
+    // Miscellaneous
+    comments: data.comments || null
   };
 }
