@@ -7,6 +7,11 @@ import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 interface AnalysisResult {
   shortTermGrossYield: number | null;
   longTermGrossYield: number | null;
+  propertyDescription?: string;
+  deposit?: number;
+  depositPercentage?: number;
+  interestRate?: number;
+  monthlyBondRepayment?: number;
   analysis: {
     shortTermAnnualRevenue: number | null;
     longTermAnnualRevenue: number | null;
@@ -63,6 +68,69 @@ export default function PropertyAnalyzerPage() {
       </div>
 
       <div className="space-y-6">
+        {/* Deal Summary Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Deal Structure */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Deal Structure</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Property Description</h3>
+                <p className="mt-1">
+                  {analysisResult?.propertyDescription || "No description available"}
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Purchase Price</h3>
+                <p className="mt-1 text-lg font-semibold">
+                  R{analysisResult?.analysis.purchasePrice?.toLocaleString() || "0"}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Deposit</h3>
+                <p className="mt-1">
+                  R{analysisResult?.deposit?.toLocaleString() || "0"} 
+                  ({analysisResult?.depositPercentage || "0"}%)
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Interest Rate</h3>
+                <p className="mt-1">{analysisResult?.interestRate || "0"}%</p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Monthly Bond Repayment</h3>
+                <p className="mt-1">R{analysisResult?.monthlyBondRepayment?.toLocaleString() || "0"}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Revenue Performance - Placeholder */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Revenue Performance</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* To be implemented */}
+            </CardContent>
+          </Card>
+
+          {/* Location - Placeholder */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Location</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* To be implemented */}
+            </CardContent>
+          </Card>
+        </div>
+
         <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
 
         {analysisError && (
