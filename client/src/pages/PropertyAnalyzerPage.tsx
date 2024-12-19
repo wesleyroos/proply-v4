@@ -1,10 +1,20 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { AlertCircle, BarChart3, TrendingUp, Building2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { AlertCircle, BarChart3, TrendingUp, Building2, MapPin } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AnalysisResult {
   shortTermGrossYield: number | null;
@@ -29,7 +39,9 @@ interface AnalysisResult {
 
 export default function PropertyAnalyzerPage() {
   const { user } = useUser();
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null,
+  );
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(null);
 
@@ -37,7 +49,7 @@ export default function PropertyAnalyzerPage() {
     try {
       setAnalysisError(null);
       setFormData(formData);
-      
+
       // Ensure all numbers are properly parsed and validated
       const requestBody = {
         purchasePrice: Number(formData.purchasePrice),
@@ -50,28 +62,31 @@ export default function PropertyAnalyzerPage() {
         deposit: Number(formData.depositAmount),
         interestRate: Number(formData.interestRate),
         floorArea: Number(formData.floorArea),
-        ratePerSquareMeter: Number(formData.cmaRatePerSqm)
+        ratePerSquareMeter: Number(formData.cmaRatePerSqm),
       };
-      
-      console.log('Data being sent to analyzer:', requestBody);
-      
-      console.log('Sending analysis request with body:', JSON.stringify(requestBody, null, 2));
-      
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
+
+      console.log("Data being sent to analyzer:", requestBody);
+
+      console.log(
+        "Sending analysis request with body:",
+        JSON.stringify(requestBody, null, 2),
+      );
+
+      const response = await fetch("/api/analyze", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
-      console.log('Raw response from analyzer:', response);
-      console.log('Parsed response data:', data);
-      
+      console.log("Raw response from analyzer:", response);
+      console.log("Parsed response data:", data);
+
       if (!response.ok) {
         const errorMessage = data.error || response.statusText;
-        console.error('Analysis failed with error:', errorMessage);
+        console.error("Analysis failed with error:", errorMessage);
         throw new Error(errorMessage);
       }
 
@@ -79,11 +94,15 @@ export default function PropertyAnalyzerPage() {
       setAnalysisResult({
         ...data,
         shortTermNightlyRate: requestBody.shortTermNightlyRate,
-        annualOccupancy: requestBody.annualOccupancy
+        annualOccupancy: requestBody.annualOccupancy,
       });
     } catch (error) {
-      console.error('Analysis failed:', error);
-      setAnalysisError(error instanceof Error ? error.message : 'Failed to analyze property data');
+      console.error("Analysis failed:", error);
+      setAnalysisError(
+        error instanceof Error
+          ? error.message
+          : "Failed to analyze property data",
+      );
       setAnalysisResult(null);
     }
   };
@@ -133,8 +152,8 @@ export default function PropertyAnalyzerPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                      <Building2 className="h-5 w-5 text-indigo-500" />
-                      Location & Property
+                      <MapPin className="h-5 w-5 text-indigo-500" />
+                      Location & Photo
                     </CardTitle>
                     <CardDescription className="text-sm text-slate-600">
                       {analysisResult.address}
@@ -146,13 +165,17 @@ export default function PropertyAnalyzerPage() {
                         <div className="rounded-lg overflow-hidden">
                           <PropertyMap address={analysisResult.address} />
                         </div>
-                        
+
                         {formData?.propertyPhoto && (
                           <div className="mt-4">
-                            <h3 className="text-sm font-semibold text-slate-600">Property Photo</h3>
+                            <h3 className="text-sm font-semibold text-slate-600">
+                              Property Photo
+                            </h3>
                             <div className="rounded-lg overflow-hidden mt-2">
                               <img
-                                src={URL.createObjectURL(formData.propertyPhoto)}
+                                src={URL.createObjectURL(
+                                  formData.propertyPhoto,
+                                )}
                                 alt="Property"
                                 className="w-full h-auto object-cover"
                               />
@@ -167,52 +190,92 @@ export default function PropertyAnalyzerPage() {
 
               {/* Deal Structure */}
               <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                      <Building2 className="h-5 w-5 text-indigo-500" />
-                      Deal Structure
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">Property Description</h3>
-                      <p className="mt-2 text-slate-700">
-                        {analysisResult.propertyDescription || "No description available"}
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">Purchase Price</h3>
-                      <p className="mt-2 text-2xl font-bold text-slate-800">
-                        R{analysisResult.analysis.purchasePrice.toLocaleString()}
-                      </p>
-                    </div>
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <Building2 className="h-5 w-5 text-indigo-500" />
+                    Deal Structure
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-600">
+                      Property Description
+                    </h3>
+                    <p className="mt-2 text-slate-700">
+                      {analysisResult.propertyDescription ||
+                        "No description available"}
+                    </p>
+                  </div>
 
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">Deposit</h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        R{analysisResult.deposit?.toLocaleString() || "0"}
-                        <span className="ml-2 text-base font-semibold text-indigo-600">
-                          ({analysisResult.depositPercentage || "0"}%)
-                        </span>
-                      </p>
-                    </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-600">
+                      Purchase Price
+                    </h3>
+                    <p className="mt-2 text-2xl font-bold text-slate-800">
+                      R{analysisResult.analysis.purchasePrice.toLocaleString()}
+                    </p>
+                  </div>
 
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">Interest Rate</h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        {analysisResult.interestRate || "0"}%
-                      </p>
-                    </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-600">
+                      Deposit
+                    </h3>
+                    <p className="mt-2 text-lg font-bold text-slate-800">
+                      R{analysisResult.deposit?.toLocaleString() || "0"}
+                      <span className="ml-2 text-base font-semibold text-indigo-600">
+                        ({analysisResult.depositPercentage || "0"}%)
+                      </span>
+                    </p>
+                  </div>
 
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">Monthly Bond Repayment</h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        R{analysisResult.monthlyBondRepayment?.toLocaleString() || "0"}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-600">
+                      Interest Rate
+                    </h3>
+                    <p className="mt-2 text-lg font-bold text-slate-800">
+                      {analysisResult.interestRate || "0"}%
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-600">
+                      Monthly Bond Repayment
+                    </h3>
+                    <p className="mt-2 text-lg font-bold text-slate-800">
+                      R
+                      {analysisResult.monthlyBondRepayment?.toLocaleString() ||
+                        "0"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-600">
+                      Bond Registration
+                    </h3>
+                    <p className="mt-2 text-lg font-bold text-slate-800">
+                      R68,283
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-600">
+                      Transfer Costs
+                    </h3>
+                    <p className="mt-2 text-lg font-bold text-slate-800">
+                      R351,383
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-600">
+                      Total Capital Required
+                    </h3>
+                    <p className="mt-2 text-lg font-bold text-slate-800">
+                      R844,566
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Middle Column with Revenue and Size/Rate */}
               <div className="space-y-4">
@@ -227,37 +290,79 @@ export default function PropertyAnalyzerPage() {
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-4 rounded-lg bg-blue-50/50">
-                          <h3 className="text-sm font-bold text-blue-600 mb-3">Short-Term Rental (Year 1)</h3>
-                          <div className="space-y-2">
-                            <div>
-                              <p className="text-2xl font-bold text-slate-800">R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}</p>
-                              <p className="text-base text-slate-600">R{Math.round((analysisResult.analysis.shortTermAnnualRevenue || 0) / 12).toLocaleString()}/month</p>
-                            </div>
-                            <p className="text-sm flex items-center gap-2">
-                              <span className="font-semibold text-emerald-600 text-base">
-                                {analysisResult.shortTermGrossYield?.toFixed(2) || "0"}% Gross Yield
-                              </span>
+                        <h3 className="text-sm font-bold text-blue-600 mb-3">
+                          Short-Term Rental (Year 1)
+                        </h3>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-2xl font-bold text-slate-800">
+                              R
+                              {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
+                                "0"}
                             </p>
-                            <div className="pt-2 border-t border-blue-100">
-                              <p className="text-sm text-slate-600">Nightly Rate: <span className="font-medium">R{analysisResult.shortTermNightlyRate?.toLocaleString() || "0"}</span></p>
-                              <p className="text-sm text-slate-600">Occupancy: <span className="font-medium">{analysisResult.annualOccupancy || "0"}%</span></p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-4 rounded-lg bg-purple-50/50">
-                          <h3 className="text-sm font-bold text-purple-600 mb-3">Long-Term Rental (Year 1)</h3>
-                          <div className="space-y-2">
-                            <div>
-                              <p className="text-2xl font-bold text-slate-800">R{analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() || "0"}</p>
-                              <p className="text-base text-slate-600">R{Math.round((analysisResult.analysis.longTermAnnualRevenue || 0) / 12).toLocaleString()}/month</p>
-                            </div>
-                            <p className="text-sm flex items-center gap-2">
-                              <span className="font-semibold text-emerald-600 text-base">
-                                {analysisResult.longTermGrossYield?.toFixed(2) || "0"}% Gross Yield
-                              </span>
+                            <p className="text-base text-slate-600">
+                              R
+                              {Math.round(
+                                (analysisResult.analysis
+                                  .shortTermAnnualRevenue || 0) / 12,
+                              ).toLocaleString()}
+                              /month
                             </p>
                           </div>
+                          <p className="text-sm flex items-center gap-2">
+                            <span className="font-semibold text-emerald-600 text-base">
+                              {analysisResult.shortTermGrossYield?.toFixed(2) ||
+                                "0"}
+                              % Gross Yield
+                            </span>
+                          </p>
+                          <div className="pt-2 border-t border-blue-100">
+                            <p className="text-sm text-slate-600">
+                              Nightly Rate:{" "}
+                              <span className="font-medium">
+                                R
+                                {analysisResult.shortTermNightlyRate?.toLocaleString() ||
+                                  "0"}
+                              </span>
+                            </p>
+                            <p className="text-sm text-slate-600">
+                              Occupancy:{" "}
+                              <span className="font-medium">
+                                {analysisResult.annualOccupancy || "0"}%
+                              </span>
+                            </p>
+                          </div>
                         </div>
+                      </div>
+                      <div className="p-4 rounded-lg bg-purple-50/50">
+                        <h3 className="text-sm font-bold text-purple-600 mb-3">
+                          Long-Term Rental (Year 1)
+                        </h3>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-2xl font-bold text-slate-800">
+                              R
+                              {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() ||
+                                "0"}
+                            </p>
+                            <p className="text-base text-slate-600">
+                              R
+                              {Math.round(
+                                (analysisResult.analysis
+                                  .longTermAnnualRevenue || 0) / 12,
+                              ).toLocaleString()}
+                              /month
+                            </p>
+                          </div>
+                          <p className="text-sm flex items-center gap-2">
+                            <span className="font-semibold text-emerald-600 text-base">
+                              {analysisResult.longTermGrossYield?.toFixed(2) ||
+                                "0"}
+                              % Gross Yield
+                            </span>
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -274,49 +379,83 @@ export default function PropertyAnalyzerPage() {
                     <div className="space-y-6">
                       <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <h3 className="text-sm font-semibold text-slate-600">Floor Area</h3>
-                          <p className="mt-2 text-lg font-bold text-slate-800">{analysisResult.floorArea || "0"} m²</p>
+                          <h3 className="text-sm font-semibold text-slate-600">
+                            Floor Area
+                          </h3>
+                          <p className="mt-2 text-lg font-bold text-slate-800">
+                            {analysisResult.floorArea || "0"} m²
+                          </p>
                         </div>
                         <div>
-                          <h3 className="text-sm font-semibold text-slate-600">Current Property Rate/m²</h3>
+                          <h3 className="text-sm font-semibold text-slate-600">
+                            Current Property Rate/m²
+                          </h3>
                           <p className="mt-2 text-lg font-bold text-slate-800">
-                            R{(analysisResult.analysis.purchasePrice / (analysisResult.floorArea || 1)).toLocaleString()}
+                            R
+                            {(
+                              analysisResult.analysis.purchasePrice /
+                              (analysisResult.floorArea || 1)
+                            ).toLocaleString()}
                           </p>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <h3 className="text-sm font-semibold text-slate-600">Area Rate/m²</h3>
-                          <p className="mt-2 text-lg font-bold text-slate-800">R{analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}</p>
+                          <h3 className="text-sm font-semibold text-slate-600">
+                            Area Rate/m²
+                          </h3>
+                          <p className="mt-2 text-lg font-bold text-slate-800">
+                            R
+                            {analysisResult.ratePerSquareMeter?.toLocaleString() ||
+                              "0"}
+                          </p>
                         </div>
                         <div>
                           {(() => {
-                            const actualRate = analysisResult.analysis.purchasePrice / (analysisResult.floorArea || 1);
-                            const areaRate = analysisResult.ratePerSquareMeter || 0;
+                            const actualRate =
+                              analysisResult.analysis.purchasePrice /
+                              (analysisResult.floorArea || 1);
+                            const areaRate =
+                              analysisResult.ratePerSquareMeter || 0;
                             const difference = areaRate - actualRate;
                             const isPositive = difference > 0;
-                          
+
                             return (
                               <div>
-                                <h3 className="text-sm font-semibold text-slate-600">Rate/m² Difference</h3>
+                                <h3 className="text-sm font-semibold text-slate-600">
+                                  Rate/m² Difference
+                                </h3>
                                 <Tooltip delayDuration={0}>
                                   <TooltipTrigger className="cursor-help">
                                     <p className="mt-2 text-lg font-bold">
-                                      <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
-                                        R{Math.abs(difference).toLocaleString()}
-                                        {' '}
-                                        {isPositive ? 'above' : 'below'}
-                                        {' '}
-                                        area rate
-                                        {' '}
-                                        ({((Math.abs(difference) / actualRate) * 100).toFixed(1)}%)
+                                      <span
+                                        className={
+                                          isPositive
+                                            ? "text-green-600"
+                                            : "text-red-600"
+                                        }
+                                      >
+                                        R{Math.abs(difference).toLocaleString()}{" "}
+                                        {isPositive ? "above" : "below"} area
+                                        rate (
+                                        {(
+                                          (Math.abs(difference) / actualRate) *
+                                          100
+                                        ).toFixed(1)}
+                                        %)
                                       </span>
                                     </p>
                                   </TooltipTrigger>
                                   <TooltipContent className="max-w-[300px] text-sm">
-                                    This shows how the property's price per square meter compares to the average rate in the area. 
-                                    A lower rate ({isPositive ? 'currently higher' : 'currently lower'}) than the area average might indicate 
-                                    better value for money, while a higher rate could suggest premium features or location.
+                                    This shows how the property's price per
+                                    square meter compares to the average rate in
+                                    the area. A lower rate (
+                                    {isPositive
+                                      ? "currently higher"
+                                      : "currently lower"}
+                                    ) than the area average might indicate
+                                    better value for money, while a higher rate
+                                    could suggest premium features or location.
                                   </TooltipContent>
                                 </Tooltip>
                               </div>
@@ -328,8 +467,6 @@ export default function PropertyAnalyzerPage() {
                   </CardContent>
                 </Card>
               </div>
-
-              
             </div>
           </>
         )}
