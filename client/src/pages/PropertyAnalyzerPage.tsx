@@ -4,6 +4,7 @@ import { AlertCircle, BarChart3, TrendingUp, Building2 } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AnalysisResult {
   shortTermGrossYield: number | null;
@@ -212,15 +213,24 @@ export default function PropertyAnalyzerPage() {
                         
                         return (
                           <>
-                            <p className="text-sm mt-2">Rate/m²: R{actualRate.toLocaleString()}</p>
-                            <p className="text-sm mt-2">
-                              Rate per Square Metre Difference:{' '}
-                              <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
-                                R{Math.abs(difference).toLocaleString()}
-                                {isPositive ? ' above' : ' below'} area rate
-                                {' '}({((Math.abs(difference) / actualRate) * 100).toFixed(1)}%)
-                              </span>
-                            </p>
+                            <p className="text-sm mt-2">Current Property Rate/m²: R{actualRate.toLocaleString()}</p>
+                            <Tooltip delayDuration={0}>
+                              <TooltipTrigger className="cursor-help">
+                                <p className="text-sm mt-2">
+                                  Rate/m² Difference:{' '}
+                                  <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
+                                    R{Math.abs(difference).toLocaleString()}
+                                    {isPositive ? ' above' : ' below'} area rate
+                                    {' '}({((Math.abs(difference) / actualRate) * 100).toFixed(1)}%)
+                                  </span>
+                                </p>
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-[300px] text-sm">
+                                This shows how the property's price per square meter compares to the average rate in the area. 
+                                A lower rate ({isPositive ? 'currently higher' : 'currently lower'}) than the area average might indicate 
+                                better value for money, while a higher rate could suggest premium features or location.
+                              </TooltipContent>
+                            </Tooltip>
                           </>
                         );
                       })()}
