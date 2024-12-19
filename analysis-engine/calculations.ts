@@ -3,11 +3,11 @@ import { z } from "zod";
 // Zod schema for input validation
 const propertyDataSchema = z.object({
   purchasePrice: z.number().positive(),
-  shortTermNightlyRate: z.number().positive().optional(),
-  annualOccupancy: z.number().min(0).max(100).optional(),
-  longTermRental: z.number().positive().optional(),
-  leaseCycleGap: z.number().min(0).optional(),
-  propertyDescription: z.string().nullable(),
+  shortTermNightlyRate: z.number().positive().nullable().optional(),
+  annualOccupancy: z.number().min(0).max(100).nullable().optional(),
+  longTermRental: z.number().positive().nullable().optional(),
+  leaseCycleGap: z.number().min(0).nullable().optional(),
+  propertyDescription: z.string().nullable().optional(),
   deposit: z.number().positive(),
   interestRate: z.number().min(0).max(100),
   floorArea: z.number().positive(),

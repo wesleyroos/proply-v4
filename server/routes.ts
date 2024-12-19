@@ -440,31 +440,39 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      const {
-        purchasePrice,
-        airbnbNightlyRate,
-        occupancyRate,
-        longTermRental,
-        leaseCycleGap
-      } = req.body;
-      
-      if (!purchasePrice) {
-        return res.status(400).json({ error: "Purchase price is required" });
-      }
+      console.log("\n=== Starting Property Analysis ===");
+      console.log("Raw request body:", JSON.stringify(req.body, null, 2));
 
       const propertyData = {
-        purchasePrice,
-        shortTermNightlyRate: airbnbNightlyRate || null,
-        annualOccupancy: occupancyRate || null,
-        longTermRental: longTermRental || null,
-        leaseCycleGap: leaseCycleGap || 0
+        purchasePrice: Number(req.body.purchasePrice),
+        shortTermNightlyRate: req.body.shortTermNightlyRate ? Number(req.body.shortTermNightlyRate) : null,
+        annualOccupancy: req.body.annualOccupancy ? Number(req.body.annualOccupancy) : null,
+        longTermRental: req.body.longTermRental ? Number(req.body.longTermRental) : null,
+        leaseCycleGap: req.body.leaseCycleGap ? Number(req.body.leaseCycleGap) : null,
+        propertyDescription: req.body.propertyDescription || null,
+        deposit: Number(req.body.deposit),
+        interestRate: Number(req.body.interestRate),
+        floorArea: Number(req.body.floorArea),
+        ratePerSquareMeter: Number(req.body.ratePerSquareMeter)
       };
 
-      const yields = calculateYields(propertyData);
-      res.json(yields);
+      console.log("Converted property data:", JSON.stringify(propertyData, null, 2));
+      
+      const analysisResult = calculateYields(propertyData);
+      console.log("Analysis complete. Result:", JSON.stringify(analysisResult, null, 2));
+
+      res.json(analysisResult);
     } catch (error) {
-      console.error('Analysis error:', error);
-      res.status(500).json({ error: "Failed to analyze property data" });
+      console.error("=== Analysis Error ===");
+      console.error("Error details:", error);
+      
+      const errorMessage = error instanceof Error ? error.message : "Failed to analyze property data";
+      console.error("Sending error response:", { error: errorMessage });
+      
+      res.status(500).json({ 
+        error: errorMessage,
+        details: error instanceof Error ? error.message : undefined
+      });
     }
   });
 
