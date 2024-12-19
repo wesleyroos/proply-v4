@@ -1,0 +1,31 @@
+api/user:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+
+chunk-UPELNCPK.js?v=54d90cc1:521 Warning: Cannot update a component (`Controller`) while rendering a different component (`PropertyAnalyzerForm`). To locate the bad setState() call inside `PropertyAnalyzerForm`, follow the stack trace as described in https://reactjs.org/link/setstate-in-render
+    at PropertyAnalyzerForm (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/components/PropertyAnalyzerForm.tsx:76:41)
+    at div
+    at div
+    at PropertyAnalyzerPage (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/pages/PropertyAnalyzerPage.tsx:25:20)
+    at main
+    at div
+    at ProtectedRoute (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/App.tsx:34:38)
+    at component
+    at Route (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.…nner/RentalROI-Compare/node_modules/.vite/deps/wouter.js?v=54d90cc1:323:16)
+    at Switch (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.…nner/RentalROI-Compare/node_modules/.vite/deps/wouter.js?v=54d90cc1:379:17)
+    at App
+    at QueryClientProvider (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.…Compare/node_modules/.vite/deps/@tanstack_react-query.js?v=54d90cc1:2805:3)
+localhost:3001/analyze:1 
+ Failed to load resource: net::ERR_CONNECTION_REFUSED
+PropertyAnalyzerPage.tsx:40 Analysis failed: TypeError: Failed to fetch
+    at Object.handleAnalysisComplete [as onAnalysisComplete] (PropertyAnalyzerPage.tsx:22:30)
+    at onSubmit (PropertyAnalyzerForm.tsx:240:21)
+localhost:3001/analyze:1 
+ Failed to load resource: net::ERR_CONNECTION_REFUSED
+PropertyAnalyzerPage.tsx:40 Analysis failed: TypeError: Failed to fetch
+    at Object.handleAnalysisComplete [as onAnalysisComplete] (PropertyAnalyzerPage.tsx:22:30)
+    at onSubmit (PropertyAnalyzerForm.tsx:240:21)
+PropertyAnalyzerPage.tsx:22 
+ POST http://localhost:3001/analyze net::ERR_CONNECTION_REFUSED
+PropertyAnalyzerPage.tsx:40 Analysis failed: TypeError: Failed to fetch
+    at Object.handleAnalysisComplete [as onAnalysisComplete] (PropertyAnalyzerPage.tsx:22:30)
+    at onSubmit (PropertyAnalyzerForm.tsx:240:21)

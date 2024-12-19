@@ -19,7 +19,7 @@ export default function PropertyAnalyzerPage() {
 
   const handleAnalysisComplete = async (formData: any) => {
     try {
-      const response = await fetch('http://localhost:3001/analyze', {
+      const response = await fetch('https://3001-a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
