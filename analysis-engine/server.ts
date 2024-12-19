@@ -1,26 +1,6 @@
 import express from "express";
 import { calculateYields, type PropertyData } from "./calculations";
 
-// Define the response type to include term
-interface AnalyzerResponse {
-  shortTermGrossYield: number;
-  longTermGrossYield: number;
-  monthlyBondRepayment: number;
-  depositPercentage: number;
-  propertyDescription: string | null;
-  address: string;
-  deposit: number;
-  interestRate: number;
-  term: number;
-  floorArea: number;
-  ratePerSquareMeter: number;
-  analysis: {
-    shortTermAnnualRevenue: number;
-    longTermAnnualRevenue: number;
-    purchasePrice: number;
-  };
-}
-
 const app = express();
 app.use(express.json());
 
@@ -55,8 +35,6 @@ app.post("/analyze", (req, res) => {
 
     // Convert and validate all input fields
     console.log("Converting and validating input fields...");
-    console.log("Raw term value:", req.body.term, typeof req.body.term);
-    console.log("Converted term value:", Number(req.body.term) || 20);
     const propertyData: PropertyData = {
       purchasePrice: Number(req.body.purchasePrice),
       shortTermNightlyRate: req.body.shortTermNightlyRate ? Number(req.body.shortTermNightlyRate) : undefined,
@@ -64,13 +42,10 @@ app.post("/analyze", (req, res) => {
       longTermRental: req.body.longTermRental ? Number(req.body.longTermRental) : undefined,
       leaseCycleGap: req.body.leaseCycleGap ? Number(req.body.leaseCycleGap) : undefined,
       propertyDescription: req.body.propertyDescription || null,
-      address: req.body.address,
       deposit: Number(req.body.deposit),
       interestRate: Number(req.body.interestRate),
-      term: Number(req.body.term) || 20, // Default to 20 years if not specified
       floorArea: Number(req.body.floorArea),
       ratePerSquareMeter: Number(req.body.ratePerSquareMeter)
-
     };
 
     // Validate numeric fields
@@ -95,21 +70,9 @@ app.post("/analyze", (req, res) => {
 
     console.log("All validations passed, calculating yields...");
     const analysisResult = calculateYields(propertyData);
-    // Construct the response with proper typing
-    const response: AnalyzerResponse = {
-      ...analysisResult,
-      term: propertyData.term || 20, // Use the validated term from propertyData
-      deposit: propertyData.deposit,
-      interestRate: propertyData.interestRate,
-      floorArea: propertyData.floorArea,
-      ratePerSquareMeter: propertyData.ratePerSquareMeter,
-      propertyDescription: propertyData.propertyDescription,
-      address: propertyData.address,
-    };
+    console.log("Analysis complete. Result:", JSON.stringify(analysisResult, null, 2));
 
-    console.log("Analysis complete. Result:", JSON.stringify(response, null, 2));
-
-    return res.json(response);
+    return res.json(analysisResult);
   } catch (error) {
     console.error("=== Analysis Error ===");
     console.error("Error details:", error);

@@ -11,7 +11,6 @@ const propertyDataSchema = z.object({
   address: z.string(),
   deposit: z.number().positive(),
   interestRate: z.number().min(0).max(100),
-  term: z.number().int().positive(),
   floorArea: z.number().positive(),
   ratePerSquareMeter: z.number().positive()
 });
@@ -70,10 +69,10 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     longTermGrossYield = (longTermAnnualRevenue / data.purchasePrice) * 100;
   }
 
-  // Calculate bond repayment using the provided term
+  // Calculate bond repayment
   const loanAmount = data.purchasePrice - data.deposit;
   const monthlyRate = (data.interestRate / 100) / 12;
-  const numberOfPayments = data.term * 12; // Convert years to months
+  const numberOfPayments = 20 * 12; // 20-year term
   const monthlyBondRepayment = loanAmount * 
     (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / 
     (Math.pow(1 + monthlyRate, numberOfPayments) - 1);

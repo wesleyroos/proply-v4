@@ -96,60 +96,60 @@ const formSchema = z.object({
     .number()
     .min(0, "Interest rate must be positive")
     .max(100, "Interest rate cannot exceed 100"),
-  term: z.number().min(1, "Loan term must be at least 1 year"),
+  loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
 
   // Step 3: Operating Expenses
-  monthlyLevies: z.coerce.number().min(0, "Monthly levies must be positive"),
-  monthlyRatesTaxes: z.coerce
+  monthlyLevies: z.number().min(0, "Monthly levies must be positive"),
+  monthlyRatesTaxes: z
     .number()
     .min(0, "Monthly rates and taxes must be positive"),
-  otherMonthlyExpenses: z.coerce
+  otherMonthlyExpenses: z
     .number()
     .min(0, "Other monthly expenses must be positive"),
-  maintenancePercentage: z.coerce
+  maintenancePercentage: z
     .number()
     .min(0, "Maintenance percentage must be positive")
     .max(100, "Maintenance percentage cannot exceed 100"),
-  managementFee: z.coerce
+  managementFee: z
     .number()
     .min(0, "Management fee must be positive")
     .max(100, "Management fee cannot exceed 100"),
 
   // Step 4: Revenue Performance
-  airbnbNightlyRate: z.coerce
+  airbnbNightlyRate: z
     .number()
     .min(0, "Nightly rate must be positive")
     .optional(),
-  occupancyRate: z.coerce
+  occupancyRate: z
     .number()
     .min(0, "Occupancy rate must be positive")
     .max(100, "Occupancy rate cannot exceed 100")
     .optional(),
-  longTermRental: z.coerce
+  longTermRental: z
     .number()
     .min(0, "Long term rental must be positive")
     .optional(),
-  leaseCycleGap: z.coerce
+  leaseCycleGap: z
     .number()
     .min(0, "Lease cycle gap must be positive")
     .optional(),
 
   // Step 5: Escalations
-  annualIncomeGrowth: z.coerce
+  annualIncomeGrowth: z
     .number()
     .min(0, "Annual income growth must be positive")
     .max(100, "Annual income growth cannot exceed 100"),
-  annualExpenseGrowth: z.coerce
+  annualExpenseGrowth: z
     .number()
     .min(0, "Annual expense growth must be positive")
     .max(100, "Annual expense growth cannot exceed 100"),
-  annualPropertyAppreciation: z.coerce
+  annualPropertyAppreciation: z
     .number()
     .min(0, "Annual property appreciation must be positive")
     .max(100, "Annual property appreciation cannot exceed 100"),
 
   // Step 6: Miscellaneous
-  cmaRatePerSqm: z.coerce.number().min(0, "Area rate per m² must be positive"),
+  cmaRatePerSqm: z.number().min(0, "Area rate per m² must be positive"),
   comments: z.string().optional(),
 });
 
@@ -273,7 +273,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       depositAmount: 0,
       depositPercentage: 0,
       interestRate: 0,
-      term: 20,
+      loanTerm: 20,
       monthlyLevies: 0,
       monthlyRatesTaxes: 0,
       otherMonthlyExpenses: 0,
@@ -312,21 +312,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     }
   };
 
-  const nextStep = async () => {
+  const nextStep = () => {
     const fields = getFieldsForStep(currentStep);
-    console.log("Current step fields:", fields);
-    console.log("Form values:", form.getValues());
-    console.log("Form errors:", form.formState.errors);
-    
-    // Trigger validation for all fields in the current step
-    const results = await Promise.all(fields.map(field => form.trigger(field)));
-    const isStepValid = results.every(isValid => isValid);
-    
-    console.log("Validation results:", results);
-    console.log("Step valid:", isStepValid);
+    const isStepValid = fields.every(
+      (field) => !form.getFieldState(field).error,
+    );
 
     if (isStepValid) {
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+    } else {
+      // Trigger validation for the current step's fields
+      fields.forEach((field) => form.trigger(field));
     }
   };
 
@@ -793,7 +789,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
                 <FormField
                   control={form.control}
-                  name="term"
+                  name="loanTerm"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Loan Term (Years)</FormLabel>
