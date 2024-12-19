@@ -42,7 +42,7 @@ export default function PropertyAnalyzerPage() {
         deposit: formData.depositAmount,
         interestRate: formData.interestRate,
         floorArea: formData.floorArea,
-        ratePerSquareMeter: formData.areaRatePerSquareMeter 
+        ratePerSquareMeter: formData.cmaRatePerSqm 
       };
       
       console.log('Data being sent to analyzer:', requestBody);
