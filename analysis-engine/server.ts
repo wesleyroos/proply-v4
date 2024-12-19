@@ -1,6 +1,26 @@
 import express from "express";
 import { calculateYields, type PropertyData } from "./calculations";
 
+// Define the response type to include term
+interface AnalyzerResponse {
+  shortTermGrossYield: number;
+  longTermGrossYield: number;
+  monthlyBondRepayment: number;
+  depositPercentage: number;
+  propertyDescription: string | null;
+  address: string;
+  deposit: number;
+  interestRate: number;
+  term: number;
+  floorArea: number;
+  ratePerSquareMeter: number;
+  analysis: {
+    shortTermAnnualRevenue: number;
+    longTermAnnualRevenue: number;
+    purchasePrice: number;
+  };
+}
+
 const app = express();
 app.use(express.json());
 
@@ -72,15 +92,21 @@ app.post("/analyze", (req, res) => {
 
     console.log("All validations passed, calculating yields...");
     const analysisResult = calculateYields(propertyData);
-    // Include term in the response
-    const result = {
-        ...analysisResult,
-        term: req.body.term ? Number(req.body.term) : 20
-      };
+    // Construct the response with proper typing
+    const response: AnalyzerResponse = {
+      ...analysisResult,
+      term: propertyData.term || 20, // Use the validated term from propertyData
+      deposit: propertyData.deposit,
+      interestRate: propertyData.interestRate,
+      floorArea: propertyData.floorArea,
+      ratePerSquareMeter: propertyData.ratePerSquareMeter,
+      propertyDescription: propertyData.propertyDescription,
+      address: propertyData.address,
+    };
 
-    console.log("Analysis complete. Result:", JSON.stringify(result, null, 2));
+    console.log("Analysis complete. Result:", JSON.stringify(response, null, 2));
 
-    return res.json(result);
+    return res.json(response);
   } catch (error) {
     console.error("=== Analysis Error ===");
     console.error("Error details:", error);
