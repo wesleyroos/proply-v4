@@ -58,6 +58,8 @@ app.post("/analyze", (req, res) => {
 
     const response = {
       grossYield,
+      floorArea: propertyData.floorArea,
+      ratePerSquareMeter: propertyData.ratePerSquareMeter,
       analysis: {
         purchasePrice: propertyData.purchasePrice,
         monthlyRent: propertyData.monthlyRent,
