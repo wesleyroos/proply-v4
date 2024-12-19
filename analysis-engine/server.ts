@@ -34,7 +34,7 @@ app.post("/analyze", (req, res) => {
       deposit: req.body.deposit ? Number(req.body.deposit) : undefined,
       interestRate: req.body.interestRate ? Number(req.body.interestRate) : undefined,
       floorArea: req.body.floorArea ? Number(req.body.floorArea) : undefined,
-      ratePerSquareMeter: req.body.cmaRatePerSqm !== undefined ? Number(req.body.cmaRatePerSqm) : undefined
+      ratePerSquareMeter: req.body.ratePerSquareMeter !== undefined ? Number(req.body.ratePerSquareMeter) : undefined
     };
     
     console.log('Debug - Property Analysis Input:', {

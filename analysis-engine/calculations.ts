@@ -87,7 +87,7 @@ export function calculateYields(data: PropertyData): YieldAnalysis {
     deposit: data.deposit ?? null,
     interestRate: data.interestRate ?? null,
     floorArea: data.floorArea ?? null,
-    ratePerSquareMeter: data.ratePerSquareMeter ?? null,
+    ratePerSquareMeter: typeof data.ratePerSquareMeter === 'number' ? Number(data.ratePerSquareMeter) : null,
 
     // Analysis summary
     analysis: {
