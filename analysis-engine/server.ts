@@ -18,9 +18,23 @@ app.use((req, res, next) => {
 
 app.post("/analyze", (req, res) => {
   try {
-    console.log("\nReceived property analysis request:", JSON.stringify(req.body, null, 2));
+    console.log("\n=== Starting Property Analysis ===");
+    console.log("Raw request body:", JSON.stringify(req.body, null, 2));
     
-    // Validate and convert all input fields
+    // First validate that all required fields are present in the request
+    const requiredFields = ['purchasePrice', 'deposit', 'interestRate', 'floorArea', 'ratePerSquareMeter'];
+    const missingFields = requiredFields.filter(field => !(field in req.body));
+    
+    if (missingFields.length > 0) {
+      console.error("Missing required fields in request:", missingFields);
+      return res.status(400).json({ 
+        error: `Missing required fields: ${missingFields.join(', ')}`,
+        details: { missingFields }
+      });
+    }
+
+    // Convert and validate all input fields
+    console.log("Converting and validating input fields...");
     const propertyData: PropertyData = {
       purchasePrice: Number(req.body.purchasePrice),
       shortTermNightlyRate: req.body.shortTermNightlyRate ? Number(req.body.shortTermNightlyRate) : undefined,
@@ -28,35 +42,54 @@ app.post("/analyze", (req, res) => {
       longTermRental: req.body.longTermRental ? Number(req.body.longTermRental) : undefined,
       leaseCycleGap: req.body.leaseCycleGap ? Number(req.body.leaseCycleGap) : undefined,
       propertyDescription: req.body.propertyDescription || null,
-      deposit: Number(req.body.deposit || 0),
-      interestRate: Number(req.body.interestRate || 0),
-      floorArea: Number(req.body.floorArea || 0),
-      ratePerSquareMeter: Number(req.body.ratePerSquareMeter || 0)
+      deposit: Number(req.body.deposit),
+      interestRate: Number(req.body.interestRate),
+      floorArea: Number(req.body.floorArea),
+      ratePerSquareMeter: Number(req.body.ratePerSquareMeter)
     };
 
-    // Log the converted data for debugging
-    console.log('Property data after conversion:', JSON.stringify(propertyData, null, 2));
+    // Validate numeric fields
+    console.log("Converted property data:", JSON.stringify(propertyData, null, 2));
+    
+    const invalidFields = Object.entries(propertyData)
+      .filter(([key, value]) => {
+        if (typeof value === 'number') {
+          return isNaN(value) || value <= 0;
+        }
+        return false;
+      })
+      .map(([key]) => key);
 
-    // Validate required fields manually before calculation
-    const requiredFields = ['purchasePrice', 'deposit', 'interestRate', 'floorArea', 'ratePerSquareMeter'];
-    const missingFields = requiredFields.filter(field => {
-      const value = propertyData[field as keyof PropertyData];
-      return value === undefined || value === null || isNaN(value as number) || (value as number) <= 0;
-    });
+    if (invalidFields.length > 0) {
+      console.error("Invalid numeric fields:", invalidFields);
+      return res.status(400).json({ 
+        error: `Invalid values for fields: ${invalidFields.join(', ')}`,
+        details: { invalidFields }
+      });
+    }
 
-    if (missingFields.length > 0) {
-      throw new Error(`Missing or invalid required fields: ${missingFields.join(', ')}`);
+    console.log("All validations passed, calculating yields...");
+    const analysisResult = calculateYields(propertyData);
+    console.log("Analysis complete. Result:", JSON.stringify(analysisResult, null, 2));
+
+    return res.json(analysisResult);
+  } catch (error) {
+    console.error("=== Analysis Error ===");
+    console.error("Error details:", error);
+    
+    let errorMessage = "Failed to analyze property data";
+    let errorDetails = {};
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      errorDetails = {
+        name: error.name,
+        stack: error.stack,
+      };
     }
     
-    const analysisResult = calculateYields(propertyData);
-    console.log("Analysis result:", JSON.stringify(analysisResult, null, 2));
-
-    res.json(analysisResult);
-  } catch (error) {
-    console.error("Analysis error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to analyze property data";
-    console.error("Detailed error:", errorMessage);
-    res.status(500).json({ error: errorMessage });
+    console.error("Sending error response:", { error: errorMessage, details: errorDetails });
+    return res.status(500).json({ error: errorMessage, details: errorDetails });
   }
 });
 

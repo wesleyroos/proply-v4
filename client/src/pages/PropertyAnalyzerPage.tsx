@@ -48,6 +48,8 @@ export default function PropertyAnalyzerPage() {
       
       console.log('Data being sent to analyzer:', requestBody);
       
+      console.log('Sending analysis request with body:', JSON.stringify(requestBody, null, 2));
+      
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
@@ -57,10 +59,13 @@ export default function PropertyAnalyzerPage() {
       });
 
       const data = await response.json();
-      console.log('Response from analyzer:', data);
+      console.log('Raw response from analyzer:', response);
+      console.log('Parsed response data:', data);
       
       if (!response.ok) {
-        throw new Error(data.error || `Analysis failed: ${response.statusText}`);
+        const errorMessage = data.error || response.statusText;
+        console.error('Analysis failed with error:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       setAnalysisResult(data);
