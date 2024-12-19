@@ -3,6 +3,7 @@ import { Switch, Route, useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import ComparisonPage from "./pages/ComparisonPage";
 import PropertiesPage from "./pages/PropertiesPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -72,46 +73,48 @@ function NotFound() {
 
 function App() {
   return (
-    <>
-      <Switch>
-        {/* Public routes */}
-        <Route path="/" component={HomePage} />
-        <Route path="/login" component={AuthPage} />
-        <Route path="/register" component={AuthPage} />
+    <TooltipProvider>
+      <>
+        <Switch>
+          {/* Public routes */}
+          <Route path="/" component={HomePage} />
+          <Route path="/login" component={AuthPage} />
+          <Route path="/register" component={AuthPage} />
 
-        {/* Protected routes */}
-        <Route 
-          path="/dashboard" 
-          component={() => <ProtectedRoute component={DashboardPage} />} 
-        />
-        <Route 
-          path="/analyzer" 
-          component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} 
-        />
-        <Route 
-          path="/compare" 
-          component={() => <ProtectedRoute component={ComparisonPage} />} 
-        />
-        <Route 
-          path="/properties" 
-          component={() => <ProtectedRoute component={PropertiesPage} />} 
-        />
-        <Route 
-          path="/settings" 
-          component={() => <ProtectedRoute component={SettingsPage} />} 
-        />
-        <Route 
-          path="/admin" 
-          component={() => <ProtectedRoute component={AdminPage} />} 
-        />
-        <Route 
-          path="/access-codes" 
-          component={() => <ProtectedRoute component={AccessCodePage} />} 
-        />
-        <Route component={NotFound} />
-      </Switch>
-      <Toaster />
-    </>
+          {/* Protected routes */}
+          <Route 
+            path="/dashboard" 
+            component={() => <ProtectedRoute component={DashboardPage} />} 
+          />
+          <Route 
+            path="/analyzer" 
+            component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} 
+          />
+          <Route 
+            path="/compare" 
+            component={() => <ProtectedRoute component={ComparisonPage} />} 
+          />
+          <Route 
+            path="/properties" 
+            component={() => <ProtectedRoute component={PropertiesPage} />} 
+          />
+          <Route 
+            path="/settings" 
+            component={() => <ProtectedRoute component={SettingsPage} />} 
+          />
+          <Route 
+            path="/admin" 
+            component={() => <ProtectedRoute component={AdminPage} />} 
+          />
+          <Route 
+            path="/access-codes" 
+            component={() => <ProtectedRoute component={AccessCodePage} />} 
+          />
+          <Route component={NotFound} />
+        </Switch>
+        <Toaster />
+      </>
+    </TooltipProvider>
   );
 }
 
