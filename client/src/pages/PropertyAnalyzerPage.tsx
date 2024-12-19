@@ -337,6 +337,14 @@ export default function PropertyAnalyzerPage() {
                           </SelectContent>
                         </Select>
                       </div>
+                      <div className="mt-4">
+                        <button className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-slate-600 to-slate-700 rounded-md hover:from-slate-700 hover:to-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                          Connect with a transfer attorney
+                        </button>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Get competitive rates and expert guidance through the transfer process
+                        </p>
+                      </div>
                     </div>
                   </div>
 
