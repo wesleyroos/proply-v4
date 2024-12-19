@@ -24,6 +24,7 @@ interface AnalysisResult {
     purchasePrice: number;
   };
   address: string;
+  propertyPhotoUrl?: string;
 }
 
 export default function PropertyAnalyzerPage() {
@@ -291,13 +292,28 @@ export default function PropertyAnalyzerPage() {
                 </Card>
               </div>
 
-              {/* Location Column */}
-              <div>
-                <h2 className="text-lg font-semibold mb-4">Location</h2>
+              {/* Location and Photo Column */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold">Location & Property</h2>
                 {analysisResult && (
-                  <div className="rounded-lg overflow-hidden bg-gray-100">
-                    <PropertyMap address={analysisResult.address} />
-                  </div>
+                  <>
+                    <div className="rounded-lg overflow-hidden bg-gray-100">
+                      <PropertyMap address={analysisResult.address} />
+                    </div>
+                    
+                    {formData?.propertyPhoto && (
+                      <div className="mt-4">
+                        <h3 className="text-sm font-semibold mb-2">Property Photo</h3>
+                        <div className="rounded-lg overflow-hidden">
+                          <img
+                            src={URL.createObjectURL(formData.propertyPhoto)}
+                            alt="Property"
+                            className="w-full h-auto object-cover"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

@@ -67,6 +67,7 @@ interface PropertyAnalyzerFormData {
   annualPropertyAppreciation: number;
   cmaRatePerSqm: number;
   comments: string;
+  propertyPhoto?: File | null;
 }
 
 // Form schema
@@ -82,6 +83,7 @@ const formSchema = z.object({
     .number()
     .min(0, "Parking spaces cannot be negative")
     .optional(),
+  propertyPhoto: z.instanceof(File).optional().nullable(),
 
   // Step 2: Financing Details
   depositType: z.enum(["amount", "percentage"]),
