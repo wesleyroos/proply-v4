@@ -246,59 +246,61 @@ export default function PropertyAnalyzerPage() {
                     </p>
                   </div>
 
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-600">
-                      Monthly Bond Repayment
-                    </h3>
-                    <p className="mt-2 text-lg font-bold text-slate-800">
-                      R
-                      {analysisResult.monthlyBondRepayment?.toLocaleString() ||
-                        "0"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-600">
-                      Bond Registration
-                    </h3>
-                    <p className="mt-2 text-lg font-bold text-slate-800">
-                      R{findCostFromTable(analysisResult.analysis.purchasePrice, bondCostsTable).total.toLocaleString()}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-600">
-                      Transfer Costs
-                    </h3>
-                    <div className="mt-2 space-y-2">
-                      <p className="text-lg font-bold text-slate-800">
-                        R{(() => {
-                          const costs = findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable);
-                          return includeTransferDuty 
-                            ? costs.total.toLocaleString()
-                            : (costs.total - costs.transferDuty).toLocaleString();
-                        })()}
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-600">
+                        Monthly Bond Repayment
+                      </h3>
+                      <p className="mt-2 text-lg font-bold text-slate-800">
+                        R
+                        {analysisResult.monthlyBondRepayment?.toLocaleString() ||
+                          "0"}
                       </p>
-                      <Select
-                        value={includeTransferDuty ? "with" : "without"}
-                        onValueChange={(value) => setIncludeTransferDuty(value === "with")}
-                      >
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Transfer duty option" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="with">With Transfer Duty</SelectItem>
-                          <SelectItem value="without">No Transfer Duty</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-600">
+                        Bond Registration
+                      </h3>
+                      <p className="mt-2 text-lg font-bold text-slate-800">
+                        R{findCostFromTable(analysisResult.analysis.purchasePrice, bondCostsTable).total.toLocaleString()}
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-600">
+                        Transfer Costs
+                      </h3>
+                      <div className="mt-2 space-y-2">
+                        <p className="text-lg font-bold text-slate-800">
+                          R{(() => {
+                            const costs = findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable);
+                            return includeTransferDuty 
+                              ? costs.total.toLocaleString()
+                              : (costs.total - costs.transferDuty).toLocaleString();
+                          })()}
+                        </p>
+                        <Select
+                          value={includeTransferDuty ? "with" : "without"}
+                          onValueChange={(value) => setIncludeTransferDuty(value === "with")}
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Transfer duty option" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="with">With Transfer Duty</SelectItem>
+                            <SelectItem value="without">No Transfer Duty</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
 
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-600">
+                  <div className="border-t pt-6">
+                    <h3 className="text-lg font-bold text-slate-800">
                       Total Capital Required
                     </h3>
-                    <p className="mt-2 text-lg font-bold text-slate-800">
+                    <p className="mt-2 text-2xl font-bold text-slate-800">
                       R{(() => {
                         const bondCosts = findCostFromTable(analysisResult.analysis.purchasePrice, bondCostsTable).total;
                         const transferCosts = findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable);
