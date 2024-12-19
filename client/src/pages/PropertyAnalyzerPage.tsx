@@ -71,12 +71,15 @@ export default function PropertyAnalyzerPage() {
         address: formData.address,
         deposit: Number(formData.depositAmount),
         interestRate: Number(formData.interestRate),
-        term: formData.term ? Number(formData.term) : 20, // Default to 20 years if not specified
+        term: Number(formData.term) || 20, // Default to 20 years if not specified
         floorArea: Number(formData.floorArea),
         ratePerSquareMeter: Number(formData.cmaRatePerSqm),
       };
 
+      // Ensure term is a valid number
+      console.log("Form data term:", formData.term, typeof formData.term);
       console.log("Data being sent to analyzer:", requestBody);
+      console.log("Term value in request:", requestBody.term, typeof requestBody.term);
 
       console.log(
         "Sending analysis request with body:",
