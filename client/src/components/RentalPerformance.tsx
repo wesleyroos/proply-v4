@@ -67,7 +67,7 @@ export default function RentalPerformance({ shortTermNightly, longTermMonthly, m
 
               {/* Fee Adjusted Rate Row */}
               <tr className="border-b hover:bg-gray-50">
-                <td className="py-3 px-6">Fee-Adjusted Rate ({managementFee > 0 ? "15.0%" : "3.0%"})</td>
+                <td className="py-3 px-6">Fee-Adjusted Rate ({managementFee > 0 ? "15" : "3"}%)</td>
                 {Array(12).fill(0).map((_, i) => (
                   <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
                     {formatter(getFeeAdjustedRate(getSeasonalNightlyRate(shortTermNightly, i), managementFee > 0))}
