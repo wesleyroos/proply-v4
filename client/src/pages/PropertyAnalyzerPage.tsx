@@ -124,18 +124,22 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <SidebarProvider defaultOpen>
-      <div className="flex min-h-screen">
-        <Sidebar variant="sidebar" collapsible="icon">
+      <div className="group/sidebar-wrapper flex min-h-svh">
+        <Sidebar variant="floating" collapsible="icon">
           <SidebarHeader>
-            <div className="flex h-14 items-center gap-2 px-4">
-              <SidebarTrigger />
-              <span className="text-lg font-semibold">Property Analyzer</span>
+            <div className="flex h-14 items-center justify-between px-4">
+              <div className="flex items-center gap-2">
+                <SidebarTrigger />
+                <span className="text-lg font-semibold">Property Analyzer</span>
+              </div>
             </div>
           </SidebarHeader>
-          <SidebarContent />
+          <SidebarContent>
+            {/* Sidebar navigation can be added here */}
+          </SidebarContent>
         </Sidebar>
 
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-background">
           {/* Progress Steps */}
           <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
             <div className="h-14 px-6 flex items-center">
@@ -158,8 +162,8 @@ export default function PropertyAnalyzerPage() {
 
           {/* Main Content Area */}
           <div className="flex-1 overflow-y-auto">
-            <div className="container mx-auto p-6">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div className="h-full px-4 py-6 lg:px-8">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-7xl mx-auto">
                 {/* Main Column */}
                 <div className="md:col-span-8 space-y-6">
                   <Card>
