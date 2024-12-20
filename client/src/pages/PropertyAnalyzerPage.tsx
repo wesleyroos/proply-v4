@@ -666,7 +666,7 @@ export default function PropertyAnalyzerPage() {
 
         {/* Disclaimer Section */}
         <div className="mt-12 mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="max-w-4xl mx-auto text-sm text-gray-600 space-y-4">
+          <div className="w-full text-sm text-gray-600 space-y-4">
             <p className="font-semibold mb-4">DISCLAIMER:</p>
             <p>
               The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.
