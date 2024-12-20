@@ -99,14 +99,14 @@ const formSchema = z.object({
   loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
 
   // Step 3: Operating Expenses
-  monthlyLevies: z.number().min(0, "Monthly levies must be positive"),
-  monthlyRatesTaxes: z
+  levies: z.number().min(0, "Monthly levies must be positive"),
+  ratesAndTaxes: z
     .number()
     .min(0, "Monthly rates and taxes must be positive"),
   otherMonthlyExpenses: z
     .number()
     .min(0, "Other monthly expenses must be positive"),
-  maintenancePercentage: z
+  maintenancePercent: z
     .number()
     .min(0, "Maintenance percentage must be positive")
     .max(100, "Maintenance percentage cannot exceed 100"),
@@ -277,11 +277,11 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       depositPercentage: undefined,
       interestRate: undefined,
       loanTerm: undefined,
-      monthlyLevies: undefined,
-      monthlyRatesTaxes: undefined,
-      otherMonthlyExpenses: undefined,
-      maintenancePercentage: undefined,
-      managementFee: undefined,
+      levies: 0,
+      ratesAndTaxes: 0,
+      otherMonthlyExpenses: 0,
+      maintenancePercent: 0,
+      managementFee: 0,
       airbnbNightlyRate: undefined,
       occupancyRate: undefined,
       longTermRental: undefined,
@@ -828,10 +828,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="monthlyLevies"
+                  name="levies"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Monthly Levies</FormLabel>
+                      <FormLabel>Monthly Levies (R)</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -849,10 +849,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
                 <FormField
                   control={form.control}
-                  name="monthlyRatesTaxes"
+                  name="ratesAndTaxes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Monthly Rates & Taxes</FormLabel>
+                      <FormLabel>Monthly Rates & Taxes (R)</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -892,10 +892,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
                 <FormField
                   control={form.control}
-                  name="maintenancePercentage"
+                  name="maintenancePercent"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Maintenance (%)</FormLabel>
+                      <FormLabel>Maintenance (% of Revenue)</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
