@@ -455,7 +455,14 @@ export function registerRoutes(app: Express): Server {
         interestRate: Number(req.body.interestRate),
         loanTerm: Number(req.body.loanTerm),
         floorArea: Number(req.body.floorArea),
-        ratePerSquareMeter: Number(req.body.ratePerSquareMeter)
+        ratePerSquareMeter: Number(req.body.ratePerSquareMeter),
+        incomeGrowthRate: Number(req.body.incomeGrowthRate || 8),
+        expenseGrowthRate: Number(req.body.expenseGrowthRate || 6),
+        levies: Number(req.body.monthlyLevies || 0),
+        ratesAndTaxes: Number(req.body.monthlyRatesTaxes || 0),
+        otherMonthlyExpenses: Number(req.body.otherMonthlyExpenses || 0),
+        maintenancePercent: Number(req.body.maintenancePercent || 0),
+        managementFee: Number(req.body.managementFee || 0)
       };
 
       console.log("Converted property data:", JSON.stringify(propertyData, null, 2));
