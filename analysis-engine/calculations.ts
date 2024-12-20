@@ -79,9 +79,14 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   let shortTermAnnualRevenue: number | null = null;
   let longTermGrossYield: number | null = null;
   let longTermAnnualRevenue: number | null = null;
+  let revenueProjections = null;
+
+  // Calculate base monthly operating expenses (outside conditional blocks)
+  const fixedMonthlyExpenses = (data.levies || 0) + (data.ratesAndTaxes || 0) + (data.otherMonthlyExpenses || 0);
+  let maintenanceExpense = 0;
+  let managementFeeExpense = 0;
 
   // Calculate short-term rental metrics
-  let revenueProjections = null;
   if (data.shortTermNightlyRate && data.annualOccupancy) {
     // Calculate platform fee based on management fee presence
     const platformFeeRate = data.managementFee > 0 ? 0.15 : 0.03;
@@ -91,8 +96,11 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     shortTermAnnualRevenue = feeAdjustedNightlyRate * 365 * (data.annualOccupancy / 100);
     shortTermGrossYield = (shortTermAnnualRevenue / data.purchasePrice) * 100;
 
+    // Update maintenance and management fee expenses based on short-term revenue
+    maintenanceExpense = shortTermAnnualRevenue * (data.maintenancePercent || 0) / 100 / 12;
+    managementFeeExpense = shortTermAnnualRevenue * (data.managementFee || 0) / 100 / 12;
+
     // Calculate revenue projections for future years using the provided income growth rate
-    // Formula: Revenue(n) = Revenue(1) × (1 + Growth Rate)^(n-1)
     const growthRate = data.incomeGrowthRate / 100; // Use input growth rate
     revenueProjections = {
       shortTerm: {
@@ -104,17 +112,6 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         year20: shortTermAnnualRevenue * Math.pow(1 + growthRate, 19) // Year 20 = Year 1 × (1.08)¹⁹
       }
     };
-
-    // Calculate base monthly operating expenses
-    const fixedMonthlyExpenses = (data.levies || 0) + (data.ratesAndTaxes || 0) + (data.otherMonthlyExpenses || 0);
-    const maintenanceExpense = shortTermAnnualRevenue * (data.maintenancePercent || 0) / 100 / 12;
-    const managementFeeExpense = shortTermAnnualRevenue * (data.managementFee || 0) / 100 / 12;
-    
-    // Calculate total annual operating expenses for Year 1
-    const baseAnnualExpenses = (fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense) * 12;
-    
-    // Calculate operating expenses projections with expense growth rate
-    const expenseGrowthRate = data.expenseGrowthRate / 100; // Use input growth rate
   }
 
   // Calculate long-term rental metrics
@@ -130,7 +127,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Calculate bond repayment
   const loanAmount = data.purchasePrice - data.deposit;
   const monthlyRate = (data.interestRate / 100) / 12;
-  const numberOfPayments = data.loanTerm * 12; // Use actual loan term from input
+  const numberOfPayments = data.loanTerm * 12;
   const monthlyBondRepayment = loanAmount * 
     (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / 
     (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
@@ -138,41 +135,45 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Calculate deposit percentage
   const depositPercentage = (data.deposit / data.purchasePrice) * 100;
 
-  // Calculate operating expenses projections
-    const operatingExpenses = {
-      year1: baseAnnualExpenses,
-      year2: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 1),  // Year 2 = Year 1 × (1.06)¹
-      year4: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 3),  // Year 4 = Year 1 × (1.06)³
-      year5: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 4),  // Year 5 = Year 1 × (1.06)⁴
-      year10: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 9), // Year 10 = Year 1 × (1.06)⁹
-      year20: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 19) // Year 20 = Year 1 × (1.06)¹⁹
-    };
+  // Calculate total annual operating expenses for Year 1
+  const baseAnnualExpenses = (fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense) * 12;
+  
+  // Calculate operating expenses projections with expense growth rate
+  const expenseGrowthRate = data.expenseGrowthRate / 100;
+  const operatingExpenses = {
+    year1: baseAnnualExpenses,
+    year2: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 1),  // Year 2 = Year 1 × (1.06)¹
+    year4: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 3),  // Year 4 = Year 1 × (1.06)³
+    year5: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 4),  // Year 5 = Year 1 × (1.06)⁴
+    year10: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 9), // Year 10 = Year 1 × (1.06)⁹
+    year20: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 19) // Year 20 = Year 1 × (1.06)¹⁹
+  };
 
-    return {
-      // Financial calculations with precise number formatting
-      shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
-      longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
-      monthlyBondRepayment: Number(monthlyBondRepayment.toFixed(2)),
-      depositPercentage: Number(depositPercentage.toFixed(2)),
+  return {
+    // Financial calculations with precise number formatting
+    shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
+    longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
+    monthlyBondRepayment: Number(monthlyBondRepayment.toFixed(2)),
+    depositPercentage: Number(depositPercentage.toFixed(2)),
 
-      // Property details (passing through validated data)
-      propertyDescription: data.propertyDescription,
-      address: data.address,
-      deposit: data.deposit,
-      interestRate: data.interestRate,
-      loanTerm: data.loanTerm,
-      floorArea: data.floorArea,
-      ratePerSquareMeter: data.ratePerSquareMeter,
+    // Property details (passing through validated data)
+    propertyDescription: data.propertyDescription || null,
+    address: data.address,
+    deposit: data.deposit,
+    interestRate: data.interestRate,
+    loanTerm: data.loanTerm,
+    floorArea: data.floorArea,
+    ratePerSquareMeter: data.ratePerSquareMeter,
 
-      // Analysis summary
-      analysis: {
-        shortTermAnnualRevenue,
-        longTermAnnualRevenue,
-        purchasePrice: data.purchasePrice,
-        revenueProjections: {
-          shortTerm: revenueProjections?.shortTerm || null
-        },
-        operatingExpenses
-      }
-    };
+    // Analysis summary
+    analysis: {
+      shortTermAnnualRevenue,
+      longTermAnnualRevenue,
+      purchasePrice: data.purchasePrice,
+      revenueProjections: {
+        shortTerm: revenueProjections?.shortTerm || null
+      },
+      operatingExpenses
+    }
+  };
 }
