@@ -111,8 +111,11 @@ const formSchema = z.object({
     .min(0, "Maintenance percentage must be positive")
     .max(100, "Maintenance percentage cannot exceed 100"),
   managementFee: z
-    .number()
-    .min(0, "Management fee must be positive")
+    .number({ 
+      required_error: "Management fee is required",
+      invalid_type_error: "Management fee must be a number" 
+    })
+    .gte(0, "Management fee cannot be negative")
     .max(100, "Management fee cannot exceed 100"),
 
   // Step 4: Revenue Performance
