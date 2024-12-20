@@ -94,10 +94,10 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   const fixedMonthlyExpenses = Number(data.levies || 0) + Number(data.ratesAndTaxes || 0) + Number(data.otherMonthlyExpenses || 0);
   let maintenanceExpense = 0;
   let managementFeeExpense = 0;
-  let totalMonthlyExpenses = 0;
+  let totalMonthlyExpenses = fixedMonthlyExpenses; // Initialize with fixed expenses
   let baseAnnualExpenses = 0;
 
-  console.log('Fixed Monthly Expenses Calculation:', {
+  console.log('Initial Fixed Monthly Expenses:', {
     fixedMonthlyExpenses,
     breakdown: {
       levies: Number(data.levies || 0),
@@ -122,17 +122,21 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       annualRevenue: shortTermAnnualRevenue
     });
 
-    // Update maintenance and management fee expenses based on revenue with explicit number conversions
-    maintenanceExpense = (shortTermAnnualRevenue * Number(data.maintenancePercent || 0)) / 100 / 12;
-    managementFeeExpense = (shortTermAnnualRevenue * Number(data.managementFee || 0)) / 100 / 12;
+    // Calculate monthly revenue-based expenses
+    const monthlyRevenue = shortTermAnnualRevenue / 12;
+    maintenanceExpense = (monthlyRevenue * Number(data.maintenancePercent || 0)) / 100;
+    managementFeeExpense = (monthlyRevenue * Number(data.managementFee || 0)) / 100;
+    
+    // Update total monthly expenses
+    totalMonthlyExpenses += maintenanceExpense + managementFeeExpense;
 
-    console.log('Variable Expenses:', {
+    console.log('Revenue-based Monthly Expenses:', {
+      monthlyRevenue,
       maintenanceExpense,
       managementFeeExpense,
       maintenancePercent: Number(data.maintenancePercent || 0),
       managementFee: Number(data.managementFee || 0),
-      shortTermAnnualRevenue,
-      monthlyRevenue: shortTermAnnualRevenue / 12
+      totalMonthlyExpenses
     });
 
     const growthRate = data.incomeGrowthRate / 100;
@@ -158,16 +162,18 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     longTermGrossYield = (longTermAnnualRevenue / data.purchasePrice) * 100;
   }
 
-  // Calculate total monthly and annual expenses
-  totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
+  // Calculate annual expenses
   baseAnnualExpenses = totalMonthlyExpenses * 12;
 
-  console.log('Final Expense Calculations:', {
-    fixedMonthlyExpenses,
-    maintenanceExpense,
-    managementFeeExpense,
-    totalMonthlyExpenses,
-    baseAnnualExpenses
+  console.log('Final Annual Expense Calculations:', {
+    monthlyBreakdown: {
+      fixedMonthlyExpenses,
+      maintenanceExpense,
+      managementFeeExpense,
+      totalMonthlyExpenses,
+    },
+    baseAnnualExpenses,
+    expenseGrowthRate: data.expenseGrowthRate
   });
 
   // Calculate bond repayment
@@ -215,7 +221,6 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     }
   };
 
-  console.log('Final Analysis Result:', JSON.stringify(result, null, 2));
   console.log('Final Analysis Result:', JSON.stringify(result, null, 2));
   return result;
 }

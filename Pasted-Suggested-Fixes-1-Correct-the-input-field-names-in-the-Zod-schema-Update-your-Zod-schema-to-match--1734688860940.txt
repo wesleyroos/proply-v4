@@ -1,0 +1,64 @@
+Suggested Fixes:
+1. Correct the input field names in the Zod schema
+Update your Zod schema to match the input field names:
+
+typescript
+Copy code
+const propertyDataSchema = z.object({
+  levies: z.number().min(0).optional().default(0), // Rename this to `monthlyLevies`
+  ratesAndTaxes: z.number().min(0).optional().default(0), // Rename this to `monthlyRatesTaxes`
+  otherMonthlyExpenses: z.number().min(0).optional().default(0), // Correctly align field name
+});
+Update the code where these fields are used:
+
+typescript
+Copy code
+let fixedMonthlyExpenses = (data.monthlyLevies || 0) + (data.monthlyRatesTaxes || 0) + (data.otherMonthlyExpenses || 0);
+2. Add a console.log to debug missing fields
+Add debugging to check what values are being used:
+
+typescript
+Copy code
+console.log("Levies:", data.levies);
+console.log("Rates and Taxes:", data.ratesAndTaxes);
+console.log("Other Monthly Expenses:", data.otherMonthlyExpenses);
+console.log("Fixed Monthly Expenses:", fixedMonthlyExpenses);
+If any of these are undefined or 0, it confirms the mismatch in field names.
+
+3. Ensure shortTermAnnualRevenue is calculated correctly
+If data.shortTermNightlyRate or data.annualOccupancy is missing, shortTermAnnualRevenue will be null, which propagates errors in dependent calculations. Verify:
+
+typescript
+Copy code
+console.log("Short Term Nightly Rate:", data.shortTermNightlyRate);
+console.log("Annual Occupancy:", data.annualOccupancy);
+console.log("Short Term Annual Revenue:", shortTermAnnualRevenue);
+4. Verify maintenanceExpense and managementFeeExpense
+Log these calculations to confirm they are not 0 incorrectly:
+
+typescript
+Copy code
+console.log("Maintenance Expense:", maintenanceExpense);
+console.log("Management Fee Expense:", managementFeeExpense);
+Updated Calculation Code:
+Here’s the corrected section:
+
+typescript
+Copy code
+let fixedMonthlyExpenses = (data.monthlyLevies || 0) + (data.monthlyRatesTaxes || 0) + (data.otherMonthlyExpenses || 0);
+
+if (shortTermAnnualRevenue) {
+  maintenanceExpense = (shortTermAnnualRevenue * (data.maintenancePercent || 0)) / 100 / 12;
+  managementFeeExpense = (shortTermAnnualRevenue * (data.managementFee || 0)) / 100 / 12;
+}
+
+totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
+baseAnnualExpenses = totalMonthlyExpenses * 12;
+
+console.log('Expenses Debugging:', {
+  fixedMonthlyExpenses,
+  maintenanceExpense,
+  managementFeeExpense,
+  totalMonthlyExpenses,
+  baseAnnualExpenses,
+});
