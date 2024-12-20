@@ -19,6 +19,7 @@ import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
 import RentalPerformance from "@/components/RentalPerformance";
+import CashflowMetrics from "@/components/CashflowMetrics";
 import {
   Tooltip,
   TooltipContent,
@@ -603,6 +604,18 @@ export default function PropertyAnalyzerPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Cashflow Metrics Section */}
+              <CashflowMetrics
+                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                longTermMonthly={
+                  analysisResult.analysis.longTermAnnualRevenue
+                    ? analysisResult.analysis.longTermAnnualRevenue / 12
+                    : 0
+                }
+                monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
+                managementFee={Number(formData?.managementFee) || 0}
+              />
             </>
           )}
         </div>
