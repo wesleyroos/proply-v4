@@ -92,9 +92,6 @@ export default function CashflowMetrics({
                             {formatter(revenueProjections.shortTerm.year1)}
                             <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            Based on {formatter(shortTermNightly)} per night at {annualOccupancy}% occupancy
-                          </div>
                         </td>
                         <td className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
