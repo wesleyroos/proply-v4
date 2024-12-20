@@ -77,6 +77,11 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   let revenueProjections = null;
 
   // Initialize and log all expense-related input values
+  console.log('=== Starting Property Analysis ===');
+  console.log('Raw request body:', JSON.stringify(inputData, null, 2));
+  console.log('Converted property data:', JSON.stringify(data, null, 2));
+  
+  // Initialize and log all expense-related input values
   console.log('Expense Input Values:', {
     levies: data.levies,
     ratesAndTaxes: data.ratesAndTaxes,
@@ -208,6 +213,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     }
   };
 
+  console.log('Final Analysis Result:', JSON.stringify(result, null, 2));
   console.log('Final Analysis Result:', JSON.stringify(result, null, 2));
   return result;
 }
