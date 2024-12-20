@@ -39,7 +39,10 @@ export const calculateMonthlyRevenue = (
 };
 
 // Format numbers with 'R' prefix and proper thousands separators
-export const formatter = (value: number): string => {
+export const formatter = (value: number | undefined | null): string => {
+  if (value === undefined || value === null || isNaN(value)) {
+    return 'R 0';
+  }
   return `R ${value.toLocaleString('en-ZA', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
