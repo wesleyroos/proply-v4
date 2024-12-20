@@ -140,28 +140,6 @@ export default function PropertyAnalyzerPage() {
         </Sidebar>
 
         <div className="flex-1 flex flex-col bg-background">
-          {/* Progress Steps */}
-          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-            <div className="h-14 px-6 flex items-center">
-              <nav className="flex items-center space-x-6">
-                {['Property Details', 'Financing', 'Operating Expenses', 'Revenue Performance', 'Escalation/Misc'].map((label, index) => (
-                  <div key={index} className="flex items-center">
-                    <div className="flex flex-col items-center">
-                      <div className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                        index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                      }`}>
-                        {index + 1}
-                      </div>
-                      <span className="text-xs mt-1 text-muted-foreground">{label}</span>
-                    </div>
-                    {index < 4 && (
-                      <div className="mx-2 h-px w-8 bg-muted self-start mt-4" />
-                    )}
-                  </div>
-                ))}
-              </nav>
-            </div>
-          </div>
 
           {/* Main Content Area */}
           <div className="flex-1 overflow-y-auto">
