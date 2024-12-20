@@ -297,7 +297,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
-    window.location.hash = 'analysis-results';
     try {
       // Clean and prepare the analysis data
       const analysisData = {
@@ -1239,16 +1238,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
             </Button>
 
             {currentStep === STEPS.length - 1 ? (
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                onClick={() => {
-                  const resultsElement = document.getElementById('analysis-results');
-                  if (resultsElement) {
-                    resultsElement.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
-              >
+              <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
