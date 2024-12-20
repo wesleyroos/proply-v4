@@ -161,7 +161,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     });
 
     console.log('Revenue-based Monthly Expenses:', {
-      monthlyRevenue,
+      grossMonthlyRevenue,
       maintenanceExpense,
       managementFeeExpense,
       maintenancePercent: Number(data.maintenancePercent || 0),
