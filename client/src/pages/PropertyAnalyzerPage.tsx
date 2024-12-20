@@ -146,13 +146,16 @@ export default function PropertyAnalyzerPage() {
               <nav className="flex items-center space-x-6">
                 {['Property Details', 'Financing', 'Operating Expenses', 'Revenue Performance', 'Escalation/Misc'].map((label, index) => (
                   <div key={index} className="flex items-center">
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                      index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                    }`}>
-                      {index + 1}
+                    <div className="flex flex-col items-center">
+                      <div className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                        index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {index + 1}
+                      </div>
+                      <span className="text-xs mt-1 text-muted-foreground">{label}</span>
                     </div>
                     {index < 4 && (
-                      <div className="ml-4 h-px w-8 bg-muted" />
+                      <div className="mx-2 h-px w-8 bg-muted self-start mt-4" />
                     )}
                   </div>
                 ))}
