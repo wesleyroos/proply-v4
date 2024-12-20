@@ -123,9 +123,9 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
-      <div className="p-6 max-w-[1400px]">
+      <div className="p-6">
         <h1 className="text-2xl font-bold text-[#262626] mb-6">
-          Proply Rent Compare
+          Property Analyzer
         </h1>
 
         <div className="space-y-6">
