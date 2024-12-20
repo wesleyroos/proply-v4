@@ -130,86 +130,87 @@ export default function CashflowMetrics({
                       </td>
                     )}
                   </tr>
-                  {netOperatingIncome && (
+                  {/* Net Operating Income and Expenses */}
+                  <>
                     <tr className="hover:bg-gray-50">
                       <td className="py-3 px-6 font-medium">Net Operating Income</td>
                       <td className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
-                          {formatter(netOperatingIncome.year1)}
+                          {formatter(netOperatingIncome?.year1 || 0)}
                           <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                         </div>
                       </td>
                       <td className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
-                          {formatter(netOperatingIncome.year2)}
+                          {formatter(netOperatingIncome?.year2 || 0)}
                           <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                         </div>
                       </td>
                       <td className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
-                          {formatter(netOperatingIncome.year4)}
+                          {formatter(netOperatingIncome?.year4 || 0)}
                           <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                         </div>
                       </td>
                       <td className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
-                          {formatter(netOperatingIncome.year5)}
+                          {formatter(netOperatingIncome?.year5 || 0)}
                           <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                         </div>
                       </td>
                       <td className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
-                          {formatter(netOperatingIncome.year10)}
+                          {formatter(netOperatingIncome?.year10 || 0)}
                           <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                         </div>
                       </td>
                       <td className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
-                          {formatter(netOperatingIncome.year20)}
+                          {formatter(netOperatingIncome?.year20 || 0)}
                           <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                         </div>
                       </td>
                     </tr>
-                  )}
-                  <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Net Operating Expenses</td>
-                    <td className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        {formatter(operatingExpenses.year1)}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
-                      </div>
-                    </td>
-                    <td className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        {formatter(operatingExpenses.year2)}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
-                      </div>
-                    </td>
-                    <td className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        {formatter(operatingExpenses.year4)}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
-                      </div>
-                    </td>
-                    <td className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        {formatter(operatingExpenses.year5)}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
-                      </div>
-                    </td>
-                    <td className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        {formatter(operatingExpenses.year10)}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
-                      </div>
-                    </td>
-                    <td className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        {formatter(operatingExpenses.year20)}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
-                      </div>
-                    </td>
-                  </tr>
+                    <tr className="hover:bg-gray-50">
+                      <td className="py-3 px-6 font-medium">Net Operating Expenses</td>
+                      <td className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(operatingExpenses.year1)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                      <td className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(operatingExpenses.year2)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                      <td className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(operatingExpenses.year4)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                      <td className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(operatingExpenses.year5)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                      <td className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(operatingExpenses.year10)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                      <td className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(operatingExpenses.year20)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                    </tr>
+                  </>
                 </tbody>
               </table>
             </div>
