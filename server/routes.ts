@@ -465,13 +465,14 @@ export function registerRoutes(app: Express): Server {
         managementFee: Number(req.body.managementFee || 0)
       };
 
-      // Calculate monthly revenue first (assuming short-term rental)
+      // Calculate monthly revenue with platform fee adjustment
+      const platformFeeRate = propertyData.managementFee > 0 ? 0.15 : 0.03; // 15% if managed, 3% if self-managed
       const monthlyRevenue = propertyData.shortTermNightlyRate && propertyData.annualOccupancy
-        ? (propertyData.shortTermNightlyRate * 365 * (propertyData.annualOccupancy / 100)) / 12
+        ? (propertyData.shortTermNightlyRate * (1 - platformFeeRate) * 365 * (propertyData.annualOccupancy / 100)) / 12
         : 0;
 
       // Fixed monthly expenses
-      const fixedMonthlyExpenses = propertyData.levies + propertyData.ratesAndTaxes + propertyData.otherMonthlyExpenses;
+      const fixedMonthlyExpenses = propertyData.monthlyLevies + propertyData.monthlyRatesTaxes + propertyData.otherMonthlyExpenses;
 
       // Revenue-based expenses (maintenance and management fees)
       const maintenanceExpense = monthlyRevenue * (propertyData.maintenancePercent / 100);
@@ -482,6 +483,14 @@ export function registerRoutes(app: Express): Server {
 
       // Annual expenses before growth rate
       const baseAnnualExpenses = totalMonthlyExpenses * 12;
+
+      console.log('Monthly Revenue Calculation:', {
+        nightlyRate: propertyData.shortTermNightlyRate,
+        platformFeeRate,
+        feeAdjustedNightlyRate: propertyData.shortTermNightlyRate * (1 - platformFeeRate),
+        occupancyRate: propertyData.annualOccupancy,
+        monthlyRevenue
+      });
 
       console.log("Monthly Expense Calculation Details:", {
         components: {
