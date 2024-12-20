@@ -489,11 +489,14 @@ export function registerRoutes(app: Express): Server {
         }
       });
 
-      // Calculate short-term revenue with platform fee adjustment
-      const platformFeeRate = propertyData.managementFee > 0 ? 0.15 : 0.03; // 15% if managed, 3% if self-managed
-      const monthlyRevenue = propertyData.shortTermNightlyRate && propertyData.annualOccupancy
-        ? (propertyData.shortTermNightlyRate * (1 - platformFeeRate) * 365 * (propertyData.annualOccupancy / 100)) / 12
+      // Calculate gross monthly revenue (before platform fees)
+      const grossMonthlyRevenue = propertyData.shortTermNightlyRate && propertyData.annualOccupancy
+        ? (propertyData.shortTermNightlyRate * 365 * (propertyData.annualOccupancy / 100)) / 12
         : 0;
+
+      // Calculate net revenue after platform fees
+      const platformFeeRate = propertyData.managementFee > 0 ? 0.15 : 0.03; // 15% if managed, 3% if self-managed
+      const netMonthlyRevenue = grossMonthlyRevenue * (1 - platformFeeRate);
       console.log("Short-term Revenue Calculations:", {
         nightlyRate: propertyData.shortTermNightlyRate,
         platformFeeRate,
@@ -502,10 +505,37 @@ export function registerRoutes(app: Express): Server {
         annualRevenue: monthlyRevenue * 12
       });
 
-      // Calculate revenue-based expenses
-      const maintenanceExpense = monthlyRevenue * (propertyData.maintenancePercent / 100);
-      const managementFeeExpense = monthlyRevenue * (propertyData.managementFee / 100);
-      const totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
+      // Calculate revenue-based expenses (using gross revenue)
+      const maintenanceExpense = grossMonthlyRevenue * (propertyData.maintenancePercent / 100);
+      const managementFeeExpense = grossMonthlyRevenue * (propertyData.managementFee / 100);
+      const platformFeeExpense = grossMonthlyRevenue * platformFeeRate;
+      const totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense + platformFeeExpense;
+
+      console.log("Detailed Revenue and Expense Breakdown:", {
+        revenue: {
+          grossMonthly: grossMonthlyRevenue,
+          netMonthly: netMonthlyRevenue,
+          platformFeeRate,
+          platformFeeExpense
+        },
+        expenses: {
+          fixed: {
+            levies: propertyData.monthlyLevies,
+            ratesTaxes: propertyData.monthlyRatesTaxes,
+            other: propertyData.otherMonthlyExpenses,
+            total: fixedMonthlyExpenses
+          },
+          variable: {
+            maintenance: maintenanceExpense,
+            managementFee: managementFeeExpense,
+            platformFee: platformFeeExpense
+          }
+        },
+        totals: {
+          monthlyExpenses: totalMonthlyExpenses,
+          annualExpenses: totalMonthlyExpenses * 12
+        }
+      });
       console.log("Revenue-based Monthly Expenses:", {
         monthlyRevenue,
         maintenanceExpense,
