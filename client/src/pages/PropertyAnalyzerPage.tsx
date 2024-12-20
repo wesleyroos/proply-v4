@@ -210,8 +210,9 @@ export default function PropertyAnalyzerPage() {
                       <h3 className="text-sm font-semibold text-slate-600">
                         Purchase Price
                       </h3>
-                      <p className="mt-2 text-2xl font-bold text-slate-800">
-                        R{analysisResult.analysis.purchasePrice.toLocaleString()}
+                      <p className="mt-2 text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <span>R{analysisResult.analysis.purchasePrice.toLocaleString()}</span>
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                       </p>
                     </div>
 
@@ -219,11 +220,14 @@ export default function PropertyAnalyzerPage() {
                       <h3 className="text-sm font-semibold text-slate-600">
                         Deposit
                       </h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        R{analysisResult.deposit?.toLocaleString() || "0"}
-                        <span className="ml-2 text-base font-semibold text-indigo-600">
-                          ({analysisResult.depositPercentage || "0"}%)
+                      <p className="mt-2 text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <span>
+                          R{analysisResult.deposit?.toLocaleString() || "0"}
+                          <span className="ml-2 text-base font-semibold text-indigo-600">
+                            ({analysisResult.depositPercentage || "0"}%)
+                          </span>
                         </span>
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                       </p>
                     </div>
                   </div>
@@ -260,9 +264,12 @@ export default function PropertyAnalyzerPage() {
                           Calculated using the standard bond repayment formula: PMT = P × r(1 + r)ⁿ/((1 + r)ⁿ - 1), where P is the principal (loan amount), r is monthly interest rate, and n is total number of payments.
                         </TooltipContent>
                       </Tooltip>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        R{analysisResult.monthlyBondRepayment?.toLocaleString() ||
-                          "0"}
+                      <p className="mt-2 text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <span>
+                          R{analysisResult.monthlyBondRepayment?.toLocaleString() ||
+                            "0"}
+                        </span>
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                       </p>
                     </div>
 
@@ -396,10 +403,13 @@ export default function PropertyAnalyzerPage() {
                         </h3>
                         <div className="space-y-2">
                           <div>
-                            <p className="text-2xl font-bold text-slate-800">
-                              R
-                              {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
-                                "0"}
+                            <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                              <span>
+                                R
+                                {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
+                                  "0"}
+                              </span>
+                              <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                             </p>
                             <p className="text-base text-slate-600">
                               R
@@ -411,10 +421,13 @@ export default function PropertyAnalyzerPage() {
                             </p>
                           </div>
                           <p className="text-sm flex items-center gap-2">
-                            <span className="font-semibold text-emerald-600 text-base">
-                              {analysisResult.shortTermGrossYield?.toFixed(2) ||
-                                "0"}
-                              % Gross Yield
+                            <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
+                              <span>
+                                {analysisResult.shortTermGrossYield?.toFixed(2) ||
+                                  "0"}
+                                % Gross Yield
+                              </span>
+                              <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                             </span>
                           </p>
                           <div className="pt-2 border-t border-blue-100">
