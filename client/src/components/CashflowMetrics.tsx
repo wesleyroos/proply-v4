@@ -21,10 +21,18 @@ export default function CashflowMetrics({
   monthlyBondRepayment,
   managementFee,
 }: CashflowMetricsProps) {
-  // Calculate metrics
-  const shortTermRevenue = Math.round(shortTermNightly * 30 * 0.7); // Assuming 70% occupancy
-  const shortTermExpenses = monthlyBondRepayment + (shortTermRevenue * (managementFee / 100));
-  const shortTermNetCashflow = shortTermRevenue - shortTermExpenses;
+  // Calculate fee-adjusted nightly rate
+  const platformFeeRate = managementFee > 0 ? 0.15 : 0.03;
+  const feeAdjustedNightlyRate = Math.round(shortTermNightly * (1 - platformFeeRate));
+  
+  // Calculate base monthly revenue (before projections)
+  const daysInMonth = 30;
+  const baseOccupancyRate = 0.70; // 70% base occupancy
+  const monthlyRevenue = Math.round(feeAdjustedNightlyRate * daysInMonth * baseOccupancyRate);
+  
+  // Other calculations
+  const shortTermExpenses = monthlyBondRepayment + (monthlyRevenue * (managementFee / 100));
+  const shortTermNetCashflow = monthlyRevenue - shortTermExpenses;
 
   const longTermExpenses = monthlyBondRepayment;
   const longTermNetCashflow = longTermMonthly - longTermExpenses;
@@ -62,7 +70,7 @@ export default function CashflowMetrics({
                     <td className="py-3 px-6 font-medium">Annual Revenue</td>
                     {[1, 2, 4, 5, 10, 20].map((year) => (
                       <td key={year} className="text-right py-3 px-6">
-                        {formatter(shortTermRevenue * 12 * Math.pow(1.05, year - 1))} {/* Assuming 5% annual growth */}
+                        {formatter(monthlyRevenue * 12 * Math.pow(1.05, year - 1))} {/* 5% annual growth */}
                       </td>
                     ))}
                   </tr>
