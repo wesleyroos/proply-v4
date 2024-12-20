@@ -46,6 +46,7 @@ interface AnalysisResult {
     operatingExpenses: {
       year1: number;
       year2: number;
+      year3: number;
       year4: number;
       year5: number;
       year10: number;
@@ -55,6 +56,7 @@ interface AnalysisResult {
       shortTerm: {
         year1: number;
         year2: number;
+        year3: number;
         year4: number;
         year5: number;
         year10: number;
