@@ -142,7 +142,7 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
-      <div className="container mx-auto pl-2 pr-4">
+      <div className="container mx-auto pr-4">
         <h1 className="text-2xl font-bold text-[#262626] mb-6 pt-6">
           Property Analyzer
         </h1>
