@@ -4,35 +4,16 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  AlertCircle,
-  BarChart3,
-  TrendingUp,
-  Building2,
-  MapPin,
-  HelpCircle,
-} from "lucide-react";
+import { AlertCircle, Building2, TrendingUp } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
 import RentalPerformance from "@/components/RentalPerformance";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
 
 interface AnalysisResult {
   shortTermGrossYield: number | null;
@@ -75,8 +56,6 @@ interface AnalysisResult {
   address: string;
   propertyPhotoUrl?: string;
 }
-
-import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
 
 export default function PropertyAnalyzerPage() {
   const { user } = useUser();
@@ -137,317 +116,227 @@ export default function PropertyAnalyzerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF]">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-[#262626] mb-6">
-          Property Analyzer
-        </h1>
+    <div className="bg-[#FFFFFF]">
+      <div className="max-w-7xl mx-auto">
+        <div className="space-y-8 px-6 py-8">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-slate-800">
+              Property Analysis
+            </h1>
+          </div>
 
-        <div className="max-w-5xl space-y-6">
-          <Card>
-            <CardContent className="pt-6">
-              <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
-            </CardContent>
-          </Card>
-
-          {analysisError && (
-            <Card className="border-red-200 bg-red-50">
+          <div className="grid gap-8">
+            {/* Analysis Form */}
+            <Card>
               <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-red-800">
-                  <AlertCircle className="h-5 w-5" />
-                  <p className="text-sm font-medium">Error: {analysisError}</p>
-                </div>
+                <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
               </CardContent>
             </Card>
-          )}
 
-          {analysisResult && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Location and Photo Column */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                      <MapPin className="h-5 w-5 text-indigo-500" />
-                      Location & Photo
-                    </CardTitle>
-                    <CardDescription className="text-sm font-semibold text-slate-600">
-                      {analysisResult.address}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="rounded-lg overflow-hidden">
-                      <PropertyMap address={analysisResult.address} />
-                    </div>
+            {analysisError && (
+              <Card className="border-red-200 bg-red-50">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 text-red-800">
+                    <AlertCircle className="h-5 w-5" />
+                    <p className="text-sm font-medium">Error: {analysisError}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-                    {formData?.propertyPhoto && (
-                      <div className="mt-4">
-                        <h3 className="text-sm font-semibold text-slate-600">
-                          Property Photo
-                        </h3>
-                        <div className="rounded-lg overflow-hidden mt-2">
-                          <img
-                            src={URL.createObjectURL(formData.propertyPhoto)}
-                            alt="Property"
-                            className="w-full h-auto object-cover"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Deal Structure */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                      <Building2 className="h-5 w-5 text-indigo-500" />
-                      Deal Structure
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Property Description
-                      </h3>
-                      <p className="mt-2 text-slate-700">
-                        {analysisResult.propertyDescription || "No description available"}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="text-sm font-semibold text-slate-600">
-                          Purchase Price
-                        </h3>
-                        <p className="mt-2 text-2xl font-bold text-slate-800">
-                          R{analysisResult.analysis.purchasePrice.toLocaleString()}
-                        </p>
-                      </div>
-
-                      <div>
-                        <h3 className="text-sm font-semibold text-slate-600">
-                          Deposit
-                        </h3>
-                        <p className="mt-2 text-lg font-bold text-slate-800">
-                          R{analysisResult.deposit?.toLocaleString() || "0"}
-                          <span className="ml-2 text-base font-semibold text-indigo-600">
-                            ({analysisResult.depositPercentage || "0"}%)
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="text-sm font-semibold text-slate-600">
-                          Interest Rate
-                        </h3>
-                        <p className="mt-2 text-lg font-bold text-slate-800">
-                          {analysisResult.interestRate || "0"}%
-                        </p>
-                      </div>
-
-                      <div>
-                        <h3 className="text-sm font-semibold text-slate-600">
-                          Term
-                        </h3>
-                        <p className="mt-2 text-lg font-bold text-slate-800">
-                          {analysisResult.loanTerm || "0"} years
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="text-sm font-semibold text-slate-600">
-                          Monthly Bond Repayment
-                        </h3>
-                        <p className="mt-2 text-lg font-bold text-slate-800">
-                          R{analysisResult.monthlyBondRepayment?.toLocaleString() || "0"}
-                        </p>
-                      </div>
-
-                      <div>
-                        <h3 className="text-sm font-semibold text-slate-600">
-                          Bond Registration
-                        </h3>
-                        <p className="mt-2 text-lg font-bold text-slate-800">
-                          R{findCostFromTable(analysisResult.analysis.purchasePrice, bondCostsTable).total.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Transfer Costs
-                      </h3>
-                      <div className="flex items-center gap-4">
-                        <p className="mt-2 text-lg font-bold text-slate-800">
-                          R{(() => {
-                            const costs = findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable);
-                            let total = includeTransferDuty ? costs.total : (costs.total - costs.transferDuty);
-                            if (!includeVAT) {
-                              total = total / 1.15;
-                            }
-                            return total.toLocaleString();
-                          })()}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2 mt-2">
-                        <Checkbox
-                          id="noTransferDuty"
-                          checked={!includeTransferDuty}
-                          onCheckedChange={(checked) => setIncludeTransferDuty(!checked)}
-                        />
-                        <label htmlFor="noTransferDuty" className="text-sm font-medium">
-                          No transfer duty
-                        </label>
-                      </div>
-                      <div className="flex items-center space-x-2 mt-2">
-                        <Checkbox
-                          id="removeVAT"
-                          checked={!includeVAT}
-                          onCheckedChange={(checked) => setIncludeVAT(!checked)}
-                        />
-                        <label htmlFor="removeVAT" className="text-sm font-medium">
-                          Remove VAT
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="border-t pt-6">
-                      <h3 className="text-lg font-bold text-slate-800">
-                        Total Capital Required
-                      </h3>
-                      <p className="mt-2 text-2xl font-bold text-slate-800">
-                        R{(() => {
-                          const bondCosts = findCostFromTable(analysisResult.analysis.purchasePrice, bondCostsTable).total;
-                          const transferCosts = findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable);
-                          let transferTotal = includeTransferDuty ? transferCosts.total : (transferCosts.total - transferCosts.transferDuty);
-                          if (!includeVAT) {
-                            transferTotal = transferTotal / 1.15;
-                          }
-                          return ((analysisResult.deposit || 0) + bondCosts + transferTotal).toLocaleString();
-                        })()}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Revenue Performance */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-emerald-500" />
-                      Revenue Performance
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="p-4 rounded-lg bg-blue-50/50">
-                        <h3 className="text-sm font-bold text-blue-600 mb-3">
-                          Short-Term Rental (Year 1)
-                        </h3>
-                        <div className="space-y-2">
+            {analysisResult && (
+              <>
+                {/* Summary Section */}
+                <div className="grid gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Property Details */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Building2 className="h-5 w-5 text-slate-600" />
+                          Property Details
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-6">
                           <div>
-                            <p className="text-2xl font-bold text-slate-800">
-                              R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}
-                            </p>
-                            <p className="text-base text-slate-600">
-                              R{Math.round((analysisResult.analysis.shortTermAnnualRevenue || 0) / 12).toLocaleString()}/month
+                            <h3 className="text-sm font-medium text-slate-500">Location</h3>
+                            <p className="mt-1 text-lg text-slate-900">{analysisResult.address}</p>
+                          </div>
+
+                          <div>
+                            <h3 className="text-sm font-medium text-slate-500">Purchase Price</h3>
+                            <p className="mt-1 text-2xl font-bold text-slate-900">
+                              R{analysisResult.analysis.purchasePrice.toLocaleString()}
                             </p>
                           </div>
-                          <p className="text-sm">
-                            <span className="font-semibold text-emerald-600 text-base">
-                              {analysisResult.shortTermGrossYield?.toFixed(2) || "0"}% Gross Yield
-                            </span>
+
+                          <div className="grid grid-cols-2 gap-6">
+                            <div>
+                              <h3 className="text-sm font-medium text-slate-500">Deposit</h3>
+                              <p className="mt-1 text-lg text-slate-900">
+                                R{analysisResult.deposit?.toLocaleString()}
+                                <span className="ml-1 text-sm text-slate-500">
+                                  ({analysisResult.depositPercentage}%)
+                                </span>
+                              </p>
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-medium text-slate-500">Monthly Bond</h3>
+                              <p className="mt-1 text-lg text-slate-900">
+                                R{analysisResult.monthlyBondRepayment?.toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Revenue Summary */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <TrendingUp className="h-5 w-5 text-slate-600" />
+                          Revenue Summary
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-6">
+                          <div>
+                            <h3 className="text-sm font-medium text-slate-500">Short-Term Revenue (Annual)</h3>
+                            <p className="mt-1 text-2xl font-bold text-slate-900">
+                              R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString()}
+                              <span className="ml-2 text-base font-normal text-emerald-600">
+                                {analysisResult.shortTermGrossYield?.toFixed(1)}% yield
+                              </span>
+                            </p>
+                            <p className="mt-1 text-sm text-slate-500">
+                              {analysisResult.annualOccupancy}% occupancy at R{analysisResult.shortTermNightlyRate?.toLocaleString()}/night
+                            </p>
+                          </div>
+
+                          <div>
+                            <h3 className="text-sm font-medium text-slate-500">Long-Term Revenue (Annual)</h3>
+                            <p className="mt-1 text-2xl font-bold text-slate-900">
+                              R{analysisResult.analysis.longTermAnnualRevenue?.toLocaleString()}
+                              <span className="ml-2 text-base font-normal text-emerald-600">
+                                {analysisResult.longTermGrossYield?.toFixed(1)}% yield
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Transaction Costs */}
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                          <h3 className="text-sm font-medium text-slate-500">Bond Registration</h3>
+                          <p className="mt-1 text-lg text-slate-900">
+                            R{findCostFromTable(analysisResult.analysis.purchasePrice, bondCostsTable).total.toLocaleString()}
                           </p>
-                          <div className="pt-2 border-t border-blue-100">
-                            <p className="text-sm text-slate-600">
-                              <span className="font-medium">Nightly Rate:</span>{" "}
-                              R{analysisResult.shortTermNightlyRate?.toLocaleString() || "0"}
-                            </p>
-                            <p className="text-sm text-slate-600">
-                              <span className="font-medium">Occupancy:</span>{" "}
-                              {analysisResult.annualOccupancy || "0"}%
-                            </p>
-                            <p className="text-sm text-slate-600">
-                              <span className="font-medium">Management Fee:</span>{" "}
-                              {formData?.managementFee || "0"}%
-                            </p>
+                        </div>
+
+                        <div>
+                          <h3 className="text-sm font-medium text-slate-500">Transfer Costs</h3>
+                          <p className="mt-1 text-lg text-slate-900">
+                            R{(() => {
+                              const costs = findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable);
+                              let total = includeTransferDuty ? costs.total : (costs.total - costs.transferDuty);
+                              if (!includeVAT) {
+                                total = total / 1.15;
+                              }
+                              return total.toLocaleString();
+                            })()}
+                          </p>
+                          <div className="mt-2 space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="noTransferDuty"
+                                checked={!includeTransferDuty}
+                                onCheckedChange={(checked) => setIncludeTransferDuty(!checked)}
+                              />
+                              <label htmlFor="noTransferDuty" className="text-sm text-slate-600">
+                                No transfer duty
+                              </label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="removeVAT"
+                                checked={!includeVAT}
+                                onCheckedChange={(checked) => setIncludeVAT(!checked)}
+                              />
+                              <label htmlFor="removeVAT" className="text-sm text-slate-600">
+                                Remove VAT
+                              </label>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="p-4 rounded-lg bg-purple-50/50">
-                        <h3 className="text-sm font-bold text-purple-600 mb-3">
-                          Long-Term Rental (Year 1)
-                        </h3>
-                        <div className="space-y-2">
-                          <div>
-                            <p className="text-2xl font-bold text-slate-800">
-                              R{analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() || "0"}
-                            </p>
-                            <p className="text-base text-slate-600">
-                              R{Math.round((analysisResult.analysis.longTermAnnualRevenue || 0) / 12).toLocaleString()}/month
-                            </p>
-                          </div>
-                          <p className="text-sm">
-                            <span className="font-semibold text-emerald-600 text-base">
-                              {analysisResult.longTermGrossYield?.toFixed(2) || "0"}% Gross Yield
-                            </span>
+                        <div>
+                          <h3 className="text-sm font-medium text-slate-500">Total Capital Required</h3>
+                          <p className="mt-1 text-xl font-bold text-slate-900">
+                            R{(() => {
+                              const bondCosts = findCostFromTable(analysisResult.analysis.purchasePrice, bondCostsTable).total;
+                              const transferCosts = findCostFromTable(analysisResult.analysis.purchasePrice, transferCostsTable);
+                              let transferTotal = includeTransferDuty ? transferCosts.total : (transferCosts.total - transferCosts.transferDuty);
+                              if (!includeVAT) {
+                                transferTotal = transferTotal / 1.15;
+                              }
+                              return ((analysisResult.deposit || 0) + bondCosts + transferTotal).toLocaleString();
+                            })()}
                           </p>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+                    </CardContent>
+                  </Card>
 
-              {/* Additional Analysis Sections */}
-              <RentalPerformance
-                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
-                managementFee={Number(formData?.managementFee) || 0}
-              />
+                  {/* Detailed Analysis */}
+                  <div className="space-y-6">
+                    <RentalPerformance
+                      shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                      longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
+                      managementFee={Number(formData?.managementFee) || 0}
+                    />
 
-              <CashflowMetrics
-                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
-                monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
-                managementFee={Number(formData?.managementFee) || 0}
-                revenueProjections={analysisResult.analysis.revenueProjections}
-                operatingExpenses={analysisResult.analysis.operatingExpenses}
-              />
+                    <CashflowMetrics
+                      shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                      longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
+                      monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
+                      managementFee={Number(formData?.managementFee) || 0}
+                      revenueProjections={analysisResult.analysis.revenueProjections}
+                      operatingExpenses={analysisResult.analysis.operatingExpenses}
+                    />
 
-              <InvestmentMetrics
-                purchasePrice={analysisResult.analysis.purchasePrice}
-                deposit={analysisResult.deposit}
-                monthlyBondRepayment={analysisResult.monthlyBondRepayment}
-                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
-                revenueProjections={analysisResult.analysis.revenueProjections}
-                operatingExpenses={analysisResult.analysis.operatingExpenses}
-              />
+                    <InvestmentMetrics
+                      purchasePrice={analysisResult.analysis.purchasePrice}
+                      deposit={analysisResult.deposit}
+                      monthlyBondRepayment={analysisResult.monthlyBondRepayment}
+                      shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                      longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
+                      revenueProjections={analysisResult.analysis.revenueProjections}
+                      operatingExpenses={analysisResult.analysis.operatingExpenses}
+                    />
+                  </div>
 
-              {/* Disclaimer */}
-              <div className="mt-12 p-6 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="w-full text-sm text-gray-600 space-y-4">
-                  <p className="font-semibold">DISCLAIMER:</p>
-                  <p>
-                    The information contained in this report is provided for informational purposes only. While we make best efforts to ensure accuracy, we cannot guarantee its absolute precision or completeness.
-                  </p>
-                  <p>
-                    This report should not be considered as financial, investment, legal, or professional advice. Property investment carries inherent risks, and market conditions can change rapidly.
-                  </p>
-                  <p>
-                    Proply Tech (Pty) Ltd and its affiliates expressly disclaim any liability for damages arising from the use of this information. Actual results may vary from projections presented.
-                  </p>
+                  {/* Disclaimer */}
+                  <div className="text-sm text-slate-500 bg-slate-50 p-6 rounded-lg">
+                    <p className="font-medium mb-2">Disclaimer</p>
+                    <p className="mb-2">
+                      The information provided is for general guidance only and should not be considered as financial advice. 
+                      Property investments carry inherent risks and actual results may vary.
+                    </p>
+                    <p>
+                      Proply Tech (Pty) Ltd assumes no liability for investment decisions made based on this analysis.
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
