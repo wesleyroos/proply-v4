@@ -77,12 +77,12 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     shortTermAnnualRevenue = feeAdjustedNightlyRate * 365 * (data.annualOccupancy / 100);
     shortTermGrossYield = (shortTermAnnualRevenue / data.purchasePrice) * 100;
 
-    // Calculate revenue projections for future years
-    const growthRate = (data.incomeGrowthRate || 5) / 100;
+    // Calculate revenue projections for future years using the provided income growth rate
+    const growthRate = data.incomeGrowthRate / 100;
     revenueProjections = {
       shortTerm: {
         year1: shortTermAnnualRevenue,
-        year2: shortTermAnnualRevenue * Math.pow(1 + growthRate, 1),
+        year2: shortTermAnnualRevenue * (1 + growthRate),
         year4: shortTermAnnualRevenue * Math.pow(1 + growthRate, 3),
         year5: shortTermAnnualRevenue * Math.pow(1 + growthRate, 4),
         year10: shortTermAnnualRevenue * Math.pow(1 + growthRate, 9),
