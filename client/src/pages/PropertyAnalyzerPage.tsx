@@ -1,11 +1,4 @@
 import { useState } from "react";
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarTrigger,
-  SidebarContent,
-} from "@/components/ui/sidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
@@ -123,123 +116,101 @@ export default function PropertyAnalyzerPage() {
   };
 
   return (
-    <SidebarProvider defaultOpen>
-      <div className="group/sidebar-wrapper flex min-h-svh">
-        <Sidebar variant="floating" collapsible="icon">
-          <SidebarHeader>
-            <div className="flex h-14 items-center justify-between px-4">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger />
-                <span className="text-lg font-semibold">Property Analyzer</span>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1400px] mx-auto">
+          {/* Main Column */}
+          <div className="lg:col-span-8 space-y-6">
+            <Card className="w-full">
+              <CardContent className="p-6">
+                <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+              </CardContent>
+            </Card>
+
+            {analysisError && (
+              <Card className="border-destructive/50 bg-destructive/10">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-2 text-destructive">
+                    <AlertCircle className="h-5 w-5" />
+                    <p className="text-sm font-medium">Error: {analysisError}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {analysisResult && (
+              <div className="space-y-6">
+                <InvestmentMetrics 
+                  purchasePrice={analysisResult.analysis.purchasePrice}
+                  deposit={analysisResult.deposit}
+                  monthlyBondRepayment={analysisResult.monthlyBondRepayment}
+                  shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                  longTermMonthly={
+                    analysisResult.analysis.longTermAnnualRevenue
+                      ? analysisResult.analysis.longTermAnnualRevenue / 12
+                      : 0
+                  }
+                  revenueProjections={analysisResult.analysis.revenueProjections}
+                  operatingExpenses={analysisResult.analysis.operatingExpenses}
+                  netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+                />
+                <CashflowMetrics
+                  shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                  longTermMonthly={
+                    analysisResult.analysis.longTermAnnualRevenue
+                      ? analysisResult.analysis.longTermAnnualRevenue / 12
+                      : 0
+                  }
+                  monthlyBondRepayment={analysisResult.monthlyBondRepayment}
+                  managementFee={Number(formData?.managementFee) || 0}
+                  revenueProjections={analysisResult.analysis.revenueProjections}
+                  operatingExpenses={analysisResult.analysis.operatingExpenses}
+                  netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+                />
               </div>
-            </div>
-          </SidebarHeader>
-          <SidebarContent>
-            {/* Sidebar navigation can be added here */}
-          </SidebarContent>
-        </Sidebar>
+            )}
+          </div>
 
-        <div className="flex-1 flex flex-col bg-background">
-
-          {/* Main Content Area */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="h-full px-4 py-6 lg:px-8">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1400px] mx-auto">
-                {/* Main Column */}
-                <div className="lg:col-span-8 space-y-6">
-                  <Card className="w-full">
-                    <CardContent className="p-6">
-                      <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
-                    </CardContent>
-                  </Card>
-
-                  {analysisError && (
-                    <Card className="border-destructive/50 bg-destructive/10">
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-2 text-destructive">
-                          <AlertCircle className="h-5 w-5" />
-                          <p className="text-sm font-medium">Error: {analysisError}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {analysisResult && (
-                    <div className="space-y-6">
-                      <InvestmentMetrics 
-                        purchasePrice={analysisResult.analysis.purchasePrice}
-                        deposit={analysisResult.deposit}
-                        monthlyBondRepayment={analysisResult.monthlyBondRepayment}
-                        shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                        longTermMonthly={
-                          analysisResult.analysis.longTermAnnualRevenue
-                            ? analysisResult.analysis.longTermAnnualRevenue / 12
-                            : 0
-                        }
-                        revenueProjections={analysisResult.analysis.revenueProjections}
-                        operatingExpenses={analysisResult.analysis.operatingExpenses}
-                        netOperatingIncome={analysisResult.analysis.netOperatingIncome}
-                      />
-                      <CashflowMetrics
-                        shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                        longTermMonthly={
-                          analysisResult.analysis.longTermAnnualRevenue
-                            ? analysisResult.analysis.longTermAnnualRevenue / 12
-                            : 0
-                        }
-                        monthlyBondRepayment={analysisResult.monthlyBondRepayment}
-                        managementFee={Number(formData?.managementFee) || 0}
-                        revenueProjections={analysisResult.analysis.revenueProjections}
-                        operatingExpenses={analysisResult.analysis.operatingExpenses}
-                        netOperatingIncome={analysisResult.analysis.netOperatingIncome}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Side Column */}
-                <div className="md:col-span-4">
-                  {analysisResult && (
-                    <div className="space-y-6">
-                      <Card>
-                        <CardContent className="p-6">
-                          <h3 className="text-lg font-semibold mb-4">Rental Performance</h3>
-                          <RentalPerformance
-                            shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                            longTermMonthly={
-                              analysisResult.analysis.longTermAnnualRevenue
-                                ? analysisResult.analysis.longTermAnnualRevenue / 12
-                                : 0
-                            }
-                            managementFee={Number(formData?.managementFee) || 0}
-                          />
-                        </CardContent>
-                      </Card>
-                    </div>
-                  )}
-                </div>
+          {/* Side Column */}
+          <div className="lg:col-span-4">
+            {analysisResult && (
+              <div className="space-y-6">
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-4">Rental Performance</h3>
+                    <RentalPerformance
+                      shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                      longTermMonthly={
+                        analysisResult.analysis.longTermAnnualRevenue
+                          ? analysisResult.analysis.longTermAnnualRevenue / 12
+                          : 0
+                      }
+                      managementFee={Number(formData?.managementFee) || 0}
+                    />
+                  </CardContent>
+                </Card>
               </div>
-
-              {/* Disclaimer */}
-              <div className="mt-8 space-y-4 text-sm text-muted-foreground">
-                <p className="font-semibold">DISCLAIMER:</p>
-                <p>
-                  The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.
-                </p>
-                <p>
-                  This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice. Any decisions made based on this information are solely the responsibility of the user. Property investment carries inherent risks, and market conditions can change rapidly.
-                </p>
-                <p>
-                  By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.
-                </p>
-                <p className="text-xs mt-6">
-                  © {new Date().getFullYear()} Proply Tech (Pty) Ltd. All rights reserved.
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
+
+        {/* Disclaimer */}
+        <div className="mt-8 space-y-4 text-sm text-muted-foreground">
+          <p className="font-semibold">DISCLAIMER:</p>
+          <p>
+            The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.
+          </p>
+          <p>
+            This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice. Any decisions made based on this information are solely the responsibility of the user. Property investment carries inherent risks, and market conditions can change rapidly.
+          </p>
+          <p>
+            By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.
+          </p>
+          <p className="text-xs mt-6">
+            © {new Date().getFullYear()} Proply Tech (Pty) Ltd. All rights reserved.
+          </p>
+        </div>
       </div>
-    </SidebarProvider>
+    </div>
   );
 }
