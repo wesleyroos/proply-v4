@@ -277,7 +277,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       depositAmount: undefined,
       depositPercentage: undefined,
       interestRate: undefined,
-      loanTerm: undefined,
+      loanTerm: 20, // Default to 20 years
       monthlyLevies: undefined,
       monthlyRatesTaxes: undefined,
       otherMonthlyExpenses: undefined,
@@ -844,10 +844,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <Input
                           type="number"
                           min="1"
+                          placeholder="Enter loan term in years"
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
+                          onChange={(e) => {
+                            const value = e.target.valueAsNumber;
+                            if (!isNaN(value) && value >= 1) {
+                              field.onChange(value);
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
