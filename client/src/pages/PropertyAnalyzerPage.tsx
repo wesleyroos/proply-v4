@@ -20,6 +20,7 @@ import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
 import RentalPerformance from "@/components/RentalPerformance";
 import CashflowMetrics from "@/components/CashflowMetrics";
+import InvestmentMetrics from "@/components/InvestmentMetrics";
 import {
   Tooltip,
   TooltipContent,
@@ -658,6 +659,18 @@ export default function PropertyAnalyzerPage() {
                 }
                 monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
                 managementFee={Number(formData?.managementFee) || 0}
+                revenueProjections={analysisResult.analysis.revenueProjections}
+                operatingExpenses={analysisResult.analysis.operatingExpenses}
+                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+              />
+
+              {/* Investment Metrics Section */}
+              <InvestmentMetrics
+                purchasePrice={analysisResult.analysis.purchasePrice}
+                deposit={analysisResult.deposit}
+                monthlyBondRepayment={analysisResult.monthlyBondRepayment}
+                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
                 revenueProjections={analysisResult.analysis.revenueProjections}
                 operatingExpenses={analysisResult.analysis.operatingExpenses}
                 netOperatingIncome={analysisResult.analysis.netOperatingIncome}
