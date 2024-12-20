@@ -9,7 +9,7 @@ interface RentalPerformanceProps {
 
 export default function RentalPerformance({ shortTermNightly, longTermMonthly, managementFee }: RentalPerformanceProps) {
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const isManaged = managementFee > 0;
+  //const isManaged = managementFee > 0;
 
   return (
     <div className="space-y-6">
@@ -22,9 +22,9 @@ export default function RentalPerformance({ shortTermNightly, longTermMonthly, m
             margin={{ left: 25 }}
             data={Array(12).fill(0).map((_, i) => ({
               month: new Date(2024, i).toLocaleString('default', { month: 'short' }),
-              low: calculateMonthlyRevenue('low', i, shortTermNightly, isManaged, managementFee),
-              medium: calculateMonthlyRevenue('medium', i, shortTermNightly, isManaged, managementFee),
-              high: calculateMonthlyRevenue('high', i, shortTermNightly, isManaged, managementFee),
+              low: calculateMonthlyRevenue('low', i, shortTermNightly, managementFee),
+              medium: calculateMonthlyRevenue('medium', i, shortTermNightly, managementFee),
+              high: calculateMonthlyRevenue('high', i, shortTermNightly, managementFee),
               longTerm: longTermMonthly,
             }))}
           >
@@ -70,7 +70,7 @@ export default function RentalPerformance({ shortTermNightly, longTermMonthly, m
                 <td className="py-3 px-6">Fee-Adjusted Rate</td>
                 {Array(12).fill(0).map((_, i) => (
                   <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
-                    {formatter(getFeeAdjustedRate(getSeasonalNightlyRate(shortTermNightly, i), isManaged))}
+                    {formatter(getFeeAdjustedRate(getSeasonalNightlyRate(shortTermNightly, i), managementFee))}
                   </td>
                 ))}
                 <td colSpan={2}></td>
@@ -99,7 +99,7 @@ export default function RentalPerformance({ shortTermNightly, longTermMonthly, m
               {/* Revenue Rows */}
               {(['low', 'medium', 'high'] as const).map((scenario) => {
                 const monthlyRevenues = Array(12).fill(0).map((_, i) => 
-                  calculateMonthlyRevenue(scenario, i, shortTermNightly, isManaged, managementFee)
+                  calculateMonthlyRevenue(scenario, i, shortTermNightly, managementFee)
                 );
                 const totalRevenue = monthlyRevenues.reduce((sum, rev) => sum + rev, 0);
                 const avgRevenue = totalRevenue / 12;

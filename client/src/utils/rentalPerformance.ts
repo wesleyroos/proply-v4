@@ -12,8 +12,8 @@ export const getSeasonalNightlyRate = (baseRate: number, monthIndex: number): nu
   return baseRate * SEASONALITY_FACTORS[monthIndex];
 };
 
-export const getFeeAdjustedRate = (rate: number, isManaged: boolean): number => {
-  const platformFeeRate = isManaged ? 0.15 : 0.03; // 15% if managed, 3% if self-managed
+export const getFeeAdjustedRate = (rate: number, managementFee: number): number => {
+  const platformFeeRate = managementFee > 0 ? 0.15 : 0.03; // 15% if managed, 3% if self-managed
   return rate * (1 - platformFeeRate);
 };
 
