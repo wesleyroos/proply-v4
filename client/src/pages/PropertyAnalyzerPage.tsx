@@ -681,7 +681,7 @@ export default function PropertyAnalyzerPage() {
               By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.
             </p>
             <p className="text-xs mt-6">
-              © 2024 Proply Tech (Pty) Ltd. All rights reserved.
+              © {new Date().getFullYear()} Proply Tech (Pty) Ltd. All rights reserved.
             </p>
           </div>
         </div>
