@@ -96,7 +96,7 @@ const formSchema = z.object({
     .number()
     .min(0, "Interest rate must be positive")
     .max(100, "Interest rate cannot exceed 100"),
-  loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
+  loanTerm: z.number().min(1, "Loan term must be at least 1 year").default(20),
 
   // Step 3: Operating Expenses
   monthlyLevies: z.coerce.number().min(0, "Monthly levies must be positive").default(0),
@@ -311,7 +311,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         depositAmount: Number(data.depositAmount),
         depositPercentage: Number(data.depositPercentage),
         interestRate: Number(data.interestRate),
-        loanTerm: Number(data.loanTerm),
+        loanTerm: Number(data.loanTerm || 20), // Ensure loanTerm has a default value of 20
         monthlyLevies: Number(data.monthlyLevies || 0),
         monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
@@ -321,9 +321,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         occupancyRate: Number(data.occupancyRate || 0),
         longTermRental: Number(data.longTermRental || 0),
         leaseCycleGap: Number(data.leaseCycleGap || 0),
-        annualIncomeGrowth: Number(data.annualIncomeGrowth),
-        annualExpenseGrowth: Number(data.annualExpenseGrowth),
-        annualPropertyAppreciation: Number(data.annualPropertyAppreciation),
+        annualIncomeGrowth: Number(data.annualIncomeGrowth || 6),
+        annualExpenseGrowth: Number(data.annualExpenseGrowth || 4),
+        annualPropertyAppreciation: Number(data.annualPropertyAppreciation || 4),
         cmaRatePerSqm: Number(data.cmaRatePerSqm),
         comments: data.comments,
       };
