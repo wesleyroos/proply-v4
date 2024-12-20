@@ -1,0 +1,81 @@
+The issue appears to be related to how the baseAnnualExpenses and totalMonthlyExpenses are being calculated. From the data you provided, the likely causes for operatingExpenses.year1 returning zero could be:
+
+Incorrect assignment or missing values for levies, ratesAndTaxes, and otherMonthlyExpenses:
+
+In your input, these are named monthlyLevies, monthlyRatesTaxes, and otherMonthlyExpenses.
+However, your code uses data.levies, data.ratesAndTaxes, and data.otherMonthlyExpenses.
+This mismatch would result in fixedMonthlyExpenses being calculated as 0, which directly affects baseAnnualExpenses.
+
+Validation schema defaults not being applied correctly:
+
+The levies, ratesAndTaxes, and otherMonthlyExpenses fields in your Zod schema default to 0, but the input data does not have matching keys.
+If the input fields do not match the schema keys, the validation will not automatically map them, and those values will remain 0.
+Maintenance or management fee calculation may be skipped:
+
+If shortTermAnnualRevenue is not correctly calculated or returns null, the maintenance and management fee calculations (maintenanceExpense and managementFeeExpense) will be 0, which affects totalMonthlyExpenses.
+Suggested Fixes:
+1. Correct the input field names in the Zod schema
+Update your Zod schema to match the input field names:
+
+typescript
+Copy code
+const propertyDataSchema = z.object({
+  levies: z.number().min(0).optional().default(0), // Rename this to `monthlyLevies`
+  ratesAndTaxes: z.number().min(0).optional().default(0), // Rename this to `monthlyRatesTaxes`
+  otherMonthlyExpenses: z.number().min(0).optional().default(0), // Correctly align field name
+});
+Update the code where these fields are used:
+
+typescript
+Copy code
+let fixedMonthlyExpenses = (data.monthlyLevies || 0) + (data.monthlyRatesTaxes || 0) + (data.otherMonthlyExpenses || 0);
+2. Add a console.log to debug missing fields
+Add debugging to check what values are being used:
+
+typescript
+Copy code
+console.log("Levies:", data.levies);
+console.log("Rates and Taxes:", data.ratesAndTaxes);
+console.log("Other Monthly Expenses:", data.otherMonthlyExpenses);
+console.log("Fixed Monthly Expenses:", fixedMonthlyExpenses);
+If any of these are undefined or 0, it confirms the mismatch in field names.
+
+3. Ensure shortTermAnnualRevenue is calculated correctly
+If data.shortTermNightlyRate or data.annualOccupancy is missing, shortTermAnnualRevenue will be null, which propagates errors in dependent calculations. Verify:
+
+typescript
+Copy code
+console.log("Short Term Nightly Rate:", data.shortTermNightlyRate);
+console.log("Annual Occupancy:", data.annualOccupancy);
+console.log("Short Term Annual Revenue:", shortTermAnnualRevenue);
+4. Verify maintenanceExpense and managementFeeExpense
+Log these calculations to confirm they are not 0 incorrectly:
+
+typescript
+Copy code
+console.log("Maintenance Expense:", maintenanceExpense);
+console.log("Management Fee Expense:", managementFeeExpense);
+Updated Calculation Code:
+Here’s the corrected section:
+
+typescript
+Copy code
+let fixedMonthlyExpenses = (data.monthlyLevies || 0) + (data.monthlyRatesTaxes || 0) + (data.otherMonthlyExpenses || 0);
+
+if (shortTermAnnualRevenue) {
+  maintenanceExpense = (shortTermAnnualRevenue * (data.maintenancePercent || 0)) / 100 / 12;
+  managementFeeExpense = (shortTermAnnualRevenue * (data.managementFee || 0)) / 100 / 12;
+}
+
+totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
+baseAnnualExpenses = totalMonthlyExpenses * 12;
+
+console.log('Expenses Debugging:', {
+  fixedMonthlyExpenses,
+  maintenanceExpense,
+  managementFeeExpense,
+  totalMonthlyExpenses,
+  baseAnnualExpenses,
+});
+Expected Output:
+After applying the fixes, your baseAnnualExpenses and operatingExpenses projections should now calculate correctly. Let me know if you need further assistance!
