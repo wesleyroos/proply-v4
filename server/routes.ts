@@ -474,7 +474,7 @@ export function registerRoutes(app: Express): Server {
         : 0;
 
       // Fixed monthly expenses (levies + rates and taxes + other expenses)
-      const fixedMonthlyExpenses = propertyData.levies + propertyData.ratesAndTaxes + propertyData.otherMonthlyExpenses;
+      const fixedMonthlyExpenses = propertyData.monthlyLevies + propertyData.monthlyRatesTaxes + propertyData.otherMonthlyExpenses;
 
       // Revenue-based expenses (using gross revenue for percentages)
       const maintenanceExpense = grossMonthlyRevenue * (propertyData.maintenancePercent / 100);
@@ -502,8 +502,8 @@ export function registerRoutes(app: Express): Server {
 
       console.log("2. Monthly Expense Components:", {
         fixed: {
-          levies: propertyData.levies,
-          ratesAndTaxes: propertyData.ratesAndTaxes,
+          levies: propertyData.monthlyLevies,
+          ratesAndTaxes: propertyData.monthlyRatesTaxes,
           otherExpenses: propertyData.otherMonthlyExpenses,
           totalFixed: fixedMonthlyExpenses
         },
