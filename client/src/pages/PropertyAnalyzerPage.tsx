@@ -629,6 +629,7 @@ export default function PropertyAnalyzerPage() {
                 monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
                 managementFee={Number(formData?.managementFee) || 0}
                 revenueProjections={analysisResult.analysis.revenueProjections}
+                operatingExpenses={analysisResult.analysis.operatingExpenses}
               />
             </>
           )}

@@ -14,7 +14,13 @@ const propertyDataSchema = z.object({
   loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
   floorArea: z.number().positive(),
   ratePerSquareMeter: z.number().positive(),
-  incomeGrowthRate: z.number().min(0).max(100).default(5)
+  incomeGrowthRate: z.number().min(0).max(100).default(8),
+  expenseGrowthRate: z.number().min(0).max(100).default(6),
+  levies: z.number().min(0).default(0),
+  ratesAndTaxes: z.number().min(0).default(0),
+  otherMonthlyExpenses: z.number().min(0).default(0),
+  maintenancePercent: z.number().min(0).max(100).default(0),
+  managementFee: z.number().min(0).max(100).default(0)
 });
 
 // TypeScript type derived from Zod schema
@@ -51,6 +57,14 @@ export interface AnalysisResult {
         year20: number;
       } | null;
     };
+    operatingExpenses: {
+      year1: number;
+      year2: number;
+      year4: number;
+      year5: number;
+      year10: number;
+      year20: number;
+    };
   };
 }
 
@@ -79,17 +93,28 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
 
     // Calculate revenue projections for future years using the provided income growth rate
     // Formula: Revenue(n) = Revenue(1) × (1 + Growth Rate)^(n-1)
-    const growthRate = 0.08; // 8% growth rate
+    const growthRate = data.incomeGrowthRate / 100; // Use input growth rate
     revenueProjections = {
       shortTerm: {
         year1: shortTermAnnualRevenue,
-        year2: shortTermAnnualRevenue * Math.pow(1.08, 1),  // Year 2 = Year 1 × (1.08)¹
-        year4: shortTermAnnualRevenue * Math.pow(1.08, 3),  // Year 4 = Year 1 × (1.08)³
-        year5: shortTermAnnualRevenue * Math.pow(1.08, 4),  // Year 5 = Year 1 × (1.08)⁴
-        year10: shortTermAnnualRevenue * Math.pow(1.08, 9), // Year 10 = Year 1 × (1.08)⁹
-        year20: shortTermAnnualRevenue * Math.pow(1.08, 19) // Year 20 = Year 1 × (1.08)¹⁹
+        year2: shortTermAnnualRevenue * Math.pow(1 + growthRate, 1),  // Year 2 = Year 1 × (1.08)¹
+        year4: shortTermAnnualRevenue * Math.pow(1 + growthRate, 3),  // Year 4 = Year 1 × (1.08)³
+        year5: shortTermAnnualRevenue * Math.pow(1 + growthRate, 4),  // Year 5 = Year 1 × (1.08)⁴
+        year10: shortTermAnnualRevenue * Math.pow(1 + growthRate, 9), // Year 10 = Year 1 × (1.08)⁹
+        year20: shortTermAnnualRevenue * Math.pow(1 + growthRate, 19) // Year 20 = Year 1 × (1.08)¹⁹
       }
     };
+
+    // Calculate base monthly operating expenses
+    const fixedMonthlyExpenses = (data.levies || 0) + (data.ratesAndTaxes || 0) + (data.otherMonthlyExpenses || 0);
+    const maintenanceExpense = shortTermAnnualRevenue * (data.maintenancePercent || 0) / 100 / 12;
+    const managementFeeExpense = shortTermAnnualRevenue * (data.managementFee || 0) / 100 / 12;
+    
+    // Calculate total annual operating expenses for Year 1
+    const baseAnnualExpenses = (fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense) * 12;
+    
+    // Calculate operating expenses projections with expense growth rate
+    const expenseGrowthRate = data.expenseGrowthRate / 100; // Use input growth rate
   }
 
   // Calculate long-term rental metrics
@@ -113,30 +138,41 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Calculate deposit percentage
   const depositPercentage = (data.deposit / data.purchasePrice) * 100;
 
-  return {
-    // Financial calculations with precise number formatting
-    shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
-    longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
-    monthlyBondRepayment: Number(monthlyBondRepayment.toFixed(2)),
-    depositPercentage: Number(depositPercentage.toFixed(2)),
+  // Calculate operating expenses projections
+    const operatingExpenses = {
+      year1: baseAnnualExpenses,
+      year2: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 1),  // Year 2 = Year 1 × (1.06)¹
+      year4: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 3),  // Year 4 = Year 1 × (1.06)³
+      year5: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 4),  // Year 5 = Year 1 × (1.06)⁴
+      year10: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 9), // Year 10 = Year 1 × (1.06)⁹
+      year20: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 19) // Year 20 = Year 1 × (1.06)¹⁹
+    };
 
-    // Property details (passing through validated data)
-    propertyDescription: data.propertyDescription,
-    address: data.address,
-    deposit: data.deposit,
-    interestRate: data.interestRate,
-    loanTerm: data.loanTerm,
-    floorArea: data.floorArea,
-    ratePerSquareMeter: data.ratePerSquareMeter,
+    return {
+      // Financial calculations with precise number formatting
+      shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
+      longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
+      monthlyBondRepayment: Number(monthlyBondRepayment.toFixed(2)),
+      depositPercentage: Number(depositPercentage.toFixed(2)),
 
-    // Analysis summary
-    analysis: {
-      shortTermAnnualRevenue,
-      longTermAnnualRevenue,
-      purchasePrice: data.purchasePrice,
-      revenueProjections: {
-        shortTerm: revenueProjections?.shortTerm || null
+      // Property details (passing through validated data)
+      propertyDescription: data.propertyDescription,
+      address: data.address,
+      deposit: data.deposit,
+      interestRate: data.interestRate,
+      loanTerm: data.loanTerm,
+      floorArea: data.floorArea,
+      ratePerSquareMeter: data.ratePerSquareMeter,
+
+      // Analysis summary
+      analysis: {
+        shortTermAnnualRevenue,
+        longTermAnnualRevenue,
+        purchasePrice: data.purchasePrice,
+        revenueProjections: {
+          shortTerm: revenueProjections?.shortTerm || null
+        },
+        operatingExpenses
       }
-    }
-  };
+    };
 }

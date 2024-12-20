@@ -23,6 +23,14 @@ interface CashflowMetricsProps {
       year20: number;
     } | null;
   };
+  operatingExpenses: {
+    year1: number;
+    year2: number;
+    year4: number;
+    year5: number;
+    year10: number;
+    year20: number;
+  };
 }
 
 export default function CashflowMetrics({
@@ -111,6 +119,45 @@ export default function CashflowMetrics({
                         No revenue projections available
                       </td>
                     )}
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6 font-medium">Net Operating Expenses</td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(operatingExpenses.year1)}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(operatingExpenses.year2)}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(operatingExpenses.year4)}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(operatingExpenses.year5)}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(operatingExpenses.year10)}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(operatingExpenses.year20)}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
                   </tr>
                 </tbody>
               </table>
