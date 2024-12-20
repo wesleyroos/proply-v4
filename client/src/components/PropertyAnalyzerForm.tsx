@@ -312,8 +312,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         depositPercentage: Number(data.depositPercentage),
         interestRate: Number(data.interestRate),
         loanTerm: Number(data.loanTerm),
-        levies: Number(data.monthlyLevies),
-        ratesAndTaxes: Number(data.monthlyRatesTaxes),
+        monthlyLevies: Number(data.monthlyLevies),
+        monthlyRatesTaxes: Number(data.monthlyRatesTaxes),
         otherMonthlyExpenses: Number(data.otherMonthlyExpenses),
         maintenancePercent: Number(data.maintenancePercent),
         managementFee: Number(data.managementFee),
@@ -391,8 +391,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         ];
       case 2:
         return [
-          "levies",
-          "ratesAndTaxes",
+          "monthlyLevies",
+          "monthlyRatesTaxes",
           "otherMonthlyExpenses",
           "maintenancePercent",
           "managementFee",
