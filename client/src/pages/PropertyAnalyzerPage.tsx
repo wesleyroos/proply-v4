@@ -145,78 +145,95 @@ export default function PropertyAnalyzerPage() {
     <SidebarProvider defaultOpen>
       <div className="flex h-screen">
         <Sidebar />
-        <SidebarInset className="flex-1 overflow-auto bg-background">
-          <div className="max-w-[1500px] mx-auto px-4 md:px-6 lg:px-8 py-6">
-            <h1 className="text-2xl font-bold text-foreground mb-6">
-              Property Analyzer
-            </h1>
+        <SidebarInset className="flex-1 overflow-auto bg-[#FFFFFF]">
+          <div className="max-w-[1500px] mx-auto px-6 py-6">
+            <div className="flex items-center justify-between gap-4 mb-8">
+              <div className="flex items-center space-x-14">
+                {[1, 2, 3, 4, 5, 6].map((step, index) => (
+                  <div key={step} className="flex items-center">
+                    <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                      step === 1 ? 'bg-blue-500 text-white' : 'bg-gray-100'
+                    }`}>
+                      {step}
+                    </div>
+                    {index < 5 && (
+                      <div className="w-10 h-[2px] bg-gray-200 ml-4" />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button className="text-blue-500 hover:text-blue-600">Previous</button>
+            </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <div className="md:col-span-2 lg:col-span-3">
-                <Card>
-                  <CardContent className="p-6">
+            <div className="grid gap-8 md:grid-cols-12">
+              <div className="md:col-span-8 lg:col-span-9">
+                <div className="space-y-6">
+                  <div className="bg-white rounded-lg shadow-sm border p-6">
                     <PropertyAnalyzerForm
                       onAnalysisComplete={handleAnalysisComplete}
                     />
-                  </CardContent>
-                </Card>
+                  </div>
+
+                  {analysisResult && (
+                    <div className="space-y-6">
+                      <InvestmentMetrics 
+                        purchasePrice={analysisResult.analysis.purchasePrice}
+                        deposit={analysisResult.deposit}
+                        monthlyBondRepayment={analysisResult.monthlyBondRepayment}
+                        shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                        longTermMonthly={
+                          analysisResult.analysis.longTermAnnualRevenue
+                            ? analysisResult.analysis.longTermAnnualRevenue / 12
+                            : 0
+                        }
+                        revenueProjections={analysisResult.analysis.revenueProjections}
+                        operatingExpenses={analysisResult.analysis.operatingExpenses}
+                        netOperatingIncome={analysisResult.analysis.netOperatingIncome || null}
+                      />
+                      <CashflowMetrics
+                        shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                        longTermMonthly={
+                          analysisResult.analysis.longTermAnnualRevenue
+                            ? analysisResult.analysis.longTermAnnualRevenue / 12
+                            : 0
+                        }
+                        monthlyBondRepayment={analysisResult.monthlyBondRepayment}
+                        managementFee={Number(formData?.managementFee) || 0}
+                        revenueProjections={analysisResult.analysis.revenueProjections}
+                        operatingExpenses={analysisResult.analysis.operatingExpenses}
+                        netOperatingIncome={analysisResult.analysis.netOperatingIncome || null}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Metrics Grid - Attempting to re-integrate original components */}
-              <div className="space-y-6 md:col-span-2 lg:col-span-2">
-                {analysisResult && (
-                  <>
-                    <InvestmentMetrics 
-                      purchasePrice={analysisResult.analysis.purchasePrice}
-                      deposit={analysisResult.deposit}
-                      monthlyBondRepayment={analysisResult.monthlyBondRepayment}
-                      shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                      longTermMonthly={
-                        analysisResult.analysis.longTermAnnualRevenue
-                          ? analysisResult.analysis.longTermAnnualRevenue / 12
-                          : 0
-                      }
-                      revenueProjections={analysisResult.analysis.revenueProjections}
-                      operatingExpenses={analysisResult.analysis.operatingExpenses}
-                      netOperatingIncome={analysisResult.analysis.netOperatingIncome || null}
-                    />
-                    <CashflowMetrics
-                      shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                      longTermMonthly={
-                        analysisResult.analysis.longTermAnnualRevenue
-                          ? analysisResult.analysis.longTermAnnualRevenue / 12
-                          : 0
-                      }
-                      monthlyBondRepayment={analysisResult.monthlyBondRepayment}
-                      managementFee={Number(formData?.managementFee) || 0}
-                      revenueProjections={analysisResult.analysis.revenueProjections}
-                      operatingExpenses={analysisResult.analysis.operatingExpenses}
-                      netOperatingIncome={analysisResult.analysis.netOperatingIncome || null}
-                    />
-                  </>
-                )}
-              </div>
-
-              {/* Side Column - Attempting to re-integrate original components */}
-              <div className="space-y-6">
-                {analysisResult && (
-                  <RentalPerformance
-                    shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                    longTermMonthly={
-                      analysisResult.analysis.longTermAnnualRevenue
-                        ? analysisResult.analysis.longTermAnnualRevenue / 12
-                        : 0
-                    }
-                    managementFee={Number(formData?.managementFee) || 0}
-                  />
-                )}
-                {/* Other components from original would go here, but are omitted in the provided 'modified' code */}
+              {/* Side Column */}
+              <div className="md:col-span-4 lg:col-span-3">
+                <div className="space-y-6">
+                  {analysisResult && (
+                    <>
+                      <div className="bg-white rounded-lg shadow-sm border p-6">
+                        <h3 className="text-lg font-semibold mb-4">Rental Performance</h3>
+                        <RentalPerformance
+                          shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                          longTermMonthly={
+                            analysisResult.analysis.longTermAnnualRevenue
+                              ? analysisResult.analysis.longTermAnnualRevenue / 12
+                              : 0
+                          }
+                          managementFee={Number(formData?.managementFee) || 0}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
 
-            {/* Disclaimer Section -  Re-integrated with some modifications to handle missing data */}
-            <div className="mt-8 text-sm text-muted-foreground space-y-4">
+            {/* Disclaimer Section */}
+            <div className="mt-8 mb-6 text-sm text-muted-foreground space-y-4 max-w-[1500px] mx-auto px-6">
               <p className="font-semibold mb-4">DISCLAIMER:</p>
               <p>
                 The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.
