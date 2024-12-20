@@ -137,12 +137,14 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   const depositPercentage = (data.deposit / data.purchasePrice) * 100;
 
   // Calculate total annual operating expenses for Year 1
-  const baseAnnualExpenses = (fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense) * 12;
+  const totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
+  const baseAnnualExpenses = totalMonthlyExpenses * 12;
   
   console.log('Operating Expenses Breakdown:', {
     fixedMonthlyExpenses,
     maintenanceExpense,
     managementFeeExpense,
+    totalMonthlyExpenses,
     baseAnnualExpenses,
     levies: data.levies,
     ratesAndTaxes: data.ratesAndTaxes,
