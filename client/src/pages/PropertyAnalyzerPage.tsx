@@ -426,6 +426,18 @@ export default function PropertyAnalyzerPage() {
                               </span>
                             </p>
                             <p className="text-sm text-slate-600">
+                              Fee-adjusted Rate:{" "}
+                              <span className="font-medium">
+                                R
+                                {analysisResult.shortTermNightlyRate
+                                  ? Math.round(
+                                      analysisResult.shortTermNightlyRate *
+                                        (1 - (formData?.managementFee > 0 ? 0.15 : 0.03))
+                                    ).toLocaleString()
+                                  : "0"}
+                              </span>
+                            </p>
+                            <p className="text-sm text-slate-600">
                               Occupancy:{" "}
                               <span className="font-medium">
                                 {analysisResult.annualOccupancy || "0"}%
