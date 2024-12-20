@@ -129,12 +129,22 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       annualRevenue: shortTermAnnualRevenue
     });
 
-    // Calculate monthly revenue-based expenses using gross revenue (before platform fees)
-    const grossMonthlyRevenue = (data.shortTermNightlyRate * 365 * (data.annualOccupancy / 100)) / 12;
+    // Calculate gross monthly revenue and expenses
+    const annualGrossRevenue = data.shortTermNightlyRate * 365 * (data.annualOccupancy / 100);
+    const grossMonthlyRevenue = annualGrossRevenue / 12;
+    
+    // Calculate maintenance and management fees based on gross revenue
     maintenanceExpense = (grossMonthlyRevenue * Number(data.maintenancePercent || 0)) / 100;
     managementFeeExpense = (grossMonthlyRevenue * Number(data.managementFee || 0)) / 100;
     
-    // Update total monthly expenses
+    console.log('Gross Revenue Calculations:', {
+      annualGrossRevenue,
+      grossMonthlyRevenue,
+      maintenanceExpense,
+      managementFeeExpense
+    });
+    
+    // Update total monthly expenses (fixed + variable)
     totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
 
     console.log('Revenue-based Expense Calculation Details:', {
@@ -203,11 +213,32 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   });
   
   // Calculate annual expenses (NOE)
-  // First calculate the base annual expenses without growth rate
+  console.log('Monthly Expense Components:', {
+    fixed: {
+      levies: data.levies,
+      ratesAndTaxes: data.ratesAndTaxes,
+      otherMonthlyExpenses: data.otherMonthlyExpenses,
+      total: fixedMonthlyExpenses
+    },
+    variable: {
+      maintenance: maintenanceExpense,
+      management: managementFeeExpense,
+      total: maintenanceExpense + managementFeeExpense
+    },
+    total: totalMonthlyExpenses
+  });
+
+  // Calculate base annual expenses (before growth)
   baseAnnualExpenses = totalMonthlyExpenses * 12;
   
-  // Then apply the expense growth rate for year 1
+  // Apply expense growth rate for year 1
   const noeYear1 = baseAnnualExpenses * (1 + (data.expenseGrowthRate / 100));
+  
+  console.log('Annual NOE Calculation:', {
+    baseAnnualExpenses,
+    growthRate: data.expenseGrowthRate,
+    noeYear1
+  });
 
   console.log('Final Annual Expense Calculations:', {
     monthlyBreakdown: {
