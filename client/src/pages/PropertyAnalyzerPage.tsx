@@ -122,7 +122,7 @@ export default function PropertyAnalyzerPage() {
   };
 
   return (
-    <div className="px-4 py-6">
+    <div className="container mx-auto px-4 py-6">
       <div className="flex items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Property Analysis</h1>
@@ -132,7 +132,7 @@ export default function PropertyAnalyzerPage() {
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
 
         {analysisError && (
@@ -587,19 +587,21 @@ export default function PropertyAnalyzerPage() {
             </div>
 
             {/* Rental Performance Section */}
-            <Card className="mt-6">
+            <Card className="mt-6 w-full">
               <CardHeader>
                 <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
                   <BarChart3 className="h-5 w-5 text-cyan-500" />
                   Rental Performance
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <RentalPerformance
-                  shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                  longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
-                  managementFee={0}  // Add management fee to the analyzer response if needed
-                />
+              <CardContent className="p-0">
+                <div className="p-6">
+                  <RentalPerformance
+                    shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                    longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
+                    managementFee={0}  // Add management fee to the analyzer response if needed
+                  />
+                </div>
               </CardContent>
             </Card>
           </>
