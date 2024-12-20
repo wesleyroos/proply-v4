@@ -391,10 +391,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
           <ol className="flex items-center justify-between w-full px-6">
             {STEPS.map((step, index) => {
               const fields = getFieldsForStep(index);
-              const isStepComplete = fields.every(
-                (field) =>
-                  !form.getFieldState(field).error && form.getValues(field),
-              );
+              const isStepComplete = fields.every((field) => {
+                const value = form.getValues(field);
+                const hasError = form.getFieldState(field).error;
+                // Special handling for management fee where 0 is valid
+                if (field === "managementFee") {
+                  return !hasError && (value === 0 || value > 0);
+                }
+                return !hasError && value !== null && value !== undefined && value !== "";
+              });
 
               return (
                 <li key={step} className="relative flex flex-col items-center">
