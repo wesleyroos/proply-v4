@@ -122,7 +122,7 @@ export default function PropertyAnalyzerPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="px-6 py-6">
       <div className="flex items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Property Analysis</h1>
@@ -132,8 +132,10 @@ export default function PropertyAnalyzerPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto space-y-6">
-        <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+      <div className="space-y-6">
+        <div className="w-3/4">
+          <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+        </div>
 
         {analysisError && (
           <Card className="border-red-200 bg-red-50">
