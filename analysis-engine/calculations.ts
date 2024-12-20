@@ -14,13 +14,13 @@ const propertyDataSchema = z.object({
   loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
   floorArea: z.number().positive(),
   ratePerSquareMeter: z.number().positive(),
-  incomeGrowthRate: z.number().min(0).max(100).default(8),
-  expenseGrowthRate: z.number().min(0).max(100).default(6),
-  levies: z.number().min(0).default(0),
-  ratesAndTaxes: z.number().min(0).default(0),
-  otherMonthlyExpenses: z.number().min(0).default(0),
-  maintenancePercent: z.number().min(0).max(100).default(0),
-  managementFee: z.number().min(0).max(100).default(0)
+  incomeGrowthRate: z.number().min(0).max(100).optional().default(8),
+  expenseGrowthRate: z.number().min(0).max(100).optional().default(6),
+  levies: z.number().min(0).optional().default(0),
+  ratesAndTaxes: z.number().min(0).optional().default(0),
+  otherMonthlyExpenses: z.number().min(0).optional().default(0),
+  maintenancePercent: z.number().min(0).max(100).optional().default(0),
+  managementFee: z.number().min(0).max(100).optional().default(0)
 });
 
 // TypeScript type derived from Zod schema

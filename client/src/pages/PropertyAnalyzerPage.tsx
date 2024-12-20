@@ -76,6 +76,14 @@ export default function PropertyAnalyzerPage() {
         loanTerm: Number(formData.loanTerm),
         floorArea: Number(formData.floorArea),
         ratePerSquareMeter: Number(formData.cmaRatePerSqm),
+        // Add expense-related fields
+        levies: Number(formData.levies) || 0,
+        ratesAndTaxes: Number(formData.ratesAndTaxes) || 0,
+        otherMonthlyExpenses: Number(formData.otherMonthlyExpenses) || 0,
+        maintenancePercent: Number(formData.maintenancePercent) || 0,
+        managementFee: Number(formData.managementFee) || 0,
+        incomeGrowthRate: 8, // Default to 8% income growth
+        expenseGrowthRate: 6, // Default to 6% expense growth
       };
 
       const response = await fetch("/api/analyze", {
