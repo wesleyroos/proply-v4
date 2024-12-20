@@ -333,35 +333,163 @@ export default function CashflowMetrics({
             </div>
           </TabsContent>
           <TabsContent value="long-term" className="mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-lg bg-gray-50">
-                <h3 className="text-sm font-semibold text-gray-600">
-                  Monthly Revenue
-                </h3>
-                <p className="mt-2 text-2xl font-bold text-slate-800 flex items-center gap-2">
-                  {formatter(longTermMonthly)}
-                  <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
-                </p>
-              </div>
-              <div className="p-4 rounded-lg bg-gray-50">
-                <h3 className="text-sm font-semibold text-gray-600">
-                  Monthly Expenses
-                </h3>
-                <p className="mt-2 text-2xl font-bold text-slate-800">
-                  {formatter(longTermExpenses)}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Bond Payment
-                </p>
-              </div>
-              <div className="p-4 rounded-lg bg-gray-50">
-                <h3 className="text-sm font-semibold text-gray-600">
-                  Net Cashflow
-                </h3>
-                <p className={`mt-2 text-2xl font-bold ${longTermNetCashflow >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                  {formatter(longTermNetCashflow)}
-                </p>
-              </div>
+            <div className="rounded-lg border">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b bg-gray-50">
+                    <th className="text-left py-3 px-6">Metric</th>
+                    <th className="text-right py-3 px-6">Year 1</th>
+                    <th className="text-right py-3 px-6">Year 2</th>
+                    <th className="text-right py-3 px-6">Year 4</th>
+                    <th className="text-right py-3 px-6">Year 5</th>
+                    <th className="text-right py-3 px-6">Year 10</th>
+                    <th className="text-right py-3 px-6">Year 20</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6 font-medium">Annual Revenue</td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(longTermMonthly * 12)}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(longTermMonthly * 12 * 1.08)} {/* 8% growth */}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(longTermMonthly * 12 * Math.pow(1.08, 3))}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(longTermMonthly * 12 * Math.pow(1.08, 4))}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(longTermMonthly * 12 * Math.pow(1.08, 9))}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(longTermMonthly * 12 * Math.pow(1.08, 19))}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6 font-medium">Net Operating Expenses</td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(monthlyBondRepayment * 12)}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(monthlyBondRepayment * 12 * 1.06)} {/* 6% expense growth */}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(monthlyBondRepayment * 12 * Math.pow(1.06, 3))}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(monthlyBondRepayment * 12 * Math.pow(1.06, 4))}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(monthlyBondRepayment * 12 * Math.pow(1.06, 9))}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                    <td className="text-right py-3 px-6">
+                      <div className="flex items-center justify-end gap-2">
+                        {formatter(monthlyBondRepayment * 12 * Math.pow(1.06, 19))}
+                        <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6 font-medium">Net Operating Income</td>
+                    {[1, 2, 4, 5, 10, 20].map((year) => {
+                      const revenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
+                      const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {formatter(revenue - expenses)}
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6 font-medium">Annual Bond Payment</td>
+                    {[1, 2, 4, 5, 10, 20].map((year) => (
+                      <td key={year} className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(monthlyBondRepayment * 12)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6 font-medium">Annual Cashflow</td>
+                    {[1, 2, 4, 5, 10, 20].map((year) => {
+                      const revenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
+                      const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
+                      const bondPayment = monthlyBondRepayment * 12;
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {formatter(revenue - expenses - bondPayment)}
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6 font-medium">Cumulative Cashflow</td>
+                    {[1, 2, 4, 5, 10, 20].map((year, index) => {
+                      let cumulativeCashflow = 0;
+                      const years = [1, 2, 4, 5, 10, 20].slice(0, index + 1);
+                      years.forEach(y => {
+                        const revenue = longTermMonthly * 12 * Math.pow(1.08, y - 1);
+                        const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, y - 1);
+                        const bondPayment = monthlyBondRepayment * 12;
+                        cumulativeCashflow += revenue - expenses - bondPayment;
+                      });
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {formatter(cumulativeCashflow)}
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </TabsContent>
         </Tabs>
