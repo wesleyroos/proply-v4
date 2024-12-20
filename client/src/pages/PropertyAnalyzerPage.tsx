@@ -124,45 +124,47 @@ export default function PropertyAnalyzerPage() {
   };
 
   return (
-    <div className="flex h-screen">
-      <SidebarProvider defaultOpen>
-        <Sidebar variant="inset" collapsible="icon">
-          <SidebarHeader className="h-[60px] border-b px-6 flex items-center">
-            <SidebarTrigger />
-            <span className="ml-2 text-lg font-semibold">Property Analyzer</span>
+    <SidebarProvider defaultOpen>
+      <div className="flex h-screen bg-background">
+        <Sidebar>
+          <SidebarHeader>
+            <div className="flex h-[60px] items-center gap-2 px-6">
+              <SidebarTrigger />
+              <span className="text-lg font-semibold">Property Analyzer</span>
+            </div>
           </SidebarHeader>
-          <SidebarContent />
+          <SidebarContent className="p-0" />
         </Sidebar>
 
-        <SidebarInset>
-          <div className="flex flex-col h-full">
+        <main className="flex-1">
+          <div className="flex flex-col min-h-screen">
             {/* Progress Steps */}
-            <div className="sticky top-0 z-10 bg-background border-b">
-              <div className="h-[60px] px-6 flex items-center">
-                <div className="flex items-center gap-12">
+            <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <div className="container flex h-[60px] items-center">
+                <nav className="flex items-center gap-12">
                   {['Property Details', 'Financing', 'Operating Expenses', 'Revenue Performance', 'Escalation/Misc'].map((label, index) => (
                     <div key={index} className="flex items-center">
-                      <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                        index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                      <div className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                        index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                       }`}>
                         {index + 1}
                       </div>
                       {index < 4 && (
-                        <div className="w-8 h-[2px] bg-muted ml-4" />
+                        <div className="ml-4 h-[2px] w-8 bg-muted" />
                       )}
                     </div>
                   ))}
-                </div>
+                </nav>
               </div>
-            </div>
+            </header>
 
             {/* Main Content */}
-            <div className="flex-1 overflow-auto">
-              <div className="px-6 py-6">
+            <div className="flex-1">
+              <div className="container py-6">
                 <div className="grid gap-6 lg:grid-cols-12">
                   {/* Main Column */}
                   <div className="lg:col-span-8 space-y-6">
-                    <Card>
+                    <Card className="overflow-hidden">
                       <CardContent className="p-6">
                         <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
                       </CardContent>
@@ -254,8 +256,8 @@ export default function PropertyAnalyzerPage() {
               </div>
             </div>
           </div>
-        </SidebarInset>
-      </SidebarProvider>
-    </div>
+        </main>
+      </div>
+    </SidebarProvider>
   );
 }
