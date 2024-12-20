@@ -59,6 +59,14 @@ export interface AnalysisResult {
       year10: number;
       year20: number;
     };
+    netOperatingIncome: {
+      year1: number;
+      year2: number;
+      year4: number;
+      year5: number;
+      year10: number;
+      year20: number;
+    } | null;
   };
 }
 
@@ -296,6 +304,16 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     year20: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 19)
   };
 
+  // Calculate Net Operating Income (Revenue - Operating Expenses) for each year
+  const netOperatingIncome = revenueProjections?.shortTerm ? {
+    year1: revenueProjections.shortTerm.year1 - operatingExpenses.year1,
+    year2: revenueProjections.shortTerm.year2 - operatingExpenses.year2,
+    year4: revenueProjections.shortTerm.year4 - operatingExpenses.year4,
+    year5: revenueProjections.shortTerm.year5 - operatingExpenses.year5,
+    year10: revenueProjections.shortTerm.year10 - operatingExpenses.year10,
+    year20: revenueProjections.shortTerm.year20 - operatingExpenses.year20
+  } : null;
+
   const result = {
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
     longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
@@ -315,7 +333,8 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       revenueProjections: {
         shortTerm: revenueProjections?.shortTerm || null
       },
-      operatingExpenses
+      operatingExpenses,
+      netOperatingIncome
     }
   };
 

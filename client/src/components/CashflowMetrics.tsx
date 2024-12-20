@@ -31,6 +31,14 @@ interface CashflowMetricsProps {
     year10: number;
     year20: number;
   };
+  netOperatingIncome: {
+    year1: number;
+    year2: number;
+    year4: number;
+    year5: number;
+    year10: number;
+    year20: number;
+  } | null;
 }
 
 export default function CashflowMetrics({
@@ -121,6 +129,47 @@ export default function CashflowMetrics({
                       </td>
                     )}
                   </tr>
+                  {netOperatingIncome && (
+                    <tr className="hover:bg-gray-50">
+                      <td className="py-3 px-6 font-medium">Net Operating Income</td>
+                      <td className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(netOperatingIncome.year1)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                      <td className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(netOperatingIncome.year2)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                      <td className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(netOperatingIncome.year4)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                      <td className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(netOperatingIncome.year5)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                      <td className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(netOperatingIncome.year10)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                      <td className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(netOperatingIncome.year20)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6 font-medium">Net Operating Expenses</td>
                     <td className="text-right py-3 px-6">
