@@ -431,6 +431,12 @@ export default function PropertyAnalyzerPage() {
                                 {analysisResult.annualOccupancy || "0"}%
                               </span>
                             </p>
+                            <p className="text-sm text-slate-600">
+                              Management Fee:{" "}
+                              <span className="font-medium">
+                                {formData?.managementFee || "0"}%
+                              </span>
+                            </p>
                           </div>
                         </div>
                       </div>
