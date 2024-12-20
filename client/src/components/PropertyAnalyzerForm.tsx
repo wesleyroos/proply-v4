@@ -99,8 +99,8 @@ const formSchema = z.object({
   loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
 
   // Step 3: Operating Expenses
-  levies: z.coerce.number().min(0, "Monthly levies must be positive").default(0),
-  ratesAndTaxes: z.coerce
+  monthlyLevies: z.coerce.number().min(0, "Monthly levies must be positive").default(0),
+  monthlyRatesTaxes: z.coerce
     .number()
     .min(0, "Monthly rates and taxes must be positive")
     .default(0),
@@ -278,8 +278,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       depositPercentage: undefined,
       interestRate: undefined,
       loanTerm: undefined,
-      levies: 0,
-      ratesAndTaxes: 0,
+      monthlyLevies: 0,
+      monthlyRatesTaxes: 0,
       otherMonthlyExpenses: 0,
       maintenancePercent: 0,
       managementFee: 0,
@@ -312,8 +312,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         depositPercentage: Number(data.depositPercentage),
         interestRate: Number(data.interestRate),
         loanTerm: Number(data.loanTerm),
-        levies: Number(data.levies),
-        ratesAndTaxes: Number(data.ratesAndTaxes),
+        levies: Number(data.monthlyLevies),
+        ratesAndTaxes: Number(data.monthlyRatesTaxes),
         otherMonthlyExpenses: Number(data.otherMonthlyExpenses),
         maintenancePercent: Number(data.maintenancePercent),
         managementFee: Number(data.managementFee),
