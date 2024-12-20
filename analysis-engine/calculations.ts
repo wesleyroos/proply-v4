@@ -69,8 +69,9 @@ export interface AnalysisResult {
 }
 
 export function calculateYields(inputData: PropertyData): AnalysisResult {
-  console.log('Calculating yields with input data:', inputData);
-
+  console.log('=== Starting Property Analysis ===');
+  console.log('Raw input data:', JSON.stringify(inputData, null, 2));
+  
   // Validate input data
   const data = propertyDataSchema.parse(inputData);
   
@@ -97,8 +98,8 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     shortTermGrossYield = (shortTermAnnualRevenue / data.purchasePrice) * 100;
 
     // Update maintenance and management fee expenses based on short-term revenue
-    maintenanceExpense = shortTermAnnualRevenue * (data.maintenancePercent || 0) / 100 / 12;
-    managementFeeExpense = shortTermAnnualRevenue * (data.managementFee || 0) / 100 / 12;
+    maintenanceExpense = (shortTermAnnualRevenue * (data.maintenancePercent || 0) / 100) / 12;
+    managementFeeExpense = (shortTermAnnualRevenue * (data.managementFee || 0) / 100) / 12;
 
     // Calculate revenue projections for future years using the provided income growth rate
     const growthRate = data.incomeGrowthRate / 100; // Use input growth rate
@@ -138,6 +139,18 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Calculate total annual operating expenses for Year 1
   const baseAnnualExpenses = (fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense) * 12;
   
+  console.log('Operating Expenses Breakdown:', {
+    fixedMonthlyExpenses,
+    maintenanceExpense,
+    managementFeeExpense,
+    baseAnnualExpenses,
+    levies: data.levies,
+    ratesAndTaxes: data.ratesAndTaxes,
+    otherMonthlyExpenses: data.otherMonthlyExpenses,
+    maintenancePercent: data.maintenancePercent,
+    managementFee: data.managementFee
+  });
+
   // Calculate operating expenses projections with expense growth rate
   const expenseGrowthRate = data.expenseGrowthRate / 100;
   const operatingExpenses = {
@@ -149,7 +162,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     year20: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 19) // Year 20 = Year 1 × (1.06)¹⁹
   };
 
-  return {
+  const result = {
     // Financial calculations with precise number formatting
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
     longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
@@ -176,4 +189,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       operatingExpenses
     }
   };
+
+  console.log('Analysis complete. Result:', JSON.stringify(result, null, 2));
+  return result;
 }
