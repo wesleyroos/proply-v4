@@ -12,10 +12,17 @@ export const getSeasonalNightlyRate = (baseRate: number, monthIndex: number): nu
   return baseRate * SEASONALITY_FACTORS[monthIndex];
 };
 
-export const getFeeAdjustedRate = (rate: number, isManaged: boolean, managementFee: number): number => {
-  // If managed (management fee > 0), apply 15% platform fee, otherwise 3%
+export const getFeeAdjustedRate = (baseRate: number, isManaged: boolean): number => {
+  // Apply platform fee (15% if managed, 3% if not) - same as revenue card calculation
   const platformFeeRate = isManaged ? 0.15 : 0.03;
-  return Math.round(rate * (1 - platformFeeRate));
+  return Math.round(baseRate * (1 - platformFeeRate));
+};
+
+export const getSeasonalFeeAdjustedRate = (baseRate: number, monthIndex: number, isManaged: boolean): number => {
+  // First get the base fee-adjusted rate (same as revenue card)
+  const feeAdjustedRate = getFeeAdjustedRate(baseRate, isManaged);
+  // Then apply seasonal factor to the fee-adjusted rate
+  return Math.round(feeAdjustedRate * SEASONALITY_FACTORS[monthIndex]);
 };
 
 export const calculateMonthlyRevenue = (
@@ -25,14 +32,12 @@ export const calculateMonthlyRevenue = (
   isManaged: boolean,
   managementFee: number
 ): number => {
-  // First get the fee-adjusted base rate
-  const feeAdjustedBaseRate = getFeeAdjustedRate(baseRate, isManaged, managementFee);
-  // Then apply seasonality to the fee-adjusted rate
-  const seasonalRate = getSeasonalNightlyRate(feeAdjustedBaseRate, monthIndex);
+  // Get the seasonal fee-adjusted rate for this month
+  const seasonalFeeAdjustedRate = getSeasonalFeeAdjustedRate(baseRate, monthIndex, isManaged);
   const daysInMonth = new Date(2024, monthIndex + 1, 0).getDate();
   const occupancyRate = OCCUPANCY_RATES[scenario][monthIndex] / 100;
   
-  const monthlyRevenue = seasonalRate * daysInMonth * occupancyRate;
+  const monthlyRevenue = seasonalFeeAdjustedRate * daysInMonth * occupancyRate;
   return Math.round(monthlyRevenue * (1 - managementFee));
 };
 
