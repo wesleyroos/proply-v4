@@ -53,10 +53,6 @@ export default function CashflowMetrics({
   operatingExpenses,
   netOperatingIncome,
 }: CashflowMetricsProps) {
-  // Calculate expenses for both rental strategies
-  const longTermExpenses = monthlyBondRepayment;
-  const longTermNetCashflow = longTermMonthly - longTermExpenses;
-
   const years = [1, 2, 3, 4, 5, 10, 20];
 
   return (
