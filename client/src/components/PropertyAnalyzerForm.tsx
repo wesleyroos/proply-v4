@@ -1238,7 +1238,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
             </Button>
 
             {currentStep === STEPS.length - 1 ? (
-              <Button type="submit" disabled={isSubmitting}>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                onClick={() => {
+                  const resultsElement = document.getElementById('analysis-results');
+                  if (resultsElement) {
+                    resultsElement.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}

@@ -172,7 +172,7 @@ export default function PropertyAnalyzerPage() {
 
           {analysisResult && (
             <>
-              <div className="mb-6">
+              <div id="analysis-results" className="mb-6">
                 <h2 className="text-2xl font-bold flex items-center gap-2">
                   <BarChart3 className="h-6 w-6" />
                   Analysis Results
