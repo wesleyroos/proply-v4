@@ -2,10 +2,10 @@ import { useState } from "react";
 import {
   SidebarProvider,
   Sidebar,
-  SidebarContent,
   SidebarHeader,
   SidebarTrigger,
-  SidebarInset,
+  SidebarContent,
+  SidebarInset
 } from "@/components/ui/sidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
@@ -124,30 +124,28 @@ export default function PropertyAnalyzerPage() {
   };
 
   return (
-    <SidebarProvider defaultOpen>
-      <div className="flex min-h-screen">
+    <div className="flex h-screen">
+      <SidebarProvider defaultOpen>
         <Sidebar variant="inset" collapsible="icon">
-          <SidebarHeader className="border-b border-border/5">
-            <div className="flex h-16 items-center px-6">
-              <SidebarTrigger />
-              <span className="text-lg font-semibold">Property Analyzer</span>
-            </div>
+          <SidebarHeader className="h-[60px] border-b px-6 flex items-center">
+            <SidebarTrigger />
+            <span className="ml-2 text-lg font-semibold">Property Analyzer</span>
           </SidebarHeader>
-          <SidebarContent className="p-0" />
+          <SidebarContent />
         </Sidebar>
 
-        <SidebarInset className="flex-1">
-          <div className="flex flex-col min-h-screen bg-background">
+        <SidebarInset>
+          <div className="flex flex-col h-full">
             {/* Progress Steps */}
             <div className="sticky top-0 z-10 bg-background border-b">
-              <div className="container flex items-center justify-between h-16">
+              <div className="h-[60px] px-6 flex items-center">
                 <div className="flex items-center gap-12">
-                  {[1, 2, 3, 4, 5].map((step, index) => (
-                    <div key={step} className="flex items-center">
+                  {['Property Details', 'Financing', 'Operating Expenses', 'Revenue Performance', 'Escalation/Misc'].map((label, index) => (
+                    <div key={index} className="flex items-center">
                       <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                        step === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                        index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted'
                       }`}>
-                        {step}
+                        {index + 1}
                       </div>
                       {index < 4 && (
                         <div className="w-8 h-[2px] bg-muted ml-4" />
@@ -159,8 +157,8 @@ export default function PropertyAnalyzerPage() {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1">
-              <div className="container py-6">
+            <div className="flex-1 overflow-auto">
+              <div className="px-6 py-6">
                 <div className="grid gap-6 lg:grid-cols-12">
                   {/* Main Column */}
                   <div className="lg:col-span-8 space-y-6">
@@ -257,7 +255,7 @@ export default function PropertyAnalyzerPage() {
             </div>
           </div>
         </SidebarInset>
-      </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </div>
   );
 }
