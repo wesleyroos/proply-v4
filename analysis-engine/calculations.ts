@@ -162,7 +162,10 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     longTermGrossYield = (longTermAnnualRevenue / data.purchasePrice) * 100;
   }
 
-  // Calculate annual expenses
+  // Calculate total monthly expenses by summing all components
+  totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
+  
+  // Calculate annual expenses (NOE)
   baseAnnualExpenses = totalMonthlyExpenses * 12;
 
   console.log('Final Annual Expense Calculations:', {
@@ -173,6 +176,13 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       totalMonthlyExpenses,
     },
     baseAnnualExpenses,
+    expenseComponents: {
+      monthlyLevies: data.levies,
+      monthlyRatesTaxes: data.ratesAndTaxes,
+      otherMonthlyExpenses: data.otherMonthlyExpenses,
+      maintenancePercent: data.maintenancePercent,
+      managementFee: data.managementFee
+    },
     expenseGrowthRate: data.expenseGrowthRate
   });
 
