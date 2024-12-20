@@ -30,19 +30,37 @@ interface AnalysisResult {
   shortTermGrossYield: number | null;
   longTermGrossYield: number | null;
   propertyDescription: string | null;
-  deposit: number | null;
-  depositPercentage: number | null;
-  interestRate: number | null;
-  loanTerm: number | null;
-  monthlyBondRepayment: number | null;
-  floorArea: number | null;
-  ratePerSquareMeter: number | null;
+  deposit: number;
+  depositPercentage: number;
+  interestRate: number;
+  loanTerm: number;
+  monthlyBondRepayment: number;
+  floorArea: number;
+  ratePerSquareMeter: number;
   shortTermNightlyRate: number | null;
   annualOccupancy: number | null;
   analysis: {
     shortTermAnnualRevenue: number | null;
     longTermAnnualRevenue: number | null;
     purchasePrice: number;
+    operatingExpenses: {
+      year1: number;
+      year2: number;
+      year4: number;
+      year5: number;
+      year10: number;
+      year20: number;
+    };
+    revenueProjections: {
+      shortTerm: {
+        year1: number;
+        year2: number;
+        year4: number;
+        year5: number;
+        year10: number;
+        year20: number;
+      } | null;
+    };
   };
   address: string;
   propertyPhotoUrl?: string;
@@ -63,6 +81,7 @@ export default function PropertyAnalyzerPage() {
       setAnalysisError(null);
       setFormData(formData);
 
+      // Prepare request body with explicit number conversion and logging
       const requestBody = {
         purchasePrice: Number(formData.purchasePrice),
         shortTermNightlyRate: Number(formData.airbnbNightlyRate) || undefined,
@@ -76,15 +95,26 @@ export default function PropertyAnalyzerPage() {
         loanTerm: Number(formData.loanTerm),
         floorArea: Number(formData.floorArea),
         ratePerSquareMeter: Number(formData.cmaRatePerSqm),
-        // Add expense-related fields
-        levies: Number(formData.levies) || 0,
-        ratesAndTaxes: Number(formData.ratesAndTaxes) || 0,
-        otherMonthlyExpenses: Number(formData.otherMonthlyExpenses) || 0,
-        maintenancePercent: Number(formData.maintenancePercent) || 0,
-        managementFee: Number(formData.managementFee) || 0,
-        incomeGrowthRate: 8, // Default to 8% income growth
-        expenseGrowthRate: 6, // Default to 6% expense growth
+        // Expense-related fields with explicit number conversion
+        levies: Number(formData.levies || 0),
+        ratesAndTaxes: Number(formData.ratesAndTaxes || 0),
+        otherMonthlyExpenses: Number(formData.otherMonthlyExpenses || 0),
+        maintenancePercent: Number(formData.maintenancePercent || 0),
+        managementFee: Number(formData.managementFee || 0),
+        incomeGrowthRate: 8,
+        expenseGrowthRate: 6,
       };
+
+      console.log('Analysis Request:', {
+        ...requestBody,
+        expenses: {
+          levies: requestBody.levies,
+          ratesAndTaxes: requestBody.ratesAndTaxes,
+          otherMonthlyExpenses: requestBody.otherMonthlyExpenses,
+          maintenancePercent: requestBody.maintenancePercent,
+          managementFee: requestBody.managementFee
+        }
+      });
 
       const response = await fetch("/api/analyze", {
         method: "POST",

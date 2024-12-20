@@ -76,18 +76,29 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   let longTermAnnualRevenue: number | null = null;
   let revenueProjections = null;
 
-  // Initialize expense variables
-  let fixedMonthlyExpenses = (data.levies || 0) + (data.ratesAndTaxes || 0) + (data.otherMonthlyExpenses || 0);
+  // Initialize and log all expense-related input values
+  console.log('Expense Input Values:', {
+    levies: data.levies,
+    ratesAndTaxes: data.ratesAndTaxes,
+    otherMonthlyExpenses: data.otherMonthlyExpenses,
+    maintenancePercent: data.maintenancePercent,
+    managementFee: data.managementFee
+  });
+
+  // Calculate fixed monthly expenses
+  const fixedMonthlyExpenses = (data.levies || 0) + (data.ratesAndTaxes || 0) + (data.otherMonthlyExpenses || 0);
   let maintenanceExpense = 0;
   let managementFeeExpense = 0;
   let totalMonthlyExpenses = 0;
   let baseAnnualExpenses = 0;
 
-  console.log('Initial expense values:', {
-    levies: data.levies,
-    ratesAndTaxes: data.ratesAndTaxes,
-    otherMonthlyExpenses: data.otherMonthlyExpenses,
-    fixedMonthlyExpenses
+  console.log('Fixed Monthly Expenses Calculation:', {
+    fixedMonthlyExpenses,
+    breakdown: {
+      levies: data.levies || 0,
+      ratesAndTaxes: data.ratesAndTaxes || 0,
+      otherMonthlyExpenses: data.otherMonthlyExpenses || 0
+    }
   });
 
   // Calculate short-term rental metrics
