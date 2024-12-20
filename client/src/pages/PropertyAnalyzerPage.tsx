@@ -598,7 +598,7 @@ export default function PropertyAnalyzerPage() {
                           ? analysisResult.analysis.longTermAnnualRevenue / 12
                           : 0
                       }
-                      managementFee={0}
+                      managementFee={Number(formData?.managementFee) || 0}
                     />
                   </div>
                 </CardContent>
