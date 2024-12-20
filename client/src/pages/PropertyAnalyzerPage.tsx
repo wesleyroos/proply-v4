@@ -418,42 +418,30 @@ export default function PropertyAnalyzerPage() {
                           </p>
                           <div className="pt-2 border-t border-blue-100">
                             <p className="text-sm text-slate-600">
-                              Nightly Rate:{" "}
-                              <span className="font-medium">
-                                R
-                                {analysisResult.shortTermNightlyRate?.toLocaleString() ||
-                                  "0"}
-                              </span>
+                              <span className="font-medium">Nightly Rate:</span>{" "}
+                              R{analysisResult.shortTermNightlyRate?.toLocaleString() ||
+                                "0"}
                             </p>
                             <p className="text-sm text-slate-600">
-                              Fee-adjusted Rate:{" "}
-                              <span className="font-medium">
-                                R
-                                {analysisResult.shortTermNightlyRate
-                                  ? Math.round(
-                                      analysisResult.shortTermNightlyRate *
-                                        (1 - (formData?.managementFee > 0 ? 0.15 : 0.03))
-                                    ).toLocaleString()
-                                  : "0"}
-                              </span>
+                              <span className="font-medium">Fee-adjusted Rate:</span>{" "}
+                              R{analysisResult.shortTermNightlyRate
+                                ? Math.round(
+                                    analysisResult.shortTermNightlyRate *
+                                      (1 - (formData?.managementFee > 0 ? 0.15 : 0.03))
+                                  ).toLocaleString()
+                                : "0"}
                             </p>
                             <p className="text-sm text-slate-600">
-                              Occupancy:{" "}
-                              <span className="font-medium">
-                                {analysisResult.annualOccupancy || "0"}%
-                              </span>
+                              <span className="font-medium">Occupancy:</span>{" "}
+                              {analysisResult.annualOccupancy || "0"}%
                             </p>
                             <p className="text-sm text-slate-600">
-                              Management Fee:{" "}
-                              <span className="font-medium">
-                                {formData?.managementFee || "0"}%
-                              </span>
+                              <span className="font-medium">Management Fee:</span>{" "}
+                              {formData?.managementFee || "0"}%
                             </p>
                             <p className="text-sm text-slate-600">
-                              Platform Fee:{" "}
-                              <span className="font-medium">
-                                {formData?.managementFee > 0 ? "15" : "3"}%
-                              </span>
+                              <span className="font-medium">Platform Fee:</span>{" "}
+                              {formData?.managementFee > 0 ? "15" : "3"}%
                             </p>
                           </div>
                         </div>
