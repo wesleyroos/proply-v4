@@ -1,0 +1,412 @@
+Let’s break down the math for calculating revenues for each year with an 8% year-on-year income growth starting from a Year 1 revenue of R575,331.
+
+Formula:
+The formula to calculate the revenue for a given year is:
+
+Revenue
+𝑛
+=
+Revenue
+1
+×
+(
+1
++
+Growth Rate
+)
+(
+𝑛
+−
+1
+)
+Revenue 
+n
+​
+ =Revenue 
+1
+​
+ ×(1+Growth Rate) 
+(n−1)
+ 
+Where:
+
+Revenue
+1
+Revenue 
+1
+​
+  = R575,331 (initial revenue for Year 1)
+Growth Rate
+Growth Rate = 8% = 0.08
+𝑛
+n = Year number (e.g., Year 2, Year 3, etc.)
+Step-by-Step Calculation:
+Year 1
+Revenue
+1
+=
+575
+,
+331
+Revenue 
+1
+​
+ =575,331
+Revenue
+1
+=
+𝑅
+575
+,
+331
+Revenue 
+1
+​
+ =R575,331
+Year 2
+Revenue
+2
+=
+575
+,
+331
+×
+(
+1
++
+0.08
+)
+Revenue 
+2
+​
+ =575,331×(1+0.08)
+Revenue
+2
+=
+575
+,
+331
+×
+1.08
+Revenue 
+2
+​
+ =575,331×1.08
+Revenue
+2
+=
+𝑅
+621
+,
+357
+Revenue 
+2
+​
+ =R621,357
+Year 3
+Revenue
+3
+=
+575
+,
+331
+×
+(
+1
++
+0.08
+)
+2
+Revenue 
+3
+​
+ =575,331×(1+0.08) 
+2
+ 
+Revenue
+3
+=
+575
+,
+331
+×
+1.0
+8
+2
+Revenue 
+3
+​
+ =575,331×1.08 
+2
+ 
+Revenue
+3
+=
+575
+,
+331
+×
+1.1664
+Revenue 
+3
+​
+ =575,331×1.1664
+Revenue
+3
+=
+𝑅
+671
+,
+066
+Revenue 
+3
+​
+ =R671,066
+Year 4
+Revenue
+4
+=
+575
+,
+331
+×
+(
+1
++
+0.08
+)
+3
+Revenue 
+4
+​
+ =575,331×(1+0.08) 
+3
+ 
+Revenue
+4
+=
+575
+,
+331
+×
+1.0
+8
+3
+Revenue 
+4
+​
+ =575,331×1.08 
+3
+ 
+Revenue
+4
+=
+575
+,
+331
+×
+1.259712
+Revenue 
+4
+​
+ =575,331×1.259712
+Revenue
+4
+=
+𝑅
+724
+,
+751
+Revenue 
+4
+​
+ =R724,751
+Year 5
+Revenue
+5
+=
+575
+,
+331
+×
+(
+1
++
+0.08
+)
+4
+Revenue 
+5
+​
+ =575,331×(1+0.08) 
+4
+ 
+Revenue
+5
+=
+575
+,
+331
+×
+1.0
+8
+4
+Revenue 
+5
+​
+ =575,331×1.08 
+4
+ 
+Revenue
+5
+=
+575
+,
+331
+×
+1.36049
+Revenue 
+5
+​
+ =575,331×1.36049
+Revenue
+5
+=
+𝑅
+782
+,
+731
+Revenue 
+5
+​
+ =R782,731
+Year 10
+Revenue
+10
+=
+575
+,
+331
+×
+(
+1
++
+0.08
+)
+9
+Revenue 
+10
+​
+ =575,331×(1+0.08) 
+9
+ 
+Revenue
+10
+=
+575
+,
+331
+×
+1.0
+8
+9
+Revenue 
+10
+​
+ =575,331×1.08 
+9
+ 
+Revenue
+10
+=
+575
+,
+331
+×
+1.999004
+Revenue 
+10
+​
+ =575,331×1.999004
+Revenue
+10
+=
+𝑅
+1
+,
+150
+,
+089
+Revenue 
+10
+​
+ =R1,150,089
+Year 20
+Revenue
+20
+=
+575
+,
+331
+×
+(
+1
++
+0.08
+)
+19
+Revenue 
+20
+​
+ =575,331×(1+0.08) 
+19
+ 
+Revenue
+20
+=
+575
+,
+331
+×
+1.0
+8
+19
+Revenue 
+20
+​
+ =575,331×1.08 
+19
+ 
+Revenue
+20
+=
+575
+,
+331
+×
+4.316124
+Revenue 
+20
+​
+ =575,331×4.316124
+Revenue
+20
+=
+𝑅
+2
+,
+482
+,
+957
+Revenue 
+20
+​
+ =R2,482,957
+Summary of Revenues:
+Year 1: R575,331
+Year 2: R621,357
+Year 3: R671,066
+Year 4: R724,751
+Year 5: R782,731
+Year 10: R1,150,089
+Year 20: R2,482,957

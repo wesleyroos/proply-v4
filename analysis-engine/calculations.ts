@@ -78,15 +78,16 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     shortTermGrossYield = (shortTermAnnualRevenue / data.purchasePrice) * 100;
 
     // Calculate revenue projections for future years using the provided income growth rate
-    const growthRate = data.incomeGrowthRate / 100;
+    // Formula: Revenue(n) = Revenue(1) × (1 + Growth Rate)^(n-1)
+    const growthRate = 0.08; // 8% growth rate
     revenueProjections = {
       shortTerm: {
         year1: shortTermAnnualRevenue,
-        year2: shortTermAnnualRevenue * (1 + growthRate),
-        year4: shortTermAnnualRevenue * Math.pow(1 + growthRate, 3),
-        year5: shortTermAnnualRevenue * Math.pow(1 + growthRate, 4),
-        year10: shortTermAnnualRevenue * Math.pow(1 + growthRate, 9),
-        year20: shortTermAnnualRevenue * Math.pow(1 + growthRate, 19)
+        year2: shortTermAnnualRevenue * Math.pow(1.08, 1),  // Year 2 = Year 1 × (1.08)¹
+        year4: shortTermAnnualRevenue * Math.pow(1.08, 3),  // Year 4 = Year 1 × (1.08)³
+        year5: shortTermAnnualRevenue * Math.pow(1.08, 4),  // Year 5 = Year 1 × (1.08)⁴
+        year10: shortTermAnnualRevenue * Math.pow(1.08, 9), // Year 10 = Year 1 × (1.08)⁹
+        year20: shortTermAnnualRevenue * Math.pow(1.08, 19) // Year 20 = Year 1 × (1.08)¹⁹
       }
     };
   }
