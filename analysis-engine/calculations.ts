@@ -64,10 +64,17 @@ export interface AnalysisResult {
 
 export function calculateYields(inputData: PropertyData): AnalysisResult {
   console.log('=== Starting Property Analysis ===');
-  console.log('Input data:', JSON.stringify(inputData, null, 2));
+  console.log('Raw Input Data:', JSON.stringify(inputData, null, 2));
   
   // Validate input data
   const data = propertyDataSchema.parse(inputData);
+  console.log('Validated Data after Schema Parse:', {
+    levies: data.levies,
+    ratesAndTaxes: data.ratesAndTaxes,
+    otherMonthlyExpenses: data.otherMonthlyExpenses,
+    maintenancePercent: data.maintenancePercent,
+    managementFee: data.managementFee
+  });
   
   // Initialize revenue calculations
   let shortTermGrossYield: number | null = null;
@@ -165,6 +172,20 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Calculate total monthly expenses by summing all components
   totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
   
+  console.log('Monthly Expense Calculation Details:', {
+    components: {
+      fixedMonthlyExpenses,
+      maintenanceExpense,
+      managementFeeExpense
+    },
+    breakdown: {
+      levies: data.levies,
+      ratesAndTaxes: data.ratesAndTaxes,
+      otherMonthlyExpenses: data.otherMonthlyExpenses
+    },
+    totalMonthlyExpenses
+  });
+  
   // Calculate annual expenses (NOE)
   baseAnnualExpenses = totalMonthlyExpenses * 12;
 
@@ -232,5 +253,10 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   };
 
   console.log('Final Analysis Result:', JSON.stringify(result, null, 2));
+  console.log('Final Operating Expenses State:', {
+    monthlyExpenses: totalMonthlyExpenses,
+    annualExpenses: baseAnnualExpenses,
+    expenseProjections: result.analysis.operatingExpenses
+  });
   return result;
 }
