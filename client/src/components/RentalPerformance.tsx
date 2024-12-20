@@ -22,9 +22,9 @@ export default function RentalPerformance({ shortTermNightly, longTermMonthly, m
             margin={{ left: 25 }}
             data={Array(12).fill(0).map((_, i) => ({
               month: new Date(2024, i).toLocaleString('default', { month: 'short' }),
-              low: calculateMonthlyRevenue('low', i, shortTermNightly, isManaged, managementFee),
-              medium: calculateMonthlyRevenue('medium', i, shortTermNightly, isManaged, managementFee),
-              high: calculateMonthlyRevenue('high', i, shortTermNightly, isManaged, managementFee),
+              low: calculateMonthlyRevenue('low', i, shortTermNightly, isManaged),
+              medium: calculateMonthlyRevenue('medium', i, shortTermNightly, isManaged),
+              high: calculateMonthlyRevenue('high', i, shortTermNightly, isManaged),
               longTerm: longTermMonthly,
             }))}
           >
@@ -111,7 +111,7 @@ export default function RentalPerformance({ shortTermNightly, longTermMonthly, m
               {/* Revenue Scenarios */}
               {(['low', 'medium', 'high'] as const).map((scenario) => {
                 const monthlyRevenues = Array(12).fill(0).map((_, i) => 
-                  calculateMonthlyRevenue(scenario, i, shortTermNightly, managementFee > 0, managementFee)
+                  calculateMonthlyRevenue(scenario, i, shortTermNightly, isManaged)
                 );
                 const totalRevenue = monthlyRevenues.reduce((sum, rev) => sum + rev, 0);
                 const avgRevenue = totalRevenue / 12;

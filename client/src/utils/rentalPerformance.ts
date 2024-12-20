@@ -29,16 +29,13 @@ export const calculateMonthlyRevenue = (
   scenario: 'low' | 'medium' | 'high',
   monthIndex: number,
   baseRate: number,
-  isManaged: boolean,
-  managementFee: number
+  isManaged: boolean
 ): number => {
-  // Get the seasonal fee-adjusted rate for this month
-  const seasonalFeeAdjustedRate = getSeasonalFeeAdjustedRate(baseRate, monthIndex, isManaged);
+  const feeAdjustedRate = getFeeAdjustedRate(getSeasonalNightlyRate(baseRate, monthIndex), isManaged);
   const daysInMonth = new Date(2024, monthIndex + 1, 0).getDate();
   const occupancyRate = OCCUPANCY_RATES[scenario][monthIndex] / 100;
   
-  const monthlyRevenue = seasonalFeeAdjustedRate * daysInMonth * occupancyRate;
-  return Math.round(monthlyRevenue * (1 - managementFee));
+  return Math.round(feeAdjustedRate * daysInMonth * occupancyRate);
 };
 
 // Format numbers with 'R' prefix and proper thousands separators
