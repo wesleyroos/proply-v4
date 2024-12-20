@@ -99,24 +99,25 @@ const formSchema = z.object({
   loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
 
   // Step 3: Operating Expenses
-  levies: z.number().min(0, "Monthly levies must be positive"),
-  ratesAndTaxes: z
+  levies: z.coerce.number().min(0, "Monthly levies must be positive").default(0),
+  ratesAndTaxes: z.coerce
     .number()
-    .min(0, "Monthly rates and taxes must be positive"),
-  otherMonthlyExpenses: z
+    .min(0, "Monthly rates and taxes must be positive")
+    .default(0),
+  otherMonthlyExpenses: z.coerce
     .number()
-    .min(0, "Other monthly expenses must be positive"),
-  maintenancePercent: z
+    .min(0, "Other monthly expenses must be positive")
+    .default(0),
+  maintenancePercent: z.coerce
     .number()
     .min(0, "Maintenance percentage must be positive")
-    .max(100, "Maintenance percentage cannot exceed 100"),
-  managementFee: z
-    .number({
-      required_error: "Management fee is required",
-      invalid_type_error: "Management fee must be a number",
-    })
-    .gte(0, "Management fee cannot be negative")
-    .max(100, "Management fee cannot exceed 100"),
+    .max(100, "Maintenance percentage cannot exceed 100")
+    .default(0),
+  managementFee: z.coerce
+    .number()
+    .min(0, "Management fee cannot be negative")
+    .max(100, "Management fee cannot exceed 100")
+    .default(0),
 
   // Step 4: Revenue Performance
   airbnbNightlyRate: z
@@ -357,10 +358,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         ];
       case 2:
         return [
-          "monthlyLevies",
-          "monthlyRatesTaxes",
+          "levies",
+          "ratesAndTaxes",
           "otherMonthlyExpenses",
-          "maintenancePercentage",
+          "maintenancePercent",
           "managementFee",
         ];
       case 3:
