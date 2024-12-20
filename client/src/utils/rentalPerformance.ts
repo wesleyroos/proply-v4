@@ -30,10 +30,13 @@ export const calculateMonthlyRevenue = (
   const occupancyRate = OCCUPANCY_RATES[scenario][monthIndex] / 100;
   
   const monthlyRevenue = feeAdjustedRate * daysInMonth * occupancyRate;
-  return monthlyRevenue * (1 - managementFee);
+  return Math.round(monthlyRevenue * (1 - managementFee));
 };
 
-export const formatter = new Intl.NumberFormat('en-ZA', {
-  style: 'currency',
-  currency: 'ZAR'
-});
+// Format numbers with 'R' prefix and proper thousands separators
+export const formatter = (value: number): string => {
+  return `R ${value.toLocaleString('en-ZA', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+};
