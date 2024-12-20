@@ -1440,7 +1440,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 monthlyLevies: 2500,
                 monthlyRatesTaxes: 1800,
                 otherMonthlyExpenses: 2000,
-                maintenancePercentage: 10,
+                maintenancePercent: 10,
                 managementFee: 20,
                 airbnbNightlyRate: 2500,
                 occupancyRate: 65,
