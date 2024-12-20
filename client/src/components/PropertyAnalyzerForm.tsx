@@ -111,9 +111,9 @@ const formSchema = z.object({
     .min(0, "Maintenance percentage must be positive")
     .max(100, "Maintenance percentage cannot exceed 100"),
   managementFee: z
-    .number({ 
+    .number({
       required_error: "Management fee is required",
-      invalid_type_error: "Management fee must be a number" 
+      invalid_type_error: "Management fee must be a number",
     })
     .gte(0, "Management fee cannot be negative")
     .max(100, "Management fee cannot exceed 100"),
@@ -398,7 +398,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 if (field === "managementFee") {
                   return !hasError && (value === 0 || value > 0);
                 }
-                return !hasError && value !== null && value !== undefined && value !== "";
+                return (
+                  !hasError &&
+                  value !== null &&
+                  value !== undefined &&
+                  value !== ""
+                );
               });
 
               return (
@@ -1400,16 +1405,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 loanTerm: 20,
                 monthlyLevies: 2500,
                 monthlyRatesTaxes: 1800,
-                otherMonthlyExpenses: 500,
-                maintenancePercentage: 8,
-                managementFee: 15,
+                otherMonthlyExpenses: 2000,
+                maintenancePercentage: 10,
+                managementFee: 20,
                 airbnbNightlyRate: 2500,
                 occupancyRate: 65,
                 longTermRental: 25000,
                 leaseCycleGap: 7,
                 annualIncomeGrowth: 8,
                 annualExpenseGrowth: 6,
-                annualPropertyAppreciation: 12,
+                annualPropertyAppreciation: 6,
                 cmaRatePerSqm: 45000,
                 comments:
                   "Prime location in Cape Town CBD. Close to amenities and tourist attractions. High potential for both short-term and long-term rentals.",
