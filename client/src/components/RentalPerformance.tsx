@@ -79,6 +79,24 @@ export default function RentalPerformance({ shortTermNightly, longTermMonthly, m
                 <td colSpan={2}></td>
               </tr>
 
+              {/* Platform Fee Row */}
+              <tr className="border-b hover:bg-gray-50">
+                <td className="py-3 px-6">
+                  Platform Fee <span className="text-slate-600">({managementFee > 0 ? "15" : "3"}%)</span>
+                </td>
+                {Array(12).fill(0).map((_, i) => {
+                  const baseRate = getSeasonalNightlyRate(shortTermNightly, i);
+                  const feePercentage = managementFee > 0 ? 0.15 : 0.03;
+                  const platformFee = -1 * baseRate * feePercentage;
+                  return (
+                    <td key={i} className="text-right py-3 px-6 whitespace-nowrap text-red-600">
+                      {formatter(platformFee)}
+                    </td>
+                  );
+                })}
+                <td colSpan={2}></td>
+              </tr>
+
               {/* Occupancy Scenarios */}
               {Object.entries(OCCUPANCY_RATES).map(([scenario, rates]) => (
                 <tr key={scenario} className="border-b hover:bg-gray-50">
