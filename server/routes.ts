@@ -465,6 +465,41 @@ export function registerRoutes(app: Express): Server {
         managementFee: Number(req.body.managementFee || 0)
       };
 
+      // Calculate monthly revenue first (assuming short-term rental)
+      const monthlyRevenue = propertyData.shortTermNightlyRate && propertyData.annualOccupancy
+        ? (propertyData.shortTermNightlyRate * 365 * (propertyData.annualOccupancy / 100)) / 12
+        : 0;
+
+      // Fixed monthly expenses
+      const fixedMonthlyExpenses = propertyData.levies + propertyData.ratesAndTaxes + propertyData.otherMonthlyExpenses;
+
+      // Revenue-based expenses (maintenance and management fees)
+      const maintenanceExpense = monthlyRevenue * (propertyData.maintenancePercent / 100);
+      const managementFeeExpense = monthlyRevenue * (propertyData.managementFee / 100);
+
+      // Total monthly expenses
+      const totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
+
+      // Annual expenses before growth rate
+      const baseAnnualExpenses = totalMonthlyExpenses * 12;
+
+      console.log("Monthly Expense Calculation Details:", {
+        components: {
+          fixedMonthlyExpenses,
+          maintenanceExpense,
+          managementFeeExpense
+        },
+        breakdown: {
+          levies: propertyData.levies,
+          ratesAndTaxes: propertyData.ratesAndTaxes,
+          otherMonthlyExpenses: propertyData.otherMonthlyExpenses,
+          maintenancePercent: propertyData.maintenancePercent,
+          managementFee: propertyData.managementFee
+        },
+        totalMonthlyExpenses,
+        shortTermAnnualRevenue: monthlyRevenue * 12
+      });
+
       console.log("Converted property data:", JSON.stringify(propertyData, null, 2));
       
       const analysisResult = calculateYields(propertyData);
