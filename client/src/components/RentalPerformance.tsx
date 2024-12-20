@@ -70,7 +70,7 @@ export default function RentalPerformance({ shortTermNightly, longTermMonthly, m
                 <td className="py-3 px-6">Fee-Adjusted Rate</td>
                 {Array(12).fill(0).map((_, i) => (
                   <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
-                    {formatter(getFeeAdjustedRate(getSeasonalNightlyRate(shortTermNightly, i), isManaged))}
+                    {formatter(getFeeAdjustedRate(getSeasonalNightlyRate(shortTermNightly, i), managementFee))}
                   </td>
                 ))}
                 <td colSpan={2}></td>
