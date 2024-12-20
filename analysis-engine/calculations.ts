@@ -129,13 +129,26 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       annualRevenue: shortTermAnnualRevenue
     });
 
-    // Calculate monthly revenue-based expenses
-    const monthlyRevenue = shortTermAnnualRevenue / 12;
-    maintenanceExpense = (monthlyRevenue * Number(data.maintenancePercent || 0)) / 100;
-    managementFeeExpense = (monthlyRevenue * Number(data.managementFee || 0)) / 100;
+    // Calculate monthly revenue-based expenses using gross revenue (before platform fees)
+    const grossMonthlyRevenue = (data.shortTermNightlyRate * 365 * (data.annualOccupancy / 100)) / 12;
+    maintenanceExpense = (grossMonthlyRevenue * Number(data.maintenancePercent || 0)) / 100;
+    managementFeeExpense = (grossMonthlyRevenue * Number(data.managementFee || 0)) / 100;
     
     // Update total monthly expenses
-    totalMonthlyExpenses += maintenanceExpense + managementFeeExpense;
+    totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
+
+    console.log('Revenue-based Expense Calculation Details:', {
+      grossMonthlyRevenue,
+      maintenanceCalc: {
+        percent: Number(data.maintenancePercent || 0),
+        amount: maintenanceExpense
+      },
+      managementCalc: {
+        percent: Number(data.managementFee || 0),
+        amount: managementFeeExpense
+      },
+      totalMonthlyExpenses
+    });
 
     console.log('Revenue-based Monthly Expenses:', {
       monthlyRevenue,
@@ -190,7 +203,11 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   });
   
   // Calculate annual expenses (NOE)
+  // First calculate the base annual expenses without growth rate
   baseAnnualExpenses = totalMonthlyExpenses * 12;
+  
+  // Then apply the expense growth rate for year 1
+  const noeYear1 = baseAnnualExpenses * (1 + (data.expenseGrowthRate / 100));
 
   console.log('Final Annual Expense Calculations:', {
     monthlyBreakdown: {
@@ -199,15 +216,18 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       managementFeeExpense,
       totalMonthlyExpenses,
     },
-    baseAnnualExpenses,
+    calculations: {
+      baseAnnualExpenses,
+      expenseGrowthRate: data.expenseGrowthRate,
+      noeYear1
+    },
     expenseComponents: {
       monthlyLevies: data.levies,
       monthlyRatesTaxes: data.ratesAndTaxes,
       otherMonthlyExpenses: data.otherMonthlyExpenses,
       maintenancePercent: data.maintenancePercent,
       managementFee: data.managementFee
-    },
-    expenseGrowthRate: data.expenseGrowthRate
+    }
   });
 
   // Calculate bond repayment
@@ -222,14 +242,15 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   const depositPercentage = (data.deposit / data.purchasePrice) * 100;
 
   // Calculate operating expenses projections
+  // Start with noeYear1 (which already includes first year's growth)
   const expenseGrowthRate = data.expenseGrowthRate / 100;
   const operatingExpenses = {
-    year1: baseAnnualExpenses,
-    year2: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 1),
-    year4: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 3),
-    year5: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 4),
-    year10: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 9),
-    year20: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 19)
+    year1: noeYear1,
+    year2: noeYear1 * (1 + expenseGrowthRate),
+    year4: noeYear1 * Math.pow(1 + expenseGrowthRate, 3),
+    year5: noeYear1 * Math.pow(1 + expenseGrowthRate, 4),
+    year10: noeYear1 * Math.pow(1 + expenseGrowthRate, 9),
+    year20: noeYear1 * Math.pow(1 + expenseGrowthRate, 19)
   };
 
   const result = {
