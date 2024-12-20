@@ -18,6 +18,7 @@ import { AlertCircle, BarChart3, TrendingUp, Building2, MapPin, HelpCircle } fro
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
+import RentalPerformance from "@/components/RentalPerformance";
 import {
   Tooltip,
   TooltipContent,
@@ -584,6 +585,23 @@ export default function PropertyAnalyzerPage() {
                 </Card>
               </div>
             </div>
+
+            {/* Rental Performance Section */}
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-cyan-500" />
+                  Rental Performance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RentalPerformance
+                  shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                  longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
+                  managementFee={0}  // Add management fee to the analyzer response if needed
+                />
+              </CardContent>
+            </Card>
           </>
         )}
       </div>
