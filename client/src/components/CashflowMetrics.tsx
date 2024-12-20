@@ -130,6 +130,18 @@ export default function CashflowMetrics({
                       </td>
                     )}
                   </tr>
+                  {/* Annual Bond Payment */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6 font-medium">Annual Bond Payment</td>
+                    {[1, 2, 4, 5, 10, 20].map((year) => (
+                      <td key={year} className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(monthlyBondRepayment * 12)}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
                   {/* Net Operating Expenses and Income */}
                   <>
                     <tr className="hover:bg-gray-50">
