@@ -69,12 +69,42 @@ export default function CashflowMetrics({
                     <td className="py-3 px-6 font-medium">Annual Revenue</td>
                     {revenueProjections.shortTerm ? (
                       <>
-                        <td className="text-right py-3 px-6">{formatter(revenueProjections.shortTerm.year1)}</td>
-                        <td className="text-right py-3 px-6">{formatter(revenueProjections.shortTerm.year2)}</td>
-                        <td className="text-right py-3 px-6">{formatter(revenueProjections.shortTerm.year4)}</td>
-                        <td className="text-right py-3 px-6">{formatter(revenueProjections.shortTerm.year5)}</td>
-                        <td className="text-right py-3 px-6">{formatter(revenueProjections.shortTerm.year10)}</td>
-                        <td className="text-right py-3 px-6">{formatter(revenueProjections.shortTerm.year20)}</td>
+                        <td className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {formatter(revenueProjections.shortTerm.year1)}
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                          </div>
+                        </td>
+                        <td className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {formatter(revenueProjections.shortTerm.year2)}
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                          </div>
+                        </td>
+                        <td className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {formatter(revenueProjections.shortTerm.year4)}
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                          </div>
+                        </td>
+                        <td className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {formatter(revenueProjections.shortTerm.year5)}
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                          </div>
+                        </td>
+                        <td className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {formatter(revenueProjections.shortTerm.year10)}
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                          </div>
+                        </td>
+                        <td className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {formatter(revenueProjections.shortTerm.year20)}
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                          </div>
+                        </td>
                       </>
                     ) : (
                       <td colSpan={6} className="text-center py-3 px-6 text-gray-500">
@@ -92,8 +122,9 @@ export default function CashflowMetrics({
                 <h3 className="text-sm font-semibold text-gray-600">
                   Monthly Revenue
                 </h3>
-                <p className="mt-2 text-2xl font-bold text-slate-800">
+                <p className="mt-2 text-2xl font-bold text-slate-800 flex items-center gap-2">
                   {formatter(longTermMonthly)}
+                  <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-gray-50">
