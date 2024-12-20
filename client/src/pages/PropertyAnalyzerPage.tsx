@@ -48,11 +48,10 @@ interface AnalysisResult {
 }
 
 import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
+
 export default function PropertyAnalyzerPage() {
   const { user } = useUser();
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
-    null,
-  );
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(null);
   const [includeTransferDuty, setIncludeTransferDuty] = useState<boolean>(true);
@@ -63,7 +62,6 @@ export default function PropertyAnalyzerPage() {
       setAnalysisError(null);
       setFormData(formData);
 
-      // Ensure all numbers are properly parsed and validated
       const requestBody = {
         purchasePrice: Number(formData.purchasePrice),
         shortTermNightlyRate: Number(formData.airbnbNightlyRate) || undefined,
@@ -79,13 +77,6 @@ export default function PropertyAnalyzerPage() {
         ratePerSquareMeter: Number(formData.cmaRatePerSqm),
       };
 
-      console.log("Data being sent to analyzer:", requestBody);
-
-      console.log(
-        "Sending analysis request with body:",
-        JSON.stringify(requestBody, null, 2),
-      );
-
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: {
@@ -95,16 +86,12 @@ export default function PropertyAnalyzerPage() {
       });
 
       const data = await response.json();
-      console.log("Raw response from analyzer:", response);
-      console.log("Parsed response data:", data);
 
       if (!response.ok) {
         const errorMessage = data.error || response.statusText;
-        console.error("Analysis failed with error:", errorMessage);
         throw new Error(errorMessage);
       }
 
-      // Include the nightly rate and occupancy from the request in the analysis result
       setAnalysisResult({
         ...data,
         shortTermNightlyRate: requestBody.shortTermNightlyRate,
@@ -115,7 +102,7 @@ export default function PropertyAnalyzerPage() {
       setAnalysisError(
         error instanceof Error
           ? error.message
-          : "Failed to analyze property data",
+          : "Failed to analyze property data"
       );
       setAnalysisResult(null);
     }
@@ -128,38 +115,36 @@ export default function PropertyAnalyzerPage() {
           Property Analyzer
         </h1>
 
-        <div className="space-y-6">
-          <div className="w-3/4">
+        <div className="max-w-[1600px] space-y-6">
+          <div className="w-4/5">
             <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
           </div>
 
-        {analysisError && (
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 text-red-800">
-                <AlertCircle className="h-5 w-5" />
-                <p className="text-sm font-medium">Error: {analysisError}</p>
+          {analysisError && (
+            <Card className="border-red-200 bg-red-50">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-red-800">
+                  <AlertCircle className="h-5 w-5" />
+                  <p className="text-sm font-medium">Error: {analysisError}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {analysisResult && (
+            <>
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <BarChart3 className="h-6 w-6" />
+                  Analysis Results
+                </h2>
+                <p className="text-muted-foreground">
+                  Based on your provided property details
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        )}
 
-        {analysisResult && (
-          <>
-            {/* Analysis Results Header */}
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
-                <BarChart3 className="h-6 w-6" />
-                Analysis Results
-              </h2>
-              <p className="text-muted-foreground">
-                Based on your provided property details
-              </p>
-            </div>
-
-            {/* Deal Summary Section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {/* Location and Photo Column */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {/* Location and Photo Column */}
               <div className="space-y-4">
                 <Card>
                   <CardHeader>
@@ -584,26 +569,30 @@ export default function PropertyAnalyzerPage() {
               </div>
             </div>
 
-            {/* Rental Performance Section */}
-            <Card className="mt-6 w-full">
-              <CardHeader>
-                <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-cyan-500" />
-                  Rental Performance
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="p-6">
-                  <RentalPerformance
-                    shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                    longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
-                    managementFee={0}  // Add management fee to the analyzer response if needed
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </>
-        )}
+              {/* Rental Performance Section */}
+              <Card className="mt-6 w-full">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-cyan-500" />
+                    Rental Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-auto">
+                    <RentalPerformance
+                      shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                      longTermMonthly={
+                        analysisResult.analysis.longTermAnnualRevenue
+                          ? analysisResult.analysis.longTermAnnualRevenue / 12
+                          : 0
+                      }
+                      managementFee={0}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
       </div>
     </div>
