@@ -125,23 +125,25 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <SidebarProvider defaultOpen>
-      <div className="flex h-screen bg-background">
-        <Sidebar>
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar variant="default" collapsible="icon">
           <SidebarHeader>
-            <div className="flex h-[60px] items-center gap-2 px-6">
+            <div className="flex h-[60px] items-center gap-2 px-4">
               <SidebarTrigger />
               <span className="text-lg font-semibold">Property Analyzer</span>
             </div>
           </SidebarHeader>
-          <SidebarContent className="p-0" />
+          <SidebarContent className="p-0">
+            {/* Add sidebar content here if needed */}
+          </SidebarContent>
         </Sidebar>
 
-        <main className="flex-1">
-          <div className="flex flex-col min-h-screen">
+        <main className="flex-1 h-screen overflow-y-auto">
+          <div className="flex flex-col">
             {/* Progress Steps */}
             <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <div className="container flex h-[60px] items-center">
-                <nav className="flex items-center gap-12">
+              <div className="flex h-[60px] items-center px-6">
+                <nav className="flex items-center space-x-8">
                   {['Property Details', 'Financing', 'Operating Expenses', 'Revenue Performance', 'Escalation/Misc'].map((label, index) => (
                     <div key={index} className="flex items-center">
                       <div className={`flex h-8 w-8 items-center justify-center rounded-full ${
@@ -159,12 +161,12 @@ export default function PropertyAnalyzerPage() {
             </header>
 
             {/* Main Content */}
-            <div className="flex-1">
-              <div className="container py-6">
-                <div className="grid gap-6 lg:grid-cols-12">
+            <div className="flex-1 p-6">
+              <div className="max-w-[1600px] mx-auto">
+                <div className="grid gap-6 md:grid-cols-12">
                   {/* Main Column */}
-                  <div className="lg:col-span-8 space-y-6">
-                    <Card className="overflow-hidden">
+                  <div className="md:col-span-8 space-y-6">
+                    <Card>
                       <CardContent className="p-6">
                         <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
                       </CardContent>
