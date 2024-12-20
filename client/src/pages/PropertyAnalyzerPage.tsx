@@ -663,6 +663,28 @@ export default function PropertyAnalyzerPage() {
             </>
           )}
         </div>
+
+        {/* Disclaimer Section */}
+        <div className="mt-12 mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="max-w-4xl mx-auto text-sm text-gray-600 space-y-4">
+            <p className="font-semibold mb-4">DISCLAIMER:</p>
+            <p>
+              The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.
+            </p>
+            <p>
+              This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice. Any decisions made based on this information are solely the responsibility of the user. Property investment carries inherent risks, and market conditions can change rapidly.
+            </p>
+            <p>
+              Proply Tech (Pty) Ltd and its affiliates expressly disclaim any and all liability for any direct, indirect, incidental, or consequential damages arising from the use of this information. Actual results may vary significantly from the projections and estimates presented.
+            </p>
+            <p>
+              By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.
+            </p>
+            <p className="text-xs mt-6">
+              © 2024 Proply Tech (Pty) Ltd. All rights reserved.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
