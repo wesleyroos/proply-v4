@@ -16,8 +16,8 @@ const propertyDataSchema = z.object({
   ratePerSquareMeter: z.number().positive(),
   incomeGrowthRate: z.number().min(0).max(100).optional().default(8),
   expenseGrowthRate: z.number().min(0).max(100).optional().default(6),
-  levies: z.number().min(0).optional().default(0),
-  ratesAndTaxes: z.number().min(0).optional().default(0),
+  monthlyLevies: z.number().min(0).optional().default(0),
+  monthlyRatesTaxes: z.number().min(0).optional().default(0),
   otherMonthlyExpenses: z.number().min(0).optional().default(0),
   maintenancePercent: z.number().min(0).max(100).optional().default(0),
   managementFee: z.number().min(0).max(100).optional().default(0)
@@ -69,8 +69,8 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Validate input data
   const data = propertyDataSchema.parse(inputData);
   console.log('Validated Data after Schema Parse:', {
-    levies: data.levies,
-    ratesAndTaxes: data.ratesAndTaxes,
+    monthlyLevies: data.monthlyLevies,
+    monthlyRatesTaxes: data.monthlyRatesTaxes,
     otherMonthlyExpenses: data.otherMonthlyExpenses,
     maintenancePercent: data.maintenancePercent,
     managementFee: data.managementFee
@@ -90,15 +90,22 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   
   // Initialize and log all expense-related input values
   console.log('Expense Input Values:', {
-    levies: data.levies,
-    ratesAndTaxes: data.ratesAndTaxes,
+    monthlyLevies: data.monthlyLevies,
+    monthlyRatesTaxes: data.monthlyRatesTaxes,
     otherMonthlyExpenses: data.otherMonthlyExpenses,
     maintenancePercent: data.maintenancePercent,
     managementFee: data.managementFee
   });
 
   // Calculate fixed monthly expenses with explicit number conversions
-  const fixedMonthlyExpenses = Number(data.levies || 0) + Number(data.ratesAndTaxes || 0) + Number(data.otherMonthlyExpenses || 0);
+  const fixedMonthlyExpenses = Number(data.monthlyLevies || 0) + Number(data.monthlyRatesTaxes || 0) + Number(data.otherMonthlyExpenses || 0);
+
+  console.log('Fixed Monthly Expenses Breakdown:', {
+    monthlyLevies: Number(data.monthlyLevies || 0),
+    monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
+    otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
+    total: fixedMonthlyExpenses
+  });
   let maintenanceExpense = 0;
   let managementFeeExpense = 0;
   let totalMonthlyExpenses = fixedMonthlyExpenses; // Initialize with fixed expenses
@@ -107,8 +114,8 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   console.log('Initial Fixed Monthly Expenses:', {
     fixedMonthlyExpenses,
     breakdown: {
-      levies: Number(data.levies || 0),
-      ratesAndTaxes: Number(data.ratesAndTaxes || 0),
+      monthlyLevies: Number(data.monthlyLevies || 0),
+      monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
       otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0)
     }
   });
@@ -202,8 +209,8 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       managementFeeExpense
     },
     breakdown: {
-      levies: data.levies,
-      ratesAndTaxes: data.ratesAndTaxes,
+      monthlyLevies: data.monthlyLevies,
+      monthlyRatesTaxes: data.monthlyRatesTaxes,
       otherMonthlyExpenses: data.otherMonthlyExpenses,
       maintenancePercent: data.maintenancePercent,
       managementFee: data.managementFee
@@ -215,8 +222,8 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Calculate annual expenses (NOE)
   console.log('Monthly Expense Components:', {
     fixed: {
-      levies: data.levies,
-      ratesAndTaxes: data.ratesAndTaxes,
+      monthlyLevies: data.monthlyLevies,
+      monthlyRatesTaxes: data.monthlyRatesTaxes,
       otherMonthlyExpenses: data.otherMonthlyExpenses,
       total: fixedMonthlyExpenses
     },
@@ -253,8 +260,8 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       noeYear1
     },
     expenseComponents: {
-      monthlyLevies: data.levies,
-      monthlyRatesTaxes: data.ratesAndTaxes,
+      monthlyLevies: data.monthlyLevies,
+      monthlyRatesTaxes: data.monthlyRatesTaxes,
       otherMonthlyExpenses: data.otherMonthlyExpenses,
       maintenancePercent: data.maintenancePercent,
       managementFee: data.managementFee
