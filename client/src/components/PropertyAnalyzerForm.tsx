@@ -862,7 +862,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="levies"
+                  name="monthlyLevies"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Monthly Levies (R)</FormLabel>
@@ -883,7 +883,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
                 <FormField
                   control={form.control}
-                  name="ratesAndTaxes"
+                  name="monthlyRatesTaxes"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Monthly Rates & Taxes (R)</FormLabel>
