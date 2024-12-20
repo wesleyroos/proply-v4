@@ -437,6 +437,12 @@ export default function PropertyAnalyzerPage() {
                                 {formData?.managementFee || "0"}%
                               </span>
                             </p>
+                            <p className="text-sm text-slate-600">
+                              Platform Fee:{" "}
+                              <span className="font-medium">
+                                {formData?.managementFee > 0 ? "15" : "3"}%
+                              </span>
+                            </p>
                           </div>
                         </div>
                       </div>
