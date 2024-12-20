@@ -13,6 +13,16 @@ interface CashflowMetricsProps {
   longTermMonthly: number;
   monthlyBondRepayment: number;
   managementFee: number;
+  revenueProjections: {
+    shortTerm: {
+      year1: number;
+      year2: number;
+      year4: number;
+      year5: number;
+      year10: number;
+      year20: number;
+    } | null;
+  };
 }
 
 export default function CashflowMetrics({
@@ -21,19 +31,7 @@ export default function CashflowMetrics({
   monthlyBondRepayment,
   managementFee,
 }: CashflowMetricsProps) {
-  // Calculate fee-adjusted nightly rate
-  const platformFeeRate = managementFee > 0 ? 0.15 : 0.03;
-  const feeAdjustedNightlyRate = Math.round(shortTermNightly * (1 - platformFeeRate));
-  
-  // Calculate base monthly revenue (before projections)
-  const daysInMonth = 30;
-  const baseOccupancyRate = 0.70; // 70% base occupancy
-  const monthlyRevenue = Math.round(feeAdjustedNightlyRate * daysInMonth * baseOccupancyRate);
-  
-  // Other calculations
-  const shortTermExpenses = monthlyBondRepayment + (monthlyRevenue * (managementFee / 100));
-  const shortTermNetCashflow = monthlyRevenue - shortTermExpenses;
-
+  // Calculate expenses for both rental strategies
   const longTermExpenses = monthlyBondRepayment;
   const longTermNetCashflow = longTermMonthly - longTermExpenses;
 
@@ -68,11 +66,20 @@ export default function CashflowMetrics({
                 <tbody>
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6 font-medium">Annual Revenue</td>
-                    {[1, 2, 4, 5, 10, 20].map((year) => (
-                      <td key={year} className="text-right py-3 px-6">
-                        {formatter(monthlyRevenue * 12 * Math.pow(1.05, year - 1))} {/* 5% annual growth */}
+                    {revenueProjections.shortTerm ? (
+                      <>
+                        <td className="text-right py-3 px-6">{formatter(revenueProjections.shortTerm.year1)}</td>
+                        <td className="text-right py-3 px-6">{formatter(revenueProjections.shortTerm.year2)}</td>
+                        <td className="text-right py-3 px-6">{formatter(revenueProjections.shortTerm.year4)}</td>
+                        <td className="text-right py-3 px-6">{formatter(revenueProjections.shortTerm.year5)}</td>
+                        <td className="text-right py-3 px-6">{formatter(revenueProjections.shortTerm.year10)}</td>
+                        <td className="text-right py-3 px-6">{formatter(revenueProjections.shortTerm.year20)}</td>
+                      </>
+                    ) : (
+                      <td colSpan={6} className="text-center py-3 px-6 text-gray-500">
+                        No revenue projections available
                       </td>
-                    ))}
+                    )}
                   </tr>
                 </tbody>
               </table>

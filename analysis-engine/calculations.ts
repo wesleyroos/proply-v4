@@ -13,7 +13,8 @@ const propertyDataSchema = z.object({
   interestRate: z.number().min(0).max(100),
   loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
   floorArea: z.number().positive(),
-  ratePerSquareMeter: z.number().positive()
+  ratePerSquareMeter: z.number().positive(),
+  incomeGrowthRate: z.number().min(0).max(100).default(5)
 });
 
 // TypeScript type derived from Zod schema
@@ -40,6 +41,16 @@ export interface AnalysisResult {
     shortTermAnnualRevenue: number | null;
     longTermAnnualRevenue: number | null;
     purchasePrice: number;
+    revenueProjections: {
+      shortTerm: {
+        year1: number;
+        year2: number;
+        year4: number;
+        year5: number;
+        year10: number;
+        year20: number;
+      } | null;
+    };
   };
 }
 
@@ -56,9 +67,28 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   let longTermAnnualRevenue: number | null = null;
 
   // Calculate short-term rental metrics
+  let revenueProjections = null;
   if (data.shortTermNightlyRate && data.annualOccupancy) {
-    shortTermAnnualRevenue = data.shortTermNightlyRate * 365 * (data.annualOccupancy / 100);
+    // Calculate platform fee based on management fee presence
+    const platformFeeRate = data.managementFee > 0 ? 0.15 : 0.03;
+    const feeAdjustedNightlyRate = data.shortTermNightlyRate * (1 - platformFeeRate);
+    
+    // Calculate base annual revenue (Year 1)
+    shortTermAnnualRevenue = feeAdjustedNightlyRate * 365 * (data.annualOccupancy / 100);
     shortTermGrossYield = (shortTermAnnualRevenue / data.purchasePrice) * 100;
+
+    // Calculate revenue projections for future years
+    const growthRate = (data.incomeGrowthRate || 5) / 100;
+    revenueProjections = {
+      shortTerm: {
+        year1: shortTermAnnualRevenue,
+        year2: shortTermAnnualRevenue * Math.pow(1 + growthRate, 1),
+        year4: shortTermAnnualRevenue * Math.pow(1 + growthRate, 3),
+        year5: shortTermAnnualRevenue * Math.pow(1 + growthRate, 4),
+        year10: shortTermAnnualRevenue * Math.pow(1 + growthRate, 9),
+        year20: shortTermAnnualRevenue * Math.pow(1 + growthRate, 19)
+      }
+    };
   }
 
   // Calculate long-term rental metrics
@@ -102,7 +132,10 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     analysis: {
       shortTermAnnualRevenue,
       longTermAnnualRevenue,
-      purchasePrice: data.purchasePrice
+      purchasePrice: data.purchasePrice,
+      revenueProjections: {
+        shortTerm: revenueProjections?.shortTerm || null
+      }
     }
   };
 }
