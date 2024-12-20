@@ -90,8 +90,8 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     managementFee: data.managementFee
   });
 
-  // Calculate fixed monthly expenses
-  const fixedMonthlyExpenses = (data.levies || 0) + (data.ratesAndTaxes || 0) + (data.otherMonthlyExpenses || 0);
+  // Calculate fixed monthly expenses with explicit number conversions
+  const fixedMonthlyExpenses = Number(data.levies || 0) + Number(data.ratesAndTaxes || 0) + Number(data.otherMonthlyExpenses || 0);
   let maintenanceExpense = 0;
   let managementFeeExpense = 0;
   let totalMonthlyExpenses = 0;
@@ -100,9 +100,9 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   console.log('Fixed Monthly Expenses Calculation:', {
     fixedMonthlyExpenses,
     breakdown: {
-      levies: data.levies || 0,
-      ratesAndTaxes: data.ratesAndTaxes || 0,
-      otherMonthlyExpenses: data.otherMonthlyExpenses || 0
+      levies: Number(data.levies || 0),
+      ratesAndTaxes: Number(data.ratesAndTaxes || 0),
+      otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0)
     }
   });
 
@@ -122,15 +122,17 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       annualRevenue: shortTermAnnualRevenue
     });
 
-    // Update maintenance and management fee expenses based on revenue
-    maintenanceExpense = (shortTermAnnualRevenue * (data.maintenancePercent || 0)) / 100 / 12;
-    managementFeeExpense = (shortTermAnnualRevenue * (data.managementFee || 0)) / 100 / 12;
+    // Update maintenance and management fee expenses based on revenue with explicit number conversions
+    maintenanceExpense = (shortTermAnnualRevenue * Number(data.maintenancePercent || 0)) / 100 / 12;
+    managementFeeExpense = (shortTermAnnualRevenue * Number(data.managementFee || 0)) / 100 / 12;
 
     console.log('Variable Expenses:', {
       maintenanceExpense,
       managementFeeExpense,
-      maintenancePercent: data.maintenancePercent,
-      managementFee: data.managementFee
+      maintenancePercent: Number(data.maintenancePercent || 0),
+      managementFee: Number(data.managementFee || 0),
+      shortTermAnnualRevenue,
+      monthlyRevenue: shortTermAnnualRevenue / 12
     });
 
     const growthRate = data.incomeGrowthRate / 100;
