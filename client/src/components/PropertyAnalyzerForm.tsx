@@ -298,14 +298,28 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
     try {
+      // Prepare analysis data with expense fields at root level
+      const analysisData = {
+        ...data,
+        // Ensure expense fields are at root level with proper names
+        levies: Number(data.levies) || 0,
+        ratesAndTaxes: Number(data.ratesAndTaxes) || 0,
+        otherMonthlyExpenses: Number(data.otherMonthlyExpenses) || 0,
+        maintenancePercent: Number(data.maintenancePercent) || 0,
+        managementFee: Number(data.managementFee) || 0,
+      };
+
+      console.log('Submitting analysis data:', analysisData);
+
       if (props.onAnalysisComplete) {
-        await props.onAnalysisComplete(data);
+        await props.onAnalysisComplete(analysisData);
       }
       toast({
         title: "Success",
         description: "Property analysis completed successfully.",
       });
     } catch (error) {
+      console.error('Analysis error:', error);
       toast({
         title: "Error",
         description: "Failed to analyze property data.",
