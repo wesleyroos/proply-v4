@@ -118,80 +118,108 @@ export default function PropertyAnalyzerPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1400px] mx-auto">
-          {/* Main Column */}
-          <div className="lg:col-span-8 space-y-6">
-            <Card className="w-full">
+        <div className="max-w-[1400px] mx-auto space-y-6">
+          {/* Property Analyzer Form - 3/4 width */}
+          <div className="w-3/4 mx-auto">
+            <Card>
               <CardContent className="p-6">
                 <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
               </CardContent>
             </Card>
+          </div>
 
-            {analysisError && (
-              <Card className="border-destructive/50 bg-destructive/10">
+          {analysisError && (
+            <Card className="border-destructive/50 bg-destructive/10">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 text-destructive">
+                  <AlertCircle className="h-5 w-5" />
+                  <p className="text-sm font-medium">Error: {analysisError}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {analysisResult && (
+            <div className="space-y-6">
+              {/* Deal Structure */}
+              <Card>
                 <CardContent className="p-6">
-                  <div className="flex items-center gap-2 text-destructive">
-                    <AlertCircle className="h-5 w-5" />
-                    <p className="text-sm font-medium">Error: {analysisError}</p>
+                  <h3 className="text-lg font-semibold mb-4">Deal Structure</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Purchase Price</p>
+                      <p className="text-lg font-semibold">
+                        R {analysisResult.analysis.purchasePrice.toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Deposit</p>
+                      <p className="text-lg font-semibold">
+                        R {analysisResult.deposit.toLocaleString()} ({analysisResult.depositPercentage}%)
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Interest Rate</p>
+                      <p className="text-lg font-semibold">{analysisResult.interestRate}%</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Monthly Bond</p>
+                      <p className="text-lg font-semibold">
+                        R {analysisResult.monthlyBondRepayment.toLocaleString()}
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            )}
 
-            {analysisResult && (
-              <div className="space-y-6">
-                <InvestmentMetrics 
-                  purchasePrice={analysisResult.analysis.purchasePrice}
-                  deposit={analysisResult.deposit}
-                  monthlyBondRepayment={analysisResult.monthlyBondRepayment}
-                  shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                  longTermMonthly={
-                    analysisResult.analysis.longTermAnnualRevenue
-                      ? analysisResult.analysis.longTermAnnualRevenue / 12
-                      : 0
-                  }
-                  revenueProjections={analysisResult.analysis.revenueProjections}
-                  operatingExpenses={analysisResult.analysis.operatingExpenses}
-                  netOperatingIncome={analysisResult.analysis.netOperatingIncome}
-                />
-                <CashflowMetrics
-                  shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                  longTermMonthly={
-                    analysisResult.analysis.longTermAnnualRevenue
-                      ? analysisResult.analysis.longTermAnnualRevenue / 12
-                      : 0
-                  }
-                  monthlyBondRepayment={analysisResult.monthlyBondRepayment}
-                  managementFee={Number(formData?.managementFee) || 0}
-                  revenueProjections={analysisResult.analysis.revenueProjections}
-                  operatingExpenses={analysisResult.analysis.operatingExpenses}
-                  netOperatingIncome={analysisResult.analysis.netOperatingIncome}
-                />
-              </div>
-            )}
-          </div>
+              {/* Rental Performance */}
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Rental Performance</h3>
+                  <RentalPerformance
+                    shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                    longTermMonthly={
+                      analysisResult.analysis.longTermAnnualRevenue
+                        ? analysisResult.analysis.longTermAnnualRevenue / 12
+                        : 0
+                    }
+                    managementFee={Number(formData?.managementFee) || 0}
+                  />
+                </CardContent>
+              </Card>
 
-          {/* Side Column */}
-          <div className="lg:col-span-4">
-            {analysisResult && (
-              <div className="space-y-6">
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">Rental Performance</h3>
-                    <RentalPerformance
-                      shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                      longTermMonthly={
-                        analysisResult.analysis.longTermAnnualRevenue
-                          ? analysisResult.analysis.longTermAnnualRevenue / 12
-                          : 0
-                      }
-                      managementFee={Number(formData?.managementFee) || 0}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-          </div>
+              {/* Cashflow Metrics */}
+              <CashflowMetrics
+                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                longTermMonthly={
+                  analysisResult.analysis.longTermAnnualRevenue
+                    ? analysisResult.analysis.longTermAnnualRevenue / 12
+                    : 0
+                }
+                monthlyBondRepayment={analysisResult.monthlyBondRepayment}
+                managementFee={Number(formData?.managementFee) || 0}
+                revenueProjections={analysisResult.analysis.revenueProjections}
+                operatingExpenses={analysisResult.analysis.operatingExpenses}
+                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+              />
+
+              {/* Investment Metrics */}
+              <InvestmentMetrics 
+                purchasePrice={analysisResult.analysis.purchasePrice}
+                deposit={analysisResult.deposit}
+                monthlyBondRepayment={analysisResult.monthlyBondRepayment}
+                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                longTermMonthly={
+                  analysisResult.analysis.longTermAnnualRevenue
+                    ? analysisResult.analysis.longTermAnnualRevenue / 12
+                    : 0
+                }
+                revenueProjections={analysisResult.analysis.revenueProjections}
+                operatingExpenses={analysisResult.analysis.operatingExpenses}
+                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+              />
+            </div>
+          )}
         </div>
 
         {/* Disclaimer */}
