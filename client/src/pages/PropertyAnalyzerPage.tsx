@@ -144,10 +144,10 @@ export default function PropertyAnalyzerPage() {
           {/* Main Content Area */}
           <div className="flex-1 overflow-y-auto">
             <div className="h-full px-4 py-6 lg:px-8">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1400px] mx-auto">
                 {/* Main Column */}
-                <div className="md:col-span-8 space-y-6">
-                  <Card>
+                <div className="lg:col-span-8 space-y-6">
+                  <Card className="w-full">
                     <CardContent className="p-6">
                       <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
                     </CardContent>
