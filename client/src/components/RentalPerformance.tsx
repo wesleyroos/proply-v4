@@ -14,8 +14,9 @@ export default function RentalPerformance({ shortTermNightly, longTermMonthly, m
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold mb-4">Rental Performance</h3>
-      <div className="overflow-x-auto border rounded-lg shadow-sm">
-        <table className="w-full text-sm">
+      <div className="max-w-full overflow-x-auto border rounded-lg shadow-sm">
+        <div className="min-w-[1000px]">
+          <table className="w-full text-sm">
           <thead className="bg-gray-50 sticky top-0">
             <tr className="border-b">
               <th className="text-left py-3 px-6 min-w-[120px] bg-gray-50">Metric</th>
@@ -120,10 +121,11 @@ export default function RentalPerformance({ shortTermNightly, longTermMonthly, m
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Chart */}
-      <div className="mt-6 h-[300px]">
+      <div className="mt-6 h-[300px] max-w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={Array(12).fill(0).map((_, i) => ({
