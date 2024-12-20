@@ -23,17 +23,13 @@ const propertyDataSchema = z.object({
   managementFee: z.number().min(0).max(100).optional().default(0)
 });
 
-// TypeScript type derived from Zod schema
 export type PropertyData = z.infer<typeof propertyDataSchema>;
 
 export interface AnalysisResult {
-  // Financial metrics
   shortTermGrossYield: number | null;
   longTermGrossYield: number | null;
   monthlyBondRepayment: number;
   depositPercentage: number;
-
-  // Property details
   propertyDescription: string | null;
   address: string;
   deposit: number;
@@ -41,8 +37,6 @@ export interface AnalysisResult {
   loanTerm: number;
   floorArea: number;
   ratePerSquareMeter: number;
-
-  // Revenue analysis
   analysis: {
     shortTermAnnualRevenue: number | null;
     longTermAnnualRevenue: number | null;
@@ -70,7 +64,7 @@ export interface AnalysisResult {
 
 export function calculateYields(inputData: PropertyData): AnalysisResult {
   console.log('=== Starting Property Analysis ===');
-  console.log('Raw input data:', JSON.stringify(inputData, null, 2));
+  console.log('Input data:', JSON.stringify(inputData, null, 2));
   
   // Validate input data
   const data = propertyDataSchema.parse(inputData);
@@ -82,51 +76,47 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   let longTermAnnualRevenue: number | null = null;
   let revenueProjections = null;
 
-  // Initialize expenses
-  let fixedMonthlyExpenses = (data.levies || 0) + (data.ratesAndTaxes || 0) + (data.otherMonthlyExpenses || 0);
+  // Initialize expense calculations
+  const fixedMonthlyExpenses = (data.levies || 0) + (data.ratesAndTaxes || 0) + (data.otherMonthlyExpenses || 0);
   let maintenanceExpense = 0;
   let managementFeeExpense = 0;
-  let totalMonthlyExpenses = 0;
-  let baseAnnualExpenses = 0;
-
-  console.log('Fixed monthly expenses:', fixedMonthlyExpenses);
+  
+  console.log('Fixed Monthly Expenses:', {
+    levies: data.levies || 0,
+    ratesAndTaxes: data.ratesAndTaxes || 0,
+    otherMonthlyExpenses: data.otherMonthlyExpenses || 0,
+    total: fixedMonthlyExpenses
+  });
 
   // Calculate short-term rental metrics
   if (data.shortTermNightlyRate && data.annualOccupancy) {
-    // Calculate platform fee based on management fee presence
     const platformFeeRate = data.managementFee > 0 ? 0.15 : 0.03;
     const feeAdjustedNightlyRate = data.shortTermNightlyRate * (1 - platformFeeRate);
     
-    // Calculate base annual revenue (Year 1)
     shortTermAnnualRevenue = feeAdjustedNightlyRate * 365 * (data.annualOccupancy / 100);
     shortTermGrossYield = (shortTermAnnualRevenue / data.purchasePrice) * 100;
 
-    // Update maintenance and management fee expenses based on short-term revenue
-    maintenanceExpense = (shortTermAnnualRevenue * (data.maintenancePercent || 0) / 100) / 12;
-    managementFeeExpense = (shortTermAnnualRevenue * (data.managementFee || 0) / 100) / 12;
-    
-    // Calculate total monthly and annual expenses
-    totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
-    baseAnnualExpenses = totalMonthlyExpenses * 12;
-    
-    console.log('Expense calculations:', {
-      fixedMonthlyExpenses,
-      maintenanceExpense,
-      managementFeeExpense,
-      totalMonthlyExpenses,
-      baseAnnualExpenses
+    console.log('Short-term Revenue Calculations:', {
+      nightlyRate: data.shortTermNightlyRate,
+      platformFeeRate,
+      feeAdjustedNightlyRate,
+      occupancyRate: data.annualOccupancy,
+      annualRevenue: shortTermAnnualRevenue
     });
 
-    // Calculate revenue projections for future years using the provided income growth rate
-    const growthRate = data.incomeGrowthRate / 100; // Use input growth rate
+    // Calculate variable expenses based on revenue
+    maintenanceExpense = (shortTermAnnualRevenue * (data.maintenancePercent || 0) / 100) / 12;
+    managementFeeExpense = (shortTermAnnualRevenue * (data.managementFee || 0) / 100) / 12;
+
+    const growthRate = data.incomeGrowthRate / 100;
     revenueProjections = {
       shortTerm: {
         year1: shortTermAnnualRevenue,
-        year2: shortTermAnnualRevenue * Math.pow(1 + growthRate, 1),  // Year 2 = Year 1 × (1.08)¹
-        year4: shortTermAnnualRevenue * Math.pow(1 + growthRate, 3),  // Year 4 = Year 1 × (1.08)³
-        year5: shortTermAnnualRevenue * Math.pow(1 + growthRate, 4),  // Year 5 = Year 1 × (1.08)⁴
-        year10: shortTermAnnualRevenue * Math.pow(1 + growthRate, 9), // Year 10 = Year 1 × (1.08)⁹
-        year20: shortTermAnnualRevenue * Math.pow(1 + growthRate, 19) // Year 20 = Year 1 × (1.08)¹⁹
+        year2: shortTermAnnualRevenue * Math.pow(1 + growthRate, 1),
+        year4: shortTermAnnualRevenue * Math.pow(1 + growthRate, 3),
+        year5: shortTermAnnualRevenue * Math.pow(1 + growthRate, 4),
+        year10: shortTermAnnualRevenue * Math.pow(1 + growthRate, 9),
+        year20: shortTermAnnualRevenue * Math.pow(1 + growthRate, 19)
       }
     };
   }
@@ -141,6 +131,20 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     longTermGrossYield = (longTermAnnualRevenue / data.purchasePrice) * 100;
   }
 
+  // Calculate total monthly and annual expenses
+  const totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
+  const baseAnnualExpenses = totalMonthlyExpenses * 12;
+
+  console.log('Total Operating Expenses:', {
+    fixedMonthlyExpenses,
+    maintenanceExpense,
+    managementFeeExpense,
+    totalMonthlyExpenses,
+    baseAnnualExpenses,
+    maintenancePercent: data.maintenancePercent,
+    managementFee: data.managementFee
+  });
+
   // Calculate bond repayment
   const loanAmount = data.purchasePrice - data.deposit;
   const monthlyRate = (data.interestRate / 100) / 12;
@@ -152,25 +156,22 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Calculate deposit percentage
   const depositPercentage = (data.deposit / data.purchasePrice) * 100;
 
-  // Calculate operating expenses projections with expense growth rate
+  // Calculate operating expenses projections
   const expenseGrowthRate = data.expenseGrowthRate / 100;
   const operatingExpenses = {
     year1: baseAnnualExpenses,
-    year2: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 1),  // Year 2 = Year 1 × (1.06)¹
-    year4: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 3),  // Year 4 = Year 1 × (1.06)³
-    year5: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 4),  // Year 5 = Year 1 × (1.06)⁴
-    year10: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 9), // Year 10 = Year 1 × (1.06)⁹
-    year20: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 19) // Year 20 = Year 1 × (1.06)¹⁹
+    year2: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 1),
+    year4: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 3),
+    year5: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 4),
+    year10: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 9),
+    year20: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 19)
   };
 
   const result = {
-    // Financial calculations with precise number formatting
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
     longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
     monthlyBondRepayment: Number(monthlyBondRepayment.toFixed(2)),
     depositPercentage: Number(depositPercentage.toFixed(2)),
-
-    // Property details (passing through validated data)
     propertyDescription: data.propertyDescription || null,
     address: data.address,
     deposit: data.deposit,
@@ -178,8 +179,6 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     loanTerm: data.loanTerm,
     floorArea: data.floorArea,
     ratePerSquareMeter: data.ratePerSquareMeter,
-
-    // Analysis summary
     analysis: {
       shortTermAnnualRevenue,
       longTermAnnualRevenue,
@@ -191,6 +190,6 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     }
   };
 
-  console.log('Analysis complete. Result:', JSON.stringify(result, null, 2));
+  console.log('Final Analysis Result:', JSON.stringify(result, null, 2));
   return result;
 }
