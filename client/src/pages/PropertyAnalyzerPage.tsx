@@ -81,13 +81,13 @@ export default function PropertyAnalyzerPage() {
       setAnalysisError(null);
       setFormData(formData);
 
-      // Prepare request body with explicit number conversion and logging
+      // Prepare request body with explicit number conversion
       const requestBody = {
         purchasePrice: Number(formData.purchasePrice),
-        shortTermNightlyRate: Number(formData.airbnbNightlyRate) || undefined,
-        annualOccupancy: Number(formData.occupancyRate) || undefined,
-        longTermRental: Number(formData.longTermRental) || undefined,
-        leaseCycleGap: Number(formData.leaseCycleGap) || undefined,
+        shortTermNightlyRate: Number(formData.airbnbNightlyRate || 0),
+        annualOccupancy: Number(formData.occupancyRate || 0),
+        longTermRental: Number(formData.longTermRental || 0),
+        leaseCycleGap: Number(formData.leaseCycleGap || 0),
         propertyDescription: formData.comments || null,
         address: formData.address,
         deposit: Number(formData.depositAmount),
@@ -95,26 +95,16 @@ export default function PropertyAnalyzerPage() {
         loanTerm: Number(formData.loanTerm),
         floorArea: Number(formData.floorArea),
         ratePerSquareMeter: Number(formData.cmaRatePerSqm),
-        // Map expense fields directly from the form
         monthlyLevies: Number(formData.monthlyLevies || 0),
         monthlyRatesTaxes: Number(formData.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(formData.otherMonthlyExpenses || 0),
         maintenancePercent: Number(formData.maintenancePercent || 0),
         managementFee: Number(formData.managementFee || 0),
         incomeGrowthRate: 8,
-        expenseGrowthRate: 6,
+        expenseGrowthRate: 6
       };
 
-      console.log('Analysis Request:', {
-        ...requestBody,
-        expenses: {
-          levies: requestBody.levies,
-          ratesAndTaxes: requestBody.ratesAndTaxes,
-          otherMonthlyExpenses: requestBody.otherMonthlyExpenses,
-          maintenancePercent: requestBody.maintenancePercent,
-          managementFee: requestBody.managementFee
-        }
-      });
+      console.log('Analysis Request:', requestBody);
 
       const response = await fetch("/api/analyze", {
         method: "POST",
