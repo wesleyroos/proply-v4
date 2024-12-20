@@ -110,12 +110,12 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
-      <div className="px-6">
+      <div className="px-6 w-full">
         <h1 className="text-2xl font-bold text-[#262626] mb-6">
           Property Analyzer
         </h1>
 
-        <div className="space-y-6">
+        <div className="space-y-6 w-full">
           <div className="w-4/5">
             <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
           </div>
