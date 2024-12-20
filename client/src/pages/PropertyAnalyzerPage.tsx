@@ -148,7 +148,7 @@ export default function PropertyAnalyzerPage() {
         </h1>
 
         <div className="space-y-6 w-full">
-          <div className="w-4/5">
+          <div className="w-full">
             <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
           </div>
 
