@@ -36,7 +36,7 @@ export const calculateMonthlyRevenue = (
 // Format numbers with 'R' prefix and proper thousands separators
 export const formatter = (value: number): string => {
   return `R ${value.toLocaleString('en-ZA', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   })}`;
 };
