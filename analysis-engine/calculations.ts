@@ -82,10 +82,14 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   let longTermAnnualRevenue: number | null = null;
   let revenueProjections = null;
 
-  // Calculate base monthly operating expenses (outside conditional blocks)
-  const fixedMonthlyExpenses = (data.levies || 0) + (data.ratesAndTaxes || 0) + (data.otherMonthlyExpenses || 0);
+  // Initialize expenses
+  let fixedMonthlyExpenses = (data.levies || 0) + (data.ratesAndTaxes || 0) + (data.otherMonthlyExpenses || 0);
   let maintenanceExpense = 0;
   let managementFeeExpense = 0;
+  let totalMonthlyExpenses = 0;
+  let baseAnnualExpenses = 0;
+
+  console.log('Fixed monthly expenses:', fixedMonthlyExpenses);
 
   // Calculate short-term rental metrics
   if (data.shortTermNightlyRate && data.annualOccupancy) {
@@ -100,6 +104,18 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     // Update maintenance and management fee expenses based on short-term revenue
     maintenanceExpense = (shortTermAnnualRevenue * (data.maintenancePercent || 0) / 100) / 12;
     managementFeeExpense = (shortTermAnnualRevenue * (data.managementFee || 0) / 100) / 12;
+    
+    // Calculate total monthly and annual expenses
+    totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
+    baseAnnualExpenses = totalMonthlyExpenses * 12;
+    
+    console.log('Expense calculations:', {
+      fixedMonthlyExpenses,
+      maintenanceExpense,
+      managementFeeExpense,
+      totalMonthlyExpenses,
+      baseAnnualExpenses
+    });
 
     // Calculate revenue projections for future years using the provided income growth rate
     const growthRate = data.incomeGrowthRate / 100; // Use input growth rate
@@ -135,23 +151,6 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
 
   // Calculate deposit percentage
   const depositPercentage = (data.deposit / data.purchasePrice) * 100;
-
-  // Calculate total annual operating expenses for Year 1
-  const totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
-  const baseAnnualExpenses = totalMonthlyExpenses * 12;
-  
-  console.log('Operating Expenses Breakdown:', {
-    fixedMonthlyExpenses,
-    maintenanceExpense,
-    managementFeeExpense,
-    totalMonthlyExpenses,
-    baseAnnualExpenses,
-    levies: data.levies,
-    ratesAndTaxes: data.ratesAndTaxes,
-    otherMonthlyExpenses: data.otherMonthlyExpenses,
-    maintenancePercent: data.maintenancePercent,
-    managementFee: data.managementFee
-  });
 
   // Calculate operating expenses projections with expense growth rate
   const expenseGrowthRate = data.expenseGrowthRate / 100;
