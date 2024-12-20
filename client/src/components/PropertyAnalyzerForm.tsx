@@ -297,6 +297,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
+    window.location.hash = 'analysis-results';
     try {
       // Clean and prepare the analysis data
       const analysisData = {
