@@ -69,6 +69,8 @@ export default function CashflowMetrics({
             <TabsTrigger value="short-term">Short-Term</TabsTrigger>
             <TabsTrigger value="long-term">Long-Term</TabsTrigger>
           </TabsList>
+          
+          {/* Short-Term Tab Content */}
           <TabsContent value="short-term" className="mt-4">
             <div className="rounded-lg border">
               <table className="w-full">
@@ -81,25 +83,20 @@ export default function CashflowMetrics({
                   </tr>
                 </thead>
                 <tbody>
+                  {/* Annual Revenue */}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6 font-medium">Annual Revenue</td>
-                    {revenueProjections.shortTerm ? (
-                      <>
-                        {years.map(year => (
-                          <td key={year} className="text-right py-3 px-6">
-                            <div className="flex items-center justify-end gap-2">
-                              {formatter(revenueProjections.shortTerm[`year${year}`])}
-                              <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
-                            </div>
-                          </td>
-                        ))}
-                      </>
-                    ) : (
-                      <td colSpan={7} className="text-center py-3 px-6 text-gray-500">
-                        No revenue projections available
+                    {years.map(year => (
+                      <td key={year} className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(revenueProjections.shortTerm?.[`year${year}`])}
+                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                        </div>
                       </td>
-                    )}
+                    ))}
                   </tr>
+
+                  {/* Net Operating Expenses */}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6 font-medium">Net Operating Expenses</td>
                     {years.map(year => (
@@ -111,17 +108,21 @@ export default function CashflowMetrics({
                       </td>
                     ))}
                   </tr>
+
+                  {/* Net Operating Income */}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6 font-medium">Net Operating Income</td>
                     {years.map(year => (
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
-                          {formatter(netOperatingIncome?.[`year${year}`] || 0)}
+                          {formatter(netOperatingIncome?.[`year${year}`])}
                           <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                         </div>
                       </td>
                     ))}
                   </tr>
+
+                  {/* Annual Bond Payment */}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6 font-medium">Annual Bond Payment</td>
                     {years.map(year => (
@@ -133,25 +134,33 @@ export default function CashflowMetrics({
                       </td>
                     ))}
                   </tr>
+
+                  {/* Annual Cashflow */}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6 font-medium">Annual Cashflow</td>
-                    {years.map(year => (
-                      <td key={year} className="text-right py-3 px-6">
-                        <div className="flex items-center justify-end gap-2">
-                          {formatter((netOperatingIncome?.[`year${year}`] || 0) - (monthlyBondRepayment * 12))}
-                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
-                        </div>
-                      </td>
-                    ))}
+                    {years.map(year => {
+                      const annualCashflow = (netOperatingIncome?.[`year${year}`] || 0) - (monthlyBondRepayment * 12);
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {formatter(annualCashflow)}
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                          </div>
+                        </td>
+                      );
+                    })}
                   </tr>
+
+                  {/* Cumulative Cashflow */}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6 font-medium">Cumulative Cashflow</td>
                     {years.map((year, index) => {
                       let cumulativeCashflow = 0;
-                      const previousYears = years.slice(0, index + 1);
-                      previousYears.forEach(y => {
-                        cumulativeCashflow += (netOperatingIncome?.[`year${y}`] || 0) - (monthlyBondRepayment * 12);
-                      });
+                      for (let i = 0; i <= index; i++) {
+                        const y = years[i];
+                        const annualCashflow = (netOperatingIncome?.[`year${y}`] || 0) - (monthlyBondRepayment * 12);
+                        cumulativeCashflow += annualCashflow;
+                      }
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
@@ -166,6 +175,8 @@ export default function CashflowMetrics({
               </table>
             </div>
           </TabsContent>
+
+          {/* Long-Term Tab Content */}
           <TabsContent value="long-term" className="mt-4">
             <div className="rounded-lg border">
               <table className="w-full">
@@ -178,43 +189,57 @@ export default function CashflowMetrics({
                   </tr>
                 </thead>
                 <tbody>
+                  {/* Annual Revenue */}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6 font-medium">Annual Revenue</td>
-                    {years.map(year => (
-                      <td key={year} className="text-right py-3 px-6">
-                        <div className="flex items-center justify-end gap-2">
-                          {formatter(longTermMonthly * 12 * Math.pow(1.08, year - 1))}
-                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
-                        </div>
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Net Operating Expenses</td>
-                    {years.map(year => (
-                      <td key={year} className="text-right py-3 px-6">
-                        <div className="flex items-center justify-end gap-2">
-                          {formatter(monthlyBondRepayment * 12 * Math.pow(1.06, year - 1))}
-                          <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
-                        </div>
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Net Operating Income</td>
                     {years.map(year => {
                       const revenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
-                      const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
-                            {formatter(revenue - expenses)}
+                            {formatter(revenue)}
                             <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                           </div>
                         </td>
                       );
                     })}
                   </tr>
+
+                  {/* Net Operating Expenses */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6 font-medium">Net Operating Expenses</td>
+                    {years.map(year => {
+                      const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {formatter(expenses)}
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Net Operating Income */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6 font-medium">Net Operating Income</td>
+                    {years.map(year => {
+                      const revenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
+                      const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
+                      const income = revenue - expenses;
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {formatter(income)}
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Annual Bond Payment */}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6 font-medium">Annual Bond Payment</td>
                     {years.map(year => (
@@ -226,33 +251,38 @@ export default function CashflowMetrics({
                       </td>
                     ))}
                   </tr>
+
+                  {/* Annual Cashflow */}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6 font-medium">Annual Cashflow</td>
                     {years.map(year => {
                       const revenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
                       const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
                       const bondPayment = monthlyBondRepayment * 12;
+                      const cashflow = revenue - expenses - bondPayment;
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
-                            {formatter(revenue - expenses - bondPayment)}
+                            {formatter(cashflow)}
                             <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                           </div>
                         </td>
                       );
                     })}
                   </tr>
+
+                  {/* Cumulative Cashflow */}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6 font-medium">Cumulative Cashflow</td>
                     {years.map((year, index) => {
                       let cumulativeCashflow = 0;
-                      const previousYears = years.slice(0, index + 1);
-                      previousYears.forEach(y => {
+                      for (let i = 0; i <= index; i++) {
+                        const y = years[i];
                         const revenue = longTermMonthly * 12 * Math.pow(1.08, y - 1);
                         const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, y - 1);
                         const bondPayment = monthlyBondRepayment * 12;
                         cumulativeCashflow += revenue - expenses - bondPayment;
-                      });
+                      }
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
