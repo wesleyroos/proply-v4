@@ -181,9 +181,12 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     breakdown: {
       levies: data.levies,
       ratesAndTaxes: data.ratesAndTaxes,
-      otherMonthlyExpenses: data.otherMonthlyExpenses
+      otherMonthlyExpenses: data.otherMonthlyExpenses,
+      maintenancePercent: data.maintenancePercent,
+      managementFee: data.managementFee
     },
-    totalMonthlyExpenses
+    totalMonthlyExpenses,
+    shortTermAnnualRevenue
   });
   
   // Calculate annual expenses (NOE)
