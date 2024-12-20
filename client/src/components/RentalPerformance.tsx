@@ -87,6 +87,15 @@ export default function RentalPerformance({ shortTermNightly, longTermMonthly, m
                 </tr>
               ))}
 
+              {/* Management Fee Row */}
+              <tr className="border-b hover:bg-gray-50">
+                <td className="py-3 px-6">Management Fee</td>
+                {Array(12).fill(0).map((_, i) => (
+                  <td key={i} className="text-right py-3 px-6 whitespace-nowrap">{managementFee}%</td>
+                ))}
+                <td colSpan={2}></td>
+              </tr>
+
               {/* Revenue Rows */}
               {(['low', 'medium', 'high'] as const).map((scenario) => {
                 const monthlyRevenues = Array(12).fill(0).map((_, i) => 
