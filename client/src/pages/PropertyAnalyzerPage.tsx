@@ -95,9 +95,9 @@ export default function PropertyAnalyzerPage() {
         loanTerm: Number(formData.loanTerm),
         floorArea: Number(formData.floorArea),
         ratePerSquareMeter: Number(formData.cmaRatePerSqm),
-        // Expense-related fields with explicit number conversion
-        levies: Number(formData.levies || 0),
-        ratesAndTaxes: Number(formData.ratesAndTaxes || 0),
+        // Map expense fields directly from the form
+        monthlyLevies: Number(formData.monthlyLevies || 0),
+        monthlyRatesTaxes: Number(formData.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(formData.otherMonthlyExpenses || 0),
         maintenancePercent: Number(formData.maintenancePercent || 0),
         managementFee: Number(formData.managementFee || 0),
