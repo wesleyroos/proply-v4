@@ -465,48 +465,74 @@ export function registerRoutes(app: Express): Server {
         managementFee: Number(req.body.managementFee || 0)
       };
 
-      // Calculate monthly revenue with platform fee adjustment
+      console.log("\n=== Starting Property Analysis ===");
+      console.log("Raw Input Data:", JSON.stringify(propertyData, null, 2));
+
+      // Validate expense inputs first
+      const expenseInput = {
+        levies: propertyData.monthlyLevies,
+        ratesAndTaxes: propertyData.monthlyRatesTaxes,
+        otherMonthlyExpenses: propertyData.otherMonthlyExpenses,
+        maintenancePercent: propertyData.maintenancePercent,
+        managementFee: propertyData.managementFee
+      };
+      console.log("Validated Data after Schema Parse:", expenseInput);
+
+      // Calculate initial fixed monthly expenses
+      const fixedMonthlyExpenses = propertyData.monthlyLevies + propertyData.monthlyRatesTaxes + propertyData.otherMonthlyExpenses;
+      console.log("Initial Fixed Monthly Expenses:", {
+        fixedMonthlyExpenses,
+        breakdown: {
+          levies: propertyData.monthlyLevies,
+          ratesAndTaxes: propertyData.monthlyRatesTaxes,
+          otherMonthlyExpenses: propertyData.otherMonthlyExpenses
+        }
+      });
+
+      // Calculate short-term revenue with platform fee adjustment
       const platformFeeRate = propertyData.managementFee > 0 ? 0.15 : 0.03; // 15% if managed, 3% if self-managed
       const monthlyRevenue = propertyData.shortTermNightlyRate && propertyData.annualOccupancy
         ? (propertyData.shortTermNightlyRate * (1 - platformFeeRate) * 365 * (propertyData.annualOccupancy / 100)) / 12
         : 0;
-
-      // Fixed monthly expenses
-      const fixedMonthlyExpenses = propertyData.monthlyLevies + propertyData.monthlyRatesTaxes + propertyData.otherMonthlyExpenses;
-
-      // Revenue-based expenses (maintenance and management fees)
-      const maintenanceExpense = monthlyRevenue * (propertyData.maintenancePercent / 100);
-      const managementFeeExpense = monthlyRevenue * (propertyData.managementFee / 100);
-
-      // Total monthly expenses
-      const totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
-
-      // Annual expenses before growth rate
-      const baseAnnualExpenses = totalMonthlyExpenses * 12;
-
-      console.log('Monthly Revenue Calculation:', {
+      console.log("Short-term Revenue Calculations:", {
         nightlyRate: propertyData.shortTermNightlyRate,
         platformFeeRate,
         feeAdjustedNightlyRate: propertyData.shortTermNightlyRate * (1 - platformFeeRate),
         occupancyRate: propertyData.annualOccupancy,
-        monthlyRevenue
+        annualRevenue: monthlyRevenue * 12
       });
 
-      console.log("Monthly Expense Calculation Details:", {
-        components: {
+      // Calculate revenue-based expenses
+      const maintenanceExpense = monthlyRevenue * (propertyData.maintenancePercent / 100);
+      const managementFeeExpense = monthlyRevenue * (propertyData.managementFee / 100);
+      const totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
+      console.log("Revenue-based Monthly Expenses:", {
+        monthlyRevenue,
+        maintenanceExpense,
+        managementFeeExpense,
+        maintenancePercent: propertyData.maintenancePercent,
+        managementFee: propertyData.managementFee,
+        totalMonthlyExpenses
+      });
+
+      // Calculate final annual expenses
+      const baseAnnualExpenses = totalMonthlyExpenses * 12;
+      console.log("Final Annual Expense Calculations:", {
+        monthlyBreakdown: {
           fixedMonthlyExpenses,
           maintenanceExpense,
-          managementFeeExpense
+          managementFeeExpense,
+          totalMonthlyExpenses
         },
-        breakdown: {
-          levies: propertyData.levies,
-          ratesAndTaxes: propertyData.ratesAndTaxes,
+        baseAnnualExpenses,
+        expenseComponents: {
+          monthlyLevies: propertyData.monthlyLevies,
+          monthlyRatesTaxes: propertyData.monthlyRatesTaxes,
           otherMonthlyExpenses: propertyData.otherMonthlyExpenses,
           maintenancePercent: propertyData.maintenancePercent,
           managementFee: propertyData.managementFee
         },
-        totalMonthlyExpenses,
-        shortTermAnnualRevenue: monthlyRevenue * 12
+        expenseGrowthRate: propertyData.expenseGrowthRate
       });
 
       console.log("Converted property data:", JSON.stringify(propertyData, null, 2));
