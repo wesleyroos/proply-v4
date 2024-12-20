@@ -122,20 +122,16 @@ export default function PropertyAnalyzerPage() {
   };
 
   return (
-    <div className="px-6 py-6">
-      <div className="flex items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Property Analysis</h1>
-          <p className="text-muted-foreground mt-1">
-            Enter property details to generate analysis
-          </p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#FFFFFF]">
+      <div className="p-6 max-w-[1400px]">
+        <h1 className="text-2xl font-bold text-[#262626] mb-6">
+          Proply Rent Compare
+        </h1>
 
-      <div className="space-y-6">
-        <div className="w-3/4">
-          <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
-        </div>
+        <div className="space-y-6">
+          <div className="w-3/4">
+            <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+          </div>
 
         {analysisError && (
           <Card className="border-red-200 bg-red-50">
@@ -608,6 +604,7 @@ export default function PropertyAnalyzerPage() {
             </Card>
           </>
         )}
+        </div>
       </div>
     </div>
   );
