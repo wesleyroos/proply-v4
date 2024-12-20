@@ -142,15 +142,13 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
-      <div className="container mx-auto pr-4">
-        <h1 className="text-2xl font-bold text-[#262626] mb-6 pt-6">
+      <div className="p-6">
+        <h1 className="text-2xl font-bold text-[#262626] mb-6">
           Property Analyzer
         </h1>
 
-        <div className="space-y-6 w-full">
-          <div className="w-4/5">
-            <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
-          </div>
+        <div className="max-w-5xl space-y-6">
+          <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
 
           {analysisError && (
             <Card className="border-red-200 bg-red-50">
@@ -680,7 +678,7 @@ export default function PropertyAnalyzerPage() {
         </div>
 
         {/* Disclaimer Section */}
-        <div className="mt-12 mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="mt-12 p-6 bg-gray-50 rounded-lg border border-gray-200">
           <div className="w-full text-sm text-gray-600 space-y-4">
             <p className="font-semibold mb-4">DISCLAIMER:</p>
             <p>
