@@ -45,6 +45,7 @@ export interface AnalysisResult {
       shortTerm: {
         year1: number;
         year2: number;
+        year3: number;
         year4: number;
         year5: number;
         year10: number;
@@ -54,6 +55,7 @@ export interface AnalysisResult {
     operatingExpenses: {
       year1: number;
       year2: number;
+      year3: number;
       year4: number;
       year5: number;
       year10: number;
@@ -189,6 +191,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       shortTerm: {
         year1: shortTermAnnualRevenue,
         year2: shortTermAnnualRevenue * Math.pow(1 + growthRate, 1),
+        year3: shortTermAnnualRevenue * Math.pow(1 + growthRate, 2),
         year4: shortTermAnnualRevenue * Math.pow(1 + growthRate, 3),
         year5: shortTermAnnualRevenue * Math.pow(1 + growthRate, 4),
         year10: shortTermAnnualRevenue * Math.pow(1 + growthRate, 9),
@@ -298,6 +301,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   const operatingExpenses = {
     year1: baseAnnualExpenses,  // No growth in first year
     year2: baseAnnualExpenses * (1 + expenseGrowthRate),
+    year3: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 2),
     year4: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 3),
     year5: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 4),
     year10: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 9),
@@ -308,6 +312,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   const netOperatingIncome = revenueProjections?.shortTerm ? {
     year1: revenueProjections.shortTerm.year1 - operatingExpenses.year1,
     year2: revenueProjections.shortTerm.year2 - operatingExpenses.year2,
+    year3: revenueProjections.shortTerm.year3 - operatingExpenses.year3,
     year4: revenueProjections.shortTerm.year4 - operatingExpenses.year4,
     year5: revenueProjections.shortTerm.year5 - operatingExpenses.year5,
     year10: revenueProjections.shortTerm.year10 - operatingExpenses.year10,
