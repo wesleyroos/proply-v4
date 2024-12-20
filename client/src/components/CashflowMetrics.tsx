@@ -30,6 +30,7 @@ export default function CashflowMetrics({
   longTermMonthly,
   monthlyBondRepayment,
   managementFee,
+  revenueProjections,
 }: CashflowMetricsProps) {
   // Calculate expenses for both rental strategies
   const longTermExpenses = monthlyBondRepayment;
