@@ -143,10 +143,10 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <SidebarProvider defaultOpen>
-      <div className="flex h-screen bg-background">
+      <div className="flex h-screen">
         <Sidebar />
-        <SidebarInset>
-          <div className="container mx-auto p-4 md:p-6 lg:p-8">
+        <SidebarInset className="flex-1 overflow-auto bg-background">
+          <div className="max-w-[1500px] mx-auto px-4 md:px-6 lg:px-8 py-6">
             <h1 className="text-2xl font-bold text-foreground mb-6">
               Property Analyzer
             </h1>
@@ -166,8 +166,33 @@ export default function PropertyAnalyzerPage() {
               <div className="space-y-6 md:col-span-2 lg:col-span-2">
                 {analysisResult && (
                   <>
-                    <InvestmentMetrics data={analysisResult.analysis} />
-                    <CashflowMetrics data={analysisResult.analysis} />
+                    <InvestmentMetrics 
+                      purchasePrice={analysisResult.analysis.purchasePrice}
+                      deposit={analysisResult.deposit}
+                      monthlyBondRepayment={analysisResult.monthlyBondRepayment}
+                      shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                      longTermMonthly={
+                        analysisResult.analysis.longTermAnnualRevenue
+                          ? analysisResult.analysis.longTermAnnualRevenue / 12
+                          : 0
+                      }
+                      revenueProjections={analysisResult.analysis.revenueProjections}
+                      operatingExpenses={analysisResult.analysis.operatingExpenses}
+                      netOperatingIncome={analysisResult.analysis.netOperatingIncome || null}
+                    />
+                    <CashflowMetrics
+                      shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                      longTermMonthly={
+                        analysisResult.analysis.longTermAnnualRevenue
+                          ? analysisResult.analysis.longTermAnnualRevenue / 12
+                          : 0
+                      }
+                      monthlyBondRepayment={analysisResult.monthlyBondRepayment}
+                      managementFee={Number(formData?.managementFee) || 0}
+                      revenueProjections={analysisResult.analysis.revenueProjections}
+                      operatingExpenses={analysisResult.analysis.operatingExpenses}
+                      netOperatingIncome={analysisResult.analysis.netOperatingIncome || null}
+                    />
                   </>
                 )}
               </div>
