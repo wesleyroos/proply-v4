@@ -7,10 +7,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import {
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -18,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AlertCircle, BarChart3, TrendingUp, Building2, MapPin, HelpCircle, MenuIcon } from "lucide-react";
+import { AlertCircle, BarChart3, TrendingUp, Building2, MapPin, HelpCircle } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
@@ -84,8 +80,6 @@ export default function PropertyAnalyzerPage() {
   const [formData, setFormData] = useState<any>(null);
   const [includeTransferDuty, setIncludeTransferDuty] = useState<boolean>(true);
   const [includeVAT, setIncludeVAT] = useState<boolean>(true);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
   const handleAnalysisComplete = async (formData: any) => {
     try {
       setAnalysisError(null);
@@ -146,36 +140,8 @@ export default function PropertyAnalyzerPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Mobile menu button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed top-4 left-4 md:hidden z-50"
-        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-      >
-        <MenuIcon className="h-6 w-6" />
-      </Button>
-
-      <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel
-          defaultSize={25}
-          minSize={20}
-          maxSize={30}
-          className={`bg-sidebar border-r border-sidebar-border transition-all duration-300 ${
-            isSidebarCollapsed ? "hidden" : "block"
-          } md:block`}
-        >
-          <div className="h-full p-6">
-            <h2 className="text-xl font-bold text-sidebar-foreground mb-6">
-              Property Analysis
-            </h2>
-            {/* Sidebar content */}
-          </div>
-        </ResizablePanel>
-
-        <ResizablePanel defaultSize={75}>
-          <main className="flex-1 overflow-auto">
+    <div className="min-h-screen bg-background">
+      <main className="w-full">
             <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
               <h1 className="text-2xl font-bold text-foreground mb-6">
                 Property Analyzer
@@ -356,8 +322,6 @@ export default function PropertyAnalyzerPage() {
               </div>
             </div>
           </main>
-        </ResizablePanel>
-      </ResizablePanelGroup>
     </div>
   );
 }
