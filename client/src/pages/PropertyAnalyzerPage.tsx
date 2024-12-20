@@ -120,7 +120,7 @@ export default function PropertyAnalyzerPage() {
       <div className="container mx-auto px-4 py-6 lg:px-8">
         <div className="max-w-[1400px] mx-auto space-y-6">
           {/* Property Analyzer Form - 3/4 width */}
-          <div className="w-3/4 mx-auto">
+          <div className="w-3/4">
             <Card>
               <CardContent className="p-6">
                 <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
