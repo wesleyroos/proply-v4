@@ -238,13 +238,18 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Calculate base annual expenses (before growth)
   baseAnnualExpenses = totalMonthlyExpenses * 12;
   
-  // Apply expense growth rate for year 1
-  const noeYear1 = baseAnnualExpenses * (1 + (data.expenseGrowthRate / 100));
+  // Year 1 is base expenses (no growth applied)
+  const noeYear1 = baseAnnualExpenses;
   
   console.log('Annual NOE Calculation:', {
+    monthlyExpenses: totalMonthlyExpenses,
     baseAnnualExpenses,
-    growthRate: data.expenseGrowthRate,
-    noeYear1
+    noeYear1,
+    breakdown: {
+      fixed: fixedMonthlyExpenses * 12,
+      maintenance: maintenanceExpense * 12,
+      management: managementFeeExpense * 12
+    }
   });
 
   console.log('Final Annual Expense Calculations:', {
@@ -283,12 +288,12 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Start with noeYear1 (which already includes first year's growth)
   const expenseGrowthRate = data.expenseGrowthRate / 100;
   const operatingExpenses = {
-    year1: noeYear1,
-    year2: noeYear1 * (1 + expenseGrowthRate),
-    year4: noeYear1 * Math.pow(1 + expenseGrowthRate, 3),
-    year5: noeYear1 * Math.pow(1 + expenseGrowthRate, 4),
-    year10: noeYear1 * Math.pow(1 + expenseGrowthRate, 9),
-    year20: noeYear1 * Math.pow(1 + expenseGrowthRate, 19)
+    year1: baseAnnualExpenses,  // No growth in first year
+    year2: baseAnnualExpenses * (1 + expenseGrowthRate),
+    year4: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 3),
+    year5: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 4),
+    year10: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 9),
+    year20: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 19)
   };
 
   const result = {
