@@ -298,15 +298,34 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
     try {
-      // Prepare analysis data with expense fields at root level
+      // Clean and prepare the analysis data
       const analysisData = {
-        ...data,
-        // Ensure expense fields are at root level with proper names
-        levies: Number(data.levies) || 0,
-        ratesAndTaxes: Number(data.ratesAndTaxes) || 0,
-        otherMonthlyExpenses: Number(data.otherMonthlyExpenses) || 0,
-        maintenancePercent: Number(data.maintenancePercent) || 0,
-        managementFee: Number(data.managementFee) || 0,
+        address: data.address,
+        propertyUrl: data.propertyUrl,
+        purchasePrice: Number(data.purchasePrice),
+        floorArea: Number(data.floorArea),
+        bedrooms: Number(data.bedrooms),
+        bathrooms: Number(data.bathrooms),
+        parkingSpaces: Number(data.parkingSpaces),
+        depositType: data.depositType,
+        depositAmount: Number(data.depositAmount),
+        depositPercentage: Number(data.depositPercentage),
+        interestRate: Number(data.interestRate),
+        loanTerm: Number(data.loanTerm),
+        levies: Number(data.levies),
+        ratesAndTaxes: Number(data.ratesAndTaxes),
+        otherMonthlyExpenses: Number(data.otherMonthlyExpenses),
+        maintenancePercent: Number(data.maintenancePercent),
+        managementFee: Number(data.managementFee),
+        airbnbNightlyRate: data.airbnbNightlyRate ? Number(data.airbnbNightlyRate) : undefined,
+        occupancyRate: data.occupancyRate ? Number(data.occupancyRate) : undefined,
+        longTermRental: data.longTermRental ? Number(data.longTermRental) : undefined,
+        leaseCycleGap: data.leaseCycleGap ? Number(data.leaseCycleGap) : undefined,
+        annualIncomeGrowth: Number(data.annualIncomeGrowth),
+        annualExpenseGrowth: Number(data.annualExpenseGrowth),
+        annualPropertyAppreciation: Number(data.annualPropertyAppreciation),
+        cmaRatePerSqm: Number(data.cmaRatePerSqm),
+        comments: data.comments,
       };
 
       console.log('Submitting analysis data:', analysisData);
