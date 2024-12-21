@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
 import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight } from "lucide-react";
+import RentalPerformance from "@/components/RentalPerformance";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
@@ -381,11 +382,11 @@ export default function PropertyAnalyzerPage() {
                         </div>
                       </div>
                       <div>
-                        <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
-                          Get Connected with a Transfer Attorney
+                        <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm">
+                          Connect to Transfer Attorney
                         </Button>
-                        <p className="mt-2 text-sm text-slate-600">
-                          Get exclusive rates and professional guidance for your property transfer process through our network of trusted attorneys.
+                        <p className="mt-1 text-xs text-slate-500">
+                          Get exclusive rates from our network of trusted attorneys
                         </p>
                       </div>
                     </div>
@@ -602,6 +603,13 @@ export default function PropertyAnalyzerPage() {
                 </Card>
               </div>
             </div>
+
+            {/* Rental Performance Section */}
+            <RentalPerformance 
+              shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+              longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
+              managementFee={20}
+            />
 
             {/* Detailed Analysis Section */}
             <div className="space-y-6">
