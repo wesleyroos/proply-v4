@@ -328,10 +328,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         comments: data.comments,
       };
 
-      console.log('Form data loan term:', data.loanTerm);
-      console.log('Converted loan term:', loanTermValue);
-      console.log('Submitting analysis data:', analysisData);
-
       if (props.onAnalysisComplete) {
         await props.onAnalysisComplete(analysisData);
       }
@@ -848,7 +844,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           min="1"
                           placeholder="Enter loan term in years"
                           {...field}
-                          {...field}
+                          type="number"
+                          min="1"
                           onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         />
                       </FormControl>
