@@ -52,17 +52,43 @@ export default function PropertyAnalyzerPage() {
 
       // Ensure all numbers are properly parsed and validated
       const requestBody = {
-        purchasePrice: Number(formData.purchasePrice),
-        shortTermNightlyRate: Number(formData.airbnbNightlyRate) || undefined,
-        annualOccupancy: Number(formData.occupancyRate) || undefined,
-        longTermRental: Number(formData.longTermRental) || undefined,
-        leaseCycleGap: Number(formData.leaseCycleGap) || undefined,
-        propertyDescription: formData.comments || null,
+        // Property Details
         address: formData.address,
-        deposit: Number(formData.depositAmount),
-        interestRate: Number(formData.interestRate),
+        propertyUrl: formData.propertyUrl,
+        purchasePrice: Number(formData.purchasePrice),
         floorArea: Number(formData.floorArea),
-        ratePerSquareMeter: Number(formData.cmaRatePerSqm),
+        bedrooms: Number(formData.bedrooms),
+        bathrooms: Number(formData.bathrooms),
+        parkingSpaces: Number(formData.parkingSpaces || 0),
+        
+        // Financing Details
+        depositType: formData.depositType,
+        deposit: Number(formData.depositAmount),
+        depositPercentage: Number(formData.depositPercentage),
+        interestRate: Number(formData.interestRate),
+        loanTerm: Number(formData.loanTerm),
+        
+        // Operating Expenses
+        monthlyLevies: Number(formData.monthlyLevies || 0),
+        monthlyRatesTaxes: Number(formData.monthlyRatesTaxes || 0),
+        otherMonthlyExpenses: Number(formData.otherMonthlyExpenses || 0),
+        maintenancePercent: Number(formData.maintenancePercent || 0),
+        managementFee: Number(formData.managementFee || 0),
+        
+        // Revenue Performance
+        shortTermNightlyRate: Number(formData.airbnbNightlyRate || 0),
+        annualOccupancy: Number(formData.occupancyRate || 0),
+        longTermRental: Number(formData.longTermRental || 0),
+        leaseCycleGap: Number(formData.leaseCycleGap || 0),
+        
+        // Escalations
+        annualIncomeGrowth: Number(formData.annualIncomeGrowth || 0),
+        annualExpenseGrowth: Number(formData.annualExpenseGrowth || 0),
+        annualPropertyAppreciation: Number(formData.annualPropertyAppreciation || 0),
+        
+        // Miscellaneous
+        ratePerSquareMeter: Number(formData.cmaRatePerSqm || 0),
+        propertyDescription: formData.comments || "",
       };
 
       console.log("Data being sent to analyzer:", requestBody);
