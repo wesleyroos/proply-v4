@@ -37,6 +37,9 @@ interface AnalysisResult {
     shortTermAnnualRevenue: number | null;
     longTermAnnualRevenue: number | null;
     purchasePrice: number;
+    revenueProjections?: { shortTerm: number[] | null };
+    operatingExpenses?: number;
+    netOperatingIncome?: number;
   };
   address: string;
   propertyPhotoUrl?: string;
@@ -317,7 +320,7 @@ export default function PropertyAnalyzerPage() {
                         <AnalyzerIndicator />
                       </h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
-                        R{analysisResult.bondRegistration?.toLocaleString() || "0"}
+                        R{calculateBondRegistration(analysisResult.analysis.purchasePrice, !removeVat).toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -483,8 +486,9 @@ export default function PropertyAnalyzerPage() {
                     <div className="space-y-6">
                       <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <h3 className="text-sm font-semibold text-slate-600">
+                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
                             Floor Area
+                            <AnalyzerIndicator />
                           </h3>
                           <p className="mt-2 text-lg font-bold text-slate-800">
                             {analysisResult.floorArea || "0"} m²
@@ -505,8 +509,9 @@ export default function PropertyAnalyzerPage() {
                       </div>
                       <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <h3 className="text-sm font-semibold text-slate-600">
+                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
                             Area Rate/m²
+                            <AnalyzerIndicator />
                           </h3>
                           <p className="mt-2 text-lg font-bold text-slate-800">
                             R
