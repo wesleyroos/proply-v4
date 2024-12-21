@@ -481,7 +481,17 @@ export default function PropertyAnalyzerPage() {
 
             {/* Metrics Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <CashflowMetrics data={analysisResult} />
+              <CashflowMetrics 
+                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                longTermMonthly={analysisResult.analysis.longTermAnnualRevenue / 12 || 0}
+                monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
+                managementFee={20}
+                revenueProjections={{
+                  shortTerm: analysisResult.analysis.revenueProjections?.shortTerm || null
+                }}
+                operatingExpenses={analysisResult.analysis.operatingExpenses}
+                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+              />
               <InvestmentMetrics data={analysisResult} />
             </div>
           </>
