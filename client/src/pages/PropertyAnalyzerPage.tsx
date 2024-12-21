@@ -349,42 +349,45 @@ export default function PropertyAnalyzerPage() {
                         !removeTransferDuty
                       ).toLocaleString()}
                     </p>
-                    <div className="mt-2 space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="removeVat"
-                          checked={removeVat}
-                          onCheckedChange={(checked) => setRemoveVat(checked as boolean)}
-                        />
-                        <label
-                          htmlFor="removeVat"
-                          className="text-sm text-slate-600 cursor-pointer"
-                        >
-                          Remove VAT
-                        </label>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <div className="mt-2 space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="removeVat"
+                              checked={removeVat}
+                              onCheckedChange={(checked) => setRemoveVat(checked as boolean)}
+                            />
+                            <label
+                              htmlFor="removeVat"
+                              className="text-sm text-slate-600 cursor-pointer"
+                            >
+                              Remove VAT
+                            </label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="removeTransferDuty"
+                              checked={removeTransferDuty}
+                              onCheckedChange={(checked) => setRemoveTransferDuty(checked as boolean)}
+                            />
+                            <label
+                              htmlFor="removeTransferDuty"
+                              className="text-sm text-slate-600 cursor-pointer"
+                            >
+                              Remove Transfer Duty
+                            </label>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="removeTransferDuty"
-                          checked={removeTransferDuty}
-                          onCheckedChange={(checked) => setRemoveTransferDuty(checked as boolean)}
-                        />
-                        <label
-                          htmlFor="removeTransferDuty"
-                          className="text-sm text-slate-600 cursor-pointer"
-                        >
-                          Remove Transfer Duty
-                        </label>
+                      <div>
+                        <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
+                          Get Connected with a Transfer Attorney
+                        </Button>
+                        <p className="mt-2 text-sm text-slate-600">
+                          Get exclusive rates and professional guidance for your property transfer process through our network of trusted attorneys.
+                        </p>
                       </div>
-                    </div>
-                    
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
-                        Get Connected with an Attorney
-                      </Button>
-                      <p className="mt-2 text-sm text-slate-600">
-                        Get exclusive rates and professional guidance for your property transfer process through our network of trusted attorneys.
-                      </p>
                     </div>
                   </div>
 
