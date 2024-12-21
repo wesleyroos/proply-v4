@@ -6,6 +6,8 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
 import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight } from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
@@ -42,11 +44,26 @@ interface AnalysisResult {
 
 export default function PropertyAnalyzerPage() {
   const { user } = useUser();
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
-    null,
-  );
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(null);
+  const [removeVat, setRemoveVat] = useState(false);
+  const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
+
+  const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
+    const costs = findCostFromTable(purchasePrice, bondCostsTable);
+    if (!costs) return 0;
+    return includeVat ? costs.total : costs.total - costs.vat;
+  };
+
+  const calculateTransferCosts = (purchasePrice: number, includeVat: boolean = true, includeTransferDuty: boolean = true) => {
+    const costs = findCostFromTable(purchasePrice, transferCostsTable);
+    if (!costs) return 0;
+    let total = costs.total;
+    if (!includeVat) total -= costs.vat;
+    if (!includeTransferDuty) total -= costs.transferDuty;
+    return total;
+  };
 
   const handleAnalysisComplete = async (formData: any) => {
     try {
@@ -312,8 +329,40 @@ export default function PropertyAnalyzerPage() {
                       <AnalyzerIndicator />
                     </h3>
                     <p className="mt-2 text-lg font-bold text-slate-800">
-                      R{analysisResult.transferCosts?.toLocaleString() || "0"}
+                      R{calculateTransferCosts(
+                        analysisResult.analysis.purchasePrice,
+                        !removeVat,
+                        !removeTransferDuty
+                      ).toLocaleString()}
                     </p>
+                    <div className="mt-2 space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="removeVat"
+                          checked={removeVat}
+                          onCheckedChange={(checked) => setRemoveVat(checked as boolean)}
+                        />
+                        <label
+                          htmlFor="removeVat"
+                          className="text-sm text-slate-600 cursor-pointer"
+                        >
+                          Remove VAT
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="removeTransferDuty"
+                          checked={removeTransferDuty}
+                          onCheckedChange={(checked) => setRemoveTransferDuty(checked as boolean)}
+                        />
+                        <label
+                          htmlFor="removeTransferDuty"
+                          className="text-sm text-slate-600 cursor-pointer"
+                        >
+                          Remove Transfer Duty
+                        </label>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Total Capital Required */}
@@ -324,8 +373,9 @@ export default function PropertyAnalyzerPage() {
                     </h3>
                     <p className="mt-2 text-2xl font-bold text-slate-800">
                       R{((analysisResult.deposit || 0) + 
-                         (analysisResult.bondRegistration || 0) + 
-                         (analysisResult.transferCosts || 0)).toLocaleString()}
+                         calculateBondRegistration(analysisResult.analysis.purchasePrice, !removeVat) +
+                         calculateTransferCosts(analysisResult.analysis.purchasePrice, !removeVat, !removeTransferDuty)
+                        ).toLocaleString()}
                     </p>
                   </div>
                 </CardContent>
