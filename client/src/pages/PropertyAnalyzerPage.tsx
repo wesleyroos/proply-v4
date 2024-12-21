@@ -6,7 +6,12 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { AlertCircle, BarChart3, TrendingUp, Building2 } from "lucide-react";
+import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight } from "lucide-react";
+import AnalyzerIndicator from "@/components/AnalyzerIndicator";
+import RentalPerformance from "@/components/RentalPerformance";
+import CashflowMetrics from "@/components/CashflowMetrics";
+import InvestmentMetrics from "@/components/InvestmentMetrics";
+import ComparisonChart from "@/components/ComparisonChart";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
@@ -294,11 +299,11 @@ export default function PropertyAnalyzerPage() {
                         </h3>
                         <div className="space-y-2">
                           <div>
-                            <p className="text-2xl font-bold text-slate-800">
-                              R
-                              {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
-                                "0"}
-                            </p>
+                            <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                            <span>R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
+                              "0"}</span>
+                            <span className="w-2 h-2 rounded-full bg-red-500" title="Data from analyzer engine" />
+                          </p>
                             <p className="text-base text-slate-600">
                               R
                               {Math.round(
@@ -466,6 +471,18 @@ export default function PropertyAnalyzerPage() {
                   </CardContent>
                 </Card>
               </div>
+            </div>
+
+            {/* Rental Performance Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <RentalPerformance data={analysisResult} />
+              <ComparisonChart data={analysisResult} />
+            </div>
+
+            {/* Metrics Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CashflowMetrics data={analysisResult} />
+              <InvestmentMetrics data={analysisResult} />
             </div>
           </>
         )}
