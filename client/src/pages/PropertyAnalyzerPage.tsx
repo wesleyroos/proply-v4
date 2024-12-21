@@ -71,7 +71,11 @@ export default function PropertyAnalyzerPage() {
   const handleAnalysisComplete = async (formData: any) => {
     try {
       setAnalysisError(null);
-      setFormData(formData);
+      console.log("Form data received:", formData); // Debug log
+      setFormData({
+        ...formData,
+        propertyPhoto: formData.propertyPhoto
+      });
 
       // Ensure all numbers are properly parsed and validated
       const requestBody = {
@@ -222,9 +226,17 @@ export default function PropertyAnalyzerPage() {
                             </h3>
                             <div className="rounded-lg overflow-hidden mt-2">
                               <img
-                                src={formData.propertyPhoto instanceof File ? URL.createObjectURL(formData.propertyPhoto) : formData.propertyPhoto}
+                                src={formData.propertyPhoto instanceof File ? 
+                                  URL.createObjectURL(formData.propertyPhoto) : 
+                                  typeof formData.propertyPhoto === 'string' ? 
+                                    formData.propertyPhoto : null
+                                }
                                 alt="Property"
                                 className="w-full h-48 object-cover rounded-lg"
+                                onError={(e) => {
+                                  console.error('Error loading image:', e);
+                                  e.currentTarget.style.display = 'none';
+                                }}
                               />
                             </div>
                           </div>
@@ -363,6 +375,15 @@ export default function PropertyAnalyzerPage() {
                           Remove Transfer Duty
                         </label>
                       </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
+                        Get Connected with an Attorney
+                      </Button>
+                      <p className="mt-2 text-sm text-slate-600">
+                        Get exclusive rates and professional guidance for your property transfer process through our network of trusted attorneys.
+                      </p>
                     </div>
                   </div>
 
