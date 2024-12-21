@@ -298,6 +298,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
     try {
+      // Validate loan term before submission
+      const loanTermValue = Number(data.loanTerm);
+      if (isNaN(loanTermValue) || loanTermValue < 1) {
+        toast({
+          title: "Validation Error",
+          description: "Loan term must be a valid number and at least 1 year",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Clean and prepare the analysis data
       const analysisData = {
         address: data.address,
@@ -311,7 +322,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         depositAmount: Number(data.depositAmount),
         depositPercentage: Number(data.depositPercentage),
         interestRate: Number(data.interestRate),
-        loanTerm: Number(data.loanTerm),
+        loanTerm: loanTermValue, // Use the validated loan term value
         monthlyLevies: Number(data.monthlyLevies || 0),
         monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
@@ -328,6 +339,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         comments: data.comments,
       };
 
+      console.log('Form data loan term:', data.loanTerm);
+      console.log('Converted loan term:', loanTermValue);
       console.log('Submitting analysis data:', analysisData);
 
       if (props.onAnalysisComplete) {
@@ -844,10 +857,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <Input
                           type="number"
                           min="1"
+                          placeholder="Enter loan term in years"
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
+                          value={field.value || ''}
+                          onChange={(e) => {
+                            const value = e.target.valueAsNumber;
+                            if (!isNaN(value) && value >= 1) {
+                              field.onChange(value);
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
