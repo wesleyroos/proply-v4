@@ -369,28 +369,28 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
           {currentStep === 1 && (
             <div className="space-y-4">
               <FormField
-                control={form.control}
-                name="loanTerm"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Loan Term (Years)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="1"
-                        placeholder="Enter loan term in years"
-                        {...field}
-                        defaultValue={20}
-                        onChange={(e) => {
-                          const value = e.target.valueAsNumber;
-                          field.onChange(isNaN(value) ? 20 : Math.max(1, value));
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  control={form.control}
+                  name="loanTerm"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Loan Term (Years)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="1"
+                          placeholder="Enter loan term in years"
+                          {...field}
+                          value={field.value || 20}
+                          onChange={(e) => {
+                            const value = e.target.valueAsNumber;
+                            field.onChange(isNaN(value) ? 20 : Math.max(1, value));
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               {/* Other financing fields... */}
               <FormField
                 control={form.control}
