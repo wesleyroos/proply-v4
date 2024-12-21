@@ -96,7 +96,7 @@ const formSchema = z.object({
     .number()
     .min(0, "Interest rate must be positive")
     .max(100, "Interest rate cannot exceed 100"),
-  loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
+  loanTerm: z.number({ required_error: "Loan term is required" }).min(1, "Loan term must be at least 1 year"),
 
   // Step 3: Operating Expenses
   monthlyLevies: z.coerce.number().min(0, "Monthly levies must be positive").default(0),
@@ -277,7 +277,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       depositAmount: undefined,
       depositPercentage: undefined,
       interestRate: undefined,
-      loanTerm: undefined,
+      loanTerm: 20, // Default to 20 years
       monthlyLevies: undefined,
       monthlyRatesTaxes: undefined,
       otherMonthlyExpenses: undefined,
