@@ -299,34 +299,48 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     setIsSubmitting(true);
     try {
       // Clean and prepare the analysis data
+      // Ensure all form fields are included and properly typed
       const analysisData = {
+        // Property Details
         address: data.address,
         propertyUrl: data.propertyUrl,
         purchasePrice: Number(data.purchasePrice),
         floorArea: Number(data.floorArea),
         bedrooms: Number(data.bedrooms),
         bathrooms: Number(data.bathrooms),
-        parkingSpaces: Number(data.parkingSpaces),
+        parkingSpaces: Number(data.parkingSpaces || 0),
+        
+        // Financing Details
         depositType: data.depositType,
         depositAmount: Number(data.depositAmount),
         depositPercentage: Number(data.depositPercentage),
         interestRate: Number(data.interestRate),
-        loanTerm: data.loanTerm,
+        loanTerm: Number(data.loanTerm), // Ensure loan term is converted to number
+        
+        // Operating Expenses
         monthlyLevies: Number(data.monthlyLevies || 0),
         monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
         maintenancePercent: Number(data.maintenancePercent || 0),
         managementFee: Number(data.managementFee || 0),
+        
+        // Revenue Performance
         airbnbNightlyRate: Number(data.airbnbNightlyRate || 0),
         occupancyRate: Number(data.occupancyRate || 0),
         longTermRental: Number(data.longTermRental || 0),
         leaseCycleGap: Number(data.leaseCycleGap || 0),
-        annualIncomeGrowth: Number(data.annualIncomeGrowth),
-        annualExpenseGrowth: Number(data.annualExpenseGrowth),
-        annualPropertyAppreciation: Number(data.annualPropertyAppreciation),
-        cmaRatePerSqm: Number(data.cmaRatePerSqm),
-        comments: data.comments,
+        
+        // Escalations
+        annualIncomeGrowth: Number(data.annualIncomeGrowth || 0),
+        annualExpenseGrowth: Number(data.annualExpenseGrowth || 0),
+        annualPropertyAppreciation: Number(data.annualPropertyAppreciation || 0),
+        
+        // Miscellaneous
+        cmaRatePerSqm: Number(data.cmaRatePerSqm || 0),
+        comments: data.comments || "",
       };
+
+      console.log("Submitting complete analysis data:", analysisData);
 
       if (props.onAnalysisComplete) {
         await props.onAnalysisComplete(analysisData);
