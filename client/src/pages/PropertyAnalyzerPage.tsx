@@ -222,11 +222,9 @@ export default function PropertyAnalyzerPage() {
                             </h3>
                             <div className="rounded-lg overflow-hidden mt-2">
                               <img
-                                src={URL.createObjectURL(
-                                  formData.propertyPhoto,
-                                )}
+                                src={formData.propertyPhoto instanceof File ? URL.createObjectURL(formData.propertyPhoto) : formData.propertyPhoto}
                                 alt="Property"
-                                className="w-full h-auto object-cover"
+                                className="w-full h-48 object-cover rounded-lg"
                               />
                             </div>
                           </div>
@@ -495,8 +493,9 @@ export default function PropertyAnalyzerPage() {
                           </p>
                         </div>
                         <div>
-                          <h3 className="text-sm font-semibold text-slate-600">
+                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
                             Current Property Rate/m²
+                            <AnalyzerIndicator />
                           </h3>
                           <p className="mt-2 text-lg font-bold text-slate-800">
                             R
@@ -531,8 +530,9 @@ export default function PropertyAnalyzerPage() {
 
                             return (
                               <div>
-                                <h3 className="text-sm font-semibold text-slate-600">
+                                <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
                                   Rate/m² Difference
+                                  <AnalyzerIndicator />
                                 </h3>
                                 <Tooltip delayDuration={0}>
                                   <TooltipTrigger className="cursor-help">
