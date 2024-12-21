@@ -492,7 +492,18 @@ export default function PropertyAnalyzerPage() {
                 operatingExpenses={analysisResult.analysis.operatingExpenses}
                 netOperatingIncome={analysisResult.analysis.netOperatingIncome}
               />
-              <InvestmentMetrics data={analysisResult} />
+              <InvestmentMetrics 
+                purchasePrice={analysisResult.analysis.purchasePrice}
+                deposit={analysisResult.deposit}
+                monthlyBondRepayment={analysisResult.monthlyBondRepayment}
+                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                longTermMonthly={analysisResult.analysis.longTermAnnualRevenue / 12 || 0}
+                revenueProjections={{
+                  shortTerm: analysisResult.analysis.revenueProjections?.shortTerm || null
+                }}
+                operatingExpenses={analysisResult.analysis.operatingExpenses}
+                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+              />
             </div>
           </>
         )}
