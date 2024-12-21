@@ -1,0 +1,50 @@
+Form data loan term: 20
+ Converted loan term: 20
+ Submitting analysis data: Object
+ Data being sent to analyzer: Object
+ Sending analysis request with body: {
+  "purchasePrice": 3500000,
+  "shortTermNightlyRate": 2500,
+  "annualOccupancy": 65,
+  "longTermRental": 25000,
+  "leaseCycleGap": 7,
+  "propertyDescription": "Prime location in Cape Town CBD. Close to amenities and tourist attractions. High potential for both short-term and long-term rentals.",
+  "address": "27 Leeuwen St, Cape Town City Centre, 8001",
+  "deposit": 350000,
+  "interestRate": 11.75,
+  "floorArea": 85,
+  "ratePerSquareMeter": 45000
+}
+api/analyze:1 
+        
+        
+       Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this errorAI
+ Raw response from analyzer: Responsebody: (...)bodyUsed: trueheaders: Headers {}ok: falseredirected: falsestatus: 500statusText: "Internal Server Error"type: "basic"url: "https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/api/analyze"[[Prototype]]: Response
+ Parsed response data: Objectdetails: "[\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"number\",\n    \"received\": \"nan\",\n    \"path\": [\n      \"loanTerm\"\n    ],\n    \"message\": \"Expected number, received nan\"\n  }\n]"error: "[\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"number\",\n    \"received\": \"nan\",\n    \"path\": [\n      \"loanTerm\"\n    ],\n    \"message\": \"Expected number, received nan\"\n  }\n]"[[Prototype]]: Object
+ Analysis failed with error: [
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "nan",
+    "path": [
+      "loanTerm"
+    ],
+    "message": "Expected number, received nan"
+  }
+]
+handleAnalysisComplete @ src/pages/PropertyAnalyzerPage.tsx:77Understand this errorAI
+ Analysis failed: Error: [
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "nan",
+    "path": [
+      "loanTerm"
+    ],
+    "message": "Expected number, received nan"
+  }
+]
+    at Object.handleAnalysisComplete [as onAnalysisComplete] (src/pages/PropertyAnalyzerPage.tsx:78:15)
+    at async onSubmit (src/components/PropertyAnalyzerForm.tsx:239:9)
+    at async chunk-EV5STJTR.js:1675:9
+handleAnalysisComplete @ src/pages/PropertyAnalyzerPage.tsx:86Understand this errorAI

@@ -96,7 +96,7 @@ const formSchema = z.object({
     .number()
     .min(0, "Interest rate must be positive")
     .max(100, "Interest rate cannot exceed 100"),
-  loanTerm: z.number({ required_error: "Loan term is required" }).min(1, "Loan term must be at least 1 year"),
+  loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
 
   // Step 3: Operating Expenses
   monthlyLevies: z.coerce.number().min(0, "Monthly levies must be positive").default(0),
@@ -298,17 +298,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
     try {
-      // Validate loan term before submission
-      const loanTermValue = Number(data.loanTerm);
-      if (isNaN(loanTermValue) || loanTermValue < 1) {
-        toast({
-          title: "Validation Error",
-          description: "Loan term must be a valid number and at least 1 year",
-          variant: "destructive",
-        });
-        return;
-      }
-
       // Clean and prepare the analysis data
       const analysisData = {
         address: data.address,
@@ -322,7 +311,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         depositAmount: Number(data.depositAmount),
         depositPercentage: Number(data.depositPercentage),
         interestRate: Number(data.interestRate),
-        loanTerm: loanTermValue, // Use the validated loan term value
+        loanTerm: data.loanTerm,
         monthlyLevies: Number(data.monthlyLevies || 0),
         monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
@@ -859,13 +848,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           min="1"
                           placeholder="Enter loan term in years"
                           {...field}
-                          value={field.value || ''}
-                          onChange={(e) => {
-                            const value = e.target.valueAsNumber;
-                            if (!isNaN(value) && value >= 1) {
-                              field.onChange(value);
-                            }
-                          }}
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         />
                       </FormControl>
                       <FormMessage />
