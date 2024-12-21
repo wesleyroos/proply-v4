@@ -236,44 +236,96 @@ export default function PropertyAnalyzerPage() {
                     </p>
                   </div>
 
+                  {/* Purchase Price and Deposit */}
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                        Purchase Price
+                        <AnalyzerIndicator />
+                      </h3>
+                      <p className="mt-2 text-2xl font-bold text-slate-800">
+                        R{analysisResult.analysis.purchasePrice.toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                        Deposit
+                        <AnalyzerIndicator />
+                      </h3>
+                      <p className="mt-2 text-2xl font-bold text-slate-800">
+                        R{analysisResult.deposit?.toLocaleString() || "0"}
+                        <span className="ml-2 text-base font-semibold text-indigo-600">
+                          ({analysisResult.depositPercentage || "0"}%)
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Interest Rate and Term */}
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                        Interest Rate
+                        <AnalyzerIndicator />
+                      </h3>
+                      <p className="mt-2 text-lg font-bold text-slate-800">
+                        {analysisResult.interestRate || "0"}%
+                      </p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                        Loan Term
+                        <AnalyzerIndicator />
+                      </h3>
+                      <p className="mt-2 text-lg font-bold text-slate-800">
+                        {analysisResult.loanTerm} years
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Monthly Bond Payment and Bond Registration */}
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                        Monthly Bond Payment
+                        <AnalyzerIndicator />
+                      </h3>
+                      <p className="mt-2 text-lg font-bold text-slate-800">
+                        R{analysisResult.monthlyBondRepayment?.toLocaleString() || "0"}
+                      </p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                        Bond Registration
+                        <AnalyzerIndicator />
+                      </h3>
+                      <p className="mt-2 text-lg font-bold text-slate-800">
+                        R{analysisResult.bondRegistration?.toLocaleString() || "0"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Transfer Costs */}
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-600">
-                      Purchase Price
+                    <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                      Transfer Costs
+                      <AnalyzerIndicator />
+                    </h3>
+                    <p className="mt-2 text-lg font-bold text-slate-800">
+                      R{analysisResult.transferCosts?.toLocaleString() || "0"}
+                    </p>
+                  </div>
+
+                  {/* Total Capital Required */}
+                  <div className="pt-4 mt-4 border-t border-gray-200">
+                    <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                      Total Capital Required
+                      <AnalyzerIndicator />
                     </h3>
                     <p className="mt-2 text-2xl font-bold text-slate-800">
-                      R{analysisResult.analysis.purchasePrice.toLocaleString()}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-600">
-                      Deposit
-                    </h3>
-                    <p className="mt-2 text-lg font-bold text-slate-800">
-                      R{analysisResult.deposit?.toLocaleString() || "0"}
-                      <span className="ml-2 text-base font-semibold text-indigo-600">
-                        ({analysisResult.depositPercentage || "0"}%)
-                      </span>
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-600">
-                      Interest Rate
-                    </h3>
-                    <p className="mt-2 text-lg font-bold text-slate-800">
-                      {analysisResult.interestRate || "0"}%
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-600">
-                      Monthly Bond Repayment
-                    </h3>
-                    <p className="mt-2 text-lg font-bold text-slate-800">
-                      R
-                      {analysisResult.monthlyBondRepayment?.toLocaleString() ||
-                        "0"}
+                      R{((analysisResult.deposit || 0) + 
+                         (analysisResult.bondRegistration || 0) + 
+                         (analysisResult.transferCosts || 0)).toLocaleString()}
                     </p>
                   </div>
                 </CardContent>
