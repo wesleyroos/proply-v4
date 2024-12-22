@@ -69,6 +69,7 @@ export default function PerformanceProjections({
   netOperatingIncome,
   annualOccupancy,
   monthlyRatesTaxes,
+  annualAppreciation,
 }: PerformanceProjectionsProps) {
   const years = [1, 2, 3, 4, 5, 10, 20];
   const loanAmount = purchasePrice - deposit;
@@ -82,9 +83,11 @@ export default function PerformanceProjections({
     
     // Calculate remaining loan balance
     const monthsPaid = year * 12;
-    const remainingBalance = (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) 
-      - Math.pow(1 + monthlyRate, monthsPaid))) 
-      / (Math.pow(1 + monthlyRate, totalPayments) - 1);
+    const remainingPayments = totalPayments - monthsPaid;
+    const remainingBalance = remainingPayments > 0 
+      ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
+        / (Math.pow(1 + monthlyRate, totalPayments) - 1)
+      : 0;
 
     // Calculate property value using the annual appreciation rate from form
     const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
