@@ -14,6 +14,7 @@ import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
 import RentalPerformance from "@/components/RentalPerformance";
+import AssetGrowthMetrics from "@/components/AssetGrowthMetrics";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
@@ -696,6 +697,16 @@ export default function PropertyAnalyzerPage() {
                 }}
                 operatingExpenses={analysisResult.analysis.operatingExpenses}
                 netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+              />
+
+              {/* Asset Growth & Equity */}
+              <AssetGrowthMetrics 
+                purchasePrice={analysisResult.analysis.purchasePrice}
+                deposit={analysisResult.deposit || 0}
+                loanAmount={analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)}
+                interestRate={analysisResult.interestRate || 0}
+                loanTerm={analysisResult.loanTerm || 20}
+                annualAppreciation={formData?.annualPropertyAppreciation || 5}
               />
             </div>
           </>
