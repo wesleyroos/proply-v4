@@ -168,6 +168,24 @@ export default function PropertyAnalyzerPage() {
       const data = await response.json();
       console.log("Raw response from analyzer:", response);
       console.log("Parsed response data:", data);
+      
+      // Detailed logging of NOI data
+      console.log("Net Operating Income Data:", {
+        fromAnalysis: data.analysis?.netOperatingIncome,
+        fromRoot: data.netOperatingIncome,
+        detailedBreakdown: {
+          year1: {
+            revenue: data.analysis?.revenueProjections?.shortTerm?.year1,
+            expenses: data.analysis?.operatingExpenses?.year1,
+            noi: data.netOperatingIncome?.year1
+          },
+          year2: {
+            revenue: data.analysis?.revenueProjections?.shortTerm?.year2,
+            expenses: data.analysis?.operatingExpenses?.year2,
+            noi: data.netOperatingIncome?.year2
+          }
+        }
+      });
 
       if (!response.ok) {
         const errorMessage = data.error || response.statusText;
