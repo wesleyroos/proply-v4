@@ -262,7 +262,7 @@ export function registerRoutes(app: Express): Server {
 
   // Property comparison routes
   // Save property analysis
-  app.post("/api/property-analysis", async (req, res) => {
+  app.post("/api/property-analyses", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
     }

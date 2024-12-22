@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useLocation } from "wouter";
+import html2pdf from "html2pdf.js";
 import {
   Card,
   CardContent,
@@ -6,8 +8,18 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/use-toast";
 import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
 import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight } from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
@@ -79,11 +91,116 @@ interface AnalysisResult {
 
 export default function PropertyAnalyzerPage() {
   const { user } = useUser();
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+
+  const handleSaveAnalysis = async (analysisResult: AnalysisResult, formData: any) => {
+    try {
+      const response = await fetch("/api/property-analyses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          address: analysisResult.address,
+          purchasePrice: analysisResult.analysis.purchasePrice,
+          deposit: analysisResult.deposit,
+          shortTermRevenue: analysisResult.analysis.shortTermAnnualRevenue,
+          longTermRevenue: analysisResult.analysis.longTermAnnualRevenue,
+          shortTermGrossYield: analysisResult.shortTermGrossYield,
+          longTermGrossYield: analysisResult.longTermGrossYield,
+          monthlyBondRepayment: analysisResult.monthlyBondRepayment,
+          interestRate: analysisResult.interestRate,
+          loanTerm: analysisResult.loanTerm,
+          propertyPhoto: formData.propertyPhoto,
+          propertyDescription: analysisResult.propertyDescription,
+          floorArea: analysisResult.floorArea,
+          shortTermNightlyRate: analysisResult.shortTermNightlyRate,
+          annualOccupancy: analysisResult.annualOccupancy,
+          managementFee: analysisResult.managementFee,
+          revenueProjections: analysisResult.analysis.revenueProjections,
+          operatingExpenses: analysisResult.analysis.operatingExpenses,
+          netOperatingIncome: analysisResult.analysis.netOperatingIncome
+        }),
+        credentials: "include"
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save analysis");
+      }
+
+      toast({
+        title: "Analysis Saved",
+        description: "Your property analysis has been saved successfully.",
+      });
+
+      // Navigate to properties page after saving
+      setLocation("/properties");
+    } catch (error) {
+      console.error("Error saving analysis:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save analysis. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(null);
   const [removeVat, setRemoveVat] = useState(false);
   const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
+  const [reportSections, setReportSections] = useState({
+    locationPhoto: true,
+    dealStructure: true,
+    revenuePerformance: true,
+    sizeAndRate: true,
+    cashflowMetrics: true,
+    investmentMetrics: true,
+    performanceProjections: true,
+  });
+  const reportRef = useRef<HTMLDivElement>(null);
+
+  const generateReport = async () => {
+    if (!reportRef.current || !analysisResult) return;
+
+    // Clone the content to modify for the report
+    const reportContent = reportRef.current.cloneNode(true) as HTMLElement;
+
+    // Remove sections that weren't selected
+    Object.entries(reportSections).forEach(([section, include]) => {
+      if (!include) {
+        const sectionElement = reportContent.querySelector(`[data-section="${section}"]`);
+        if (sectionElement) {
+          sectionElement.remove();
+        }
+      }
+    });
+
+    // Configure html2pdf options
+    const opt = {
+      margin: 1,
+      filename: `Property Analysis - ${analysisResult.address}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+      await html2pdf().set(opt).from(reportContent).save();
+      toast({
+        title: "Report Generated",
+        description: "Your property analysis report has been generated successfully.",
+      });
+    } catch (error) {
+      console.error("Error generating report:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate report. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
@@ -221,22 +338,74 @@ export default function PropertyAnalyzerPage() {
 
         {analysisResult && (
           <>
+            {/* Analysis Results Container */}
+            <div ref={reportRef}>
             {/* Analysis Results Header */}
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
-                <BarChart3 className="h-6 w-6" />
-                Analysis Results
-              </h2>
-              <p className="text-muted-foreground">
-                Based on your provided property details
-              </p>
+            <div className="mb-6 flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <BarChart3 className="h-6 w-6" />
+                  Analysis Results
+                </h2>
+                <p className="text-muted-foreground">
+                  Based on your provided property details
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => handleSaveAnalysis(analysisResult, formData)}
+                  className="bg-[#1BA3FF] hover:bg-[#114D9D]"
+                >
+                  Save Analysis
+                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">Generate Report</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Generate Property Report</DialogTitle>
+                      <DialogDescription>
+                        Select the sections you want to include in your report.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="space-y-2">
+                        {Object.entries(reportSections).map(([key, value]) => (
+                          <div key={key} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={key}
+                              checked={value}
+                              onCheckedChange={(checked) =>
+                                setReportSections(prev => ({
+                                  ...prev,
+                                  [key]: !!checked
+                                }))
+                              }
+                            />
+                            <label
+                              htmlFor={key}
+                              className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={generateReport}>Generate PDF</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
 
             {/* Deal Summary Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               {/* Location and Photo Column */}
               <div className="space-y-4">
-                <Card>
+                <Card data-section="locationPhoto">
                   <CardHeader>
                     <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
                       <Building2 className="h-5 w-5 text-indigo-500" />
@@ -282,7 +451,7 @@ export default function PropertyAnalyzerPage() {
               </div>
 
               {/* Deal Structure */}
-              <Card>
+              <Card data-section="dealStructure">
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
                     <Building2 className="h-5 w-5 text-indigo-500" />
@@ -431,7 +600,7 @@ export default function PropertyAnalyzerPage() {
               {/* Middle Column with Revenue and Size/Rate */}
               <div className="space-y-4">
                 {/* Revenue Performance */}
-                <Card>
+                <Card data-section="revenuePerformance">
                   <CardHeader>
                     <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
                       <TrendingUp className="h-5 w-5 text-emerald-500" />
@@ -549,7 +718,7 @@ export default function PropertyAnalyzerPage() {
                 </Card>
 
                 {/* Size and Rate */}
-                <Card>
+                <Card data-section="sizeAndRate">
                   <CardHeader>
                     <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
                       <BarChart3 className="h-5 w-5 text-cyan-500" />
