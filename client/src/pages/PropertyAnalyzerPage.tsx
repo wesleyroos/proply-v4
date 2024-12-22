@@ -717,8 +717,6 @@ export default function PropertyAnalyzerPage() {
                 }}
                 operatingExpenses={analysisResult.analysis.operatingExpenses}
                 netOperatingIncome={analysisResult.analysis.netOperatingIncome}
-                operatingExpenses={analysisResult.analysis.operatingExpenses}
-                netOperatingIncome={analysisResult.netOperatingIncome}
               />
               
               {/* Investment Metrics */}
