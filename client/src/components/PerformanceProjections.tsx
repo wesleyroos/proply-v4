@@ -53,6 +53,7 @@ interface PerformanceProjectionsProps {
   } | null;
   annualOccupancy: number;
   monthlyRatesTaxes: number;
+  annualAppreciation: number;  // Added property appreciation rate from form
 }
 
 export default function PerformanceProjections({
@@ -73,7 +74,7 @@ export default function PerformanceProjections({
   const loanAmount = purchasePrice - deposit;
   const monthlyRate = interestRate / 100 / 12;
   const totalPayments = loanTerm * 12;
-  const annualAppreciation = 5; // 5% annual appreciation
+  // Use the annualAppreciation passed from the form
 
   // Calculate loan balance, property value, and equity for each year
   const propertyValueData = years.map(year => {
@@ -85,8 +86,8 @@ export default function PerformanceProjections({
       - Math.pow(1 + monthlyRate, monthsPaid))) 
       / (Math.pow(1 + monthlyRate, totalPayments) - 1);
 
-    // Calculate property value with appreciation (5% annual)
-    const propertyValue = purchasePrice * Math.pow(1.05, year);
+    // Calculate property value using the annual appreciation rate from form
+    const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
 
     // Calculate equity (property value - remaining loan)
     const equity = propertyValue - remainingBalance;

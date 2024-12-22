@@ -724,6 +724,7 @@ export default function PropertyAnalyzerPage() {
                 netOperatingIncome={analysisResult.analysis.netOperatingIncome}
                 annualOccupancy={analysisResult.annualOccupancy || 0}
                 monthlyRatesTaxes={formData?.monthlyRatesTaxes || 0}
+                annualAppreciation={formData?.annualPropertyAppreciation}
               />
             </div>
           </>
