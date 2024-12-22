@@ -157,37 +157,46 @@ export default function RentalPerformance({
                   Platform Fee ({isManaged ? "15" : "3"}%)
                 </td>
                 {MONTHS.map((_, i) => {
-                  const nightlyRate = getSeasonalNightlyRate(shortTermNightly, i);
-                  return (
-                    <td key={i} className="text-right py-3 px-4">
-                      {isManaged ? "15" : "3"}%
-                    </td>
-                  );
-                })}
-                <td className="text-right py-3 px-4 border-l">-</td>
-                <td className="text-right py-3 px-4 text-red-600">
-                  {formatter(-shortTermNightly * (isManaged ? 0.15 : 0.03))}
-                </td>
-              </tr>
+                    return (
+                      <td key={i} className="text-right py-3 px-4 text-red-600">
+                        {isManaged ? "15" : "3"}%
+                        <span className="w-2 h-2 rounded-full bg-red-500 ml-2 inline-block" title="Calculated by analysis engine" />
+                      </td>
+                    );
+                  })}
+                  <td className="text-right py-3 px-4 border-l text-red-600">
+                    {isManaged ? "15" : "3"}%
+                    <span className="w-2 h-2 rounded-full bg-red-500 ml-2 inline-block" title="Calculated by analysis engine" />
+                  </td>
+                  <td className="text-right py-3 px-4 text-red-600">
+                    {isManaged ? "15" : "3"}%
+                    <span className="w-2 h-2 rounded-full bg-red-500 ml-2 inline-block" title="Calculated by analysis engine" />
+                  </td>
+                </tr>
 
               {/* Fee-adjusted Rate */}
               <tr className="border-b hover:bg-gray-50">
                 <td className="py-3 px-4 font-medium">Fee-adjusted Rate</td>
                 {MONTHS.map((_, i) => {
-                  const nightlyRate = getSeasonalNightlyRate(shortTermNightly, i);
-                  const platformFeeRate = isManaged ? 0.15 : 0.03;
-                  const adjustedRate = nightlyRate * (1 - platformFeeRate);
-                  return (
-                    <td key={i} className="text-right py-3 px-4">
-                      {formatter(adjustedRate)}
-                    </td>
-                  );
-                })}
-                <td className="text-right py-3 px-4 border-l">-</td>
-                <td className="text-right py-3 px-4">
-                  {formatter(getFeeAdjustedRate(shortTermNightly, isManaged))}
-                </td>
-              </tr>
+                    const nightlyRate = getSeasonalNightlyRate(shortTermNightly, i);
+                    const platformFeeRate = isManaged ? 0.15 : 0.03;
+                    const adjustedRate = nightlyRate * (1 - platformFeeRate);
+                    return (
+                      <td key={i} className="text-right py-3 px-4">
+                        {formatter(adjustedRate)}
+                        <span className="w-2 h-2 rounded-full bg-red-500 ml-2 inline-block" title="Calculated by analysis engine" />
+                      </td>
+                    );
+                  })}
+                  <td className="text-right py-3 px-4 border-l">
+                    {formatter(getFeeAdjustedRate(shortTermNightly, isManaged))}
+                    <span className="w-2 h-2 rounded-full bg-red-500 ml-2 inline-block" title="Calculated by analysis engine" />
+                  </td>
+                  <td className="text-right py-3 px-4">
+                    {formatter(getFeeAdjustedRate(shortTermNightly, isManaged))}
+                    <span className="w-2 h-2 rounded-full bg-red-500 ml-2 inline-block" title="Calculated by analysis engine" />
+                  </td>
+                </tr>
 
               {/* Occupancy Rates */}
               {Object.entries(OCCUPANCY_RATES).map(([scenario, rates]) => (
@@ -249,11 +258,13 @@ export default function RentalPerformance({
                     {formatter(longTermMonthly)}
                   </td>
                 ))}
-                <td className="text-right py-3 px-4 border-l font-medium">
+                <td className="text-right py-3 px-4 border-l font-medium text-red-600">
                   {formatter(longTermMonthly * 12)}
+                  <span className="w-2 h-2 rounded-full bg-red-500 ml-2 inline-block" title="Calculated by analysis engine" />
                 </td>
-                <td className="text-right py-3 px-4 font-medium">
+                <td className="text-right py-3 px-4 font-medium text-red-600">
                   {formatter(longTermMonthly)}
+                  <span className="w-2 h-2 rounded-full bg-red-500 ml-2 inline-block" title="Calculated by analysis engine" />
                 </td>
               </tr>
             </tbody>
