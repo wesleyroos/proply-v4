@@ -604,46 +604,41 @@ export default function PropertyAnalyzerPage() {
               </div>
             </div>
 
-            {/* Rental Performance and Analysis Sections */}
-            <div className="max-w-[1200px] mx-auto">
-              {/* Rental Performance Section */}
-              <div className="max-w-[800px] mx-auto overflow-x-auto"> {/* Added container for horizontal scrolling */}
-                <RentalPerformance
-                  shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                  longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
-                  managementFee={20}
-                />
-              </div>
+            {/* Rental Performance Section */}
+            <RentalPerformance 
+              shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+              longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
+              managementFee={20}
+            />
 
-              {/* Detailed Analysis Section */}
-              <div className="space-y-6">
-                {/* Cashflow Metrics */}
-                <CashflowMetrics
-                  shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                  longTermMonthly={analysisResult.analysis.longTermAnnualRevenue / 12 || 0}
-                  monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
-                  managementFee={20}
-                  revenueProjections={{
-                    shortTerm: analysisResult.analysis.revenueProjections?.shortTerm || null
-                  }}
-                  operatingExpenses={analysisResult.analysis.operatingExpenses}
-                  netOperatingIncome={analysisResult.analysis.netOperatingIncome}
-                />
-
-                {/* Investment Metrics */}
-                <InvestmentMetrics
-                  purchasePrice={analysisResult.analysis.purchasePrice}
-                  deposit={analysisResult.deposit}
-                  monthlyBondRepayment={analysisResult.monthlyBondRepayment}
-                  shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                  longTermMonthly={analysisResult.analysis.longTermAnnualRevenue / 12 || 0}
-                  revenueProjections={{
-                    shortTerm: analysisResult.analysis.revenueProjections?.shortTerm || null
-                  }}
-                  operatingExpenses={analysisResult.analysis.operatingExpenses}
-                  netOperatingIncome={analysisResult.analysis.netOperatingIncome}
-                />
-              </div>
+            {/* Detailed Analysis Section */}
+            <div className="space-y-6">
+              {/* Cashflow Metrics */}
+              <CashflowMetrics 
+                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                longTermMonthly={analysisResult.analysis.longTermAnnualRevenue / 12 || 0}
+                monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
+                managementFee={20}
+                revenueProjections={{
+                  shortTerm: analysisResult.analysis.revenueProjections?.shortTerm || null
+                }}
+                operatingExpenses={analysisResult.analysis.operatingExpenses}
+                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+              />
+              
+              {/* Investment Metrics */}
+              <InvestmentMetrics 
+                purchasePrice={analysisResult.analysis.purchasePrice}
+                deposit={analysisResult.deposit}
+                monthlyBondRepayment={analysisResult.monthlyBondRepayment}
+                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                longTermMonthly={analysisResult.analysis.longTermAnnualRevenue / 12 || 0}
+                revenueProjections={{
+                  shortTerm: analysisResult.analysis.revenueProjections?.shortTerm || null
+                }}
+                operatingExpenses={analysisResult.analysis.operatingExpenses}
+                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+              />
             </div>
           </>
         )}
