@@ -35,13 +35,41 @@ interface AnalysisResult {
   ratePerSquareMeter: number | null;
   shortTermNightlyRate: number | null;
   annualOccupancy: number | null;
+  managementFee: number;
+  loanTerm: number;
   analysis: {
     shortTermAnnualRevenue: number | null;
     longTermAnnualRevenue: number | null;
     purchasePrice: number;
-    revenueProjections?: { shortTerm: number[] | null };
-    operatingExpenses?: number;
-    netOperatingIncome?: number;
+    revenueProjections?: { 
+      shortTerm: {
+        year1: number;
+        year2: number;
+        year3: number;
+        year4: number;
+        year5: number;
+        year10: number;
+        year20: number;
+      } | null 
+    };
+    operatingExpenses: {
+      year1: number;
+      year2: number;
+      year3: number;
+      year4: number;
+      year5: number;
+      year10: number;
+      year20: number;
+    };
+    netOperatingIncome: {
+      year1: number;
+      year2: number;
+      year3: number;
+      year4: number;
+      year5: number;
+      year10: number;
+      year20: number;
+    } | null;
   };
   address: string;
   propertyPhotoUrl?: string;
@@ -150,6 +178,8 @@ export default function PropertyAnalyzerPage() {
         ...data,
         shortTermNightlyRate: requestBody.shortTermNightlyRate,
         annualOccupancy: requestBody.annualOccupancy,
+        managementFee: requestBody.managementFee,
+        loanTerm: requestBody.loanTerm
       });
     } catch (error) {
       console.error("Analysis failed:", error);
