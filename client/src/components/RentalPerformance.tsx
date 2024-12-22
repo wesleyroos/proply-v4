@@ -124,65 +124,136 @@ export default function RentalPerformance({
         </ResponsiveContainer>
       </div>
 
-      {/* Simplified Revenue Table */}
+      {/* Detailed Monthly Performance Table */}
       <div className="mt-6 rounded-lg border border-gray-200">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-gray-50">
-                <th className="text-left py-3 px-4">Scenario</th>
-                <th className="text-right py-3 px-4">Monthly Average</th>
-                <th className="text-right py-3 px-4">Annual Total</th>
-                <th className="text-right py-3 px-4">Platform Fee</th>
-                <th className="text-right py-3 px-4">Net Revenue</th>
+                <th className="text-left py-3 px-4">Metric</th>
+                {MONTHS.map(month => (
+                  <th key={month} className="text-right py-3 px-4">{month}</th>
+                ))}
+                <th className="text-right py-3 px-4 border-l">Annual</th>
+                <th className="text-right py-3 px-4">Monthly Avg</th>
               </tr>
             </thead>
             <tbody>
-              {Object.entries(scenarios).map(([scenario, data], index) => {
-                const platformFee = data.total * (isManaged ? 0.15 : 0.03);
-                const netRevenue = data.total - platformFee;
+              {/* Nightly Rate */}
+              <tr className="border-b hover:bg-gray-50">
+                <td className="py-3 px-4 font-medium">Nightly Rate</td>
+                {MONTHS.map((_, i) => (
+                  <td key={i} className="text-right py-3 px-4">
+                    {formatter(getSeasonalNightlyRate(shortTermNightly, i))}
+                  </td>
+                ))}
+                <td className="text-right py-3 px-4 border-l">-</td>
+                <td className="text-right py-3 px-4">{formatter(shortTermNightly)}</td>
+              </tr>
+
+              {/* Platform Fee */}
+              <tr className="border-b hover:bg-gray-50">
+                <td className="py-3 px-4 font-medium">
+                  Platform Fee ({isManaged ? "15" : "3"}%)
+                </td>
+                {MONTHS.map((_, i) => {
+                  const nightlyRate = getSeasonalNightlyRate(shortTermNightly, i);
+                  const fee = nightlyRate * (isManaged ? 0.15 : 0.03);
+                  return (
+                    <td key={i} className="text-right py-3 px-4 text-red-600">
+                      {formatter(-fee)}
+                    </td>
+                  );
+                })}
+                <td className="text-right py-3 px-4 border-l">-</td>
+                <td className="text-right py-3 px-4 text-red-600">
+                  {formatter(-shortTermNightly * (isManaged ? 0.15 : 0.03))}
+                </td>
+              </tr>
+
+              {/* Fee-adjusted Rate */}
+              <tr className="border-b hover:bg-gray-50">
+                <td className="py-3 px-4 font-medium">Fee-adjusted Rate</td>
+                {MONTHS.map((_, i) => {
+                  const nightlyRate = getSeasonalNightlyRate(shortTermNightly, i);
+                  const adjustedRate = getFeeAdjustedRate(nightlyRate, isManaged);
+                  return (
+                    <td key={i} className="text-right py-3 px-4">
+                      {formatter(adjustedRate)}
+                    </td>
+                  );
+                })}
+                <td className="text-right py-3 px-4 border-l">-</td>
+                <td className="text-right py-3 px-4">
+                  {formatter(getFeeAdjustedRate(shortTermNightly, isManaged))}
+                </td>
+              </tr>
+
+              {/* Occupancy Rates */}
+              {Object.entries(OCCUPANCY_RATES).map(([scenario, rates]) => (
+                <tr key={`occupancy-${scenario}`} className="border-b hover:bg-gray-50">
+                  <td className="py-3 px-4 font-medium">
+                    Occupancy {scenario.charAt(0).toUpperCase() + scenario.slice(1)}
+                  </td>
+                  {rates.map((rate, i) => (
+                    <td key={i} className="text-right py-3 px-4">{rate}%</td>
+                  ))}
+                  <td className="text-right py-3 px-4 border-l">-</td>
+                  <td className="text-right py-3 px-4">
+                    {(rates.reduce((sum, rate) => sum + rate, 0) / 12).toFixed(1)}%
+                  </td>
+                </tr>
+              ))}
+
+              {/* Revenue Scenarios */}
+              {(["low", "medium", "high"] as const).map((scenario) => {
+                const monthlyRevenues = MONTHS.map((_, i) => 
+                  calculateMonthlyRevenue(scenario, i, shortTermNightly, isManaged)
+                );
+                const total = monthlyRevenues.reduce((sum, rev) => sum + rev, 0);
+                const average = total / 12;
                 const bgColor = scenario === 'low' ? 'bg-[#FF6B6B]/5' : 
                                scenario === 'medium' ? 'bg-[#4ECDC4]/5' : 
                                'bg-[#45B7D1]/5';
                 const textColor = scenario === 'low' ? 'text-[#FF6B6B]' : 
                                  scenario === 'medium' ? 'text-[#4ECDC4]' : 
                                  'text-[#45B7D1]';
-                
+
                 return (
-                  <tr key={scenario} className={`border-b ${bgColor} hover:bg-opacity-20`}>
+                  <tr key={`revenue-${scenario}`} className={`border-b ${bgColor} hover:bg-opacity-20`}>
                     <td className={`py-3 px-4 font-medium ${textColor}`}>
-                      {scenario.charAt(0).toUpperCase() + scenario.slice(1)} Season
+                      Revenue {scenario.charAt(0).toUpperCase() + scenario.slice(1)}
                     </td>
-                    <td className="text-right py-3 px-4">
-                      {formatter(data.average)}
-                    </td>
-                    <td className="text-right py-3 px-4">
-                      {formatter(data.total)}
-                    </td>
-                    <td className="text-right py-3 px-4 text-red-600">
-                      {formatter(-platformFee)}
+                    {monthlyRevenues.map((revenue, i) => (
+                      <td key={i} className="text-right py-3 px-4">
+                        {formatter(revenue)}
+                      </td>
+                    ))}
+                    <td className="text-right py-3 px-4 border-l font-medium">
+                      {formatter(total)}
                     </td>
                     <td className="text-right py-3 px-4 font-medium">
-                      {formatter(netRevenue)}
+                      {formatter(average)}
                     </td>
                   </tr>
                 );
               })}
+
+              {/* Long Term Rental */}
               <tr className="border-b bg-[#FFE66D]/5 hover:bg-[#FFE66D]/10">
                 <td className="py-3 px-4 font-medium text-[#B8860B]">
                   Long Term Rental
                 </td>
-                <td className="text-right py-3 px-4">
-                  {formatter(longTermMonthly)}
-                </td>
-                <td className="text-right py-3 px-4">
+                {MONTHS.map((_, i) => (
+                  <td key={i} className="text-right py-3 px-4">
+                    {formatter(longTermMonthly)}
+                  </td>
+                ))}
+                <td className="text-right py-3 px-4 border-l font-medium">
                   {formatter(longTermMonthly * 12)}
-                </td>
-                <td className="text-right py-3 px-4">
-                  -
                 </td>
                 <td className="text-right py-3 px-4 font-medium">
-                  {formatter(longTermMonthly * 12)}
+                  {formatter(longTermMonthly)}
                 </td>
               </tr>
             </tbody>
