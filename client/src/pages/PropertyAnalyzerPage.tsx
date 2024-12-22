@@ -380,8 +380,8 @@ export default function PropertyAnalyzerPage() {
                         !removeTransferDuty
                       ).toLocaleString()}
                     </p>
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="mt-2 space-y-2">
+                    <div className="flex justify-between items-start gap-6">
+                      <div className="space-y-2">
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id="removeVat"
@@ -409,11 +409,11 @@ export default function PropertyAnalyzerPage() {
                           </label>
                         </div>
                       </div>
-                      <div>
-                        <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
+                      <div className="flex-shrink-0">
+                        <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm">
                           Connect with Transfer Attorney
                         </Button>
-                        <p className="mt-2 text-sm text-slate-600">
+                        <p className="mt-1 text-xs text-slate-600">
                           Get exclusive rates and guidance from our trusted attorney network.
                         </p>
                       </div>

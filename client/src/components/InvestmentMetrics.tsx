@@ -174,7 +174,7 @@ export default function InvestmentMetrics({
                     {years.map(year => {
                       const yearKey = `year${year}` as keyof typeof netOperatingIncome;
                       const netYield = netOperatingIncome ? 
-                        (netOperatingIncome[yearKey] / purchasePrice) * 100 : 0;
+                        ((netOperatingIncome[yearKey] - (monthlyBondRepayment * 12)) / purchasePrice) * 100 : 0;
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
@@ -383,7 +383,7 @@ export default function InvestmentMetrics({
                     {years.map(year => {
                       const annualRevenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
                       const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
-                      const netYield = ((annualRevenue - expenses) / purchasePrice) * 100;
+                      const netYield = ((annualRevenue - expenses - (monthlyBondRepayment * 12)) / purchasePrice) * 100;
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
