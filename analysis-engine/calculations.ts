@@ -16,6 +16,7 @@ const propertyDataSchema = z.object({
   ratePerSquareMeter: z.number().positive(),
   incomeGrowthRate: z.number().min(0).max(100).optional().default(8),
   expenseGrowthRate: z.number().min(0).max(100).optional().default(6),
+  annualPropertyAppreciation: z.number().min(0).max(100),
   monthlyLevies: z.number().min(0).optional().default(0),
   monthlyRatesTaxes: z.number().min(0).optional().default(0),
   otherMonthlyExpenses: z.number().min(0).optional().default(0),
@@ -347,6 +348,14 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         return acc + (netOperatingIncome?.[prevYearKey] ? 
           (netOperatingIncome[prevYearKey] - (monthlyBondRepayment * 12)) : 0);
       }, 0);
+
+    // Log individual components for debugging
+    console.log(`Net Worth Components for Year ${year}:`, {
+      equityFromRepayment,
+      totalAppreciation,
+      cumulativeCashflow,
+      total: equityFromRepayment + totalAppreciation + cumulativeCashflow
+    });
 
     // Total net worth change is the sum of all three components
     acc[yearKey] = equityFromRepayment + totalAppreciation + cumulativeCashflow;
