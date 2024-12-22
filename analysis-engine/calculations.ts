@@ -16,7 +16,6 @@ const propertyDataSchema = z.object({
   ratePerSquareMeter: z.number().positive(),
   incomeGrowthRate: z.number().min(0).max(100).optional().default(8),
   expenseGrowthRate: z.number().min(0).max(100).optional().default(6),
-  annualPropertyAppreciation: z.number().min(0).max(100),
   monthlyLevies: z.number().min(0).optional().default(0),
   monthlyRatesTaxes: z.number().min(0).optional().default(0),
   otherMonthlyExpenses: z.number().min(0).optional().default(0),
@@ -285,7 +284,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     }
   });
 
-  // Calculate loan and payment details
+  // Calculate bond repayment
   const loanAmount = data.purchasePrice - data.deposit;
   const monthlyRate = (data.interestRate / 100) / 12;
   const numberOfPayments = data.loanTerm * 12;
@@ -320,84 +319,6 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     year20: revenueProjections.shortTerm.year20 - operatingExpenses.year20
   } : null;
 
-  // Calculate asset growth metrics for all projection years
-  const years = [1, 2, 3, 4, 5, 10, 20];
-  const totalPayments = numberOfPayments; // Use the already calculated numberOfPayments
-  
-  // Calculate asset growth metrics for each year
-  const assetGrowthMetrics = years.reduce((acc, year) => {
-    const monthsPaid = year * 12;
-    const remainingPayments = numberOfPayments - monthsPaid;
-    
-    // Calculate property value and appreciation with validation
-    const appreciationRate = data.annualPropertyAppreciation / 100;
-    const propertyValue = data.purchasePrice * Math.pow(1 + appreciationRate, year);
-    const startValue = year > 1 
-      ? data.purchasePrice * Math.pow(1 + appreciationRate, year - 1)
-      : data.purchasePrice;
-    const annualAppreciation = propertyValue - startValue;
-    
-    // Calculate loan balance and equity from repayment
-    const loanBalance = remainingPayments > 0 
-      ? (loanAmount * (Math.pow(1 + monthlyRate, numberOfPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
-        / (Math.pow(1 + monthlyRate, numberOfPayments) - 1)
-      : 0;
-    const equityFromRepayment = loanAmount - loanBalance;
-    
-    // Calculate total interest paid
-    const monthlyPayment = monthlyBondRepayment; // Use already calculated monthly payment
-    const totalPaid = monthsPaid * monthlyPayment;
-    const principalPaid = loanAmount - loanBalance;
-    const interestPaid = totalPaid - principalPaid;
-    
-    // Calculate interest-to-principal ratio for current payment
-    const interestPayment = loanBalance * monthlyRate;
-    const principalPayment = monthlyPayment - interestPayment;
-    const interestToPrincipalRatio = (interestPayment / principalPayment) * 100;
-    
-    // Calculate total equity (including appreciation)
-    const totalEquity = propertyValue - loanBalance;
-    
-    // Calculate net worth change components using NOI
-    const cumulativeCashflow = years
-      .filter(y => y <= year)
-      .reduce((acc, y) => {
-        const prevYearKey = `year${y}` as keyof typeof netOperatingIncome;
-        return acc + (netOperatingIncome?.[prevYearKey] ? 
-          (netOperatingIncome[prevYearKey] - (monthlyBondRepayment * 12)) : 0);
-      }, 0);
-    
-    const totalAppreciation = propertyValue - data.purchasePrice;
-    const netWorthChange = equityFromRepayment + totalAppreciation + cumulativeCashflow;
-    
-    // Store all metrics for this year
-    acc[`year${year}`] = {
-      propertyValue,
-      annualAppreciation,
-      loanBalance,
-      totalInterestPaid: interestPaid,
-      interestToPrincipalRatio,
-      totalEquity,
-      equityFromRepayment,
-      netWorthChange
-    };
-    
-    console.log(`Asset Growth Metrics for Year ${year}:`, acc[`year${year}`]);
-    return acc;
-  }, {} as Record<string, {
-    propertyValue: number;
-    annualAppreciation: number;
-    loanBalance: number;
-    totalInterestPaid: number;
-    interestToPrincipalRatio: number;
-    totalEquity: number;
-    equityFromRepayment: number;
-    netWorthChange: number;
-  }>);
-
-  // Log the complete metrics for debugging
-  console.log('Asset Growth Metrics:', assetGrowthMetrics);
-
   const result = {
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
     longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
@@ -418,8 +339,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         shortTerm: revenueProjections?.shortTerm || null
       },
       operatingExpenses,
-      netOperatingIncome,
-      assetGrowthMetrics
+      netOperatingIncome
     }
   };
 
