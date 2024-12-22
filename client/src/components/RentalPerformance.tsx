@@ -161,7 +161,7 @@ export default function RentalPerformance({
                   const platformFeeRate = isManaged ? 0.15 : 0.03;
                   const platformFeeAmount = nightlyRate * platformFeeRate;
                   return (
-                    <td key={i} className="text-right py-3 px-4">
+                    <td key={i} className="text-right py-3 px-4 text-red-600">
                       {formatter(-platformFeeAmount)}
                     </td>
                   );
