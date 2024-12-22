@@ -285,7 +285,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     }
   });
 
-  // Calculate bond repayment
+  // Calculate loan and payment details
   const loanAmount = data.purchasePrice - data.deposit;
   const monthlyRate = (data.interestRate / 100) / 12;
   const numberOfPayments = data.loanTerm * 12;
@@ -320,27 +320,44 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     year20: revenueProjections.shortTerm.year20 - operatingExpenses.year20
   } : null;
 
-  // Calculate net worth change for each year by combining equity build-up, cumulative cashflow, and property appreciation
+  // Calculate asset growth metrics for all projection years
   const years = [1, 2, 3, 4, 5, 10, 20];
-  const totalPayments = data.loanTerm * 12;
+  const totalPayments = numberOfPayments; // Use the already calculated numberOfPayments
   
-  const netWorthChangeByYear = years.reduce((acc, year) => {
-    const yearKey = `year${year}` as keyof typeof netOperatingIncome;
-    
-    // Calculate remaining loan balance for equity build-up using same formula as AssetGrowthMetrics
+  const assetGrowthMetrics = years.reduce((acc, year) => {
     const monthsPaid = year * 12;
     const remainingPayments = totalPayments - monthsPaid;
+    
+    // Calculate property value and appreciation
+    const propertyValue = data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), year);
+    const startValue = year > 1 
+      ? data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), year - 1)
+      : data.purchasePrice;
+    const annualAppreciation = propertyValue - startValue;
+    
+    // Calculate loan balance and equity from repayment
     const loanBalance = remainingPayments > 0 
       ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
         / (Math.pow(1 + monthlyRate, totalPayments) - 1)
       : 0;
     const equityFromRepayment = loanAmount - loanBalance;
-
-    // Calculate property appreciation
-    const propertyValue = data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), year);
-    const totalAppreciation = propertyValue - data.purchasePrice;
-
-    // Calculate cumulative cashflow
+    
+    // Calculate total interest paid
+    const monthlyPayment = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) 
+      / (Math.pow(1 + monthlyRate, totalPayments) - 1);
+    const totalPaid = monthsPaid * monthlyPayment;
+    const principalPaid = loanAmount - loanBalance;
+    const interestPaid = totalPaid - principalPaid;
+    
+    // Calculate interest-to-principal ratio for current payment
+    const interestPayment = loanBalance * monthlyRate;
+    const principalPayment = monthlyPayment - interestPayment;
+    const interestToPrincipalRatio = (interestPayment / principalPayment) * 100;
+    
+    // Calculate total equity (including appreciation)
+    const totalEquity = propertyValue - loanBalance;
+    
+    // Calculate net worth change components
     const cumulativeCashflow = years
       .filter(y => y <= year)
       .reduce((acc, y) => {
@@ -348,19 +365,36 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         return acc + (netOperatingIncome?.[prevYearKey] ? 
           (netOperatingIncome[prevYearKey] - (monthlyBondRepayment * 12)) : 0);
       }, 0);
-
-    // Log individual components for debugging
-    console.log(`Net Worth Components for Year ${year}:`, {
+    
+    const totalAppreciation = propertyValue - data.purchasePrice;
+    const netWorthChange = equityFromRepayment + totalAppreciation + cumulativeCashflow;
+    
+    // Store all metrics for this year
+    acc[`year${year}`] = {
+      propertyValue,
+      annualAppreciation,
+      loanBalance,
+      totalInterestPaid: interestPaid,
+      interestToPrincipalRatio,
+      totalEquity,
       equityFromRepayment,
-      totalAppreciation,
-      cumulativeCashflow,
-      total: equityFromRepayment + totalAppreciation + cumulativeCashflow
-    });
-
-    // Total net worth change is the sum of all three components
-    acc[yearKey] = equityFromRepayment + totalAppreciation + cumulativeCashflow;
+      netWorthChange
+    };
+    
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, {
+    propertyValue: number;
+    annualAppreciation: number;
+    loanBalance: number;
+    totalInterestPaid: number;
+    interestToPrincipalRatio: number;
+    totalEquity: number;
+    equityFromRepayment: number;
+    netWorthChange: number;
+  }>);
+
+  // Log the complete metrics for debugging
+  console.log('Asset Growth Metrics:', assetGrowthMetrics);
 
   const result = {
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
@@ -383,7 +417,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       },
       operatingExpenses,
       netOperatingIncome,
-      netWorthChange: netWorthChangeByYear
+      assetGrowthMetrics
     }
   };
 

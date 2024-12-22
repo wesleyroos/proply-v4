@@ -7,13 +7,19 @@ import {
 } from "@/components/ui/tooltip";
 import { HelpCircle } from "lucide-react";
 
-interface AssetGrowthMetricsProps {
-  purchasePrice: number;
-  deposit: number;
-  loanAmount: number;
-  interestRate: number;
-  loanTerm: number;
+interface AssetGrowthMetrics {
+  propertyValue: number;
   annualAppreciation: number;
+  loanBalance: number;
+  totalInterestPaid: number;
+  interestToPrincipalRatio: number;
+  totalEquity: number;
+  equityFromRepayment: number;
+  netWorthChange: number;
+}
+
+interface AssetGrowthMetricsProps {
+  metrics: Record<string, AssetGrowthMetrics>;
 }
 
 export default function AssetGrowthMetrics({
@@ -71,11 +77,11 @@ export default function AssetGrowthMetrics({
                   />
                 </td>
                 {years.map(year => {
-                  const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
+                  const yearMetrics = metrics[`year${year}`];
                   return (
                     <td key={year} className="text-right py-3 px-6">
                       <div className="flex items-center justify-end gap-2">
-                        R{Math.round(propertyValue).toLocaleString()}
+                        R{Math.round(yearMetrics.propertyValue).toLocaleString()}
                         <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                       </div>
                     </td>
@@ -92,13 +98,11 @@ export default function AssetGrowthMetrics({
                   />
                 </td>
                 {years.map(year => {
-                  const startValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year - 1);
-                  const endValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
-                  const appreciationAmount = endValue - startValue;
+                  const yearMetrics = metrics[`year${year}`];
                   return (
                     <td key={year} className="text-right py-3 px-6">
                       <div className="flex items-center justify-end gap-2">
-                        R{Math.round(appreciationAmount).toLocaleString()}
+                        R{Math.round(yearMetrics.annualAppreciation).toLocaleString()}
                         <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                       </div>
                     </td>
@@ -115,16 +119,11 @@ export default function AssetGrowthMetrics({
                   />
                 </td>
                 {years.map(year => {
-                  const monthsPaid = year * 12;
-                  const remainingPayments = totalPayments - monthsPaid;
-                  const loanBalance = remainingPayments > 0 
-                    ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
-                      / (Math.pow(1 + monthlyRate, totalPayments) - 1)
-                    : 0;
+                  const yearMetrics = metrics[`year${year}`];
                   return (
                     <td key={year} className="text-right py-3 px-6">
                       <div className="flex items-center justify-end gap-2">
-                        R{Math.round(loanBalance).toLocaleString()}
+                        R{Math.round(yearMetrics.loanBalance).toLocaleString()}
                         <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                       </div>
                     </td>
@@ -141,17 +140,11 @@ export default function AssetGrowthMetrics({
                   />
                 </td>
                 {years.map(year => {
-                  const monthsPaid = year * 12;
-                  const totalPaid = monthsPaid * (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) 
-                    / (Math.pow(1 + monthlyRate, totalPayments) - 1);
-                  const principalPaid = loanAmount - ((loanAmount * (Math.pow(1 + monthlyRate, totalPayments) 
-                    - Math.pow(1 + monthlyRate, monthsPaid))) 
-                    / (Math.pow(1 + monthlyRate, totalPayments) - 1));
-                  const interestPaid = totalPaid - principalPaid;
+                  const yearMetrics = metrics[`year${year}`];
                   return (
                     <td key={year} className="text-right py-3 px-6">
                       <div className="flex items-center justify-end gap-2">
-                        R{Math.round(interestPaid).toLocaleString()}
+                        R{Math.round(yearMetrics.totalInterestPaid).toLocaleString()}
                         <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                       </div>
                     </td>
@@ -168,19 +161,11 @@ export default function AssetGrowthMetrics({
                   />
                 </td>
                 {years.map(year => {
-                  const monthsPaid = year * 12;
-                  const monthlyPayment = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) 
-                    / (Math.pow(1 + monthlyRate, totalPayments) - 1);
-                  const remainingBalance = (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) 
-                    - Math.pow(1 + monthlyRate, monthsPaid))) 
-                    / (Math.pow(1 + monthlyRate, totalPayments) - 1);
-                  const interestPayment = remainingBalance * monthlyRate;
-                  const principalPayment = monthlyPayment - interestPayment;
-                  const ratio = (interestPayment / principalPayment) * 100;
+                  const yearMetrics = metrics[`year${year}`];
                   return (
                     <td key={year} className="text-right py-3 px-6">
                       <div className="flex items-center justify-end gap-2">
-                        {ratio.toFixed(1)}%
+                        {yearMetrics.interestToPrincipalRatio.toFixed(1)}%
                         <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                       </div>
                     </td>
@@ -199,18 +184,11 @@ export default function AssetGrowthMetrics({
                   />
                 </td>
                 {years.map(year => {
-                  const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
-                  const monthsPaid = year * 12;
-                  const remainingPayments = totalPayments - monthsPaid;
-                  const loanBalance = remainingPayments > 0 
-                    ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
-                      / (Math.pow(1 + monthlyRate, totalPayments) - 1)
-                    : 0;
-                  const totalEquity = propertyValue - loanBalance;
+                  const yearMetrics = metrics[`year${year}`];
                   return (
                     <td key={year} className="text-right py-3 px-6">
                       <div className="flex items-center justify-end gap-2">
-                        R{Math.round(totalEquity).toLocaleString()}
+                        R{Math.round(yearMetrics.totalEquity).toLocaleString()}
                         <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                       </div>
                     </td>
@@ -227,17 +205,11 @@ export default function AssetGrowthMetrics({
                   />
                 </td>
                 {years.map(year => {
-                  const monthsPaid = year * 12;
-                  const remainingPayments = totalPayments - monthsPaid;
-                  const loanBalance = remainingPayments > 0 
-                    ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
-                      / (Math.pow(1 + monthlyRate, totalPayments) - 1)
-                    : 0;
-                  const equityFromRepayment = loanAmount - loanBalance;
+                  const yearMetrics = metrics[`year${year}`];
                   return (
                     <td key={year} className="text-right py-3 px-6">
                       <div className="flex items-center justify-end gap-2">
-                        R{Math.round(equityFromRepayment).toLocaleString()}
+                        R{Math.round(yearMetrics.equityFromRepayment).toLocaleString()}
                         <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                       </div>
                     </td>
