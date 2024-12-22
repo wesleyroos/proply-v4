@@ -135,6 +135,7 @@ export default function RentalPerformance({
                   <th key={month} className="text-right py-3 px-4">{month}</th>
                 ))}
                 <th className="text-right py-3 px-4 border-l">Annual</th>
+                <th className="text-right py-3 px-4">Monthly Avg</th>
               </tr>
             </thead>
             <tbody>
