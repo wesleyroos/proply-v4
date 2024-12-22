@@ -34,13 +34,13 @@ interface CashflowMetricsProps {
     year20: number;
   };
   netOperatingIncome: {
-    year1: number;
-    year2: number;
-    year3: number;
-    year4: number;
-    year5: number;
-    year10: number;
-    year20: number;
+    year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
   } | null;
 }
 
@@ -122,7 +122,7 @@ export default function CashflowMetrics({
                     {years.map(year => (
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
-                          {formatter(netOperatingIncome?.[`year${year}`])}
+                          {formatter(netOperatingIncome?.[`year${year}`]?.value || 0)}
                           <span className="h-2 w-2 rounded-full bg-red-500" title="Calculated by analysis engine"/>
                         </div>
                       </td>
