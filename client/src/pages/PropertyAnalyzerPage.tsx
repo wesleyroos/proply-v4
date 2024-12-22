@@ -603,6 +603,19 @@ export default function PropertyAnalyzerPage() {
 
             {/* Detailed Analysis Section */}
             <div className="space-y-6">
+              {/* Rental Performance */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-emerald-500" />
+                    Rental Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {/* Content will be added here */}
+                </CardContent>
+              </Card>
+
               {/* Cashflow Metrics */}
               <CashflowMetrics 
                 shortTermNightly={analysisResult.shortTermNightlyRate || 0}
