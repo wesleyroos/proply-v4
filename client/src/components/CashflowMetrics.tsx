@@ -53,6 +53,13 @@ export default function CashflowMetrics({
   operatingExpenses,
   netOperatingIncome,
 }: CashflowMetricsProps) {
+  // Debug logging of incoming props
+  console.log('CashflowMetrics - Received props:', {
+    revenueProjections,
+    operatingExpenses,
+    netOperatingIncome
+  });
+  
   const years = [1, 2, 3, 4, 5, 10, 20];
 
   return (

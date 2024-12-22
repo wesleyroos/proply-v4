@@ -166,25 +166,25 @@ export default function PropertyAnalyzerPage() {
       });
 
       const data = await response.json();
-      console.log("Raw response from analyzer:", response);
-      console.log("Parsed response data:", data);
       
-      // Detailed logging of NOI data
-      console.log("Net Operating Income Data:", {
-        fromAnalysis: data.analysis?.netOperatingIncome,
-        fromRoot: data.netOperatingIncome,
-        detailedBreakdown: {
+      // Debug NOI calculation data flow
+      console.log('Analysis Engine Response - NOI Debug:', {
+        netOperatingIncome: data.analysis?.netOperatingIncome,
+        calculations: {
           year1: {
             revenue: data.analysis?.revenueProjections?.shortTerm?.year1,
             expenses: data.analysis?.operatingExpenses?.year1,
-            noi: data.netOperatingIncome?.year1
+            noi: data.analysis?.netOperatingIncome?.year1?.value,
+            fullNoiData: data.analysis?.netOperatingIncome?.year1
           },
           year2: {
             revenue: data.analysis?.revenueProjections?.shortTerm?.year2,
             expenses: data.analysis?.operatingExpenses?.year2,
-            noi: data.netOperatingIncome?.year2
+            noi: data.analysis?.netOperatingIncome?.year2?.value,
+            fullNoiData: data.analysis?.netOperatingIncome?.year2
           }
-        }
+        },
+        rawResponse: data
       });
 
       if (!response.ok) {
