@@ -61,17 +61,17 @@ export default function InvestmentMetrics({
   netOperatingIncome,
 }: InvestmentMetricsProps) {
   const years = [1, 2, 3, 4, 5, 10, 20];
-  
+
   // Calculate investment metrics
   const calculateROI = (annualRevenue: number) => {
     return ((annualRevenue - (monthlyBondRepayment * 12)) / purchasePrice) * 100;
   };
-  
+
   const calculateCapRate = (annualRevenue: number, annualExpenses: number) => {
     const noi = annualRevenue - annualExpenses;
     return (noi / purchasePrice) * 100;
   };
-  
+
   const calculateCashOnCash = (annualCashflow: number) => {
     return (annualCashflow / deposit) * 100;
   };
@@ -90,6 +90,8 @@ export default function InvestmentMetrics({
     </div>
   );
 
+  type YearKey = keyof typeof netOperatingIncome;
+
   return (
     <Card className="mt-6">
       <CardHeader>
@@ -104,7 +106,7 @@ export default function InvestmentMetrics({
             <TabsTrigger value="short-term">Short-Term</TabsTrigger>
             <TabsTrigger value="long-term">Long-Term</TabsTrigger>
           </TabsList>
-          
+
           {/* Short-Term Tab Content */}
           <TabsContent value="short-term" className="mt-4">
             <div className="rounded-lg border">
@@ -172,9 +174,9 @@ export default function InvestmentMetrics({
                       />
                     </td>
                     {years.map(year => {
-                      const yearKey = `year${year}` as keyof typeof netOperatingIncome;
+                      const yearKey = `year${year}` as YearKey;
                       const netYield = netOperatingIncome ? 
-                        ((netOperatingIncome[yearKey] - (monthlyBondRepayment * 12)) / purchasePrice) * 100 : 0;
+                        ((netOperatingIncome[yearKey].value - (monthlyBondRepayment * 12)) / purchasePrice) * 100 : 0;
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
@@ -195,9 +197,9 @@ export default function InvestmentMetrics({
                       />
                     </td>
                     {years.map(year => {
-                      const yearKey = `year${year}` as keyof typeof netOperatingIncome;
+                      const yearKey = `year${year}` as YearKey;
                       const annualCashflow = netOperatingIncome ? 
-                        netOperatingIncome[yearKey] - (monthlyBondRepayment * 12) : 0;
+                        netOperatingIncome[yearKey].value - (monthlyBondRepayment * 12) : 0;
                       const roe = (annualCashflow / deposit) * 100;
                       return (
                         <td key={year} className="text-right py-3 px-6">
@@ -219,9 +221,9 @@ export default function InvestmentMetrics({
                       />
                     </td>
                     {years.map(year => {
-                      const yearKey = `year${year}` as keyof typeof netOperatingIncome;
+                      const yearKey = `year${year}` as YearKey;
                       const annualCashflow = netOperatingIncome ? 
-                        netOperatingIncome[yearKey] - (monthlyBondRepayment * 12) : 0;
+                        netOperatingIncome[yearKey].value - (monthlyBondRepayment * 12) : 0;
                       // Simplified IRR calculation for display purposes
                       const propertyValue = purchasePrice * Math.pow(1.05, year); // Assuming 5% annual appreciation
                       const totalReturn = ((propertyValue - purchasePrice + annualCashflow) / purchasePrice) * 100 / year;
@@ -271,9 +273,9 @@ export default function InvestmentMetrics({
                       />
                     </td>
                     {years.map(year => {
-                      const yearKey = `year${year}` as keyof typeof operatingExpenses;
+                      const yearKey = `year${year}` as YearKey;
                       const annualCashflow = netOperatingIncome ? 
-                        netOperatingIncome[yearKey] - (monthlyBondRepayment * 12) : 0;
+                        netOperatingIncome[yearKey].value - (monthlyBondRepayment * 12) : 0;
                       const cashOnCash = calculateCashOnCash(annualCashflow);
                       return (
                         <td key={year} className="text-right py-3 px-6">
@@ -295,10 +297,10 @@ export default function InvestmentMetrics({
                       />
                     </td>
                     {years.map(year => {
-                      const yearKey = `year${year}` as keyof typeof operatingExpenses;
+                      const yearKey = `year${year}` as YearKey;
                       const appreciation = purchasePrice * Math.pow(1.05, year) - purchasePrice;
                       const totalCashflow = netOperatingIncome ? 
-                        netOperatingIncome[yearKey] - (monthlyBondRepayment * 12) : 0;
+                        netOperatingIncome[yearKey].value - (monthlyBondRepayment * 12) : 0;
                       const totalReturn = ((appreciation + totalCashflow) / purchasePrice) * 100;
                       return (
                         <td key={year} className="text-right py-3 px-6">
@@ -320,10 +322,10 @@ export default function InvestmentMetrics({
                       />
                     </td>
                     {years.map(year => {
-                      const yearKey = `year${year}` as keyof typeof netOperatingIncome;
+                      const yearKey = `year${year}` as YearKey;
                       // Use the netWorthChange value from the analyzer engine
                       const netWorthChange = netOperatingIncome?.[yearKey]?.netWorthChange || 0;
-                      
+
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
