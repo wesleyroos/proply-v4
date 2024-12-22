@@ -98,18 +98,21 @@ export default function PerformanceProjections({
   });
 
   // Calculate annual and cumulative cashflow data using netOperatingIncome
+  const annualBondPayments = monthlyBondRepayment * 12;
+  
   const cashflowData = years.map(year => {
-    // Get annual cashflow for this year (revenue - expenses - bond payments)
-    const annualCashflow = netOperatingIncome?.[`year${year}` as keyof typeof netOperatingIncome] || 0;
-    const annualBondPayments = monthlyBondRepayment * 12;
-    const yearCashflow = annualCashflow - annualBondPayments;
+    // Get net operating income for this year
+    const yearNOI = netOperatingIncome?.[`year${year}` as keyof typeof netOperatingIncome] || 0;
+    
+    // Calculate annual cashflow (NOI - Bond Payments)
+    const yearCashflow = yearNOI - annualBondPayments;
 
-    // Calculate cumulative cashflow up to this year
+    // Calculate cumulative cashflow by summing all previous years including current
     const cumulativeCashflow = years
       .filter(y => y <= year)
       .reduce((acc, y) => {
-        const yearNOI = netOperatingIncome?.[`year${y}` as keyof typeof netOperatingIncome] || 0;
-        return acc + (yearNOI - annualBondPayments);
+        const prevYearNOI = netOperatingIncome?.[`year${y}` as keyof typeof netOperatingIncome] || 0;
+        return acc + (prevYearNOI - annualBondPayments);
       }, 0);
 
     return {
