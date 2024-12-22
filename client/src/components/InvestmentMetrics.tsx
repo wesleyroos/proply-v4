@@ -40,13 +40,13 @@ interface InvestmentMetricsProps {
     year20: number;
   };
   netOperatingIncome: {
-    year1: number;
-    year2: number;
-    year3: number;
-    year4: number;
-    year5: number;
-    year10: number;
-    year20: number;
+    year1: { value: number; netWorthChange: number };
+    year2: { value: number; netWorthChange: number };
+    year3: { value: number; netWorthChange: number };
+    year4: { value: number; netWorthChange: number };
+    year5: { value: number; netWorthChange: number };
+    year10: { value: number; netWorthChange: number };
+    year20: { value: number; netWorthChange: number };
   } | null;
 }
 
@@ -320,37 +320,15 @@ export default function InvestmentMetrics({
                       />
                     </td>
                     {years.map(year => {
-                      const yearKey = `year${year}` as keyof typeof operatingExpenses;
-                      // Property appreciation
-                      const propertyValue = purchasePrice * Math.pow(1 + (expenseGrowthRate / 100), year);
-                      const appreciation = propertyValue - purchasePrice;
-                      
-                      // Equity from loan repayment
-                      const monthsPaid = year * 12;
-                      const remainingPayments = totalPayments - monthsPaid;
-                      const loanBalance = remainingPayments > 0 
-                        ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
-                          / (Math.pow(1 + monthlyRate, totalPayments) - 1)
-                        : 0;
-                      const equityFromRepayment = loanAmount - loanBalance;
-
-                      // Cumulative cashflow
-                      const cumulativeCashflow = years
-                        .filter(y => y <= year)
-                        .reduce((acc, y) => {
-                          const prevYearKey = `year${y}` as keyof typeof netOperatingIncome;
-                          return acc + (netOperatingIncome?.[prevYearKey] ? 
-                            (netOperatingIncome[prevYearKey] - (monthlyBondRepayment * 12)) : 0);
-                        }, 0);
-
-                      // Total net worth change
-                      const netWorthChange = appreciation + equityFromRepayment + cumulativeCashflow;
+                      const yearKey = `year${year}` as keyof typeof netOperatingIncome;
+                      // Use the netWorthChange value from the analyzer engine
+                      const netWorthChange = netOperatingIncome?.[yearKey]?.netWorthChange || 0;
                       
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
                             {formatter(netWorthChange)}
-                            <span className="h-2 w-2 rounded-full bg-purple-500" title="Calculated metric"/>
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                           </div>
                         </td>
                       );
