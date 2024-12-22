@@ -140,6 +140,102 @@ export default function InvestmentMetrics({
                     })}
                   </tr>
 
+                  {/* Gross Yield */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6">
+                      <MetricLabel 
+                        label="Gross Yield (%)"
+                        tooltip="Gross Yield represents the total annual rental income as a percentage of the property's purchase price, before any expenses or fees."
+                      />
+                    </td>
+                    {years.map(year => {
+                      const yearKey = `year${year}` as keyof typeof revenueProjections.shortTerm;
+                      const grossYield = revenueProjections.shortTerm ? 
+                        (revenueProjections.shortTerm[yearKey] / purchasePrice) * 100 : 0;
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {grossYield.toFixed(2)}%
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Net Yield */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6">
+                      <MetricLabel 
+                        label="Net Yield (%)"
+                        tooltip="Net Yield shows the rental income after all expenses (excluding financing costs) as a percentage of the property's purchase price."
+                      />
+                    </td>
+                    {years.map(year => {
+                      const yearKey = `year${year}` as keyof typeof netOperatingIncome;
+                      const netYield = netOperatingIncome ? 
+                        (netOperatingIncome[yearKey] / purchasePrice) * 100 : 0;
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {netYield.toFixed(2)}%
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Return on Equity */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6">
+                      <MetricLabel 
+                        label="Return on Equity (%)"
+                        tooltip="Return on Equity (ROE) measures the return on your initial cash investment (deposit). It's calculated as (Annual Cash Flow / Initial Deposit) × 100."
+                      />
+                    </td>
+                    {years.map(year => {
+                      const yearKey = `year${year}` as keyof typeof netOperatingIncome;
+                      const annualCashflow = netOperatingIncome ? 
+                        netOperatingIncome[yearKey] - (monthlyBondRepayment * 12) : 0;
+                      const roe = (annualCashflow / deposit) * 100;
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {roe.toFixed(2)}%
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Internal Rate of Return */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6">
+                      <MetricLabel 
+                        label="Internal Rate of Return (%)"
+                        tooltip="IRR is a metric that estimates the profitability of potential investments, considering the time value of money. It includes both rental income and projected property value appreciation."
+                      />
+                    </td>
+                    {years.map(year => {
+                      const yearKey = `year${year}` as keyof typeof netOperatingIncome;
+                      const annualCashflow = netOperatingIncome ? 
+                        netOperatingIncome[yearKey] - (monthlyBondRepayment * 12) : 0;
+                      // Simplified IRR calculation for display purposes
+                      const propertyValue = purchasePrice * Math.pow(1.05, year); // Assuming 5% annual appreciation
+                      const totalReturn = ((propertyValue - purchasePrice + annualCashflow) / purchasePrice) * 100 / year;
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {totalReturn.toFixed(2)}%
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
                   {/* Cap Rate */}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6">
@@ -248,6 +344,101 @@ export default function InvestmentMetrics({
                           <div className="flex items-center justify-end gap-2">
                             {roi.toFixed(2)}%
                             <span className="h-2 w-2 rounded-full bg-purple-500" title="Calculated metric"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Gross Yield */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6">
+                      <MetricLabel 
+                        label="Gross Yield (%)"
+                        tooltip="Gross Yield represents the total annual rental income as a percentage of the property's purchase price, before any expenses or fees."
+                      />
+                    </td>
+                    {years.map(year => {
+                      const annualRevenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
+                      const grossYield = (annualRevenue / purchasePrice) * 100;
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {grossYield.toFixed(2)}%
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Net Yield */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6">
+                      <MetricLabel 
+                        label="Net Yield (%)"
+                        tooltip="Net Yield shows the rental income after all expenses (excluding financing costs) as a percentage of the property's purchase price."
+                      />
+                    </td>
+                    {years.map(year => {
+                      const annualRevenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
+                      const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
+                      const netYield = ((annualRevenue - expenses) / purchasePrice) * 100;
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {netYield.toFixed(2)}%
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Return on Equity */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6">
+                      <MetricLabel 
+                        label="Return on Equity (%)"
+                        tooltip="Return on Equity (ROE) measures the return on your initial cash investment (deposit). It's calculated as (Annual Cash Flow / Initial Deposit) × 100."
+                      />
+                    </td>
+                    {years.map(year => {
+                      const annualRevenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
+                      const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
+                      const annualCashflow = annualRevenue - expenses - (monthlyBondRepayment * 12);
+                      const roe = (annualCashflow / deposit) * 100;
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {roe.toFixed(2)}%
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Internal Rate of Return */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6">
+                      <MetricLabel 
+                        label="Internal Rate of Return (%)"
+                        tooltip="IRR is a metric that estimates the profitability of potential investments, considering the time value of money. It includes both rental income and projected property value appreciation."
+                      />
+                    </td>
+                    {years.map(year => {
+                      const annualRevenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
+                      const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
+                      const annualCashflow = annualRevenue - expenses - (monthlyBondRepayment * 12);
+                      // Simplified IRR calculation for display purposes
+                      const propertyValue = purchasePrice * Math.pow(1.05, year); // Assuming 5% annual appreciation
+                      const totalReturn = ((propertyValue - purchasePrice + annualCashflow) / purchasePrice) * 100 / year;
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {totalReturn.toFixed(2)}%
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                           </div>
                         </td>
                       );

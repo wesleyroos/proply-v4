@@ -411,10 +411,10 @@ export default function PropertyAnalyzerPage() {
                       </div>
                       <div>
                         <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
-                          Get Connected with a Transfer Attorney
+                          Connect with Transfer Attorney
                         </Button>
                         <p className="mt-2 text-sm text-slate-600">
-                          Get exclusive rates and professional guidance for your property transfer process through our network of trusted attorneys.
+                          Get exclusive rates and guidance from our trusted attorney network.
                         </p>
                       </div>
                     </div>
