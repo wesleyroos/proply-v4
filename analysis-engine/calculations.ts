@@ -62,12 +62,13 @@ export interface AnalysisResult {
       year20: number;
     };
     netOperatingIncome: {
-      year1: number;
-      year2: number;
-      year4: number;
-      year5: number;
-      year10: number;
-      year20: number;
+      year1: { value: number; netWorthChange: number };
+      year2: { value: number; netWorthChange: number };
+      year3: { value: number; netWorthChange: number };
+      year4: { value: number; netWorthChange: number };
+      year5: { value: number; netWorthChange: number };
+      year10: { value: number; netWorthChange: number };
+      year20: { value: number; netWorthChange: number };
     } | null;
   };
 }
@@ -308,16 +309,54 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     year20: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 19)
   };
 
-  // Calculate Net Operating Income (Revenue - Operating Expenses) for each year
+  // Calculate Net Operating Income and Net Worth Change for each year
   const netOperatingIncome = revenueProjections?.shortTerm ? {
-    year1: revenueProjections.shortTerm.year1 - operatingExpenses.year1,
-    year2: revenueProjections.shortTerm.year2 - operatingExpenses.year2,
-    year3: revenueProjections.shortTerm.year3 - operatingExpenses.year3,
-    year4: revenueProjections.shortTerm.year4 - operatingExpenses.year4,
-    year5: revenueProjections.shortTerm.year5 - operatingExpenses.year5,
-    year10: revenueProjections.shortTerm.year10 - operatingExpenses.year10,
-    year20: revenueProjections.shortTerm.year20 - operatingExpenses.year20
+    year1: calculateNetWorthMetrics(1, revenueProjections.shortTerm.year1, operatingExpenses.year1, data, loanAmount, monthlyBondRepayment),
+    year2: calculateNetWorthMetrics(2, revenueProjections.shortTerm.year2, operatingExpenses.year2, data, loanAmount, monthlyBondRepayment),
+    year3: calculateNetWorthMetrics(3, revenueProjections.shortTerm.year3, operatingExpenses.year3, data, loanAmount, monthlyBondRepayment),
+    year4: calculateNetWorthMetrics(4, revenueProjections.shortTerm.year4, operatingExpenses.year4, data, loanAmount, monthlyBondRepayment),
+    year5: calculateNetWorthMetrics(5, revenueProjections.shortTerm.year5, operatingExpenses.year5, data, loanAmount, monthlyBondRepayment),
+    year10: calculateNetWorthMetrics(10, revenueProjections.shortTerm.year10, operatingExpenses.year10, data, loanAmount, monthlyBondRepayment),
+    year20: calculateNetWorthMetrics(20, revenueProjections.shortTerm.year20, operatingExpenses.year20, data, loanAmount, monthlyBondRepayment)
   } : null;
+
+  function calculateNetWorthMetrics(
+    year: number, 
+    revenue: number, 
+    expenses: number, 
+    propertyData: PropertyData,
+    initialLoanAmount: number,
+    monthlyPayment: number
+  ) {
+    // Calculate NOI
+    const noi = revenue - expenses;
+    
+    // Calculate remaining loan balance after N years
+    const monthlyRate = (propertyData.interestRate / 100) / 12;
+    const totalPayments = year * 12;
+    const remainingBalance = initialLoanAmount * 
+      (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - Math.pow(1 + monthlyRate, totalPayments)) /
+      (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - 1);
+
+    // Property appreciation (assuming 5% annual appreciation)
+    const appreciatedValue = propertyData.purchasePrice * Math.pow(1.05, year);
+    const appreciation = appreciatedValue - propertyData.purchasePrice;
+
+    // Equity from loan paydown
+    const equityFromLoanPaydown = initialLoanAmount - remainingBalance;
+
+    // Cumulative rental income (NOI after debt service)
+    const annualDebtService = monthlyPayment * 12;
+    const cumulativeRentalIncome = (noi - annualDebtService) * year;
+
+    // Calculate total net worth change
+    const netWorthChange = appreciation + equityFromLoanPaydown + cumulativeRentalIncome;
+
+    return {
+      value: noi,
+      netWorthChange
+    };
+  }
 
   const result = {
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
