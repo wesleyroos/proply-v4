@@ -13,6 +13,7 @@ import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight } from "luc
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
+import RentalPerformance from "@/components/RentalPerformance";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
@@ -612,7 +613,11 @@ export default function PropertyAnalyzerPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {/* Content will be added here */}
+                  <RentalPerformance
+                    shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                    longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
+                    managementFee={analysisResult.managementFee || 0}
+                  />
                 </CardContent>
               </Card>
 
