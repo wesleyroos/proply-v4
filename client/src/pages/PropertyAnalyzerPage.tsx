@@ -490,6 +490,33 @@ export default function PropertyAnalyzerPage() {
                               % Gross Yield
                             </span>
                           </p>
+                          
+                          <div className="pt-2 border-t border-purple-100">
+                            <div className="flex justify-between items-center">
+                              <p className="text-sm text-slate-600">Fee-adjusted Rate:</p>
+                              <p className="text-sm font-medium flex items-center gap-2">
+                                R{analysisResult.shortTermNightlyRate ? 
+                                  Math.round(analysisResult.shortTermNightlyRate * 
+                                    (analysisResult.managementFee > 0 ? 0.85 : 0.97)
+                                  ).toLocaleString() : "0"}
+                                <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">Platform Fee:</p>
+                              <p className="text-sm font-medium text-red-600 flex items-center gap-2">
+                                {analysisResult.managementFee > 0 ? "15" : "3"}%
+                                <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">Management Fee:</p>
+                              <p className="text-sm font-medium flex items-center gap-2">
+                                {analysisResult.managementFee || "0"}%
+                                <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
