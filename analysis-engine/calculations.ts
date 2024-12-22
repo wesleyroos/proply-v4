@@ -288,10 +288,10 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Calculate bond repayment
   const loanAmount = data.purchasePrice - data.deposit;
   const monthlyRate = (data.interestRate / 100) / 12;
-  const numberOfPayments = data.loanTerm * 12;
+  const totalPayments = data.loanTerm * 12;  // Total number of payments over loan term
   const monthlyBondRepayment = loanAmount * 
-    (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / 
-    (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+    (monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) / 
+    (Math.pow(1 + monthlyRate, totalPayments) - 1);
 
   // Calculate deposit percentage
   const depositPercentage = (data.deposit / data.purchasePrice) * 100;
