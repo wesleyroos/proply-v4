@@ -16,7 +16,6 @@ const propertyDataSchema = z.object({
   ratePerSquareMeter: z.number().positive(),
   incomeGrowthRate: z.number().min(0).max(100).optional().default(8),
   expenseGrowthRate: z.number().min(0).max(100).optional().default(6),
-  annualPropertyAppreciation: z.number().min(0).max(100).optional().default(6),
   monthlyLevies: z.number().min(0).optional().default(0),
   monthlyRatesTaxes: z.number().min(0).optional().default(0),
   otherMonthlyExpenses: z.number().min(0).optional().default(0),
@@ -289,10 +288,10 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   // Calculate bond repayment
   const loanAmount = data.purchasePrice - data.deposit;
   const monthlyRate = (data.interestRate / 100) / 12;
-  const totalPayments = data.loanTerm * 12;  // Total number of payments over loan term
+  const numberOfPayments = data.loanTerm * 12;
   const monthlyBondRepayment = loanAmount * 
-    (monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) / 
-    (Math.pow(1 + monthlyRate, totalPayments) - 1);
+    (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / 
+    (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
 
   // Calculate deposit percentage
   const depositPercentage = (data.deposit / data.purchasePrice) * 100;
@@ -312,48 +311,146 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
 
   // Calculate Net Operating Income (Revenue - Operating Expenses) for each year
   const netOperatingIncome = revenueProjections?.shortTerm ? {
-    year1: {
-      value: revenueProjections.shortTerm.year1 - operatingExpenses.year1,
-      netWorthChange: (revenueProjections.shortTerm.year1 - operatingExpenses.year1 - (monthlyBondRepayment * 12)) +
-                     (data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 1) - data.purchasePrice) +
-                     (loanAmount - (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, 12))) / (Math.pow(1 + monthlyRate, totalPayments) - 1))
-    },
-    year2: {
-      value: revenueProjections.shortTerm.year2 - operatingExpenses.year2,
-      netWorthChange: (revenueProjections.shortTerm.year2 - operatingExpenses.year2 - (monthlyBondRepayment * 12)) +
-                     (data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 2) - data.purchasePrice) +
-                     (loanAmount - (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, 24))) / (Math.pow(1 + monthlyRate, totalPayments) - 1))
-    },
-    year3: {
-      value: revenueProjections.shortTerm.year3 - operatingExpenses.year3,
-      netWorthChange: (revenueProjections.shortTerm.year3 - operatingExpenses.year3 - (monthlyBondRepayment * 12)) +
-                     (data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 3) - data.purchasePrice) +
-                     (loanAmount - (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, 36))) / (Math.pow(1 + monthlyRate, totalPayments) - 1))
-    },
-    year4: {
-      value: revenueProjections.shortTerm.year4 - operatingExpenses.year4,
-      netWorthChange: (revenueProjections.shortTerm.year4 - operatingExpenses.year4 - (monthlyBondRepayment * 12)) +
-                     (data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 4) - data.purchasePrice) +
-                     (loanAmount - (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, 48))) / (Math.pow(1 + monthlyRate, totalPayments) - 1))
-    },
-    year5: {
-      value: revenueProjections.shortTerm.year5 - operatingExpenses.year5,
-      netWorthChange: (revenueProjections.shortTerm.year5 - operatingExpenses.year5 - (monthlyBondRepayment * 12)) +
-                     (data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 5) - data.purchasePrice) +
-                     (loanAmount - (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, 60))) / (Math.pow(1 + monthlyRate, totalPayments) - 1))
-    },
-    year10: {
-      value: revenueProjections.shortTerm.year10 - operatingExpenses.year10,
-      netWorthChange: (revenueProjections.shortTerm.year10 - operatingExpenses.year10 - (monthlyBondRepayment * 12)) +
-                     (data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 10) - data.purchasePrice) +
-                     (loanAmount - (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, 120))) / (Math.pow(1 + monthlyRate, totalPayments) - 1))
-    },
-    year20: {
-      value: revenueProjections.shortTerm.year20 - operatingExpenses.year20,
-      netWorthChange: (revenueProjections.shortTerm.year20 - operatingExpenses.year20 - (monthlyBondRepayment * 12)) +
-                     (data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 20) - data.purchasePrice) +
-                     (loanAmount - (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, 240))) / (Math.pow(1 + monthlyRate, totalPayments) - 1))
-    }
+    year1: (() => {
+      const noi = revenueProjections.shortTerm.year1 - operatingExpenses.year1;
+      const propertyValue = data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 1);
+      const appreciation = propertyValue - data.purchasePrice;
+      const monthsPaid = 12;
+      const remainingPayments = totalPayments - monthsPaid;
+      const loanBalance = remainingPayments > 0 
+        ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
+        / (Math.pow(1 + monthlyRate, totalPayments) - 1)
+        : 0;
+      const equityFromRepayment = loanAmount - loanBalance;
+      const cashflow = noi - (monthlyBondRepayment * 12);
+      return {
+        value: noi,
+        netWorthChange: appreciation + equityFromRepayment + cashflow
+      };
+    })(),
+    year2: (() => {
+      const noi = revenueProjections.shortTerm.year2 - operatingExpenses.year2;
+      const propertyValue = data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 2);
+      const appreciation = propertyValue - data.purchasePrice;
+      const monthsPaid = 24;
+      const remainingPayments = totalPayments - monthsPaid;
+      const loanBalance = remainingPayments > 0 
+        ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
+        / (Math.pow(1 + monthlyRate, totalPayments) - 1)
+        : 0;
+      const equityFromRepayment = loanAmount - loanBalance;
+      const cashflow = (revenueProjections.shortTerm.year1 - operatingExpenses.year1 - (monthlyBondRepayment * 12)) +
+                      (noi - (monthlyBondRepayment * 12));
+      return {
+        value: noi,
+        netWorthChange: appreciation + equityFromRepayment + cashflow
+      };
+    })(),
+    year3: (() => {
+      const noi = revenueProjections.shortTerm.year3 - operatingExpenses.year3;
+      const propertyValue = data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 3);
+      const appreciation = propertyValue - data.purchasePrice;
+      const monthsPaid = 36;
+      const remainingPayments = totalPayments - monthsPaid;
+      const loanBalance = remainingPayments > 0 
+        ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
+        / (Math.pow(1 + monthlyRate, totalPayments) - 1)
+        : 0;
+      const equityFromRepayment = loanAmount - loanBalance;
+      const cashflow = (revenueProjections.shortTerm.year1 - operatingExpenses.year1 - (monthlyBondRepayment * 12)) +
+                      (revenueProjections.shortTerm.year2 - operatingExpenses.year2 - (monthlyBondRepayment * 12)) +
+                      (noi - (monthlyBondRepayment * 12));
+      return {
+        value: noi,
+        netWorthChange: appreciation + equityFromRepayment + cashflow
+      };
+    })(),
+    year4: (() => {
+      const noi = revenueProjections.shortTerm.year4 - operatingExpenses.year4;
+      const propertyValue = data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 4);
+      const appreciation = propertyValue - data.purchasePrice;
+      const monthsPaid = 48;
+      const remainingPayments = totalPayments - monthsPaid;
+      const loanBalance = remainingPayments > 0 
+        ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
+        / (Math.pow(1 + monthlyRate, totalPayments) - 1)
+        : 0;
+      const equityFromRepayment = loanAmount - loanBalance;
+      const cashflow = (revenueProjections.shortTerm.year1 - operatingExpenses.year1 - (monthlyBondRepayment * 12)) +
+                      (revenueProjections.shortTerm.year2 - operatingExpenses.year2 - (monthlyBondRepayment * 12)) +
+                      (revenueProjections.shortTerm.year3 - operatingExpenses.year3 - (monthlyBondRepayment * 12)) +
+                      (noi - (monthlyBondRepayment * 12));
+      return {
+        value: noi,
+        netWorthChange: appreciation + equityFromRepayment + cashflow
+      };
+    })(),
+    year5: (() => {
+      const noi = revenueProjections.shortTerm.year5 - operatingExpenses.year5;
+      const propertyValue = data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 5);
+      const appreciation = propertyValue - data.purchasePrice;
+      const monthsPaid = 60;
+      const remainingPayments = totalPayments - monthsPaid;
+      const loanBalance = remainingPayments > 0 
+        ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
+        / (Math.pow(1 + monthlyRate, totalPayments) - 1)
+        : 0;
+      const equityFromRepayment = loanAmount - loanBalance;
+      const cashflow = years
+        .filter(y => y <= 5)
+        .reduce((acc, y) => {
+          const yearKey = `year${y}` as keyof typeof revenueProjections.shortTerm;
+          return acc + (revenueProjections.shortTerm[yearKey] - operatingExpenses[yearKey] - (monthlyBondRepayment * 12));
+        }, 0);
+      return {
+        value: noi,
+        netWorthChange: appreciation + equityFromRepayment + cashflow
+      };
+    })(),
+    year10: (() => {
+      const noi = revenueProjections.shortTerm.year10 - operatingExpenses.year10;
+      const propertyValue = data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 10);
+      const appreciation = propertyValue - data.purchasePrice;
+      const monthsPaid = 120;
+      const remainingPayments = totalPayments - monthsPaid;
+      const loanBalance = remainingPayments > 0 
+        ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
+        / (Math.pow(1 + monthlyRate, totalPayments) - 1)
+        : 0;
+      const equityFromRepayment = loanAmount - loanBalance;
+      const cashflow = years
+        .filter(y => y <= 10)
+        .reduce((acc, y) => {
+          const yearKey = `year${y}` as keyof typeof revenueProjections.shortTerm;
+          return acc + (revenueProjections.shortTerm[yearKey] - operatingExpenses[yearKey] - (monthlyBondRepayment * 12));
+        }, 0);
+      return {
+        value: noi,
+        netWorthChange: appreciation + equityFromRepayment + cashflow
+      };
+    })(),
+    year20: (() => {
+      const noi = revenueProjections.shortTerm.year20 - operatingExpenses.year20;
+      const propertyValue = data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), 20);
+      const appreciation = propertyValue - data.purchasePrice;
+      const monthsPaid = 240;
+      const remainingPayments = totalPayments - monthsPaid;
+      const loanBalance = remainingPayments > 0 
+        ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
+        / (Math.pow(1 + monthlyRate, totalPayments) - 1)
+        : 0;
+      const equityFromRepayment = loanAmount - loanBalance;
+      const cashflow = years
+        .filter(y => y <= 20)
+        .reduce((acc, y) => {
+          const yearKey = `year${y}` as keyof typeof revenueProjections.shortTerm;
+          return acc + (revenueProjections.shortTerm[yearKey] - operatingExpenses[yearKey] - (monthlyBondRepayment * 12));
+        }, 0);
+      return {
+        value: noi,
+        netWorthChange: appreciation + equityFromRepayment + cashflow
+      };
+    })()
   } : null;
 
   const result = {
