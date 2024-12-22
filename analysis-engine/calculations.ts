@@ -328,13 +328,23 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     initialLoanAmount: number,
     monthlyPayment: number
   ) {
-    // Calculate NOI
+    // Calculate NOI (Net Operating Income)
     const noi = revenue - expenses;
+    console.log(`Year ${year} NOI Calculation:`, {
+      revenue,
+      expenses,
+      noi
+    });
     
     // Calculate annual cashflow (NOI minus debt service)
     const annualDebtService = monthlyPayment * 12;
     const annualCashflow = noi - annualDebtService;
-    
+    console.log(`Year ${year} Cashflow Calculation:`, {
+      noi,
+      annualDebtService,
+      annualCashflow
+    });
+
     // Calculate remaining loan balance after N years
     const monthlyRate = (propertyData.interestRate / 100) / 12;
     const totalPayments = year * 12;
@@ -349,11 +359,22 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     // Equity from loan paydown
     const equityFromLoanPaydown = initialLoanAmount - remainingBalance;
 
-    // Calculate cumulative rental income (summing up annual cashflows)
+    // Calculate cumulative rental income (sum of annual cashflows up to this year)
     const cumulativeRentalIncome = annualCashflow * year;
+    console.log(`Year ${year} Cumulative Income:`, {
+      annualCashflow,
+      year,
+      cumulativeRentalIncome
+    });
 
     // Calculate total net worth change
     const netWorthChange = appreciation + equityFromLoanPaydown + cumulativeRentalIncome;
+    console.log(`Year ${year} Net Worth Components:`, {
+      appreciation,
+      equityFromLoanPaydown,
+      cumulativeRentalIncome,
+      netWorthChange
+    });
 
     return {
       value: noi,
