@@ -135,7 +135,6 @@ export default function RentalPerformance({
                   <th key={month} className="text-right py-3 px-4">{month}</th>
                 ))}
                 <th className="text-right py-3 px-4 border-l">Annual</th>
-                <th className="text-right py-3 px-4">Monthly Avg</th>
               </tr>
             </thead>
             <tbody>
@@ -148,7 +147,6 @@ export default function RentalPerformance({
                   </td>
                 ))}
                 <td className="text-right py-3 px-4 border-l">-</td>
-                <td className="text-right py-3 px-4">{formatter(shortTermNightly)}</td>
               </tr>
 
               {/* Platform Fee */}
@@ -167,9 +165,6 @@ export default function RentalPerformance({
                   );
                 })}
                 <td className="text-right py-3 px-4 border-l">-</td>
-                <td className="text-right py-3 px-4 text-red-600">
-                  {formatter(-shortTermNightly * (isManaged ? 0.15 : 0.03))}
-                </td>
               </tr>
 
               {/* Fee-adjusted Rate */}
@@ -186,9 +181,6 @@ export default function RentalPerformance({
                   );
                 })}
                 <td className="text-right py-3 px-4 border-l">-</td>
-                <td className="text-right py-3 px-4">
-                  {formatter(getFeeAdjustedRate(shortTermNightly, isManaged))}
-                </td>
               </tr>
 
               {/* Occupancy Rates */}
