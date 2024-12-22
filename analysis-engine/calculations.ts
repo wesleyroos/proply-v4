@@ -62,13 +62,13 @@ export interface AnalysisResult {
       year20: number;
     };
     netOperatingIncome: {
-      year1: { value: number; netWorthChange: number };
-      year2: { value: number; netWorthChange: number };
-      year3: { value: number; netWorthChange: number };
-      year4: { value: number; netWorthChange: number };
-      year5: { value: number; netWorthChange: number };
-      year10: { value: number; netWorthChange: number };
-      year20: { value: number; netWorthChange: number };
+      year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
     } | null;
   };
 }
@@ -331,6 +331,10 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     // Calculate NOI
     const noi = revenue - expenses;
     
+    // Calculate annual cashflow (NOI minus debt service)
+    const annualDebtService = monthlyPayment * 12;
+    const annualCashflow = noi - annualDebtService;
+    
     // Calculate remaining loan balance after N years
     const monthlyRate = (propertyData.interestRate / 100) / 12;
     const totalPayments = year * 12;
@@ -345,15 +349,16 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     // Equity from loan paydown
     const equityFromLoanPaydown = initialLoanAmount - remainingBalance;
 
-    // Cumulative rental income (NOI after debt service)
-    const annualDebtService = monthlyPayment * 12;
-    const cumulativeRentalIncome = (noi - annualDebtService) * year;
+    // Calculate cumulative rental income (summing up annual cashflows)
+    const cumulativeRentalIncome = annualCashflow * year;
 
     // Calculate total net worth change
     const netWorthChange = appreciation + equityFromLoanPaydown + cumulativeRentalIncome;
 
     return {
       value: noi,
+      annualCashflow,
+      cumulativeRentalIncome,
       netWorthChange
     };
   }
