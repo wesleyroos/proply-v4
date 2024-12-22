@@ -299,12 +299,22 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     setIsSubmitting(true);
     try {
       // Clean and prepare the analysis data
-      // Ensure all form fields are included and properly typed
-      // Calculate required values with defaults if not provided
+      console.log('Form data received:', data);
+      
+      // Pre-calculate and validate core values with defaults
       const purchasePrice = Number(data.purchasePrice);
       const depositAmount = Number(data.depositAmount) || purchasePrice * 0.1; // Default 10% deposit
       const floorArea = Number(data.floorArea);
-      const ratePerSqm = Number(data.cmaRatePerSqm) || Math.ceil(purchasePrice / floorArea); // Calculate from price/area
+      const ratePerSqm = Number(data.cmaRatePerSqm) || Math.ceil(purchasePrice / floorArea);
+      const annualPropertyAppreciation = Number(data.annualPropertyAppreciation || 6);
+      
+      console.log('Data being sent to analyzer:', {
+        purchasePrice,
+        depositAmount,
+        floorArea,
+        ratePerSqm,
+        annualPropertyAppreciation
+      });
 
       const analysisData = {
         purchasePrice,
@@ -314,20 +324,22 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         leaseCycleGap: Number(data.leaseCycleGap || 0),
         propertyDescription: data.comments || "",
         address: data.address,
-        deposit: depositAmount, // Guaranteed to be > 0
+        deposit: depositAmount,
         interestRate: Number(data.interestRate),
         loanTerm: Number(data.loanTerm),
         floorArea,
-        ratePerSquareMeter: ratePerSqm, // Guaranteed to be > 0
-        incomeGrowthRate: Number(data.annualIncomeGrowth || 8), // Default 8%
-        expenseGrowthRate: Number(data.annualExpenseGrowth || 6), // Default 6%
-        annualPropertyAppreciation: Number(data.annualPropertyAppreciation || 6), // Default 6%
+        ratePerSquareMeter: ratePerSqm,
+        incomeGrowthRate: Number(data.annualIncomeGrowth || 8),
+        expenseGrowthRate: Number(data.annualExpenseGrowth || 6),
+        annualPropertyAppreciation,
         monthlyLevies: Number(data.monthlyLevies || 0),
         monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
         maintenancePercent: Number(data.maintenancePercent || 0),
         managementFee: Number(data.managementFee || 0),
       };
+
+      console.log('Sending analysis request with body:', analysisData);
 
       console.log("Submitting complete analysis data:", analysisData);
 
