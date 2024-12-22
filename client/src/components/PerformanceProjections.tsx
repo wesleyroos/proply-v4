@@ -77,23 +77,37 @@ export default function PerformanceProjections({
 
   // Calculate loan balance, property value, and equity for each year
   const propertyValueData = years.map(year => {
+    const yearKey = `year${year}` as keyof typeof netOperatingIncome;
+    
     // Calculate remaining loan balance
     const monthsPaid = year * 12;
     const remainingBalance = (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) 
       - Math.pow(1 + monthlyRate, monthsPaid))) 
       / (Math.pow(1 + monthlyRate, totalPayments) - 1);
 
-    // Calculate property value with appreciation
-    const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
+    // Calculate property value with appreciation (5% annual)
+    const propertyValue = purchasePrice * Math.pow(1.05, year);
 
     // Calculate equity (property value - remaining loan)
     const equity = propertyValue - remainingBalance;
+
+    // Cumulative rental income
+    const cumulativeRental = years
+      .filter(y => y <= year)
+      .reduce((acc, y) => {
+        const prevYearKey = `year${y}` as keyof typeof netOperatingIncome;
+        return acc + (netOperatingIncome?.[prevYearKey] ? 
+          (netOperatingIncome[prevYearKey] - (monthlyBondRepayment * 12)) : 0);
+      }, 0);
+
+    // Total equity includes property equity plus cumulative rental income
+    const totalEquity = equity + cumulativeRental;
 
     return {
       year: `Year ${year}`,
       'Property Value': propertyValue,
       'Loan Balance': remainingBalance,
-      'Equity': equity,
+      'Total Equity': totalEquity,
     };
   });
 
@@ -163,7 +177,7 @@ export default function PerformanceProjections({
                   />
                   <Area 
                     type="monotone" 
-                    dataKey="Equity" 
+                    dataKey="Total Equity" 
                     stackId="3"
                     stroke="#ffc658" 
                     fill="#ffc658" 
