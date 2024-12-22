@@ -350,34 +350,32 @@ export default function PropertyAnalyzerPage() {
                       ).toLocaleString()}
                     </p>
                     <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <div className="mt-2 space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <Checkbox
-                              id="removeVat"
-                              checked={removeVat}
-                              onCheckedChange={(checked) => setRemoveVat(checked as boolean)}
-                            />
-                            <label
-                              htmlFor="removeVat"
-                              className="text-sm text-slate-600 cursor-pointer"
-                            >
-                              Remove VAT
-                            </label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Checkbox
-                              id="removeTransferDuty"
-                              checked={removeTransferDuty}
-                              onCheckedChange={(checked) => setRemoveTransferDuty(checked as boolean)}
-                            />
-                            <label
-                              htmlFor="removeTransferDuty"
-                              className="text-sm text-slate-600 cursor-pointer"
-                            >
-                              Remove Transfer Duty
-                            </label>
-                          </div>
+                      <div className="mt-2 space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="removeVat"
+                            checked={removeVat}
+                            onCheckedChange={(checked) => setRemoveVat(checked as boolean)}
+                          />
+                          <label
+                            htmlFor="removeVat"
+                            className="text-sm text-slate-600 cursor-pointer"
+                          >
+                            Remove VAT
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="removeTransferDuty"
+                            checked={removeTransferDuty}
+                            onCheckedChange={(checked) => setRemoveTransferDuty(checked as boolean)}
+                          />
+                          <label
+                            htmlFor="removeTransferDuty"
+                            className="text-sm text-slate-600 cursor-pointer"
+                          >
+                            Remove Transfer Duty
+                          </label>
                         </div>
                       </div>
                       <div>
