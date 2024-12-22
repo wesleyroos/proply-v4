@@ -472,16 +472,10 @@ export default function PropertyAnalyzerPage() {
                             </div>
                             <div className="flex justify-between items-center mt-1">
                               <p className="text-sm text-slate-600">Management Fee:</p>
-                              <div>
-                                <p className="text-sm font-medium flex items-center gap-2">
-                                  20%
-                                  <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
-                                </p>
-                                <p className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                                  R{Math.round((analysisResult.analysis.shortTermAnnualRevenue || 0) * 0.2 / 12).toLocaleString()}/month
-                                  <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
-                                </p>
-                              </div>
+                              <p className="text-sm font-medium flex items-center gap-2">
+                                20%
+                                <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
+                              </p>
                             </div>
                             <p className="text-sm text-slate-600 mt-1">
                               Occupancy:{" "}
