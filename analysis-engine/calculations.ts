@@ -319,6 +319,38 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     year20: revenueProjections.shortTerm.year20 - operatingExpenses.year20
   } : null;
 
+  // Calculate net worth change for each year by combining equity build-up, cumulative cashflow, and property appreciation
+  const years = [1, 2, 3, 4, 5, 10, 20];
+  const netWorthChangeByYear = years.reduce((acc, year) => {
+    const yearKey = `year${year}` as keyof typeof netOperatingIncome;
+    
+    // Calculate remaining loan balance for equity build-up
+    const monthsPaid = year * 12;
+    const remainingPayments = totalPayments - monthsPaid;
+    const loanBalance = remainingPayments > 0 
+      ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
+        / (Math.pow(1 + monthlyRate, totalPayments) - 1)
+      : 0;
+    const equityFromRepayment = loanAmount - loanBalance;
+
+    // Calculate property appreciation
+    const propertyValue = data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), year);
+    const totalAppreciation = propertyValue - data.purchasePrice;
+
+    // Calculate cumulative cashflow
+    const cumulativeCashflow = years
+      .filter(y => y <= year)
+      .reduce((acc, y) => {
+        const prevYearKey = `year${y}` as keyof typeof netOperatingIncome;
+        return acc + (netOperatingIncome?.[prevYearKey] ? 
+          (netOperatingIncome[prevYearKey] - (monthlyBondRepayment * 12)) : 0);
+      }, 0);
+
+    // Total net worth change is the sum of all three components
+    acc[yearKey] = equityFromRepayment + totalAppreciation + cumulativeCashflow;
+    return acc;
+  }, {} as Record<string, number>);
+
   const result = {
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
     longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
@@ -339,7 +371,8 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         shortTerm: revenueProjections?.shortTerm || null
       },
       operatingExpenses,
-      netOperatingIncome
+      netOperatingIncome,
+      netWorthChange: netWorthChangeByYear
     }
   };
 
