@@ -1,0 +1,106 @@
+Submitting complete analysis data: Object
+PropertyAnalyzerPage.tsx:106 Form data received: Object
+PropertyAnalyzerPage.tsx:153 Data being sent to analyzer: Object
+PropertyAnalyzerPage.tsx:155 Sending analysis request with body: {
+  "address": "27 Leeuwen St, Cape Town City Centre, 8001",
+  "purchasePrice": 3500000,
+  "floorArea": 85,
+  "bedrooms": null,
+  "bathrooms": null,
+  "parkingSpaces": 0,
+  "deposit": null,
+  "depositPercentage": null,
+  "interestRate": 11.75,
+  "loanTerm": 20,
+  "monthlyLevies": 2500,
+  "monthlyRatesTaxes": 1800,
+  "otherMonthlyExpenses": 2000,
+  "maintenancePercent": 10,
+  "managementFee": 20,
+  "shortTermNightlyRate": 0,
+  "annualOccupancy": 0,
+  "longTermRental": 25000,
+  "leaseCycleGap": 7,
+  "annualIncomeGrowth": 0,
+  "annualExpenseGrowth": 0,
+  "annualPropertyAppreciation": 6,
+  "ratePerSquareMeter": 0,
+  "propertyDescription": ""
+}
+api/analyze:1 
+        
+        
+       Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this errorAI
+PropertyAnalyzerPage.tsx:169 Raw response from analyzer: Response
+PropertyAnalyzerPage.tsx:170 Parsed response data: Object
+PropertyAnalyzerPage.tsx:174 Analysis failed with error: [
+  {
+    "code": "too_small",
+    "minimum": 0,
+    "type": "number",
+    "inclusive": false,
+    "exact": false,
+    "message": "Number must be greater than 0",
+    "path": [
+      "deposit"
+    ]
+  },
+  {
+    "code": "too_small",
+    "minimum": 0,
+    "type": "number",
+    "inclusive": false,
+    "exact": false,
+    "message": "Number must be greater than 0",
+    "path": [
+      "ratePerSquareMeter"
+    ]
+  },
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "undefined",
+    "path": [
+      "annualPropertyAppreciation"
+    ],
+    "message": "Required"
+  }
+]
+handleAnalysisComplete @ PropertyAnalyzerPage.tsx:174Understand this errorAI
+PropertyAnalyzerPage.tsx:187 Analysis failed: Error: [
+  {
+    "code": "too_small",
+    "minimum": 0,
+    "type": "number",
+    "inclusive": false,
+    "exact": false,
+    "message": "Number must be greater than 0",
+    "path": [
+      "deposit"
+    ]
+  },
+  {
+    "code": "too_small",
+    "minimum": 0,
+    "type": "number",
+    "inclusive": false,
+    "exact": false,
+    "message": "Number must be greater than 0",
+    "path": [
+      "ratePerSquareMeter"
+    ]
+  },
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "undefined",
+    "path": [
+      "annualPropertyAppreciation"
+    ],
+    "message": "Required"
+  }
+]
+    at Object.handleAnalysisComplete [as onAnalysisComplete] (PropertyAnalyzerPage.tsx:175:15)
+    at async onSubmit (PropertyAnalyzerForm.tsx:329:9)
+    at async chunk-EV5STJTR.js?v=f07777d6:1675:9
+handleAnalysisComplete @ PropertyAnalyzerPage.tsx:187Understand this errorAI

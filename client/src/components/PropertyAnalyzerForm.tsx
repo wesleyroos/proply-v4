@@ -300,22 +300,28 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     try {
       // Clean and prepare the analysis data
       // Ensure all form fields are included and properly typed
+      // Calculate required values with defaults if not provided
+      const purchasePrice = Number(data.purchasePrice);
+      const depositAmount = Number(data.depositAmount) || purchasePrice * 0.1; // Default 10% deposit
+      const floorArea = Number(data.floorArea);
+      const ratePerSqm = Number(data.cmaRatePerSqm) || Math.ceil(purchasePrice / floorArea); // Calculate from price/area
+
       const analysisData = {
-        purchasePrice: Number(data.purchasePrice),
+        purchasePrice,
         shortTermNightlyRate: Number(data.airbnbNightlyRate || 0),
         annualOccupancy: Number(data.occupancyRate || 0),
         longTermRental: Number(data.longTermRental || 0),
         leaseCycleGap: Number(data.leaseCycleGap || 0),
         propertyDescription: data.comments || "",
         address: data.address,
-        deposit: Number(data.depositAmount || 0),
+        deposit: depositAmount, // Guaranteed to be > 0
         interestRate: Number(data.interestRate),
         loanTerm: Number(data.loanTerm),
-        floorArea: Number(data.floorArea),
-        ratePerSquareMeter: Number(data.cmaRatePerSqm || 0),
-        incomeGrowthRate: Number(data.annualIncomeGrowth || 0),
-        expenseGrowthRate: Number(data.annualExpenseGrowth || 0),
-        annualPropertyAppreciation: Number(data.annualPropertyAppreciation || 0),
+        floorArea,
+        ratePerSquareMeter: ratePerSqm, // Guaranteed to be > 0
+        incomeGrowthRate: Number(data.annualIncomeGrowth || 8), // Default 8%
+        expenseGrowthRate: Number(data.annualExpenseGrowth || 6), // Default 6%
+        annualPropertyAppreciation: Number(data.annualPropertyAppreciation || 6), // Default 6%
         monthlyLevies: Number(data.monthlyLevies || 0),
         monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
