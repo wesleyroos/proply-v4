@@ -511,8 +511,9 @@ export default function PropertyAnalyzerPage() {
                             Floor Area
                             <AnalyzerIndicator />
                           </h3>
-                          <p className="mt-2 text-lg font-bold text-slate-800">
-                            {analysisResult.floorArea || "0"} m²
+                          <p className="mt-2 text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <span>{analysisResult.floorArea || "0"} m²</span>
+                            <span className="w-2 h-2 rounded-full bg-red-500" title="Data from analyzer engine" />
                           </p>
                         </div>
                         <div>
@@ -520,12 +521,13 @@ export default function PropertyAnalyzerPage() {
                             Current Property Rate/m²
                             <AnalyzerIndicator />
                           </h3>
-                          <p className="mt-2 text-lg font-bold text-slate-800">
-                            R
+                          <p className="mt-2 text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <span>R
                             {(
                               analysisResult.analysis.purchasePrice /
                               (analysisResult.floorArea || 1)
-                            ).toLocaleString()}
+                            ).toLocaleString()}</span>
+                            <span className="w-2 h-2 rounded-full bg-red-500" title="Data from analyzer engine" />
                           </p>
                         </div>
                       </div>
@@ -535,10 +537,11 @@ export default function PropertyAnalyzerPage() {
                             Area Rate/m²
                             <AnalyzerIndicator />
                           </h3>
-                          <p className="mt-2 text-lg font-bold text-slate-800">
-                            R
+                          <p className="mt-2 text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <span>R
                             {analysisResult.ratePerSquareMeter?.toLocaleString() ||
-                              "0"}
+                              "0"}</span>
+                            <span className="w-2 h-2 rounded-full bg-red-500" title="Data from analyzer engine" />
                           </p>
                         </div>
                         <div>
@@ -559,7 +562,7 @@ export default function PropertyAnalyzerPage() {
                                 </h3>
                                 <Tooltip delayDuration={0}>
                                   <TooltipTrigger className="cursor-help">
-                                    <p className="mt-2 text-lg font-bold">
+                                    <p className="mt-2 text-lg font-bold flex items-center gap-2">
                                       <span
                                         className={
                                           isPositive
@@ -576,6 +579,7 @@ export default function PropertyAnalyzerPage() {
                                         ).toFixed(1)}
                                         %)
                                       </span>
+                                      <span className="w-2 h-2 rounded-full bg-red-500" title="Data from analyzer engine" />
                                     </p>
                                   </TooltipTrigger>
                                   <TooltipContent className="max-w-[300px] text-sm">
