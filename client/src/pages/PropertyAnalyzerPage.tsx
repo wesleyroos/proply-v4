@@ -428,7 +428,7 @@ export default function PropertyAnalyzerPage() {
                             <span>R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
                               "0"}</span>
                             <span className="w-2 h-2 rounded-full bg-red-500" title="Data from analyzer engine" />
-                          </p>
+                            </p>
                             <p className="text-base text-slate-600">
                               R
                               {Math.round(
@@ -439,10 +439,11 @@ export default function PropertyAnalyzerPage() {
                             </p>
                           </div>
                           <p className="text-sm flex items-center gap-2">
-                            <span className="font-semibold text-emerald-600 text-base">
+                            <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
                               {analysisResult.shortTermGrossYield?.toFixed(2) ||
                                 "0"}
                               % Gross Yield
+                              <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
                             </span>
                           </p>
                           <div className="pt-2 border-t border-blue-100">
@@ -491,10 +492,11 @@ export default function PropertyAnalyzerPage() {
                         </h3>
                         <div className="space-y-2">
                           <div>
-                            <p className="text-2xl font-bold text-slate-800">
+                            <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                               R
                               {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() ||
                                 "0"}
+                              <span className="w-2 h-2 rounded-full bg-red-500" title="Data from analyzer engine" />
                             </p>
                             <p className="text-base text-slate-600">
                               R
@@ -506,39 +508,15 @@ export default function PropertyAnalyzerPage() {
                             </p>
                           </div>
                           <p className="text-sm flex items-center gap-2">
-                            <span className="font-semibold text-emerald-600 text-base">
+                            <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
                               {analysisResult.longTermGrossYield?.toFixed(2) ||
                                 "0"}
                               % Gross Yield
+                              <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
                             </span>
                           </p>
                           
-                          <div className="pt-2 border-t border-purple-100">
-                            <div className="flex justify-between items-center">
-                              <p className="text-sm text-slate-600">Fee-adjusted Rate:</p>
-                              <p className="text-sm font-medium flex items-center gap-2">
-                                R{analysisResult.shortTermNightlyRate ? 
-                                  Math.round(analysisResult.shortTermNightlyRate * 
-                                    (analysisResult.managementFee > 0 ? 0.85 : 0.97)
-                                  ).toLocaleString() : "0"}
-                                <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
-                              </p>
-                            </div>
-                            <div className="flex justify-between items-center mt-1">
-                              <p className="text-sm text-slate-600">Platform Fee:</p>
-                              <p className="text-sm font-medium text-red-600 flex items-center gap-2">
-                                {analysisResult.managementFee > 0 ? "15" : "3"}%
-                                <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
-                              </p>
-                            </div>
-                            <div className="flex justify-between items-center mt-1">
-                              <p className="text-sm text-slate-600">Management Fee:</p>
-                              <p className="text-sm font-medium flex items-center gap-2">
-                                {analysisResult.managementFee || "0"}%
-                                <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
-                              </p>
-                            </div>
-                          </div>
+                          {/* No fee adjustment section needed for long-term rental */}
                         </div>
                       </div>
                     </div>

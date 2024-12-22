@@ -158,10 +158,9 @@ export default function RentalPerformance({
                 </td>
                 {MONTHS.map((_, i) => {
                   const nightlyRate = getSeasonalNightlyRate(shortTermNightly, i);
-                  const fee = nightlyRate * (isManaged ? 0.15 : 0.03);
                   return (
-                    <td key={i} className="text-right py-3 px-4 text-red-600">
-                      {formatter(-fee)}
+                    <td key={i} className="text-right py-3 px-4">
+                      {isManaged ? "15" : "3"}%
                     </td>
                   );
                 })}
@@ -176,7 +175,8 @@ export default function RentalPerformance({
                 <td className="py-3 px-4 font-medium">Fee-adjusted Rate</td>
                 {MONTHS.map((_, i) => {
                   const nightlyRate = getSeasonalNightlyRate(shortTermNightly, i);
-                  const adjustedRate = getFeeAdjustedRate(nightlyRate, isManaged);
+                  const platformFeeRate = isManaged ? 0.15 : 0.03;
+                  const adjustedRate = nightlyRate * (1 - platformFeeRate);
                   return (
                     <td key={i} className="text-right py-3 px-4">
                       {formatter(adjustedRate)}
