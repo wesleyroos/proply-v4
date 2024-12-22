@@ -321,10 +321,12 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
 
   // Calculate net worth change for each year by combining equity build-up, cumulative cashflow, and property appreciation
   const years = [1, 2, 3, 4, 5, 10, 20];
+  const totalPayments = data.loanTerm * 12;
+  
   const netWorthChangeByYear = years.reduce((acc, year) => {
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
     
-    // Calculate remaining loan balance for equity build-up
+    // Calculate remaining loan balance for equity build-up using same formula as AssetGrowthMetrics
     const monthsPaid = year * 12;
     const remainingPayments = totalPayments - monthsPaid;
     const loanBalance = remainingPayments > 0 
