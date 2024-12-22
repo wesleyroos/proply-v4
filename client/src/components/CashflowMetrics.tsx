@@ -171,7 +171,21 @@ export default function CashflowMetrics({
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6 font-medium">Annual Cashflow</td>
                     {years.map(year => {
-                      const annualCashflow = (netOperatingIncome?.[`year${year}`] || 0) - (monthlyBondRepayment * 12);
+                      // Debug annual cashflow calculation
+                      const yearKey = `year${year}` as keyof typeof netOperatingIncome;
+                      const noiValue = netOperatingIncome?.[yearKey]?.value || 0;
+                      const annualDebtService = monthlyBondRepayment * 12;
+                      const annualCashflow = noiValue - annualDebtService;
+                      
+                      console.log(`Annual Cashflow Calculation - Year ${year}:`, {
+                        yearKey,
+                        noiValue,
+                        monthlyBondRepayment,
+                        annualDebtService,
+                        annualCashflow,
+                        netOperatingIncomeYear: netOperatingIncome?.[yearKey]
+                      });
+
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
@@ -188,11 +202,32 @@ export default function CashflowMetrics({
                     <td className="py-3 px-6 font-medium">Cumulative Cashflow</td>
                     {years.map((year, index) => {
                       let cumulativeCashflow = 0;
+                      const yearlyFlows = [];
+                      
                       for (let i = 0; i <= index; i++) {
                         const y = years[i];
-                        const annualCashflow = (netOperatingIncome?.[`year${y}`] || 0) - (monthlyBondRepayment * 12);
+                        const yearKey = `year${y}` as keyof typeof netOperatingIncome;
+                        const noiValue = netOperatingIncome?.[yearKey]?.value || 0;
+                        const annualDebtService = monthlyBondRepayment * 12;
+                        const annualCashflow = noiValue - annualDebtService;
+                        
+                        yearlyFlows.push({
+                          year: y,
+                          noiValue,
+                          annualDebtService,
+                          annualCashflow
+                        });
+                        
                         cumulativeCashflow += annualCashflow;
                       }
+                      
+                      console.log(`Cumulative Cashflow Calculation - Up to Year ${year}:`, {
+                        yearlyFlows,
+                        cumulativeCashflow,
+                        monthlyBondRepayment,
+                        netOperatingIncomePresent: !!netOperatingIncome
+                      });
+
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
