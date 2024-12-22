@@ -310,6 +310,52 @@ export default function InvestmentMetrics({
                       );
                     })}
                   </tr>
+
+                  {/* Net Worth Change */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6">
+                      <MetricLabel 
+                        label="Net Worth Change"
+                        tooltip="Total change in net worth from property ownership, combining equity build-up from loan repayment, cumulative rental income, and property value appreciation."
+                      />
+                    </td>
+                    {years.map(year => {
+                      const yearKey = `year${year}` as keyof typeof operatingExpenses;
+                      // Property appreciation
+                      const propertyValue = purchasePrice * Math.pow(1 + (expenseGrowthRate / 100), year);
+                      const appreciation = propertyValue - purchasePrice;
+                      
+                      // Equity from loan repayment
+                      const monthsPaid = year * 12;
+                      const remainingPayments = totalPayments - monthsPaid;
+                      const loanBalance = remainingPayments > 0 
+                        ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
+                          / (Math.pow(1 + monthlyRate, totalPayments) - 1)
+                        : 0;
+                      const equityFromRepayment = loanAmount - loanBalance;
+
+                      // Cumulative cashflow
+                      const cumulativeCashflow = years
+                        .filter(y => y <= year)
+                        .reduce((acc, y) => {
+                          const prevYearKey = `year${y}` as keyof typeof netOperatingIncome;
+                          return acc + (netOperatingIncome?.[prevYearKey] ? 
+                            (netOperatingIncome[prevYearKey] - (monthlyBondRepayment * 12)) : 0);
+                        }, 0);
+
+                      // Total net worth change
+                      const netWorthChange = appreciation + equityFromRepayment + cumulativeCashflow;
+                      
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {formatter(netWorthChange)}
+                            <span className="h-2 w-2 rounded-full bg-purple-500" title="Calculated metric"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
                 </tbody>
               </table>
             </div>
