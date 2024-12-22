@@ -26,25 +26,35 @@ import {
 } from "@/components/ui/tooltip";
 
 interface AnalysisResult {
-  shortTermGrossYield: number | null;
-  longTermGrossYield: number | null;
-  propertyDescription: string | null;
-  deposit: number | null;
-  depositPercentage: number | null;
-  interestRate: number | null;
-  monthlyBondRepayment: number | null;
-  floorArea: number | null;
-  ratePerSquareMeter: number | null;
-  shortTermNightlyRate: number | null;
-  annualOccupancy: number | null;
-  managementFee: number;
-  loanTerm: number;
-  analysis: {
-    shortTermAnnualRevenue: number | null;
-    longTermAnnualRevenue: number | null;
-    purchasePrice: number;
-    revenueProjections?: { 
-      shortTerm: {
+    shortTermGrossYield: number | null;
+    longTermGrossYield: number | null;
+    propertyDescription: string | null;
+    deposit: number | null;
+    depositPercentage: number | null;
+    interestRate: number | null;
+    monthlyBondRepayment: number | null;
+    floorArea: number | null;
+    ratePerSquareMeter: number | null;
+    shortTermNightlyRate: number | null;
+    annualOccupancy: number | null;
+    managementFee: number;
+    loanTerm: number;
+    analysis: {
+      shortTermAnnualRevenue: number | null;
+      longTermAnnualRevenue: number | null;
+      purchasePrice: number;
+      revenueProjections?: { 
+        shortTerm: {
+          year1: number;
+          year2: number;
+          year3: number;
+          year4: number;
+          year5: number;
+          year10: number;
+          year20: number;
+        } | null 
+      };
+      operatingExpenses: {
         year1: number;
         year2: number;
         year3: number;
@@ -52,30 +62,20 @@ interface AnalysisResult {
         year5: number;
         year10: number;
         year20: number;
-      } | null 
-    };
-    operatingExpenses: {
-      year1: number;
-      year2: number;
-      year3: number;
-      year4: number;
-      year5: number;
-      year10: number;
-      year20: number;
+      };
     };
     netOperatingIncome: {
-      year1: number;
-      year2: number;
-      year3: number;
-      year4: number;
-      year5: number;
-      year10: number;
-      year20: number;
+      year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
     } | null;
-  };
-  address: string;
-  propertyPhotoUrl?: string;
-}
+    address: string;
+    propertyPhotoUrl?: string;
+  }
 
 export default function PropertyAnalyzerPage() {
   const { user } = useUser();
@@ -683,7 +683,7 @@ export default function PropertyAnalyzerPage() {
                   shortTerm: analysisResult.analysis.revenueProjections?.shortTerm || null
                 }}
                 operatingExpenses={analysisResult.analysis.operatingExpenses}
-                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+                netOperatingIncome={analysisResult.netOperatingIncome}
               />
               
               {/* Investment Metrics */}
@@ -697,7 +697,7 @@ export default function PropertyAnalyzerPage() {
                   shortTerm: analysisResult.analysis.revenueProjections?.shortTerm || null
                 }}
                 operatingExpenses={analysisResult.analysis.operatingExpenses}
-                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+                netOperatingIncome={analysisResult.netOperatingIncome}
               />
 
               {/* Asset Growth & Equity */}
@@ -721,7 +721,7 @@ export default function PropertyAnalyzerPage() {
                 longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
                 revenueProjections={analysisResult.analysis.revenueProjections}
                 operatingExpenses={analysisResult.analysis.operatingExpenses}
-                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+                netOperatingIncome={analysisResult.netOperatingIncome}
                 annualOccupancy={analysisResult.annualOccupancy || 0}
                 monthlyRatesTaxes={formData?.monthlyRatesTaxes || 0}
                 annualAppreciation={formData?.annualPropertyAppreciation}

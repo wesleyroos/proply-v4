@@ -172,15 +172,18 @@ export default function InvestmentMetrics({
                       />
                     </td>
                     {years.map(year => {
-                      const yearKey = `year${year}` as keyof typeof revenueProjections.shortTerm;
-                      const revenue = revenueProjections.shortTerm?.[yearKey] || 0;
-                      const expenses = operatingExpenses[yearKey];
-                      const noi = revenue - expenses;
-                      
+                      const yearKey = `year${year}` as YearKey;
+                      // Access NOI directly from netOperatingIncome data structure
+                      const noi = netOperatingIncome?.[yearKey]?.value;
+                      console.log(`NOI for year ${year}:`, { 
+                        yearKey,
+                        netOperatingIncome: netOperatingIncome?.[yearKey],
+                        value: noi 
+                      });
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
-                            {formatter(noi)}
+                            {formatter(noi || 0)}
                             <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                           </div>
                         </td>
