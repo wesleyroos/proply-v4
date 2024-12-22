@@ -30,54 +30,19 @@ export const users = pgTable("users", {
   accessCodeId: integer("access_code_id"),
 });
 
-export const propertyAnalysis = pgTable("property_analysis", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  title: text("title").notNull(),
-  address: text("address").notNull(),
-  propertyDescription: text("property_description"),
-  propertyPhoto: text("property_photo"),
-  purchasePrice: decimal("purchase_price", { precision: 10, scale: 2 }).notNull(),
-  deposit: decimal("deposit", { precision: 10, scale: 2 }).notNull(),
-  interestRate: decimal("interest_rate", { precision: 5, scale: 2 }).notNull(),
-  loanTerm: integer("loan_term").notNull(),
-  monthlyBondRepayment: decimal("monthly_bond_repayment", { precision: 10, scale: 2 }).notNull(),
-  bedrooms: text("bedrooms").notNull(),
-  bathrooms: text("bathrooms").notNull(),
-  floorArea: decimal("floor_area", { precision: 10, scale: 2 }),
-  ratePerSquareMeter: decimal("rate_per_square_meter", { precision: 10, scale: 2 }),
-  shortTermNightly: decimal("short_term_nightly", { precision: 10, scale: 2 }),
-  annualOccupancy: decimal("annual_occupancy", { precision: 5, scale: 2 }),
-  managementFee: decimal("management_fee", { precision: 5, scale: 2 }),
-  monthlyLevies: decimal("monthly_levies", { precision: 10, scale: 2 }),
-  monthlyRatesTaxes: decimal("monthly_rates_taxes", { precision: 10, scale: 2 }),
-  otherMonthlyExpenses: decimal("other_monthly_expenses", { precision: 10, scale: 2 }),
-  maintenancePercent: decimal("maintenance_percent", { precision: 5, scale: 2 }),
-  annualPropertyAppreciation: decimal("annual_property_appreciation", { precision: 5, scale: 2 }),
-  // Analysis Results
-  shortTermGrossYield: decimal("short_term_gross_yield", { precision: 5, scale: 2 }),
-  longTermGrossYield: decimal("long_term_gross_yield", { precision: 5, scale: 2 }),
-  shortTermAnnualRevenue: decimal("short_term_annual_revenue", { precision: 10, scale: 2 }),
-  longTermAnnualRevenue: decimal("long_term_annual_revenue", { precision: 10, scale: 2 }),
-  // Store revenue projections as JSON
-  revenueProjections: jsonb("revenue_projections"),
-  operatingExpenses: jsonb("operating_expenses"),
-  netOperatingIncome: jsonb("net_operating_income"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const rentalComparisons = pgTable("rental_comparisons", {
+export const properties = pgTable("properties", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   title: text("title").notNull(),
   address: text("address").notNull(),
   bedrooms: text("bedrooms").notNull(),
   bathrooms: text("bathrooms").notNull(),
-  longTermRental: decimal("long_term_rental", { precision: 10, scale: 2 }).notNull(),
-  shortTermNightly: decimal("short_term_nightly", { precision: 10, scale: 2 }).notNull(),
-  annualOccupancy: decimal("annual_occupancy", { precision: 5, scale: 2 }).notNull(),
-  managementFee: decimal("management_fee", { precision: 5, scale: 2 }).notNull(),
-  // Computed results
+  longTermRental: text("long_term_rental").notNull(),
+  annualEscalation: text("annual_escalation").notNull(),
+  shortTermNightly: text("short_term_nightly").notNull(),
+  annualOccupancy: text("annual_occupancy").notNull(),
+  managementFee: text("management_fee").notNull(),
+  // Store computed results
   longTermMonthly: decimal("long_term_monthly", { precision: 10, scale: 2 }).notNull(),
   longTermAnnual: decimal("long_term_annual", { precision: 10, scale: 2 }).notNull(),
   shortTermMonthly: decimal("short_term_monthly", { precision: 10, scale: 2 }).notNull(),
@@ -189,10 +154,8 @@ export const insertAccessCodeSchema = createInsertSchema(accessCodes);
 export const selectAccessCodeSchema = createSelectSchema(accessCodes);
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
-export const insertPropertyAnalysisSchema = createInsertSchema(propertyAnalysis);
-export const selectPropertyAnalysisSchema = createSelectSchema(propertyAnalysis);
-export const insertRentalComparisonSchema = createInsertSchema(rentalComparisons);
-export const selectRentalComparisonSchema = createSelectSchema(rentalComparisons);
+export const insertPropertySchema = createInsertSchema(properties);
+export const selectPropertySchema = createSelectSchema(properties);
 export const insertPropdataTokenSchema = createInsertSchema(propdataTokens);
 export const selectPropdataTokenSchema = createSelectSchema(propdataTokens);
 export const insertPropdataListingSchema = createInsertSchema(propdataListings);
@@ -207,10 +170,8 @@ export type InsertAccessCode = typeof accessCodes.$inferInsert;
 export type SelectAccessCode = typeof accessCodes.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type SelectUser = typeof users.$inferSelect;
-export type InsertPropertyAnalysis = typeof propertyAnalysis.$inferInsert;
-export type SelectPropertyAnalysis = typeof propertyAnalysis.$inferSelect;
-export type InsertRentalComparison = typeof rentalComparisons.$inferInsert;
-export type SelectRentalComparison = typeof rentalComparisons.$inferSelect;
+export type InsertProperty = typeof properties.$inferInsert;
+export type SelectProperty = typeof properties.$inferSelect;
 export type InsertPropdataToken = typeof propdataTokens.$inferInsert;
 export type SelectPropdataToken = typeof propdataTokens.$inferSelect;
 export type InsertPropdataListing = typeof propdataListings.$inferInsert;
