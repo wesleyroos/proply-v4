@@ -9,8 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
-import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Calendar } from "lucide-react";
-import RentalPerformance from "../components/RentalPerformance";
+import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight } from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
@@ -608,16 +607,12 @@ export default function PropertyAnalyzerPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-emerald-500" />
+                    <TrendingUp className="h-5 w-5 text-emerald-500" />
                     Rental Performance
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <RentalPerformance
-                    shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                    longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
-                    managementFee={analysisResult.managementFee || 0}
-                  />
+                  {/* Content will be added here */}
                 </CardContent>
               </Card>
 
