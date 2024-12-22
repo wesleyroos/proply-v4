@@ -118,32 +118,6 @@ export default function InvestmentMetrics({
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Internal Rate of Return (Featured Metric) */}
-                  <tr className="hover:bg-gray-50 bg-blue-50/30">
-                    <td className="py-4 px-6">
-                      <MetricLabel 
-                        label="Internal Rate of Return (%)"
-                        tooltip="IRR is the key metric for comparing this property investment with other asset classes like stocks, bonds, or REITs. It represents the annualized return including both rental income and property appreciation, making it directly comparable to stock market returns or bond yields."
-                      />
-                    </td>
-                    {years.map(year => {
-                      const yearKey = `year${year}` as keyof typeof netOperatingIncome;
-                      const annualCashflow = netOperatingIncome ? 
-                        netOperatingIncome[yearKey] - (monthlyBondRepayment * 12) : 0;
-                      // Enhanced IRR calculation considering appreciation and cash flows
-                      const propertyValue = purchasePrice * Math.pow(1.05, year); // 5% annual appreciation
-                      const totalReturn = ((propertyValue - purchasePrice + annualCashflow) / purchasePrice) * 100 / year;
-                      return (
-                        <td key={year} className="text-right py-4 px-6 font-medium">
-                          <div className="flex items-center justify-end gap-2">
-                            {totalReturn.toFixed(2)}%
-                            <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                          </div>
-                        </td>
-                      );
-                    })}
-                  </tr>
-
                   {/* ROI */}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6">
@@ -229,6 +203,32 @@ export default function InvestmentMetrics({
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
                             {roe.toFixed(2)}%
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Internal Rate of Return */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6">
+                      <MetricLabel 
+                        label="Internal Rate of Return (%)"
+                        tooltip="IRR is a metric that estimates the profitability of potential investments, considering the time value of money. It includes both rental income and projected property value appreciation."
+                      />
+                    </td>
+                    {years.map(year => {
+                      const yearKey = `year${year}` as keyof typeof netOperatingIncome;
+                      const annualCashflow = netOperatingIncome ? 
+                        netOperatingIncome[yearKey] - (monthlyBondRepayment * 12) : 0;
+                      // Simplified IRR calculation for display purposes
+                      const propertyValue = purchasePrice * Math.pow(1.05, year); // Assuming 5% annual appreciation
+                      const totalReturn = ((propertyValue - purchasePrice + annualCashflow) / purchasePrice) * 100 / year;
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {totalReturn.toFixed(2)}%
                             <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                           </div>
                         </td>
@@ -328,32 +328,6 @@ export default function InvestmentMetrics({
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Internal Rate of Return (Featured Metric) */}
-                  <tr className="hover:bg-gray-50 bg-blue-50/30">
-                    <td className="py-4 px-6">
-                      <MetricLabel 
-                        label="Internal Rate of Return (%)"
-                        tooltip="IRR is the key metric for comparing this property investment with other asset classes like stocks, bonds, or REITs. It represents the annualized return including both rental income and property appreciation, making it directly comparable to stock market returns or bond yields."
-                      />
-                    </td>
-                    {years.map(year => {
-                      const annualRevenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
-                      const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
-                      const annualCashflow = annualRevenue - expenses - (monthlyBondRepayment * 12);
-                      // Enhanced IRR calculation considering appreciation and cash flows
-                      const propertyValue = purchasePrice * Math.pow(1.05, year); // 5% annual appreciation
-                      const totalReturn = ((propertyValue - purchasePrice + annualCashflow) / purchasePrice) * 100 / year;
-                      return (
-                        <td key={year} className="text-right py-4 px-6 font-medium">
-                          <div className="flex items-center justify-end gap-2">
-                            {totalReturn.toFixed(2)}%
-                            <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                          </div>
-                        </td>
-                      );
-                    })}
-                  </tr>
-
                   {/* ROI */}
                   <tr className="hover:bg-gray-50">
                     <td className="py-3 px-6">
@@ -438,6 +412,32 @@ export default function InvestmentMetrics({
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
                             {roe.toFixed(2)}%
+                            <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Internal Rate of Return */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-6">
+                      <MetricLabel 
+                        label="Internal Rate of Return (%)"
+                        tooltip="IRR is a metric that estimates the profitability of potential investments, considering the time value of money. It includes both rental income and projected property value appreciation."
+                      />
+                    </td>
+                    {years.map(year => {
+                      const annualRevenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
+                      const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
+                      const annualCashflow = annualRevenue - expenses - (monthlyBondRepayment * 12);
+                      // Simplified IRR calculation for display purposes
+                      const propertyValue = purchasePrice * Math.pow(1.05, year); // Assuming 5% annual appreciation
+                      const totalReturn = ((propertyValue - purchasePrice + annualCashflow) / purchasePrice) * 100 / year;
+                      return (
+                        <td key={year} className="text-right py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {totalReturn.toFixed(2)}%
                             <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                           </div>
                         </td>
