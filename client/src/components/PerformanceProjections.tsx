@@ -77,40 +77,28 @@ export default function PerformanceProjections({
   const totalPayments = loanTerm * 12;
   // Use the annualAppreciation passed from the form
 
-  // Calculate loan balance, property value, and equity for each year
+  // Calculate loan balance, property value, and equity for each year using the same logic as AssetGrowthMetrics
   const propertyValueData = years.map(year => {
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
     
-    // Calculate remaining loan balance
+    // Calculate remaining loan balance using the same formula as AssetGrowthMetrics
     const monthsPaid = year * 12;
     const remainingPayments = totalPayments - monthsPaid;
-    const remainingBalance = remainingPayments > 0 
+    const loanBalance = remainingPayments > 0 
       ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
         / (Math.pow(1 + monthlyRate, totalPayments) - 1)
       : 0;
 
-    // Calculate property value using the annual appreciation rate from form
+    // Calculate property value
     const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
 
-    // Calculate equity (property value - remaining loan)
-    const equity = propertyValue - remainingBalance;
-
-    // Cumulative rental income
-    const cumulativeRental = years
-      .filter(y => y <= year)
-      .reduce((acc, y) => {
-        const prevYearKey = `year${y}` as keyof typeof netOperatingIncome;
-        return acc + (netOperatingIncome?.[prevYearKey] ? 
-          (netOperatingIncome[prevYearKey] - (monthlyBondRepayment * 12)) : 0);
-      }, 0);
-
-    // Total equity includes property equity plus cumulative rental income
-    const totalEquity = equity + cumulativeRental;
+    // Calculate total equity exactly as shown in the table
+    const totalEquity = propertyValue - loanBalance;
 
     return {
       year: `Year ${year}`,
       'Property Value': propertyValue,
-      'Loan Balance': remainingBalance,
+      'Loan Balance': loanBalance,
       'Total Equity': totalEquity,
     };
   });
