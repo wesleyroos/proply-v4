@@ -329,10 +329,16 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     monthlyPayment: number
   ) {
     // Calculate NOI (Net Operating Income)
+    // NOI = Annual Revenue - Operating Expenses
     const noi = revenue - expenses;
-    console.log(`Year ${year} NOI Calculation:`, {
-      revenue,
-      expenses,
+    
+    console.log(`Year ${year} NOI Calculation Details:`, {
+      year,
+      components: {
+        annualRevenue: revenue,
+        operatingExpenses: expenses
+      },
+      calculation: `${revenue} - ${expenses} = ${noi}`,
       noi
     });
     

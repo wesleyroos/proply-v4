@@ -168,15 +168,19 @@ export default function InvestmentMetrics({
                     <td className="py-3 px-6">
                       <MetricLabel 
                         label="Net Operating Income"
-                        tooltip="Income generated after deducting operating expenses but before debt service (mortgage payments)."
+                        tooltip="Income generated after deducting operating expenses but before debt service (mortgage payments). NOI = Annual Revenue - Operating Expenses"
                       />
                     </td>
                     {years.map(year => {
-                      const yearKey = `year${year}` as YearKey;
+                      const yearKey = `year${year}` as keyof typeof revenueProjections.shortTerm;
+                      const revenue = revenueProjections.shortTerm?.[yearKey] || 0;
+                      const expenses = operatingExpenses[yearKey];
+                      const noi = revenue - expenses;
+                      
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
-                            {formatter(netOperatingIncome?.[yearKey]?.value || 0)}
+                            {formatter(noi)}
                             <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                           </div>
                         </td>
