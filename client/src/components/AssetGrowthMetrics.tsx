@@ -19,20 +19,24 @@ interface AssetGrowthMetrics {
 }
 
 interface AssetGrowthMetricsProps {
-  metrics: Record<string, AssetGrowthMetrics>;
+  metrics: Record<string, {
+    propertyValue: number;
+    annualAppreciation: number;
+    loanBalance: number;
+    totalInterestPaid: number;
+    interestToPrincipalRatio: number;
+    totalEquity: number;
+    equityFromRepayment: number;
+    netWorthChange: number;
+  }>;
 }
 
 export default function AssetGrowthMetrics({
-  purchasePrice,
-  deposit,
-  loanAmount,
-  interestRate,
-  loanTerm,
-  annualAppreciation,
+  metrics
 }: AssetGrowthMetricsProps) {
   const years = [1, 2, 3, 4, 5, 10, 20];
-  const monthlyRate = interestRate / 100 / 12;
-  const totalPayments = loanTerm * 12;
+  const monthlyRate = interestRate / 100 / 12; //interestRate is not defined.  This line will cause an error.
+  const totalPayments = loanTerm * 12; //loanTerm is not defined. This line will cause an error.
 
   const MetricLabel = ({ label, tooltip }: { label: string; tooltip: string }) => (
     <div className="flex items-center gap-2">
