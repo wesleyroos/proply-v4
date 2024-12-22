@@ -154,19 +154,18 @@ export default function RentalPerformance({
               {/* Platform Fee */}
               <tr className="border-b hover:bg-gray-50">
                 <td className="py-3 px-4 font-medium">
-                  Platform Fee ({isManaged ? "15" : "3"}%)
+                  Platform Fee
                 </td>
-                {MONTHS.map((_, i) => {
-                  const nightlyRate = getSeasonalNightlyRate(shortTermNightly, i);
-                  return (
-                    <td key={i} className="text-right py-3 px-4">
-                      {isManaged ? "15" : "3"}%
-                    </td>
-                  );
-                })}
+                {MONTHS.map((_, i) => (
+                  <td key={i} className="text-right py-3 px-4 text-red-600 flex items-center justify-end gap-2">
+                    15%
+                    <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
+                  </td>
+                ))}
                 <td className="text-right py-3 px-4 border-l">-</td>
-                <td className="text-right py-3 px-4 text-red-600">
-                  {formatter(-shortTermNightly * (isManaged ? 0.15 : 0.03))}
+                <td className="text-right py-3 px-4 text-red-600 flex items-center justify-end gap-2">
+                  15%
+                  <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
                 </td>
               </tr>
 
@@ -175,17 +174,18 @@ export default function RentalPerformance({
                 <td className="py-3 px-4 font-medium">Fee-adjusted Rate</td>
                 {MONTHS.map((_, i) => {
                   const nightlyRate = getSeasonalNightlyRate(shortTermNightly, i);
-                  const platformFeeRate = isManaged ? 0.15 : 0.03;
-                  const adjustedRate = nightlyRate * (1 - platformFeeRate);
+                  const adjustedRate = nightlyRate * 0.85; // Always 15% platform fee since management fee is 20%
                   return (
-                    <td key={i} className="text-right py-3 px-4">
+                    <td key={i} className="text-right py-3 px-4 flex items-center justify-end gap-2">
                       {formatter(adjustedRate)}
+                      <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
                     </td>
                   );
                 })}
                 <td className="text-right py-3 px-4 border-l">-</td>
-                <td className="text-right py-3 px-4">
-                  {formatter(getFeeAdjustedRate(shortTermNightly, isManaged))}
+                <td className="text-right py-3 px-4 flex items-center justify-end gap-2">
+                  {formatter(shortTermNightly * 0.85)}
+                  <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
                 </td>
               </tr>
 
