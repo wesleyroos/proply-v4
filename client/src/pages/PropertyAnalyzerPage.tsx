@@ -167,24 +167,39 @@ export default function PropertyAnalyzerPage() {
 
       const data = await response.json();
       
-      // Debug NOI calculation data flow
-      console.log('Analysis Engine Response - NOI Debug:', {
-        netOperatingIncome: data.analysis?.netOperatingIncome,
-        calculations: {
-          year1: {
-            revenue: data.analysis?.revenueProjections?.shortTerm?.year1,
-            expenses: data.analysis?.operatingExpenses?.year1,
-            noi: data.analysis?.netOperatingIncome?.year1?.value,
-            fullNoiData: data.analysis?.netOperatingIncome?.year1
-          },
-          year2: {
-            revenue: data.analysis?.revenueProjections?.shortTerm?.year2,
-            expenses: data.analysis?.operatingExpenses?.year2,
-            noi: data.analysis?.netOperatingIncome?.year2?.value,
-            fullNoiData: data.analysis?.netOperatingIncome?.year2
-          }
-        },
-        rawResponse: data
+      // Comprehensive debug logging
+      console.log('=== Property Analysis Debug Logs ===');
+      
+      // 1. Raw response data
+      console.log('Raw response from analysis engine:', data);
+      
+      // 2. NOI specific data
+      console.log('NOI Data Structure:', {
+        fromAnalysisRoot: data.analysis?.netOperatingIncome,
+        year1Detail: {
+          full: data.analysis?.netOperatingIncome?.year1,
+          value: data.analysis?.netOperatingIncome?.year1?.value,
+          path: 'data.analysis.netOperatingIncome.year1.value'
+        }
+      });
+      
+      // 3. Pre-state update data
+      const stateUpdateData = {
+        ...data,
+        shortTermNightlyRate: requestBody.shortTermNightlyRate,
+        annualOccupancy: requestBody.annualOccupancy,
+        managementFee: requestBody.managementFee,
+        loanTerm: requestBody.loanTerm
+      };
+      
+      console.log('Data being set to state:', stateUpdateData);
+      
+      // 4. Verify NOI data structure before state update
+      console.log('NOI structure verification:', {
+        hasAnalysis: !!stateUpdateData.analysis,
+        hasNetOperatingIncome: !!stateUpdateData.analysis?.netOperatingIncome,
+        year1NOI: stateUpdateData.analysis?.netOperatingIncome?.year1?.value,
+        fullNOIObject: stateUpdateData.analysis?.netOperatingIncome
       });
 
       if (!response.ok) {
@@ -694,12 +709,14 @@ export default function PropertyAnalyzerPage() {
               {/* Cashflow Metrics */}
               <CashflowMetrics 
                 shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                longTermMonthly={analysisResult.analysis.longTermAnnualRevenue / 12 || 0}
+                longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
                 monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
-                managementFee={20}
+                managementFee={analysisResult.managementFee}
                 revenueProjections={{
                   shortTerm: analysisResult.analysis.revenueProjections?.shortTerm || null
                 }}
+                operatingExpenses={analysisResult.analysis.operatingExpenses}
+                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
                 operatingExpenses={analysisResult.analysis.operatingExpenses}
                 netOperatingIncome={analysisResult.netOperatingIncome}
               />

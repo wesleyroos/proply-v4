@@ -53,12 +53,37 @@ export default function CashflowMetrics({
   operatingExpenses,
   netOperatingIncome,
 }: CashflowMetricsProps) {
-  // Debug logging of incoming props
-  console.log('CashflowMetrics - Received props:', {
+  // Detailed props debugging
+  console.log('=== CashflowMetrics Component Debug ===');
+  
+  // Log all props
+  console.log('All received props:', {
+    shortTermNightly,
+    longTermMonthly,
+    monthlyBondRepayment,
+    managementFee,
     revenueProjections,
     operatingExpenses,
     netOperatingIncome
   });
+  
+  // Specifically check NOI structure
+  console.log('NOI Structure Check:', {
+    isNull: netOperatingIncome === null,
+    type: typeof netOperatingIncome,
+    year1: netOperatingIncome?.year1,
+    year1Value: netOperatingIncome?.year1?.value,
+    allYears: Object.keys(netOperatingIncome || {})
+  });
+
+  // Debug first year's calculations
+  const year1Debug = {
+    revenue: revenueProjections.shortTerm?.year1 || 0,
+    expenses: operatingExpenses.year1,
+    noi: netOperatingIncome?.year1?.value,
+    manualNOICalc: (revenueProjections.shortTerm?.year1 || 0) - operatingExpenses.year1
+  };
+  console.log('Year 1 Calculations:', year1Debug);
   
   const years = [1, 2, 3, 4, 5, 10, 20];
 
