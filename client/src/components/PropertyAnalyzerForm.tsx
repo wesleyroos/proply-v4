@@ -316,6 +316,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         annualPropertyAppreciation
       });
 
+      // Ensure all required fields have valid values
       const analysisData = {
         purchasePrice,
         shortTermNightlyRate: Number(data.airbnbNightlyRate || 0),
@@ -324,14 +325,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         leaseCycleGap: Number(data.leaseCycleGap || 0),
         propertyDescription: data.comments || "",
         address: data.address,
-        deposit: depositAmount,
+        deposit: Math.max(depositAmount, purchasePrice * 0.1), // Ensure minimum 10% deposit
         interestRate: Number(data.interestRate),
         loanTerm: Number(data.loanTerm),
         floorArea,
-        ratePerSquareMeter: ratePerSqm,
+        ratePerSquareMeter: Math.max(ratePerSqm, Math.ceil(purchasePrice / floorArea)), // Ensure valid rate
         incomeGrowthRate: Number(data.annualIncomeGrowth || 8),
         expenseGrowthRate: Number(data.annualExpenseGrowth || 6),
-        annualPropertyAppreciation,
+        annualPropertyAppreciation: Number(data.annualPropertyAppreciation || 6),
         monthlyLevies: Number(data.monthlyLevies || 0),
         monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),

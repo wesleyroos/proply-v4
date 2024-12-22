@@ -324,27 +324,28 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   const years = [1, 2, 3, 4, 5, 10, 20];
   const totalPayments = numberOfPayments; // Use the already calculated numberOfPayments
   
+  // Calculate asset growth metrics for each year
   const assetGrowthMetrics = years.reduce((acc, year) => {
     const monthsPaid = year * 12;
-    const remainingPayments = totalPayments - monthsPaid;
+    const remainingPayments = numberOfPayments - monthsPaid;
     
-    // Calculate property value and appreciation
-    const propertyValue = data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), year);
+    // Calculate property value and appreciation with validation
+    const appreciationRate = data.annualPropertyAppreciation / 100;
+    const propertyValue = data.purchasePrice * Math.pow(1 + appreciationRate, year);
     const startValue = year > 1 
-      ? data.purchasePrice * Math.pow(1 + (data.annualPropertyAppreciation / 100), year - 1)
+      ? data.purchasePrice * Math.pow(1 + appreciationRate, year - 1)
       : data.purchasePrice;
     const annualAppreciation = propertyValue - startValue;
     
     // Calculate loan balance and equity from repayment
     const loanBalance = remainingPayments > 0 
-      ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
-        / (Math.pow(1 + monthlyRate, totalPayments) - 1)
+      ? (loanAmount * (Math.pow(1 + monthlyRate, numberOfPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
+        / (Math.pow(1 + monthlyRate, numberOfPayments) - 1)
       : 0;
     const equityFromRepayment = loanAmount - loanBalance;
     
     // Calculate total interest paid
-    const monthlyPayment = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) 
-      / (Math.pow(1 + monthlyRate, totalPayments) - 1);
+    const monthlyPayment = monthlyBondRepayment; // Use already calculated monthly payment
     const totalPaid = monthsPaid * monthlyPayment;
     const principalPaid = loanAmount - loanBalance;
     const interestPaid = totalPaid - principalPaid;
@@ -357,7 +358,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     // Calculate total equity (including appreciation)
     const totalEquity = propertyValue - loanBalance;
     
-    // Calculate net worth change components
+    // Calculate net worth change components using NOI
     const cumulativeCashflow = years
       .filter(y => y <= year)
       .reduce((acc, y) => {
@@ -381,6 +382,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       netWorthChange
     };
     
+    console.log(`Asset Growth Metrics for Year ${year}:`, acc[`year${year}`]);
     return acc;
   }, {} as Record<string, {
     propertyValue: number;
