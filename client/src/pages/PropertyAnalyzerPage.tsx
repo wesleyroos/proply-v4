@@ -459,21 +459,23 @@ export default function PropertyAnalyzerPage() {
                               <p className="text-sm text-slate-600">Fee-adjusted Rate:</p>
                               <p className="text-sm font-medium flex items-center gap-2">
                                 R{analysisResult.shortTermNightlyRate ? 
-                                  Math.round(analysisResult.shortTermNightlyRate * 0.85).toLocaleString() : "0"}
+                                  Math.round(analysisResult.shortTermNightlyRate * 
+                                    (1 - (analysisResult.managementFee > 0 ? 0.15 : 0.03))
+                                  ).toLocaleString() : "0"}
                                 <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
                               </p>
                             </div>
                             <div className="flex justify-between items-center mt-1">
                               <p className="text-sm text-slate-600">Platform Fee:</p>
                               <p className="text-sm font-medium text-red-600 flex items-center gap-2">
-                                15%
+                                {analysisResult.managementFee > 0 ? "15" : "3"}%
                                 <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
                               </p>
                             </div>
                             <div className="flex justify-between items-center mt-1">
                               <p className="text-sm text-slate-600">Management Fee:</p>
                               <p className="text-sm font-medium flex items-center gap-2">
-                                20%
+                                {analysisResult.managementFee}%
                                 <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
                               </p>
                             </div>
