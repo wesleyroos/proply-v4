@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { properties, users, accessCodes } from "@db/schema";
+import { propertyAnalysis, rentalComparisons, users, accessCodes } from "@db/schema";
 import { eq, and } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
@@ -261,100 +261,142 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Property comparison routes
-  app.post("/api/properties", async (req, res) => {
+  // Save property analysis
+  app.post("/api/property-analysis", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
     }
 
     try {
-      const property = await db.insert(properties).values({
+      const analysis = await db.insert(propertyAnalysis).values({
         ...req.body,
         userId: req.user!.id,
       }).returning();
-      res.json(property[0]);
+      res.json(analysis[0]);
     } catch (error) {
-      res.status(400).json({ error: "Invalid property data" });
+      console.error('Error saving property analysis:', error);
+      res.status(400).json({ error: "Invalid property analysis data" });
     }
   });
 
+  // Save rental comparison
+  app.post("/api/rental-comparison", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const comparison = await db.insert(rentalComparisons).values({
+        ...req.body,
+        userId: req.user!.id,
+      }).returning();
+      res.json(comparison[0]);
+    } catch (error) {
+      console.error('Error saving rental comparison:', error);
+      res.status(400).json({ error: "Invalid rental comparison data" });
+    }
+  });
+
+  // Get all properties (both analyses and comparisons)
   app.get("/api/properties", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
     }
 
     try {
-      // Log the current user and their ID for debugging
-      console.log('Fetching properties for user:', {
-        userId: req.user!.id,
-        email: req.user!.email,
-        userType: req.user!.userType
-      });
+      // Fetch property analyses
+      const analyses = await db
+        .select()
+        .from(propertyAnalysis)
+        .where(eq(propertyAnalysis.userId, req.user!.id))
+        .orderBy(propertyAnalysis.createdAt);
 
-      // Strictly filter by userId for all users
-      const userProperties = await db
-        .select({
-          id: properties.id,
-          userId: properties.userId,
-          title: properties.title,
-          address: properties.address,
-          bedrooms: properties.bedrooms,
-          bathrooms: properties.bathrooms,
-          longTermMonthly: properties.longTermMonthly,
-          shortTermAnnual: properties.shortTermAnnual,
-          shortTermAfterFees: properties.shortTermAfterFees,
-          breakEvenOccupancy: properties.breakEvenOccupancy,
-          shortTermNightly: properties.shortTermNightly,
-          annualOccupancy: properties.annualOccupancy,
-          createdAt: properties.createdAt
-        })
-        .from(properties)
-        .where(eq(properties.userId, req.user!.id))
-        .orderBy(properties.createdAt);
-      
-      // Log the number of properties found
-      console.log(`Found ${userProperties.length} properties for user ${req.user!.id}`);
-      
-      res.json(userProperties);
+      // Fetch rental comparisons
+      const comparisons = await db
+        .select()
+        .from(rentalComparisons)
+        .where(eq(rentalComparisons.userId, req.user!.id))
+        .orderBy(rentalComparisons.createdAt);
+
+      res.json({
+        analyses,
+        comparisons
+      });
     } catch (error) {
       console.error('Error fetching properties:', error);
       res.status(500).json({ error: "Failed to fetch properties" });
     }
   });
 
-  app.delete("/api/properties/:id", async (req, res) => {
+  // Delete property analysis
+  app.delete("/api/property-analysis/:id", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
     }
 
-    const propertyId = parseInt(req.params.id);
-    if (isNaN(propertyId)) {
-      return res.status(400).send("Invalid property ID");
+    const analysisId = parseInt(req.params.id);
+    if (isNaN(analysisId)) {
+      return res.status(400).send("Invalid analysis ID");
     }
     
     try {
-      // First check if the property exists and belongs to the user
-      const [property] = await db
+      const [analysis] = await db
         .select()
-        .from(properties)
-        .where(eq(properties.id, propertyId));
+        .from(propertyAnalysis)
+        .where(eq(propertyAnalysis.id, analysisId));
 
-      if (!property) {
-        return res.status(404).send("Property not found");
+      if (!analysis) {
+        return res.status(404).send("Property analysis not found");
       }
 
-      if (property.userId !== req.user!.id) {
-        return res.status(403).send("Not authorized to delete this property");
+      if (analysis.userId !== req.user!.id) {
+        return res.status(403).send("Not authorized to delete this analysis");
       }
 
-      // Delete the property
       await db
-        .delete(properties)
-        .where(eq(properties.id, propertyId));
+        .delete(propertyAnalysis)
+        .where(eq(propertyAnalysis.id, analysisId));
 
-      res.json({ message: "Property deleted successfully" });
+      res.json({ message: "Property analysis deleted successfully" });
     } catch (error) {
-      console.error('Error deleting property:', error);
-      res.status(500).json({ error: "Failed to delete property" });
+      console.error('Error deleting property analysis:', error);
+      res.status(500).json({ error: "Failed to delete property analysis" });
+    }
+  });
+
+  // Delete rental comparison
+  app.delete("/api/rental-comparison/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const comparisonId = parseInt(req.params.id);
+    if (isNaN(comparisonId)) {
+      return res.status(400).send("Invalid comparison ID");
+    }
+    
+    try {
+      const [comparison] = await db
+        .select()
+        .from(rentalComparisons)
+        .where(eq(rentalComparisons.id, comparisonId));
+
+      if (!comparison) {
+        return res.status(404).send("Rental comparison not found");
+      }
+
+      if (comparison.userId !== req.user!.id) {
+        return res.status(403).send("Not authorized to delete this comparison");
+      }
+
+      await db
+        .delete(rentalComparisons)
+        .where(eq(rentalComparisons.id, comparisonId));
+
+      res.json({ message: "Rental comparison deleted successfully" });
+    } catch (error) {
+      console.error('Error deleting rental comparison:', error);
+      res.status(500).json({ error: "Failed to delete rental comparison" });
     }
   });
 
