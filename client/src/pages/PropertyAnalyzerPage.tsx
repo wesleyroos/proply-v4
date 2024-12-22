@@ -448,13 +448,35 @@ export default function PropertyAnalyzerPage() {
                           <div className="pt-2 border-t border-blue-100">
                             <p className="text-sm text-slate-600">
                               Nightly Rate:{" "}
-                              <span className="font-medium">
+                              <span className="font-medium flex items-center gap-2">
                                 R
                                 {analysisResult.shortTermNightlyRate?.toLocaleString() ||
                                   "0"}
                               </span>
                             </p>
-                            <p className="text-sm text-slate-600">
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">Fee-adjusted Rate:</p>
+                              <p className="text-sm font-medium flex items-center gap-2">
+                                R{analysisResult.shortTermNightlyRate ? 
+                                  Math.round(analysisResult.shortTermNightlyRate * 0.85).toLocaleString() : "0"}
+                                <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">Platform Fee:</p>
+                              <p className="text-sm font-medium text-red-600 flex items-center gap-2">
+                                15%
+                                <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">Management Fee:</p>
+                              <p className="text-sm font-medium flex items-center gap-2">
+                                20%
+                                <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
+                              </p>
+                            </div>
+                            <p className="text-sm text-slate-600 mt-1">
                               Occupancy:{" "}
                               <span className="font-medium">
                                 {analysisResult.annualOccupancy || "0"}%
