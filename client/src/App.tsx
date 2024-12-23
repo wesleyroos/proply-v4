@@ -11,6 +11,7 @@ import AdminPage from "./pages/AdminPage";
 import AccessCodePage from "./pages/AccessCodePage";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
+import PricingPage from "./pages/PricingPage";
 import DashboardPage from "./pages/DashboardPage";
 import PropertyAnalyzerPage from "./pages/PropertyAnalyzerPage";
 import { useUser } from "./hooks/use-user";
@@ -80,6 +81,7 @@ function App() {
           <Route path="/" component={HomePage} />
           <Route path="/login" component={AuthPage} />
           <Route path="/register" component={AuthPage} />
+          <Route path="/pricing" component={PricingPage} />
 
           {/* Protected routes */}
           <Route 
