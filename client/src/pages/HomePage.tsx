@@ -22,6 +22,9 @@ export default function HomePage() {
           <div className="flex justify-between items-center h-16">
             <img src="/proply-logo-1.png" alt="Proply" className="h-8" />
             <div className="flex gap-4">
+              <Link href="/pricing">
+                <Button variant="ghost">Pricing</Button>
+              </Link>
               <Link href="/login">
                 <Button variant="ghost">Login</Button>
               </Link>
@@ -67,7 +70,7 @@ export default function HomePage() {
                 className="bg-white/10 text-white border-white hover:bg-white/20"
                 asChild
               >
-                <Link href="#saas">Learn More</Link>
+                <Link href="/pricing">View Pricing</Link>
               </Button>
             </div>
           </div>
@@ -372,6 +375,8 @@ export default function HomePage() {
             <div className="flex flex-wrap gap-4 items-center justify-between">
               <p>© 2024 Proply. All rights reserved.</p>
               <div className="flex gap-4">
+                <Link href="/pricing">Pricing</Link>
+                <span>|</span>
                 <Link href="/privacy">Privacy Policy</Link>
                 <span>|</span>
                 <Link href="/terms">Terms of Service</Link>
