@@ -26,7 +26,9 @@ export default function HomePage() {
                 <Button variant="ghost">Login</Button>
               </Link>
               <Link href="/register">
-                <Button className="bg-[#1BA3FF] hover:bg-[#114D9D]">Get Started</Button>
+                <Button className="bg-[#1BA3FF] hover:bg-[#114D9D]">
+                  Get Started
+                </Button>
               </Link>
             </div>
           </div>
@@ -34,17 +36,17 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-[#114D9D] to-[#1BA3FF] overflow-hidden">
-        <div className="absolute inset-0">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#114D9D] to-[#1BA3FF]">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#114D9D]/90 to-[#1BA3FF]/90" />
+        <div className="absolute inset-0 z-10">
           <img
             src="/images/property-technology.png"
             alt="Property Technology"
-            className="w-full h-full object-cover opacity-40"
+            className="w-full h-full object-cover opacity-75"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#114D9D]/90 to-[#1BA3FF]/90" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
           <div className="text-center space-y-8">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
               Powerful Real Estate Investment
@@ -59,7 +61,12 @@ export default function HomePage() {
               <Button size="lg" variant="secondary" asChild>
                 <Link href="/register">Get Started</Link>
               </Button>
-              <Button size="lg" variant="outline" className="bg-white/10 text-white border-white hover:bg-white/20" asChild>
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-white/10 text-white border-white hover:bg-white/20"
+                asChild
+              >
                 <Link href="#saas">Learn More</Link>
               </Button>
             </div>
@@ -71,7 +78,9 @@ export default function HomePage() {
       <section id="saas" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">Property Analysis Platform</h2>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Property Analysis Platform
+            </h2>
             <p className="mt-4 text-xl text-gray-600">
               Comprehensive property analysis for investors and professionals
             </p>
@@ -82,8 +91,9 @@ export default function HomePage() {
                 <LineChart className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">The Challenge</h3>
                 <p className="text-gray-600">
-                  Making investment decisions without accurate data and comprehensive analysis
-                  leads to missed opportunities and potential losses.
+                  Making investment decisions without accurate data and
+                  comprehensive analysis leads to missed opportunities and
+                  potential losses.
                 </p>
               </CardContent>
             </Card>
@@ -92,8 +102,9 @@ export default function HomePage() {
                 <Database className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">The Solution</h3>
                 <p className="text-gray-600">
-                  Our platform provides detailed property analysis, market insights, and
-                  financial projections to guide your investment decisions.
+                  Our platform provides detailed property analysis, market
+                  insights, and financial projections to guide your investment
+                  decisions.
                 </p>
               </CardContent>
             </Card>
@@ -117,7 +128,9 @@ export default function HomePage() {
       <section id="comparison" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">Rental Strategy Comparison</h2>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Rental Strategy Comparison
+            </h2>
             <p className="mt-4 text-xl text-gray-600">
               Compare long-term vs short-term rental potential for your property
             </p>
@@ -128,8 +141,8 @@ export default function HomePage() {
                 <Home className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">The Challenge</h3>
                 <p className="text-gray-600">
-                  Deciding between long-term rentals and Airbnb without clear data on
-                  potential returns and market dynamics.
+                  Deciding between long-term rentals and Airbnb without clear
+                  data on potential returns and market dynamics.
                 </p>
               </CardContent>
             </Card>
@@ -138,8 +151,8 @@ export default function HomePage() {
                 <Calculator className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">The Solution</h3>
                 <p className="text-gray-600">
-                  Side-by-side comparison of rental strategies with projected revenues,
-                  expenses, and ROI calculations.
+                  Side-by-side comparison of rental strategies with projected
+                  revenues, expenses, and ROI calculations.
                 </p>
               </CardContent>
             </Card>
@@ -163,7 +176,9 @@ export default function HomePage() {
       <section id="api" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">Property Analysis API</h2>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Property Analysis API
+            </h2>
             <p className="mt-4 text-xl text-gray-600">
               Enterprise-grade property analysis engine for your business
             </p>
@@ -184,8 +199,8 @@ export default function HomePage() {
                 <Code className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">The Solution</h3>
                 <p className="text-gray-600">
-                  Integrate our powerful analysis engine into your platform with our
-                  simple REST API.
+                  Integrate our powerful analysis engine into your platform with
+                  our simple REST API.
                 </p>
               </CardContent>
             </Card>
