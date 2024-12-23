@@ -17,7 +17,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md z-50 border-b">
+      <nav className="fixed top-0 left-0 right-0 bg-white z-50 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <img src="/proply-logo-1.png" alt="Proply" className="h-8" />
@@ -39,7 +39,7 @@ export default function HomePage() {
           <img
             src="/images/property-technology.png"
             alt="Property Technology"
-            className="w-full h-full object-cover opacity-20"
+            className="w-full h-full object-cover opacity-40"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#114D9D]/90 to-[#1BA3FF]/90" />
         </div>
@@ -59,8 +59,8 @@ export default function HomePage() {
               <Button size="lg" variant="secondary" asChild>
                 <Link href="/register">Get Started</Link>
               </Button>
-              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10" asChild>
-                <Link href="#learn-more">Learn More</Link>
+              <Button size="lg" variant="outline" className="bg-white/10 text-white border-white hover:bg-white/20" asChild>
+                <Link href="#saas">Learn More</Link>
               </Button>
             </div>
           </div>
@@ -221,7 +221,7 @@ export default function HomePage() {
             <Button
               size="lg"
               variant="outline"
-              className="text-white border-white hover:bg-white/10"
+              className="bg-white/10 text-white border-white hover:bg-white/20"
               asChild
             >
               <Link href="/contact">Contact Sales</Link>
