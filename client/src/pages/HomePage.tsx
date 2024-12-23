@@ -115,12 +115,20 @@ export default function HomePage() {
               <CardContent className="pt-6">
                 <DollarSign className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Start Analyzing</h3>
-                <Link href="/register">
-                  <Button className="w-full mt-4">
-                    Try Free Analysis
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                <div className="space-y-2 mt-4">
+                  <Link href="/property-analyzer">
+                    <Button variant="outline" className="w-full">
+                      Learn More
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button className="w-full">
+                      Try Free Analysis
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -192,12 +200,20 @@ export default function HomePage() {
               <CardContent className="pt-6">
                 <BarChart2 className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Start Comparing</h3>
-                <Link href="/rent-compare">
-                  <Button className="w-full mt-4">
-                    Compare Now
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                <div className="space-y-2 mt-4">
+                  <Link href="/rent-compare">
+                    <Button variant="outline" className="w-full">
+                      Learn More
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button className="w-full">
+                      Compare Now
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -270,12 +286,20 @@ export default function HomePage() {
               <CardContent className="pt-6">
                 <Database className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Get API Access</h3>
-                <Link href="/api-access">
-                  <Button className="w-full mt-4">
-                    View Documentation
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                <div className="space-y-2 mt-4">
+                  <Link href="/property-analyzer">
+                    <Button variant="outline" className="w-full">
+                      Learn More
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/pricing">
+                    <Button className="w-full">
+                      View Enterprise Plans
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           </div>
