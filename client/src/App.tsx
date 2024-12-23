@@ -12,6 +12,8 @@ import AccessCodePage from "./pages/AccessCodePage";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
 import PricingPage from "./pages/PricingPage";
+import PropertyAnalyzerProductPage from "./pages/PropertyAnalyzerProductPage";
+import RentComparePage from "./pages/RentComparePage";
 import DashboardPage from "./pages/DashboardPage";
 import PropertyAnalyzerPage from "./pages/PropertyAnalyzerPage";
 import { useUser } from "./hooks/use-user";
@@ -82,6 +84,8 @@ function App() {
           <Route path="/login" component={AuthPage} />
           <Route path="/register" component={AuthPage} />
           <Route path="/pricing" component={PricingPage} />
+          <Route path="/property-analyzer" component={PropertyAnalyzerProductPage} />
+          <Route path="/rent-compare" component={RentComparePage} />
 
           {/* Protected routes */}
           <Route 
