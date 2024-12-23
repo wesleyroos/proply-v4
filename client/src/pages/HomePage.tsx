@@ -79,10 +79,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900">
-              Property Analysis Platform
+              Property Analyzer
             </h2>
             <p className="mt-4 text-xl text-gray-600">
-              Comprehensive property analysis for investors and professionals
+              Comprehensive on-platform property analysis for investors and professionals
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -129,7 +129,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900">
-              Rental Strategy Comparison
+              Rent Compare
             </h2>
             <p className="mt-4 text-xl text-gray-600">
               Compare long-term vs short-term rental potential for your property
@@ -177,7 +177,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900">
-              Property Analysis API
+              Property Analyzer (API)
             </h2>
             <p className="mt-4 text-xl text-gray-600">
               Enterprise-grade property analysis engine for your business
@@ -189,8 +189,7 @@ export default function HomePage() {
                 <Settings className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">The Challenge</h3>
                 <p className="text-gray-600">
-                  Building and maintaining your own property analysis system is
-                  time-consuming and expensive.
+                  Real estate agencies need quick and accurate property analysis when uploading properties to the market to better assist their clients with transactions.
                 </p>
               </CardContent>
             </Card>
@@ -199,8 +198,8 @@ export default function HomePage() {
                 <Code className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">The Solution</h3>
                 <p className="text-gray-600">
-                  Integrate our powerful analysis engine into your platform with
-                  our simple REST API.
+                  Automatic property analysis reports generated instantly when you
+                  list properties, seamlessly integrated with your existing workflow.
                 </p>
               </CardContent>
             </Card>
