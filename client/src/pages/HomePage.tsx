@@ -121,6 +121,35 @@ export default function HomePage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Targeted Property Analysis Section */}
+          <div className="mt-16 max-w-4xl mx-auto text-center">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">
+              Comprehensive Analysis for Every Stakeholder
+            </h3>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
+                  For Property Investors
+                </h4>
+                <p className="text-gray-600">
+                  Make confident investment decisions with our detailed financial modeling 
+                  and market analysis. Get instant insights into property potential, ROI 
+                  calculations, and future value projections based on real market data.
+                </p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
+                  For Real Estate Professionals
+                </h4>
+                <p className="text-gray-600">
+                  Elevate your client service with professional-grade property analysis. 
+                  Present compelling investment cases backed by comprehensive data and 
+                  detailed financial projections.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -246,6 +275,36 @@ export default function HomePage() {
                 </Link>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Targeted API Integration Section */}
+          <div className="mt-16 max-w-4xl mx-auto text-center">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">
+              Empower Your Real Estate Platform
+            </h3>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
+                  For Real Estate Agencies
+                </h4>
+                <p className="text-gray-600">
+                  Streamline your property listing process with automatic analysis reports. 
+                  Every time you upload a new property, our system generates comprehensive 
+                  insights that help your agents close deals faster and provide more value 
+                  to clients.
+                </p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
+                  For Property Platforms
+                </h4>
+                <p className="text-gray-600">
+                  Enhance your platform's value proposition with enterprise-grade property 
+                  analysis. Our API seamlessly integrates with your existing systems to 
+                  provide automatic, accurate property insights at scale.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
