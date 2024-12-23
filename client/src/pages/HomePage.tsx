@@ -39,9 +39,9 @@ export default function HomePage() {
           <img
             src="/images/property-technology.png"
             alt="Property Technology"
-            className="w-full h-full object-cover opacity-40"
+            className="w-full h-full object-cover opacity-70"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#114D9D]/90 to-[#1BA3FF]/90" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#114D9D]/95 to-[#1BA3FF]/95" />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
@@ -160,7 +160,15 @@ export default function HomePage() {
       </section>
 
       {/* API Section */}
-      <section id="api" className="py-20 bg-white">
+      <section id="api" className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <img
+            src="/images/purple-tech-splash.jpg"
+            alt="Technology Background"
+            className="w-full h-full object-cover opacity-10"
+          />
+          <div className="absolute inset-0 bg-white/95" />
+        </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900">Property Analysis API</h2>
