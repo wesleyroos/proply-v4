@@ -169,6 +169,37 @@ export default function HomePage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Targeted Airbnb Management Section */}
+          <div className="mt-16 max-w-4xl mx-auto text-center">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">
+              Transform Your Airbnb Management Business
+            </h3>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
+                  For Management Companies
+                </h4>
+                <p className="text-gray-600">
+                  Convert prospects into clients with confidence using our comprehensive 
+                  data-driven analysis. Show potential clients exactly how much more they 
+                  could earn with professional Airbnb management, backed by precise market 
+                  data and revenue projections.
+                </p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
+                  For Individual Hosts
+                </h4>
+                <p className="text-gray-600">
+                  Whether you're considering Airbnb hosting or already managing your 
+                  property, get detailed insights into your property's true potential. 
+                  Make informed decisions about your investment with actual market data, 
+                  not guesswork.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
