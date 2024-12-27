@@ -16,6 +16,8 @@ import PropertyAnalyzerProductPage from "./pages/PropertyAnalyzerProductPage";
 import RentComparePage from "./pages/RentComparePage";
 import DashboardPage from "./pages/DashboardPage";
 import PropertyAnalyzerPage from "./pages/PropertyAnalyzerPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
 import { useUser } from "./hooks/use-user";
 import Sidebar from "./components/Sidebar";
 
@@ -86,6 +88,8 @@ function App() {
           <Route path="/pricing" component={PricingPage} />
           <Route path="/property-analyzer" component={PropertyAnalyzerProductPage} />
           <Route path="/rent-compare" component={RentComparePage} />
+          <Route path="/privacy" component={PrivacyPage} />
+          <Route path="/terms" component={TermsPage} />
 
           {/* Protected routes */}
           <Route 
