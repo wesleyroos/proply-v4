@@ -6,10 +6,10 @@ export default function PublicHeader() {
     <nav className="fixed top-0 left-0 right-0 bg-white z-50 border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link href="/">
-            <img src="/proply-logo-1.png" alt="Proply" className="h-8 cursor-pointer" />
-          </Link>
-          <div className="flex gap-4">
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <img src="/proply-logo-1.png" alt="Proply" className="h-8 cursor-pointer" />
+            </Link>
             <Link href="/property-analyzer">
               <Button variant="ghost">Property Analyzer</Button>
             </Link>
@@ -22,6 +22,8 @@ export default function PublicHeader() {
             <Link href="/contact">
               <Button variant="ghost">Contact</Button>
             </Link>
+          </div>
+          <div className="flex gap-4">
             <Link href="/login">
               <Button variant="ghost">Login</Button>
             </Link>
