@@ -18,6 +18,7 @@ import DashboardPage from "./pages/DashboardPage";
 import PropertyAnalyzerPage from "./pages/PropertyAnalyzerPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
+import ContactPage from "./pages/ContactPage";
 import { useUser } from "./hooks/use-user";
 import Sidebar from "./components/Sidebar";
 
@@ -90,6 +91,7 @@ function App() {
           <Route path="/rent-compare" component={RentComparePage} />
           <Route path="/privacy" component={PrivacyPage} />
           <Route path="/terms" component={TermsPage} />
+          <Route path="/contact" component={ContactPage} />
 
           {/* Protected routes */}
           <Route 

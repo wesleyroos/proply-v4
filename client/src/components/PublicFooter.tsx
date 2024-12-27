@@ -46,6 +46,8 @@ export default function PublicFooter() {
               <span>|</span>
               <Link href="/pricing">Pricing</Link>
               <span>|</span>
+              <Link href="/contact">Contact</Link>
+              <span>|</span>
               <Link href="/privacy">Privacy Policy</Link>
               <span>|</span>
               <Link href="/terms">Terms of Service</Link>

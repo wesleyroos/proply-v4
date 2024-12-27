@@ -19,6 +19,9 @@ export default function PublicHeader() {
             <Link href="/pricing">
               <Button variant="ghost">Pricing</Button>
             </Link>
+            <Link href="/contact">
+              <Button variant="ghost">Contact</Button>
+            </Link>
             <Link href="/login">
               <Button variant="ghost">Login</Button>
             </Link>
