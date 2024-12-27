@@ -182,14 +182,14 @@ export default function HomePage() {
               <CardContent className="pt-6">
                 <BarChart2 className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Start Comparing</h3>
-                <div className="space-y-4 mt-4">
-                  <Link href="/rent-compare">
+                <div className="flex flex-col gap-4 mt-4">
+                  <Link href="/rent-compare" className="w-full">
                     <Button variant="outline" className="w-full">
                       Learn More
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                  <Link href="/register">
+                  <Link href="/register" className="w-full">
                     <Button className="w-full">
                       Compare Now
                       <ArrowRight className="ml-2 h-4 w-4" />
@@ -268,14 +268,14 @@ export default function HomePage() {
               <CardContent className="pt-6">
                 <Database className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Get API Access</h3>
-                <div className="space-y-4 mt-4">
-                  <Link href="/property-analyzer">
+                <div className="flex flex-col gap-4 mt-4">
+                  <Link href="/property-analyzer" className="w-full">
                     <Button variant="outline" className="w-full">
                       Learn More
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                  <Link href="/pricing">
+                  <Link href="/pricing" className="w-full">
                     <Button className="w-full">
                       View Enterprise Plans
                       <ArrowRight className="ml-2 h-4 w-4" />
