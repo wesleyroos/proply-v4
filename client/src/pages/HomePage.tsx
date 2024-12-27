@@ -12,31 +12,13 @@ import {
   LineChart,
   Settings,
 } from "lucide-react";
+import PublicHeader from "@/components/PublicHeader";
+import PublicFooter from "@/components/PublicFooter";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 bg-white z-50 border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <img src="/proply-logo-1.png" alt="Proply" className="h-8" />
-            <div className="flex gap-4">
-              <Link href="/pricing">
-                <Button variant="ghost">Pricing</Button>
-              </Link>
-              <Link href="/login">
-                <Button variant="ghost">Login</Button>
-              </Link>
-              <Link href="/register">
-                <Button className="bg-[#1BA3FF] hover:bg-[#114D9D]">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <PublicHeader />
 
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-[#114D9D] to-[#1BA3FF]">
@@ -115,7 +97,7 @@ export default function HomePage() {
               <CardContent className="pt-6">
                 <DollarSign className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Start Analyzing</h3>
-                <div className="space-y-2 mt-4">
+                <div className="space-y-4 mt-4">
                   <Link href="/property-analyzer">
                     <Button variant="outline" className="w-full">
                       Learn More
@@ -200,7 +182,7 @@ export default function HomePage() {
               <CardContent className="pt-6">
                 <BarChart2 className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Start Comparing</h3>
-                <div className="space-y-2 mt-4">
+                <div className="space-y-4 mt-4">
                   <Link href="/rent-compare">
                     <Button variant="outline" className="w-full">
                       Learn More
@@ -286,7 +268,7 @@ export default function HomePage() {
               <CardContent className="pt-6">
                 <Database className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Get API Access</h3>
-                <div className="space-y-2 mt-4">
+                <div className="space-y-4 mt-4">
                   <Link href="/property-analyzer">
                     <Button variant="outline" className="w-full">
                       Learn More
@@ -361,54 +343,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
-            {/* Company Info */}
-            <div>
-              <img src="/proply-logo-1.png" alt="Proply" className="h-8 mb-4" />
-              <p className="text-gray-600 mb-4">
-                Empowering you with data-driven insights for strategic
-                decision-making in real estate.
-              </p>
-              <p className="text-gray-600 mb-2">
-                Address: Innovation City, Darter Road, Longkloof Gardens, Cape Town, 8001
-              </p>
-              <p className="text-gray-600">
-                Email: hello@proply.co.za
-              </p>
-            </div>
-
-            {/* Newsletter */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Subscribe to Our Newsletter</h3>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#1BA3FF]"
-                />
-                <Button>Subscribe</Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer Links */}
-          <div className="border-t pt-8 text-sm text-gray-600">
-            <div className="flex flex-wrap gap-4 items-center justify-between">
-              <p>© 2024 Proply. All rights reserved.</p>
-              <div className="flex gap-4">
-                <Link href="/pricing">Pricing</Link>
-                <span>|</span>
-                <Link href="/privacy">Privacy Policy</Link>
-                <span>|</span>
-                <Link href="/terms">Terms of Service</Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }
