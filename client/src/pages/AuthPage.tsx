@@ -96,8 +96,8 @@ export default function AuthPage() {
     const paymentData = {
       merchant_id: merchantId,
       merchant_key: merchantKey,
-      return_url: `${window.location.origin}/settings?payment=success`,
-      cancel_url: `${window.location.origin}/settings?payment=cancelled`,
+      return_url: `${window.location.origin}/payment/success`,
+      cancel_url: `${window.location.origin}/payment/failure`,
       notify_url: `${window.location.origin}/api/payment-webhook`,
       name_first: formData.firstName,
       email_address: formData.email,

@@ -19,7 +19,9 @@ import PropertyAnalyzerPage from "./pages/PropertyAnalyzerPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
 import ContactPage from "./pages/ContactPage";
-import SubscriptionPage from "./pages/SubscriptionPage"; // Added import
+import SubscriptionPage from "./pages/SubscriptionPage";
+import PaymentSuccessPage from "./pages/PaymentSuccessPage";
+import PaymentFailurePage from "./pages/PaymentFailurePage";
 import { useUser } from "./hooks/use-user";
 import Sidebar from "./components/Sidebar";
 
@@ -74,6 +76,8 @@ function App() {
           <Route path="/privacy" component={PrivacyPage} />
           <Route path="/terms" component={TermsPage} />
           <Route path="/contact" component={ContactPage} />
+          <Route path="/payment/success" component={PaymentSuccessPage} />
+          <Route path="/payment/failure" component={PaymentFailurePage} />
 
           {/* Protected routes */}
           <Route 
@@ -107,7 +111,7 @@ function App() {
           <Route
             path="/subscription"
             component={() => <ProtectedRoute component={SubscriptionPage} />}
-          /> {/* Added route */}
+          />
           <Route component={NotFound} />
         </Switch>
       </TooltipProvider>
