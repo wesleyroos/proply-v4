@@ -100,9 +100,14 @@ export default function AuthPage() {
       return;
     }
 
+    // Minimize data size for PayFast's 255 char limit
     const registrationData = {
-      ...formData,
-      subscriptionStatus: 'pro'
+      e: formData.email, // email
+      p: formData.password, // password
+      f: formData.firstName, // firstName
+      l: formData.lastName, // lastName
+      t: formData.userType, // userType
+      s: 'pro' // subscriptionStatus
     };
 
     const paymentData = {

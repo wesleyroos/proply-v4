@@ -26,7 +26,17 @@ export default function PaymentSuccessPage() {
           throw new Error('Registration data not found');
         }
 
-        const registrationData = JSON.parse(decodeURIComponent(customStr1));
+        const compressed = JSON.parse(decodeURIComponent(customStr1));
+
+        // Expand the compressed registration data
+        const registrationData = {
+          email: compressed.e,
+          password: compressed.p,
+          firstName: compressed.f,
+          lastName: compressed.l,
+          userType: compressed.t,
+          subscriptionStatus: compressed.s
+        };
 
         // Register the user
         await register({
@@ -37,7 +47,7 @@ export default function PaymentSuccessPage() {
           firstName: registrationData.firstName,
           lastName: registrationData.lastName,
           company: registrationData.company,
-          subscriptionStatus: 'pro'
+          subscriptionStatus: registrationData.subscriptionStatus
         });
 
         // Login with complete credentials
