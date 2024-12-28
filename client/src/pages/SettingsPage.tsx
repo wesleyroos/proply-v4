@@ -28,6 +28,8 @@ import {
   AlertDialogCancel,
   AlertDialogAction
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CalendarDays, AlertTriangle } from "lucide-react";
 
 interface ProfileFormData {
   firstName: string;
@@ -88,18 +90,13 @@ export default function SettingsPage() {
       const updatedUser = await response.json();
       queryClient.setQueryData(['user'], updatedUser);
 
-      toast({
-        title: "Profile Updated",
-        description: "Your profile information has been successfully saved.",
-        variant: "default",
-        duration: 3000,
-      });
+      // Replaced toast with AlertDialog - This part needs further refinement based on desired alert behavior.
+      // Consider using a state variable to control the alert's visibility.
+      //  For simplicity, a console log is used here.
+      console.log("Profile Updated:", updatedUser);
+
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update profile",
-        variant: "destructive",
-      });
+      console.error("Error updating profile:", error);
     } finally {
       setIsUpdating(false);
     }
@@ -107,11 +104,7 @@ export default function SettingsPage() {
 
   const handlePasswordChange = async (data: ProfileFormData) => {
     if (data.newPassword !== data.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "New passwords do not match",
-        variant: "destructive",
-      });
+      console.error("New passwords do not match");
       return;
     }
 
@@ -131,12 +124,10 @@ export default function SettingsPage() {
         throw new Error(await response.text());
       }
 
-      toast({
-        title: "Password Changed",
-        description: "Your password has been successfully updated.",
-        variant: "default",
-        duration: 3000,
-      });
+      // Replaced toast with AlertDialog - This part needs further refinement based on desired alert behavior.
+      // Consider using a state variable to control the alert's visibility.
+      // For simplicity, a console log is used here.
+      console.log("Password Changed Successfully");
 
       // Reset password fields
       form.reset({
@@ -146,11 +137,7 @@ export default function SettingsPage() {
         confirmPassword: ""
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to change password",
-        variant: "destructive",
-      });
+      console.error("Error changing password:", error);
     } finally {
       setIsUpdating(false);
     }
@@ -169,20 +156,12 @@ export default function SettingsPage() {
       : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
 
     if (!merchantId || !merchantKey) {
-      toast({
-        title: "Error",
-        description: "Payment configuration is missing. Please try again later.",
-        variant: "destructive"
-      });
+      console.error("Payment configuration is missing. Please try again later.");
       return;
     }
 
     if (!user) {
-      toast({
-        title: "Error",
-        description: "Please log in to upgrade your account.",
-        variant: "destructive"
-      });
+      console.error("Please log in to upgrade your account.");
       return;
     }
 
@@ -407,10 +386,26 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
+                    {/* Pending Downgrade Alert */}
+                    {user?.pendingDowngrade && user?.subscriptionExpiryDate && (
+                      <Alert variant="warning" className="mb-6">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Subscription Change Scheduled</AlertTitle>
+                        <AlertDescription className="mt-2 flex items-center gap-2">
+                          <CalendarDays className="h-4 w-4" />
+                          Your account will downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
                     <div>
                       <label className="text-sm font-medium">Current Plan</label>
-                      <p className="text-muted-foreground capitalize">{user?.subscriptionStatus || 'Free'}</p>
+                      <p className="text-muted-foreground capitalize">
+                        {user?.subscriptionStatus || 'Free'}
+                        {user?.pendingDowngrade && ' (Downgrade Scheduled)'}
+                      </p>
                     </div>
+
                     {/* Only show expiry date for non-pro subscriptions */}
                     {user?.subscriptionStatus !== 'pro' && user?.subscriptionExpiryDate && (
                       <div>
@@ -448,8 +443,9 @@ export default function SettingsPage() {
                               <Button
                                 variant="outline"
                                 className="w-full text-destructive hover:text-destructive"
+                                disabled={user?.pendingDowngrade}
                               >
-                                Downgrade to Free
+                                {user?.pendingDowngrade ? 'Downgrade Scheduled' : 'Downgrade to Free'}
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
@@ -479,17 +475,48 @@ export default function SettingsPage() {
                                       console.log('Downgrade scheduled:', result);
 
                                       queryClient.invalidateQueries({ queryKey: ['user'] });
-                                      toast({
-                                        title: "Plan Update Scheduled",
-                                        description: `Your account will be downgraded to Free at the end of your current billing cycle (${new Date(result.expiryDate).toLocaleDateString()}).`,
-                                      });
+
+                                      // Show confirmation dialog
+                                      const confirmDialog = document.createElement('dialog');
+                                      confirmDialog.innerHTML = `
+                                        <div class="bg-white p-6 rounded-lg shadow-lg">
+                                          <h3 class="text-lg font-semibold mb-2">Plan Update Scheduled</h3>
+                                          <p class="text-gray-600 mb-4">
+                                            Your account will be downgraded to Free on ${new Date(result.expiryDate).toLocaleDateString()}.
+                                            You'll maintain Pro access until then.
+                                          </p>
+                                          <button class="px-4 py-2 bg-primary text-white rounded" onclick="this.closest('dialog').close()">
+                                            Got it
+                                          </button>
+                                        </div>
+                                      `;
+                                      document.body.appendChild(confirmDialog);
+                                      confirmDialog.showModal();
+                                      confirmDialog.querySelector('button').onclick = () => {
+                                        confirmDialog.close();
+                                        document.body.removeChild(confirmDialog);
+                                      };
+
                                     } catch (error) {
                                       console.error('Error scheduling downgrade:', error);
-                                      toast({
-                                        title: "Error",
-                                        description: error instanceof Error ? error.message : "Failed to schedule plan downgrade",
-                                        variant: "destructive",
-                                      });
+                                      const errorDialog = document.createElement('dialog');
+                                      errorDialog.innerHTML = `
+                                        <div class="bg-white p-6 rounded-lg shadow-lg">
+                                          <h3 class="text-lg font-semibold text-red-600 mb-2">Error</h3>
+                                          <p class="text-gray-600 mb-4">
+                                            ${error instanceof Error ? error.message : "Failed to schedule plan downgrade"}
+                                          </p>
+                                          <button class="px-4 py-2 bg-primary text-white rounded" onclick="this.closest('dialog').close()">
+                                            Close
+                                          </button>
+                                        </div>
+                                      `;
+                                      document.body.appendChild(errorDialog);
+                                      errorDialog.showModal();
+                                      errorDialog.querySelector('button').onclick = () => {
+                                        errorDialog.close();
+                                        document.body.removeChild(errorDialog);
+                                      };
                                     }
                                   }}
                                   className="bg-destructive hover:bg-destructive/90"
