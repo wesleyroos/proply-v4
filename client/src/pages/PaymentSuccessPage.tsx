@@ -15,38 +15,72 @@ export default function PaymentSuccessPage() {
   const [isProcessing, setIsProcessing] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-useEffect(() => {
+  useEffect(() => {
     const processPaymentSuccess = async () => {
       try {
-        // Get registration data directly from URL params
+        // Get registration/upgrade data from URL params
         const params = new URLSearchParams(window.location.search);
-        const encodedData = params.get('custom_str1');
+        const encodedData = params.get('upgrade_data');
 
         console.log('URL Search params:', window.location.search);
-        console.log('Encoded registration data:', encodedData);
+        console.log('Encoded data:', encodedData);
 
         if (!encodedData) {
-          throw new Error('Registration data not found in URL parameters');
+          throw new Error('Registration/upgrade data not found in URL parameters');
         }
 
         let compressed;
         try {
           compressed = JSON.parse(decodeURIComponent(encodedData));
         } catch (e) {
-          console.error('Error parsing registration data:', e);
-          throw new Error('Failed to parse registration data');
+          console.error('Error parsing data:', e);
+          throw new Error('Failed to parse registration/upgrade data');
         }
 
-        console.log('Decoded registration data:', {
+        console.log('Decoded data:', {
           ...compressed,
           p: '[REDACTED]'
         });
 
+        // If this is an upgrade (has uid), handle differently than new registration
+        if (compressed.uid) {
+          console.log('Processing upgrade for existing user:', compressed.uid);
+
+          const response = await fetch('/api/subscription/upgrade', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              userId: compressed.uid,
+              subscriptionStatus: 'pro'
+            }),
+            credentials: 'include'
+          });
+
+          if (!response.ok) {
+            throw new Error(await response.text());
+          }
+
+          // Update user data in React Query cache
+          queryClient.invalidateQueries({ queryKey: ['user'] });
+
+          setIsProcessing(false);
+          toast({
+            title: "Success",
+            description: "Your account has been upgraded to Pro!",
+          });
+
+          // Redirect back to settings
+          setLocation('/settings');
+          return;
+        }
+
+        // Handle new user registration
         if (!compressed.e || !compressed.p) {
           throw new Error('Invalid registration data format');
         }
 
-        // Register the user with explicit pro subscription status
         const registrationData = {
           username: compressed.e,
           email: compressed.e,
@@ -57,7 +91,7 @@ useEffect(() => {
           subscriptionStatus: 'pro' // Always pro since payment was successful
         };
 
-        console.log('Registering user with data:', {
+        console.log('Registering new user with data:', {
           ...registrationData,
           password: '[REDACTED]',
           subscriptionStatus: registrationData.subscriptionStatus,
@@ -68,7 +102,6 @@ useEffect(() => {
 
         // Login the user
         await login({
-          username: compressed.e,
           email: compressed.e,
           password: compressed.p,
           userType: compressed.t || 'individual'
@@ -80,19 +113,19 @@ useEffect(() => {
 
       } catch (error) {
         console.error('Payment success processing error:', error);
-        setError(error instanceof Error ? error.message : "Failed to complete registration");
+        setError(error instanceof Error ? error.message : "Failed to complete registration/upgrade");
         setIsProcessing(false);
 
         toast({
           variant: "destructive",
-          title: "Registration Error",
-          description: error instanceof Error ? error.message : "Failed to complete registration"
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to complete registration/upgrade"
         });
       }
     };
 
     processPaymentSuccess();
-  }, [register, login, queryClient, toast]);
+  }, [register, login, queryClient, toast, setLocation]);
 
   if (isProcessing) {
     return (
@@ -101,7 +134,7 @@ useEffect(() => {
           <CardContent className="pt-6 text-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
             <p className="text-lg text-gray-600">
-              Completing your registration...
+              Processing your subscription...
             </p>
           </CardContent>
         </Card>
@@ -115,7 +148,7 @@ useEffect(() => {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-red-700">
-              Registration Error
+              Processing Error
             </CardTitle>
             <CardDescription className="text-gray-600">
               {error}
@@ -123,15 +156,14 @@ useEffect(() => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-gray-500 text-center">
-              Please try logging in with your email and password. If the problem persists,
-              contact our support team.
+              Please try again or contact our support team if the problem persists.
             </p>
             <div className="flex flex-col gap-3">
               <Button
-                onClick={() => setLocation('/login')}
+                onClick={() => setLocation('/settings')}
                 className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
               >
-                Go to Login
+                Return to Settings
               </Button>
               <Button
                 variant="outline"

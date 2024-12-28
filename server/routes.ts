@@ -23,6 +23,76 @@ export function registerRoutes(app: Express): Server {
     next();
   });
 
+  // Subscription upgrade endpoint
+  app.post("/api/subscription/upgrade", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const { userId, subscriptionStatus } = req.body;
+
+    if (!userId || !subscriptionStatus) {
+      return res.status(400).send("Missing required fields");
+    }
+
+    try {
+      console.log('Processing subscription upgrade:', {
+        userId,
+        subscriptionStatus,
+        requestedBy: req.user?.id
+      });
+
+      // Verify the user exists
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      if (!user) {
+        console.error('User not found:', userId);
+        return res.status(404).send("User not found");
+      }
+
+      // Set subscription expiry date to 1 year from now for pro subscriptions
+      const subscriptionExpiryDate = subscriptionStatus === 'pro'
+        ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+        : null;
+
+      // Update user's subscription status
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          subscriptionStatus,
+          subscriptionExpiryDate,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, userId))
+        .returning();
+
+      console.log('Subscription updated successfully:', {
+        userId: updatedUser.id,
+        newStatus: updatedUser.subscriptionStatus,
+        expiryDate: updatedUser.subscriptionExpiryDate
+      });
+
+      res.json({
+        message: "Subscription updated successfully",
+        user: {
+          id: updatedUser.id,
+          subscriptionStatus: updatedUser.subscriptionStatus,
+          subscriptionExpiryDate: updatedUser.subscriptionExpiryDate
+        }
+      });
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      res.status(500).json({
+        error: "Failed to update subscription",
+        details: error instanceof Error ? error.message : undefined
+      });
+    }
+  });
+
   // Access code routes
   app.get("/api/access-codes", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
@@ -34,7 +104,7 @@ export function registerRoutes(app: Express): Server {
         .select()
         .from(accessCodes)
         .orderBy(accessCodes.createdAt);
-    
+
       res.json(codes);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch access codes" });
@@ -48,13 +118,13 @@ export function registerRoutes(app: Express): Server {
 
     try {
       const { expiryDays } = req.body;
-      
+
       if (!expiryDays || isNaN(parseInt(expiryDays))) {
         return res.status(400).json({ error: "Valid expiry days required" });
       }
 
       // Generate a random 8-character code
-      const code = Array.from({ length: 8 }, () => 
+      const code = Array.from({ length: 8 }, () =>
         Math.random().toString(36).charAt(2)
       ).join('').toUpperCase();
 
@@ -117,7 +187,7 @@ export function registerRoutes(app: Express): Server {
     }
 
     const userId = parseInt(req.params.id);
-    
+
     try {
       const [targetUser] = await db
         .select()
@@ -138,16 +208,16 @@ export function registerRoutes(app: Express): Server {
       }
 
       const action = req.params.action as 'suspend' | 'unsuspend' | 'change-plan';
-      
+
       if (action === 'change-plan') {
         const { plan } = req.body;
         if (!plan || !['free', 'pro'].includes(plan)) {
           return res.status(400).send("Invalid plan specified");
         }
-        
+
         await db
           .update(users)
-          .set({ 
+          .set({
             subscriptionStatus: plan,
             subscriptionExpiryDate: plan === 'pro' ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : null
           })
@@ -173,7 +243,7 @@ export function registerRoutes(app: Express): Server {
     }
 
     const userId = parseInt(req.params.id);
-    
+
     try {
       const [targetUser] = await db
         .select()
@@ -310,10 +380,10 @@ export function registerRoutes(app: Express): Server {
         .from(properties)
         .where(eq(properties.userId, req.user!.id))
         .orderBy(properties.createdAt);
-      
+
       // Log the number of properties found
       console.log(`Found ${userProperties.length} properties for user ${req.user!.id}`);
-      
+
       res.json(userProperties);
     } catch (error) {
       console.error('Error fetching properties:', error);
@@ -330,7 +400,7 @@ export function registerRoutes(app: Express): Server {
     if (isNaN(propertyId)) {
       return res.status(400).send("Invalid property ID");
     }
-    
+
     try {
       // First check if the property exists and belongs to the user
       const [property] = await db
@@ -362,15 +432,15 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/payment-webhook", async (req, res) => {
     // Validate PayFast signature and update subscription
     const { user_id, subscription_status } = req.body;
-    
+
     try {
       await db.update(users)
-        .set({ 
+        .set({
           subscriptionStatus: subscription_status,
           subscriptionExpiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
         })
         .where(eq(users.id, user_id));
-      
+
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to update subscription" });
@@ -384,17 +454,17 @@ export function registerRoutes(app: Express): Server {
     }
 
     const { firstName, lastName, companyLogo } = req.body;
-    
+
     try {
       const [updatedUser] = await db.update(users)
-        .set({ 
+        .set({
           firstName,
           lastName,
           companyLogo
         })
         .where(eq(users.id, req.user!.id))
         .returning();
-      
+
       res.json(updatedUser);
     } catch (error) {
       res.status(500).json({ error: "Failed to update profile" });
@@ -528,7 +598,7 @@ export function registerRoutes(app: Express): Server {
       });
 
       console.log("Converted property data:", JSON.stringify(propertyData, null, 2));
-      
+
       const analysisResult = calculateYields(propertyData);
       console.log("Analysis complete. Result:", JSON.stringify(analysisResult, null, 2));
 
@@ -536,11 +606,11 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("=== Analysis Error ===");
       console.error("Error details:", error);
-      
+
       const errorMessage = error instanceof Error ? error.message : "Failed to analyze property data";
       console.error("Sending error response:", { error: errorMessage });
-      
-      res.status(500).json({ 
+
+      res.status(500).json({
         error: errorMessage,
         details: error instanceof Error ? error.message : undefined
       });

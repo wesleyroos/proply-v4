@@ -17,7 +17,17 @@ import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import type { SelectUser } from "@db/schema";
 import { useQueryClient } from "@tanstack/react-query";
-import {AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction} from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction
+} from "@/components/ui/alert-dialog";
 
 interface ProfileFormData {
   firstName: string;
@@ -144,6 +154,92 @@ export default function SettingsPage() {
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const initiateProUpgrade = () => {
+    const isDevelopment = import.meta.env.DEV;
+    console.log('Initiating Pro upgrade payment flow');
+
+    const merchantId = isDevelopment
+      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
+      : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
+
+    const merchantKey = isDevelopment
+      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY
+      : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
+
+    if (!merchantId || !merchantKey) {
+      toast({
+        title: "Error",
+        description: "Payment configuration is missing. Please try again later.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Please log in to upgrade your account.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Prepare minimal upgrade data
+    const upgradeData = {
+      uid: user.id,
+      e: user.email,
+      f: user.firstName || '',
+      l: user.lastName || '',
+      t: user.userType || 'individual',
+      s: 'pro'
+    };
+
+    console.log('Processing upgrade for user:', {
+      ...upgradeData,
+      email: user.email,
+      currentPlan: user.subscriptionStatus
+    });
+
+    const encodedData = encodeURIComponent(JSON.stringify(upgradeData));
+
+    const paymentData = {
+      merchant_id: merchantId,
+      merchant_key: merchantKey,
+      return_url: `${window.location.origin}/payment/success?upgrade_data=${encodedData}`,
+      cancel_url: `${window.location.origin}/settings`,
+      notify_url: `${window.location.origin}/api/payment-webhook`,
+      name_first: user.firstName || user.email,
+      email_address: user.email,
+      amount: "2000.00",
+      item_name: "Proply Pro Subscription Upgrade",
+      subscription_type: "1",
+      billing_date: new Date().toISOString().split('T')[0],
+      recurring_amount: "2000.00",
+      frequency: "3",
+      cycles: "0"
+    };
+
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = isDevelopment
+      ? "https://sandbox.payfast.co.za/eng/process"
+      : "https://www.payfast.co.za/eng/process";
+
+    Object.entries(paymentData).forEach(([key, value]) => {
+      if (value !== undefined) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = value.toString();
+        form.appendChild(input);
+      }
+    });
+
+    document.body.appendChild(form);
+    console.log('Submitting upgrade payment form to PayFast...');
+    form.submit();
   };
 
   return (
@@ -334,7 +430,7 @@ export default function SettingsPage() {
                             advanced metrics, and priority support.
                           </p>
                           <Button 
-                            onClick={() => setLocation("/subscription")}
+                            onClick={initiateProUpgrade}
                             className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
                           >
                             Upgrade to Pro
