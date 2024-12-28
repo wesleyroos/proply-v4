@@ -33,7 +33,7 @@ interface ProfileFormData {
   userType: string;
   company?: string;
   accessCode?: string;
-  plan?:string;
+  plan?: string;
 }
 
 export default function AuthPage() {
@@ -110,10 +110,12 @@ export default function AuthPage() {
       s: 'pro' // subscriptionStatus
     };
 
+    const encodedData = encodeURIComponent(JSON.stringify(registrationData));
+
     const paymentData = {
       merchant_id: merchantId,
       merchant_key: merchantKey,
-      return_url: `${window.location.origin}/payment/success`,
+      return_url: `${window.location.origin}/payment/success?custom_str1=${encodedData}`,
       cancel_url: `${window.location.origin}/payment/failure`,
       notify_url: `${window.location.origin}/api/payment-webhook`,
       name_first: formData.firstName,
@@ -125,7 +127,6 @@ export default function AuthPage() {
       recurring_amount: "2000.00",
       frequency: "3", // Monthly
       cycles: "0", // Unlimited cycles
-      custom_str1: encodeURIComponent(JSON.stringify(registrationData)),
     };
 
     // Create form and submit to PayFast

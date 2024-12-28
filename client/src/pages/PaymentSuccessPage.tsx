@@ -18,62 +18,51 @@ export default function PaymentSuccessPage() {
   useEffect(() => {
     const processPaymentSuccess = async () => {
       try {
-        // Get registration data from URL params
+        // Get registration data directly from URL params
         const params = new URLSearchParams(window.location.search);
-        const customStr1 = params.get('custom_str1');
+        const encodedData = params.get('custom_str1');
 
-        if (!customStr1) {
+        console.log('URL Search params:', window.location.search);
+        console.log('Encoded registration data:', encodedData);
+
+        if (!encodedData) {
           throw new Error('Registration data not found in URL parameters');
         }
 
-        console.log('Raw customStr1:', customStr1);
-
         let compressed;
         try {
-          compressed = JSON.parse(decodeURIComponent(customStr1));
+          compressed = JSON.parse(decodeURIComponent(encodedData));
         } catch (e) {
-          console.error('Error parsing customStr1:', e);
+          console.error('Error parsing registration data:', e);
           throw new Error('Failed to parse registration data');
         }
 
-        console.log('Decoded compressed data:', compressed);
+        console.log('Decoded registration data:', {
+          ...compressed,
+          p: '[REDACTED]'
+        });
 
         if (!compressed.e || !compressed.p) {
           throw new Error('Invalid registration data format');
         }
 
-        // Expand the compressed registration data
-        const registrationData = {
+        // Register the user
+        await register({
+          username: compressed.e,
           email: compressed.e,
           password: compressed.p,
           firstName: compressed.f,
           lastName: compressed.l,
           userType: compressed.t || 'individual',
           subscriptionStatus: compressed.s || 'pro'
-        };
-
-        console.log('Registration data prepared:', { 
-          ...registrationData,
-          password: '[REDACTED]' 
         });
 
-        // Register the user
-        await register({
-          username: registrationData.email,
-          email: registrationData.email,
-          password: registrationData.password,
-          userType: registrationData.userType,
-          firstName: registrationData.firstName,
-          lastName: registrationData.lastName,
-          subscriptionStatus: registrationData.subscriptionStatus
-        });
-
-        // Login with complete credentials
+        // Login the user
         await login({
-          username: registrationData.email,
-          email: registrationData.email,
-          password: registrationData.password,
-          userType: registrationData.userType
+          username: compressed.e,
+          email: compressed.e,
+          password: compressed.p,
+          userType: compressed.t || 'individual'
         });
 
         // Update UI state
@@ -85,7 +74,6 @@ export default function PaymentSuccessPage() {
         setError(error instanceof Error ? error.message : "Failed to complete registration");
         setIsProcessing(false);
 
-        // Show error toast
         toast({
           variant: "destructive",
           title: "Registration Error",
