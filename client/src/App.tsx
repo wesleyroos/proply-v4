@@ -19,6 +19,7 @@ import PropertyAnalyzerPage from "./pages/PropertyAnalyzerPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
 import ContactPage from "./pages/ContactPage";
+import SubscriptionPage from "./pages/SubscriptionPage"; // Added import
 import { useUser } from "./hooks/use-user";
 import Sidebar from "./components/Sidebar";
 
@@ -54,25 +55,6 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
       <main className="flex-1">
         <Component />
       </main>
-    </div>
-  );
-}
-
-// fallback 404 not found page
-function NotFound() {
-  return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md mx-4">
-        <CardContent className="pt-6">
-          <div className="flex mb-4 gap-2">
-            <AlertCircle className="h-8 w-8 text-red-500" />
-            <h1 className="text-2xl font-bold text-gray-900">404 Page Not Found</h1>
-          </div>
-          <p className="mt-4 text-sm text-gray-600">
-            The page you're looking for doesn't exist.
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 }
@@ -122,11 +104,34 @@ function App() {
             path="/access-codes" 
             component={() => <ProtectedRoute component={AccessCodePage} />} 
           />
+          <Route
+            path="/subscription"
+            component={() => <ProtectedRoute component={SubscriptionPage} />}
+          /> {/* Added route */}
           <Route component={NotFound} />
         </Switch>
       </TooltipProvider>
       <Toaster />
     </>
+  );
+}
+
+// fallback 404 not found page
+function NotFound() {
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md mx-4">
+        <CardContent className="pt-6">
+          <div className="flex mb-4 gap-2">
+            <AlertCircle className="h-8 w-8 text-red-500" />
+            <h1 className="text-2xl font-bold text-gray-900">404 Page Not Found</h1>
+          </div>
+          <p className="mt-4 text-sm text-gray-600">
+            The page you're looking for doesn't exist.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
