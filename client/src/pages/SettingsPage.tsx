@@ -90,9 +90,6 @@ export default function SettingsPage() {
       const updatedUser = await response.json();
       queryClient.setQueryData(['user'], updatedUser);
 
-      // Replaced toast with AlertDialog - This part needs further refinement based on desired alert behavior.
-      // Consider using a state variable to control the alert's visibility.
-      //  For simplicity, a console log is used here.
       console.log("Profile Updated:", updatedUser);
 
     } catch (error) {
@@ -124,12 +121,8 @@ export default function SettingsPage() {
         throw new Error(await response.text());
       }
 
-      // Replaced toast with AlertDialog - This part needs further refinement based on desired alert behavior.
-      // Consider using a state variable to control the alert's visibility.
-      // For simplicity, a console log is used here.
       console.log("Password Changed Successfully");
 
-      // Reset password fields
       form.reset({
         ...form.getValues(),
         currentPassword: "",
@@ -165,7 +158,6 @@ export default function SettingsPage() {
       return;
     }
 
-    // Prepare minimal upgrade data
     const upgradeData = {
       uid: user.id,
       e: user.email,
@@ -272,7 +264,6 @@ export default function SettingsPage() {
                         />
                       </div>
 
-                      {/* Company Logo Upload */}
                       <FormItem>
                         <FormLabel>Company Logo</FormLabel>
                         <div className="flex items-start space-x-4">
@@ -386,15 +377,84 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {/* Pending Downgrade Alert */}
                     {user?.pendingDowngrade && user?.subscriptionExpiryDate && (
                       <Alert variant="warning" className="mb-6">
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Subscription Change Scheduled</AlertTitle>
-                        <AlertDescription className="mt-2 flex items-center gap-2">
-                          <CalendarDays className="h-4 w-4" />
-                          Your account will downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
-                        </AlertDescription>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <AlertTitle className="flex items-center gap-2">
+                              <AlertTriangle className="h-4 w-4" />
+                              Subscription Change Scheduled
+                            </AlertTitle>
+                            <AlertDescription className="mt-2 flex items-center gap-2">
+                              <CalendarDays className="h-4 w-4" />
+                              Your account will downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
+                            </AlertDescription>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={async () => {
+                              try {
+                                console.log('Cancelling subscription downgrade...');
+                                const response = await fetch('/api/subscription/cancel-downgrade', {
+                                  method: 'POST',
+                                  credentials: 'include'
+                                });
+
+                                if (!response.ok) {
+                                  throw new Error(await response.text());
+                                }
+
+                                const result = await response.json();
+                                console.log('Downgrade cancelled:', result);
+
+                                queryClient.invalidateQueries({ queryKey: ['user'] });
+
+                                const confirmDialog = document.createElement('dialog');
+                                confirmDialog.innerHTML = `
+                                  <div class="bg-white p-6 rounded-lg shadow-lg">
+                                    <h3 class="text-lg font-semibold mb-2">Downgrade Cancelled</h3>
+                                    <p class="text-gray-600 mb-4">
+                                      Your Pro subscription will continue without interruption.
+                                    </p>
+                                    <button class="px-4 py-2 bg-primary text-white rounded" onclick="this.closest('dialog').close()">
+                                      Got it
+                                    </button>
+                                  </div>
+                                `;
+                                document.body.appendChild(confirmDialog);
+                                confirmDialog.showModal();
+                                confirmDialog.querySelector('button').onclick = () => {
+                                  confirmDialog.close();
+                                  document.body.removeChild(confirmDialog);
+                                };
+
+                              } catch (error) {
+                                console.error('Error cancelling downgrade:', error);
+                                const errorDialog = document.createElement('dialog');
+                                errorDialog.innerHTML = `
+                                  <div class="bg-white p-6 rounded-lg shadow-lg">
+                                    <h3 class="text-lg font-semibold text-red-600 mb-2">Error</h3>
+                                    <p class="text-gray-600 mb-4">
+                                      ${error instanceof Error ? error.message : "Failed to cancel plan downgrade"}
+                                    </p>
+                                    <button class="px-4 py-2 bg-primary text-white rounded" onclick="this.closest('dialog').close()">
+                                      Close
+                                    </button>
+                                  </div>
+                                `;
+                                document.body.appendChild(errorDialog);
+                                errorDialog.showModal();
+                                errorDialog.querySelector('button').onclick = () => {
+                                  errorDialog.close();
+                                  document.body.removeChild(errorDialog);
+                                };
+                              }
+                            }}
+                          >
+                            Cancel Downgrade
+                          </Button>
+                        </div>
                       </Alert>
                     )}
 
@@ -406,7 +466,6 @@ export default function SettingsPage() {
                       </p>
                     </div>
 
-                    {/* Only show expiry date for non-pro subscriptions */}
                     {user?.subscriptionStatus !== 'pro' && user?.subscriptionExpiryDate && (
                       <div>
                         <label className="text-sm font-medium">Access Until</label>
@@ -416,7 +475,6 @@ export default function SettingsPage() {
                       </div>
                     )}
 
-                    {/* Plan switching section */}
                     <div className="pt-4 border-t">
                       <h3 className="text-sm font-medium mb-2">Change Plan</h3>
                       {user?.subscriptionStatus === "free" ? (
@@ -476,7 +534,6 @@ export default function SettingsPage() {
 
                                       queryClient.invalidateQueries({ queryKey: ['user'] });
 
-                                      // Show confirmation dialog
                                       const confirmDialog = document.createElement('dialog');
                                       confirmDialog.innerHTML = `
                                         <div class="bg-white p-6 rounded-lg shadow-lg">

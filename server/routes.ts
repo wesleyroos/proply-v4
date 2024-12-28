@@ -674,6 +674,53 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Cancel subscription downgrade endpoint
+  app.post("/api/subscription/cancel-downgrade", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
+
+      if (!user) {
+        return res.status(404).send("User not found");
+      }
+
+      // Remove pending downgrade and expiry date
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          pendingDowngrade: false,
+          subscriptionExpiryDate: null,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning();
+
+      console.log('Subscription downgrade cancelled:', {
+        userId: updatedUser.id,
+        currentStatus: updatedUser.subscriptionStatus,
+        pendingDowngrade: updatedUser.pendingDowngrade
+      });
+
+      res.json({
+        message: "Subscription downgrade cancelled",
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error('Error cancelling subscription downgrade:', error);
+      res.status(500).json({
+        error: "Failed to cancel subscription downgrade",
+        details: error instanceof Error ? error.message : undefined
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
