@@ -28,16 +28,9 @@ export const crypto = {
   },
 };
 
-import type { SelectUser } from "@db/schema";
-
 declare global {
   namespace Express {
-    interface User extends SelectUser {
-      id: number;
-      username: string;
-      subscriptionStatus: string;
-      subscriptionExpiryDate: Date | null;
-    }
+    interface User extends SelectUser {}
   }
 }
 
@@ -77,7 +70,7 @@ export function setupAuth(app: Express) {
     }, async (email, password, done) => {
       try {
         console.log("Login attempt with email:", email);
-        
+
         const [user] = await db
           .select()
           .from(users)
@@ -87,13 +80,6 @@ export function setupAuth(app: Express) {
         if (!user) {
           console.log("No user found with email:", email);
           return done(null, false, { message: "No account found with this email address." });
-        }
-
-        if (user.subscriptionStatus === 'suspended') {
-          console.log("Suspended account attempt:", email);
-          return done(null, false, { 
-            message: "Your account has been suspended. Please contact support@proply.co.za for assistance."
-          });
         }
 
         const isMatch = await crypto.compare(password, user.password);
@@ -131,6 +117,8 @@ export function setupAuth(app: Express) {
   app.post("/api/register", async (req, res, next) => {
     try {
       console.log("Registration payload:", req.body);
+
+      // Validate request body
       const result = insertUserSchema.safeParse(req.body);
       if (!result.success) {
         console.log("Validation errors:", result.error.issues);
@@ -139,7 +127,19 @@ export function setupAuth(app: Express) {
           .send("Invalid input: " + result.error.issues.map(i => i.message).join(", "));
       }
 
-      const { email: username, password, email, userType, company, firstName, lastName, accessCode } = req.body;
+      const { 
+        email: username, 
+        password, 
+        email, 
+        userType, 
+        company, 
+        firstName, 
+        lastName, 
+        accessCode,
+        subscriptionStatus = 'free' // Default to free unless explicitly set
+      } = req.body;
+
+      console.log("Processing registration with subscription status:", subscriptionStatus);
 
       let validCode = null;
       if (accessCode) {
@@ -158,7 +158,7 @@ export function setupAuth(app: Express) {
         if (code.expiresAt && new Date(code.expiresAt) < new Date()) {
           return res.status(400).send("Access code has expired");
         }
-        
+
         validCode = code;
       }
 
@@ -166,53 +166,56 @@ export function setupAuth(app: Express) {
       const [existingUser] = await db
         .select()
         .from(users)
-        .where(eq(users.username, username))
-        .limit(1);
-
-      if (existingUser) {
-        return res.status(400).send("Username already exists");
-      }
-
-      // Check if email already exists
-      const [existingEmail] = await db
-        .select()
-        .from(users)
         .where(eq(users.email, email))
         .limit(1);
 
-      if (existingEmail) {
+      if (existingUser) {
         return res.status(400).send("Email already exists");
       }
 
       // Hash the password
       const hashedPassword = await crypto.hash(password);
 
-      // Create the new user
-      // Create the new user
+      // Create the new user with explicit subscription status
+      const userData = {
+        username,
+        password: hashedPassword,
+        email,
+        userType,
+        company,
+        firstName,
+        lastName,
+        subscriptionStatus: validCode ? "pro" : subscriptionStatus, // Use provided status or 'pro' if valid code
+        accessCodeId: validCode?.id || null,
+      };
+
+      console.log("Creating user with data:", {
+        ...userData,
+        password: '[REDACTED]'
+      });
+
       const [newUser] = await db
         .insert(users)
-        .values({
-          username,
-          password: hashedPassword,
-          email,
-          userType,
-          company,
-          firstName,
-          lastName,
-          subscriptionStatus: validCode ? "pro" : "free",
-          accessCodeId: validCode?.id || null,
-        })
+        .values(userData)
         .returning();
 
-      // Mark the access code as used
-      await db
-        .update(accessCodes)
-        .set({
-          isUsed: true,
-          usedAt: new Date(),
-          usedBy: newUser.id,
-        })
-        .where(eq(accessCodes.id, validCode.id));
+      console.log("User created successfully:", {
+        id: newUser.id,
+        email: newUser.email,
+        subscriptionStatus: newUser.subscriptionStatus
+      });
+
+      // Mark the access code as used if applicable
+      if (validCode) {
+        await db
+          .update(accessCodes)
+          .set({
+            isUsed: true,
+            usedAt: new Date(),
+            usedBy: newUser.id,
+          })
+          .where(eq(accessCodes.id, validCode.id));
+      }
 
       req.login(newUser, (err) => {
         if (err) {
@@ -229,19 +232,12 @@ export function setupAuth(app: Express) {
         });
       });
     } catch (error) {
+      console.error("Registration error:", error);
       next(error);
     }
   });
 
   app.post("/api/login", (req, res, next) => {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({
-        message: "Email and password are required"
-      });
-    }
-
     passport.authenticate("local", (err: any, user: Express.User, info: IVerifyOptions) => {
       if (err) {
         console.error("Login error:", err);
