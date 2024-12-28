@@ -430,7 +430,7 @@ export default function SettingsPage() {
                             Upgrade to Pro to unlock all features including unlimited property analyses,
                             advanced metrics, and priority support.
                           </p>
-                          <Button 
+                          <Button
                             onClick={initiateProUpgrade}
                             className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
                           >
@@ -445,8 +445,8 @@ export default function SettingsPage() {
                           </p>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 className="w-full text-destructive hover:text-destructive"
                               >
                                 Downgrade to Free
@@ -465,6 +465,7 @@ export default function SettingsPage() {
                                 <AlertDialogAction
                                   onClick={async () => {
                                     try {
+                                      console.log('Initiating subscription downgrade...');
                                       const response = await fetch('/api/subscription/downgrade', {
                                         method: 'POST',
                                         credentials: 'include'
@@ -474,12 +475,16 @@ export default function SettingsPage() {
                                         throw new Error(await response.text());
                                       }
 
+                                      const result = await response.json();
+                                      console.log('Downgrade scheduled:', result);
+
                                       queryClient.invalidateQueries({ queryKey: ['user'] });
                                       toast({
                                         title: "Plan Update Scheduled",
-                                        description: "Your account will be downgraded to Free at the end of your current billing cycle.",
+                                        description: `Your account will be downgraded to Free at the end of your current billing cycle (${new Date(result.expiryDate).toLocaleDateString()}).`,
                                       });
                                     } catch (error) {
+                                      console.error('Error scheduling downgrade:', error);
                                       toast({
                                         title: "Error",
                                         description: error instanceof Error ? error.message : "Failed to schedule plan downgrade",

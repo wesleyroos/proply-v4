@@ -26,8 +26,11 @@ export const users = pgTable("users", {
   companyLogo: text("company_logo"),
   subscriptionStatus: text("subscription_status").default("free").notNull(),
   subscriptionExpiryDate: timestamp("subscription_expiry_date"),
+  subscriptionStartDate: timestamp("subscription_start_date"),
+  pendingDowngrade: boolean("pending_downgrade").default(false),
   isAdmin: boolean("is_admin").default(false).notNull(),
   accessCodeId: integer("access_code_id"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const properties = pgTable("properties", {
