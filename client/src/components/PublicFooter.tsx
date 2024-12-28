@@ -43,6 +43,8 @@ export default function PublicFooter() {
               <span>|</span>
               <Link href="/rent-compare">Rent Compare</Link>
               <span>|</span>
+              <Link href="/blog">Blog</Link>
+              <span>|</span>
               <Link href="/pricing">Pricing</Link>
               <span>|</span>
               <Link href="/contact">Contact</Link>

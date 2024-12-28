@@ -13,6 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import PricingPage from "./pages/PricingPage";
+import BlogPage from "./pages/BlogPage";
 import PropertyAnalyzerProductPage from "./pages/PropertyAnalyzerProductPage";
 import RentComparePage from "./pages/RentComparePage";
 import DashboardPage from "./pages/DashboardPage";
@@ -72,6 +73,8 @@ function App() {
           <Route path="/login" component={LoginPage} />
           <Route path="/register" component={RegisterPage} />
           <Route path="/pricing" component={PricingPage} />
+          <Route path="/blog" component={BlogPage} />
+          <Route path="/blog/:slug" component={BlogPage} />
           <Route path="/property-analyzer" component={PropertyAnalyzerProductPage} />
           <Route path="/rent-compare" component={RentComparePage} />
           <Route path="/privacy" component={PrivacyPage} />

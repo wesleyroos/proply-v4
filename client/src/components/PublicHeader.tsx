@@ -24,6 +24,9 @@ export default function PublicHeader() {
             <Link href="/rent-compare">
               <Button variant="ghost">Rent Compare</Button>
             </Link>
+            <Link href="/blog">
+              <Button variant="ghost">Blog</Button>
+            </Link>
             <Link href="/pricing">
               <Button variant="ghost">Pricing</Button>
             </Link>
