@@ -23,10 +23,24 @@ export default function PaymentSuccessPage() {
         const customStr1 = params.get('custom_str1');
 
         if (!customStr1) {
-          throw new Error('Registration data not found');
+          throw new Error('Registration data not found in URL parameters');
         }
 
-        const compressed = JSON.parse(decodeURIComponent(customStr1));
+        console.log('Raw customStr1:', customStr1);
+
+        let compressed;
+        try {
+          compressed = JSON.parse(decodeURIComponent(customStr1));
+        } catch (e) {
+          console.error('Error parsing customStr1:', e);
+          throw new Error('Failed to parse registration data');
+        }
+
+        console.log('Decoded compressed data:', compressed);
+
+        if (!compressed.e || !compressed.p) {
+          throw new Error('Invalid registration data format');
+        }
 
         // Expand the compressed registration data
         const registrationData = {
@@ -34,19 +48,23 @@ export default function PaymentSuccessPage() {
           password: compressed.p,
           firstName: compressed.f,
           lastName: compressed.l,
-          userType: compressed.t,
-          subscriptionStatus: compressed.s
+          userType: compressed.t || 'individual',
+          subscriptionStatus: compressed.s || 'pro'
         };
+
+        console.log('Registration data prepared:', { 
+          ...registrationData,
+          password: '[REDACTED]' 
+        });
 
         // Register the user
         await register({
           username: registrationData.email,
           email: registrationData.email,
           password: registrationData.password,
-          userType: registrationData.userType || 'individual',
+          userType: registrationData.userType,
           firstName: registrationData.firstName,
           lastName: registrationData.lastName,
-          company: registrationData.company,
           subscriptionStatus: registrationData.subscriptionStatus
         });
 
@@ -55,7 +73,7 @@ export default function PaymentSuccessPage() {
           username: registrationData.email,
           email: registrationData.email,
           password: registrationData.password,
-          userType: registrationData.userType || 'individual'
+          userType: registrationData.userType
         });
 
         // Update UI state
@@ -66,6 +84,13 @@ export default function PaymentSuccessPage() {
         console.error('Payment success processing error:', error);
         setError(error instanceof Error ? error.message : "Failed to complete registration");
         setIsProcessing(false);
+
+        // Show error toast
+        toast({
+          variant: "destructive",
+          title: "Registration Error",
+          description: error instanceof Error ? error.message : "Failed to complete registration"
+        });
       }
     };
 
