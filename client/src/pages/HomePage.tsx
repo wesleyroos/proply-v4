@@ -58,34 +58,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Trusted By Section */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-12 items-center">
-            <div className="text-right">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Trusted By:
-              </h2>
-            </div>
-            <img
-              src="/images/partners/nox-properties.jpg"
-              alt="Nox Properties"
-              className="h-20 object-contain justify-self-center"
-            />
-            <img
-              src="/images/partners/prospr-management.jpg"
-              alt="Prospr Management"
-              className="h-20 object-contain justify-self-center"
-            />
-            <img
-              src="/images/partners/sothebys.jpg"
-              alt="Sotheby's International Realty"
-              className="h-20 object-contain justify-self-center"
-            />
-          </div>
-        </div>
-      </section>
-
       {/* SaaS Product Section */}
       <section id="saas" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -94,7 +66,8 @@ export default function HomePage() {
               Property Analyzer
             </h2>
             <p className="mt-4 text-xl text-gray-600">
-              Comprehensive on-platform property analysis for investors and professionals
+              Comprehensive on-platform property analysis for investors and
+              professionals
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -153,9 +126,10 @@ export default function HomePage() {
                   For Property Investors
                 </h4>
                 <p className="text-gray-600">
-                  Make confident investment decisions with our detailed financial modeling
-                  and market analysis. Get instant insights into property potential, ROI
-                  calculations, and future value projections based on real market data.
+                  Make confident investment decisions with our detailed
+                  financial modeling and market analysis. Get instant insights
+                  into property potential, ROI calculations, and future value
+                  projections based on real market data.
                 </p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -163,9 +137,9 @@ export default function HomePage() {
                   For Real Estate Professionals
                 </h4>
                 <p className="text-gray-600">
-                  Elevate your client service with professional-grade property analysis.
-                  Present compelling investment cases backed by comprehensive data and
-                  detailed financial projections.
+                  Elevate your client service with professional-grade property
+                  analysis. Present compelling investment cases backed by
+                  comprehensive data and detailed financial projections.
                 </p>
               </div>
             </div>
@@ -177,9 +151,7 @@ export default function HomePage() {
       <section id="comparison" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">
-              Rent Compare
-            </h2>
+            <h2 className="text-3xl font-bold text-gray-900">Rent Compare</h2>
             <p className="mt-4 text-xl text-gray-600">
               Compare long-term vs short-term rental potential for your property
             </p>
@@ -238,10 +210,11 @@ export default function HomePage() {
                   For Management Companies
                 </h4>
                 <p className="text-gray-600">
-                  Convert prospects into clients with confidence using our comprehensive
-                  data-driven analysis. Show potential clients exactly how much more they
-                  could earn with professional Airbnb management, backed by precise market
-                  data and revenue projections.
+                  Convert prospects into clients with confidence using our
+                  comprehensive data-driven analysis. Show potential clients
+                  exactly how much more they could earn with professional Airbnb
+                  management, backed by precise market data and revenue
+                  projections.
                 </p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -249,10 +222,10 @@ export default function HomePage() {
                   For Individual Hosts
                 </h4>
                 <p className="text-gray-600">
-                  Whether you're considering Airbnb hosting or already managing your
-                  property, get detailed insights into your property's true potential.
-                  Make informed decisions about your investment with actual market data,
-                  not guesswork.
+                  Whether you're considering Airbnb hosting or already managing
+                  your property, get detailed insights into your property's true
+                  potential. Make informed decisions about your investment with
+                  actual market data, not guesswork.
                 </p>
               </div>
             </div>
@@ -277,7 +250,9 @@ export default function HomePage() {
                 <Settings className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">The Challenge</h3>
                 <p className="text-gray-600">
-                  Real estate agencies need quick and accurate property analysis when uploading properties to the market to better assist their clients with transactions.
+                  Real estate agencies need quick and accurate property analysis
+                  when uploading properties to the market to better assist their
+                  clients with transactions.
                 </p>
               </CardContent>
             </Card>
@@ -286,8 +261,9 @@ export default function HomePage() {
                 <Code className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">The Solution</h3>
                 <p className="text-gray-600">
-                  Automatic property analysis reports generated instantly when you
-                  list properties, seamlessly integrated with your existing workflow.
+                  Automatic property analysis reports generated instantly when
+                  you list properties, seamlessly integrated with your existing
+                  workflow.
                 </p>
               </CardContent>
             </Card>
@@ -324,10 +300,10 @@ export default function HomePage() {
                   For Real Estate Agencies
                 </h4>
                 <p className="text-gray-600">
-                  Streamline your property listing process with automatic analysis reports.
-                  Every time you upload a new property, our system generates comprehensive
-                  insights that help your agents close deals faster and provide more value
-                  to clients.
+                  Streamline your property listing process with automatic
+                  analysis reports. Every time you upload a new property, our
+                  system generates comprehensive insights that help your agents
+                  close deals faster and provide more value to clients.
                 </p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -335,12 +311,39 @@ export default function HomePage() {
                   For Property Platforms
                 </h4>
                 <p className="text-gray-600">
-                  Enhance your platform's value proposition with enterprise-grade property
-                  analysis. Our API seamlessly integrates with your existing systems to
-                  provide automatic, accurate property insights at scale.
+                  Enhance your platform's value proposition with
+                  enterprise-grade property analysis. Our API seamlessly
+                  integrates with your existing systems to provide automatic,
+                  accurate property insights at scale.
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trusted By Section */}
+      <section className="py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-8 items-center">
+            <div className="text-right">
+              <h2 className="text-2xl font-bold text-gray-900">Trusted By:</h2>
+            </div>
+            <img
+              src="/images/partners/nox-properties.jpg"
+              alt="Nox Properties"
+              className="h-21 object-contain justify-self-center"
+            />
+            <img
+              src="/images/partners/prospr-management.jpg"
+              alt="Prospr Management"
+              className="h-21 object-contain justify-self-center"
+            />
+            <img
+              src="/images/partners/sothebys.jpg"
+              alt="Sotheby's International Realty"
+              className="h-21 object-contain justify-self-center"
+            />
           </div>
         </div>
       </section>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +29,9 @@ export default function AuthPage() {
   const { login, register } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [, setLocation] = useLocation();
+  const [searchParams] = useState(new URLSearchParams(window.location.search));
+  const selectedPlan = searchParams.get('plan') || 'free';
 
   const loginForm = useForm<InsertUser>({
     defaultValues: {
@@ -42,16 +45,15 @@ export default function AuthPage() {
       username: "",
       password: "",
       email: "",
-      userType: "individual", // default value
+      userType: "individual",
       company: "",
       firstName: "",
       lastName: "",
       accessCode: "",
+      plan: selectedPlan,
     },
   });
 
-  const [, setLocation] = useLocation();
-  
   const handleLogin = async (data: InsertUser) => {
     try {
       setIsLoading(true);
@@ -70,27 +72,32 @@ export default function AuthPage() {
     try {
       setIsLoading(true);
       setError(null);
-      
+
+      // Check if pro plan and no access code, redirect to payment
+      if (selectedPlan === 'pro' && !data.accessCode) {
+        setLocation('/payment');
+        return;
+      }
+
       // Prepare registration data
       const registrationData = {
-        username: data.email, // Use email as username
+        username: data.email,
         email: data.email,
         password: data.password,
         userType: data.userType,
         company: data.company,
         firstName: data.firstName,
         lastName: data.lastName,
-        accessCode: data.accessCode
+        accessCode: data.accessCode,
+        plan: selectedPlan
       };
 
       await register(registrationData);
-      
-      // After successful registration, log in
       await login({
         email: data.email,
         password: data.password
       });
-      
+
       setLocation('/dashboard');
     } catch (error) {
       console.error('Registration error:', error);
@@ -114,11 +121,11 @@ export default function AuthPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-center text-[#262626]">
-              Get started with Proply
+              {selectedPlan === 'pro' ? 'Get Started with Pro' : 'Get Started with Proply'}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login">
+            <Tabs defaultValue="register">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Register</TabsTrigger>
@@ -193,23 +200,26 @@ export default function AuthPage() {
                     onSubmit={registerForm.handleSubmit(handleRegister)}
                     className="space-y-4"
                   >
-                    <FormField
-                      control={registerForm.control}
-                      name="accessCode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Access Code</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Enter your access code (optional)"
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {selectedPlan === 'pro' && (
+                      <FormField
+                        control={registerForm.control}
+                        name="accessCode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Access Code</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Enter your access code (optional)"
+                                disabled={isLoading}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
                     <FormField
                       control={registerForm.control}
                       name="email"
@@ -229,6 +239,7 @@ export default function AuthPage() {
                         </FormItem>
                       )}
                     />
+
                     <FormField
                       control={registerForm.control}
                       name="userType"
@@ -253,23 +264,8 @@ export default function AuthPage() {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={registerForm.control}
-                      name="company"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Company Name (Optional)</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="grid grid-cols-2 gap-4 mb-4">
+
+                    <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={registerForm.control}
                         name="firstName"
@@ -307,25 +303,6 @@ export default function AuthPage() {
                         )}
                       />
                     </div>
-                    <FormField
-                      control={registerForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type="email"
-                              autoComplete="email"
-                              disabled={isLoading}
-                              required
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
 
                     <FormField
                       control={registerForm.control}
@@ -352,7 +329,11 @@ export default function AuthPage() {
                       className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
                       disabled={isLoading}
                     >
-                      {isLoading ? "Creating Account..." : "Create Account"}
+                      {isLoading ? "Creating Account..." : (
+                        selectedPlan === 'pro' && !registerForm.getValues('accessCode') 
+                          ? "Continue to Payment" 
+                          : "Create Account"
+                      )}
                     </Button>
                   </form>
                 </Form>

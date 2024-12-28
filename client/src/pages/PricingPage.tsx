@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, AlertCircle } from "lucide-react";
+import { Check } from "lucide-react";
 import PublicHeader from "@/components/PublicHeader";
 import PublicFooter from "@/components/PublicFooter";
 
@@ -48,7 +48,7 @@ export default function PricingPage() {
                 </li>
               </ul>
               <Button className="w-full mt-8" variant="outline" asChild>
-                <Link href="/register">Get Started</Link>
+                <Link href="/register?plan=free">Get Started</Link>
               </Button>
             </CardContent>
           </Card>
