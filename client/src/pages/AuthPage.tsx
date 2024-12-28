@@ -66,7 +66,12 @@ export default function AuthPage() {
     try {
       setIsLoading(true);
       setError(null);
-      await login(data);
+      await login({
+        username: data.email,
+        email: data.email,
+        password: data.password,
+        userType: 'individual' // Default value for login
+      });
       setLocation('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
@@ -80,7 +85,7 @@ export default function AuthPage() {
     const isDevelopment = import.meta.env.DEV;
 
     // Get sandbox credentials
-    const merchantId = isDevelopment 
+    const merchantId = isDevelopment
       ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
       : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
 
