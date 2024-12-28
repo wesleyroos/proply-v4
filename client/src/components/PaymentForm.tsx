@@ -3,13 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/hooks/use-user";
+import { useToast } from "@/hooks/use-toast";
 
-export default function PaymentForm() {
+export default function PaymentForm({ registrationData = null }) {
   const { user } = useUser();
+  const { toast } = useToast();
   const form = useForm({
     defaultValues: {
-      name: "",
-      email: "",
+      name: registrationData?.firstName || "",
+      email: registrationData?.email || "",
     },
   });
 
@@ -21,16 +23,31 @@ export default function PaymentForm() {
   const onSubmit = (data: PaymentFormData) => {
     // Initialize PayFast payment using sandbox credentials in development
     const isDevelopment = import.meta.env.DEV;
+
+    // Get sandbox credentials
+    const merchantId = isDevelopment 
+      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
+      : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
+
+    const merchantKey = isDevelopment
+      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY
+      : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
+
+    if (!merchantId || !merchantKey) {
+      toast({
+        title: "Error",
+        description: "Payment configuration is missing. Please try again later.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const paymentData = {
-      merchant_id: isDevelopment 
-        ? import.meta.env.PAYFAST_SANDBOX_MERCHANT_ID 
-        : import.meta.env.PAYFAST_MERCHANT_ID,
-      merchant_key: isDevelopment
-        ? import.meta.env.PAYFAST_SANDBOX_MERCHANT_KEY
-        : import.meta.env.PAYFAST_MERCHANT_KEY,
-      return_url: window.location.origin + "/settings?payment=success",
-      cancel_url: window.location.origin + "/settings?payment=cancelled",
-      notify_url: window.location.origin + "/api/payment-webhook",
+      merchant_id: merchantId,
+      merchant_key: merchantKey,
+      return_url: `${window.location.origin}/settings?payment=success`,
+      cancel_url: `${window.location.origin}/settings?payment=cancelled`,
+      notify_url: `${window.location.origin}/api/payment-webhook`,
       name_first: data.name,
       email_address: data.email,
       amount: "2000.00", // R2,000 as shown in pricing
@@ -40,7 +57,15 @@ export default function PaymentForm() {
       recurring_amount: "2000.00",
       frequency: "3", // Monthly
       cycles: "0", // Unlimited cycles
-      user_id: user?.id,
+      custom_str1: registrationData 
+        ? JSON.stringify({
+            ...registrationData,
+            subscriptionStatus: 'pro'
+          })
+        : JSON.stringify({
+            userId: user?.id,
+            subscriptionStatus: 'pro'
+          }),
     };
 
     // Create form and submit to PayFast

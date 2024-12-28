@@ -24,6 +24,17 @@ import {
 } from "@/components/ui/select";
 import { useUser } from "../hooks/use-user";
 import type { InsertUser } from "@db/schema";
+import PaymentForm from '@/components/PaymentForm'; // Import the PaymentForm component
+
+interface ProfileFormData {
+  firstName: string;
+  lastName: string;
+  password: string;
+  email: string;
+  userType: string;
+  company?: string;
+  accessCode?: string;
+}
 
 export default function AuthPage() {
   const { login, register } = useUser();
@@ -32,6 +43,8 @@ export default function AuthPage() {
   const [, setLocation] = useLocation();
   const [searchParams] = useState(new URLSearchParams(window.location.search));
   const [selectedPlan, setSelectedPlan] = useState(searchParams.get('plan') || 'free');
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [registrationData, setRegistrationData] = useState<ProfileFormData | null>(null);
 
   const loginForm = useForm<InsertUser>({
     defaultValues: {
@@ -40,23 +53,17 @@ export default function AuthPage() {
     },
   });
 
-  const registerForm = useForm<InsertUser & { accessCode: string }>({
+  const registerForm = useForm<ProfileFormData>({
     defaultValues: {
-      username: "",
-      password: "",
       email: "",
-      userType: "individual",
-      company: "",
+      password: "",
       firstName: "",
       lastName: "",
+      userType: "individual",
+      company: "",
       accessCode: "",
     },
   });
-
-  // Update form when plan changes
-  useEffect(() => {
-    registerForm.setValue('plan', selectedPlan);
-  }, [selectedPlan]);
 
   const handleLogin = async (data: InsertUser) => {
     try {
@@ -72,59 +79,15 @@ export default function AuthPage() {
     }
   };
 
-  const initiatePayFastPayment = (formData: any) => {
-    const isDevelopment = import.meta.env.DEV;
-    const paymentData = {
-      merchant_id: isDevelopment 
-        ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID 
-        : import.meta.env.VITE_PAYFAST_MERCHANT_ID,
-      merchant_key: isDevelopment
-        ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY
-        : import.meta.env.VITE_PAYFAST_MERCHANT_KEY,
-      return_url: window.location.origin + "/settings?payment=success",
-      cancel_url: window.location.origin + "/settings?payment=cancelled",
-      notify_url: window.location.origin + "/api/payment-webhook",
-      name_first: formData.firstName,
-      email_address: formData.email,
-      amount: "2000.00", // R2,000 as shown in pricing
-      item_name: "Proply Pro Subscription",
-      subscription_type: "1", // Monthly subscription
-      billing_date: new Date().toISOString().split('T')[0], // Today
-      recurring_amount: "2000.00",
-      frequency: "3", // Monthly
-      cycles: "0", // Unlimited cycles
-      custom_str1: JSON.stringify(formData), // Store registration data
-    };
-
-    // Create form and submit to PayFast
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = isDevelopment
-      ? "https://sandbox.payfast.co.za/eng/process"
-      : "https://www.payfast.co.za/eng/process";
-
-    Object.entries(paymentData).forEach(([key, value]) => {
-      if (value !== undefined) {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = value.toString();
-        form.appendChild(input);
-      }
-    });
-
-    document.body.appendChild(form);
-    form.submit();
-  };
-
-  const handleRegister = async (data: any) => {
+  const handleRegister = async (data: ProfileFormData) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Check if pro plan and no access code, redirect to payment
+      // Check if pro plan and no access code, show payment form
       if (selectedPlan === 'pro' && !data.accessCode) {
-        initiatePayFastPayment(data);
+        setRegistrationData(data);
+        setShowPaymentForm(true);
         return;
       }
 
@@ -155,6 +118,33 @@ export default function AuthPage() {
       setIsLoading(false);
     }
   };
+
+  // If showing payment form, render PaymentForm component
+  if (showPaymentForm) {
+    return (
+      <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md mb-8">
+          <Link href="/">
+            <img
+              src="/proply-logo-1.png"
+              alt="Proply"
+              className="h-12 mx-auto mb-8 cursor-pointer"
+            />
+          </Link>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center text-[#262626]">
+                Complete Pro Subscription
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PaymentForm registrationData={registrationData} />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center p-4">
@@ -416,8 +406,8 @@ export default function AuthPage() {
                       disabled={isLoading}
                     >
                       {isLoading ? "Creating Account..." : (
-                        selectedPlan === 'pro' && !registerForm.getValues('accessCode') 
-                          ? "Continue to Payment" 
+                        selectedPlan === 'pro' && !registerForm.getValues('accessCode')
+                          ? "Continue to Payment"
                           : "Create Account"
                       )}
                     </Button>
