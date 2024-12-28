@@ -58,6 +58,32 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Trusted By Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-center text-gray-900 mb-12">
+            Trusted By
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center justify-items-center">
+            <img
+              src="/images/partners/nox-properties.jpg"
+              alt="Nox Properties"
+              className="h-60 object-contain"
+            />
+            <img
+              src="/images/partners/prospr-management.jpg"
+              alt="Prospr Management"
+              className="h-60 object-contain"
+            />
+            <img
+              src="/images/partners/sothebys.jpg"
+              alt="Sotheby's International Realty"
+              className="h-60 object-contain"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* SaaS Product Section */}
       <section id="saas" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,14 +123,18 @@ export default function HomePage() {
                 <DollarSign className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Start Analyzing</h3>
                 <div className="flex flex-col gap-4 mt-4">
-                  <Button variant="outline" className="w-full">
-                    Learn More
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                  <Button className="w-full">
-                    Try Free Analysis
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <Link href="/property-analyzer">
+                    <Button variant="outline" className="w-full">
+                      Learn More
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button className="w-full">
+                      Try Free Analysis
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -121,8 +151,8 @@ export default function HomePage() {
                   For Property Investors
                 </h4>
                 <p className="text-gray-600">
-                  Make confident investment decisions with our detailed financial modeling 
-                  and market analysis. Get instant insights into property potential, ROI 
+                  Make confident investment decisions with our detailed financial modeling
+                  and market analysis. Get instant insights into property potential, ROI
                   calculations, and future value projections based on real market data.
                 </p>
               </div>
@@ -131,8 +161,8 @@ export default function HomePage() {
                   For Real Estate Professionals
                 </h4>
                 <p className="text-gray-600">
-                  Elevate your client service with professional-grade property analysis. 
-                  Present compelling investment cases backed by comprehensive data and 
+                  Elevate your client service with professional-grade property analysis.
+                  Present compelling investment cases backed by comprehensive data and
                   detailed financial projections.
                 </p>
               </div>
@@ -178,14 +208,18 @@ export default function HomePage() {
                 <BarChart2 className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Start Comparing</h3>
                 <div className="flex flex-col gap-4 mt-4">
-                  <Button variant="outline" className="w-full">
-                    Learn More
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                  <Button className="w-full">
-                    Compare Now
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <Link href="/rent-compare">
+                    <Button variant="outline" className="w-full">
+                      Learn More
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button className="w-full">
+                      Compare Now
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -202,9 +236,9 @@ export default function HomePage() {
                   For Management Companies
                 </h4>
                 <p className="text-gray-600">
-                  Convert prospects into clients with confidence using our comprehensive 
-                  data-driven analysis. Show potential clients exactly how much more they 
-                  could earn with professional Airbnb management, backed by precise market 
+                  Convert prospects into clients with confidence using our comprehensive
+                  data-driven analysis. Show potential clients exactly how much more they
+                  could earn with professional Airbnb management, backed by precise market
                   data and revenue projections.
                 </p>
               </div>
@@ -213,9 +247,9 @@ export default function HomePage() {
                   For Individual Hosts
                 </h4>
                 <p className="text-gray-600">
-                  Whether you're considering Airbnb hosting or already managing your 
-                  property, get detailed insights into your property's true potential. 
-                  Make informed decisions about your investment with actual market data, 
+                  Whether you're considering Airbnb hosting or already managing your
+                  property, get detailed insights into your property's true potential.
+                  Make informed decisions about your investment with actual market data,
                   not guesswork.
                 </p>
               </div>
@@ -260,14 +294,18 @@ export default function HomePage() {
                 <Database className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Get API Access</h3>
                 <div className="flex flex-col gap-4 mt-4">
-                  <Button variant="outline" className="w-full">
-                    Learn More
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                  <Button className="w-full">
-                    View Enterprise Plans
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <Link href="/property-analyzer">
+                    <Button variant="outline" className="w-full">
+                      Learn More
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/pricing">
+                    <Button className="w-full">
+                      View Enterprise Plans
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -284,9 +322,9 @@ export default function HomePage() {
                   For Real Estate Agencies
                 </h4>
                 <p className="text-gray-600">
-                  Streamline your property listing process with automatic analysis reports. 
-                  Every time you upload a new property, our system generates comprehensive 
-                  insights that help your agents close deals faster and provide more value 
+                  Streamline your property listing process with automatic analysis reports.
+                  Every time you upload a new property, our system generates comprehensive
+                  insights that help your agents close deals faster and provide more value
                   to clients.
                 </p>
               </div>
@@ -295,38 +333,12 @@ export default function HomePage() {
                   For Property Platforms
                 </h4>
                 <p className="text-gray-600">
-                  Enhance your platform's value proposition with enterprise-grade property 
-                  analysis. Our API seamlessly integrates with your existing systems to 
+                  Enhance your platform's value proposition with enterprise-grade property
+                  analysis. Our API seamlessly integrates with your existing systems to
                   provide automatic, accurate property insights at scale.
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trusted By Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-center text-gray-900 mb-12">
-            Trusted By
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center justify-items-center">
-            <img
-              src="/images/partners/nox-properties.jpg"
-              alt="Nox Properties"
-              className="h-12 object-contain"
-            />
-            <img
-              src="/images/partners/prospr-management.jpg"
-              alt="Prospr Management"
-              className="h-12 object-contain"
-            />
-            <img
-              src="/images/partners/sothebys.jpg"
-              alt="Sotheby's International Realty"
-              className="h-12 object-contain"
-            />
           </div>
         </div>
       </section>
