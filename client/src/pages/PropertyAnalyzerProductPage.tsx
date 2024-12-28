@@ -32,7 +32,7 @@ export default function PropertyAnalyzerProductPage() {
             </p>
             <div className="flex justify-center gap-4">
               <Button size="lg" variant="secondary" asChild>
-                <Link href="/register">Start Free Analysis</Link>
+                <Link href="/register">Start Free Trial</Link>
               </Button>
               <Button
                 size="lg"
@@ -123,7 +123,7 @@ export default function PropertyAnalyzerProductPage() {
                 </li>
               </ul>
               <Button className="mt-8" asChild>
-                <Link href="/pricing">Get API Access</Link>
+                <Link href="/register">Get API Access</Link>
               </Button>
             </div>
 
@@ -160,7 +160,7 @@ export default function PropertyAnalyzerProductPage() {
           </p>
           <div className="flex justify-center gap-4">
             <Button size="lg" variant="secondary" asChild>
-              <Link href="/register">Get Started Free</Link>
+              <Link href="/register">Start Free Trial</Link>
             </Button>
             <Button
               size="lg"

@@ -43,15 +43,16 @@ export default function HomePage() {
               decision-making in real estate.
             </p>
             <div className="flex justify-center gap-4">
-              <Button size="lg" variant="secondary">
-                Get Started
+              <Button size="lg" variant="secondary" asChild>
+                <Link href="/register">Get Started</Link>
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 className="bg-white/10 text-white border-white hover:bg-white/20"
+                asChild
               >
-                View Pricing
+                <Link href="/pricing">View Pricing</Link>
               </Button>
             </div>
           </div>
@@ -358,15 +359,16 @@ export default function HomePage() {
             Join industry leaders making data-driven decisions with Proply
           </p>
           <div className="flex justify-center gap-4">
-            <Button size="lg" variant="secondary">
-              Get Started Free
+            <Button size="lg" variant="secondary" asChild>
+              <Link href="/register">Get Started Free</Link>
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="bg-white/10 text-white border-white hover:bg-white/20"
+              asChild
             >
-              Contact Sales
+              <Link href="/contact">Contact Sales</Link>
             </Button>
           </div>
         </div>

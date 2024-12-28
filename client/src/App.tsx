@@ -9,7 +9,8 @@ import PropertiesPage from "./pages/PropertiesPage";
 import SettingsPage from "./pages/SettingsPage";
 import AdminPage from "./pages/AdminPage";
 import AccessCodePage from "./pages/AccessCodePage";
-import AuthPage from "./pages/AuthPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import PricingPage from "./pages/PricingPage";
 import PropertyAnalyzerProductPage from "./pages/PropertyAnalyzerProductPage";
@@ -68,8 +69,8 @@ function App() {
         <Switch>
           {/* Public routes */}
           <Route path="/" component={HomePage} />
-          <Route path="/login" component={AuthPage} />
-          <Route path="/register" component={AuthPage} />
+          <Route path="/login" component={LoginPage} />
+          <Route path="/register" component={RegisterPage} />
           <Route path="/pricing" component={PricingPage} />
           <Route path="/property-analyzer" component={PropertyAnalyzerProductPage} />
           <Route path="/rent-compare" component={RentComparePage} />
@@ -120,7 +121,6 @@ function App() {
   );
 }
 
-// fallback 404 not found page
 function NotFound() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
