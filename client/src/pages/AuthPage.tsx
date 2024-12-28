@@ -50,7 +50,6 @@ export default function AuthPage() {
       firstName: "",
       lastName: "",
       accessCode: "",
-      plan: selectedPlan,
     },
   });
 
@@ -73,6 +72,51 @@ export default function AuthPage() {
     }
   };
 
+  const initiatePayFastPayment = (formData: any) => {
+    const isDevelopment = import.meta.env.DEV;
+    const paymentData = {
+      merchant_id: isDevelopment 
+        ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID 
+        : import.meta.env.VITE_PAYFAST_MERCHANT_ID,
+      merchant_key: isDevelopment
+        ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY
+        : import.meta.env.VITE_PAYFAST_MERCHANT_KEY,
+      return_url: window.location.origin + "/settings?payment=success",
+      cancel_url: window.location.origin + "/settings?payment=cancelled",
+      notify_url: window.location.origin + "/api/payment-webhook",
+      name_first: formData.firstName,
+      email_address: formData.email,
+      amount: "2000.00", // R2,000 as shown in pricing
+      item_name: "Proply Pro Subscription",
+      subscription_type: "1", // Monthly subscription
+      billing_date: new Date().toISOString().split('T')[0], // Today
+      recurring_amount: "2000.00",
+      frequency: "3", // Monthly
+      cycles: "0", // Unlimited cycles
+      custom_str1: JSON.stringify(formData), // Store registration data
+    };
+
+    // Create form and submit to PayFast
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = isDevelopment
+      ? "https://sandbox.payfast.co.za/eng/process"
+      : "https://www.payfast.co.za/eng/process";
+
+    Object.entries(paymentData).forEach(([key, value]) => {
+      if (value !== undefined) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = value.toString();
+        form.appendChild(input);
+      }
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+  };
+
   const handleRegister = async (data: any) => {
     try {
       setIsLoading(true);
@@ -80,7 +124,7 @@ export default function AuthPage() {
 
       // Check if pro plan and no access code, redirect to payment
       if (selectedPlan === 'pro' && !data.accessCode) {
-        setLocation('/payment');
+        initiatePayFastPayment(data);
         return;
       }
 
@@ -94,7 +138,7 @@ export default function AuthPage() {
         firstName: data.firstName,
         lastName: data.lastName,
         accessCode: data.accessCode,
-        plan: selectedPlan
+        subscriptionStatus: selectedPlan
       };
 
       await register(registrationData);
@@ -200,6 +244,12 @@ export default function AuthPage() {
               </TabsContent>
 
               <TabsContent value="register">
+                {error && (
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
                 <Form {...registerForm}>
                   <form
                     onSubmit={registerForm.handleSubmit(handleRegister)}
