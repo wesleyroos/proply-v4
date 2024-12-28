@@ -52,7 +52,7 @@ export default function PropertiesPage() {
         throw new Error('Failed to fetch properties');
       }
       const data = await response.json();
-      console.log(`Fetched ${data.length} properties for user ${user?.id}`);
+      console.log(`Fetched ${data.length} properties:`, data);
       return data;
     }
   });
@@ -65,12 +65,14 @@ export default function PropertiesPage() {
     direction: 'asc' | 'desc';
   } | null>(null);
 
-  const filteredProperties = properties?.filter(property =>
-    property.propertyType === activeTab && (
-      property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.address.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  const filteredProperties = properties?.filter(property => {
+    const typeMatch = property.propertyType === activeTab || !property.propertyType;
+    const searchMatch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       property.address.toLowerCase().includes(searchTerm.toLowerCase());
+    return typeMatch && searchMatch;
+  });
+
+  console.log(`Filtered ${filteredProperties?.length} properties for type ${activeTab}:`, filteredProperties);
 
   const sortedProperties = filteredProperties?.sort((a, b) => {
     if (!sortConfig) return 0;
