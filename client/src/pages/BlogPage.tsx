@@ -30,7 +30,7 @@ export default function BlogPage() {
             <Card className="overflow-hidden">
               <div className="aspect-w-16 aspect-h-9 relative">
                 <img
-                  src="/images/blog/cape-town-rental.jpg"
+                  src="/images/blog/sophie-pascarella-de-klerk-cape-town-view.jpg"
                   alt="Cape Town Rental Property"
                   className="object-cover w-full"
                 />
@@ -75,7 +75,7 @@ function BlogPost() {
       <div className="relative h-[60vh] min-h-[400px]">
         <div className="absolute inset-0">
           <img
-            src="/images/blog/cape-town-rental.jpg"
+            src="/images/blog/sophie-pascarella-de-klerk-cape-town-view.jpg"
             alt="Cape Town Rental Property View"
             className="w-full h-full object-cover"
           />
