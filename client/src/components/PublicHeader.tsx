@@ -15,6 +15,9 @@ export default function PublicHeader() {
 
           {/* Navigation Links - Centered */}
           <div className="flex items-center gap-4">
+            <Link href="/">
+              <Button variant="ghost">Home</Button>
+            </Link>
             <Link href="/property-analyzer">
               <Button variant="ghost">Property Analyzer</Button>
             </Link>

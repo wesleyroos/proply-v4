@@ -6,7 +6,6 @@ export default function PublicFooter() {
     <footer className="bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-8 mb-8">
-          {/* Company Info */}
           <div>
             <img src="/proply-logo-1.png" alt="Proply" className="h-8 mb-4" />
             <p className="text-gray-600 mb-4">
@@ -21,7 +20,6 @@ export default function PublicFooter() {
             </p>
           </div>
 
-          {/* Newsletter */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Subscribe to Our Newsletter</h3>
             <div className="flex gap-2">
@@ -35,11 +33,12 @@ export default function PublicFooter() {
           </div>
         </div>
 
-        {/* Footer Links */}
         <div className="border-t pt-8 text-sm text-gray-600">
           <div className="flex flex-wrap gap-4 items-center justify-between">
             <p>© 2024 Proply. All rights reserved.</p>
             <div className="flex gap-4">
+              <Link href="/">Home</Link>
+              <span>|</span>
               <Link href="/property-analyzer">Property Analyzer</Link>
               <span>|</span>
               <Link href="/rent-compare">Rent Compare</Link>

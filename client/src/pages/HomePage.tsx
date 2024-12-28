@@ -43,16 +43,15 @@ export default function HomePage() {
               decision-making in real estate.
             </p>
             <div className="flex justify-center gap-4">
-              <Button size="lg" variant="secondary" asChild>
-                <Link href="/register">Get Started</Link>
+              <Button size="lg" variant="secondary">
+                Get Started
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 className="bg-white/10 text-white border-white hover:bg-white/20"
-                asChild
               >
-                <Link href="/pricing">View Pricing</Link>
+                View Pricing
               </Button>
             </div>
           </div>
@@ -98,18 +97,14 @@ export default function HomePage() {
                 <DollarSign className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Start Analyzing</h3>
                 <div className="flex flex-col gap-4 mt-4">
-                  <Link href="/property-analyzer" className="w-full">
-                    <Button variant="outline" className="w-full">
-                      Learn More
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Link href="/register" className="w-full">
-                    <Button className="w-full">
-                      Try Free Analysis
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <Button variant="outline" className="w-full">
+                    Learn More
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                  <Button className="w-full">
+                    Try Free Analysis
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -183,18 +178,14 @@ export default function HomePage() {
                 <BarChart2 className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Start Comparing</h3>
                 <div className="flex flex-col gap-4 mt-4">
-                  <Link href="/rent-compare" className="w-full">
-                    <Button variant="outline" className="w-full">
-                      Learn More
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Link href="/register" className="w-full">
-                    <Button className="w-full">
-                      Compare Now
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <Button variant="outline" className="w-full">
+                    Learn More
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                  <Button className="w-full">
+                    Compare Now
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -269,18 +260,14 @@ export default function HomePage() {
                 <Database className="h-12 w-12 text-[#1BA3FF] mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Get API Access</h3>
                 <div className="flex flex-col gap-4 mt-4">
-                  <Link href="/property-analyzer" className="w-full">
-                    <Button variant="outline" className="w-full">
-                      Learn More
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Link href="/pricing" className="w-full">
-                    <Button className="w-full">
-                      View Enterprise Plans
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <Button variant="outline" className="w-full">
+                    Learn More
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                  <Button className="w-full">
+                    View Enterprise Plans
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -318,6 +305,32 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Trusted By Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-center text-gray-900 mb-12">
+            Trusted By
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center justify-items-center">
+            <img
+              src="/images/partners/nox-properties.jpg"
+              alt="Nox Properties"
+              className="h-12 object-contain"
+            />
+            <img
+              src="/images/partners/prospr-management.jpg"
+              alt="Prospr Management"
+              className="h-12 object-contain"
+            />
+            <img
+              src="/images/partners/sothebys.jpg"
+              alt="Sotheby's International Realty"
+              className="h-12 object-contain"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA Section */}
       <section className="py-16 bg-[#1BA3FF]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -328,16 +341,15 @@ export default function HomePage() {
             Join industry leaders making data-driven decisions with Proply
           </p>
           <div className="flex justify-center gap-4">
-            <Button size="lg" variant="secondary" asChild>
-              <Link href="/register">Get Started Free</Link>
+            <Button size="lg" variant="secondary">
+              Get Started Free
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="bg-white/10 text-white border-white hover:bg-white/20"
-              asChild
             >
-              <Link href="/contact">Contact Sales</Link>
+              Contact Sales
             </Button>
           </div>
         </div>
