@@ -46,7 +46,7 @@ export default function PaymentSuccessPage() {
           throw new Error('Invalid registration data format');
         }
 
-        // Register the user
+        // Register the user with explicit pro subscription status
         await register({
           username: compressed.e,
           email: compressed.e,
@@ -54,7 +54,7 @@ export default function PaymentSuccessPage() {
           firstName: compressed.f,
           lastName: compressed.l,
           userType: compressed.t || 'individual',
-          subscriptionStatus: compressed.s || 'pro'
+          subscriptionStatus: 'pro' // Always set to pro since payment was successful
         });
 
         // Login the user
