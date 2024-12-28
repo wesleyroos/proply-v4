@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast"; 
 import {
   Form,
   FormControl,
@@ -43,6 +44,7 @@ export default function AuthPage() {
   const [, setLocation] = useLocation();
   const [searchParams] = useState(new URLSearchParams(window.location.search));
   const [selectedPlan, setSelectedPlan] = useState(searchParams.get('plan') || 'free');
+  const toast = useToast();
 
   const loginForm = useForm<InsertUser>({
     defaultValues: {
@@ -72,7 +74,7 @@ export default function AuthPage() {
         username: data.email,
         email: data.email,
         password: data.password,
-        userType: 'individual' // Default value for login
+        userType: 'individual' 
       });
       setLocation('/dashboard');
     } catch (error) {
@@ -86,7 +88,12 @@ export default function AuthPage() {
   const initiatePayFastPayment = (formData: ProfileFormData) => {
     const isDevelopment = import.meta.env.DEV;
 
-    // Get sandbox credentials
+    console.log('Initiating PayFast payment with form data:', {
+      ...formData,
+      password: '[REDACTED]',
+      plan: selectedPlan
+    });
+
     const merchantId = isDevelopment
       ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
       : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
@@ -96,21 +103,32 @@ export default function AuthPage() {
       : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
 
     if (!merchantId || !merchantKey) {
-      setError("Payment configuration is missing. Please try again later.");
+      toast({
+        title: "Error",
+        description: "Payment configuration is missing. Please try again later.",
+        variant: "destructive"
+      });
       return;
     }
 
-    // Minimize data size for PayFast's 255 char limit
     const registrationData = {
-      e: formData.email, // email
-      p: formData.password, // password
-      f: formData.firstName, // firstName
-      l: formData.lastName, // lastName
-      t: formData.userType, // userType
-      s: selectedPlan // subscriptionStatus - use the actual selected plan
+      e: formData.email, 
+      p: formData.password, 
+      f: formData.firstName, 
+      l: formData.lastName, 
+      t: formData.userType, 
+      s: selectedPlan 
     };
 
+    console.log('Compressed registration data:', {
+      ...registrationData,
+      p: '[REDACTED]',
+      selectedPlan,
+      formPlan: formData.plan
+    });
+
     const encodedData = encodeURIComponent(JSON.stringify(registrationData));
+    console.log('Encoded registration data length:', encodedData.length);
 
     const paymentData = {
       merchant_id: merchantId,
@@ -120,16 +138,15 @@ export default function AuthPage() {
       notify_url: `${window.location.origin}/api/payment-webhook`,
       name_first: formData.firstName,
       email_address: formData.email,
-      amount: "2000.00", // R2,000 as shown in pricing
+      amount: "2000.00",
       item_name: "Proply Pro Subscription",
-      subscription_type: "1", // Monthly subscription
-      billing_date: new Date().toISOString().split('T')[0], // Today
+      subscription_type: "1",
+      billing_date: new Date().toISOString().split('T')[0],
       recurring_amount: "2000.00",
-      frequency: "3", // Monthly
-      cycles: "0", // Unlimited cycles
+      frequency: "3",
+      cycles: "0"
     };
 
-    // Create form and submit to PayFast
     const form = document.createElement("form");
     form.method = "POST";
     form.action = isDevelopment
@@ -147,6 +164,7 @@ export default function AuthPage() {
     });
 
     document.body.appendChild(form);
+    console.log('Submitting payment form to PayFast...');
     form.submit();
   };
 
@@ -155,13 +173,11 @@ export default function AuthPage() {
       setIsLoading(true);
       setError(null);
 
-      // Check if pro plan and no access code, initiate PayFast payment
       if (selectedPlan === 'pro' && !data.accessCode) {
         initiatePayFastPayment(data);
         return;
       }
 
-      // Prepare registration data
       const registrationData = {
         username: data.email,
         email: data.email,
@@ -288,7 +304,6 @@ export default function AuthPage() {
                     onSubmit={registerForm.handleSubmit(handleRegister)}
                     className="space-y-4"
                   >
-                    {/* Plan Selection */}
                     <FormField
                       control={registerForm.control}
                       name="plan"

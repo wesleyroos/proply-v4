@@ -54,12 +54,14 @@ useEffect(() => {
           firstName: compressed.f,
           lastName: compressed.l,
           userType: compressed.t || 'individual',
-          subscriptionStatus: compressed.s === 'pro' ? 'pro' : 'free' // Ensure we use the selected plan
+          subscriptionStatus: 'pro' // Always pro since payment was successful
         };
 
         console.log('Registering user with data:', {
           ...registrationData,
-          password: '[REDACTED]'
+          password: '[REDACTED]',
+          subscriptionStatus: registrationData.subscriptionStatus,
+          originalPlan: compressed.s
         });
 
         await register(registrationData);
