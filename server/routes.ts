@@ -54,17 +54,13 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).send("User not found");
       }
 
-      // Set subscription expiry date to 1 year from now for pro subscriptions
-      const subscriptionExpiryDate = subscriptionStatus === 'pro'
-        ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-        : null;
-
-      // Update user's subscription status
+      // Update user's subscription status and start tracking the subscription start date
       const [updatedUser] = await db
         .update(users)
         .set({
           subscriptionStatus,
-          subscriptionExpiryDate,
+          subscriptionStartDate: new Date(), // Track when they started their pro subscription
+          pendingDowngrade: false, // Clear any pending downgrades
           updatedAt: new Date()
         })
         .where(eq(users.id, userId))
@@ -73,7 +69,7 @@ export function registerRoutes(app: Express): Server {
       console.log('Subscription updated successfully:', {
         userId: updatedUser.id,
         newStatus: updatedUser.subscriptionStatus,
-        expiryDate: updatedUser.subscriptionExpiryDate
+        startDate: updatedUser.subscriptionStartDate
       });
 
       res.json({
@@ -81,7 +77,7 @@ export function registerRoutes(app: Express): Server {
         user: {
           id: updatedUser.id,
           subscriptionStatus: updatedUser.subscriptionStatus,
-          subscriptionExpiryDate: updatedUser.subscriptionExpiryDate
+          subscriptionStartDate: updatedUser.subscriptionStartDate
         }
       });
     } catch (error) {
@@ -617,6 +613,66 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+
+  // Update user profile
+  app.post("/api/subscription/downgrade", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
+
+      if (!user) {
+        return res.status(404).send("User not found");
+      }
+
+      // Calculate the end of the current billing cycle
+      // If they just upgraded, use their upgrade date as reference
+      // Otherwise, use their subscription start date
+      const currentDate = new Date();
+      const subscriptionStartDate = user.subscriptionStartDate || currentDate;
+      const monthsSinceStart = (currentDate.getTime() - subscriptionStartDate.getTime()) / (30 * 24 * 60 * 60 * 1000);
+      const completedMonths = Math.floor(monthsSinceStart);
+
+      // Calculate the next billing cycle end date
+      const nextBillingDate = new Date(subscriptionStartDate);
+      nextBillingDate.setMonth(nextBillingDate.getMonth() + completedMonths + 1);
+
+      // Update user to indicate pending downgrade
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          pendingDowngrade: true,
+          subscriptionExpiryDate: nextBillingDate,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning();
+
+      console.log('Subscription downgrade scheduled:', {
+        userId: updatedUser.id,
+        currentStatus: updatedUser.subscriptionStatus,
+        expiryDate: updatedUser.subscriptionExpiryDate,
+        pendingDowngrade: updatedUser.pendingDowngrade
+      });
+
+      res.json({
+        message: "Subscription downgrade scheduled",
+        expiryDate: nextBillingDate
+      });
+    } catch (error) {
+      console.error('Error scheduling subscription downgrade:', error);
+      res.status(500).json({
+        error: "Failed to schedule subscription downgrade",
+        details: error instanceof Error ? error.message : undefined
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

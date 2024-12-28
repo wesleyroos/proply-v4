@@ -411,9 +411,10 @@ export default function SettingsPage() {
                       <label className="text-sm font-medium">Current Plan</label>
                       <p className="text-muted-foreground capitalize">{user?.subscriptionStatus || 'Free'}</p>
                     </div>
-                    {user?.subscriptionExpiryDate && (
+                    {/* Only show expiry date for non-pro subscriptions */}
+                    {user?.subscriptionStatus !== 'pro' && user?.subscriptionExpiryDate && (
                       <div>
-                        <label className="text-sm font-medium">Expiry Date</label>
+                        <label className="text-sm font-medium">Access Until</label>
                         <p className="text-muted-foreground">
                           {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
                         </p>
@@ -439,8 +440,8 @@ export default function SettingsPage() {
                       ) : (
                         <div>
                           <p className="text-sm text-muted-foreground mb-4">
-                            Warning: Downgrading to the Free plan will limit your access to basic features
-                            and restrict the number of property analyses you can perform.
+                            Warning: Downgrading to the Free plan will limit your access to basic features.
+                            You will maintain Pro access until the end of your current billing cycle.
                           </p>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
@@ -455,9 +456,8 @@ export default function SettingsPage() {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  This action will immediately downgrade your account to the Free plan.
-                                  You will lose access to Pro features and any remaining subscription time
-                                  will be forfeited.
+                                  This action will schedule your account to downgrade to the Free plan at the end of your current billing cycle.
+                                  You'll maintain Pro access until then, but your subscription won't renew automatically.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
@@ -476,20 +476,20 @@ export default function SettingsPage() {
 
                                       queryClient.invalidateQueries({ queryKey: ['user'] });
                                       toast({
-                                        title: "Plan Updated",
-                                        description: "Your account has been downgraded to the Free plan.",
+                                        title: "Plan Update Scheduled",
+                                        description: "Your account will be downgraded to Free at the end of your current billing cycle.",
                                       });
                                     } catch (error) {
                                       toast({
                                         title: "Error",
-                                        description: error instanceof Error ? error.message : "Failed to downgrade plan",
+                                        description: error instanceof Error ? error.message : "Failed to schedule plan downgrade",
                                         variant: "destructive",
                                       });
                                     }
                                   }}
                                   className="bg-destructive hover:bg-destructive/90"
                                 >
-                                  Downgrade
+                                  Confirm Downgrade
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
