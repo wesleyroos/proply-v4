@@ -4,18 +4,20 @@ import { useUser } from "@/hooks/use-user";
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatter } from "../utils/formatting";
-import { Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Trash2, ChevronDown, ChevronUp, Calculator, ArrowUpDown } from "lucide-react";
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
+import type { SelectUser } from "@db/schema";
 
 interface Property {
   id: number;
@@ -29,12 +31,16 @@ interface Property {
   breakEvenOccupancy: number;
   shortTermNightly: number;
   annualOccupancy: number;
+  propertyType: 'rent_compare' | 'property_analyzer';
   createdAt: string;
 }
+
+type PropertyType = 'rent_compare' | 'property_analyzer';
 
 export default function PropertiesPage() {
   const queryClient = useQueryClient();
   const { user } = useUser();
+  const [activeTab, setActiveTab] = useState<PropertyType>('rent_compare');
   const { data: properties, isLoading } = useQuery<Property[]>({
     queryKey: ['/api/properties', user?.id],
     enabled: !!user,
@@ -50,6 +56,7 @@ export default function PropertiesPage() {
       return data;
     }
   });
+
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,29 +65,31 @@ export default function PropertiesPage() {
     direction: 'asc' | 'desc';
   } | null>(null);
 
-  const filteredProperties = properties?.filter(property => 
-    property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    property.address.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProperties = properties?.filter(property =>
+    property.propertyType === activeTab && (
+      property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      property.address.toLowerCase().includes(searchTerm.toLowerCase())
+    )
   );
 
   const sortedProperties = filteredProperties?.sort((a, b) => {
     if (!sortConfig) return 0;
-    
+
     const aValue = a[sortConfig.key];
     const bValue = b[sortConfig.key];
-    
+
     if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortConfig.direction === 'asc' 
+      return sortConfig.direction === 'asc'
         ? aValue.localeCompare(bValue)
         : bValue.localeCompare(aValue);
     }
-    
+
     if (typeof aValue === 'number' && typeof bValue === 'number') {
       return sortConfig.direction === 'asc'
         ? aValue - bValue
         : bValue - aValue;
     }
-    
+
     return 0;
   });
 
@@ -93,7 +102,7 @@ export default function PropertiesPage() {
 
   const handleDelete = async () => {
     if (!propertyToDelete) return;
-    
+
     try {
       const response = await fetch(`/api/properties/${propertyToDelete.id}`, {
         method: 'DELETE',
@@ -104,7 +113,6 @@ export default function PropertiesPage() {
         throw new Error(await response.text());
       }
 
-      // Invalidate and refetch properties
       queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
       setPropertyToDelete(null);
       setDeleteError(null);
@@ -118,11 +126,22 @@ export default function PropertiesPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">My Properties</h1>
-          <Link href="/compare">
-            <Button>Compare New Property</Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/compare">
+              <Button variant="outline" className="flex items-center gap-2">
+                <ArrowUpDown className="h-4 w-4" />
+                Rent Compare
+              </Button>
+            </Link>
+            <Link href="/analyzer">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Calculator className="h-4 w-4" />
+                Property Analyzer
+              </Button>
+            </Link>
+          </div>
         </div>
-        
+
         <div className="relative">
           <input
             type="text"
@@ -134,149 +153,185 @@ export default function PropertiesPage() {
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th 
-                    className="py-3 px-4 text-left cursor-pointer hover:bg-muted/80"
-                    onClick={() => handleSort('title')}
-                  >
-                    <div className="flex items-center gap-2">
-                      Property
-                      {sortConfig?.key === 'title' && (
-                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
-                    onClick={() => handleSort('shortTermNightly')}
-                  >
-                    <div className="flex items-center justify-end gap-2">
-                      Short-Term Rate
-                      {sortConfig?.key === 'shortTermNightly' && (
-                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
-                    onClick={() => handleSort('longTermMonthly')}
-                  >
-                    <div className="flex items-center justify-end gap-2">
-                      Long-Term Monthly
-                      {sortConfig?.key === 'longTermMonthly' && (
-                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
-                    onClick={() => handleSort('longTermAnnual')}
-                  >
-                    <div className="flex items-center justify-end gap-2">
-                      Long-Term Annual
-                      {sortConfig?.key === 'longTermAnnual' && (
-                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
-                    onClick={() => handleSort('shortTermAfterFees')}
-                  >
-                    <div className="flex items-center justify-end gap-2">
-                      Short-Term Annual
-                      {sortConfig?.key === 'shortTermAfterFees' && (
-                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
-                    onClick={() => handleSort('breakEvenOccupancy')}
-                  >
-                    <div className="flex items-center justify-end gap-2">
-                      Break-even
-                      {sortConfig?.key === 'breakEvenOccupancy' && (
-                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
-                    onClick={() => handleSort('createdAt')}
-                  >
-                    <div className="flex items-center justify-end gap-2">
-                      Added
-                      {sortConfig?.key === 'createdAt' && (
-                        sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-8 text-muted-foreground">
-                      Loading properties...
-                    </td>
-                  </tr>
-                ) : !properties?.length ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-8 text-muted-foreground">
-                      No properties analyzed yet.{' '}
-                      <Link href="/compare" className="text-primary hover:underline">
-                        Compare your first property
-                      </Link>
-                    </td>
-                  </tr>
-                ) : (
-                  sortedProperties?.map((property) => (
-                    <tr key={property.id} className="border-b hover:bg-muted/50">
-                      <td className="py-3 px-4">
-                        <div>
-                          <div className="font-medium">{property.title}</div>
-                          <div className="text-sm text-muted-foreground">{property.address}</div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {property.bedrooms} bed • {property.bathrooms} bath
-                          </div>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as PropertyType)} className="mt-6">
+        <TabsList className="mb-4">
+          <TabsTrigger value="rent_compare" className="flex items-center gap-2">
+            <ArrowUpDown className="h-4 w-4" />
+            Rent Compare
+          </TabsTrigger>
+          <TabsTrigger value="property_analyzer" className="flex items-center gap-2">
+            <Calculator className="h-4 w-4" />
+            Property Analyzer
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="rent_compare">
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th
+                        className="py-3 px-4 text-left cursor-pointer hover:bg-muted/80"
+                        onClick={() => handleSort('title')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Property
+                          {sortConfig?.key === 'title' && (
+                            sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                          )}
                         </div>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <div>{formatter.format(property.shortTermNightly)}</div>
-                        <div className="text-sm text-muted-foreground">{property.annualOccupancy}% occupancy</div>
-                      </td>
-                      <td className="py-3 px-4 text-right">{formatter.format(property.longTermMonthly)}</td>
-                      <td className="py-3 px-4 text-right">{formatter.format(property.longTermMonthly * 12)}</td>
-                      <td className="py-3 px-4 text-right">{formatter.format(property.shortTermAfterFees)}</td>
-                      <td className="py-3 px-4 text-right">{property.breakEvenOccupancy}%</td>
-                      <td className="py-3 px-4 text-right whitespace-nowrap">
-                        {new Date(property.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => setPropertyToDelete(property)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      </th>
+                      <th
+                        className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
+                        onClick={() => handleSort('shortTermNightly')}
+                      >
+                        <div className="flex items-center justify-end gap-2">
+                          Short-Term Rate
+                          {sortConfig?.key === 'shortTermNightly' && (
+                            sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
+                        onClick={() => handleSort('longTermMonthly')}
+                      >
+                        <div className="flex items-center justify-end gap-2">
+                          Long-Term Monthly
+                          {sortConfig?.key === 'longTermMonthly' && (
+                            sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
+                        onClick={() => handleSort('shortTermAfterFees')}
+                      >
+                        <div className="flex items-center justify-end gap-2">
+                          Short-Term Annual
+                          {sortConfig?.key === 'shortTermAfterFees' && (
+                            sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
+                        onClick={() => handleSort('breakEvenOccupancy')}
+                      >
+                        <div className="flex items-center justify-end gap-2">
+                          Break-even
+                          {sortConfig?.key === 'breakEvenOccupancy' && (
+                            sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
+                        onClick={() => handleSort('createdAt')}
+                      >
+                        <div className="flex items-center justify-end gap-2">
+                          Added
+                          {sortConfig?.key === 'createdAt' && (
+                            sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                          )}
+                        </div>
+                      </th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {isLoading ? (
+                      <tr>
+                        <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                          Loading properties...
+                        </td>
+                      </tr>
+                    ) : !sortedProperties?.length ? (
+                      <tr>
+                        <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                          No properties analyzed yet.{' '}
+                          <Link href="/compare" className="text-primary hover:underline">
+                            Compare your first property
+                          </Link>
+                        </td>
+                      </tr>
+                    ) : (
+                      sortedProperties?.map((property) => (
+                        <tr key={property.id} className="border-b hover:bg-muted/50">
+                          <td className="py-3 px-4">
+                            <div>
+                              <div className="font-medium">{property.title}</div>
+                              <div className="text-sm text-muted-foreground">{property.address}</div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {property.bedrooms} bed • {property.bathrooms} bath
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <div>{formatter.format(property.shortTermNightly)}</div>
+                            <div className="text-sm text-muted-foreground">{property.annualOccupancy}% occupancy</div>
+                          </td>
+                          <td className="py-3 px-4 text-right">{formatter.format(property.longTermMonthly)}</td>
+                          <td className="py-3 px-4 text-right">{formatter.format(property.shortTermAfterFees)}</td>
+                          <td className="py-3 px-4 text-right">{property.breakEvenOccupancy}%</td>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            {new Date(property.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => setPropertyToDelete(property)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="property_analyzer">
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      {/* Add property analyzer specific columns */}
+                      <th className="py-3 px-4 text-left">Property</th>
+                      <th className="py-3 px-4 text-right">Purchase Price</th>
+                      <th className="py-3 px-4 text-right">Net Operating Income</th>
+                      <th className="py-3 px-4 text-right">Cap Rate</th>
+                      <th className="py-3 px-4 text-right">Cash on Cash Return</th>
+                      <th className="py-3 px-4 text-right">Added</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                        Property Analyzer coming soon.{' '}
+                        <Link href="/analyzer" className="text-primary hover:underline">
+                          Analyze your first property
+                        </Link>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!propertyToDelete} onOpenChange={() => setPropertyToDelete(null)}>

@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { formatter } from "../utils/formatting";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Building2, ArrowUpRight, ArrowDownRight, Percent } from "lucide-react";
+import type { SelectUser } from "@db/schema";
 
 interface Property {
   id: number;
@@ -72,7 +73,7 @@ export default function DashboardPage() {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">Welcome, {user?.firstName || user?.username}!</h1>
-      
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -146,7 +147,7 @@ export default function DashboardPage() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value: number) => formatter.format(value)}
                   />
                   <Bar dataKey="shortTerm" name="Short-Term" fill="#22c55e" />
