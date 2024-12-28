@@ -15,7 +15,7 @@ export default function PaymentSuccessPage() {
   const [isProcessing, setIsProcessing] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+useEffect(() => {
     const processPaymentSuccess = async () => {
       try {
         // Get registration data directly from URL params
@@ -47,15 +47,22 @@ export default function PaymentSuccessPage() {
         }
 
         // Register the user with explicit pro subscription status
-        await register({
+        const registrationData = {
           username: compressed.e,
           email: compressed.e,
           password: compressed.p,
           firstName: compressed.f,
           lastName: compressed.l,
           userType: compressed.t || 'individual',
-          subscriptionStatus: 'pro' // Always set to pro since payment was successful
+          subscriptionStatus: compressed.s === 'pro' ? 'pro' : 'free' // Ensure we use the selected plan
+        };
+
+        console.log('Registering user with data:', {
+          ...registrationData,
+          password: '[REDACTED]'
         });
+
+        await register(registrationData);
 
         // Login the user
         await login({

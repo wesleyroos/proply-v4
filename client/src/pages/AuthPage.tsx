@@ -107,7 +107,7 @@ export default function AuthPage() {
       f: formData.firstName, // firstName
       l: formData.lastName, // lastName
       t: formData.userType, // userType
-      s: 'pro' // subscriptionStatus
+      s: selectedPlan // subscriptionStatus - use the actual selected plan
     };
 
     const encodedData = encodeURIComponent(JSON.stringify(registrationData));
