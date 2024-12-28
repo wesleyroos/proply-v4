@@ -40,7 +40,7 @@ export default function PaymentSuccessPage() {
           subscriptionStatus: 'pro'
         });
 
-        // Login the user with complete credentials
+        // Login with complete credentials
         await login({
           username: registrationData.email,
           email: registrationData.email,

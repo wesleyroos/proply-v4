@@ -33,6 +33,7 @@ interface ProfileFormData {
   userType: string;
   company?: string;
   accessCode?: string;
+  plan?:string;
 }
 
 export default function AuthPage() {
@@ -59,6 +60,7 @@ export default function AuthPage() {
       userType: "individual",
       company: "",
       accessCode: "",
+      plan: selectedPlan
     },
   });
 
@@ -98,6 +100,11 @@ export default function AuthPage() {
       return;
     }
 
+    const registrationData = {
+      ...formData,
+      subscriptionStatus: 'pro'
+    };
+
     const paymentData = {
       merchant_id: merchantId,
       merchant_key: merchantKey,
@@ -113,10 +120,7 @@ export default function AuthPage() {
       recurring_amount: "2000.00",
       frequency: "3", // Monthly
       cycles: "0", // Unlimited cycles
-      custom_str1: JSON.stringify({
-        ...formData,
-        subscriptionStatus: 'pro'
-      }),
+      custom_str1: encodeURIComponent(JSON.stringify(registrationData)),
     };
 
     // Create form and submit to PayFast
