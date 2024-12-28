@@ -31,7 +31,7 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [, setLocation] = useLocation();
   const [searchParams] = useState(new URLSearchParams(window.location.search));
-  const selectedPlan = searchParams.get('plan') || 'free';
+  const [selectedPlan, setSelectedPlan] = useState(searchParams.get('plan') || 'free');
 
   const loginForm = useForm<InsertUser>({
     defaultValues: {
@@ -53,6 +53,11 @@ export default function AuthPage() {
       plan: selectedPlan,
     },
   });
+
+  // Update form when plan changes
+  useEffect(() => {
+    registerForm.setValue('plan', selectedPlan);
+  }, [selectedPlan]);
 
   const handleLogin = async (data: InsertUser) => {
     try {
@@ -200,6 +205,37 @@ export default function AuthPage() {
                     onSubmit={registerForm.handleSubmit(handleRegister)}
                     className="space-y-4"
                   >
+                    {/* Plan Selection */}
+                    <FormField
+                      control={registerForm.control}
+                      name="plan"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Plan</FormLabel>
+                          <Select
+                            value={selectedPlan}
+                            onValueChange={(value) => {
+                              setSelectedPlan(value);
+                              field.onChange(value);
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select your plan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="free">Free Plan</SelectItem>
+                              <SelectItem value="pro">Pro Plan</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {selectedPlan === 'pro' && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Pro plan includes advanced features and unlimited analyses
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+
                     {selectedPlan === 'pro' && (
                       <FormField
                         control={registerForm.control}
