@@ -20,7 +20,8 @@ const propertyDataSchema = z.object({
   monthlyRatesTaxes: z.number().min(0).optional().default(0),
   otherMonthlyExpenses: z.number().min(0).optional().default(0),
   maintenancePercent: z.number().min(0).max(100).optional().default(0),
-  managementFee: z.number().min(0).max(100).optional().default(0)
+  managementFee: z.number().min(0).max(100).optional().default(0),
+  annualAppreciation: z.number().min(0).max(100).optional().default(0)
 });
 
 export type PropertyData = z.infer<typeof propertyDataSchema>;
@@ -120,7 +121,6 @@ function calculateYearlyInvestmentMetrics(
   monthlyBondRepayment: number,
   remainingLoanBalance: number,
   initialLoanAmount: number,
-  //Removed cumulativeCashflow: number
 ): InvestmentYearMetrics {
   const annualDebtService = monthlyBondRepayment * 12;
   const propertyValueAtYear = purchasePrice * (1 + propertyValueIncrease);
@@ -445,36 +445,59 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     initialLoanAmount: number,
     monthlyPayment: number
   ) {
+    // First calculate NOI and Annual Cashflow
     const noi = revenue - expenses;
     const annualDebtService = monthlyPayment * 12;
     const annualCashflow = noi - annualDebtService;
 
-    // Calculate remaining loan balance for this year
-    const monthlyRate = (propertyData.interestRate / 100) / 12;
-    const totalPayments = year * 12;
-    const remainingBalance = initialLoanAmount *
-      (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - Math.pow(1 + monthlyRate, totalPayments)) /
-      (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - 1);
+    console.log(`Year ${year} Cashflow Calculation:`, {
+      revenue,
+      expenses,
+      noi,
+      annualDebtService,
+      annualCashflow
+    });
 
-    // Calculate property appreciation for this specific year
-    const previousYearValue = propertyData.purchasePrice * Math.pow(1.05, year - 1);
-    const currentYearValue = propertyData.purchasePrice * Math.pow(1.05, year);
+    // Calculate appreciation for this specific year using input appreciation rate
+    const appreciationRate = propertyData.annualAppreciation / 100; // Convert percentage to decimal
+    const previousYearValue = propertyData.purchasePrice * Math.pow(1 + appreciationRate, year - 1);
+    const currentYearValue = propertyData.purchasePrice * Math.pow(1 + appreciationRate, year);
     const annualAppreciation = currentYearValue - previousYearValue;
 
+    console.log(`Year ${year} Appreciation Calculation:`, {
+      appreciationRate: propertyData.annualAppreciation,
+      previousYearValue,
+      currentYearValue,
+      annualAppreciation
+    });
+
     // Calculate equity gained from loan paydown this year
+    const monthlyRate = (propertyData.interestRate / 100) / 12;
     const previousYearBalance = year > 1 ?
       initialLoanAmount * (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - Math.pow(1 + monthlyRate, (year - 1) * 12)) /
       (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - 1) : initialLoanAmount;
-    const annualEquityGain = previousYearBalance - remainingBalance;
 
-    // Calculate net worth change for this specific year only
+    const currentYearBalance = initialLoanAmount *
+      (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - Math.pow(1 + monthlyRate, year * 12)) /
+      (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - 1);
+
+    const annualEquityGain = previousYearBalance - currentYearBalance;
+
+    console.log(`Year ${year} Equity Gain Calculation:`, {
+      previousYearBalance,
+      currentYearBalance,
+      annualEquityGain
+    });
+
+    // Calculate net worth change using only this year's components
     const netWorthChange = annualAppreciation + annualEquityGain + annualCashflow;
 
-    console.log(`Year ${year} Net Worth Components:`, {
+    console.log(`Year ${year} Net Worth Change Components:`, {
       annualAppreciation,
       annualEquityGain,
       annualCashflow,
-      netWorthChange
+      netWorthChange,
+      calculation: `${annualAppreciation} + ${annualEquityGain} + ${annualCashflow} = ${netWorthChange}`
     });
 
     return {
@@ -485,7 +508,6 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     };
   }
 
-  const annualAppreciation = 0.05; // 5% annual appreciation
   const investmentMetrics = {
     shortTerm: [
       calculateYearlyInvestmentMetrics(
@@ -494,7 +516,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         netOperatingIncome?.year1.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation,
+        netOperatingIncome?.year1.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         revenueProjections?.shortTerm?.year1 || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(1, loanAmount, data.loanTerm),
@@ -506,7 +528,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         netOperatingIncome?.year2.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation * 2,
+        netOperatingIncome?.year2.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         revenueProjections?.shortTerm?.year2 || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(2, loanAmount, data.loanTerm),
@@ -518,7 +540,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         netOperatingIncome?.year3.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation * 3,
+        netOperatingIncome?.year3.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         revenueProjections?.shortTerm?.year3 || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(3, loanAmount, data.loanTerm),
@@ -530,7 +552,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         netOperatingIncome?.year4.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation * 4,
+        netOperatingIncome?.year4.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         revenueProjections?.shortTerm?.year4 || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(4, loanAmount, data.loanTerm),
@@ -542,7 +564,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         netOperatingIncome?.year5.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation * 5,
+        netOperatingIncome?.year5.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         revenueProjections?.shortTerm?.year5 || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(5, loanAmount, data.loanTerm),
@@ -554,7 +576,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         netOperatingIncome?.year10.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation * 10,
+        netOperatingIncome?.year10.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         revenueProjections?.shortTerm?.year10 || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(10, loanAmount, data.loanTerm),
@@ -566,7 +588,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         netOperatingIncome?.year20.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation * 20,
+        netOperatingIncome?.year20.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         revenueProjections?.shortTerm?.year20 || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(20, loanAmount, data.loanTerm),
@@ -580,7 +602,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         longTermNetOperatingIncome?.year1.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation,
+        netOperatingIncome?.year1.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         data.longTermRental * 12 || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(1, loanAmount, data.loanTerm),
@@ -592,7 +614,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         longTermNetOperatingIncome?.year2.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation * 2,
+        netOperatingIncome?.year2.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100, 1) || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(2, loanAmount, data.loanTerm),
@@ -604,7 +626,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         longTermNetOperatingIncome?.year3.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation * 3,
+        netOperatingIncome?.year3.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100, 2) || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(3, loanAmount, data.loanTerm),
@@ -616,7 +638,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         longTermNetOperatingIncome?.year4.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation * 4,
+        netOperatingIncome?.year4.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100, 3) || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(4, loanAmount, data.loanTerm),
@@ -628,7 +650,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         longTermNetOperatingIncome?.year5.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation * 5,
+        netOperatingIncome?.year5.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100, 4) || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(5, loanAmount, data.loanTerm),
@@ -640,7 +662,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         longTermNetOperatingIncome?.year10.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation * 10,
+        netOperatingIncome?.year10.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100, 9) || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(10, loanAmount, data.loanTerm),
@@ -652,7 +674,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         longTermNetOperatingIncome?.year20.annualCashflow || 0,
         data.purchasePrice,
         data.deposit,
-        annualAppreciation * 20,
+        netOperatingIncome?.year20.netWorthChange / data.purchasePrice, //Using netWorthChange for appreciation
         data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100, 19) || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(20, loanAmount, data.loanTerm),
