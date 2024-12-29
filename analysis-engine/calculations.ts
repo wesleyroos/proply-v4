@@ -446,18 +446,18 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     initialLoanAmount: number,
     monthlyPayment: number
   ) {
-    // First calculate NOI and Annual Cashflow
+    // Calculate NOI and Annual Cashflow
     const noi = revenue - expenses;
     const annualDebtService = monthlyPayment * 12;
     const annualCashflow = noi - annualDebtService;
 
     console.log(`Year ${year} Cashflow Calculation:`, {
-        revenue,
-        expenses,
-        noi,
-        annualDebtService,
-        annualCashflow,
-        calculation: `${noi} - ${annualDebtService} = ${annualCashflow}`
+      revenue,
+      expenses,
+      noi,
+      annualDebtService,
+      annualCashflow,
+      calculation: `${noi} - ${annualDebtService} = ${annualCashflow}`
     });
 
     // Calculate property appreciation for this specific year only
@@ -467,54 +467,60 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     const annualAppreciation = currentYearValue - previousYearValue;
 
     console.log(`Year ${year} Appreciation Calculation:`, {
-        appreciationRate: propertyData.annualAppreciation,
-        purchasePrice: propertyData.purchasePrice,
-        previousYearValue,
-        currentYearValue,
-        annualAppreciation,
-        calculation: `${currentYearValue} - ${previousYearValue} = ${annualAppreciation}`
+      appreciationRate: propertyData.annualAppreciation,
+      previousYearValue: previousYearValue.toFixed(2),
+      currentYearValue: currentYearValue.toFixed(2),
+      annualAppreciation: annualAppreciation.toFixed(2),
+      calculation: `Current(${currentYearValue.toFixed(2)}) - Previous(${previousYearValue.toFixed(2)}) = ${annualAppreciation.toFixed(2)}`
     });
 
-    // Calculate loan paydown for this specific year only
+    // Calculate loan amortization for this specific year only
     const monthlyRate = (propertyData.interestRate / 100) / 12;
-    const previousYearBalance = year > 1 ?
-        initialLoanAmount * 
-        (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - Math.pow(1 + monthlyRate, (year - 1) * 12)) /
-        (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - 1) :
-        initialLoanAmount;
+    const numberOfPayments = propertyData.loanTerm * 12;
 
-    const currentYearBalance = initialLoanAmount *
-        (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - Math.pow(1 + monthlyRate, year * 12)) /
-        (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - 1);
+    // Calculate loan balance at the start of the year
+    const previousYearBalance = year > 1
+      ? calculateLoanBalance(initialLoanAmount, monthlyRate, numberOfPayments, (year - 1) * 12)
+      : initialLoanAmount;
 
+    // Calculate loan balance at the end of the year
+    const currentYearBalance = calculateLoanBalance(initialLoanAmount, monthlyRate, numberOfPayments, year * 12);
+
+    // Annual equity gain is the difference in loan balances
     const annualEquityGain = previousYearBalance - currentYearBalance;
 
     console.log(`Year ${year} Equity Gain Calculation:`, {
-        previousYearBalance,
-        currentYearBalance,
-        annualEquityGain,
-        calculation: `${previousYearBalance} - ${currentYearBalance} = ${annualEquityGain}`
+      previousYearBalance: previousYearBalance.toFixed(2),
+      currentYearBalance: currentYearBalance.toFixed(2),
+      annualEquityGain: annualEquityGain.toFixed(2),
+      calculation: `Previous(${previousYearBalance.toFixed(2)}) - Current(${currentYearBalance.toFixed(2)}) = ${annualEquityGain.toFixed(2)}`
     });
 
-    // Calculate total net worth change using only this year's components
+    // Calculate net worth change using only this year's components
     const netWorthChange = annualAppreciation + annualEquityGain + annualCashflow;
 
-    console.log(`Year ${year} Final Net Worth Change:`, {
-        components: {
-            annualAppreciation,
-            annualEquityGain,
-            annualCashflow
-        },
-        calculation: `${annualAppreciation} + ${annualEquityGain} + ${annualCashflow} = ${netWorthChange}`,
-        netWorthChange
+    console.log(`Year ${year} Net Worth Change Final Calculation:`, {
+      components: {
+        annualAppreciation: annualAppreciation.toFixed(2),
+        annualEquityGain: annualEquityGain.toFixed(2),
+        annualCashflow: annualCashflow.toFixed(2)
+      },
+      calculation: `${annualAppreciation.toFixed(2)} + ${annualEquityGain.toFixed(2)} + ${annualCashflow.toFixed(2)} = ${netWorthChange.toFixed(2)}`
     });
 
     return {
-        value: noi,
-        annualCashflow,
-        cumulativeRentalIncome: annualCashflow,
-        netWorthChange
+      value: noi,
+      annualCashflow,
+      cumulativeRentalIncome: annualCashflow,
+      netWorthChange
     };
+  }
+
+  // Helper function to calculate loan balance at any point in time
+  function calculateLoanBalance(principal: number, monthlyRate: number, totalPayments: number, paymentsMade: number): number {
+    return principal *
+      (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, paymentsMade)) /
+      (Math.pow(1 + monthlyRate, totalPayments) - 1);
   }
 
   const investmentMetrics = {
