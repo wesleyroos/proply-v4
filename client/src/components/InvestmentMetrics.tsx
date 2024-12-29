@@ -28,7 +28,6 @@ interface YearlyMetrics {
   roiWithoutAppreciation: number;
   roiWithAppreciation: number;
   irr: number;
-  netWorthChange: number;
 }
 
 interface InvestmentMetricsProps {
@@ -68,7 +67,6 @@ export default function InvestmentMetrics({
   const metricsToDisplay: Array<{
     key: keyof YearlyMetrics;
     format: (value: number) => string;
-    description?: MetricDescription;
   }> = [
     { key: "grossYield", format: formatPercentage },
     { key: "netYield", format: formatPercentage },
@@ -78,16 +76,7 @@ export default function InvestmentMetrics({
     { key: "cashOnCashReturn", format: formatPercentage },
     { key: "roiWithoutAppreciation", format: formatPercentage },
     { key: "roiWithAppreciation", format: formatPercentage },
-    { key: "irr", format: formatPercentage },
-    { 
-      key: "netWorthChange", 
-      format: formatter,
-      description: {
-        title: "Net Worth Change",
-        explanation: "Total change in net worth for the year, combining annual cashflow, property appreciation, and loan equity buildup.",
-        calculationMethod: "Annual Cashflow + Annual Property Appreciation + Annual Equity Gain"
-      }
-    },
+    { key: "irr", format: formatPercentage }
   ];
 
   const MetricsTable = ({ rentalType }: { rentalType: 'shortTerm' | 'longTerm' }) => (
@@ -104,21 +93,21 @@ export default function InvestmentMetrics({
           </tr>
         </thead>
         <tbody>
-          {metricsToDisplay.map(({ key, format, description }) => (
+          {metricsToDisplay.map(({ key, format }) => (
             <tr key={key} className="border-b hover:bg-muted/50">
               <td className="py-3 px-4">
                 <div className="flex items-center gap-2">
-                  <span>{description?.title || metricDescriptions[key].title}</span>
+                  <span>{metricDescriptions[key].title}</span>
                   <Tooltip>
                     <TooltipTrigger>
                       <HelpCircle className="h-4 w-4 text-muted-foreground" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-[300px] p-4">
                       <p className="font-medium mb-2">
-                        {description?.explanation || metricDescriptions[key].explanation}
+                        {metricDescriptions[key].explanation}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Calculation: {description?.calculationMethod || metricDescriptions[key].calculationMethod}
+                        Calculation: {metricDescriptions[key].calculationMethod}
                       </p>
                     </TooltipContent>
                   </Tooltip>
