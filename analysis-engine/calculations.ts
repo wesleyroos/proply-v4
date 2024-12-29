@@ -127,8 +127,21 @@ function calculateYearlyInvestmentMetrics(
   const equityFromLoanPaydown = initialLoanAmount - remainingLoanBalance;
   const appreciation = propertyValueAtYear - purchasePrice;
 
-  // Calculate net worth change using only annual cashflow
-  const netWorthChange = appreciation + equityFromLoanPaydown + annualCashflow;
+  // Calculate annual cashflow, appreciation, and equity gain components
+  const netWorthComponents = {
+    annualCashflow,
+    appreciation,
+    equityGain: equityFromLoanPaydown
+  };
+
+  // Calculate net worth change as sum of the three components
+  const netWorthChange = annualCashflow + appreciation + equityFromLoanPaydown;
+
+  console.log(`Year ${year} Net Worth Components:`, {
+    ...netWorthComponents,
+    total: netWorthChange,
+    calculation: `${annualCashflow} + ${appreciation} + ${equityFromLoanPaydown} = ${netWorthChange}`
+  });
 
   return {
     grossYield: (grossRevenue / purchasePrice) * 100,

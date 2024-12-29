@@ -28,6 +28,7 @@ interface YearlyMetrics {
   roiWithoutAppreciation: number;
   roiWithAppreciation: number;
   irr: number;
+  netWorthChange: number;
 }
 
 interface InvestmentMetricsProps {
@@ -63,22 +64,14 @@ export default function InvestmentMetrics({
     return yearlyMetrics[rentalType][index][metric];
   };
 
-  // List of metrics to display in order, with updated net yield tooltip
+  // List of metrics to display in order
   const metricsToDisplay: Array<{
     key: keyof YearlyMetrics;
     format: (value: number) => string;
     description?: MetricDescription;
   }> = [
     { key: "grossYield", format: formatPercentage },
-    { 
-      key: "netYield", 
-      format: formatPercentage,
-      description: {
-        title: "Net Yield",
-        explanation: "Annual net rental income as a percentage of property value, after all expenses including bond repayments.",
-        calculationMethod: "(Annual Rental Income - Operating Expenses - Bond Repayments) / Property Value × 100"
-      }
-    },
+    { key: "netYield", format: formatPercentage },
     { key: "returnOnEquity", format: formatPercentage },
     { key: "annualReturn", format: formatPercentage },
     { key: "capRate", format: formatPercentage },
@@ -86,6 +79,15 @@ export default function InvestmentMetrics({
     { key: "roiWithoutAppreciation", format: formatPercentage },
     { key: "roiWithAppreciation", format: formatPercentage },
     { key: "irr", format: formatPercentage },
+    { 
+      key: "netWorthChange", 
+      format: formatter,
+      description: {
+        title: "Net Worth Change",
+        explanation: "Total change in net worth for the year, combining annual cashflow, property appreciation, and loan equity buildup.",
+        calculationMethod: "Annual Cashflow + Annual Property Appreciation + Annual Equity Gain"
+      }
+    },
   ];
 
   const MetricsTable = ({ rentalType }: { rentalType: 'shortTerm' | 'longTerm' }) => (
