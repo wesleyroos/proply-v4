@@ -128,20 +128,23 @@ function calculateYearlyInvestmentMetrics(
   // Calculate annual cash flow (NOI - debt service)
   const annualCashflow = noi - annualDebtService;
 
+  // Calculate annual appreciation
+  const annualAppreciation = futurePropertyValue - purchasePrice;
+
   return {
     grossYield: (grossRevenue / purchasePrice) * 100,
     netYield: (noi - annualDebtService) / purchasePrice * 100,
     returnOnEquity: (noi / deposit) * 100,
-    annualReturn: ((noi + (futurePropertyValue - purchasePrice) / year) / purchasePrice) * 100,
-    capRate: (noi / futurePropertyValue) * 100,
+    annualReturn: ((noi + annualAppreciation / year) / purchasePrice) * 100,
+    capRate: (noi / purchasePrice) * 100,
     cashOnCashReturn: ((noi - annualDebtService) / deposit) * 100,
     roiWithoutAppreciation: (noi / purchasePrice) * 100,
-    roiWithAppreciation: ((noi + (futurePropertyValue - purchasePrice)) / purchasePrice) * 100,
+    roiWithAppreciation: ((noi + annualAppreciation) / purchasePrice) * 100,
     irr: calculateIRR(
       year,
-      purchasePrice, // Use full purchase price as initial investment
-      annualCashflow, // Use NOI minus debt service as annual cash flow
-      futurePropertyValue // Use appreciated property value at exit
+      purchasePrice, // Initial investment is full purchase price
+      annualCashflow + (annualAppreciation / year), // Annual cash flow includes both rental income and appreciation
+      futurePropertyValue // Final value is appreciated property value
     )
   };
 }
@@ -164,7 +167,7 @@ function calculateIRR(
   annualCashflow: number,
   propertyValue: number
 ): number {
-  // Initial investment is full property price (not just deposit)
+  // Initial investment is negative
   const cashflows = [-initialInvestment];
 
   // Add consistent annual cash flows
