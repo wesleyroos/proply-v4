@@ -28,7 +28,6 @@ interface YearlyMetrics {
   roiWithoutAppreciation: number;
   roiWithAppreciation: number;
   irr: number;
-  netWorthChange: number;
 }
 
 interface InvestmentMetricsProps {
@@ -87,7 +86,6 @@ export default function InvestmentMetrics({
     { key: "roiWithoutAppreciation", format: formatPercentage },
     { key: "roiWithAppreciation", format: formatPercentage },
     { key: "irr", format: formatPercentage },
-    { key: "netWorthChange", format: formatter },
   ];
 
   const MetricsTable = ({ rentalType }: { rentalType: 'shortTerm' | 'longTerm' }) => (
