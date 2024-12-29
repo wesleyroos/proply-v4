@@ -113,7 +113,7 @@ interface InvestmentYearMetrics {
 function calculateYearlyInvestmentMetrics(
   year: number,
   noi: number,
-  netWorthChangeValue: number,  // renamed to make it clear this is the final value
+  netWorthChangeValue: number,  // This is the final value we want to show
   purchasePrice: number,
   deposit: number,
   propertyValueIncrease: number,
@@ -126,7 +126,6 @@ function calculateYearlyInvestmentMetrics(
   const appreciationRate = propertyValueIncrease / 100;
   const annualAppreciation = purchasePrice * appreciationRate;
 
-  // Use the provided netWorthChangeValue directly instead of recalculating
   return {
     grossYield: (grossRevenue / purchasePrice) * 100,
     netYield: (noi - annualDebtService) / purchasePrice * 100,
@@ -137,7 +136,7 @@ function calculateYearlyInvestmentMetrics(
     roiWithoutAppreciation: (noi / (deposit + purchasePrice)) * 100,
     roiWithAppreciation: ((noi + annualAppreciation) / (deposit + purchasePrice)) * 100,
     irr: calculateIRR(year, deposit, (noi - annualDebtService), annualAppreciation),
-    netWorthChange: netWorthChangeValue  // Use the value directly without modification
+    netWorthChange: netWorthChangeValue  // Just pass through the value without any modification
   };
 }
 
