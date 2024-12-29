@@ -123,6 +123,9 @@ function calculateYearlyInvestmentMetrics(
   const appreciationRate = propertyValueIncrease / 100;
   const annualAppreciation = purchasePrice * appreciationRate;
 
+  // Calculate future property value considering appreciation
+  const futurePropertyValue = purchasePrice * Math.pow(1 + appreciationRate, year);
+
   return {
     grossYield: (grossRevenue / purchasePrice) * 100,
     netYield: (noi - annualDebtService) / purchasePrice * 100,
@@ -132,7 +135,12 @@ function calculateYearlyInvestmentMetrics(
     cashOnCashReturn: ((noi - annualDebtService) / deposit) * 100,
     roiWithoutAppreciation: (noi / (deposit + purchasePrice)) * 100,
     roiWithAppreciation: ((noi + annualAppreciation) / (deposit + purchasePrice)) * 100,
-    irr: calculateIRR(year, deposit, (noi - annualDebtService), annualAppreciation),
+    irr: calculateIRR(
+      year,
+      deposit, // Initial investment is the deposit amount
+      noi - annualDebtService, // Annual cash flow is NOI minus debt service
+      futurePropertyValue // Future value of property at the end of the period
+    ),
   };
 }
 
@@ -144,15 +152,59 @@ function calculateNetYieldWithFinancing(
   return (noi - annualDebtService) / purchasePrice * 100;
 }
 
+function calculateNPV(rate: number, cashflows: number[]): number {
+  return cashflows.reduce((npv, cf, t) => npv + cf / Math.pow(1 + rate, t), 0);
+}
+
 function calculateIRR(
   year: number,
   initialInvestment: number,
   annualCashflow: number,
-  appreciation: number
+  propertyValue: number
 ): number {
-  const totalReturn = (annualCashflow * year) + appreciation;
-  const averageAnnualReturn = totalReturn / year;
-  return (averageAnnualReturn / initialInvestment) * 100;
+  // Create array of cash flows starting with initial investment (negative)
+  const cashflows = [-initialInvestment];
+
+  // Add annual cash flows
+  for (let i = 1; i <= year; i++) {
+    cashflows.push(annualCashflow);
+  }
+
+  // Add property value to final year (simulating sale)
+  cashflows[cashflows.length - 1] += propertyValue;
+
+  // Newton-Raphson method to find IRR
+  let rate = 0.1; // Initial guess
+  const maxIterations = 100;
+  const tolerance = 0.0000001;
+
+  for (let i = 0; i < maxIterations; i++) {
+    const npv = calculateNPV(rate, cashflows);
+
+    // Break if NPV is close enough to 0
+    if (Math.abs(npv) < tolerance) {
+      break;
+    }
+
+    // Calculate derivative of NPV
+    const deltaNPV = cashflows.reduce((sum, cf, t) => {
+      return sum - (t * cf) / Math.pow(1 + rate, t + 1);
+    }, 0);
+
+    // Update rate using Newton-Raphson formula
+    const newRate = rate - npv / deltaNPV;
+
+    // Break if rate isn't changing significantly
+    if (Math.abs(newRate - rate) < tolerance) {
+      rate = newRate;
+      break;
+    }
+
+    rate = newRate;
+  }
+
+  // Convert to percentage
+  return rate * 100;
 }
 
 export function calculateYields(inputData: PropertyData): AnalysisResult {
@@ -247,23 +299,23 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
 
   // Calculate Net Operating Income for each year
   netOperatingIncome = revenueProjections?.shortTerm ? {
-    year1: { value: revenueProjections.shortTerm.year1 - operatingExpenses.year1, annualCashflow: revenueProjections.shortTerm.year1 - operatingExpenses.year1 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year1 - operatingExpenses.year1 - (monthlyBondRepayment * 12)},
-    year2: { value: revenueProjections.shortTerm.year2 - operatingExpenses.year2, annualCashflow: revenueProjections.shortTerm.year2 - operatingExpenses.year2 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year2 - operatingExpenses.year2 - (monthlyBondRepayment * 12)},
-    year3: { value: revenueProjections.shortTerm.year3 - operatingExpenses.year3, annualCashflow: revenueProjections.shortTerm.year3 - operatingExpenses.year3 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year3 - operatingExpenses.year3 - (monthlyBondRepayment * 12)},
-    year4: { value: revenueProjections.shortTerm.year4 - operatingExpenses.year4, annualCashflow: revenueProjections.shortTerm.year4 - operatingExpenses.year4 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year4 - operatingExpenses.year4 - (monthlyBondRepayment * 12)},
-    year5: { value: revenueProjections.shortTerm.year5 - operatingExpenses.year5, annualCashflow: revenueProjections.shortTerm.year5 - operatingExpenses.year5 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year5 - operatingExpenses.year5 - (monthlyBondRepayment * 12)},
-    year10: { value: revenueProjections.shortTerm.year10 - operatingExpenses.year10, annualCashflow: revenueProjections.shortTerm.year10 - operatingExpenses.year10 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year10 - operatingExpenses.year10 - (monthlyBondRepayment * 12)},
-    year20: { value: revenueProjections.shortTerm.year20 - operatingExpenses.year20, annualCashflow: revenueProjections.shortTerm.year20 - operatingExpenses.year20 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year20 - operatingExpenses.year20 - (monthlyBondRepayment * 12)}
+    year1: { value: revenueProjections.shortTerm.year1 - operatingExpenses.year1, annualCashflow: revenueProjections.shortTerm.year1 - operatingExpenses.year1 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year1 - operatingExpenses.year1 - (monthlyBondRepayment * 12) },
+    year2: { value: revenueProjections.shortTerm.year2 - operatingExpenses.year2, annualCashflow: revenueProjections.shortTerm.year2 - operatingExpenses.year2 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year2 - operatingExpenses.year2 - (monthlyBondRepayment * 12) },
+    year3: { value: revenueProjections.shortTerm.year3 - operatingExpenses.year3, annualCashflow: revenueProjections.shortTerm.year3 - operatingExpenses.year3 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year3 - operatingExpenses.year3 - (monthlyBondRepayment * 12) },
+    year4: { value: revenueProjections.shortTerm.year4 - operatingExpenses.year4, annualCashflow: revenueProjections.shortTerm.year4 - operatingExpenses.year4 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year4 - operatingExpenses.year4 - (monthlyBondRepayment * 12) },
+    year5: { value: revenueProjections.shortTerm.year5 - operatingExpenses.year5, annualCashflow: revenueProjections.shortTerm.year5 - operatingExpenses.year5 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year5 - operatingExpenses.year5 - (monthlyBondRepayment * 12) },
+    year10: { value: revenueProjections.shortTerm.year10 - operatingExpenses.year10, annualCashflow: revenueProjections.shortTerm.year10 - operatingExpenses.year10 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year10 - operatingExpenses.year10 - (monthlyBondRepayment * 12) },
+    year20: { value: revenueProjections.shortTerm.year20 - operatingExpenses.year20, annualCashflow: revenueProjections.shortTerm.year20 - operatingExpenses.year20 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.shortTerm.year20 - operatingExpenses.year20 - (monthlyBondRepayment * 12) }
   } : null;
 
   longTermNetOperatingIncome = revenueProjections?.longTerm ? {
-    year1: { value: revenueProjections.longTerm.year1 - operatingExpenses.year1, annualCashflow: revenueProjections.longTerm.year1 - operatingExpenses.year1 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year1 - operatingExpenses.year1 - (monthlyBondRepayment * 12)},
-    year2: { value: revenueProjections.longTerm.year2 - operatingExpenses.year2, annualCashflow: revenueProjections.longTerm.year2 - operatingExpenses.year2 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year2 - operatingExpenses.year2 - (monthlyBondRepayment * 12)},
-    year3: { value: revenueProjections.longTerm.year3 - operatingExpenses.year3, annualCashflow: revenueProjections.longTerm.year3 - operatingExpenses.year3 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year3 - operatingExpenses.year3 - (monthlyBondRepayment * 12)},
-    year4: { value: revenueProjections.longTerm.year4 - operatingExpenses.year4, annualCashflow: revenueProjections.longTerm.year4 - operatingExpenses.year4 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year4 - operatingExpenses.year4 - (monthlyBondRepayment * 12)},
-    year5: { value: revenueProjections.longTerm.year5 - operatingExpenses.year5, annualCashflow: revenueProjections.longTerm.year5 - operatingExpenses.year5 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year5 - operatingExpenses.year5 - (monthlyBondRepayment * 12)},
-    year10: { value: revenueProjections.longTerm.year10 - operatingExpenses.year10, annualCashflow: revenueProjections.longTerm.year10 - operatingExpenses.year10 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year10 - operatingExpenses.year10 - (monthlyBondRepayment * 12)},
-    year20: { value: revenueProjections.longTerm.year20 - operatingExpenses.year20, annualCashflow: revenueProjections.longTerm.year20 - operatingExpenses.year20 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year20 - operatingExpenses.year20 - (monthlyBondRepayment * 12)}
+    year1: { value: revenueProjections.longTerm.year1 - operatingExpenses.year1, annualCashflow: revenueProjections.longTerm.year1 - operatingExpenses.year1 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year1 - operatingExpenses.year1 - (monthlyBondRepayment * 12) },
+    year2: { value: revenueProjections.longTerm.year2 - operatingExpenses.year2, annualCashflow: revenueProjections.longTerm.year2 - operatingExpenses.year2 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year2 - operatingExpenses.year2 - (monthlyBondRepayment * 12) },
+    year3: { value: revenueProjections.longTerm.year3 - operatingExpenses.year3, annualCashflow: revenueProjections.longTerm.year3 - operatingExpenses.year3 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year3 - operatingExpenses.year3 - (monthlyBondRepayment * 12) },
+    year4: { value: revenueProjections.longTerm.year4 - operatingExpenses.year4, annualCashflow: revenueProjections.longTerm.year4 - operatingExpenses.year4 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year4 - operatingExpenses.year4 - (monthlyBondRepayment * 12) },
+    year5: { value: revenueProjections.longTerm.year5 - operatingExpenses.year5, annualCashflow: revenueProjections.longTerm.year5 - operatingExpenses.year5 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year5 - operatingExpenses.year5 - (monthlyBondRepayment * 12) },
+    year10: { value: revenueProjections.longTerm.year10 - operatingExpenses.year10, annualCashflow: revenueProjections.longTerm.year10 - operatingExpenses.year10 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year10 - operatingExpenses.year10 - (monthlyBondRepayment * 12) },
+    year20: { value: revenueProjections.longTerm.year20 - operatingExpenses.year20, annualCashflow: revenueProjections.longTerm.year20 - operatingExpenses.year20 - (monthlyBondRepayment * 12), cumulativeRentalIncome: revenueProjections.longTerm.year20 - operatingExpenses.year20 - (monthlyBondRepayment * 12) }
   } : null;
 
   const investmentMetrics = {
@@ -429,7 +481,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
 
   const result = {
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
-    longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)): null,
+    longTermGrossYield: longTermGrossYield !== null ? Number(longTermGrossYield.toFixed(2)) : null,
     monthlyBondRepayment: Number(monthlyBondRepayment.toFixed(2)),
     depositPercentage: Number(depositPercentage.toFixed(2)),
     propertyDescription: data.propertyDescription || null,
