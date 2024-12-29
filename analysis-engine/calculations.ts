@@ -427,6 +427,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   } : null;
 
 
+
   longTermNetOperatingIncome = revenueProjections?.longTerm ? {
     year1: calculateNetWorthMetrics(1, revenueProjections.longTerm.year1, operatingExpenses.year1, data, loanAmount, monthlyBondRepayment),
     year2: calculateNetWorthMetrics(2, revenueProjections.longTerm.year2, operatingExpenses.year2, data, loanAmount, monthlyBondRepayment),
@@ -451,60 +452,68 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     const annualCashflow = noi - annualDebtService;
 
     console.log(`Year ${year} Cashflow Calculation:`, {
-      revenue,
-      expenses,
-      noi,
-      annualDebtService,
-      annualCashflow
+        revenue,
+        expenses,
+        noi,
+        annualDebtService,
+        annualCashflow,
+        calculation: `${noi} - ${annualDebtService} = ${annualCashflow}`
     });
 
-    // Calculate appreciation for this specific year using input appreciation rate
-    const appreciationRate = propertyData.annualAppreciation / 100; // Convert percentage to decimal
+    // Calculate property appreciation for this specific year only
+    const appreciationRate = propertyData.annualAppreciation / 100;
     const previousYearValue = propertyData.purchasePrice * Math.pow(1 + appreciationRate, year - 1);
     const currentYearValue = propertyData.purchasePrice * Math.pow(1 + appreciationRate, year);
     const annualAppreciation = currentYearValue - previousYearValue;
 
     console.log(`Year ${year} Appreciation Calculation:`, {
-      appreciationRate: propertyData.annualAppreciation,
-      previousYearValue,
-      currentYearValue,
-      annualAppreciation
+        appreciationRate: propertyData.annualAppreciation,
+        purchasePrice: propertyData.purchasePrice,
+        previousYearValue,
+        currentYearValue,
+        annualAppreciation,
+        calculation: `${currentYearValue} - ${previousYearValue} = ${annualAppreciation}`
     });
 
-    // Calculate equity gained from loan paydown this year
+    // Calculate loan paydown for this specific year only
     const monthlyRate = (propertyData.interestRate / 100) / 12;
     const previousYearBalance = year > 1 ?
-      initialLoanAmount * (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - Math.pow(1 + monthlyRate, (year - 1) * 12)) /
-      (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - 1) : initialLoanAmount;
+        initialLoanAmount * 
+        (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - Math.pow(1 + monthlyRate, (year - 1) * 12)) /
+        (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - 1) :
+        initialLoanAmount;
 
     const currentYearBalance = initialLoanAmount *
-      (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - Math.pow(1 + monthlyRate, year * 12)) /
-      (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - 1);
+        (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - Math.pow(1 + monthlyRate, year * 12)) /
+        (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - 1);
 
     const annualEquityGain = previousYearBalance - currentYearBalance;
 
     console.log(`Year ${year} Equity Gain Calculation:`, {
-      previousYearBalance,
-      currentYearBalance,
-      annualEquityGain
+        previousYearBalance,
+        currentYearBalance,
+        annualEquityGain,
+        calculation: `${previousYearBalance} - ${currentYearBalance} = ${annualEquityGain}`
     });
 
-    // Calculate net worth change using only this year's components
+    // Calculate total net worth change using only this year's components
     const netWorthChange = annualAppreciation + annualEquityGain + annualCashflow;
 
-    console.log(`Year ${year} Net Worth Change Components:`, {
-      annualAppreciation,
-      annualEquityGain,
-      annualCashflow,
-      netWorthChange,
-      calculation: `${annualAppreciation} + ${annualEquityGain} + ${annualCashflow} = ${netWorthChange}`
+    console.log(`Year ${year} Final Net Worth Change:`, {
+        components: {
+            annualAppreciation,
+            annualEquityGain,
+            annualCashflow
+        },
+        calculation: `${annualAppreciation} + ${annualEquityGain} + ${annualCashflow} = ${netWorthChange}`,
+        netWorthChange
     });
 
     return {
-      value: noi,
-      annualCashflow,
-      cumulativeRentalIncome: annualCashflow, // Keeping for backward compatibility but using annual value
-      netWorthChange
+        value: noi,
+        annualCashflow,
+        cumulativeRentalIncome: annualCashflow,
+        netWorthChange
     };
   }
 
