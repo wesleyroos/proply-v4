@@ -131,11 +131,10 @@ function calculateYearlyInvestmentMetrics(
   const annualAppreciation = futurePropertyValue - purchasePrice;
 
   // Calculate the equity buildup through loan payments
-  // This is the difference between the initial loan amount and the remaining balance after 'year' years
   const monthlyRate = (11.75 / 100) / 12; // Using standard interest rate
   const monthsPassed = year * 12;
-  const remainingLoanBalance = initialLoanAmount * 
-    (Math.pow(1 + monthlyRate, loanTerm * 12) - Math.pow(1 + monthlyRate, monthsPassed)) / 
+  const remainingLoanBalance = initialLoanAmount *
+    (Math.pow(1 + monthlyRate, loanTerm * 12) - Math.pow(1 + monthlyRate, monthsPassed)) /
     (Math.pow(1 + monthlyRate, loanTerm * 12) - 1);
   const equityBuildup = initialLoanAmount - remainingLoanBalance;
 
@@ -146,12 +145,12 @@ function calculateYearlyInvestmentMetrics(
     grossYield: (grossRevenue / purchasePrice) * 100,
     netYield: (noi - annualDebtService) / purchasePrice * 100,
     returnOnEquity: (noi / deposit) * 100,
-    annualReturn: ((noi + annualAppreciation) / purchasePrice) * 100,  // Changed to include full annual appreciation
-    capRate: (noi / purchasePrice) * 100,  // Kept as is - only considers NOI
+    annualReturn: ((noi + (annualAppreciation / year)) / purchasePrice) * 100, 
+    capRate: (noi / purchasePrice) * 100, 
     cashOnCashReturn: ((noi - annualDebtService) / deposit) * 100,
     irr: calculateIRR(
       year,
-      purchasePrice, 
+      purchasePrice,
       annualCashflow + (annualAppreciation / year),
       futurePropertyValue
     ),
@@ -363,7 +362,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         2,
         netOperatingIncome?.year2.value || 0,
-        data.purchasePrice,
+        data.purchasePrice * (1 + data.annualAppreciation / 100), 
         data.deposit,
         data.annualAppreciation,
         revenueProjections?.shortTerm?.year2 || 0,
@@ -374,7 +373,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         3,
         netOperatingIncome?.year3.value || 0,
-        data.purchasePrice,
+        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 2), 
         data.deposit,
         data.annualAppreciation,
         revenueProjections?.shortTerm?.year3 || 0,
@@ -385,7 +384,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         4,
         netOperatingIncome?.year4.value || 0,
-        data.purchasePrice,
+        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 3), 
         data.deposit,
         data.annualAppreciation,
         revenueProjections?.shortTerm?.year4 || 0,
@@ -396,7 +395,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         5,
         netOperatingIncome?.year5.value || 0,
-        data.purchasePrice,
+        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 4), 
         data.deposit,
         data.annualAppreciation,
         revenueProjections?.shortTerm?.year5 || 0,
@@ -407,7 +406,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         10,
         netOperatingIncome?.year10.value || 0,
-        data.purchasePrice,
+        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 9), 
         data.deposit,
         data.annualAppreciation,
         revenueProjections?.shortTerm?.year10 || 0,
@@ -418,7 +417,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         20,
         netOperatingIncome?.year20.value || 0,
-        data.purchasePrice,
+        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 19), 
         data.deposit,
         data.annualAppreciation,
         revenueProjections?.shortTerm?.year20 || 0,
@@ -442,7 +441,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         2,
         longTermNetOperatingIncome?.year2.value || 0,
-        data.purchasePrice,
+        data.purchasePrice * (1 + data.annualAppreciation / 100), 
         data.deposit,
         data.annualAppreciation,
         revenueProjections?.longTerm?.year2 || 0,
@@ -453,7 +452,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         3,
         longTermNetOperatingIncome?.year3.value || 0,
-        data.purchasePrice,
+        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 2), 
         data.deposit,
         data.annualAppreciation,
         revenueProjections?.longTerm?.year3 || 0,
@@ -464,7 +463,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         4,
         longTermNetOperatingIncome?.year4.value || 0,
-        data.purchasePrice,
+        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 3), 
         data.deposit,
         data.annualAppreciation,
         revenueProjections?.longTerm?.year4 || 0,
@@ -475,7 +474,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         5,
         longTermNetOperatingIncome?.year5.value || 0,
-        data.purchasePrice,
+        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 4), 
         data.deposit,
         data.annualAppreciation,
         revenueProjections?.longTerm?.year5 || 0,
@@ -486,7 +485,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         10,
         longTermNetOperatingIncome?.year10.value || 0,
-        data.purchasePrice,
+        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 9), 
         data.deposit,
         data.annualAppreciation,
         revenueProjections?.longTerm?.year10 || 0,
@@ -497,7 +496,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         20,
         longTermNetOperatingIncome?.year20.value || 0,
-        data.purchasePrice,
+        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 19), 
         data.deposit,
         data.annualAppreciation,
         revenueProjections?.longTerm?.year20 || 0,
