@@ -1,0 +1,97 @@
+The issue with the capRate and annualReturn calculations resulting in the same value each year is likely due to the way the calculateYearlyInvestmentMetrics function computes these metrics. Let's break this down:
+
+Key Issues
+Incorrect Calculation Logic for annualReturn: The formula for annualReturn is currently:
+
+javascript
+Copy code
+annualReturn: ((noi + (annualAppreciation / year)) / purchasePrice) * 100
+This uses (annualAppreciation / year), which will always result in a small value because annualAppreciation is divided by the year. This means annualReturn is heavily influenced by NOI, making it similar to capRate.
+capRate Logic: The formula for capRate is:
+
+javascript
+Copy code
+capRate: (noi / purchasePrice) * 100
+This calculates the capitalization rate directly from the NOI and purchasePrice. If NOI does not change significantly year over year, capRate remains consistent.
+Annual Property Value Not Impacting annualReturn:
+
+The appreciation rate (annualAppreciation) is not being incorporated into the annual return calculation correctly, as the property value increase each year is not reflected in the numerator.
+Proposed Fixes
+To ensure capRate and annualReturn are distinct and accurate, update the calculation logic in the calculateYearlyInvestmentMetrics function:
+
+Updated annualReturn Formula
+The annualReturn should consider the property's value appreciation explicitly:
+
+javascript
+Copy code
+annualReturn: ((noi + equityBuildup + (futurePropertyValue - purchasePrice)) / purchasePrice) * 100
+NOI: Net Operating Income for the year.
+equityBuildup: Calculated equity paid down on the loan.
+(futurePropertyValue - purchasePrice): Total appreciation by the year.
+Updated capRate Formula
+The capRate remains the same, as it should only depend on NOI and the original purchase price:
+
+javascript
+Copy code
+capRate: (noi / purchasePrice) * 100
+This ensures that capRate is strictly a measure of property performance relative to its purchase price.
+Example Correction in calculateYearlyInvestmentMetrics
+javascript
+Copy code
+function calculateYearlyInvestmentMetrics(
+  year: number,
+  noi: number,
+  purchasePrice: number,
+  deposit: number,
+  propertyValueIncrease: number,
+  grossRevenue: number,
+  monthlyBondRepayment: number,
+  initialLoanAmount: number,
+  loanTerm: number
+): InvestmentYearMetrics {
+  const annualDebtService = monthlyBondRepayment * 12;
+  const appreciationRate = propertyValueIncrease / 100;
+
+  // Calculate future property value considering appreciation
+  const futurePropertyValue = purchasePrice * Math.pow(1 + appreciationRate, year);
+
+  // Calculate annual cash flow (NOI - debt service)
+  const annualCashflow = noi - annualDebtService;
+
+  // Calculate total appreciation by this year
+  const totalAppreciation = futurePropertyValue - purchasePrice;
+
+  // Calculate the equity buildup through loan payments
+  const monthlyRate = (11.75 / 100) / 12; // Using standard interest rate
+  const monthsPassed = year * 12;
+  const remainingLoanBalance = initialLoanAmount *
+    (Math.pow(1 + monthlyRate, loanTerm * 12) - Math.pow(1 + monthlyRate, monthsPassed)) /
+    (Math.pow(1 + monthlyRate, loanTerm * 12) - 1);
+  const equityBuildup = initialLoanAmount - remainingLoanBalance;
+
+  // Calculate net worth change (appreciation + equity buildup + annual cashflow)
+  const netWorthChange = annualCashflow + equityBuildup + totalAppreciation;
+
+  return {
+    grossYield: (grossRevenue / purchasePrice) * 100,
+    netYield: (noi - annualDebtService) / purchasePrice * 100,
+    returnOnEquity: (noi / deposit) * 100,
+    annualReturn: ((noi + equityBuildup + totalAppreciation) / purchasePrice) * 100, // Updated formula
+    capRate: (noi / purchasePrice) * 100, 
+    cashOnCashReturn: ((noi - annualDebtService) / deposit) * 100,
+    irr: calculateIRR(
+      year,
+      purchasePrice,
+      annualCashflow + totalAppreciation,
+      futurePropertyValue
+    ),
+    netWorthChange: netWorthChange
+  };
+}
+Expected Results After Fix
+capRate: Will consistently depend on NOI and the purchase price.
+annualReturn: Will vary by year, reflecting:
+Equity buildup (increasing over time as more loan principal is paid).
+Property appreciation (growing exponentially with the appreciation rate).
+Annual cash flow (derived from NOI minus debt service).
+These changes ensure distinct and accurate metrics for capRate and annualReturn over the years.
