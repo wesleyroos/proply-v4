@@ -108,6 +108,12 @@ interface AnalysisResult {
     propertyPhotoUrl?: string;
   }
 
+interface MetricDescription {
+  title: string;
+  explanation: string;
+  calculationMethod: string;
+}
+
 export default function PropertyAnalyzerPage() {
   const { user } = useUser();
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -255,6 +261,59 @@ export default function PropertyAnalyzerPage() {
           : "Failed to analyze property data",
       );
       setAnalysisResult(null);
+    }
+  };
+
+  const metricDescriptions: Record<keyof YearlyMetrics, MetricDescription> = {
+    grossYield: {
+      title: "Gross Yield",
+      explanation: "Annual gross rental income as a percentage of the property's purchase price",
+      calculationMethod: "(Annual Gross Rental Income / Property Purchase Price) × 100"
+    },
+    netYield: {
+      title: "Net Yield",
+      explanation: "Annual net rental income (after expenses) as a percentage of the property's purchase price",
+      calculationMethod: "(Annual Net Operating Income / Property Purchase Price) × 100"
+    },
+    returnOnEquity: {
+      title: "Return on Equity",
+      explanation: "Annual return relative to the equity invested in the property",
+      calculationMethod: "(Annual Net Operating Income / Total Equity Invested) × 100"
+    },
+    annualReturn: {
+      title: "Annual Return",
+      explanation: "Total return including rental income and property appreciation for the year",
+      calculationMethod: "((Net Operating Income + Property Value Increase) / Initial Investment) × 100"
+    },
+    capRate: {
+      title: "Cap Rate",
+      explanation: "Net operating income as a percentage of property value, indicating potential return regardless of financing",
+      calculationMethod: "(Net Operating Income / Current Property Value) × 100"
+    },
+    cashOnCashReturn: {
+      title: "Cash on Cash Return",
+      explanation: "Annual pre-tax cash flow relative to total cash invested",
+      calculationMethod: "(Annual Pre-Tax Cash Flow / Total Cash Invested) × 100"
+    },
+    roiWithoutAppreciation: {
+      title: "ROI without Appreciation",
+      explanation: "Return on investment considering only rental income and expenses",
+      calculationMethod: "(Annual Net Operating Income / Total Investment) × 100"
+    },
+    roiWithAppreciation: {
+      title: "ROI with Appreciation",
+      explanation: "Total return including both rental income and property value appreciation",
+      calculationMethod: "((Annual NOI + Property Value Increase) / Total Investment) × 100"
+    },
+    irr: {
+      title: "Internal Rate of Return (IRR)",
+      explanation: "The discount rate that makes the net present value of all cash flows equal to zero",
+      calculationMethod: "Complex calculation using all future cash flows and initial investment"
+    },
+    netWorthChange: {
+      title: "Net Worth Change",
+      explanation: "The total change in net worth from owning this property, combining property appreciation, loan equity buildup, and annual cashflow.",
+      calculationMethod: "Property Appreciation + Equity Buildup (Loan Principal Reduction) + Annual Cashflow"
     }
   };
 
@@ -763,58 +822,7 @@ export default function PropertyAnalyzerPage() {
                   {analysisResult && (
                     <InvestmentMetrics
                       yearlyMetrics={analysisResult.analysis.investmentMetrics}
-                      metricDescriptions={{
-                        grossYield: {
-                          title: "Gross Yield",
-                          explanation: "Annual gross rental income as a percentage of the property's purchase price",
-                          calculationMethod: "(Annual Gross Rental Income / Property Purchase Price) × 100"
-                        },
-                        netYield: {
-                          title: "Net Yield",
-                          explanation: "Annual net rental income (after expenses) as a percentage of the property's purchase price",
-                          calculationMethod: "(Annual Net Operating Income / Property Purchase Price) × 100"
-                        },
-                        returnOnEquity: {
-                          title: "Return on Equity",
-                          explanation: "Annual return relative to the equity invested in the property",
-                          calculationMethod: "(Annual Net Operating Income / Total Equity Invested) × 100"
-                        },
-                        annualReturn: {
-                          title: "Annual Return",
-                          explanation: "Total return including rental income and property appreciation for the year",
-                          calculationMethod: "((Net Operating Income + Property Value Increase) / Initial Investment) × 100"
-                        },
-                        capRate: {
-                          title: "Cap Rate",
-                          explanation: "Net operating income as a percentage of property value, indicating potential return regardless of financing",
-                          calculationMethod: "(Net Operating Income / Current Property Value) × 100"
-                        },
-                        cashOnCashReturn: {
-                          title: "Cash on Cash Return",
-                          explanation: "Annual pre-tax cash flow relative to total cash invested",
-                          calculationMethod: "(Annual Pre-Tax Cash Flow / Total Cash Invested) × 100"
-                        },
-                        roiWithoutAppreciation: {
-                          title: "ROI without Appreciation",
-                          explanation: "Return on investment considering only rental income and expenses",
-                          calculationMethod: "(Annual Net Operating Income / Total Investment) × 100"
-                        },
-                        roiWithAppreciation: {
-                          title: "ROI with Appreciation",
-                          explanation: "Total return including both rental income and property value appreciation",
-                          calculationMethod: "((Annual NOI + Property Value Increase) / Total Investment) × 100"
-                        },
-                        irr: {
-                          title: "Internal Rate of Return (IRR)",
-                          explanation: "The discount rate that makes the net present value of all cash flows equal to zero",
-                          calculationMethod: "Complex calculation using all future cash flows and initial investment"
-                        },
-                        netWorthChange: {
-                          title: "Net Worth Change",
-                          explanation: "Total change in net worth including equity buildup, appreciation, and rental income",
-                          calculationMethod: "Property Value Increase + Loan Principal Paid + Cumulative Rental Income"
-                        }
-                      }}
+                      metricDescriptions={metricDescriptions}
                     />
                   )}
                 </CardContent>

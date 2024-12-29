@@ -28,6 +28,7 @@ interface YearlyMetrics {
   roiWithoutAppreciation: number;
   roiWithAppreciation: number;
   irr: number;
+  netWorthChange: number; // Added new metric
 }
 
 interface InvestmentMetricsProps {
@@ -55,6 +56,8 @@ export default function InvestmentMetrics({
 }: InvestmentMetricsProps) {
   // Helper function to format percentages
   const formatPercentage = (value: number) => `${value.toFixed(2)}%`;
+  // Helper function to format currency
+  const formatCurrency = (value: number) => formatter(value);
 
   // Helper function to get metric value for a specific year and rental type
   const getMetricValue = (year: number, metric: keyof YearlyMetrics, rentalType: 'shortTerm' | 'longTerm') => {
@@ -76,7 +79,8 @@ export default function InvestmentMetrics({
     { key: "cashOnCashReturn", format: formatPercentage },
     { key: "roiWithoutAppreciation", format: formatPercentage },
     { key: "roiWithAppreciation", format: formatPercentage },
-    { key: "irr", format: formatPercentage }
+    { key: "irr", format: formatPercentage },
+    { key: "netWorthChange", format: formatCurrency } // Added new metric with currency formatting
   ];
 
   const MetricsTable = ({ rentalType }: { rentalType: 'shortTerm' | 'longTerm' }) => (

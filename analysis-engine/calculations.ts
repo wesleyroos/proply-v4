@@ -106,6 +106,7 @@ interface InvestmentYearMetrics {
   roiWithoutAppreciation: number;
   roiWithAppreciation: number;
   irr: number;
+  netWorthChange: number;  // Added new metric
 }
 
 function calculateYearlyInvestmentMetrics(
@@ -131,6 +132,18 @@ function calculateYearlyInvestmentMetrics(
   // Calculate annual appreciation
   const annualAppreciation = futurePropertyValue - purchasePrice;
 
+  // Calculate loan balance at the end of the year.  Corrected Loan Balance Calculation
+  const monthlyRate = (data.interestRate / 100) / 12;
+  const numberOfPaymentsMade = year * 12;
+  const loanBalance = initialLoanAmount * (Math.pow(1 + monthlyRate, loanTerm * 12) - Math.pow(1 + monthlyRate, numberOfPaymentsMade)) / (Math.pow(1 + monthlyRate, loanTerm * 12) * monthlyRate);
+
+
+  // Calculate equity buildup (reduction in loan principal)
+  const equityBuildup = initialLoanAmount - loanBalance;
+
+  // Calculate net worth change
+  const netWorthChange = annualAppreciation + equityBuildup + annualCashflow;
+
   return {
     grossYield: (grossRevenue / purchasePrice) * 100,
     netYield: (noi - annualDebtService) / purchasePrice * 100,
@@ -142,10 +155,11 @@ function calculateYearlyInvestmentMetrics(
     roiWithAppreciation: ((noi + annualAppreciation) / purchasePrice) * 100,
     irr: calculateIRR(
       year,
-      purchasePrice, // Initial investment is full purchase price
-      annualCashflow + (annualAppreciation / year), // Annual cash flow includes both rental income and appreciation
-      futurePropertyValue // Final value is appreciated property value
-    )
+      purchasePrice,
+      annualCashflow + (annualAppreciation / year),
+      futurePropertyValue
+    ),
+    netWorthChange: netWorthChange  // Added new metric
   };
 }
 
