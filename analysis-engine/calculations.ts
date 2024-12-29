@@ -161,11 +161,13 @@ function calculateIRR(year: number, initialInvestment: number, annualCashflow: n
   return (averageAnnualReturn / initialInvestment) * 100;
 }
 
-function calculateRemainingLoanBalance(year: number): number {
-    //This is a placeholder.  A proper amortization calculation should be implemented here.
-    //This example assumes a simple linear paydown.  Replace with a proper calculation.
-    const loanAmount = data.purchasePrice - data.deposit;
-    return loanAmount * (1 - year / data.loanTerm);
+function calculateRemainingLoanBalance(
+  year: number,
+  loanAmount: number,
+  loanTerm: number
+): number {
+  // Simple linear paydown calculation
+  return loanAmount * (1 - year / loanTerm);
 }
 
 export function calculateYields(inputData: PropertyData): AnalysisResult {
@@ -517,7 +519,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         annualAppreciation,
         revenueProjections?.shortTerm?.year1 || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(1),
+        calculateRemainingLoanBalance(1, loanAmount, data.loanTerm),
         loanAmount,
         netOperatingIncome?.year1.cumulativeRentalIncome || 0
       ),
@@ -530,7 +532,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         annualAppreciation * 2,
         revenueProjections?.shortTerm?.year2 || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(2),
+        calculateRemainingLoanBalance(2, loanAmount, data.loanTerm),
         loanAmount,
         netOperatingIncome?.year2.cumulativeRentalIncome || 0
       ),
@@ -543,7 +545,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         annualAppreciation * 3,
         revenueProjections?.shortTerm?.year3 || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(3),
+        calculateRemainingLoanBalance(3, loanAmount, data.loanTerm),
         loanAmount,
         netOperatingIncome?.year3.cumulativeRentalIncome || 0
       ),
@@ -556,7 +558,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         annualAppreciation * 4,
         revenueProjections?.shortTerm?.year4 || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(4),
+        calculateRemainingLoanBalance(4, loanAmount, data.loanTerm),
         loanAmount,
         netOperatingIncome?.year4.cumulativeRentalIncome || 0
       ),
@@ -569,7 +571,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         annualAppreciation * 5,
         revenueProjections?.shortTerm?.year5 || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(5),
+        calculateRemainingLoanBalance(5, loanAmount, data.loanTerm),
         loanAmount,
         netOperatingIncome?.year5.cumulativeRentalIncome || 0
       ),
@@ -582,7 +584,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         annualAppreciation * 10,
         revenueProjections?.shortTerm?.year10 || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(10),
+        calculateRemainingLoanBalance(10, loanAmount, data.loanTerm),
         loanAmount,
         netOperatingIncome?.year10.cumulativeRentalIncome || 0
       ),
@@ -595,7 +597,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         annualAppreciation * 20,
         revenueProjections?.shortTerm?.year20 || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(20),
+        calculateRemainingLoanBalance(20, loanAmount, data.loanTerm),
         loanAmount,
         netOperatingIncome?.year20.cumulativeRentalIncome || 0
       )
@@ -610,7 +612,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         annualAppreciation,
         data.longTermRental * 12 || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(1),
+        calculateRemainingLoanBalance(1, loanAmount, data.loanTerm),
         loanAmount,
         longTermNetOperatingIncome?.year1.cumulativeRentalIncome || 0
       ),
@@ -621,9 +623,9 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         data.purchasePrice,
         data.deposit,
         annualAppreciation * 2,
-        data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100,1) || 0,
+        data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100, 1) || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(2),
+        calculateRemainingLoanBalance(2, loanAmount, data.loanTerm),
         loanAmount,
         longTermNetOperatingIncome?.year2.cumulativeRentalIncome || 0
       ),
@@ -634,9 +636,9 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         data.purchasePrice,
         data.deposit,
         annualAppreciation * 3,
-        data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100,2) || 0,
+        data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100, 2) || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(3),
+        calculateRemainingLoanBalance(3, loanAmount, data.loanTerm),
         loanAmount,
         longTermNetOperatingIncome?.year3.cumulativeRentalIncome || 0
       ),
@@ -647,9 +649,9 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         data.purchasePrice,
         data.deposit,
         annualAppreciation * 4,
-        data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100,3) || 0,
+        data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100, 3) || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(4),
+        calculateRemainingLoanBalance(4, loanAmount, data.loanTerm),
         loanAmount,
         longTermNetOperatingIncome?.year4.cumulativeRentalIncome || 0
       ),
@@ -660,9 +662,9 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         data.purchasePrice,
         data.deposit,
         annualAppreciation * 5,
-        data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100,4) || 0,
+        data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100, 4) || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(5),
+        calculateRemainingLoanBalance(5, loanAmount, data.loanTerm),
         loanAmount,
         longTermNetOperatingIncome?.year5.cumulativeRentalIncome || 0
       ),
@@ -673,9 +675,9 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         data.purchasePrice,
         data.deposit,
         annualAppreciation * 10,
-        data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100,9) || 0,
+        data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100, 9) || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(10),
+        calculateRemainingLoanBalance(10, loanAmount, data.loanTerm),
         loanAmount,
         longTermNetOperatingIncome?.year10.cumulativeRentalIncome || 0
       ),
@@ -686,9 +688,9 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         data.purchasePrice,
         data.deposit,
         annualAppreciation * 20,
-        data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100,19) || 0,
+        data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100, 19) || 0,
         monthlyBondRepayment,
-        calculateRemainingLoanBalance(20),
+        calculateRemainingLoanBalance(20, loanAmount, data.loanTerm),
         loanAmount,
         longTermNetOperatingIncome?.year20.cumulativeRentalIncome || 0
       )
