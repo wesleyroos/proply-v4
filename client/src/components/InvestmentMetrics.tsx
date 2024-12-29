@@ -30,29 +30,22 @@ interface YearlyMetrics {
 
 interface InvestmentMetricsProps {
   yearlyMetrics: {
-    shortTerm: {
-      year1: YearlyMetrics;
-      year2: YearlyMetrics;
-      year3: YearlyMetrics;
-      year4: YearlyMetrics;
-      year5: YearlyMetrics;
-      year10: YearlyMetrics;
-      year20: YearlyMetrics;
-    };
-    longTerm: {
-      year1: YearlyMetrics;
-      year2: YearlyMetrics;
-      year3: YearlyMetrics;
-      year4: YearlyMetrics;
-      year5: YearlyMetrics;
-      year10: YearlyMetrics;
-      year20: YearlyMetrics;
-    };
+    shortTerm: YearlyMetrics[];
+    longTerm: YearlyMetrics[];
   };
   metricDescriptions: Record<keyof YearlyMetrics, MetricDescription>;
 }
 
 const years = [1, 2, 3, 4, 5, 10, 20];
+const yearToIndex = new Map([
+  [1, 0],
+  [2, 1],
+  [3, 2],
+  [4, 3],
+  [5, 4],
+  [10, 5],
+  [20, 6],
+]);
 
 export default function InvestmentMetrics({
   yearlyMetrics,
@@ -63,8 +56,9 @@ export default function InvestmentMetrics({
 
   // Helper function to get metric value for a specific year and rental type
   const getMetricValue = (year: number, metric: keyof YearlyMetrics, rentalType: 'shortTerm' | 'longTerm') => {
-    const yearKey = `year${year}` as keyof typeof yearlyMetrics.shortTerm;
-    return yearlyMetrics[rentalType][yearKey][metric];
+    const index = yearToIndex.get(year);
+    if (index === undefined) return 0;
+    return yearlyMetrics[rentalType][index][metric];
   };
 
   // List of metrics to display in order
