@@ -106,7 +106,6 @@ interface InvestmentYearMetrics {
   roiWithoutAppreciation: number;
   roiWithAppreciation: number;
   irr: number;
-  netWorthChange: number;
 }
 
 function calculateYearlyInvestmentMetrics(
@@ -118,55 +117,35 @@ function calculateYearlyInvestmentMetrics(
   grossRevenue: number,
   monthlyBondRepayment: number,
   initialLoanAmount: number,
-  loanTerm: number,
-  interestRate: number,
-  appreciationValue: number
+  loanTerm: number
 ): InvestmentYearMetrics {
   const annualDebtService = monthlyBondRepayment * 12;
+  const appreciationRate = propertyValueIncrease / 100;
+
+  // Calculate future property value considering appreciation
+  const futurePropertyValue = purchasePrice * Math.pow(1 + appreciationRate, year);
 
   // Calculate annual cash flow (NOI - debt service)
   const annualCashflow = noi - annualDebtService;
 
-  // Calculate loan balance at the end of the year
-  const monthlyRate = interestRate / 100 / 12;
-  const numberOfPaymentsMade = year * 12;
-  const loanBalance = initialLoanAmount *
-    (Math.pow(1 + monthlyRate, loanTerm * 12) - Math.pow(1 + monthlyRate, numberOfPaymentsMade)) /
-    (Math.pow(1 + monthlyRate, loanTerm * 12) - 1);
-
-  // Calculate equity buildup (reduction in loan principal)
-  const equityBuildup = initialLoanAmount - loanBalance;
-
-  // Use the provided appreciation value instead of calculating it
-  const netWorthChange = appreciationValue + equityBuildup + annualCashflow;
-
-  // Add detailed logging
-  console.log(`\n=== Net Worth Change Calculation for Year ${year} ===`);
-  console.log(`Initial Purchase Price: R${purchasePrice.toLocaleString()}`);
-  console.log(`Appreciation Value: R${appreciationValue.toLocaleString()}`);
-  console.log(`Initial Loan Amount: R${initialLoanAmount.toLocaleString()}`);
-  console.log(`Current Loan Balance: R${loanBalance.toLocaleString()}`);
-  console.log(`Equity Buildup: R${equityBuildup.toLocaleString()}`);
-  console.log(`Annual Cashflow: R${annualCashflow.toLocaleString()}`);
-  console.log(`Net Worth Change: R${netWorthChange.toLocaleString()}`);
-  console.log('=====================================\n');
+  // Calculate annual appreciation
+  const annualAppreciation = futurePropertyValue - purchasePrice;
 
   return {
     grossYield: (grossRevenue / purchasePrice) * 100,
     netYield: (noi - annualDebtService) / purchasePrice * 100,
     returnOnEquity: (noi / deposit) * 100,
-    annualReturn: ((noi + appreciationValue) / purchasePrice) * 100,
+    annualReturn: ((noi + annualAppreciation / year) / purchasePrice) * 100,
     capRate: (noi / purchasePrice) * 100,
     cashOnCashReturn: ((noi - annualDebtService) / deposit) * 100,
     roiWithoutAppreciation: (noi / purchasePrice) * 100,
-    roiWithAppreciation: ((noi + appreciationValue) / purchasePrice) * 100,
+    roiWithAppreciation: ((noi + annualAppreciation) / purchasePrice) * 100,
     irr: calculateIRR(
       year,
-      purchasePrice,
-      annualCashflow + appreciationValue,
-      purchasePrice * Math.pow(1 + propertyValueIncrease / 100, year)
-    ),
-    netWorthChange: netWorthChange
+      purchasePrice, // Initial investment is full purchase price
+      annualCashflow + (annualAppreciation / year), // Annual cash flow includes both rental income and appreciation
+      futurePropertyValue // Final value is appreciated property value
+    )
   };
 }
 
@@ -369,9 +348,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.shortTerm?.year1 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * (data.annualAppreciation / 100)
+        data.loanTerm
       ),
       calculateYearlyInvestmentMetrics(
         2,
@@ -382,9 +359,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.shortTerm?.year2 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 2) - data.purchasePrice * (data.annualAppreciation / 100)
+        data.loanTerm
       ),
       calculateYearlyInvestmentMetrics(
         3,
@@ -395,9 +370,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.shortTerm?.year3 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 3) - data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 2)
+        data.loanTerm
       ),
       calculateYearlyInvestmentMetrics(
         4,
@@ -408,9 +381,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.shortTerm?.year4 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 4) - data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 3)
+        data.loanTerm
       ),
       calculateYearlyInvestmentMetrics(
         5,
@@ -421,9 +392,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.shortTerm?.year5 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 5) - data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 4)
+        data.loanTerm
       ),
       calculateYearlyInvestmentMetrics(
         10,
@@ -434,9 +403,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.shortTerm?.year10 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 10) - data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 9)
+        data.loanTerm
       ),
       calculateYearlyInvestmentMetrics(
         20,
@@ -447,9 +414,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.shortTerm?.year20 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 20) - data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 19)
+        data.loanTerm
       )
     ],
     longTerm: [
@@ -462,9 +427,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.longTerm?.year1 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * (data.annualAppreciation / 100)
+        data.loanTerm
       ),
       calculateYearlyInvestmentMetrics(
         2,
@@ -475,9 +438,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.longTerm?.year2 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 2) - data.purchasePrice * (data.annualAppreciation / 100)
+        data.loanTerm
       ),
       calculateYearlyInvestmentMetrics(
         3,
@@ -488,9 +449,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.longTerm?.year3 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 3) - data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 2)
+        data.loanTerm
       ),
       calculateYearlyInvestmentMetrics(
         4,
@@ -501,9 +460,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.longTerm?.year4 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 4) - data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 3)
+        data.loanTerm
       ),
       calculateYearlyInvestmentMetrics(
         5,
@@ -514,9 +471,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.longTerm?.year5 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 5) - data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 4)
+        data.loanTerm
       ),
       calculateYearlyInvestmentMetrics(
         10,
@@ -527,9 +482,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.longTerm?.year10 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 10) - data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 9)
+        data.loanTerm
       ),
       calculateYearlyInvestmentMetrics(
         20,
@@ -540,9 +493,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         revenueProjections?.longTerm?.year20 || 0,
         monthlyBondRepayment,
         loanAmount,
-        data.loanTerm,
-        data.interestRate,
-        data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 20) - data.purchasePrice * Math.pow(1 + data.annualAppreciation / 100, 19)
+        data.loanTerm
       )
     ]
   };
