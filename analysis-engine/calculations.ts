@@ -117,30 +117,32 @@ function calculateYearlyInvestmentMetrics(
   grossRevenue: number,
   monthlyBondRepayment: number,
   initialLoanAmount: number,
-  loanTerm: number,
+  loanTerm: number
 ): InvestmentYearMetrics {
   const annualDebtService = monthlyBondRepayment * 12;
   const appreciationRate = propertyValueIncrease / 100;
-  const annualAppreciation = purchasePrice * appreciationRate;
 
   // Calculate future property value considering appreciation
   const futurePropertyValue = purchasePrice * Math.pow(1 + appreciationRate, year);
+
+  // Calculate annual cash flow (NOI - debt service)
+  const annualCashflow = noi - annualDebtService;
 
   return {
     grossYield: (grossRevenue / purchasePrice) * 100,
     netYield: (noi - annualDebtService) / purchasePrice * 100,
     returnOnEquity: (noi / deposit) * 100,
-    annualReturn: ((noi + annualAppreciation) / purchasePrice) * 100,
-    capRate: (noi / (purchasePrice * Math.pow(1 + appreciationRate, year))) * 100,
+    annualReturn: ((noi + (futurePropertyValue - purchasePrice) / year) / purchasePrice) * 100,
+    capRate: (noi / futurePropertyValue) * 100,
     cashOnCashReturn: ((noi - annualDebtService) / deposit) * 100,
-    roiWithoutAppreciation: (noi / (deposit + purchasePrice)) * 100,
-    roiWithAppreciation: ((noi + annualAppreciation) / (deposit + purchasePrice)) * 100,
+    roiWithoutAppreciation: (noi / purchasePrice) * 100,
+    roiWithAppreciation: ((noi + (futurePropertyValue - purchasePrice)) / purchasePrice) * 100,
     irr: calculateIRR(
       year,
-      deposit, // Initial investment is the deposit amount
-      noi - annualDebtService, // Annual cash flow is NOI minus debt service
-      futurePropertyValue // Future value of property at the end of the period
-    ),
+      purchasePrice, // Use full purchase price as initial investment
+      annualCashflow, // Use NOI minus debt service as annual cash flow
+      futurePropertyValue // Use appreciated property value at exit
+    )
   };
 }
 
@@ -162,10 +164,10 @@ function calculateIRR(
   annualCashflow: number,
   propertyValue: number
 ): number {
-  // Create array of cash flows starting with initial investment (negative)
+  // Initial investment is full property price (not just deposit)
   const cashflows = [-initialInvestment];
 
-  // Add annual cash flows
+  // Add consistent annual cash flows
   for (let i = 1; i <= year; i++) {
     cashflows.push(annualCashflow);
   }
@@ -173,38 +175,52 @@ function calculateIRR(
   // Add property value to final year (simulating sale)
   cashflows[cashflows.length - 1] += propertyValue;
 
-  // Newton-Raphson method to find IRR
-  let rate = 0.1; // Initial guess
-  const maxIterations = 100;
-  const tolerance = 0.0000001;
+  let rate = 0.05; // Start with 5% as initial guess
+  const maxIterations = 1000;
+  const tolerance = 0.00001;
 
-  for (let i = 0; i < maxIterations; i++) {
-    const npv = calculateNPV(rate, cashflows);
+  try {
+    for (let i = 0; i < maxIterations; i++) {
+      const npv = calculateNPV(rate, cashflows);
 
-    // Break if NPV is close enough to 0
-    if (Math.abs(npv) < tolerance) {
-      break;
-    }
+      if (Math.abs(npv) < tolerance) {
+        break;
+      }
 
-    // Calculate derivative of NPV
-    const deltaNPV = cashflows.reduce((sum, cf, t) => {
-      return sum - (t * cf) / Math.pow(1 + rate, t + 1);
-    }, 0);
+      // Calculate NPV derivative for Newton-Raphson method
+      const derivative = cashflows.reduce((sum, cf, t) => {
+        return sum - (t * cf) / Math.pow(1 + rate, t + 1);
+      }, 0);
 
-    // Update rate using Newton-Raphson formula
-    const newRate = rate - npv / deltaNPV;
+      // Prevent division by zero
+      if (Math.abs(derivative) < tolerance) {
+        rate = 0;
+        break;
+      }
 
-    // Break if rate isn't changing significantly
-    if (Math.abs(newRate - rate) < tolerance) {
+      // Update rate using Newton-Raphson formula
+      const newRate = rate - npv / derivative;
+
+      // Check for convergence
+      if (Math.abs(newRate - rate) < tolerance) {
+        rate = newRate;
+        break;
+      }
+
+      // Prevent negative rates and rates > 100%
+      if (newRate <= -1 || newRate > 1) {
+        rate = 0;
+        break;
+      }
+
       rate = newRate;
-      break;
     }
-
-    rate = newRate;
+  } catch (error) {
+    console.error('IRR calculation error:', error);
+    rate = 0;
   }
 
-  // Convert to percentage
-  return rate * 100;
+  return rate * 100; // Convert to percentage
 }
 
 export function calculateYields(inputData: PropertyData): AnalysisResult {
