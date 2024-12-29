@@ -25,9 +25,8 @@ interface YearlyMetrics {
   annualReturn: number;
   capRate: number;
   cashOnCashReturn: number;
-  roiWithoutAppreciation: number;
-  roiWithAppreciation: number;
   irr: number;
+  netWorthChange: number;
 }
 
 interface InvestmentMetricsProps {
@@ -53,20 +52,30 @@ export default function InvestmentMetrics({
   yearlyMetrics,
   metricDescriptions,
 }: InvestmentMetricsProps) {
-  // Helper function to format percentages
-  const formatPercentage = (value: number) => `${value.toFixed(2)}%`;
+  // Helper function to format percentages, handling undefined/null values
+  const formatPercentage = (value: number | undefined | null) => {
+    if (value == null) return "N/A";
+    return `${value.toFixed(2)}%`;
+  };
+
+  // Helper function to format currency values
+  const formatCurrency = (value: number | undefined | null) => {
+    if (value == null) return "N/A";
+    return `R${value.toLocaleString()}`;
+  };
 
   // Helper function to get metric value for a specific year and rental type
   const getMetricValue = (year: number, metric: keyof YearlyMetrics, rentalType: 'shortTerm' | 'longTerm') => {
     const index = yearToIndex.get(year);
-    if (index === undefined) return 0;
-    return yearlyMetrics[rentalType][index][metric];
+    if (index === undefined) return null;
+    const metrics = yearlyMetrics[rentalType][index];
+    return metrics ? metrics[metric] : null;
   };
 
   // List of metrics to display in order
   const metricsToDisplay: Array<{
     key: keyof YearlyMetrics;
-    format: (value: number) => string;
+    format: (value: number | null | undefined) => string;
   }> = [
     { key: "grossYield", format: formatPercentage },
     { key: "netYield", format: formatPercentage },
@@ -74,9 +83,8 @@ export default function InvestmentMetrics({
     { key: "annualReturn", format: formatPercentage },
     { key: "capRate", format: formatPercentage },
     { key: "cashOnCashReturn", format: formatPercentage },
-    { key: "roiWithoutAppreciation", format: formatPercentage },
-    { key: "roiWithAppreciation", format: formatPercentage },
-    { key: "irr", format: formatPercentage }
+    { key: "irr", format: formatPercentage },
+    { key: "netWorthChange", format: formatCurrency }
   ];
 
   const MetricsTable = ({ rentalType }: { rentalType: 'shortTerm' | 'longTerm' }) => (
