@@ -39,13 +39,13 @@ interface CashflowMetricsProps {
     year20: number;
   };
   netOperatingIncome: {
-    year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
   } | null;
 }
 
