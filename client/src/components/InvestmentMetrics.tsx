@@ -64,13 +64,22 @@ export default function InvestmentMetrics({
     return yearlyMetrics[rentalType][index][metric];
   };
 
-  // List of metrics to display in order
+  // List of metrics to display in order, with updated net yield tooltip
   const metricsToDisplay: Array<{
     key: keyof YearlyMetrics;
     format: (value: number) => string;
+    description?: MetricDescription;
   }> = [
     { key: "grossYield", format: formatPercentage },
-    { key: "netYield", format: formatPercentage },
+    { 
+      key: "netYield", 
+      format: formatPercentage,
+      description: {
+        title: "Net Yield",
+        explanation: "Annual net rental income as a percentage of property value, after all expenses including bond repayments.",
+        calculationMethod: "(Annual Rental Income - Operating Expenses - Bond Repayments) / Property Value × 100"
+      }
+    },
     { key: "returnOnEquity", format: formatPercentage },
     { key: "annualReturn", format: formatPercentage },
     { key: "capRate", format: formatPercentage },
@@ -95,19 +104,21 @@ export default function InvestmentMetrics({
           </tr>
         </thead>
         <tbody>
-          {metricsToDisplay.map(({ key, format }) => (
+          {metricsToDisplay.map(({ key, format, description }) => (
             <tr key={key} className="border-b hover:bg-muted/50">
               <td className="py-3 px-4">
                 <div className="flex items-center gap-2">
-                  <span>{metricDescriptions[key].title}</span>
+                  <span>{description?.title || metricDescriptions[key].title}</span>
                   <Tooltip>
                     <TooltipTrigger>
                       <HelpCircle className="h-4 w-4 text-muted-foreground" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-[300px] p-4">
-                      <p className="font-medium mb-2">{metricDescriptions[key].explanation}</p>
+                      <p className="font-medium mb-2">
+                        {description?.explanation || metricDescriptions[key].explanation}
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        Calculation: {metricDescriptions[key].calculationMethod}
+                        Calculation: {description?.calculationMethod || metricDescriptions[key].calculationMethod}
                       </p>
                     </TooltipContent>
                   </Tooltip>
