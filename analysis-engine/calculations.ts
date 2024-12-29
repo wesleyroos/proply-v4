@@ -122,68 +122,48 @@ function calculateYearlyInvestmentMetrics(
   initialLoanAmount: number,
   loanTerm: number,
 ): InvestmentYearMetrics {
-  // 1. Calculate Annual Cashflow (NOI - Debt Service)
-  const annualDebtService = monthlyBondRepayment * 12;
-  console.log(`Year ${year} - Step 1: Annual Cashflow`, {
-    noi,
-    annualDebtService,
-    annualCashflow
-  });
+  // 1. Annual Cashflow (already provided as parameter)
+  console.log(`Year ${year} Step 1: Annual Cashflow:`, annualCashflow);
 
-  // 2. Calculate Annual Property Appreciation
+  // 2. Calculate Property Appreciation
   const appreciationRate = propertyValueIncrease / 100;
-  const startOfYearValue = purchasePrice * Math.pow(1 + appreciationRate, year - 1);
-  const endOfYearValue = purchasePrice * Math.pow(1 + appreciationRate, year);
-  const annualAppreciation = endOfYearValue - startOfYearValue;
+  const annualAppreciation = purchasePrice * appreciationRate;
+  console.log(`Year ${year} Step 2: Property Appreciation:`, annualAppreciation);
 
-  console.log(`Year ${year} - Step 2: Property Appreciation`, {
-    appreciationRate,
-    startOfYearValue,
-    endOfYearValue,
-    annualAppreciation
-  });
-
-  // 3. Calculate Equity Gain from Loan Paydown
-  const monthlyRate = 0.09 / 12; // 9% annual interest rate
+  // 3. Calculate Equity Gain
+  // Using mortgage amortization formula
+  const monthlyRate = 0.09 / 12;  // 9% annual rate
   const totalPayments = loanTerm * 12;
   const startOfYearPayments = (year - 1) * 12;
   const endOfYearPayments = year * 12;
 
-  const startOfYearBalance = year === 1 ? initialLoanAmount :
-    initialLoanAmount *
-    (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, startOfYearPayments)) /
+  const startBalance = year === 1 ? initialLoanAmount :
+    initialLoanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, startOfYearPayments)) /
     (Math.pow(1 + monthlyRate, totalPayments) - 1);
 
-  const endOfYearBalance = initialLoanAmount *
+  const endBalance = initialLoanAmount * 
     (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, endOfYearPayments)) /
     (Math.pow(1 + monthlyRate, totalPayments) - 1);
 
-  const annualEquityGain = startOfYearBalance - endOfYearBalance;
+  const equityGain = startBalance - endBalance;
+  console.log(`Year ${year} Step 3: Equity Gain:`, equityGain);
 
-  console.log(`Year ${year} - Step 3: Equity Gain`, {
-    startOfYearBalance,
-    endOfYearBalance,
-    annualEquityGain
-  });
+  // Calculate Net Worth Change - simple addition of the three components
+  const netWorthChange = annualCashflow + annualAppreciation + equityGain;
 
-  // Calculate Net Worth Change
-  const netWorthChange = annualCashflow + annualAppreciation + annualEquityGain;
-
-  console.log(`Year ${year} - Final Net Worth Change`, {
-    components: {
-      annualCashflow,
-      annualAppreciation,
-      annualEquityGain
-    },
+  console.log(`Year ${year} Net Worth Change Components:`, {
+    annualCashflow,
+    annualAppreciation,
+    equityGain,
     total: netWorthChange
   });
 
   return {
     grossYield: (grossRevenue / purchasePrice) * 100,
-    netYield: (noi - annualDebtService) / purchasePrice * 100,
+    netYield: (noi - monthlyBondRepayment * 12) / purchasePrice * 100,
     returnOnEquity: (noi / deposit) * 100,
     annualReturn: ((noi + annualAppreciation) / purchasePrice) * 100,
-    capRate: (noi / endOfYearValue) * 100,
+    capRate: (noi / (purchasePrice * Math.pow(1 + appreciationRate, year))) * 100,
     cashOnCashReturn: (annualCashflow / deposit) * 100,
     roiWithoutAppreciation: (noi / (deposit + purchasePrice)) * 100,
     roiWithAppreciation: ((noi + annualAppreciation) / (deposit + purchasePrice)) * 100,
