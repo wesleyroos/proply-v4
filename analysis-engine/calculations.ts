@@ -141,7 +141,7 @@ function calculateYearlyInvestmentMetrics(
     initialLoanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, startOfYearPayments)) /
     (Math.pow(1 + monthlyRate, totalPayments) - 1);
 
-  const endBalance = initialLoanAmount * 
+  const endBalance = initialLoanAmount *
     (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, endOfYearPayments)) /
     (Math.pow(1 + monthlyRate, totalPayments) - 1);
 
@@ -604,7 +604,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         5,
         netOperatingIncome?.year5.value || 0,
-        netOperatingIncome?.year5.annualCashflow || 0,
+        netOperatingIncome?.year5.netWorthChange || 0, 
         data.purchasePrice,
         data.deposit,
         data.annualAppreciation,
@@ -616,7 +616,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         10,
         netOperatingIncome?.year10.value || 0,
-        netOperatingIncome?.year10.annualCashflow || 0,
+        netOperatingIncome?.year10.netWorthChange || 0,
         data.purchasePrice,
         data.deposit,
         data.annualAppreciation,
@@ -628,7 +628,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         20,
         netOperatingIncome?.year20.value || 0,
-        netOperatingIncome?.year20.annualCashflow || 0,
+        netOperatingIncome?.year20.netWorthChange || 0,
         data.purchasePrice,
         data.deposit,
         data.annualAppreciation,
@@ -690,7 +690,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         5,
         longTermNetOperatingIncome?.year5.value || 0,
-        longTermNetOperatingIncome?.year5.annualCashflow || 0,
+        longTermNetOperatingIncome?.year5.netWorthChange || 0,
         data.purchasePrice,
         data.deposit,
         data.annualAppreciation,
@@ -702,7 +702,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         10,
         longTermNetOperatingIncome?.year10.value || 0,
-        longTermNetOperatingIncome?.year10.annualCashflow || 0,
+        longTermNetOperatingIncome?.year10.netWorthChange || 0,
         data.purchasePrice,
         data.deposit,
         data.annualAppreciation,
@@ -714,7 +714,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       calculateYearlyInvestmentMetrics(
         20,
         longTermNetOperatingIncome?.year20.value || 0,
-        longTermNetOperatingIncome?.year20.annualCashflow || 0,
+        longTermNetOperatingIncome?.year20.netWorthChange || 0,
         data.purchasePrice,
         data.deposit,
         data.annualAppreciation,
