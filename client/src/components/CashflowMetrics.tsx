@@ -5,8 +5,13 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator } from "lucide-react";
+import { Calculator, HelpCircle } from "lucide-react";
 import { formatter } from "@/utils/rentalPerformance";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface CashflowMetricsProps {
   shortTermNightly: number;
@@ -53,42 +58,10 @@ export default function CashflowMetrics({
   operatingExpenses,
   netOperatingIncome,
 }: CashflowMetricsProps) {
-  // Detailed props debugging
-  console.log('=== CashflowMetrics Component Debug ===');
-  
-  // Log all props
-  console.log('All received props:', {
-    shortTermNightly,
-    longTermMonthly,
-    monthlyBondRepayment,
-    managementFee,
-    revenueProjections,
-    operatingExpenses,
-    netOperatingIncome
-  });
-  
-  // Specifically check NOI structure
-  console.log('NOI Structure Check:', {
-    isNull: netOperatingIncome === null,
-    type: typeof netOperatingIncome,
-    year1: netOperatingIncome?.year1,
-    year1Value: netOperatingIncome?.year1?.value,
-    allYears: Object.keys(netOperatingIncome || {})
-  });
-
-  // Debug first year's calculations
-  const year1Debug = {
-    revenue: revenueProjections.shortTerm?.year1 || 0,
-    expenses: operatingExpenses.year1,
-    noi: netOperatingIncome?.year1?.value,
-    manualNOICalc: (revenueProjections.shortTerm?.year1 || 0) - operatingExpenses.year1
-  };
-  console.log('Year 1 Calculations:', year1Debug);
-  
   const years = [1, 2, 3, 4, 5, 10, 20];
 
   return (
-    <Card className="mt-6">
+    <Card>
       <CardHeader>
         <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
           <Calculator className="h-5 w-5 text-purple-500" />
@@ -101,7 +74,7 @@ export default function CashflowMetrics({
             <TabsTrigger value="short-term">Short-Term</TabsTrigger>
             <TabsTrigger value="long-term">Long-Term</TabsTrigger>
           </TabsList>
-          
+
           {/* Short-Term Tab Content */}
           <TabsContent value="short-term" className="mt-4">
             <div className="rounded-lg border">
@@ -117,7 +90,18 @@ export default function CashflowMetrics({
                 <tbody>
                   {/* Annual Revenue */}
                   <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Annual Revenue</td>
+                    <td className="py-3 px-6 font-medium flex items-center gap-2">
+                      Annual Revenue
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Calculated as: Nightly Rate × 365 days × Occupancy Rate × (1 - Platform Fee)</p>
+                          <p className="mt-1 text-sm text-gray-400">Annual revenue grows by 8% each year to account for market appreciation</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
                     {years.map(year => (
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
@@ -130,7 +114,24 @@ export default function CashflowMetrics({
 
                   {/* Net Operating Expenses */}
                   <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Net Operating Expenses</td>
+                    <td className="py-3 px-6 font-medium flex items-center gap-2">
+                      Net Operating Expenses
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Sum of monthly expenses:</p>
+                          <ul className="list-disc ml-4 mt-1">
+                            <li>Levies</li>
+                            <li>Rates & Taxes</li>
+                            <li>Management Fees ({managementFee}%)</li>
+                            <li>Maintenance Reserve</li>
+                          </ul>
+                          <p className="mt-1 text-sm text-gray-400">Expenses increase by 6% annually</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
                     {years.map(year => (
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
@@ -143,7 +144,18 @@ export default function CashflowMetrics({
 
                   {/* Net Operating Income */}
                   <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Net Operating Income</td>
+                    <td className="py-3 px-6 font-medium flex items-center gap-2">
+                      Net Operating Income
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Annual Revenue - Operating Expenses</p>
+                          <p className="mt-1 text-sm text-gray-400">This is your property's income before considering the bond payment</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
                     {years.map(year => (
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
@@ -156,7 +168,18 @@ export default function CashflowMetrics({
 
                   {/* Annual Bond Payment */}
                   <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Annual Bond Payment</td>
+                    <td className="py-3 px-6 font-medium flex items-center gap-2">
+                      Annual Bond Payment
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Monthly Bond Payment × 12</p>
+                          <p className="mt-1 text-sm text-gray-400">This is fixed throughout the loan term assuming a fixed interest rate</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
                     {years.map(year => (
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
@@ -169,22 +192,23 @@ export default function CashflowMetrics({
 
                   {/* Annual Cashflow */}
                   <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Annual Cashflow</td>
+                    <td className="py-3 px-6 font-medium flex items-center gap-2">
+                      Annual Cashflow
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Net Operating Income - Annual Bond Payment</p>
+                          <p className="mt-1 text-sm text-gray-400">This represents your actual cash profit/loss after paying all expenses including the bond</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
                     {years.map(year => {
-                      // Debug annual cashflow calculation
                       const yearKey = `year${year}` as keyof typeof netOperatingIncome;
                       const noiValue = netOperatingIncome?.[yearKey]?.value || 0;
                       const annualDebtService = monthlyBondRepayment * 12;
                       const annualCashflow = noiValue - annualDebtService;
-                      
-                      console.log(`Annual Cashflow Calculation - Year ${year}:`, {
-                        yearKey,
-                        noiValue,
-                        monthlyBondRepayment,
-                        annualDebtService,
-                        annualCashflow,
-                        netOperatingIncomeYear: netOperatingIncome?.[yearKey]
-                      });
 
                       return (
                         <td key={year} className="text-right py-3 px-6">
@@ -199,34 +223,29 @@ export default function CashflowMetrics({
 
                   {/* Cumulative Cashflow */}
                   <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Cumulative Cashflow</td>
+                    <td className="py-3 px-6 font-medium flex items-center gap-2">
+                      Cumulative Cashflow
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Sum of all Annual Cashflows up to this year</p>
+                          <p className="mt-1 text-sm text-gray-400">Shows your total cash profit/loss since purchase, helps visualize when you break even</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
                     {years.map((year, index) => {
                       let cumulativeCashflow = 0;
-                      const yearlyFlows = [];
-                      
+
                       for (let i = 0; i <= index; i++) {
                         const y = years[i];
                         const yearKey = `year${y}` as keyof typeof netOperatingIncome;
                         const noiValue = netOperatingIncome?.[yearKey]?.value || 0;
                         const annualDebtService = monthlyBondRepayment * 12;
                         const annualCashflow = noiValue - annualDebtService;
-                        
-                        yearlyFlows.push({
-                          year: y,
-                          noiValue,
-                          annualDebtService,
-                          annualCashflow
-                        });
-                        
                         cumulativeCashflow += annualCashflow;
                       }
-                      
-                      console.log(`Cumulative Cashflow Calculation - Up to Year ${year}:`, {
-                        yearlyFlows,
-                        cumulativeCashflow,
-                        monthlyBondRepayment,
-                        netOperatingIncomePresent: !!netOperatingIncome
-                      });
 
                       return (
                         <td key={year} className="text-right py-3 px-6">
@@ -243,7 +262,7 @@ export default function CashflowMetrics({
             </div>
           </TabsContent>
 
-          {/* Long-Term Tab Content */}
+          {/* Long-Term Tab Content - Similar structure but with long-term calculations */}
           <TabsContent value="long-term" className="mt-4">
             <div className="rounded-lg border">
               <table className="w-full">
@@ -258,7 +277,18 @@ export default function CashflowMetrics({
                 <tbody>
                   {/* Annual Revenue */}
                   <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Annual Revenue</td>
+                    <td className="py-3 px-6 font-medium flex items-center gap-2">
+                      Annual Revenue
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Calculated as: Monthly Rate × 12 months × (1 + Annual Growth Rate)^(year -1)</p>
+                          <p className="mt-1 text-sm text-gray-400">Annual revenue grows by 8% each year to account for market appreciation</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
                     {years.map(year => {
                       const revenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
                       return (
@@ -274,7 +304,24 @@ export default function CashflowMetrics({
 
                   {/* Net Operating Expenses */}
                   <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Net Operating Expenses</td>
+                    <td className="py-3 px-6 font-medium flex items-center gap-2">
+                      Net Operating Expenses
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Sum of monthly expenses:</p>
+                          <ul className="list-disc ml-4 mt-1">
+                            <li>Levies</li>
+                            <li>Rates & Taxes</li>
+                            <li>Management Fees ({managementFee}%)</li>
+                            <li>Maintenance Reserve</li>
+                          </ul>
+                          <p className="mt-1 text-sm text-gray-400">Expenses increase by 6% annually</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
                     {years.map(year => {
                       const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
                       return (
@@ -290,7 +337,18 @@ export default function CashflowMetrics({
 
                   {/* Net Operating Income */}
                   <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Net Operating Income</td>
+                    <td className="py-3 px-6 font-medium flex items-center gap-2">
+                      Net Operating Income
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Annual Revenue - Operating Expenses</p>
+                          <p className="mt-1 text-sm text-gray-400">This is your property's income before considering the bond payment</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
                     {years.map(year => {
                       const revenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
                       const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
@@ -308,7 +366,18 @@ export default function CashflowMetrics({
 
                   {/* Annual Bond Payment */}
                   <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Annual Bond Payment</td>
+                    <td className="py-3 px-6 font-medium flex items-center gap-2">
+                      Annual Bond Payment
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Monthly Bond Payment × 12</p>
+                          <p className="mt-1 text-sm text-gray-400">This is fixed throughout the loan term assuming a fixed interest rate</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
                     {years.map(year => (
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
@@ -321,7 +390,18 @@ export default function CashflowMetrics({
 
                   {/* Annual Cashflow */}
                   <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Annual Cashflow</td>
+                    <td className="py-3 px-6 font-medium flex items-center gap-2">
+                      Annual Cashflow
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Net Operating Income - Annual Bond Payment</p>
+                          <p className="mt-1 text-sm text-gray-400">This represents your actual cash profit/loss after paying all expenses including the bond</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
                     {years.map(year => {
                       const revenue = longTermMonthly * 12 * Math.pow(1.08, year - 1);
                       const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
@@ -340,7 +420,18 @@ export default function CashflowMetrics({
 
                   {/* Cumulative Cashflow */}
                   <tr className="hover:bg-gray-50">
-                    <td className="py-3 px-6 font-medium">Cumulative Cashflow</td>
+                    <td className="py-3 px-6 font-medium flex items-center gap-2">
+                      Cumulative Cashflow
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Sum of all Annual Cashflows up to this year</p>
+                          <p className="mt-1 text-sm text-gray-400">Shows your total cash profit/loss since purchase, helps visualize when you break even</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
                     {years.map((year, index) => {
                       let cumulativeCashflow = 0;
                       for (let i = 0; i <= index; i++) {
