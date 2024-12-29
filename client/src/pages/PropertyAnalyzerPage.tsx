@@ -63,6 +63,19 @@ interface AnalysisResult {
         year10: number;
         year20: number;
       };
+      investmentMetrics?: {
+        grossYield: number;
+        netYield: number;
+        returnOnEquity: number;
+        annualReturn: number;
+        capRate: number;
+        cashOnCashReturn: number;
+        roiWithoutAppreciation: number;
+        roiWithAppreciation: number;
+        irr: number;
+        netWorthChange: number;
+
+      }
     };
     netOperatingIncome: {
       year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
@@ -720,18 +733,73 @@ export default function PropertyAnalyzerPage() {
               />
               
               {/* Investment Metrics */}
-              <InvestmentMetrics 
-                purchasePrice={analysisResult.analysis.purchasePrice}
-                deposit={analysisResult.deposit}
-                monthlyBondRepayment={analysisResult.monthlyBondRepayment}
-                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                longTermMonthly={analysisResult.analysis.longTermAnnualRevenue / 12 || 0}
-                revenueProjections={{
-                  shortTerm: analysisResult.analysis.revenueProjections?.shortTerm || null
-                }}
-                operatingExpenses={analysisResult.analysis.operatingExpenses}
-                netOperatingIncome={analysisResult.netOperatingIncome}
-              />
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-purple-500" />
+                    Investment Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {analysisResult && (
+                    <InvestmentMetrics
+                      yearlyMetrics={analysisResult.analysis.investmentMetrics}
+                      metricDescriptions={{
+                        grossYield: {
+                          title: "Gross Yield",
+                          explanation: "Annual gross rental income as a percentage of the property's purchase price",
+                          calculationMethod: "(Annual Gross Rental Income / Property Purchase Price) × 100"
+                        },
+                        netYield: {
+                          title: "Net Yield",
+                          explanation: "Annual net rental income (after expenses) as a percentage of the property's purchase price",
+                          calculationMethod: "(Annual Net Operating Income / Property Purchase Price) × 100"
+                        },
+                        returnOnEquity: {
+                          title: "Return on Equity",
+                          explanation: "Annual return relative to the equity invested in the property",
+                          calculationMethod: "(Annual Net Operating Income / Total Equity Invested) × 100"
+                        },
+                        annualReturn: {
+                          title: "Annual Return",
+                          explanation: "Total return including rental income and property appreciation for the year",
+                          calculationMethod: "((Net Operating Income + Property Value Increase) / Initial Investment) × 100"
+                        },
+                        capRate: {
+                          title: "Cap Rate",
+                          explanation: "Net operating income as a percentage of property value, indicating potential return regardless of financing",
+                          calculationMethod: "(Net Operating Income / Current Property Value) × 100"
+                        },
+                        cashOnCashReturn: {
+                          title: "Cash on Cash Return",
+                          explanation: "Annual pre-tax cash flow relative to total cash invested",
+                          calculationMethod: "(Annual Pre-Tax Cash Flow / Total Cash Invested) × 100"
+                        },
+                        roiWithoutAppreciation: {
+                          title: "ROI without Appreciation",
+                          explanation: "Return on investment considering only rental income and expenses",
+                          calculationMethod: "(Annual Net Operating Income / Total Investment) × 100"
+                        },
+                        roiWithAppreciation: {
+                          title: "ROI with Appreciation",
+                          explanation: "Total return including both rental income and property value appreciation",
+                          calculationMethod: "((Annual NOI + Property Value Increase) / Total Investment) × 100"
+                        },
+                        irr: {
+                          title: "Internal Rate of Return (IRR)",
+                          explanation: "The discount rate that makes the net present value of all cash flows equal to zero",
+                          calculationMethod: "Complex calculation using all future cash flows and initial investment"
+                        },
+                        netWorthChange: {
+                          title: "Net Worth Change",
+                          explanation: "Total change in net worth including equity buildup, appreciation, and rental income",
+                          calculationMethod: "Property Value Increase + Loan Principal Paid + Cumulative Rental Income"
+                        }
+                      }}
+                    />
+                  )}
+                </CardContent>
+              </Card>
 
               {/* Asset Growth & Equity */}
               <AssetGrowthMetrics 
