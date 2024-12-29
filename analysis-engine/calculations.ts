@@ -120,15 +120,15 @@ function calculateYearlyInvestmentMetrics(
   monthlyBondRepayment: number,
   remainingLoanBalance: number,
   initialLoanAmount: number,
-  cumulativeRentalIncome: number
+  cumulativeCashflow: number
 ): InvestmentYearMetrics {
   const annualDebtService = monthlyBondRepayment * 12;
   const propertyValueAtYear = purchasePrice * (1 + propertyValueIncrease);
   const equityFromLoanPaydown = initialLoanAmount - remainingLoanBalance;
   const appreciation = propertyValueAtYear - purchasePrice;
 
-  // Calculate net worth components
-  const netWorthChange = appreciation + equityFromLoanPaydown + cumulativeRentalIncome;
+  // Calculate net worth using cumulative cashflow instead of cumulative rental income
+  const netWorthChange = appreciation + equityFromLoanPaydown + cumulativeCashflow;
 
   return {
     grossYield: (grossRevenue / purchasePrice) * 100,
@@ -427,6 +427,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   } : null;
 
 
+
   longTermNetOperatingIncome = revenueProjections?.longTerm ? {
     year1: calculateNetWorthMetrics(1, revenueProjections.longTerm.year1, operatingExpenses.year1, data, loanAmount, monthlyBondRepayment),
     year2: calculateNetWorthMetrics(2, revenueProjections.longTerm.year2, operatingExpenses.year2, data, loanAmount, monthlyBondRepayment),
@@ -483,26 +484,29 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     const equityFromLoanPaydown = initialLoanAmount - remainingBalance;
 
     // Calculate cumulative rental income (sum of annual cashflows up to this year)
-    const cumulativeRentalIncome = annualCashflow * year;
+    let cumulativeCashflow = 0;
+    for (let i = 1; i <= year; i++) {
+        cumulativeCashflow += netOperatingIncome?.[`year${i}`].annualCashflow || 0;
+    }
     console.log(`Year ${year} Cumulative Income:`, {
       annualCashflow,
       year,
-      cumulativeRentalIncome
+      cumulativeCashflow
     });
 
     // Calculate total net worth change
-    const netWorthChange = appreciation + equityFromLoanPaydown + cumulativeRentalIncome;
+    const netWorthChange = appreciation + equityFromLoanPaydown + cumulativeCashflow;
     console.log(`Year ${year} Net Worth Components:`, {
       appreciation,
       equityFromLoanPaydown,
-      cumulativeRentalIncome,
+      cumulativeCashflow,
       netWorthChange
     });
 
     return {
       value: noi,
       annualCashflow,
-      cumulativeRentalIncome,
+      cumulativeRentalIncome: cumulativeCashflow, //Keeping this for backward compatibility
       netWorthChange
     };
   }
@@ -521,7 +525,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         calculateRemainingLoanBalance(1, loanAmount, data.loanTerm),
         loanAmount,
-        netOperatingIncome?.year1.cumulativeRentalIncome || 0
+        netOperatingIncome?.year1.annualCashflow || 0
       ),
       calculateYearlyInvestmentMetrics(
         2,
@@ -534,7 +538,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         calculateRemainingLoanBalance(2, loanAmount, data.loanTerm),
         loanAmount,
-        netOperatingIncome?.year2.cumulativeRentalIncome || 0
+        (netOperatingIncome?.year1.annualCashflow || 0) + (netOperatingIncome?.year2.annualCashflow || 0)
       ),
       calculateYearlyInvestmentMetrics(
         3,
@@ -547,7 +551,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         calculateRemainingLoanBalance(3, loanAmount, data.loanTerm),
         loanAmount,
-        netOperatingIncome?.year3.cumulativeRentalIncome || 0
+        (netOperatingIncome?.year1.annualCashflow || 0) + (netOperatingIncome?.year2.annualCashflow || 0) + (netOperatingIncome?.year3.annualCashflow || 0)
       ),
       calculateYearlyInvestmentMetrics(
         4,
@@ -560,7 +564,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         calculateRemainingLoanBalance(4, loanAmount, data.loanTerm),
         loanAmount,
-        netOperatingIncome?.year4.cumulativeRentalIncome || 0
+        (netOperatingIncome?.year1.annualCashflow || 0) + (netOperatingIncome?.year2.annualCashflow || 0) + (netOperatingIncome?.year3.annualCashflow || 0) + (netOperatingIncome?.year4.annualCashflow || 0)
       ),
       calculateYearlyInvestmentMetrics(
         5,
@@ -573,7 +577,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         calculateRemainingLoanBalance(5, loanAmount, data.loanTerm),
         loanAmount,
-        netOperatingIncome?.year5.cumulativeRentalIncome || 0
+        (netOperatingIncome?.year1.annualCashflow || 0) + (netOperatingIncome?.year2.annualCashflow || 0) + (netOperatingIncome?.year3.annualCashflow || 0) + (netOperatingIncome?.year4.annualCashflow || 0) + (netOperatingIncome?.year5.annualCashflow || 0)
       ),
       calculateYearlyInvestmentMetrics(
         10,
@@ -586,7 +590,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         calculateRemainingLoanBalance(10, loanAmount, data.loanTerm),
         loanAmount,
-        netOperatingIncome?.year10.cumulativeRentalIncome || 0
+        (netOperatingIncome?.year1.annualCashflow || 0) + (netOperatingIncome?.year2.annualCashflow || 0) + (netOperatingIncome?.year3.annualCashflow || 0) + (netOperatingIncome?.year4.annualCashflow || 0) + (netOperatingIncome?.year5.annualCashflow || 0) + (netOperatingIncome?.year6.annualCashflow || 0) + (netOperatingIncome?.year7.annualCashflow || 0) + (netOperatingIncome?.year8.annualCashflow || 0) + (netOperatingIncome?.year9.annualCashflow || 0) + (netOperatingIncome?.year10.annualCashflow || 0)
       ),
       calculateYearlyInvestmentMetrics(
         20,
@@ -599,7 +603,8 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         calculateRemainingLoanBalance(20, loanAmount, data.loanTerm),
         loanAmount,
-        netOperatingIncome?.year20.cumulativeRentalIncome || 0
+        (netOperatingIncome?.year1.annualCashflow || 0) + (netOperatingIncome?.year2.annualCashflow || 0) + (netOperatingIncome?.year3.annualCashflow || 0) + (netOperatingIncome?.year4.annualCashflow || 0) + (netOperatingIncome?.year5.annualCashflow || 0) + (netOperatingIncome?.year6.annualCashflow || 0) + (netOperatingIncome?.year7.annualCashflow || 0) + (netOperatingIncome?.year8.annualCashflow || 0) + (netOperatingIncome?.year9.annualCashflow || 0) + (netOperatingIncome?.year10.annualCashflow || 0) + (netOperatingIncome?.year11.annualCashflow || 0) + (netOperatingIncome?.year12.annualCashflow || 0) + (netOperatingIncome?.year13.annualCashflow || 0) + (netOperatingIncome?.year14.annualCashflow || 0) + (netOperatingIncome?.year15.annualCashflow || 0) + (netOperatingIncome?.year16.annualCashflow || 0) + (netOperatingIncome?.year17.annualCashflow || 0) + (netOperatingIncome?.year18.annualCashflow || 0) + (netOperatingIncome?.year19.annualCashflow || 0) + (netOperatingIncome?.year20.annualCashflow || 0)
+
       )
     ],
     longTerm: [
@@ -614,7 +619,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         calculateRemainingLoanBalance(1, loanAmount, data.loanTerm),
         loanAmount,
-        longTermNetOperatingIncome?.year1.cumulativeRentalIncome || 0
+        longTermNetOperatingIncome?.year1.annualCashflow || 0
       ),
       calculateYearlyInvestmentMetrics(
         2,
@@ -627,7 +632,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         calculateRemainingLoanBalance(2, loanAmount, data.loanTerm),
         loanAmount,
-        longTermNetOperatingIncome?.year2.cumulativeRentalIncome || 0
+        (longTermNetOperatingIncome?.year1.annualCashflow || 0) + (longTermNetOperatingIncome?.year2.annualCashflow || 0)
       ),
       calculateYearlyInvestmentMetrics(
         3,
@@ -640,7 +645,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         calculateRemainingLoanBalance(3, loanAmount, data.loanTerm),
         loanAmount,
-        longTermNetOperatingIncome?.year3.cumulativeRentalIncome || 0
+        (longTermNetOperatingIncome?.year1.annualCashflow || 0) + (longTermNetOperatingIncome?.year2.annualCashflow || 0) + (longTermNetOperatingIncome?.year3.annualCashflow || 0)
       ),
       calculateYearlyInvestmentMetrics(
         4,
@@ -653,7 +658,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         calculateRemainingLoanBalance(4, loanAmount, data.loanTerm),
         loanAmount,
-        longTermNetOperatingIncome?.year4.cumulativeRentalIncome || 0
+        (longTermNetOperatingIncome?.year1.annualCashflow || 0) + (longTermNetOperatingIncome?.year2.annualCashflow || 0) + (longTermNetOperatingIncome?.year3.annualCashflow || 0) + (longTermNetOperatingIncome?.year4.annualCashflow || 0)
       ),
       calculateYearlyInvestmentMetrics(
         5,
@@ -665,8 +670,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         data.longTermRental * 12 * Math.pow(1 + data.incomeGrowthRate / 100, 4) || 0,
         monthlyBondRepayment,
         calculateRemainingLoanBalance(5, loanAmount, data.loanTerm),
-        loanAmount,
-        longTermNetOperatingIncome?.year5.cumulativeRentalIncome || 0
+        loanAmount,        longTermNetOperatingIncome?.year5.annualCashflow || 0
       ),
       calculateYearlyInvestmentMetrics(
         10,
@@ -679,7 +683,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         calculateRemainingLoanBalance(10, loanAmount, data.loanTerm),
         loanAmount,
-        longTermNetOperatingIncome?.year10.cumulativeRentalIncome || 0
+        (longTermNetOperatingIncome?.year1.annualCashflow || 0) + (longTermNetOperatingIncome?.year2.annualCashflow || 0) + (longTermNetOperatingIncome?.year3.annualCashflow || 0) + (longTermNetOperatingIncome?.year4.annualCashflow || 0) + (longTermNetOperatingIncome?.year5.annualCashflow || 0) + (longTermNetOperatingIncome?.year6.annualCashflow || 0) + (longTermNetOperatingIncome?.year7.annualCashflow || 0) + (longTermNetOperatingIncome?.year8.annualCashflow || 0) + (longTermNetOperatingIncome?.year9.annualCashflow || 0) + (longTermNetOperatingIncome?.year10.annualCashflow || 0)
       ),
       calculateYearlyInvestmentMetrics(
         20,
@@ -692,7 +696,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         calculateRemainingLoanBalance(20, loanAmount, data.loanTerm),
         loanAmount,
-        longTermNetOperatingIncome?.year20.cumulativeRentalIncome || 0
+        (longTermNetOperatingIncome?.year1.annualCashflow || 0) + (longTermNetOperatingIncome?.year2.annualCashflow || 0) + (longTermNetOperatingIncome?.year3.annualCashflow || 0) + (longTermNetOperatingIncome?.year4.annualCashflow || 0) + (longTermNetOperatingIncome?.year5.annualCashflow || 0) + (longTermNetOperatingIncome?.year6.annualCashflow || 0) + (longTermNetOperatingIncome?.year7.annualCashflow || 0) + (longTermNetOperatingIncome?.year8.annualCashflow || 0) + (longTermNetOperatingIncome?.year9.annualCashflow || 0) + (longTermNetOperatingIncome?.year10.annualCashflow || 0) + (longTermNetOperatingIncome?.year11.annualCashflow || 0) + (longTermNetOperatingIncome?.year12.annualCashflow || 0) + (longTermNetOperatingIncome?.year13.annualCashflow || 0) + (longTermNetOperatingIncome?.year14.annualCashflow || 0) + (longTermNetOperatingIncome?.year15.annualCashflow || 0) + (longTermNetOperatingIncome?.year16.annualCashflow || 0) + (longTermNetOperatingIncome?.year17.annualCashflow || 0) + (longTermNetOperatingIncome?.year18.annualCashflow || 0) + (longTermNetOperatingIncome?.year19.annualCashflow || 0) + (longTermNetOperatingIncome?.year20.annualCashflow || 0)
       )
     ]
   };
