@@ -103,9 +103,8 @@ interface InvestmentYearMetrics {
   annualReturn: number;
   capRate: number;
   cashOnCashReturn: number;
-  roiWithoutAppreciation: number;
-  roiWithAppreciation: number;
   irr: number;
+  netWorthChange: number;
 }
 
 function calculateYearlyInvestmentMetrics(
@@ -131,6 +130,18 @@ function calculateYearlyInvestmentMetrics(
   // Calculate annual appreciation
   const annualAppreciation = futurePropertyValue - purchasePrice;
 
+  // Calculate the equity buildup through loan payments
+  // This is the difference between the initial loan amount and the remaining balance after 'year' years
+  const monthlyRate = (11.75 / 100) / 12; // Using standard interest rate
+  const monthsPassed = year * 12;
+  const remainingLoanBalance = initialLoanAmount * 
+    (Math.pow(1 + monthlyRate, loanTerm * 12) - Math.pow(1 + monthlyRate, monthsPassed)) / 
+    (Math.pow(1 + monthlyRate, loanTerm * 12) - 1);
+  const equityBuildup = initialLoanAmount - remainingLoanBalance;
+
+  // Calculate net worth change (appreciation + equity buildup + annual cashflow)
+  const netWorthChange = (annualAppreciation / year) + equityBuildup + annualCashflow;
+
   return {
     grossYield: (grossRevenue / purchasePrice) * 100,
     netYield: (noi - annualDebtService) / purchasePrice * 100,
@@ -138,14 +149,13 @@ function calculateYearlyInvestmentMetrics(
     annualReturn: ((noi + annualAppreciation / year) / purchasePrice) * 100,
     capRate: (noi / purchasePrice) * 100,
     cashOnCashReturn: ((noi - annualDebtService) / deposit) * 100,
-    roiWithoutAppreciation: (noi / purchasePrice) * 100,
-    roiWithAppreciation: ((noi + annualAppreciation) / purchasePrice) * 100,
     irr: calculateIRR(
       year,
-      purchasePrice, // Initial investment is full purchase price
-      annualCashflow + (annualAppreciation / year), // Annual cash flow includes both rental income and appreciation
-      futurePropertyValue // Final value is appreciated property value
-    )
+      purchasePrice, 
+      annualCashflow + (annualAppreciation / year),
+      futurePropertyValue
+    ),
+    netWorthChange: netWorthChange
   };
 }
 
