@@ -106,7 +106,6 @@ interface InvestmentYearMetrics {
   roiWithoutAppreciation: number;
   roiWithAppreciation: number;
   irr: number;
-  netWorthChange: number; // Added new metric
 }
 
 function calculateYearlyInvestmentMetrics(
@@ -132,27 +131,6 @@ function calculateYearlyInvestmentMetrics(
   // Calculate annual appreciation
   const annualAppreciation = futurePropertyValue - purchasePrice;
 
-  // Calculate loan equity buildup (principal portion of payments) for the year
-  const monthlyInterestRate = propertyValueIncrease / (100 * 12);
-  const totalPayments = loanTerm * 12;
-  const remainingPayments = totalPayments - (year - 1) * 12;
-
-  // Calculate remaining loan balance at start of year
-  const startYearBalance = initialLoanAmount * 
-    (Math.pow(1 + monthlyInterestRate, remainingPayments + 12) - 1) / 
-    (Math.pow(1 + monthlyInterestRate, totalPayments) - 1);
-
-  // Calculate remaining loan balance at end of year
-  const endYearBalance = initialLoanAmount * 
-    (Math.pow(1 + monthlyInterestRate, remainingPayments) - 1) / 
-    (Math.pow(1 + monthlyInterestRate, totalPayments) - 1);
-
-  // Equity buildup is the difference in loan balances
-  const equityBuildup = startYearBalance - endYearBalance;
-
-  // Calculate net worth change (appreciation + equity buildup + cashflow)
-  const netWorthChange = (annualAppreciation / year) + equityBuildup + annualCashflow;
-
   return {
     grossYield: (grossRevenue / purchasePrice) * 100,
     netYield: (noi - annualDebtService) / purchasePrice * 100,
@@ -164,11 +142,10 @@ function calculateYearlyInvestmentMetrics(
     roiWithAppreciation: ((noi + annualAppreciation) / purchasePrice) * 100,
     irr: calculateIRR(
       year,
-      purchasePrice,
-      annualCashflow + (annualAppreciation / year),
-      futurePropertyValue
-    ),
-    netWorthChange: netWorthChange // Added new metric
+      purchasePrice, // Initial investment is full purchase price
+      annualCashflow + (annualAppreciation / year), // Annual cash flow includes both rental income and appreciation
+      futurePropertyValue // Final value is appreciated property value
+    )
   };
 }
 
