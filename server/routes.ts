@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { properties, users, accessCodes } from "@db/schema";
+import { properties, users, accessCodes, propertyAnalyzerResults, insertPropertyAnalyzerResultSchema } from "@db/schema";
 import { eq, and } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
@@ -716,6 +716,64 @@ export function registerRoutes(app: Express): Server {
       console.error('Error cancelling subscription downgrade:', error);
       res.status(500).json({
         error: "Failed to cancel subscription downgrade",
+        details: error instanceof Error ? error.message : undefined
+      });
+    }
+  });
+
+  // New endpoint to save property analysis results
+  app.post("/api/property-analyzer/save", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const result = insertPropertyAnalyzerResultSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).send("Invalid input: " + result.error.issues.map(i => i.message).join(", "));
+      }
+
+      // Add the user ID to the data
+      const analysisData = {
+        ...result.data,
+        userId: req.user!.id,
+        updatedAt: new Date()
+      };
+
+      // Save to database
+      const [savedAnalysis] = await db
+        .insert(propertyAnalyzerResults)
+        .values(analysisData)
+        .returning();
+
+      res.json(savedAnalysis);
+    } catch (error) {
+      console.error('Error saving property analysis:', error);
+      res.status(500).json({
+        error: "Failed to save property analysis",
+        details: error instanceof Error ? error.message : undefined
+      });
+    }
+  });
+
+  // New endpoint to fetch property analyzer results
+  app.get("/api/property-analyzer/properties", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const analyzerProperties = await db
+        .select()
+        .from(propertyAnalyzerResults)
+        .where(eq(propertyAnalyzerResults.userId, req.user!.id))
+        .orderBy(propertyAnalyzerResults.createdAt);
+
+      res.json(analyzerProperties);
+    } catch (error) {
+      console.error('Error fetching property analyses:', error);
+      res.status(500).json({
+        error: "Failed to fetch property analyses",
         details: error instanceof Error ? error.message : undefined
       });
     }

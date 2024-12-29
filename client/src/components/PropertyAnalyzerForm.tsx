@@ -2,7 +2,16 @@ import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 // Hooks
 import { useProAccess } from "@/hooks/use-pro-access";
@@ -178,6 +187,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [showPercentileDialog, setShowPercentileDialog] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [demoClicks, setDemoClicks] = useState(0);
@@ -189,6 +199,207 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   } | null>(null);
   const hasProAccess = useProAccess();
   const { toast } = useToast();
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+
+  // Update save mutation
+  const saveMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch('/api/property-analyzer/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...data,
+          revenueProjections: analysisResult.revenueProjections,
+          operatingExpenses: analysisResult.operatingExpenses,
+          netOperatingIncome: analysisResult.netOperatingIncome,
+          longTermNetOperatingIncome: analysisResult.longTermNetOperatingIncome,
+          investmentMetrics: analysisResult.investmentMetrics,
+        }),
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text);
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      setShowSaveSuccess(true); // Show success dialog instead of toast
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save property analysis",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmit = async (data: PropertyAnalyzerFormValues) => {
+    setIsSubmitting(true);
+    try {
+      // Clean and prepare the analysis data
+      // Ensure all form fields are included and properly typed
+      const analysisData = {
+        // Property Details
+        address: data.address,
+        propertyUrl: data.propertyUrl,
+        purchasePrice: Number(data.purchasePrice),
+        floorArea: Number(data.floorArea),
+        bedrooms: Number(data.bedrooms),
+        bathrooms: Number(data.bathrooms),
+        parkingSpaces: Number(data.parkingSpaces || 0),
+
+        // Financing Details
+        depositType: data.depositType,
+        depositAmount: Number(data.depositAmount),
+        depositPercentage: Number(data.depositPercentage),
+        interestRate: Number(data.interestRate),
+        loanTerm: Number(data.loanTerm), // Ensure loan term is converted to number
+
+        // Operating Expenses
+        monthlyLevies: Number(data.monthlyLevies || 0),
+        monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
+        otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
+        maintenancePercent: Number(data.maintenancePercent || 0),
+        managementFee: Number(data.managementFee || 0),
+
+        // Revenue Performance
+        airbnbNightlyRate: Number(data.airbnbNightlyRate || 0),
+        occupancyRate: Number(data.occupancyRate || 0),
+        longTermRental: Number(data.longTermRental || 0),
+        leaseCycleGap: Number(data.leaseCycleGap || 0),
+
+        // Escalations
+        annualIncomeGrowth: Number(data.annualIncomeGrowth || 0),
+        annualExpenseGrowth: Number(data.annualExpenseGrowth || 0),
+        annualPropertyAppreciation: Number(data.annualPropertyAppreciation || 0),
+
+        // Miscellaneous
+        cmaRatePerSqm: Number(data.cmaRatePerSqm || 0),
+        comments: data.comments || "",
+      };
+
+      console.log("Submitting complete analysis data:", analysisData);
+
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(analysisData),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const result = await response.json();
+      setAnalysisResult(result); // Store the analysis result
+
+      if (props.onAnalysisComplete) {
+        await props.onAnalysisComplete(analysisData);
+      }
+      toast({
+        title: "Success",
+        description: "Property analysis completed successfully.",
+      });
+    } catch (error) {
+      console.error('Analysis error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to analyze property data.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSave = () => {
+    if (!analysisResult) {
+      toast({
+        title: "Error",
+        description: "Please analyze the property first before saving.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const formData = form.getValues();
+    saveMutation.mutate(formData);
+  };
+
+  const nextStep = () => {
+    const fields = getFieldsForStep(currentStep);
+    const isStepValid = fields.every(
+      (field) => !form.getFieldState(field).error,
+    );
+
+    if (isStepValid) {
+      setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+    } else {
+      // Trigger validation for the current step's fields
+      fields.forEach((field) => form.trigger(field));
+    }
+  };
+
+  const previousStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+  };
+
+  const getFieldsForStep = (
+    step: number,
+  ): (keyof PropertyAnalyzerFormValues)[] => {
+    switch (step) {
+      case 0:
+        return [
+          "address",
+          "propertyUrl",
+          "purchasePrice",
+          "floorArea",
+          "bedrooms",
+          "bathrooms",
+          "parkingSpaces",
+        ];
+      case 1:
+        return [
+          "depositType",
+          "depositAmount",
+          "depositPercentage",
+          "interestRate",
+          "loanTerm",
+        ];
+      case 2:
+        return [
+          "monthlyLevies",
+          "monthlyRatesTaxes",
+          "otherMonthlyExpenses",
+          "maintenancePercent",
+          "managementFee",
+        ];
+      case 3:
+        return [
+          "airbnbNightlyRate",
+          "occupancyRate",
+          "longTermRental",
+          "leaseCycleGap",
+        ];
+      case 4:
+        return [
+          "annualIncomeGrowth",
+          "annualExpenseGrowth",
+          "annualPropertyAppreciation",
+        ];
+      case 5:
+        return ["cmaRatePerSqm", "comments"];
+      default:
+        return [];
+    }
+  };
 
   const fetchRevenueData = async () => {
     setIsLoading(true);
@@ -294,140 +505,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       comments: "",
     },
   });
-
-  const onSubmit = async (data: PropertyAnalyzerFormValues) => {
-    setIsSubmitting(true);
-    try {
-      // Clean and prepare the analysis data
-      // Ensure all form fields are included and properly typed
-      const analysisData = {
-        // Property Details
-        address: data.address,
-        propertyUrl: data.propertyUrl,
-        purchasePrice: Number(data.purchasePrice),
-        floorArea: Number(data.floorArea),
-        bedrooms: Number(data.bedrooms),
-        bathrooms: Number(data.bathrooms),
-        parkingSpaces: Number(data.parkingSpaces || 0),
-        
-        // Financing Details
-        depositType: data.depositType,
-        depositAmount: Number(data.depositAmount),
-        depositPercentage: Number(data.depositPercentage),
-        interestRate: Number(data.interestRate),
-        loanTerm: Number(data.loanTerm), // Ensure loan term is converted to number
-        
-        // Operating Expenses
-        monthlyLevies: Number(data.monthlyLevies || 0),
-        monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
-        otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
-        maintenancePercent: Number(data.maintenancePercent || 0),
-        managementFee: Number(data.managementFee || 0),
-        
-        // Revenue Performance
-        airbnbNightlyRate: Number(data.airbnbNightlyRate || 0),
-        occupancyRate: Number(data.occupancyRate || 0),
-        longTermRental: Number(data.longTermRental || 0),
-        leaseCycleGap: Number(data.leaseCycleGap || 0),
-        
-        // Escalations
-        annualIncomeGrowth: Number(data.annualIncomeGrowth || 0),
-        annualExpenseGrowth: Number(data.annualExpenseGrowth || 0),
-        annualPropertyAppreciation: Number(data.annualPropertyAppreciation || 0),
-        
-        // Miscellaneous
-        cmaRatePerSqm: Number(data.cmaRatePerSqm || 0),
-        comments: data.comments || "",
-      };
-
-      console.log("Submitting complete analysis data:", analysisData);
-
-      if (props.onAnalysisComplete) {
-        await props.onAnalysisComplete(analysisData);
-      }
-      toast({
-        title: "Success",
-        description: "Property analysis completed successfully.",
-      });
-    } catch (error) {
-      console.error('Analysis error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to analyze property data.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const nextStep = () => {
-    const fields = getFieldsForStep(currentStep);
-    const isStepValid = fields.every(
-      (field) => !form.getFieldState(field).error,
-    );
-
-    if (isStepValid) {
-      setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
-    } else {
-      // Trigger validation for the current step's fields
-      fields.forEach((field) => form.trigger(field));
-    }
-  };
-
-  const previousStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 0));
-  };
-
-  const getFieldsForStep = (
-    step: number,
-  ): (keyof PropertyAnalyzerFormValues)[] => {
-    switch (step) {
-      case 0:
-        return [
-          "address",
-          "propertyUrl",
-          "purchasePrice",
-          "floorArea",
-          "bedrooms",
-          "bathrooms",
-          "parkingSpaces",
-        ];
-      case 1:
-        return [
-          "depositType",
-          "depositAmount",
-          "depositPercentage",
-          "interestRate",
-          "loanTerm",
-        ];
-      case 2:
-        return [
-          "monthlyLevies",
-          "monthlyRatesTaxes",
-          "otherMonthlyExpenses",
-          "maintenancePercent",
-          "managementFee",
-        ];
-      case 3:
-        return [
-          "airbnbNightlyRate",
-          "occupancyRate",
-          "longTermRental",
-          "leaseCycleGap",
-        ];
-      case 4:
-        return [
-          "annualIncomeGrowth",
-          "annualExpenseGrowth",
-          "annualPropertyAppreciation",
-        ];
-      case 5:
-        return ["cmaRatePerSqm", "comments"];
-      default:
-        return [];
-    }
-  };
 
   return (
     <div className="space-y-8 max-w-[75%]">
@@ -1007,8 +1084,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                                 field.onChange(e.target.valueAsNumber)
                               }
                             />
-                          </FormControl>
-                          <FormMessage />
+                          </FormControl>                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -1240,7 +1316,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
           </Card>
 
           {/* Navigation */}
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-between mt-8">
             <Button
               type="button"
               variant="outline"
@@ -1250,18 +1326,42 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               Previous
             </Button>
 
-            {currentStep === STEPS.length - 1 ? (
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Submit
-              </Button>
-            ) : (
-              <Button type="button" onClick={nextStep}>
-                Next
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {currentStep === STEPS.length - 1 && (
+                <>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="min-w-[100px]"
+                  >
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Analyze
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={!analysisResult || saveMutation.isPending}
+                    className="min-w-[100px]"
+                  >
+                    {saveMutation.isPending ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="mr-2 h-4 w-4" />
+                    )}
+                    Save
+                  </Button>
+                </>
+              )}
+
+              {currentStep < STEPS.length - 1 && (
+                <Button type="button" onClick={nextStep}>
+                  Next
+                </Button>
+              )}
+            </div>
           </div>
         </form>
       </Form>
@@ -1474,6 +1574,23 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         className="fixed bottom-4 right-4 w-4 h-4 opacity-5 hover:opacity-10 bg-gray-500 rounded-full"
         aria-hidden="true"
       />
+
+      {/* Add Success Dialog */}
+      <AlertDialog open={showSaveSuccess} onOpenChange={setShowSaveSuccess}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Analysis Saved Successfully</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your property analysis has been saved and can be viewed in the Properties page under the Property Analyzer tab.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex justify-end">
+            <AlertDialogAction>
+              Continue
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

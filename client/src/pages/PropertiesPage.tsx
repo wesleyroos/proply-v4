@@ -35,78 +35,61 @@ interface Property {
   createdAt: string;
 }
 
+interface AnalyzerProperty {
+  id: number;
+  address: string;
+  purchasePrice: number;
+  bedrooms: number;
+  bathrooms: number;
+  netOperatingIncome: {
+    year1: {
+      value: number;
+    };
+  };
+  investmentMetrics: {
+    shortTerm: Array<{
+      capRate: number;
+      cashOnCashReturn: number;
+    }>;
+  };
+  createdAt: string;
+}
+
 type PropertyType = 'rent_compare' | 'property_analyzer';
 
 export default function PropertiesPage() {
   const queryClient = useQueryClient();
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState<PropertyType>('rent_compare');
-  const { data: properties, isLoading } = useQuery<Property[]>({
-    queryKey: ['/api/properties', user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const response = await fetch('/api/properties', {
-        credentials: 'include'
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch properties');
-      }
-      const data = await response.json();
-      console.log(`Fetched ${data.length} properties:`, data);
-      return data;
-    }
-  });
-
-  const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
+  const [propertyToDelete, setPropertyToDelete] = useState<Property | AnalyzerProperty | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
-    key: keyof Property;
+    key: keyof Property | keyof AnalyzerProperty;
     direction: 'asc' | 'desc';
   } | null>(null);
 
-  const filteredProperties = properties?.filter(property => {
-    const typeMatch = property.propertyType === activeTab || !property.propertyType;
-    const searchMatch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       property.address.toLowerCase().includes(searchTerm.toLowerCase());
-    return typeMatch && searchMatch;
+  // Query for rent compare properties
+  const { data: properties, isLoading: isLoadingProperties } = useQuery<Property[]>({
+    queryKey: ['/api/properties', user?.id],
+    enabled: !!user && activeTab === 'rent_compare',
   });
 
-  console.log(`Filtered ${filteredProperties?.length} properties for type ${activeTab}:`, filteredProperties);
-
-  const sortedProperties = filteredProperties?.sort((a, b) => {
-    if (!sortConfig) return 0;
-
-    const aValue = a[sortConfig.key];
-    const bValue = b[sortConfig.key];
-
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortConfig.direction === 'asc'
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    }
-
-    if (typeof aValue === 'number' && typeof bValue === 'number') {
-      return sortConfig.direction === 'asc'
-        ? aValue - bValue
-        : bValue - aValue;
-    }
-
-    return 0;
+  // Query for property analyzer results
+  const { data: analyzerProperties, isLoading: isLoadingAnalyzer } = useQuery<AnalyzerProperty[]>({
+    queryKey: ['/api/property-analyzer/properties', user?.id],
+    enabled: !!user && activeTab === 'property_analyzer',
   });
-
-  const handleSort = (key: keyof Property) => {
-    setSortConfig(current => ({
-      key,
-      direction: current?.key === key && current.direction === 'asc' ? 'desc' : 'asc'
-    }));
-  };
 
   const handleDelete = async () => {
     if (!propertyToDelete) return;
 
     try {
-      const response = await fetch(`/api/properties/${propertyToDelete.id}`, {
+      const endpoint = activeTab === 'rent_compare' 
+        ? `/api/properties/${propertyToDelete.id}`
+        : `/api/property-analyzer/${propertyToDelete.id}`;
+
+      const response = await fetch(endpoint, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -115,7 +98,13 @@ export default function PropertiesPage() {
         throw new Error(await response.text());
       }
 
-      queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
+      // Invalidate the appropriate query
+      queryClient.invalidateQueries({ 
+        queryKey: activeTab === 'rent_compare' 
+          ? ['/api/properties'] 
+          : ['/api/property-analyzer/properties'] 
+      });
+
       setPropertyToDelete(null);
       setDeleteError(null);
     } catch (error) {
@@ -174,83 +163,23 @@ export default function PropertiesPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
-                      <th
-                        className="py-3 px-4 text-left cursor-pointer hover:bg-muted/80"
-                        onClick={() => handleSort('title')}
-                      >
-                        <div className="flex items-center gap-2">
-                          Property
-                          {sortConfig?.key === 'title' && (
-                            sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                          )}
-                        </div>
-                      </th>
-                      <th
-                        className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
-                        onClick={() => handleSort('shortTermNightly')}
-                      >
-                        <div className="flex items-center justify-end gap-2">
-                          Short-Term Rate
-                          {sortConfig?.key === 'shortTermNightly' && (
-                            sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                          )}
-                        </div>
-                      </th>
-                      <th
-                        className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
-                        onClick={() => handleSort('longTermMonthly')}
-                      >
-                        <div className="flex items-center justify-end gap-2">
-                          Long-Term Monthly
-                          {sortConfig?.key === 'longTermMonthly' && (
-                            sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                          )}
-                        </div>
-                      </th>
-                      <th
-                        className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
-                        onClick={() => handleSort('shortTermAfterFees')}
-                      >
-                        <div className="flex items-center justify-end gap-2">
-                          Short-Term Annual
-                          {sortConfig?.key === 'shortTermAfterFees' && (
-                            sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                          )}
-                        </div>
-                      </th>
-                      <th
-                        className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
-                        onClick={() => handleSort('breakEvenOccupancy')}
-                      >
-                        <div className="flex items-center justify-end gap-2">
-                          Break-even
-                          {sortConfig?.key === 'breakEvenOccupancy' && (
-                            sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                          )}
-                        </div>
-                      </th>
-                      <th
-                        className="py-3 px-4 text-right cursor-pointer hover:bg-muted/80"
-                        onClick={() => handleSort('createdAt')}
-                      >
-                        <div className="flex items-center justify-end gap-2">
-                          Added
-                          {sortConfig?.key === 'createdAt' && (
-                            sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                          )}
-                        </div>
-                      </th>
+                      <th className="py-3 px-4 text-left">Property</th>
+                      <th className="py-3 px-4 text-right">Short-Term Rate</th>
+                      <th className="py-3 px-4 text-right">Long-Term Monthly</th>
+                      <th className="py-3 px-4 text-right">Short-Term Annual</th>
+                      <th className="py-3 px-4 text-right">Break-even</th>
+                      <th className="py-3 px-4 text-right">Added</th>
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {isLoading ? (
+                    {isLoadingProperties ? (
                       <tr>
                         <td colSpan={7} className="text-center py-8 text-muted-foreground">
                           Loading properties...
                         </td>
                       </tr>
-                    ) : !sortedProperties?.length ? (
+                    ) : !properties?.length ? (
                       <tr>
                         <td colSpan={7} className="text-center py-8 text-muted-foreground">
                           No properties analyzed yet.{' '}
@@ -260,7 +189,7 @@ export default function PropertiesPage() {
                         </td>
                       </tr>
                     ) : (
-                      sortedProperties?.map((property) => (
+                      properties.map((property) => (
                         <tr key={property.id} className="border-b hover:bg-muted/50">
                           <td className="py-3 px-4">
                             <div>
@@ -308,10 +237,9 @@ export default function PropertiesPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
-                      {/* Add property analyzer specific columns */}
                       <th className="py-3 px-4 text-left">Property</th>
                       <th className="py-3 px-4 text-right">Purchase Price</th>
-                      <th className="py-3 px-4 text-right">Net Operating Income</th>
+                      <th className="py-3 px-4 text-right">Net Operating Income (Year 1)</th>
                       <th className="py-3 px-4 text-right">Cap Rate</th>
                       <th className="py-3 px-4 text-right">Cash on Cash Return</th>
                       <th className="py-3 px-4 text-right">Added</th>
@@ -319,14 +247,60 @@ export default function PropertiesPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td colSpan={7} className="text-center py-8 text-muted-foreground">
-                        Property Analyzer coming soon.{' '}
-                        <Link href="/analyzer" className="text-primary hover:underline">
-                          Analyze your first property
-                        </Link>
-                      </td>
-                    </tr>
+                    {isLoadingAnalyzer ? (
+                      <tr>
+                        <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                          Loading properties...
+                        </td>
+                      </tr>
+                    ) : !analyzerProperties?.length ? (
+                      <tr>
+                        <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                          No properties analyzed yet.{' '}
+                          <Link href="/analyzer" className="text-primary hover:underline">
+                            Analyze your first property
+                          </Link>
+                        </td>
+                      </tr>
+                    ) : (
+                      analyzerProperties.map((property) => (
+                        <tr key={property.id} className="border-b hover:bg-muted/50">
+                          <td className="py-3 px-4">
+                            <div>
+                              <div className="text-sm text-muted-foreground">{property.address}</div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {property.bedrooms} bed • {property.bathrooms} bath
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            {formatter.format(Number(property.purchasePrice))}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            {formatter.format(property.netOperatingIncome.year1.value)}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            {property.investmentMetrics.shortTerm[0].capRate.toFixed(2)}%
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            {property.investmentMetrics.shortTerm[0].cashOnCashReturn.toFixed(2)}%
+                          </td>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            {new Date(property.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => setPropertyToDelete(property)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -342,7 +316,7 @@ export default function PropertiesPage() {
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the property
-              {propertyToDelete && ` "${propertyToDelete.title}"`} and remove it from our servers.
+              {propertyToDelete && ` "${propertyToDelete.address}"`} and remove it from our servers.
               {deleteError && (
                 <p className="mt-2 text-red-600">{deleteError}</p>
               )}
