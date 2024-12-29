@@ -146,6 +146,18 @@ function calculateYearlyInvestmentMetrics(
   // Calculate net worth change
   const netWorthChange = annualAppreciation + equityBuildup + annualCashflow;
 
+  // Add detailed logging
+  console.log(`\n=== Net Worth Change Calculation for Year ${year} ===`);
+  console.log(`Initial Purchase Price: R${purchasePrice.toLocaleString()}`);
+  console.log(`Future Property Value: R${futurePropertyValue.toLocaleString()}`);
+  console.log(`Annual Appreciation: R${annualAppreciation.toLocaleString()}`);
+  console.log(`Initial Loan Amount: R${initialLoanAmount.toLocaleString()}`);
+  console.log(`Current Loan Balance: R${loanBalance.toLocaleString()}`);
+  console.log(`Equity Buildup: R${equityBuildup.toLocaleString()}`);
+  console.log(`Annual Cashflow: R${annualCashflow.toLocaleString()}`);
+  console.log(`Net Worth Change: R${netWorthChange.toLocaleString()}`);
+  console.log('=====================================\n');
+
   return {
     grossYield: (grossRevenue / purchasePrice) * 100,
     netYield: (noi - annualDebtService) / purchasePrice * 100,
