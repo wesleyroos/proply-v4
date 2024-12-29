@@ -146,8 +146,8 @@ function calculateYearlyInvestmentMetrics(
     grossYield: (grossRevenue / purchasePrice) * 100,
     netYield: (noi - annualDebtService) / purchasePrice * 100,
     returnOnEquity: (noi / deposit) * 100,
-    annualReturn: ((noi + annualAppreciation / year) / purchasePrice) * 100,
-    capRate: (noi / purchasePrice) * 100,
+    annualReturn: ((noi + annualAppreciation) / purchasePrice) * 100,  // Changed to include full annual appreciation
+    capRate: (noi / purchasePrice) * 100,  // Kept as is - only considers NOI
     cashOnCashReturn: ((noi - annualDebtService) / deposit) * 100,
     irr: calculateIRR(
       year,
