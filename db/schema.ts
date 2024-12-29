@@ -116,6 +116,60 @@ export const reportTracking = pgTable("report_tracking", {
   errorMessage: text("error_message"),
 });
 
+// New table for property analyzer results
+export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  title: text("title").notNull(),
+  address: text("address").notNull(),
+  propertyUrl: text("property_url"),
+  purchasePrice: decimal("purchase_price", { precision: 10, scale: 2 }).notNull(),
+  floorArea: decimal("floor_area", { precision: 10, scale: 2 }).notNull(),
+  bedrooms: decimal("bedrooms", { precision: 3, scale: 1 }).notNull(),
+  bathrooms: decimal("bathrooms", { precision: 3, scale: 1 }).notNull(),
+  parkingSpaces: integer("parking_spaces"),
+
+  // Financing details
+  depositType: text("deposit_type").notNull(),
+  depositAmount: decimal("deposit_amount", { precision: 10, scale: 2 }).notNull(),
+  depositPercentage: decimal("deposit_percentage", { precision: 5, scale: 2 }).notNull(),
+  interestRate: decimal("interest_rate", { precision: 5, scale: 2 }).notNull(),
+  loanTerm: integer("loan_term").notNull(),
+
+  // Operating expenses
+  monthlyLevies: decimal("monthly_levies", { precision: 10, scale: 2 }).notNull(),
+  monthlyRatesTaxes: decimal("monthly_rates_taxes", { precision: 10, scale: 2 }).notNull(),
+  otherMonthlyExpenses: decimal("other_monthly_expenses", { precision: 10, scale: 2 }).notNull(),
+  maintenancePercent: decimal("maintenance_percent", { precision: 5, scale: 2 }).notNull(),
+  managementFee: decimal("management_fee", { precision: 5, scale: 2 }).notNull(),
+
+  // Revenue performance
+  airbnbNightlyRate: decimal("airbnb_nightly_rate", { precision: 10, scale: 2 }),
+  occupancyRate: decimal("occupancy_rate", { precision: 5, scale: 2 }),
+  longTermRental: decimal("long_term_rental", { precision: 10, scale: 2 }),
+  leaseCycleGap: decimal("lease_cycle_gap", { precision: 5, scale: 2 }),
+
+  // Escalations
+  annualIncomeGrowth: decimal("annual_income_growth", { precision: 5, scale: 2 }).notNull(),
+  annualExpenseGrowth: decimal("annual_expense_growth", { precision: 5, scale: 2 }).notNull(),
+  annualPropertyAppreciation: decimal("annual_property_appreciation", { precision: 5, scale: 2 }).notNull(),
+
+  // Analysis results stored as JSON
+  revenueProjections: jsonb("revenue_projections").notNull(),
+  operatingExpenses: jsonb("operating_expenses").notNull(),
+  netOperatingIncome: jsonb("net_operating_income").notNull(),
+  longTermNetOperatingIncome: jsonb("long_term_net_operating_income").notNull(),
+  investmentMetrics: jsonb("investment_metrics").notNull(),
+
+  // Additional fields
+  cmaRatePerSqm: decimal("cma_rate_per_sqm", { precision: 10, scale: 2 }).notNull(),
+  comments: text("comments"),
+  propertyPhoto: text("property_photo"),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ one }) => ({
   accessCode: one(accessCodes, {
@@ -154,6 +208,15 @@ export const reportTrackingRelations = relations(reportTracking, ({ one }) => ({
   }),
 }));
 
+// Add relations for new table
+export const propertyAnalyzerResultsRelations = relations(propertyAnalyzerResults, ({ one }) => ({
+  user: one(users, {
+    fields: [propertyAnalyzerResults.userId],
+    references: [users.id],
+  }),
+}));
+
+
 // Schemas
 export const insertAccessCodeSchema = createInsertSchema(accessCodes);
 export const selectAccessCodeSchema = createSelectSchema(accessCodes);
@@ -170,6 +233,10 @@ export const selectAgencySettingsSchema = createSelectSchema(agencySettings);
 export const insertReportTrackingSchema = createInsertSchema(reportTracking);
 export const selectReportTrackingSchema = createSelectSchema(reportTracking);
 
+// Add schemas for new table
+export const insertPropertyAnalyzerResultSchema = createInsertSchema(propertyAnalyzerResults);
+export const selectPropertyAnalyzerResultSchema = createSelectSchema(propertyAnalyzerResults);
+
 // Types
 export type InsertAccessCode = typeof accessCodes.$inferInsert;
 export type SelectAccessCode = typeof accessCodes.$inferSelect;
@@ -185,3 +252,7 @@ export type InsertAgencySettings = typeof agencySettings.$inferInsert;
 export type SelectAgencySettings = typeof agencySettings.$inferSelect;
 export type InsertReportTracking = typeof reportTracking.$inferInsert;
 export type SelectReportTracking = typeof reportTracking.$inferSelect;
+
+// Add types for the new table
+export type InsertPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferInsert;
+export type SelectPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferSelect;
