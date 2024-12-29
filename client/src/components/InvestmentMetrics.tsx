@@ -108,12 +108,14 @@ export default function InvestmentMetrics({
                       </p>
                     </TooltipContent>
                   </Tooltip>
-                  <AnalyzerIndicator />
                 </div>
               </td>
               {years.map((year) => (
                 <td key={year} className="py-3 px-4 text-right">
-                  {format(getMetricValue(year, key, rentalType))}
+                  <div className="flex items-center justify-end gap-2">
+                    <span>{format(getMetricValue(year, key, rentalType))}</span>
+                    <AnalyzerIndicator />
+                  </div>
                 </td>
               ))}
             </tr>
