@@ -127,10 +127,13 @@ function calculateYearlyInvestmentMetrics(
   // Calculate future property value considering appreciation
   const futurePropertyValue = purchasePrice * Math.pow(1 + appreciationRate, year);
 
-  // Calculate annual appreciation - fixing the calculation to show first year appreciation
+  // Calculate annual appreciation for this specific year
   const annualAppreciation = year === 1 ? 
     (futurePropertyValue - purchasePrice) : 
     (futurePropertyValue - (purchasePrice * Math.pow(1 + appreciationRate, year - 1)));
+
+  // Calculate annual cash flow (NOI - debt service)
+  const annualCashflow = noi - annualDebtService;
 
   // Calculate loan balance at the end of the year
   const monthlyRate = interestRate / 100 / 12;
