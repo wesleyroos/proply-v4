@@ -119,7 +119,7 @@ function calculateYearlyInvestmentMetrics(
   monthlyBondRepayment: number,
   initialLoanAmount: number,
   loanTerm: number,
-  interestRate: number  // Added this parameter
+  interestRate: number
 ): InvestmentYearMetrics {
   const annualDebtService = monthlyBondRepayment * 12;
   const appreciationRate = propertyValueIncrease / 100;
@@ -365,7 +365,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       ),
       calculateYearlyInvestmentMetrics(
         2,
@@ -377,7 +377,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       ),
       calculateYearlyInvestmentMetrics(
         3,
@@ -389,7 +389,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       ),
       calculateYearlyInvestmentMetrics(
         4,
@@ -401,7 +401,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       ),
       calculateYearlyInvestmentMetrics(
         5,
@@ -413,7 +413,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       ),
       calculateYearlyInvestmentMetrics(
         10,
@@ -425,7 +425,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       ),
       calculateYearlyInvestmentMetrics(
         20,
@@ -437,7 +437,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       )
     ],
     longTerm: [
@@ -451,7 +451,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       ),
       calculateYearlyInvestmentMetrics(
         2,
@@ -463,7 +463,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       ),
       calculateYearlyInvestmentMetrics(
         3,
@@ -475,7 +475,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       ),
       calculateYearlyInvestmentMetrics(
         4,
@@ -487,7 +487,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       ),
       calculateYearlyInvestmentMetrics(
         5,
@@ -499,7 +499,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       ),
       calculateYearlyInvestmentMetrics(
         10,
@@ -511,7 +511,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       ),
       calculateYearlyInvestmentMetrics(
         20,
@@ -523,7 +523,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         monthlyBondRepayment,
         loanAmount,
         data.loanTerm,
-        data.interestRate  // Added interest rate parameter
+        data.interestRate
       )
     ]
   };
