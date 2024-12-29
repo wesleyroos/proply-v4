@@ -70,7 +70,62 @@ export interface AnalysisResult {
       year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
       year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
     } | null;
+    investmentMetrics: {
+      year1: InvestmentYearMetrics;
+      year2: InvestmentYearMetrics;
+      year3: InvestmentYearMetrics;
+      year4: InvestmentYearMetrics;
+      year5: InvestmentYearMetrics;
+      year10: InvestmentYearMetrics;
+      year20: InvestmentYearMetrics;
+    };
   };
+}
+
+interface InvestmentYearMetrics {
+  grossYield: number;
+  netYield: number;
+  returnOnEquity: number;
+  annualReturn: number;
+  capRate: number;
+  cashOnCashReturn: number;
+  roiWithoutAppreciation: number;
+  roiWithAppreciation: number;
+  irr: number;
+  netWorthChange: number;
+}
+
+function calculateYearlyInvestmentMetrics(
+  year: number,
+  noi: number,
+  annualCashflow: number,
+  netWorthChange: number,
+  purchasePrice: number,
+  deposit: number,
+  propertyValueIncrease: number,
+  grossRevenue: number
+): InvestmentYearMetrics {
+  const propertyValueAtYear = purchasePrice * (1 + propertyValueIncrease);
+
+  return {
+    grossYield: (grossRevenue / purchasePrice) * 100,
+    netYield: (noi / purchasePrice) * 100,
+    returnOnEquity: (noi / deposit) * 100,
+    annualReturn: ((noi + (purchasePrice * propertyValueIncrease)) / purchasePrice) * 100,
+    capRate: (noi / propertyValueAtYear) * 100,
+    cashOnCashReturn: (annualCashflow / deposit) * 100,
+    roiWithoutAppreciation: (noi / (deposit + purchasePrice)) * 100,
+    roiWithAppreciation: ((noi + (purchasePrice * propertyValueIncrease)) / (deposit + purchasePrice)) * 100,
+    irr: calculateIRR(year, deposit, annualCashflow, propertyValueAtYear - purchasePrice),
+    netWorthChange: netWorthChange
+  };
+}
+
+function calculateIRR(year: number, initialInvestment: number, annualCashflow: number, appreciation: number): number {
+  // Simple IRR approximation - in real world would use Newton-Raphson method
+  const totalReturn = (annualCashflow * year) + appreciation;
+  const averageAnnualReturn = totalReturn / year;
+  return (averageAnnualReturn / initialInvestment) * 100;
 }
 
 export function calculateYields(inputData: PropertyData): AnalysisResult {
@@ -350,21 +405,21 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       annualDebtService,
       annualCashflow
     });
-
+    
     // Calculate remaining loan balance after N years
     const monthlyRate = (propertyData.interestRate / 100) / 12;
     const totalPayments = year * 12;
     const remainingBalance = initialLoanAmount * 
       (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - Math.pow(1 + monthlyRate, totalPayments)) /
       (Math.pow(1 + monthlyRate, propertyData.loanTerm * 12) - 1);
-
+    
     // Property appreciation (assuming 5% annual appreciation)
     const appreciatedValue = propertyData.purchasePrice * Math.pow(1.05, year);
     const appreciation = appreciatedValue - propertyData.purchasePrice;
-
+    
     // Equity from loan paydown
     const equityFromLoanPaydown = initialLoanAmount - remainingBalance;
-
+    
     // Calculate cumulative rental income (sum of annual cashflows up to this year)
     const cumulativeRentalIncome = annualCashflow * year;
     console.log(`Year ${year} Cumulative Income:`, {
@@ -372,7 +427,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       year,
       cumulativeRentalIncome
     });
-
+    
     // Calculate total net worth change
     const netWorthChange = appreciation + equityFromLoanPaydown + cumulativeRentalIncome;
     console.log(`Year ${year} Net Worth Components:`, {
@@ -381,7 +436,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       cumulativeRentalIncome,
       netWorthChange
     });
-
+    
     return {
       value: noi,
       annualCashflow,
@@ -389,6 +444,80 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
       netWorthChange
     };
   }
+
+  const annualAppreciation = 0.05; // 5% annual appreciation
+  const investmentMetrics = {
+    year1: calculateYearlyInvestmentMetrics(
+      1,
+      netOperatingIncome?.year1.value || 0,
+      netOperatingIncome?.year1.annualCashflow || 0,
+      netOperatingIncome?.year1.netWorthChange || 0,
+      data.purchasePrice,
+      data.deposit,
+      annualAppreciation,
+      revenueProjections?.shortTerm?.year1 || 0
+    ),
+    year2: calculateYearlyInvestmentMetrics(
+      2,
+      netOperatingIncome?.year2.value || 0,
+      netOperatingIncome?.year2.annualCashflow || 0,
+      netOperatingIncome?.year2.netWorthChange || 0,
+      data.purchasePrice,
+      data.deposit,
+      annualAppreciation * 2,
+      revenueProjections?.shortTerm?.year2 || 0
+    ),
+    year3: calculateYearlyInvestmentMetrics(
+      3,
+      netOperatingIncome?.year3.value || 0,
+      netOperatingIncome?.year3.annualCashflow || 0,
+      netOperatingIncome?.year3.netWorthChange || 0,
+      data.purchasePrice,
+      data.deposit,
+      annualAppreciation * 3,
+      revenueProjections?.shortTerm?.year3 || 0
+    ),
+    year4: calculateYearlyInvestmentMetrics(
+      4,
+      netOperatingIncome?.year4.value || 0,
+      netOperatingIncome?.year4.annualCashflow || 0,
+      netOperatingIncome?.year4.netWorthChange || 0,
+      data.purchasePrice,
+      data.deposit,
+      annualAppreciation * 4,
+      revenueProjections?.shortTerm?.year4 || 0
+    ),
+    year5: calculateYearlyInvestmentMetrics(
+      5,
+      netOperatingIncome?.year5.value || 0,
+      netOperatingIncome?.year5.annualCashflow || 0,
+      netOperatingIncome?.year5.netWorthChange || 0,
+      data.purchasePrice,
+      data.deposit,
+      annualAppreciation * 5,
+      revenueProjections?.shortTerm?.year5 || 0
+    ),
+    year10: calculateYearlyInvestmentMetrics(
+      10,
+      netOperatingIncome?.year10.value || 0,
+      netOperatingIncome?.year10.annualCashflow || 0,
+      netOperatingIncome?.year10.netWorthChange || 0,
+      data.purchasePrice,
+      data.deposit,
+      annualAppreciation * 10,
+      revenueProjections?.shortTerm?.year10 || 0
+    ),
+    year20: calculateYearlyInvestmentMetrics(
+      20,
+      netOperatingIncome?.year20.value || 0,
+      netOperatingIncome?.year20.annualCashflow || 0,
+      netOperatingIncome?.year20.netWorthChange || 0,
+      data.purchasePrice,
+      data.deposit,
+      annualAppreciation * 20,
+      revenueProjections?.shortTerm?.year20 || 0
+    )
+  };
 
   const result = {
     shortTermGrossYield: shortTermGrossYield !== null ? Number(shortTermGrossYield.toFixed(2)) : null,
@@ -410,7 +539,8 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
         shortTerm: revenueProjections?.shortTerm || null
       },
       operatingExpenses,
-      netOperatingIncome
+      netOperatingIncome,
+      investmentMetrics
     }
   };
 

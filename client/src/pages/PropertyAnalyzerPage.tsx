@@ -25,6 +25,19 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+interface YearlyMetrics {
+  grossYield: number;
+  netYield: number;
+  returnOnEquity: number;
+  annualReturn: number;
+  capRate: number;
+  cashOnCashReturn: number;
+  roiWithoutAppreciation: number;
+  roiWithAppreciation: number;
+  irr: number;
+  netWorthChange: number;
+}
+
 interface AnalysisResult {
     shortTermGrossYield: number | null;
     longTermGrossYield: number | null;
@@ -43,7 +56,7 @@ interface AnalysisResult {
       shortTermAnnualRevenue: number | null;
       longTermAnnualRevenue: number | null;
       purchasePrice: number;
-      revenueProjections?: { 
+      revenueProjections: {
         shortTerm: {
           year1: number;
           year2: number;
@@ -52,7 +65,7 @@ interface AnalysisResult {
           year5: number;
           year10: number;
           year20: number;
-        } | null 
+        } | null;
       };
       operatingExpenses: {
         year1: number;
@@ -63,19 +76,24 @@ interface AnalysisResult {
         year10: number;
         year20: number;
       };
-      investmentMetrics?: {
-        grossYield: number;
-        netYield: number;
-        returnOnEquity: number;
-        annualReturn: number;
-        capRate: number;
-        cashOnCashReturn: number;
-        roiWithoutAppreciation: number;
-        roiWithAppreciation: number;
-        irr: number;
-        netWorthChange: number;
-
-      }
+      netOperatingIncome: {
+        year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+        year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+        year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+        year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+        year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+        year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+        year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      } | null;
+      investmentMetrics: {
+        year1: YearlyMetrics;
+        year2: YearlyMetrics;
+        year3: YearlyMetrics;
+        year4: YearlyMetrics;
+        year5: YearlyMetrics;
+        year10: YearlyMetrics;
+        year20: YearlyMetrics;
+      };
     };
     netOperatingIncome: {
       year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
@@ -132,32 +150,32 @@ export default function PropertyAnalyzerPage() {
         bedrooms: Number(formData.bedrooms),
         bathrooms: Number(formData.bathrooms),
         parkingSpaces: Number(formData.parkingSpaces || 0),
-        
+
         // Financing Details
         depositType: formData.depositType,
         deposit: Number(formData.depositAmount),
         depositPercentage: Number(formData.depositPercentage),
         interestRate: Number(formData.interestRate),
         loanTerm: Number(formData.loanTerm),
-        
+
         // Operating Expenses
         monthlyLevies: Number(formData.monthlyLevies || 0),
         monthlyRatesTaxes: Number(formData.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(formData.otherMonthlyExpenses || 0),
         maintenancePercent: Number(formData.maintenancePercent || 0),
         managementFee: Number(formData.managementFee || 0),
-        
+
         // Revenue Performance
         shortTermNightlyRate: Number(formData.airbnbNightlyRate || 0),
         annualOccupancy: Number(formData.occupancyRate || 0),
         longTermRental: Number(formData.longTermRental || 0),
         leaseCycleGap: Number(formData.leaseCycleGap || 0),
-        
+
         // Escalations
         annualIncomeGrowth: Number(formData.annualIncomeGrowth || 0),
         annualExpenseGrowth: Number(formData.annualExpenseGrowth || 0),
         annualPropertyAppreciation: Number(formData.annualPropertyAppreciation || 0),
-        
+
         // Miscellaneous
         ratePerSquareMeter: Number(formData.cmaRatePerSqm || 0),
         propertyDescription: formData.comments || "",
@@ -179,13 +197,13 @@ export default function PropertyAnalyzerPage() {
       });
 
       const data = await response.json();
-      
+
       // Comprehensive debug logging
       console.log('=== Property Analysis Debug Logs ===');
-      
+
       // 1. Raw response data
       console.log('Raw response from analysis engine:', data);
-      
+
       // 2. NOI specific data
       console.log('NOI Data Structure:', {
         fromAnalysisRoot: data.analysis?.netOperatingIncome,
@@ -195,7 +213,7 @@ export default function PropertyAnalyzerPage() {
           path: 'data.analysis.netOperatingIncome.year1.value'
         }
       });
-      
+
       // 3. Pre-state update data
       const stateUpdateData = {
         ...data,
@@ -204,9 +222,9 @@ export default function PropertyAnalyzerPage() {
         managementFee: requestBody.managementFee,
         loanTerm: requestBody.loanTerm
       };
-      
+
       console.log('Data being set to state:', stateUpdateData);
-      
+
       // 4. Verify NOI data structure before state update
       console.log('NOI structure verification:', {
         hasAnalysis: !!stateUpdateData.analysis,
@@ -306,9 +324,9 @@ export default function PropertyAnalyzerPage() {
                             </h3>
                             <div className="rounded-lg overflow-hidden mt-2">
                               <img
-                                src={formData.propertyPhoto instanceof File ? 
-                                  URL.createObjectURL(formData.propertyPhoto) : 
-                                  typeof formData.propertyPhoto === 'string' ? 
+                                src={formData.propertyPhoto instanceof File ?
+                                  URL.createObjectURL(formData.propertyPhoto) :
+                                  typeof formData.propertyPhoto === 'string' ?
                                     formData.propertyPhoto : null
                                 }
                                 alt="Property"
@@ -465,9 +483,9 @@ export default function PropertyAnalyzerPage() {
                       <AnalyzerIndicator />
                     </h3>
                     <p className="mt-2 text-2xl font-bold text-slate-800">
-                      R{((analysisResult.deposit || 0) + 
-                         calculateBondRegistration(analysisResult.analysis.purchasePrice, !removeVat) +
-                         calculateTransferCosts(analysisResult.analysis.purchasePrice, !removeVat, !removeTransferDuty)
+                      R{((analysisResult.deposit || 0) +
+                        calculateBondRegistration(analysisResult.analysis.purchasePrice, !removeVat) +
+                        calculateTransferCosts(analysisResult.analysis.purchasePrice, !removeVat, !removeTransferDuty)
                         ).toLocaleString()}
                     </p>
                   </div>
@@ -493,9 +511,9 @@ export default function PropertyAnalyzerPage() {
                         <div className="space-y-2">
                           <div>
                             <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                            <span>R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
-                              "0"}</span>
-                            <span className="w-2 h-2 rounded-full bg-red-500" title="Data from analyzer engine" />
+                              <span>R{analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
+                                "0"}</span>
+                              <span className="w-2 h-2 rounded-full bg-red-500" title="Data from analyzer engine" />
                             </p>
                             <p className="text-base text-slate-600">
                               R
@@ -526,8 +544,8 @@ export default function PropertyAnalyzerPage() {
                             <div className="flex justify-between items-center mt-1">
                               <p className="text-sm text-slate-600">Fee-adjusted Rate:</p>
                               <p className="text-sm font-medium flex items-center gap-2">
-                                R{analysisResult.shortTermNightlyRate ? 
-                                  Math.round(analysisResult.shortTermNightlyRate * 
+                                R{analysisResult.shortTermNightlyRate ?
+                                  Math.round(analysisResult.shortTermNightlyRate *
                                     (1 - (analysisResult.managementFee > 0 ? 0.15 : 0.03))
                                   ).toLocaleString() : "0"}
                                 <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
@@ -586,7 +604,7 @@ export default function PropertyAnalyzerPage() {
                               <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
                             </span>
                           </p>
-                          
+
                           {/* No fee adjustment section needed for long-term rental */}
                         </div>
                       </div>
@@ -720,7 +738,7 @@ export default function PropertyAnalyzerPage() {
               </Card>
 
               {/* Cashflow Metrics */}
-              <CashflowMetrics 
+              <CashflowMetrics
                 shortTermNightly={analysisResult.shortTermNightlyRate || 0}
                 longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
                 monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
@@ -731,7 +749,8 @@ export default function PropertyAnalyzerPage() {
                 operatingExpenses={analysisResult.analysis.operatingExpenses}
                 netOperatingIncome={analysisResult.analysis.netOperatingIncome}
               />
-              
+
+
               {/* Investment Metrics */}
               <Card className="mt-6">
                 <CardHeader>
@@ -802,7 +821,7 @@ export default function PropertyAnalyzerPage() {
               </Card>
 
               {/* Asset Growth & Equity */}
-              <AssetGrowthMetrics 
+              <AssetGrowthMetrics
                 purchasePrice={analysisResult.analysis.purchasePrice}
                 deposit={analysisResult.deposit || 0}
                 loanAmount={analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)}
