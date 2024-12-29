@@ -416,96 +416,75 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   };
 
   // Calculate Net Operating Income and Net Worth Change for each year
-  netOperatingIncome = revenueProjections?.shortTerm ? {
-    year1: calculateNetWorthMetrics(1, revenueProjections.shortTerm.year1, operatingExpenses.year1, data, loanAmount, monthlyBondRepayment),
-    year2: calculateNetWorthMetrics(2, revenueProjections.shortTerm.year2, operatingExpenses.year2, data, loanAmount, monthlyBondRepayment),
-    year3: calculateNetWorthMetrics(3, revenueProjections.shortTerm.year3, operatingExpenses.year3, data, loanAmount, monthlyBondRepayment),
-    year4: calculateNetWorthMetrics(4, revenueProjections.shortTerm.year4, operatingExpenses.year4, data, loanAmount, monthlyBondRepayment),
-    year5: calculateNetWorthMetrics(5, revenueProjections.shortTerm.year5, operatingExpenses.year5, data, loanAmount, monthlyBondRepayment),
-    year10: calculateNetWorthMetrics(10, revenueProjections.shortTerm.year10, operatingExpenses.year10, data, loanAmount, monthlyBondRepayment),
-    year20: calculateNetWorthMetrics(20, revenueProjections.shortTerm.year20, operatingExpenses.year20, data, loanAmount, monthlyBondRepayment)
-  } : null;
 
-
-
-  longTermNetOperatingIncome = revenueProjections?.longTerm ? {
-    year1: calculateNetWorthMetrics(1, revenueProjections.longTerm.year1, operatingExpenses.year1, data, loanAmount, monthlyBondRepayment),
-    year2: calculateNetWorthMetrics(2, revenueProjections.longTerm.year2, operatingExpenses.year2, data, loanAmount, monthlyBondRepayment),
-    year3: calculateNetWorthMetrics(3, revenueProjections.longTerm.year3, operatingExpenses.year3, data, loanAmount, monthlyBondRepayment),
-    year4: calculateNetWorthMetrics(4, revenueProjections.longTerm.year4, operatingExpenses.year4, data, loanAmount, monthlyBondRepayment),
-    year5: calculateNetWorthMetrics(5, revenueProjections.longTerm.year5, operatingExpenses.year5, data, loanAmount, monthlyBondRepayment),
-    year10: calculateNetWorthMetrics(10, revenueProjections.longTerm.year10, operatingExpenses.year10, data, loanAmount, monthlyBondRepayment),
-    year20: calculateNetWorthMetrics(20, revenueProjections.longTerm.year20, operatingExpenses.year20, data, loanAmount, monthlyBondRepayment)
-  } : null;
-
-  function calculateNetWorthMetrics(
+  function calculateNetWorthForYear(
     year: number,
     revenue: number,
     expenses: number,
     propertyData: PropertyData,
     initialLoanAmount: number,
-    monthlyPayment: number
+    monthlyBondPayment: number
   ) {
-    // Calculate NOI and Annual Cashflow
+    // 1. Calculate annual cashflow
     const noi = revenue - expenses;
-    const annualDebtService = monthlyPayment * 12;
-    const annualCashflow = noi - annualDebtService;
+    const annualBondPayment = monthlyBondPayment * 12;
+    const annualCashflow = noi - annualBondPayment;
 
-    console.log(`Year ${year} Cashflow Calculation:`, {
-      revenue,
-      expenses,
+    console.log(`[Year ${year}] Component 1 - Annual Cashflow:`, {
       noi,
-      annualDebtService,
+      annualBondPayment,
       annualCashflow,
-      calculation: `${noi} - ${annualDebtService} = ${annualCashflow}`
+      calculation: `${noi} - ${annualBondPayment} = ${annualCashflow}`
     });
 
-    // Calculate property appreciation for this specific year only
+    // 2. Calculate this year's appreciation only
     const appreciationRate = propertyData.annualAppreciation / 100;
-    const previousYearValue = propertyData.purchasePrice * Math.pow(1 + appreciationRate, year - 1);
-    const currentYearValue = propertyData.purchasePrice * Math.pow(1 + appreciationRate, year);
-    const annualAppreciation = currentYearValue - previousYearValue;
+    const propertyValueStartOfYear = propertyData.purchasePrice * Math.pow(1 + appreciationRate, year - 1);
+    const propertyValueEndOfYear = propertyData.purchasePrice * Math.pow(1 + appreciationRate, year);
+    const annualAppreciation = propertyValueEndOfYear - propertyValueStartOfYear;
 
-    console.log(`Year ${year} Appreciation Calculation:`, {
+    console.log(`[Year ${year}] Component 2 - Annual Appreciation:`, {
       appreciationRate: propertyData.annualAppreciation,
-      previousYearValue: previousYearValue.toFixed(2),
-      currentYearValue: currentYearValue.toFixed(2),
-      annualAppreciation: annualAppreciation.toFixed(2),
-      calculation: `Current(${currentYearValue.toFixed(2)}) - Previous(${previousYearValue.toFixed(2)}) = ${annualAppreciation.toFixed(2)}`
+      startValue: propertyValueStartOfYear,
+      endValue: propertyValueEndOfYear,
+      annualAppreciation,
+      calculation: `${propertyValueEndOfYear} - ${propertyValueStartOfYear} = ${annualAppreciation}`
     });
 
-    // Calculate loan amortization for this specific year only
+    // 3. Calculate this year's equity gain from loan paydown
     const monthlyRate = (propertyData.interestRate / 100) / 12;
-    const numberOfPayments = propertyData.loanTerm * 12;
+    const totalPayments = propertyData.loanTerm * 12;
 
-    // Calculate loan balance at the start of the year
-    const previousYearBalance = year > 1
-      ? calculateLoanBalance(initialLoanAmount, monthlyRate, numberOfPayments, (year - 1) * 12)
-      : initialLoanAmount;
+    // Calculate loan balance at start of year
+    const startOfYearPayments = (year - 1) * 12;
+    const loanBalanceStartOfYear = year === 1 ? initialLoanAmount : 
+      initialLoanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, startOfYearPayments)) /
+      (Math.pow(1 + monthlyRate, totalPayments) - 1);
 
-    // Calculate loan balance at the end of the year
-    const currentYearBalance = calculateLoanBalance(initialLoanAmount, monthlyRate, numberOfPayments, year * 12);
+    // Calculate loan balance at end of year
+    const endOfYearPayments = year * 12;
+    const loanBalanceEndOfYear = initialLoanAmount * 
+      (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, endOfYearPayments)) /
+      (Math.pow(1 + monthlyRate, totalPayments) - 1);
 
-    // Annual equity gain is the difference in loan balances
-    const annualEquityGain = previousYearBalance - currentYearBalance;
+    const annualEquityGain = loanBalanceStartOfYear - loanBalanceEndOfYear;
 
-    console.log(`Year ${year} Equity Gain Calculation:`, {
-      previousYearBalance: previousYearBalance.toFixed(2),
-      currentYearBalance: currentYearBalance.toFixed(2),
-      annualEquityGain: annualEquityGain.toFixed(2),
-      calculation: `Previous(${previousYearBalance.toFixed(2)}) - Current(${currentYearBalance.toFixed(2)}) = ${annualEquityGain.toFixed(2)}`
+    console.log(`[Year ${year}] Component 3 - Annual Equity Gain:`, {
+      startBalance: loanBalanceStartOfYear,
+      endBalance: loanBalanceEndOfYear,
+      annualEquityGain,
+      calculation: `${loanBalanceStartOfYear} - ${loanBalanceEndOfYear} = ${annualEquityGain}`
     });
 
-    // Calculate net worth change using only this year's components
-    const netWorthChange = annualAppreciation + annualEquityGain + annualCashflow;
+    // Calculate total net worth change for this year only
+    const netWorthChange = annualCashflow + annualAppreciation + annualEquityGain;
 
-    console.log(`Year ${year} Net Worth Change Final Calculation:`, {
-      components: {
-        annualAppreciation: annualAppreciation.toFixed(2),
-        annualEquityGain: annualEquityGain.toFixed(2),
-        annualCashflow: annualCashflow.toFixed(2)
-      },
-      calculation: `${annualAppreciation.toFixed(2)} + ${annualEquityGain.toFixed(2)} + ${annualCashflow.toFixed(2)} = ${netWorthChange.toFixed(2)}`
+    console.log(`[Year ${year}] Final Net Worth Change:`, {
+      annualCashflow,
+      annualAppreciation,
+      annualEquityGain,
+      netWorthChange,
+      calculation: `${annualCashflow} + ${annualAppreciation} + ${annualEquityGain} = ${netWorthChange}`
     });
 
     return {
@@ -516,12 +495,26 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     };
   }
 
-  // Helper function to calculate loan balance at any point in time
-  function calculateLoanBalance(principal: number, monthlyRate: number, totalPayments: number, paymentsMade: number): number {
-    return principal *
-      (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, paymentsMade)) /
-      (Math.pow(1 + monthlyRate, totalPayments) - 1);
-  }
+  netOperatingIncome = revenueProjections?.shortTerm ? {
+    year1: calculateNetWorthForYear(1, revenueProjections.shortTerm.year1, operatingExpenses.year1, data, loanAmount, monthlyBondRepayment),
+    year2: calculateNetWorthForYear(2, revenueProjections.shortTerm.year2, operatingExpenses.year2, data, loanAmount, monthlyBondRepayment),
+    year3: calculateNetWorthForYear(3, revenueProjections.shortTerm.year3, operatingExpenses.year3, data, loanAmount, monthlyBondRepayment),
+    year4: calculateNetWorthForYear(4, revenueProjections.shortTerm.year4, operatingExpenses.year4, data, loanAmount, monthlyBondRepayment),
+    year5: calculateNetWorthForYear(5, revenueProjections.shortTerm.year5, operatingExpenses.year5, data, loanAmount, monthlyBondRepayment),
+    year10: calculateNetWorthForYear(10, revenueProjections.shortTerm.year10, operatingExpenses.year10, data, loanAmount, monthlyBondRepayment),
+    year20: calculateNetWorthForYear(20, revenueProjections.shortTerm.year20, operatingExpenses.year20, data, loanAmount, monthlyBondRepayment)
+  } : null;
+
+  longTermNetOperatingIncome = revenueProjections?.longTerm ? {
+    year1: calculateNetWorthForYear(1, revenueProjections.longTerm.year1, operatingExpenses.year1, data, loanAmount, monthlyBondRepayment),
+    year2: calculateNetWorthForYear(2, revenueProjections.longTerm.year2, operatingExpenses.year2, data, loanAmount, monthlyBondRepayment),
+    year3: calculateNetWorthForYear(3, revenueProjections.longTerm.year3, operatingExpenses.year3, data, loanAmount, monthlyBondRepayment),
+    year4: calculateNetWorthForYear(4, revenueProjections.longTerm.year4, operatingExpenses.year4, data, loanAmount, monthlyBondRepayment),
+    year5: calculateNetWorthForYear(5, revenueProjections.longTerm.year5, operatingExpenses.year5, data, loanAmount, monthlyBondRepayment),
+    year10: calculateNetWorthForYear(10, revenueProjections.longTerm.year10, operatingExpenses.year10, data, loanAmount, monthlyBondRepayment),
+    year20: calculateNetWorthForYear(20, revenueProjections.longTerm.year20, operatingExpenses.year20, data, loanAmount, monthlyBondRepayment)
+  } : null;
+
 
   const investmentMetrics = {
     shortTerm: [
