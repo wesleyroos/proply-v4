@@ -242,11 +242,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     setIsSubmitting(true);
     try {
       // Clean and prepare the analysis data
-      // Ensure all form fields are included and properly typed
       const analysisData = {
         // Property Details
         address: data.address,
-        propertyUrl: data.propertyUrl,
+        propertyUrl: data.propertyUrl || "",
         purchasePrice: Number(data.purchasePrice),
         floorArea: Number(data.floorArea),
         bedrooms: Number(data.bedrooms),
@@ -255,10 +254,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
         // Financing Details
         depositType: data.depositType,
-        depositAmount: Number(data.depositAmount),
-        depositPercentage: Number(data.depositPercentage),
+        deposit: Number(data.depositAmount) || Number((data.depositPercentage / 100) * data.purchasePrice),
         interestRate: Number(data.interestRate),
-        loanTerm: Number(data.loanTerm), // Ensure loan term is converted to number
+        loanTerm: Number(data.loanTerm),
 
         // Operating Expenses
         monthlyLevies: Number(data.monthlyLevies || 0),
@@ -268,19 +266,19 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         managementFee: Number(data.managementFee || 0),
 
         // Revenue Performance
-        airbnbNightlyRate: Number(data.airbnbNightlyRate || 0),
-        occupancyRate: Number(data.occupancyRate || 0),
+        shortTermNightlyRate: Number(data.airbnbNightlyRate || 0),
+        annualOccupancy: Number(data.occupancyRate || 0),
         longTermRental: Number(data.longTermRental || 0),
         leaseCycleGap: Number(data.leaseCycleGap || 0),
 
         // Escalations
-        annualIncomeGrowth: Number(data.annualIncomeGrowth || 0),
-        annualExpenseGrowth: Number(data.annualExpenseGrowth || 0),
-        annualPropertyAppreciation: Number(data.annualPropertyAppreciation || 0),
+        incomeGrowthRate: Number(data.annualIncomeGrowth || 0),
+        expenseGrowthRate: Number(data.annualExpenseGrowth || 0),
+        annualAppreciation: Number(data.annualPropertyAppreciation || 0),
 
         // Miscellaneous
-        cmaRatePerSqm: Number(data.cmaRatePerSqm || 0),
-        comments: data.comments || "",
+        ratePerSquareMeter: Number(data.cmaRatePerSqm || 0),
+        propertyDescription: data.comments || "",
       };
 
       console.log("Submitting complete analysis data:", analysisData);
@@ -834,7 +832,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               placeholder="250000,00"
                               {...field}
                               onChange={(e) => {
-                                const amount = e.target.valueAsNumber;
+                                const amount = e.target.valueAsNumber || 0;
                                 field.onChange(amount);
                                 // Calculate percentage based on amount
                                 const purchasePrice =
@@ -877,7 +875,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               placeholder="10"
                               {...field}
                               onChange={(e) => {
-                                const percentage = e.target.valueAsNumber;
+                                const percentage = e.target.valueAsNumber || 0;
                                 field.onChange(percentage);
                                 // Calculate amount based on percentage
                                 const purchasePrice =
@@ -935,8 +933,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           min="1"
                           placeholder="Enter loan term in years"
                           {...field}
-                          type="number"
-                          min="1"
                           onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         />
                       </FormControl>
