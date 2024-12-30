@@ -12,6 +12,13 @@ import {
   AlertDialogDescription,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 // Hooks
 import { useProAccess } from "@/hooks/use-pro-access";
@@ -30,12 +37,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 // Types
@@ -200,72 +201,78 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const hasProAccess = useProAccess();
   const { toast } = useToast();
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Update save mutation
   const saveMutation = useMutation({
     mutationFn: async (data: PropertyAnalyzerFormValues) => {
-      // Ensure deposit calculation is correct
+      if (!analysisResult) {
+        throw new Error("Please analyze the property first before saving.");
+      }
+
       const calculatedDeposit = data.depositType === "amount"
         ? Number(data.depositAmount)
         : Number((Number(data.depositPercentage) / 100) * Number(data.purchasePrice));
+
+      const payload = {
+        title: data.address.split(',')[0], // Use first part of address as title
+        address: data.address,
+        propertyUrl: data.propertyUrl || "",
+        purchasePrice: Number(data.purchasePrice),
+        floorArea: Number(data.floorArea),
+        bedrooms: Number(data.bedrooms),
+        bathrooms: Number(data.bathrooms),
+        parkingSpaces: Number(data.parkingSpaces || 0),
+
+        // Financing details
+        depositType: data.depositType,
+        depositAmount: calculatedDeposit,
+        depositPercentage: Number(data.depositPercentage),
+        interestRate: Number(data.interestRate),
+        loanTerm: Number(data.loanTerm),
+
+        // Operating expenses
+        monthlyLevies: Number(data.monthlyLevies),
+        monthlyRatesTaxes: Number(data.monthlyRatesTaxes),
+        otherMonthlyExpenses: Number(data.otherMonthlyExpenses),
+        maintenancePercent: Number(data.maintenancePercent),
+        managementFee: Number(data.managementFee),
+
+        // Revenue performance
+        airbnbNightlyRate: Number(data.airbnbNightlyRate || 0),
+        occupancyRate: Number(data.occupancyRate || 0),
+        longTermRental: Number(data.longTermRental || 0),
+        leaseCycleGap: Number(data.leaseCycleGap || 0),
+
+        // Escalations
+        annualIncomeGrowth: Number(data.annualIncomeGrowth),
+        annualExpenseGrowth: Number(data.annualExpenseGrowth),
+        annualPropertyAppreciation: Number(data.annualPropertyAppreciation),
+
+        // Results data
+        revenueProjections: analysisResult.revenueProjections,
+        operatingExpenses: analysisResult.operatingExpenses,
+        netOperatingIncome: analysisResult.netOperatingIncome,
+        longTermNetOperatingIncome: analysisResult.longTermNetOperatingIncome,
+        investmentMetrics: analysisResult.investmentMetrics,
+
+        // Additional fields
+        cmaRatePerSqm: Number(data.cmaRatePerSqm),
+        comments: data.comments || "",
+      };
 
       const response = await fetch('/api/property-analyzer/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: data.address.split(',')[0], // Use first part of address as title
-          address: data.address,
-          propertyUrl: data.propertyUrl || "",
-          purchasePrice: Number(data.purchasePrice) || 0,
-          floorArea: Number(data.floorArea) || 0,
-          bedrooms: Number(data.bedrooms) || 0,
-          bathrooms: Number(data.bathrooms) || 0,
-          parkingSpaces: Number(data.parkingSpaces || 0),
-
-          // Financing details
-          depositType: data.depositType,
-          depositAmount: Number(data.depositAmount) || 0,
-          depositPercentage: Number(data.depositPercentage) || 0,
-          interestRate: Number(data.interestRate) || 11.75,
-          loanTerm: Number(data.loanTerm) || 20,
-
-          // Operating expenses
-          monthlyLevies: Number(data.monthlyLevies) || 0,
-          monthlyRatesTaxes: Number(data.monthlyRatesTaxes) || 0,
-          otherMonthlyExpenses: Number(data.otherMonthlyExpenses) || 0,
-          maintenancePercent: Number(data.maintenancePercent) || 0,
-          managementFee: Number(data.managementFee) || 0,
-
-          // Revenue performance
-          airbnbNightlyRate: Number(data.airbnbNightlyRate) || 0,
-          occupancyRate: Number(data.occupancyRate) || 0,
-          longTermRental: Number(data.longTermRental) || 0,
-          leaseCycleGap: Number(data.leaseCycleGap) || 0,
-
-          // Escalations
-          annualIncomeGrowth: Number(data.annualIncomeGrowth) || 6,
-          annualExpenseGrowth: Number(data.annualExpenseGrowth) || 4,
-          annualPropertyAppreciation: Number(data.annualPropertyAppreciation) || 4,
-
-          // Results data
-          revenueProjections: analysisResult.revenueProjections,
-          operatingExpenses: analysisResult.operatingExpenses,
-          netOperatingIncome: analysisResult.netOperatingIncome,
-          longTermNetOperatingIncome: analysisResult.longTermNetOperatingIncome,
-          investmentMetrics: analysisResult.investmentMetrics,
-
-          // Additional fields
-          cmaRatePerSqm: Number(data.cmaRatePerSqm) || 0,
-          comments: data.comments || "",
-          propertyPhoto: null, // Handle photo upload separately if needed
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text);
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to save property analysis');
       }
 
       return response.json();
@@ -274,11 +281,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       setShowSaveSuccess(true);
     },
     onError: (error) => {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save property analysis",
-        variant: "destructive",
-      });
+      setErrorMessage(error instanceof Error ? error.message : "Failed to save property analysis");
+      setShowErrorDialog(true);
     },
   });
 
@@ -1635,6 +1639,19 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               Continue
             </AlertDialogAction>
           </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Error Dialog */}
+      <AlertDialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Error</AlertDialogTitle>
+            <AlertDialogDescription>
+              {errorMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogAction>OK</AlertDialogAction>
         </AlertDialogContent>
       </AlertDialog>
     </div>

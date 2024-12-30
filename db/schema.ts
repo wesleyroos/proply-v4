@@ -1,6 +1,7 @@
 import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
+import { z } from 'zod';
 
 // Existing tables
 export const accessCodes = pgTable("access_codes", {
@@ -154,7 +155,7 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   annualExpenseGrowth: decimal("annual_expense_growth", { precision: 5, scale: 2 }).notNull(),
   annualPropertyAppreciation: decimal("annual_property_appreciation", { precision: 5, scale: 2 }).notNull(),
 
-  // Analysis results stored as JSON
+  // Analysis results
   revenueProjections: jsonb("revenue_projections").notNull(),
   operatingExpenses: jsonb("operating_expenses").notNull(),
   netOperatingIncome: jsonb("net_operating_income").notNull(),
@@ -164,7 +165,6 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   // Additional fields
   cmaRatePerSqm: decimal("cma_rate_per_sqm", { precision: 10, scale: 2 }).notNull(),
   comments: text("comments"),
-  propertyPhoto: text("property_photo"),
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -234,7 +234,21 @@ export const insertReportTrackingSchema = createInsertSchema(reportTracking);
 export const selectReportTrackingSchema = createSelectSchema(reportTracking);
 
 // Add schemas for new table
-export const insertPropertyAnalyzerResultSchema = createInsertSchema(propertyAnalyzerResults);
+export const insertPropertyAnalyzerResultSchema = createInsertSchema(propertyAnalyzerResults, {
+  title: z.string().min(1, "Title is required"),
+  address: z.string().min(1, "Address is required"),
+  purchasePrice: z.number().positive("Purchase price must be greater than 0"),
+  floorArea: z.number().positive("Floor area must be greater than 0"),
+  bedrooms: z.number().min(0, "Bedrooms cannot be negative"),
+  bathrooms: z.number().min(0, "Bathrooms cannot be negative"),
+  depositType: z.enum(["amount", "percentage"], {
+    required_error: "Deposit type must be either 'amount' or 'percentage'",
+  }),
+  depositAmount: z.number().min(0, "Deposit amount cannot be negative"),
+  depositPercentage: z.number().min(0, "Deposit percentage cannot be negative").max(100, "Deposit percentage cannot exceed 100"),
+  interestRate: z.number().min(0, "Interest rate cannot be negative"),
+  loanTerm: z.number().int().positive("Loan term must be a positive integer"),
+});
 export const selectPropertyAnalyzerResultSchema = createSelectSchema(propertyAnalyzerResults);
 
 // Types
