@@ -728,8 +728,14 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
+      const result = insertPropertyAnalyzerResultSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).send("Invalid input: " + result.error.issues.map(i => i.message).join(", "));
+      }
+
+      // Add the user ID to the data
       const analysisData = {
-        ...req.body,
+        ...result.data,
         userId: req.user!.id,
         updatedAt: new Date()
       };
@@ -739,12 +745,6 @@ export function registerRoutes(app: Express): Server {
         .insert(propertyAnalyzerResults)
         .values(analysisData)
         .returning();
-
-      console.log('Property analysis saved successfully:', {
-        analysisId: savedAnalysis.id,
-        userId: savedAnalysis.userId,
-        address: savedAnalysis.address
-      });
 
       res.json(savedAnalysis);
     } catch (error) {

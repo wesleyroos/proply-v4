@@ -1,7 +1,6 @@
 import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
-import { z } from 'zod';
 
 // Existing tables
 export const accessCodes = pgTable("access_codes", {
@@ -117,7 +116,7 @@ export const reportTracking = pgTable("report_tracking", {
   errorMessage: text("error_message"),
 });
 
-// Property analyzer results table (reverted to original)
+// New table for property analyzer results
 export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
@@ -155,7 +154,7 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   annualExpenseGrowth: decimal("annual_expense_growth", { precision: 5, scale: 2 }).notNull(),
   annualPropertyAppreciation: decimal("annual_property_appreciation", { precision: 5, scale: 2 }).notNull(),
 
-  // Analysis results
+  // Analysis results stored as JSON
   revenueProjections: jsonb("revenue_projections").notNull(),
   operatingExpenses: jsonb("operating_expenses").notNull(),
   netOperatingIncome: jsonb("net_operating_income").notNull(),
@@ -165,6 +164,7 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   // Additional fields
   cmaRatePerSqm: decimal("cma_rate_per_sqm", { precision: 10, scale: 2 }).notNull(),
   comments: text("comments"),
+  propertyPhoto: text("property_photo"),
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -233,7 +233,7 @@ export const selectAgencySettingsSchema = createSelectSchema(agencySettings);
 export const insertReportTrackingSchema = createInsertSchema(reportTracking);
 export const selectReportTrackingSchema = createSelectSchema(reportTracking);
 
-// Basic schema without additional validation
+// Add schemas for new table
 export const insertPropertyAnalyzerResultSchema = createInsertSchema(propertyAnalyzerResults);
 export const selectPropertyAnalyzerResultSchema = createSelectSchema(propertyAnalyzerResults);
 
