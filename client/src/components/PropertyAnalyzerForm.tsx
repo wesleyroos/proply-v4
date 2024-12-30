@@ -203,63 +203,19 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
   // Update save mutation
   const saveMutation = useMutation({
-    mutationFn: async (data: PropertyAnalyzerFormValues) => {
-      // Ensure deposit calculation is correct
-      const calculatedDeposit = data.depositType === "amount"
-        ? Number(data.depositAmount)
-        : Number((Number(data.depositPercentage) / 100) * Number(data.purchasePrice));
-
+    mutationFn: async (data: any) => {
       const response = await fetch('/api/property-analyzer/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          title: data.address.split(',')[0], // Use first part of address as title
-          address: data.address,
-          propertyUrl: data.propertyUrl || "",
-          purchasePrice: Number(data.purchasePrice) || 0,
-          floorArea: Number(data.floorArea) || 0,
-          bedrooms: Number(data.bedrooms) || 0,
-          bathrooms: Number(data.bathrooms) || 0,
-          parkingSpaces: Number(data.parkingSpaces || 0),
-
-          // Financing details
-          depositType: data.depositType,
-          depositAmount: Number(data.depositAmount) || 0,
-          depositPercentage: Number(data.depositPercentage) || 0,
-          interestRate: Number(data.interestRate) || 11.75,
-          loanTerm: Number(data.loanTerm) || 20,
-
-          // Operating expenses
-          monthlyLevies: Number(data.monthlyLevies) || 0,
-          monthlyRatesTaxes: Number(data.monthlyRatesTaxes) || 0,
-          otherMonthlyExpenses: Number(data.otherMonthlyExpenses) || 0,
-          maintenancePercent: Number(data.maintenancePercent) || 0,
-          managementFee: Number(data.managementFee) || 0,
-
-          // Revenue performance
-          airbnbNightlyRate: Number(data.airbnbNightlyRate) || 0,
-          occupancyRate: Number(data.occupancyRate) || 0,
-          longTermRental: Number(data.longTermRental) || 0,
-          leaseCycleGap: Number(data.leaseCycleGap) || 0,
-
-          // Escalations
-          annualIncomeGrowth: Number(data.annualIncomeGrowth) || 6,
-          annualExpenseGrowth: Number(data.annualExpenseGrowth) || 4,
-          annualPropertyAppreciation: Number(data.annualPropertyAppreciation) || 4,
-
-          // Results data
+          ...data,
           revenueProjections: analysisResult.revenueProjections,
           operatingExpenses: analysisResult.operatingExpenses,
           netOperatingIncome: analysisResult.netOperatingIncome,
           longTermNetOperatingIncome: analysisResult.longTermNetOperatingIncome,
           investmentMetrics: analysisResult.investmentMetrics,
-
-          // Additional fields
-          cmaRatePerSqm: Number(data.cmaRatePerSqm) || 0,
-          comments: data.comments || "",
-          propertyPhoto: null, // Handle photo upload separately if needed
         }),
       });
 
@@ -271,7 +227,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       return response.json();
     },
     onSuccess: () => {
-      setShowSaveSuccess(true);
+      setShowSaveSuccess(true); // Show success dialog instead of toast
     },
     onError: (error) => {
       toast({
@@ -282,67 +238,31 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     },
   });
 
-  const form = useForm<PropertyAnalyzerFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      address: "",
-      propertyUrl: "",
-      purchasePrice: 0,
-      floorArea: 0,
-      bedrooms: 0,
-      bathrooms: 0,
-      parkingSpaces: 0,
-      depositType: "percentage",
-      depositAmount: 0,
-      depositPercentage: 10, // Default 10% deposit
-      interestRate: 11.75, // Default interest rate
-      loanTerm: 20, // Default to 20 years
-      monthlyLevies: 0,
-      monthlyRatesTaxes: 0,
-      otherMonthlyExpenses: 0,
-      maintenancePercentage: 0,
-      managementFee: 0,
-      airbnbNightlyRate: 0,
-      occupancyRate: 0,
-      longTermRental: 0,
-      leaseCycleGap: 0,
-      annualIncomeGrowth: 6,
-      annualExpenseGrowth: 4,
-      annualPropertyAppreciation: 4,
-      cmaRatePerSqm: 0,
-      comments: "",
-    },
-  });
-
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
     try {
-      // Ensure deposit calculation is done correctly
-      const calculatedDeposit = data.depositType === "amount"
-        ? Number(data.depositAmount)
-        : Number((Number(data.depositPercentage) / 100) * Number(data.purchasePrice));
-
       // Clean and prepare the analysis data
       const analysisData = {
         // Property Details
         address: data.address,
         propertyUrl: data.propertyUrl || "",
-        purchasePrice: Number(data.purchasePrice) || 0,
-        floorArea: Number(data.floorArea) || 0,
-        bedrooms: Number(data.bedrooms) || 0,
-        bathrooms: Number(data.bathrooms) || 0,
+        purchasePrice: Number(data.purchasePrice),
+        floorArea: Number(data.floorArea),
+        bedrooms: Number(data.bedrooms),
+        bathrooms: Number(data.bathrooms),
         parkingSpaces: Number(data.parkingSpaces || 0),
 
         // Financing Details
-        deposit: calculatedDeposit,
-        interestRate: Number(data.interestRate) || 11.75,
-        loanTerm: Number(data.loanTerm) || 20,
+        depositType: data.depositType,
+        deposit: Number(data.depositAmount) || Number((data.depositPercentage / 100) * data.purchasePrice),
+        interestRate: Number(data.interestRate),
+        loanTerm: Number(data.loanTerm),
 
         // Operating Expenses
         monthlyLevies: Number(data.monthlyLevies || 0),
         monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
-        maintenancePercentage: Number(data.maintenancePercent || 0), //Corrected field name
+        maintenancePercent: Number(data.maintenancePercent || 0),
         managementFee: Number(data.managementFee || 0),
 
         // Revenue Performance
@@ -352,9 +272,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         leaseCycleGap: Number(data.leaseCycleGap || 0),
 
         // Escalations
-        incomeGrowthRate: Number(data.annualIncomeGrowth || 6),
-        expenseGrowthRate: Number(data.annualExpenseGrowth || 4),
-        annualAppreciation: Number(data.annualPropertyAppreciation || 4),
+        incomeGrowthRate: Number(data.annualIncomeGrowth || 0),
+        expenseGrowthRate: Number(data.annualExpenseGrowth || 0),
+        annualAppreciation: Number(data.annualPropertyAppreciation || 0),
 
         // Miscellaneous
         ratePerSquareMeter: Number(data.cmaRatePerSqm || 0),
@@ -376,12 +296,11 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       }
 
       const result = await response.json();
-      setAnalysisResult(result);
+      setAnalysisResult(result); // Store the analysis result
 
       if (props.onAnalysisComplete) {
-        await props.onAnalysisComplete(data);
+        await props.onAnalysisComplete(analysisData);
       }
-
       toast({
         title: "Success",
         description: "Property analysis completed successfully.",
@@ -390,7 +309,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       console.error('Analysis error:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to analyze property data.",
+        description: "Failed to analyze property data.",
         variant: "destructive",
       });
     } finally {
@@ -553,6 +472,37 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     setShowPercentileDialog(false);
   };
 
+  const form = useForm<PropertyAnalyzerFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      address: "",
+      propertyUrl: "",
+      purchasePrice: undefined,
+      floorArea: undefined,
+      bedrooms: undefined,
+      bathrooms: undefined,
+      parkingSpaces: undefined,
+      depositType: "percentage",
+      depositAmount: undefined,
+      depositPercentage: undefined,
+      interestRate: undefined,
+      loanTerm: 20, // Default to 20 years
+      monthlyLevies: undefined,
+      monthlyRatesTaxes: undefined,
+      otherMonthlyExpenses: undefined,
+      maintenancePercent: undefined,
+      managementFee: undefined,
+      airbnbNightlyRate: undefined,
+      occupancyRate: undefined,
+      longTermRental: undefined,
+      leaseCycleGap: undefined,
+      annualIncomeGrowth: 6,
+      annualExpenseGrowth: 4,
+      annualPropertyAppreciation: 4,
+      cmaRatePerSqm: undefined,
+      comments: "",
+    },
+  });
 
   return (
     <div className="space-y-8 max-w-[75%]">
@@ -586,7 +536,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         index < currentStep || isStepComplete
                           ? "bg-[#3B82F6]"
                           : "bg-gray-300"
-                        }`}
+                      }`}
                       style={{ left: "4rem" }}
                     />
                   )}
@@ -626,7 +576,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             : isStepComplete
                               ? "bg-white text-green-500 ring-green-500"
                               : "bg-white text-gray-500 ring-gray-300"
-                          }`}
+                        }`}
                       >
                         {index + 1}
                       </span>
@@ -1062,7 +1012,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
                 <FormField
                   control={form.control}
-                  name="maintenancePercentage"
+                  name="maintenancePercent"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Maintenance (% of Revenue)</FormLabel>
@@ -1599,7 +1549,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 monthlyLevies: 2500,
                 monthlyRatesTaxes: 1800,
                 otherMonthlyExpenses: 2000,
-                maintenancePercentage: 10,
+                maintenancePercent: 10,
                 managementFee: 20,
                 airbnbNightlyRate: 2500,
                 occupancyRate: 65,
