@@ -22,6 +22,13 @@ const propertyDataSchema = z.object({
   maintenancePercent: z.number().min(0).max(100).optional().default(0),
   managementFee: z.number().min(0).max(100).optional().default(0),
   annualAppreciation: z.number().min(0).max(100).optional().default(0)
+}).transform((data) => {
+  // Handle any necessary data transformations
+  return {
+    ...data,
+    deposit: Number(data.deposit) || 0,
+    ratePerSquareMeter: Number(data.ratePerSquareMeter) || 0
+  };
 });
 
 export type PropertyData = z.infer<typeof propertyDataSchema>;

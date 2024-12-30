@@ -153,7 +153,7 @@ export default function PropertyAnalyzerPage() {
 
         // Financing Details
         depositType: formData.depositType,
-        deposit: Number(formData.depositAmount),
+        deposit: formData.depositType === 'amount' ? Number(formData.depositAmount) : Number(formData.purchasePrice * (formData.depositPercentage / 100)),
         depositPercentage: Number(formData.depositPercentage),
         interestRate: Number(formData.interestRate),
         loanTerm: Number(formData.loanTerm),
@@ -176,7 +176,7 @@ export default function PropertyAnalyzerPage() {
         annualExpenseGrowth: Number(formData.annualExpenseGrowth || 0),
         annualPropertyAppreciation: Number(formData.annualPropertyAppreciation || 0),
 
-        // Miscellaneous
+        // Miscellaneous  
         ratePerSquareMeter: Number(formData.cmaRatePerSqm || 0),
         propertyDescription: formData.comments || "",
       };
@@ -797,7 +797,7 @@ export default function PropertyAnalyzerPage() {
                         roiWithoutAppreciation: {
                           title: "ROI without Appreciation",
                           explanation: "Return on investment considering only rental income and expenses",
-                          calculationMethod: "(Annual Net Operating Income / Total Investment) × 100"
+                          calculationMethod: "(Annual Net Operating Income / Total Investment) × 100) × 100"
                         },
                         roiWithAppreciation: {
                           title: "ROI with Appreciation",
