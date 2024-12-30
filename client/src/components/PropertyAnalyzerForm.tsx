@@ -203,19 +203,63 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
   // Update save mutation
   const saveMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: PropertyAnalyzerFormValues) => {
+      // Ensure deposit calculation is correct
+      const calculatedDeposit = data.depositType === "amount"
+        ? Number(data.depositAmount)
+        : Number((Number(data.depositPercentage) / 100) * Number(data.purchasePrice));
+
       const response = await fetch('/api/property-analyzer/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...data,
+          title: data.address.split(',')[0], // Use first part of address as title
+          address: data.address,
+          propertyUrl: data.propertyUrl || "",
+          purchasePrice: Number(data.purchasePrice) || 0,
+          floorArea: Number(data.floorArea) || 0,
+          bedrooms: Number(data.bedrooms) || 0,
+          bathrooms: Number(data.bathrooms) || 0,
+          parkingSpaces: Number(data.parkingSpaces || 0),
+
+          // Financing details
+          depositType: data.depositType,
+          depositAmount: Number(data.depositAmount) || 0,
+          depositPercentage: Number(data.depositPercentage) || 0,
+          interestRate: Number(data.interestRate) || 11.75,
+          loanTerm: Number(data.loanTerm) || 20,
+
+          // Operating expenses
+          monthlyLevies: Number(data.monthlyLevies) || 0,
+          monthlyRatesTaxes: Number(data.monthlyRatesTaxes) || 0,
+          otherMonthlyExpenses: Number(data.otherMonthlyExpenses) || 0,
+          maintenancePercent: Number(data.maintenancePercent) || 0,
+          managementFee: Number(data.managementFee) || 0,
+
+          // Revenue performance
+          airbnbNightlyRate: Number(data.airbnbNightlyRate) || 0,
+          occupancyRate: Number(data.occupancyRate) || 0,
+          longTermRental: Number(data.longTermRental) || 0,
+          leaseCycleGap: Number(data.leaseCycleGap) || 0,
+
+          // Escalations
+          annualIncomeGrowth: Number(data.annualIncomeGrowth) || 6,
+          annualExpenseGrowth: Number(data.annualExpenseGrowth) || 4,
+          annualPropertyAppreciation: Number(data.annualPropertyAppreciation) || 4,
+
+          // Results data
           revenueProjections: analysisResult.revenueProjections,
           operatingExpenses: analysisResult.operatingExpenses,
           netOperatingIncome: analysisResult.netOperatingIncome,
           longTermNetOperatingIncome: analysisResult.longTermNetOperatingIncome,
           investmentMetrics: analysisResult.investmentMetrics,
+
+          // Additional fields
+          cmaRatePerSqm: Number(data.cmaRatePerSqm) || 0,
+          comments: data.comments || "",
+          propertyPhoto: null, // Handle photo upload separately if needed
         }),
       });
 
@@ -227,7 +271,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       return response.json();
     },
     onSuccess: () => {
-      setShowSaveSuccess(true); // Show success dialog instead of toast
+      setShowSaveSuccess(true);
     },
     onError: (error) => {
       toast({
@@ -256,7 +300,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       monthlyLevies: 0,
       monthlyRatesTaxes: 0,
       otherMonthlyExpenses: 0,
-      maintenancePercent: 0,
+      maintenancePercentage: 0,
       managementFee: 0,
       airbnbNightlyRate: 0,
       occupancyRate: 0,
@@ -298,7 +342,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         monthlyLevies: Number(data.monthlyLevies || 0),
         monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
-        maintenancePercent: Number(data.maintenancePercent || 0),
+        maintenancePercentage: Number(data.maintenancePercent || 0), //Corrected field name
         managementFee: Number(data.managementFee || 0),
 
         // Revenue Performance
@@ -1018,7 +1062,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
                 <FormField
                   control={form.control}
-                  name="maintenancePercent"
+                  name="maintenancePercentage"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Maintenance (% of Revenue)</FormLabel>
@@ -1555,7 +1599,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 monthlyLevies: 2500,
                 monthlyRatesTaxes: 1800,
                 otherMonthlyExpenses: 2000,
-                maintenancePercent: 10,
+                maintenancePercentage: 10,
                 managementFee: 20,
                 airbnbNightlyRate: 2500,
                 occupancyRate: 65,
