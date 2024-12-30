@@ -9,11 +9,11 @@ const propertyDataSchema = z.object({
   leaseCycleGap: z.number().min(0).nullable().optional(),
   propertyDescription: z.string().nullable().optional(),
   address: z.string(),
-  deposit: z.number().min(0), // Changed from positive() to min(0) to allow 0 deposit
+  deposit: z.number().positive(),
   interestRate: z.number().min(0).max(100),
   loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
   floorArea: z.number().positive(),
-  ratePerSquareMeter: z.number().min(0), // Changed from positive() to min(0) to allow 0
+  ratePerSquareMeter: z.number().positive(),
   incomeGrowthRate: z.number().min(0).max(100).optional().default(8),
   expenseGrowthRate: z.number().min(0).max(100).optional().default(6),
   monthlyLevies: z.number().min(0).optional().default(0),
