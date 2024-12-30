@@ -238,25 +238,61 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     },
   });
 
+  const form = useForm<PropertyAnalyzerFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      address: "",
+      propertyUrl: "",
+      purchasePrice: 0,
+      floorArea: 0,
+      bedrooms: 0,
+      bathrooms: 0,
+      parkingSpaces: 0,
+      depositType: "percentage",
+      depositAmount: 0,
+      depositPercentage: 10, // Default 10% deposit
+      interestRate: 11.75, // Default interest rate
+      loanTerm: 20, // Default to 20 years
+      monthlyLevies: 0,
+      monthlyRatesTaxes: 0,
+      otherMonthlyExpenses: 0,
+      maintenancePercent: 0,
+      managementFee: 0,
+      airbnbNightlyRate: 0,
+      occupancyRate: 0,
+      longTermRental: 0,
+      leaseCycleGap: 0,
+      annualIncomeGrowth: 6,
+      annualExpenseGrowth: 4,
+      annualPropertyAppreciation: 4,
+      cmaRatePerSqm: 0,
+      comments: "",
+    },
+  });
+
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
     try {
+      // Ensure deposit calculation is done correctly
+      const calculatedDeposit = data.depositType === "amount"
+        ? Number(data.depositAmount)
+        : Number((Number(data.depositPercentage) / 100) * Number(data.purchasePrice));
+
       // Clean and prepare the analysis data
       const analysisData = {
         // Property Details
         address: data.address,
         propertyUrl: data.propertyUrl || "",
-        purchasePrice: Number(data.purchasePrice),
-        floorArea: Number(data.floorArea),
-        bedrooms: Number(data.bedrooms),
-        bathrooms: Number(data.bathrooms),
+        purchasePrice: Number(data.purchasePrice) || 0,
+        floorArea: Number(data.floorArea) || 0,
+        bedrooms: Number(data.bedrooms) || 0,
+        bathrooms: Number(data.bathrooms) || 0,
         parkingSpaces: Number(data.parkingSpaces || 0),
 
         // Financing Details
-        depositType: data.depositType,
-        deposit: Number(data.depositAmount) || Number((data.depositPercentage / 100) * data.purchasePrice),
-        interestRate: Number(data.interestRate),
-        loanTerm: Number(data.loanTerm),
+        deposit: calculatedDeposit,
+        interestRate: Number(data.interestRate) || 11.75,
+        loanTerm: Number(data.loanTerm) || 20,
 
         // Operating Expenses
         monthlyLevies: Number(data.monthlyLevies || 0),
@@ -272,9 +308,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         leaseCycleGap: Number(data.leaseCycleGap || 0),
 
         // Escalations
-        incomeGrowthRate: Number(data.annualIncomeGrowth || 0),
-        expenseGrowthRate: Number(data.annualExpenseGrowth || 0),
-        annualAppreciation: Number(data.annualPropertyAppreciation || 0),
+        incomeGrowthRate: Number(data.annualIncomeGrowth || 6),
+        expenseGrowthRate: Number(data.annualExpenseGrowth || 4),
+        annualAppreciation: Number(data.annualPropertyAppreciation || 4),
 
         // Miscellaneous
         ratePerSquareMeter: Number(data.cmaRatePerSqm || 0),
@@ -296,11 +332,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       }
 
       const result = await response.json();
-      setAnalysisResult(result); // Store the analysis result
+      setAnalysisResult(result);
 
       if (props.onAnalysisComplete) {
-        await props.onAnalysisComplete(analysisData);
+        await props.onAnalysisComplete(data);
       }
+
       toast({
         title: "Success",
         description: "Property analysis completed successfully.",
@@ -309,7 +346,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       console.error('Analysis error:', error);
       toast({
         title: "Error",
-        description: "Failed to analyze property data.",
+        description: error instanceof Error ? error.message : "Failed to analyze property data.",
         variant: "destructive",
       });
     } finally {
@@ -472,37 +509,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     setShowPercentileDialog(false);
   };
 
-  const form = useForm<PropertyAnalyzerFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      address: "",
-      propertyUrl: "",
-      purchasePrice: undefined,
-      floorArea: undefined,
-      bedrooms: undefined,
-      bathrooms: undefined,
-      parkingSpaces: undefined,
-      depositType: "percentage",
-      depositAmount: undefined,
-      depositPercentage: undefined,
-      interestRate: undefined,
-      loanTerm: 20, // Default to 20 years
-      monthlyLevies: undefined,
-      monthlyRatesTaxes: undefined,
-      otherMonthlyExpenses: undefined,
-      maintenancePercent: undefined,
-      managementFee: undefined,
-      airbnbNightlyRate: undefined,
-      occupancyRate: undefined,
-      longTermRental: undefined,
-      leaseCycleGap: undefined,
-      annualIncomeGrowth: 6,
-      annualExpenseGrowth: 4,
-      annualPropertyAppreciation: 4,
-      cmaRatePerSqm: undefined,
-      comments: "",
-    },
-  });
 
   return (
     <div className="space-y-8 max-w-[75%]">
@@ -536,7 +542,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         index < currentStep || isStepComplete
                           ? "bg-[#3B82F6]"
                           : "bg-gray-300"
-                      }`}
+                        }`}
                       style={{ left: "4rem" }}
                     />
                   )}
@@ -576,7 +582,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             : isStepComplete
                               ? "bg-white text-green-500 ring-green-500"
                               : "bg-white text-gray-500 ring-gray-300"
-                        }`}
+                          }`}
                       >
                         {index + 1}
                       </span>
