@@ -117,7 +117,7 @@ export const reportTracking = pgTable("report_tracking", {
   errorMessage: text("error_message"),
 });
 
-// New table for property analyzer results
+// Property analyzer results table (reverted to original)
 export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
@@ -233,22 +233,8 @@ export const selectAgencySettingsSchema = createSelectSchema(agencySettings);
 export const insertReportTrackingSchema = createInsertSchema(reportTracking);
 export const selectReportTrackingSchema = createSelectSchema(reportTracking);
 
-// Add schemas for new table
-export const insertPropertyAnalyzerResultSchema = createInsertSchema(propertyAnalyzerResults, {
-  title: z.string().min(1, "Title is required"),
-  address: z.string().min(1, "Address is required"),
-  purchasePrice: z.number().positive("Purchase price must be greater than 0"),
-  floorArea: z.number().positive("Floor area must be greater than 0"),
-  bedrooms: z.number().min(0, "Bedrooms cannot be negative"),
-  bathrooms: z.number().min(0, "Bathrooms cannot be negative"),
-  depositType: z.enum(["amount", "percentage"], {
-    required_error: "Deposit type must be either 'amount' or 'percentage'",
-  }),
-  depositAmount: z.number().min(0, "Deposit amount cannot be negative"),
-  depositPercentage: z.number().min(0, "Deposit percentage cannot be negative").max(100, "Deposit percentage cannot exceed 100"),
-  interestRate: z.number().min(0, "Interest rate cannot be negative"),
-  loanTerm: z.number().int().positive("Loan term must be a positive integer"),
-});
+// Basic schema without additional validation
+export const insertPropertyAnalyzerResultSchema = createInsertSchema(propertyAnalyzerResults);
 export const selectPropertyAnalyzerResultSchema = createSelectSchema(propertyAnalyzerResults);
 
 // Types

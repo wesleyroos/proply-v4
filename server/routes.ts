@@ -728,24 +728,8 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      const result = insertPropertyAnalyzerResultSchema.safeParse({
-        ...req.body,
-        userId: req.user!.id
-      });
-
-      if (!result.success) {
-        return res.status(400).json({
-          error: "Invalid input",
-          details: result.error.issues.map(issue => ({
-            field: issue.path.join('.'),
-            message: issue.message
-          }))
-        });
-      }
-
-      // Add the user ID to the data
       const analysisData = {
-        ...result.data,
+        ...req.body,
         userId: req.user!.id,
         updatedAt: new Date()
       };
