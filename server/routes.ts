@@ -669,6 +669,8 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
+      console.log("Incoming data:", JSON.stringify(req.body, null, 2));
+
       // First validate the form data
       const result = insertPropertyAnalyzerResultSchema.safeParse({
         ...req.body,
@@ -683,10 +685,31 @@ export function registerRoutes(app: Express): Server {
         });
       }
 
-      // Remove any undefined values
-      const cleanData = Object.fromEntries(
-        Object.entries(result.data).filter(([_, v]) => v !== undefined)
-      );
+      // Remove any undefined values and convert numbers
+      const cleanData = {
+        ...result.data,
+        purchasePrice: Number(result.data.purchasePrice),
+        floorArea: Number(result.data.floorArea),
+        depositAmount: Number(result.data.depositAmount),
+        depositPercentage: Number(result.data.depositPercentage),
+        interestRate: Number(result.data.interestRate),
+        loanTerm: Number(result.data.loanTerm),
+        monthlyBondRepayment: result.data.monthlyBondRepayment ? Number(result.data.monthlyBondRepayment) : null,
+        monthlyLevies: Number(result.data.monthlyLevies),
+        monthlyRatesTaxes: Number(result.data.monthlyRatesTaxes),
+        otherMonthlyExpenses: Number(result.data.otherMonthlyExpenses),
+        maintenancePercent: Number(result.data.maintenancePercent),
+        managementFee: Number(result.data.managementFee),
+        shortTermNightlyRate: result.data.shortTermNightlyRate ? Number(result.data.shortTermNightlyRate) : null,
+        annualOccupancy: result.data.annualOccupancy ? Number(result.data.annualOccupancy) : null,
+        shortTermAnnualRevenue: result.data.shortTermAnnualRevenue ? Number(result.data.shortTermAnnualRevenue) : null,
+        longTermAnnualRevenue: result.data.longTermAnnualRevenue ? Number(result.data.longTermAnnualRevenue) : null,
+        shortTermGrossYield: result.data.shortTermGrossYield ? Number(result.data.shortTermGrossYield) : null,
+        longTermGrossYield: result.data.longTermGrossYield ? Number(result.data.longTermGrossYield) : null,
+        ratePerSquareMeter: Number(result.data.ratePerSquareMeter)
+      };
+
+      console.log('Cleaned data for insertion:', JSON.stringify(cleanData, null, 2));
 
       // Save to database
       const [savedAnalysis] = await db
