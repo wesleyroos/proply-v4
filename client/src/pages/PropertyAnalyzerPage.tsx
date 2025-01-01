@@ -316,7 +316,54 @@ export default function PropertyAnalyzerPage() {
                     Based on your provided property details
                   </p>
                 </div>
-                {/* Save Button Removed */}
+                {/* Save Button Added Here */}
+                <Button 
+                  onClick={async () => {
+                    try {
+                      const dataToSave = prepareAnalysisDataForSave();
+                      if (!dataToSave) {
+                        toast({
+                          title: "Error",
+                          description: "No analysis data to save",
+                          variant: "destructive"
+                        });
+                        return;
+                      }
+
+                      console.log('Data being saved:', dataToSave);
+
+                      const response = await fetch('/api/property-analyzer/save', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(dataToSave),
+                        credentials: 'include'
+                      });
+
+                      if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(errorText);
+                      }
+
+                      toast({
+                        title: "Success",
+                        description: "Property analysis saved successfully"
+                      });
+                    } catch (error) {
+                      console.error('Save error:', error);
+                      toast({
+                        title: "Error",
+                        description: error instanceof Error ? error.message : "Failed to save analysis",
+                        variant: "destructive"
+                      });
+                    }
+                  }}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Analysis
+                </Button>
               </div>
             </div>
 
