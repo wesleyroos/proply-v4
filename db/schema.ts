@@ -117,7 +117,55 @@ export const reportTracking = pgTable("report_tracking", {
   errorMessage: text("error_message"),
 });
 
-// New table for property analyzer results
+// Property analyzer schema
+const customPropertyAnalyzerSchema = z.object({
+  userId: z.number(),
+  title: z.string(),
+  address: z.string(),
+  propertyUrl: z.string().optional(),
+  propertyDescription: z.string().optional(),
+  propertyPhoto: z.string().optional(),
+
+  // Property Details
+  purchasePrice: z.number(),
+  floorArea: z.number(),
+  bedrooms: z.number(),
+  bathrooms: z.number(),
+  parkingSpaces: z.number().optional(),
+
+  // Financing details
+  depositAmount: z.number(),
+  depositPercentage: z.number(),
+  interestRate: z.number(),
+  loanTerm: z.number(),
+  monthlyBondRepayment: z.number().nullable(),
+
+  // Operating expenses
+  monthlyLevies: z.number(),
+  monthlyRatesTaxes: z.number(),
+  otherMonthlyExpenses: z.number(),
+  maintenancePercent: z.number(),
+  managementFee: z.number(),
+
+  // Revenue performance
+  shortTermNightlyRate: z.number().nullable(),
+  annualOccupancy: z.number().nullable(),
+  shortTermAnnualRevenue: z.number().nullable(),
+  longTermAnnualRevenue: z.number().nullable(),
+  shortTermGrossYield: z.number().nullable(),
+  longTermGrossYield: z.number().nullable(),
+
+  // Rate comparison
+  ratePerSquareMeter: z.number(),
+
+  // Analysis results - using record for flexible JSON data
+  revenueProjections: z.record(z.unknown()),
+  operatingExpenses: z.record(z.unknown()),
+  netOperatingIncome: z.record(z.unknown()),
+  investmentMetrics: z.record(z.unknown())
+});
+
+// Define the table
 export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
@@ -169,6 +217,13 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const insertPropertyAnalyzerResultSchema = customPropertyAnalyzerSchema;
+export const selectPropertyAnalyzerResultSchema = createSelectSchema(propertyAnalyzerResults);
+
+export type InsertPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferInsert;
+export type SelectPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferSelect;
+
 
 // Relations
 export const usersRelations = relations(users, ({ one }) => ({
@@ -234,55 +289,7 @@ export const insertReportTrackingSchema = createInsertSchema(reportTracking);
 export const selectReportTrackingSchema = createSelectSchema(reportTracking);
 
 // Add schemas for new table
-const customPropertyAnalyzerSchema = z.object({
-  userId: z.number(),
-  title: z.string(),
-  address: z.string(),
-  propertyUrl: z.string().optional(),
-  propertyDescription: z.string().optional(),
-  propertyPhoto: z.string().optional(),
 
-  // Property Details
-  purchasePrice: z.number(),
-  floorArea: z.number(),
-  bedrooms: z.number(),
-  bathrooms: z.number(),
-  parkingSpaces: z.number().optional(),
-
-  // Financing details
-  depositAmount: z.number(),
-  depositPercentage: z.number(),
-  interestRate: z.number(),
-  loanTerm: z.number(),
-  monthlyBondRepayment: z.number().optional(),
-
-  // Operating expenses
-  monthlyLevies: z.number(),
-  monthlyRatesTaxes: z.number(),
-  otherMonthlyExpenses: z.number(),
-  maintenancePercent: z.number(),
-  managementFee: z.number(),
-
-  // Revenue performance
-  shortTermNightlyRate: z.number().optional(),
-  annualOccupancy: z.number().optional(),
-  shortTermAnnualRevenue: z.number().optional(),
-  longTermAnnualRevenue: z.number().optional(),
-  shortTermGrossYield: z.number().optional(),
-  longTermGrossYield: z.number().optional(),
-
-  // Rate comparison
-  ratePerSquareMeter: z.number(),
-
-  // Analysis results - using passthrough to allow any valid JSON
-  revenueProjections: z.object({}).passthrough(),
-  operatingExpenses: z.object({}).passthrough(),
-  netOperatingIncome: z.object({}).passthrough(),
-  investmentMetrics: z.object({}).passthrough()
-});
-
-export const insertPropertyAnalyzerResultSchema = customPropertyAnalyzerSchema;
-export const selectPropertyAnalyzerResultSchema = createSelectSchema(propertyAnalyzerResults);
 
 // Types
 export type InsertAccessCode = typeof accessCodes.$inferInsert;
