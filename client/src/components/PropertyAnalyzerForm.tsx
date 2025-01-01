@@ -2,7 +2,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Save } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import {
   AlertDialog,
@@ -199,44 +199,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   } | null>(null);
   const hasProAccess = useProAccess();
   const { toast } = useToast();
-  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
-
-  // Update save mutation
-  const saveMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await fetch('/api/property-analyzer/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...data,
-          revenueProjections: analysisResult.revenueProjections,
-          operatingExpenses: analysisResult.operatingExpenses,
-          netOperatingIncome: analysisResult.netOperatingIncome,
-          longTermNetOperatingIncome: analysisResult.longTermNetOperatingIncome,
-          investmentMetrics: analysisResult.investmentMetrics,
-        }),
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text);
-      }
-
-      return response.json();
-    },
-    onSuccess: () => {
-      setShowSaveSuccess(true); // Show success dialog instead of toast
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save property analysis",
-        variant: "destructive",
-      });
-    },
-  });
 
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
@@ -317,20 +279,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleSave = () => {
-    if (!analysisResult) {
-      toast({
-        title: "Error",
-        description: "Please analyze the property first before saving.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const formData = form.getValues();
-    saveMutation.mutate(formData);
   };
 
   const nextStep = () => {
@@ -1139,7 +1087,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                                 </span>
                               </>
                             )}
-                          </Button>
+                                                    </Button>
                           <p className="text-xs text-muted-foreground">
                             Get accurate rates from Airbnb listings in your area
                           </p>
@@ -1338,20 +1286,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
                     Analyze
-                  </Button>
-
-                  <Button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={!analysisResult || saveMutation.isPending}
-                    className="min-w-[100px]"
-                  >
-                    {saveMutation.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="mr-2 h-4 w-4" />
-                    )}
-                    Save
                   </Button>
                 </>
               )}
@@ -1574,23 +1508,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         className="fixed bottom-4 right-4 w-4 h-4 opacity-5 hover:opacity-10 bg-gray-500 rounded-full"
         aria-hidden="true"
       />
-
-      {/* Add Success Dialog */}
-      <AlertDialog open={showSaveSuccess} onOpenChange={setShowSaveSuccess}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Analysis Saved Successfully</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your property analysis has been saved and can be viewed in the Properties page under the Property Analyzer tab.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex justify-end">
-            <AlertDialogAction>
-              Continue
-            </AlertDialogAction>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
