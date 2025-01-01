@@ -669,7 +669,8 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      console.log("Incoming data:", JSON.stringify(req.body, null, 2));
+      console.log("\n=== Starting Property Analysis Save ===");
+      console.log("Raw request body:", JSON.stringify(req.body, null, 2));
 
       // First validate the form data
       const result = insertPropertyAnalyzerResultSchema.safeParse({
@@ -678,10 +679,14 @@ export function registerRoutes(app: Express): Server {
       });
 
       if (!result.success) {
-        console.error('Validation failed:', result.error.issues);
+        console.error('Validation failed. Issues:', JSON.stringify(result.error.issues, null, 2));
         return res.status(400).json({
           error: "Invalid input data",
-          details: result.error.issues.map(i => i.message)
+          details: result.error.issues.map(i => ({
+            path: i.path.join('.'),
+            message: i.message,
+            code: i.code
+          }))
         });
       }
 
@@ -721,22 +726,43 @@ export function registerRoutes(app: Express): Server {
         console.log('Successfully saved property analysis:', {
           id: savedAnalysis.id,
           title: savedAnalysis.title,
-          address: savedAnalysis.address
+          address: savedAnalysis.address,
+          data: savedAnalysis
         });
 
         res.json(savedAnalysis);
       } catch (dbError) {
-        console.error('Database insertion error:', dbError);
+        console.error('Database insertion error. Full error:', dbError);
+        console.error('Error name:', dbError?.name);
+        console.error('Error code:', dbError?.code);
+        console.error('Error constraint:', (dbError as any)?.constraint);
+        console.error('Error detail:', (dbError as any)?.detail);
+        console.error('Error schema:', (dbError as any)?.schema);
+        console.error('Error table:', (dbError as any)?.table);
+        console.error('Error column:', (dbError as any)?.column);
+
         res.status(500).json({
           error: "Failed to save property analysis",
-          details: dbError instanceof Error ? dbError.message : "Unknown database error"
+          details: dbError instanceof Error ? {
+            message: dbError.message,
+            name: dbError.name,
+            code: (dbError as any)?.code,
+            constraint: (dbError as any)?.constraint,
+            detail: (dbError as any)?.detail
+          } : "Unknown database error"
         });
       }
     } catch (error) {
       console.error('Error saving property analysis:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : undefined);
+
       res.status(500).json({
         error: "Failed to save property analysis",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? {
+          message: error.message,
+          name: error.name,
+          stack: error.stack
+        } : undefined
       });
     }
   });
