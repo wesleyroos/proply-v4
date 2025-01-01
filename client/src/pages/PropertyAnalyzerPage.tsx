@@ -134,59 +134,59 @@ export default function PropertyAnalyzerPage() {
   const handleAnalysisComplete = async (formData: any) => {
     try {
       setAnalysisError(null);
-      console.log("Form data received:", formData); // Debug log
+      console.log("Form data received:", formData);
       setFormData({
         ...formData,
         propertyPhoto: formData.propertyPhoto
       });
+
+      // Calculate deposit based on type
+      const deposit = formData.depositType === 'amount' 
+        ? parseFloat(formData.depositAmount) 
+        : (parseFloat(formData.purchasePrice) * parseFloat(formData.depositPercentage)) / 100;
 
       // Ensure all numbers are properly parsed and validated
       const requestBody = {
         // Property Details
         address: formData.address,
         propertyUrl: formData.propertyUrl,
-        purchasePrice: Number(formData.purchasePrice),
-        floorArea: Number(formData.floorArea),
-        bedrooms: Number(formData.bedrooms),
-        bathrooms: Number(formData.bathrooms),
-        parkingSpaces: Number(formData.parkingSpaces || 0),
+        purchasePrice: parseFloat(formData.purchasePrice),
+        floorArea: parseFloat(formData.floorArea),
+        bedrooms: parseInt(formData.bedrooms),
+        bathrooms: parseInt(formData.bathrooms),
+        parkingSpaces: parseInt(formData.parkingSpaces || 0),
 
         // Financing Details
         depositType: formData.depositType,
-        deposit: formData.depositType === 'amount' ? Number(formData.depositAmount) : Number(formData.purchasePrice * (formData.depositPercentage / 100)),
-        depositPercentage: Number(formData.depositPercentage),
-        interestRate: Number(formData.interestRate),
-        loanTerm: Number(formData.loanTerm),
+        deposit: deposit,
+        depositPercentage: parseFloat(formData.depositPercentage),
+        interestRate: parseFloat(formData.interestRate),
+        loanTerm: parseInt(formData.loanTerm),
 
         // Operating Expenses
-        monthlyLevies: Number(formData.monthlyLevies || 0),
-        monthlyRatesTaxes: Number(formData.monthlyRatesTaxes || 0),
-        otherMonthlyExpenses: Number(formData.otherMonthlyExpenses || 0),
-        maintenancePercent: Number(formData.maintenancePercent || 0),
-        managementFee: Number(formData.managementFee || 0),
+        monthlyLevies: parseFloat(formData.monthlyLevies || 0),
+        monthlyRatesTaxes: parseFloat(formData.monthlyRatesTaxes || 0),
+        otherMonthlyExpenses: parseFloat(formData.otherMonthlyExpenses || 0),
+        maintenancePercent: parseFloat(formData.maintenancePercent || 0),
+        managementFee: parseFloat(formData.managementFee || 0),
 
         // Revenue Performance
-        shortTermNightlyRate: Number(formData.airbnbNightlyRate || 0),
-        annualOccupancy: Number(formData.occupancyRate || 0),
-        longTermRental: Number(formData.longTermRental || 0),
-        leaseCycleGap: Number(formData.leaseCycleGap || 0),
+        shortTermNightlyRate: parseFloat(formData.airbnbNightlyRate || 0),
+        annualOccupancy: parseFloat(formData.occupancyRate || 0),
+        longTermRental: parseFloat(formData.longTermRental || 0),
+        leaseCycleGap: parseInt(formData.leaseCycleGap || 0),
 
         // Escalations
-        annualIncomeGrowth: Number(formData.annualIncomeGrowth || 0),
-        annualExpenseGrowth: Number(formData.annualExpenseGrowth || 0),
-        annualPropertyAppreciation: Number(formData.annualPropertyAppreciation || 0),
+        annualIncomeGrowth: parseFloat(formData.annualIncomeGrowth || 0),
+        annualExpenseGrowth: parseFloat(formData.annualExpenseGrowth || 0),
+        annualPropertyAppreciation: parseFloat(formData.annualPropertyAppreciation || 0),
 
         // Miscellaneous  
-        ratePerSquareMeter: Number(formData.cmaRatePerSqm || 0),
+        ratePerSquareMeter: parseFloat(formData.cmaRatePerSqm || 0),
         propertyDescription: formData.comments || "",
       };
 
       console.log("Data being sent to analyzer:", requestBody);
-
-      console.log(
-        "Sending analysis request with body:",
-        JSON.stringify(requestBody, null, 2),
-      );
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -196,50 +196,14 @@ export default function PropertyAnalyzerPage() {
         body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
-
-      // Comprehensive debug logging
-      console.log('=== Property Analysis Debug Logs ===');
-
-      // 1. Raw response data
-      console.log('Raw response from analysis engine:', data);
-
-      // 2. NOI specific data
-      console.log('NOI Data Structure:', {
-        fromAnalysisRoot: data.analysis?.netOperatingIncome,
-        year1Detail: {
-          full: data.analysis?.netOperatingIncome?.year1,
-          value: data.analysis?.netOperatingIncome?.year1?.value,
-          path: 'data.analysis.netOperatingIncome.year1.value'
-        }
-      });
-
-      // 3. Pre-state update data
-      const stateUpdateData = {
-        ...data,
-        shortTermNightlyRate: requestBody.shortTermNightlyRate,
-        annualOccupancy: requestBody.annualOccupancy,
-        managementFee: requestBody.managementFee,
-        loanTerm: requestBody.loanTerm
-      };
-
-      console.log('Data being set to state:', stateUpdateData);
-
-      // 4. Verify NOI data structure before state update
-      console.log('NOI structure verification:', {
-        hasAnalysis: !!stateUpdateData.analysis,
-        hasNetOperatingIncome: !!stateUpdateData.analysis?.netOperatingIncome,
-        year1NOI: stateUpdateData.analysis?.netOperatingIncome?.year1?.value,
-        fullNOIObject: stateUpdateData.analysis?.netOperatingIncome
-      });
-
       if (!response.ok) {
-        const errorMessage = data.error || response.statusText;
-        console.error("Analysis failed with error:", errorMessage);
-        throw new Error(errorMessage);
+        const errorData = await response.json();
+        throw new Error(errorData.error || response.statusText);
       }
 
-      // Include the nightly rate and occupancy from the request in the analysis result
+      const data = await response.json();
+      console.log('Analysis response:', data);
+
       setAnalysisResult({
         ...data,
         shortTermNightlyRate: requestBody.shortTermNightlyRate,

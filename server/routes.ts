@@ -510,90 +510,31 @@ export function registerRoutes(app: Express): Server {
       console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
 
       const propertyData = {
-        purchasePrice: Number(req.body.purchasePrice),
-        shortTermNightlyRate: req.body.shortTermNightlyRate ? Number(req.body.shortTermNightlyRate) : null,
-        annualOccupancy: req.body.annualOccupancy ? Number(req.body.annualOccupancy) : null,
-        longTermRental: req.body.longTermRental ? Number(req.body.longTermRental) : null,
-        leaseCycleGap: req.body.leaseCycleGap ? Number(req.body.leaseCycleGap) : null,
+        purchasePrice: parseFloat(req.body.purchasePrice),
+        shortTermNightlyRate: req.body.shortTermNightlyRate ? parseFloat(req.body.shortTermNightlyRate) : null,
+        annualOccupancy: req.body.annualOccupancy ? parseFloat(req.body.annualOccupancy) : null,
+        longTermRental: req.body.longTermRental ? parseFloat(req.body.longTermRental) : null,
+        leaseCycleGap: req.body.leaseCycleGap ? parseInt(req.body.leaseCycleGap) : null,
         propertyDescription: req.body.propertyDescription || null,
         address: req.body.address,
-        deposit: Number(req.body.deposit),
-        interestRate: Number(req.body.interestRate),
-        loanTerm: Number(req.body.loanTerm),
-        floorArea: Number(req.body.floorArea),
-        ratePerSquareMeter: Number(req.body.ratePerSquareMeter),
-        incomeGrowthRate: Number(req.body.incomeGrowthRate || 8),
-        expenseGrowthRate: Number(req.body.expenseGrowthRate || 6),
-        monthlyLevies: Number(req.body.monthlyLevies || 0),
-        monthlyRatesTaxes: Number(req.body.monthlyRatesTaxes || 0),
-        otherMonthlyExpenses: Number(req.body.otherMonthlyExpenses || 0),
-        maintenancePercent: Number(req.body.maintenancePercent || 0),
-        managementFee: Number(req.body.managementFee || 0)
+        deposit: req.body.depositType === 'amount'
+          ? parseFloat(req.body.deposit)
+          : (parseFloat(req.body.purchasePrice) * parseFloat(req.body.depositPercentage)) / 100,
+        interestRate: parseFloat(req.body.interestRate),
+        loanTerm: parseInt(req.body.loanTerm),
+        floorArea: parseFloat(req.body.floorArea),
+        ratePerSquareMeter: parseFloat(req.body.ratePerSquareMeter || req.body.cmaRatePerSqm || 0),
+        incomeGrowthRate: parseFloat(req.body.annualIncomeGrowth || 8),
+        expenseGrowthRate: parseFloat(req.body.annualExpenseGrowth || 6),
+        monthlyLevies: parseFloat(req.body.monthlyLevies || 0),
+        monthlyRatesTaxes: parseFloat(req.body.monthlyRatesTaxes || 0),
+        otherMonthlyExpenses: parseFloat(req.body.otherMonthlyExpenses || 0),
+        maintenancePercent: parseFloat(req.body.maintenancePercent || 0),
+        managementFee: parseFloat(req.body.managementFee || 0)
       };
 
       console.log("\n=== Starting Property Analysis ===");
       console.log("Raw Input Data:", JSON.stringify(propertyData, null, 2));
-
-      // Calculate gross monthly revenue (before platform fees)
-      const grossMonthlyRevenue = propertyData.shortTermNightlyRate && propertyData.annualOccupancy
-        ? (propertyData.shortTermNightlyRate * 365 * (propertyData.annualOccupancy / 100)) / 12
-        : 0;
-
-      // Fixed monthly expenses (levies + rates and taxes + other expenses)
-      const fixedMonthlyExpenses = propertyData.monthlyLevies + propertyData.monthlyRatesTaxes + propertyData.otherMonthlyExpenses;
-
-      // Revenue-based expenses (using gross revenue for percentages)
-      const maintenanceExpense = grossMonthlyRevenue * (propertyData.maintenancePercent / 100);
-      const managementFeeExpense = grossMonthlyRevenue * (propertyData.managementFee / 100);
-
-      // Total monthly expenses for NOE (excluding platform fees)
-      const totalMonthlyExpenses = fixedMonthlyExpenses + maintenanceExpense + managementFeeExpense;
-
-      // Calculate NOE for Year 1 using the formula:
-      // NOE = ((Fixed + Maintenance + Management) × 12) × (1 + Growth Rate)
-      const baseAnnualExpenses = totalMonthlyExpenses * 12;
-      const noeYear1 = baseAnnualExpenses * (1 + (propertyData.expenseGrowthRate / 100));
-
-      // Platform fee calculation (separate from NOE)
-      const platformFeeRate = propertyData.managementFee > 0 ? 0.15 : 0.03;
-      const netMonthlyRevenue = grossMonthlyRevenue * (1 - platformFeeRate);
-
-      console.log("=== Detailed Calculations ===");
-      console.log("1. Revenue Calculations:", {
-        grossMonthlyRevenue,
-        netMonthlyRevenue,
-        platformFeeRate,
-        annualGrossRevenue: grossMonthlyRevenue * 12
-      });
-
-      console.log("2. Monthly Expense Components:", {
-        fixed: {
-          levies: propertyData.monthlyLevies,
-          ratesAndTaxes: propertyData.monthlyRatesTaxes,
-          otherExpenses: propertyData.otherMonthlyExpenses,
-          totalFixed: fixedMonthlyExpenses
-        },
-        revenueBased: {
-          maintenance: {
-            percentage: propertyData.maintenancePercent,
-            amount: maintenanceExpense
-          },
-          managementFee: {
-            percentage: propertyData.managementFee,
-            amount: managementFeeExpense
-          }
-        },
-        total: totalMonthlyExpenses
-      });
-
-      console.log("3. NOE Calculation:", {
-        monthlyExpenses: totalMonthlyExpenses,
-        annualBaseExpenses: baseAnnualExpenses,
-        expenseGrowthRate: propertyData.expenseGrowthRate,
-        noeYear1
-      });
-
-      console.log("Converted property data:", JSON.stringify(propertyData, null, 2));
 
       const analysisResult = calculateYields(propertyData);
       console.log("Analysis complete. Result:", JSON.stringify(analysisResult, null, 2));
