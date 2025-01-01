@@ -16,6 +16,7 @@ import InvestmentMetrics from "@/components/InvestmentMetrics";
 import RentalPerformance from "@/components/RentalPerformance";
 import AssetGrowthMetrics from "@/components/AssetGrowthMetrics";
 import { useUser } from "@/hooks/use-user";
+import { useToast } from "@/hooks/use-toast";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
 import PerformanceProjections from "@/components/PerformanceProjections";
@@ -24,7 +25,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { toast } from '@radix-ui/react-toast';
 
 interface YearlyMetrics {
   grossYield: number;
@@ -111,6 +111,7 @@ interface AnalysisResult {
 
 export default function PropertyAnalyzerPage() {
   const { user } = useUser();
+  const { toast } = useToast();
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(null);
@@ -223,6 +224,53 @@ export default function PropertyAnalyzerPage() {
     }
   };
 
+  const prepareAnalysisDataForSave = () => {
+    if (!analysisResult) return null;
+
+    return {
+      // Property Details
+      title: `${analysisResult.address} Analysis`,
+      address: analysisResult.address,
+      propertyDescription: analysisResult.propertyDescription,
+      propertyPhoto: analysisResult.propertyPhotoUrl,
+      floorArea: analysisResult.floorArea,
+      ratePerSquareMeter: analysisResult.ratePerSquareMeter,
+
+      // Financial Details
+      purchasePrice: analysisResult.analysis.purchasePrice,
+      deposit: analysisResult.deposit,
+      depositPercentage: analysisResult.depositPercentage,
+      interestRate: analysisResult.interestRate,
+      monthlyBondRepayment: analysisResult.monthlyBondRepayment,
+      loanTerm: analysisResult.loanTerm,
+
+      // Revenue Performance
+      shortTermNightlyRate: analysisResult.shortTermNightlyRate,
+      annualOccupancy: analysisResult.annualOccupancy,
+      shortTermAnnualRevenue: analysisResult.analysis.shortTermAnnualRevenue,
+      longTermAnnualRevenue: analysisResult.analysis.longTermAnnualRevenue,
+      shortTermGrossYield: analysisResult.shortTermGrossYield,
+      longTermGrossYield: analysisResult.longTermGrossYield,
+      managementFee: analysisResult.managementFee,
+
+      // Analysis Results
+      analysis: {
+        purchasePrice: analysisResult.analysis.purchasePrice,
+        revenueProjections: analysisResult.analysis.revenueProjections,
+        operatingExpenses: analysisResult.analysis.operatingExpenses,
+        netOperatingIncome: analysisResult.analysis.netOperatingIncome,
+        investmentMetrics: analysisResult.analysis.investmentMetrics
+      },
+
+      // Operation Metrics
+      netOperatingIncome: analysisResult.netOperatingIncome,
+
+      // Timestamps
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+  };
+
   return (
     <div className="px-4 py-6">
       <div className="flex items-center mb-8">
@@ -265,22 +313,33 @@ export default function PropertyAnalyzerPage() {
                 <Button 
                   onClick={async () => {
                     try {
+                      const dataToSave = prepareAnalysisDataForSave();
+                      if (!dataToSave) {
+                        toast({
+                          title: "Error",
+                          description: "No analysis data to save",
+                          variant: "destructive"
+                        });
+                        return;
+                      }
+
                       const response = await fetch('/api/property-analyzer/save', {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify(analysisResult),
+                        body: JSON.stringify(dataToSave),
                         credentials: 'include'
                       });
 
                       if (!response.ok) {
-                        throw new Error(await response.text());
+                        const errorText = await response.text();
+                        throw new Error(errorText);
                       }
 
                       toast({
                         title: "Success",
-                        description: "Property analysis saved successfully",
+                        description: "Property analysis saved successfully"
                       });
                     } catch (error) {
                       console.error('Save error:', error);
@@ -767,10 +826,8 @@ export default function PropertyAnalyzerPage() {
                     <InvestmentMetrics
                       yearlyMetrics={analysisResult.analysis.investmentMetrics}
                       metricDescriptions={{
-                        grossYield: {
-                          title: "Gross Yield",
-                          explanation: "Annual gross rental income as a percentage of the property's purchase price",
-                          calculationMethod: "(Annual Gross Rental Income / Property Purchase Price) × 100"
+                        grossYield: {                          title: "Gross Yield",                    explanation: "Annual grossrental income as a percentage of the property's purchase price",
+                    calculationMethod: "(Annual Gross Rental Income / Property Purchase Price) × 100"
                         },
                         netYield: {
                           title: "Net Yield",

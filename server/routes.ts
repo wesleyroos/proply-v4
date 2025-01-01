@@ -662,30 +662,39 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // New endpoint to save property analysis results
+  // Property analyzer save endpoint
   app.post("/api/property-analyzer/save", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
     }
 
     try {
-      const result = insertPropertyAnalyzerResultSchema.safeParse(req.body);
-      if (!result.success) {
-        return res.status(400).send("Invalid input: " + result.error.issues.map(i => i.message).join(", "));
-      }
-
-      // Add the user ID to the data
-      const analysisData = {
-        ...result.data,
+      // First validate the form data
+      const result = insertPropertyAnalyzerResultSchema.safeParse({
+        ...req.body,
         userId: req.user!.id,
         updatedAt: new Date()
-      };
+      });
+
+      if (!result.success) {
+        console.error('Validation failed:', result.error.issues);
+        return res.status(400).json({
+          error: "Invalid input data",
+          details: result.error.issues.map(i => i.message)
+        });
+      }
 
       // Save to database
       const [savedAnalysis] = await db
         .insert(propertyAnalyzerResults)
-        .values(analysisData)
+        .values(result.data)
         .returning();
+
+      console.log('Successfully saved property analysis:', {
+        id: savedAnalysis.id,
+        title: savedAnalysis.title,
+        address: savedAnalysis.address
+      });
 
       res.json(savedAnalysis);
     } catch (error) {
