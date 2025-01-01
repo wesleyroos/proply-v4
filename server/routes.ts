@@ -672,8 +672,7 @@ export function registerRoutes(app: Express): Server {
       // First validate the form data
       const result = insertPropertyAnalyzerResultSchema.safeParse({
         ...req.body,
-        userId: req.user!.id,
-        updatedAt: new Date()
+        userId: req.user!.id
       });
 
       if (!result.success) {
@@ -684,10 +683,15 @@ export function registerRoutes(app: Express): Server {
         });
       }
 
+      // Remove any undefined values
+      const cleanData = Object.fromEntries(
+        Object.entries(result.data).filter(([_, v]) => v !== undefined)
+      );
+
       // Save to database
       const [savedAnalysis] = await db
         .insert(propertyAnalyzerResults)
-        .values(result.data)
+        .values(cleanData)
         .returning();
 
       console.log('Successfully saved property analysis:', {

@@ -275,12 +275,12 @@ const customPropertyAnalyzerSchema = z.object({
   ratePerSquareMeter: z.number(),
 
   // Analysis results
-  revenueProjections: z.record(z.any()),
-  operatingExpenses: z.record(z.any()),
-  netOperatingIncome: z.record(z.any()),
-  investmentMetrics: z.record(z.any()),
+  revenueProjections: z.object({}).passthrough(),
+  operatingExpenses: z.object({}).passthrough(),
+  netOperatingIncome: z.object({}).passthrough(),
+  investmentMetrics: z.object({}).passthrough(),
 
-  // Timestamps are handled automatically by the database
+  // Make timestamps optional since they're handled by the database
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 });
