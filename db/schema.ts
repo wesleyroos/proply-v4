@@ -117,52 +117,52 @@ export const reportTracking = pgTable("report_tracking", {
   errorMessage: text("error_message"),
 });
 
-// Property analyzer schema
+// Property analyzer schema with simplified validation
 const customPropertyAnalyzerSchema = z.object({
   userId: z.number(),
   title: z.string(),
   address: z.string(),
-  propertyUrl: z.string().optional(),
-  propertyDescription: z.string().optional(),
-  propertyPhoto: z.string().optional(),
+  propertyUrl: z.string().optional().nullable(),
+  propertyDescription: z.string().optional().nullable(),
+  propertyPhoto: z.string().optional().nullable(),
 
   // Property Details
-  purchasePrice: z.number(),
-  floorArea: z.number(),
+  purchasePrice: z.number().or(z.string()).transform(val => Number(val)),
+  floorArea: z.number().or(z.string()).transform(val => Number(val)),
   bedrooms: z.number(),
   bathrooms: z.number(),
-  parkingSpaces: z.number().optional(),
+  parkingSpaces: z.number().optional().nullable(),
 
   // Financing details
-  depositAmount: z.number(),
-  depositPercentage: z.number(),
-  interestRate: z.number(),
-  loanTerm: z.number(),
-  monthlyBondRepayment: z.number().nullable(),
+  depositAmount: z.number().or(z.string()).transform(val => Number(val)),
+  depositPercentage: z.number().or(z.string()).transform(val => Number(val)),
+  interestRate: z.number().or(z.string()).transform(val => Number(val)),
+  loanTerm: z.number().or(z.string()).transform(val => Number(val)),
+  monthlyBondRepayment: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
 
   // Operating expenses
-  monthlyLevies: z.number(),
-  monthlyRatesTaxes: z.number(),
-  otherMonthlyExpenses: z.number(),
-  maintenancePercent: z.number(),
-  managementFee: z.number(),
+  monthlyLevies: z.number().or(z.string()).transform(val => Number(val)),
+  monthlyRatesTaxes: z.number().or(z.string()).transform(val => Number(val)),
+  otherMonthlyExpenses: z.number().or(z.string()).transform(val => Number(val)),
+  maintenancePercent: z.number().or(z.string()).transform(val => Number(val)),
+  managementFee: z.number().or(z.string()).transform(val => Number(val)),
 
   // Revenue performance
-  shortTermNightlyRate: z.number().nullable(),
-  annualOccupancy: z.number().nullable(),
-  shortTermAnnualRevenue: z.number().nullable(),
-  longTermAnnualRevenue: z.number().nullable(),
-  shortTermGrossYield: z.number().nullable(),
-  longTermGrossYield: z.number().nullable(),
+  shortTermNightlyRate: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
+  annualOccupancy: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
+  shortTermAnnualRevenue: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
+  longTermAnnualRevenue: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
+  shortTermGrossYield: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
+  longTermGrossYield: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
 
   // Rate comparison
-  ratePerSquareMeter: z.number(),
+  ratePerSquareMeter: z.number().or(z.string()).transform(val => Number(val)),
 
-  // Analysis results - using record for flexible JSON data
-  revenueProjections: z.record(z.unknown()),
-  operatingExpenses: z.record(z.unknown()),
-  netOperatingIncome: z.record(z.unknown()),
-  investmentMetrics: z.record(z.unknown())
+  // Analysis results - using any for flexible JSON structures
+  revenueProjections: z.any(),
+  operatingExpenses: z.any(),
+  netOperatingIncome: z.any(),
+  investmentMetrics: z.any()
 });
 
 // Define the table
@@ -207,7 +207,7 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   // Rate comparison
   ratePerSquareMeter: decimal("rate_per_square_meter", { precision: 10, scale: 2 }).notNull(),
 
-  // Analysis results
+  // Analysis results stored as JSON
   revenueProjections: jsonb("revenue_projections").notNull(),
   operatingExpenses: jsonb("operating_expenses").notNull(),
   netOperatingIncome: jsonb("net_operating_income").notNull(),
@@ -218,22 +218,17 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Export the schema
 export const insertPropertyAnalyzerResultSchema = customPropertyAnalyzerSchema;
 export const selectPropertyAnalyzerResultSchema = createSelectSchema(propertyAnalyzerResults);
-
 export type InsertPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferInsert;
 export type SelectPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferSelect;
-
 
 // Relations
 export const usersRelations = relations(users, ({ one }) => ({
   accessCode: one(accessCodes, {
     fields: [users.accessCodeId],
     references: [accessCodes.id],
-  }),
-  agencySettings: one(agencySettings, {
-    fields: [users.id],
-    references: [agencySettings.userId],
   }),
 }));
 
