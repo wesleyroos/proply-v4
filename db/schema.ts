@@ -274,15 +274,11 @@ const customPropertyAnalyzerSchema = z.object({
   // Rate comparison
   ratePerSquareMeter: z.number(),
 
-  // Analysis results
+  // Analysis results - using passthrough to allow any valid JSON
   revenueProjections: z.object({}).passthrough(),
   operatingExpenses: z.object({}).passthrough(),
   netOperatingIncome: z.object({}).passthrough(),
-  investmentMetrics: z.object({}).passthrough(),
-
-  // Make timestamps optional since they're handled by the database
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
+  investmentMetrics: z.object({}).passthrough()
 });
 
 export const insertPropertyAnalyzerResultSchema = customPropertyAnalyzerSchema;
