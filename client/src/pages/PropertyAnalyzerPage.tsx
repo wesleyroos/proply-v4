@@ -230,10 +230,11 @@ export default function PropertyAnalyzerPage() {
       return null;
     }
 
-    // Create dates properly
-    const now = new Date();
+    // Create a single date instance for consistency
+    const timestamp = new Date();
 
-    return {
+    // Prepare the data with proper type conversions
+    const data = {
       // Required user ID from auth
       userId: user.id,
 
@@ -283,9 +284,14 @@ export default function PropertyAnalyzerPage() {
       investmentMetrics: analysisResult.analysis.investmentMetrics || {},
 
       // Timestamps as proper Date objects
-      createdAt: now,
-      updatedAt: now
+      createdAt: timestamp,
+      updatedAt: timestamp
     };
+
+    // Log the prepared data for debugging
+    console.log('Prepared data for save:', JSON.stringify(data, null, 2));
+
+    return data;
   };
 
   return (
@@ -341,8 +347,6 @@ export default function PropertyAnalyzerPage() {
                           return;
                         }
 
-                        console.log('Data being saved:', dataToSave);
-
                         const response = await fetch('/api/property-analyzer/save', {
                           method: 'POST',
                           headers: {
@@ -354,6 +358,7 @@ export default function PropertyAnalyzerPage() {
 
                         if (!response.ok) {
                           const errorData = await response.json();
+                          console.error('Save response error:', errorData);
                           throw new Error(JSON.stringify(errorData));
                         }
 
