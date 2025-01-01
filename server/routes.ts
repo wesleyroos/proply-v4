@@ -711,19 +711,27 @@ export function registerRoutes(app: Express): Server {
 
       console.log('Cleaned data for insertion:', JSON.stringify(cleanData, null, 2));
 
-      // Save to database
-      const [savedAnalysis] = await db
-        .insert(propertyAnalyzerResults)
-        .values(cleanData)
-        .returning();
+      try {
+        // Save to database
+        const [savedAnalysis] = await db
+          .insert(propertyAnalyzerResults)
+          .values(cleanData)
+          .returning();
 
-      console.log('Successfully saved property analysis:', {
-        id: savedAnalysis.id,
-        title: savedAnalysis.title,
-        address: savedAnalysis.address
-      });
+        console.log('Successfully saved property analysis:', {
+          id: savedAnalysis.id,
+          title: savedAnalysis.title,
+          address: savedAnalysis.address
+        });
 
-      res.json(savedAnalysis);
+        res.json(savedAnalysis);
+      } catch (dbError) {
+        console.error('Database insertion error:', dbError);
+        res.status(500).json({
+          error: "Failed to save property analysis",
+          details: dbError instanceof Error ? dbError.message : "Unknown database error"
+        });
+      }
     } catch (error) {
       console.error('Error saving property analysis:', error);
       res.status(500).json({
