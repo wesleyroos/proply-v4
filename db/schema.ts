@@ -127,42 +127,42 @@ const customPropertyAnalyzerSchema = z.object({
   propertyPhoto: z.string().optional().nullable(),
 
   // Property Details
-  purchasePrice: z.number().or(z.string()).transform(val => Number(val)),
-  floorArea: z.number().or(z.string()).transform(val => Number(val)),
-  bedrooms: z.number(),
-  bathrooms: z.number(),
-  parkingSpaces: z.number().optional().nullable(),
+  purchasePrice: z.coerce.number(),
+  floorArea: z.coerce.number(),
+  bedrooms: z.coerce.number(),
+  bathrooms: z.coerce.number(),
+  parkingSpaces: z.coerce.number().optional().nullable(),
 
   // Financing details
-  depositAmount: z.number().or(z.string()).transform(val => Number(val)),
-  depositPercentage: z.number().or(z.string()).transform(val => Number(val)),
-  interestRate: z.number().or(z.string()).transform(val => Number(val)),
-  loanTerm: z.number().or(z.string()).transform(val => Number(val)),
-  monthlyBondRepayment: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
+  depositAmount: z.coerce.number(),
+  depositPercentage: z.coerce.number(),
+  interestRate: z.coerce.number(),
+  loanTerm: z.coerce.number(),
+  monthlyBondRepayment: z.coerce.number().optional().nullable(),
 
   // Operating expenses
-  monthlyLevies: z.number().or(z.string()).transform(val => Number(val)),
-  monthlyRatesTaxes: z.number().or(z.string()).transform(val => Number(val)),
-  otherMonthlyExpenses: z.number().or(z.string()).transform(val => Number(val)),
-  maintenancePercent: z.number().or(z.string()).transform(val => Number(val)),
-  managementFee: z.number().or(z.string()).transform(val => Number(val)),
+  monthlyLevies: z.coerce.number(),
+  monthlyRatesTaxes: z.coerce.number(),
+  otherMonthlyExpenses: z.coerce.number(),
+  maintenancePercent: z.coerce.number(),
+  managementFee: z.coerce.number(),
 
   // Revenue performance
-  shortTermNightlyRate: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
-  annualOccupancy: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
-  shortTermAnnualRevenue: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
-  longTermAnnualRevenue: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
-  shortTermGrossYield: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
-  longTermGrossYield: z.number().or(z.string()).nullable().transform(val => val ? Number(val) : null),
+  shortTermNightlyRate: z.coerce.number().optional().nullable(),
+  annualOccupancy: z.coerce.number().optional().nullable(),
+  shortTermAnnualRevenue: z.coerce.number().optional().nullable(),
+  longTermAnnualRevenue: z.coerce.number().optional().nullable(),
+  shortTermGrossYield: z.coerce.number().optional().nullable(),
+  longTermGrossYield: z.coerce.number().optional().nullable(),
 
   // Rate comparison
-  ratePerSquareMeter: z.number().or(z.string()).transform(val => Number(val)),
+  ratePerSquareMeter: z.coerce.number(),
 
-  // Analysis results - using any for flexible JSON structures
-  revenueProjections: z.any(),
-  operatingExpenses: z.any(),
-  netOperatingIncome: z.any(),
-  investmentMetrics: z.any()
+  // Analysis results - using record type for better type safety
+  revenueProjections: z.record(z.unknown()),
+  operatingExpenses: z.record(z.unknown()),
+  netOperatingIncome: z.record(z.unknown()),
+  investmentMetrics: z.record(z.unknown())
 });
 
 // Define the table

@@ -673,16 +673,16 @@ export function registerRoutes(app: Express): Server {
       console.log("Raw request body:", JSON.stringify(req.body, null, 2));
 
       // First validate the form data
-      const result = insertPropertyAnalyzerResultSchema.safeParse({
+      const validationResult = insertPropertyAnalyzerResultSchema.safeParse({
         ...req.body,
         userId: req.user!.id
       });
 
-      if (!result.success) {
-        console.error('Validation failed. Issues:', JSON.stringify(result.error.issues, null, 2));
+      if (!validationResult.success) {
+        console.error('Validation failed. Issues:', JSON.stringify(validationResult.error.issues, null, 2));
         return res.status(400).json({
           error: "Invalid input data",
-          details: result.error.issues.map(i => ({
+          details: validationResult.error.issues.map(i => ({
             path: i.path.join('.'),
             message: i.message,
             code: i.code
@@ -690,79 +690,92 @@ export function registerRoutes(app: Express): Server {
         });
       }
 
-      // Remove any undefined values and convert numbers
-      const cleanData = {
-        ...result.data,
-        purchasePrice: Number(result.data.purchasePrice),
-        floorArea: Number(result.data.floorArea),
-        depositAmount: Number(result.data.depositAmount),
-        depositPercentage: Number(result.data.depositPercentage),
-        interestRate: Number(result.data.interestRate),
-        loanTerm: Number(result.data.loanTerm),
-        monthlyBondRepayment: result.data.monthlyBondRepayment ? Number(result.data.monthlyBondRepayment) : null,
-        monthlyLevies: Number(result.data.monthlyLevies),
-        monthlyRatesTaxes: Number(result.data.monthlyRatesTaxes),
-        otherMonthlyExpenses: Number(result.data.otherMonthlyExpenses),
-        maintenancePercent: Number(result.data.maintenancePercent),
-        managementFee: Number(result.data.managementFee),
-        shortTermNightlyRate: result.data.shortTermNightlyRate ? Number(result.data.shortTermNightlyRate) : null,
-        annualOccupancy: result.data.annualOccupancy ? Number(result.data.annualOccupancy) : null,
-        shortTermAnnualRevenue: result.data.shortTermAnnualRevenue ? Number(result.data.shortTermAnnualRevenue) : null,
-        longTermAnnualRevenue: result.data.longTermAnnualRevenue ? Number(result.data.longTermAnnualRevenue) : null,
-        shortTermGrossYield: result.data.shortTermGrossYield ? Number(result.data.shortTermGrossYield) : null,
-        longTermGrossYield: result.data.longTermGrossYield ? Number(result.data.longTermGrossYield) : null,
-        ratePerSquareMeter: Number(result.data.ratePerSquareMeter)
-      };
+      const data = validationResult.data;
 
-      console.log('Cleaned data for insertion:', JSON.stringify(cleanData, null, 2));
+      console.log('Validated data:', JSON.stringify(data, null, 2));
 
       try {
         // Save to database
         const [savedAnalysis] = await db
           .insert(propertyAnalyzerResults)
-          .values(cleanData)
+          .values({
+            userId: data.userId,
+            title: data.title,
+            address: data.address,
+            propertyUrl: data.propertyUrl,
+            propertyDescription: data.propertyDescription,
+            propertyPhoto: data.propertyPhoto,
+            purchasePrice: data.purchasePrice,
+            floorArea: data.floorArea,
+            bedrooms: data.bedrooms,
+            bathrooms: data.bathrooms,
+            parkingSpaces: data.parkingSpaces,
+            depositAmount: data.depositAmount,
+            depositPercentage: data.depositPercentage,
+            interestRate: data.interestRate,
+            loanTerm: data.loanTerm,
+            monthlyBondRepayment: data.monthlyBondRepayment,
+            monthlyLevies: data.monthlyLevies,
+            monthlyRatesTaxes: data.monthlyRatesTaxes,
+            otherMonthlyExpenses: data.otherMonthlyExpenses,
+            maintenancePercent: data.maintenancePercent,
+            managementFee: data.managementFee,
+            shortTermNightlyRate: data.shortTermNightlyRate,
+            annualOccupancy: data.annualOccupancy,
+            shortTermAnnualRevenue: data.shortTermAnnualRevenue,
+            longTermAnnualRevenue: data.longTermAnnualRevenue,
+            shortTermGrossYield: data.shortTermGrossYield,
+            longTermGrossYield: data.longTermGrossYield,
+            ratePerSquareMeter: data.ratePerSquareMeter,
+            revenueProjections: data.revenueProjections,
+            operatingExpenses: data.operatingExpenses,
+            netOperatingIncome: data.netOperatingIncome,
+            investmentMetrics: data.investmentMetrics
+          })
           .returning();
 
         console.log('Successfully saved property analysis:', {
           id: savedAnalysis.id,
           title: savedAnalysis.title,
-          address: savedAnalysis.address,
-          data: savedAnalysis
+          address: savedAnalysis.address
         });
 
         res.json(savedAnalysis);
-      } catch (dbError) {
-        console.error('Database insertion error. Full error:', dbError);
-        console.error('Error name:', dbError?.name);
-        console.error('Error code:', dbError?.code);
-        console.error('Error constraint:', (dbError as any)?.constraint);
-        console.error('Error detail:', (dbError as any)?.detail);
-        console.error('Error schema:', (dbError as any)?.schema);
-        console.error('Error table:', (dbError as any)?.table);
-        console.error('Error column:', (dbError as any)?.column);
+      } catch (dbError: any) {
+        console.error('Database insertion error:', {
+          error: dbError,
+          name: dbError.name,
+          code: dbError.code,
+          detail: dbError.detail,
+          schema: dbError.schema,
+          table: dbError.table,
+          column: dbError.column,
+          stack: dbError.stack
+        });
 
         res.status(500).json({
           error: "Failed to save property analysis",
-          details: dbError instanceof Error ? {
+          details: {
             message: dbError.message,
-            name: dbError.name,
-            code: (dbError as any)?.code,
-            constraint: (dbError as any)?.constraint,
-            detail: (dbError as any)?.detail
-          } : "Unknown database error"
+            code: dbError.code,
+            detail: dbError.detail
+          }
         });
       }
-    } catch (error) {
-      console.error('Error saving property analysis:', error);
-      console.error('Error stack:', error instanceof Error ? error.stack : undefined);
+    } catch (error: any) {
+      console.error('Error in property analyzer save:', {
+        error,
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
 
       res.status(500).json({
         error: "Failed to save property analysis",
-        details: error instanceof Error ? {
+        details: {
           message: error.message,
-          name: error.name,
-          stack: error.stack
-        } : undefined
+          name: error.name
+        }
       });
     }
   });
