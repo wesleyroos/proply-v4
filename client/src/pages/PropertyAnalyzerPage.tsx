@@ -225,15 +225,24 @@ export default function PropertyAnalyzerPage() {
   };
 
   const prepareAnalysisDataForSave = () => {
-    if (!analysisResult || !formData) return null;
+    if (!analysisResult || !formData || !user) {
+      console.error('Missing required data:', { analysisResult: !!analysisResult, formData: !!formData, user: !!user });
+      return null;
+    }
+
+    // Create dates properly
+    const now = new Date();
 
     return {
+      // Required user ID from auth
+      userId: user.id,
+
       // Property Details
       title: `${analysisResult.address} Analysis`,
       address: analysisResult.address,
-      propertyUrl: formData.propertyUrl,
+      propertyUrl: formData.propertyUrl || "",
       propertyDescription: formData.comments || "",
-      propertyPhoto: formData.propertyPhoto,
+      propertyPhoto: formData.propertyPhoto || "",
 
       // Property Details
       purchasePrice: Number(analysisResult.analysis.purchasePrice),
@@ -268,12 +277,14 @@ export default function PropertyAnalyzerPage() {
       ratePerSquareMeter: Number(formData.cmaRatePerSqm || 0),
 
       // Analysis results
-      revenueProjections: analysisResult.analysis.revenueProjections,
-      operatingExpenses: analysisResult.analysis.operatingExpenses,
-      netOperatingIncome: analysisResult.netOperatingIncome,
-      investmentMetrics: analysisResult.analysis.investmentMetrics,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      revenueProjections: analysisResult.analysis.revenueProjections || {},
+      operatingExpenses: analysisResult.analysis.operatingExpenses || {},
+      netOperatingIncome: analysisResult.netOperatingIncome || {},
+      investmentMetrics: analysisResult.analysis.investmentMetrics || {},
+
+      // Timestamps as proper Date objects
+      createdAt: now,
+      updatedAt: now
     };
   };
 
@@ -316,54 +327,55 @@ export default function PropertyAnalyzerPage() {
                     Based on your provided property details
                   </p>
                 </div>
-                {/* Save Button Added Here */}
-                <Button 
-                  onClick={async () => {
-                    try {
-                      const dataToSave = prepareAnalysisDataForSave();
-                      if (!dataToSave) {
+                <div className="space-x-2">
+                  <Button 
+                    onClick={async () => {
+                      try {
+                        const dataToSave = prepareAnalysisDataForSave();
+                        if (!dataToSave) {
+                          toast({
+                            title: "Error",
+                            description: "Missing required data for saving analysis",
+                            variant: "destructive"
+                          });
+                          return;
+                        }
+
+                        console.log('Data being saved:', dataToSave);
+
+                        const response = await fetch('/api/property-analyzer/save', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify(dataToSave),
+                          credentials: 'include'
+                        });
+
+                        if (!response.ok) {
+                          const errorData = await response.json();
+                          throw new Error(JSON.stringify(errorData));
+                        }
+
+                        toast({
+                          title: "Success",
+                          description: "Property analysis saved successfully"
+                        });
+                      } catch (error) {
+                        console.error('Save error:', error);
                         toast({
                           title: "Error",
-                          description: "No analysis data to save",
+                          description: error instanceof Error ? error.message : "Failed to save analysis",
                           variant: "destructive"
                         });
-                        return;
                       }
-
-                      console.log('Data being saved:', dataToSave);
-
-                      const response = await fetch('/api/property-analyzer/save', {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(dataToSave),
-                        credentials: 'include'
-                      });
-
-                      if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(errorText);
-                      }
-
-                      toast({
-                        title: "Success",
-                        description: "Property analysis saved successfully"
-                      });
-                    } catch (error) {
-                      console.error('Save error:', error);
-                      toast({
-                        title: "Error",
-                        description: error instanceof Error ? error.message : "Failed to save analysis",
-                        variant: "destructive"
-                      });
-                    }
-                  }}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Analysis
-                </Button>
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Analysis
+                  </Button>
+                </div>
               </div>
             </div>
 
