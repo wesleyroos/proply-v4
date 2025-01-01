@@ -8,6 +8,16 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
 import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save } from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
@@ -16,7 +26,6 @@ import InvestmentMetrics from "@/components/InvestmentMetrics";
 import RentalPerformance from "@/components/RentalPerformance";
 import AssetGrowthMetrics from "@/components/AssetGrowthMetrics";
 import { useUser } from "@/hooks/use-user";
-import { useToast } from "@/hooks/use-toast";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
 import PerformanceProjections from "@/components/PerformanceProjections";
@@ -111,12 +120,16 @@ interface AnalysisResult {
 
 export default function PropertyAnalyzerPage() {
   const { user } = useUser();
-  const { toast } = useToast();
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(null);
   const [removeVat, setRemoveVat] = useState(false);
   const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
+  const [saveDialog, setSaveDialog] = useState<{ isOpen: boolean; type: 'success' | 'error'; message: string }>({
+    isOpen: false,
+    type: 'success',
+    message: ''
+  });
 
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
@@ -230,10 +243,7 @@ export default function PropertyAnalyzerPage() {
       return null;
     }
 
-    // Create a single date instance for consistency
-    const timestamp = new Date();
-
-    // Prepare the data with proper type conversions
+    // Prepare the data with proper type conversions and validation
     const data = {
       // Required user ID from auth
       userId: user.id,
@@ -277,19 +287,12 @@ export default function PropertyAnalyzerPage() {
       // Rate comparison
       ratePerSquareMeter: Number(formData.cmaRatePerSqm || 0),
 
-      // Analysis results
+      // Analysis results - ensure these are objects, not null
       revenueProjections: analysisResult.analysis.revenueProjections || {},
       operatingExpenses: analysisResult.analysis.operatingExpenses || {},
       netOperatingIncome: analysisResult.netOperatingIncome || {},
-      investmentMetrics: analysisResult.analysis.investmentMetrics || {},
-
-      // Timestamps as proper Date objects
-      createdAt: timestamp,
-      updatedAt: timestamp
+      investmentMetrics: analysisResult.analysis.investmentMetrics || {}
     };
-
-    // Log the prepared data for debugging
-    console.log('Prepared data for save:', JSON.stringify(data, null, 2));
 
     return data;
   };
@@ -339,13 +342,15 @@ export default function PropertyAnalyzerPage() {
                       try {
                         const dataToSave = prepareAnalysisDataForSave();
                         if (!dataToSave) {
-                          toast({
-                            title: "Error",
-                            description: "Missing required data for saving analysis",
-                            variant: "destructive"
+                          setSaveDialog({
+                            isOpen: true,
+                            type: 'error',
+                            message: 'Missing required data for saving analysis. Please ensure all fields are filled correctly.'
                           });
                           return;
                         }
+
+                        console.log('Data being saved:', dataToSave);
 
                         const response = await fetch('/api/property-analyzer/save', {
                           method: 'POST',
@@ -356,22 +361,30 @@ export default function PropertyAnalyzerPage() {
                           credentials: 'include'
                         });
 
+                        const responseData = await response.json();
+
                         if (!response.ok) {
-                          const errorData = await response.json();
-                          console.error('Save response error:', errorData);
-                          throw new Error(JSON.stringify(errorData));
+                          console.error('Save response error:', responseData);
+                          let errorMessage = 'Failed to save analysis. ';
+                          if (responseData.details && Array.isArray(responseData.details)) {
+                            errorMessage += responseData.details.join('\n');
+                          } else if (responseData.error) {
+                            errorMessage += responseData.error;
+                          }
+                          throw new Error(errorMessage);
                         }
 
-                        toast({
-                          title: "Success",
-                          description: "Property analysis saved successfully"
+                        setSaveDialog({
+                          isOpen: true,
+                          type: 'success',
+                          message: 'Property analysis saved successfully! You can view it in the Properties page.'
                         });
                       } catch (error) {
                         console.error('Save error:', error);
-                        toast({
-                          title: "Error",
-                          description: error instanceof Error ? error.message : "Failed to save analysis",
-                          variant: "destructive"
+                        setSaveDialog({
+                          isOpen: true,
+                          type: 'error',
+                          message: error instanceof Error ? error.message : 'Failed to save analysis'
                         });
                       }
                     }}
@@ -383,6 +396,29 @@ export default function PropertyAnalyzerPage() {
                 </div>
               </div>
             </div>
+
+            {/* Add Alert Dialog for Save Status */}
+            <AlertDialog 
+              open={saveDialog.isOpen} 
+              onOpenChange={(open) => setSaveDialog(prev => ({ ...prev, isOpen: open }))}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {saveDialog.type === 'success' ? 'Success' : 'Error'}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="whitespace-pre-line">
+                    {saveDialog.message}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogAction>
+                    {saveDialog.type === 'success' ? 'Continue' : 'Try Again'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
 
             {/* Deal Summary Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -775,26 +811,19 @@ export default function PropertyAnalyzerPage() {
                                         R{Math.abs(difference).toLocaleString()}{" "}
                                         {isPositive ? "above" : "below"} area
                                         rate (
-                                        {(
-                                          (Math.abs(difference) / actualRate) *
-                                          100
-                                        ).toFixed(1)}
-                                        %)
+                                        {(Math.abs(difference) / actualRate * 100).toFixed(1)}%)
                                       </span>
                                     </p>
                                   </TooltipTrigger>
                                   <TooltipContent className="max-w-[300px] text-sm">
                                     This shows how the property's price per
                                     square meter compares to the average rate in
-                                    the area. A lower rate (
-                                    {isPositive
-                                      ? "currently higher"
-                                      : "currently lower"}
-                                    ) than the area average might indicate
+                                    the area. A lower rate than the area average might indicate
                                     better value for money, while a higher rate
-                                    could suggest premium features or location.
+                                    suggests premium positioning.
                                   </TooltipContent>
                                 </Tooltip>
+
                               </div>
                             );
                           })()}
