@@ -225,47 +225,53 @@ export default function PropertyAnalyzerPage() {
   };
 
   const prepareAnalysisDataForSave = () => {
-    if (!analysisResult) return null;
+    if (!analysisResult || !formData) return null;
 
     return {
       // Property Details
       title: `${analysisResult.address} Analysis`,
       address: analysisResult.address,
-      propertyDescription: analysisResult.propertyDescription,
-      propertyPhoto: analysisResult.propertyPhotoUrl,
-      floorArea: analysisResult.floorArea,
-      ratePerSquareMeter: analysisResult.ratePerSquareMeter,
+      propertyUrl: formData.propertyUrl,
+      propertyDescription: formData.comments || "",
+      propertyPhoto: formData.propertyPhoto,
 
-      // Financial Details
-      purchasePrice: analysisResult.analysis.purchasePrice,
-      deposit: analysisResult.deposit,
-      depositPercentage: analysisResult.depositPercentage,
-      interestRate: analysisResult.interestRate,
-      monthlyBondRepayment: analysisResult.monthlyBondRepayment,
-      loanTerm: analysisResult.loanTerm,
+      // Property Details
+      purchasePrice: Number(analysisResult.analysis.purchasePrice),
+      floorArea: Number(formData.floorArea),
+      bedrooms: Number(formData.bedrooms),
+      bathrooms: Number(formData.bathrooms),
+      parkingSpaces: Number(formData.parkingSpaces || 0),
 
-      // Revenue Performance
-      shortTermNightlyRate: analysisResult.shortTermNightlyRate,
-      annualOccupancy: analysisResult.annualOccupancy,
-      shortTermAnnualRevenue: analysisResult.analysis.shortTermAnnualRevenue,
-      longTermAnnualRevenue: analysisResult.analysis.longTermAnnualRevenue,
-      shortTermGrossYield: analysisResult.shortTermGrossYield,
-      longTermGrossYield: analysisResult.longTermGrossYield,
-      managementFee: analysisResult.managementFee,
+      // Financing details
+      depositAmount: Number(analysisResult.deposit),
+      depositPercentage: Number(analysisResult.depositPercentage),
+      interestRate: Number(analysisResult.interestRate),
+      loanTerm: Number(analysisResult.loanTerm),
+      monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment),
 
-      // Analysis Results
-      analysis: {
-        purchasePrice: analysisResult.analysis.purchasePrice,
-        revenueProjections: analysisResult.analysis.revenueProjections,
-        operatingExpenses: analysisResult.analysis.operatingExpenses,
-        netOperatingIncome: analysisResult.analysis.netOperatingIncome,
-        investmentMetrics: analysisResult.analysis.investmentMetrics
-      },
+      // Operating expenses
+      monthlyLevies: Number(formData.monthlyLevies || 0),
+      monthlyRatesTaxes: Number(formData.monthlyRatesTaxes || 0),
+      otherMonthlyExpenses: Number(formData.otherMonthlyExpenses || 0),
+      maintenancePercent: Number(formData.maintenancePercent || 0),
+      managementFee: Number(formData.managementFee || 0),
 
-      // Operation Metrics
+      // Revenue performance
+      shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate || 0),
+      annualOccupancy: Number(analysisResult.annualOccupancy || 0),
+      shortTermAnnualRevenue: Number(analysisResult.analysis.shortTermAnnualRevenue || 0),
+      longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue || 0),
+      shortTermGrossYield: Number(analysisResult.shortTermGrossYield || 0),
+      longTermGrossYield: Number(analysisResult.longTermGrossYield || 0),
+
+      // Rate comparison
+      ratePerSquareMeter: Number(formData.cmaRatePerSqm || 0),
+
+      // Analysis results
+      revenueProjections: analysisResult.analysis.revenueProjections,
+      operatingExpenses: analysisResult.analysis.operatingExpenses,
       netOperatingIncome: analysisResult.netOperatingIncome,
-
-      // Timestamps
+      investmentMetrics: analysisResult.analysis.investmentMetrics,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -310,51 +316,7 @@ export default function PropertyAnalyzerPage() {
                     Based on your provided property details
                   </p>
                 </div>
-                <Button 
-                  onClick={async () => {
-                    try {
-                      const dataToSave = prepareAnalysisDataForSave();
-                      if (!dataToSave) {
-                        toast({
-                          title: "Error",
-                          description: "No analysis data to save",
-                          variant: "destructive"
-                        });
-                        return;
-                      }
-
-                      const response = await fetch('/api/property-analyzer/save', {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(dataToSave),
-                        credentials: 'include'
-                      });
-
-                      if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(errorText);
-                      }
-
-                      toast({
-                        title: "Success",
-                        description: "Property analysis saved successfully"
-                      });
-                    } catch (error) {
-                      console.error('Save error:', error);
-                      toast({
-                        title: "Error",
-                        description: error instanceof Error ? error.message : "Failed to save analysis",
-                        variant: "destructive"
-                      });
-                    }
-                  }}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Analysis
-                </Button>
+                {/* Save Button Removed */}
               </div>
             </div>
 

@@ -1,6 +1,7 @@
 import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
+import { z } from "zod";
 
 // Existing tables
 export const accessCodes = pgTable("access_codes", {
@@ -123,18 +124,22 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   title: text("title").notNull(),
   address: text("address").notNull(),
   propertyUrl: text("property_url"),
+  propertyDescription: text("property_description"),
+  propertyPhoto: text("property_photo"),
+
+  // Property Details
   purchasePrice: decimal("purchase_price", { precision: 10, scale: 2 }).notNull(),
   floorArea: decimal("floor_area", { precision: 10, scale: 2 }).notNull(),
-  bedrooms: decimal("bedrooms", { precision: 3, scale: 1 }).notNull(),
-  bathrooms: decimal("bathrooms", { precision: 3, scale: 1 }).notNull(),
+  bedrooms: integer("bedrooms").notNull(),
+  bathrooms: integer("bathrooms").notNull(),
   parkingSpaces: integer("parking_spaces"),
 
   // Financing details
-  depositType: text("deposit_type").notNull(),
   depositAmount: decimal("deposit_amount", { precision: 10, scale: 2 }).notNull(),
   depositPercentage: decimal("deposit_percentage", { precision: 5, scale: 2 }).notNull(),
   interestRate: decimal("interest_rate", { precision: 5, scale: 2 }).notNull(),
   loanTerm: integer("loan_term").notNull(),
+  monthlyBondRepayment: decimal("monthly_bond_repayment", { precision: 10, scale: 2 }),
 
   // Operating expenses
   monthlyLevies: decimal("monthly_levies", { precision: 10, scale: 2 }).notNull(),
@@ -144,28 +149,23 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   managementFee: decimal("management_fee", { precision: 5, scale: 2 }).notNull(),
 
   // Revenue performance
-  airbnbNightlyRate: decimal("airbnb_nightly_rate", { precision: 10, scale: 2 }),
-  occupancyRate: decimal("occupancy_rate", { precision: 5, scale: 2 }),
-  longTermRental: decimal("long_term_rental", { precision: 10, scale: 2 }),
-  leaseCycleGap: decimal("lease_cycle_gap", { precision: 5, scale: 2 }),
+  shortTermNightlyRate: decimal("short_term_nightly_rate", { precision: 10, scale: 2 }),
+  annualOccupancy: decimal("annual_occupancy", { precision: 5, scale: 2 }),
+  shortTermAnnualRevenue: decimal("short_term_annual_revenue", { precision: 10, scale: 2 }),
+  longTermAnnualRevenue: decimal("long_term_annual_revenue", { precision: 10, scale: 2 }),
+  shortTermGrossYield: decimal("short_term_gross_yield", { precision: 5, scale: 2 }),
+  longTermGrossYield: decimal("long_term_gross_yield", { precision: 5, scale: 2 }),
 
-  // Escalations
-  annualIncomeGrowth: decimal("annual_income_growth", { precision: 5, scale: 2 }).notNull(),
-  annualExpenseGrowth: decimal("annual_expense_growth", { precision: 5, scale: 2 }).notNull(),
-  annualPropertyAppreciation: decimal("annual_property_appreciation", { precision: 5, scale: 2 }).notNull(),
+  // Rate comparison
+  ratePerSquareMeter: decimal("rate_per_square_meter", { precision: 10, scale: 2 }).notNull(),
 
-  // Analysis results stored as JSON
+  // Analysis results
   revenueProjections: jsonb("revenue_projections").notNull(),
   operatingExpenses: jsonb("operating_expenses").notNull(),
   netOperatingIncome: jsonb("net_operating_income").notNull(),
-  longTermNetOperatingIncome: jsonb("long_term_net_operating_income").notNull(),
   investmentMetrics: jsonb("investment_metrics").notNull(),
 
-  // Additional fields
-  cmaRatePerSqm: decimal("cma_rate_per_sqm", { precision: 10, scale: 2 }).notNull(),
-  comments: text("comments"),
-  propertyPhoto: text("property_photo"),
-
+  // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -234,7 +234,58 @@ export const insertReportTrackingSchema = createInsertSchema(reportTracking);
 export const selectReportTrackingSchema = createSelectSchema(reportTracking);
 
 // Add schemas for new table
-export const insertPropertyAnalyzerResultSchema = createInsertSchema(propertyAnalyzerResults);
+const customPropertyAnalyzerSchema = z.object({
+  userId: z.number(),
+  title: z.string(),
+  address: z.string(),
+  propertyUrl: z.string().optional(),
+  propertyDescription: z.string().optional(),
+  propertyPhoto: z.string().optional(),
+
+  // Property Details
+  purchasePrice: z.number(),
+  floorArea: z.number(),
+  bedrooms: z.number(),
+  bathrooms: z.number(),
+  parkingSpaces: z.number().optional(),
+
+  // Financing details
+  depositAmount: z.number(),
+  depositPercentage: z.number(),
+  interestRate: z.number(),
+  loanTerm: z.number(),
+  monthlyBondRepayment: z.number().optional(),
+
+  // Operating expenses
+  monthlyLevies: z.number(),
+  monthlyRatesTaxes: z.number(),
+  otherMonthlyExpenses: z.number(),
+  maintenancePercent: z.number(),
+  managementFee: z.number(),
+
+  // Revenue performance
+  shortTermNightlyRate: z.number().optional(),
+  annualOccupancy: z.number().optional(),
+  shortTermAnnualRevenue: z.number().optional(),
+  longTermAnnualRevenue: z.number().optional(),
+  shortTermGrossYield: z.number().optional(),
+  longTermGrossYield: z.number().optional(),
+
+  // Rate comparison
+  ratePerSquareMeter: z.number(),
+
+  // Analysis results
+  revenueProjections: z.record(z.any()),
+  operatingExpenses: z.record(z.any()),
+  netOperatingIncome: z.record(z.any()),
+  investmentMetrics: z.record(z.any()),
+
+  // Timestamps are handled automatically by the database
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+export const insertPropertyAnalyzerResultSchema = customPropertyAnalyzerSchema;
 export const selectPropertyAnalyzerResultSchema = createSelectSchema(propertyAnalyzerResults);
 
 // Types
