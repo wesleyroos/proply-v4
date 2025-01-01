@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
-import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight } from "lucide-react";
+import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save } from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
@@ -24,6 +24,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toast } from '@radix-ui/react-toast';
 
 interface YearlyMetrics {
   grossYield: number;
@@ -251,13 +252,51 @@ export default function PropertyAnalyzerPage() {
           <>
             {/* Analysis Results Header */}
             <div className="mb-6">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
-                <BarChart3 className="h-6 w-6" />
-                Analysis Results
-              </h2>
-              <p className="text-muted-foreground">
-                Based on your provided property details
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
+                    <BarChart3 className="h-6 w-6" />
+                    Analysis Results
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Based on your provided property details
+                  </p>
+                </div>
+                <Button 
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/property-analyzer/save', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(analysisResult),
+                        credentials: 'include'
+                      });
+
+                      if (!response.ok) {
+                        throw new Error(await response.text());
+                      }
+
+                      toast({
+                        title: "Success",
+                        description: "Property analysis saved successfully",
+                      });
+                    } catch (error) {
+                      console.error('Save error:', error);
+                      toast({
+                        title: "Error",
+                        description: error instanceof Error ? error.message : "Failed to save analysis",
+                        variant: "destructive"
+                      });
+                    }
+                  }}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Analysis
+                </Button>
+              </div>
             </div>
 
             {/* Deal Summary Section */}
