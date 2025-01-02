@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { Link } from "wouter";
@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatter } from "../utils/formatting";
-import { Trash2, Calculator, ArrowUpDown, Eye } from "lucide-react";
+import { Trash2, Calculator, ArrowUpDown, Eye, ChevronUp, ChevronDown } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -17,8 +17,8 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-import type { SelectUser } from "@db/schema";
 import { PropertyAnalyzerModal } from "@/components/PropertyAnalyzerModal";
+import type { SelectUser } from "@db/schema";
 
 interface Property {
   id: number;
@@ -30,8 +30,6 @@ interface Property {
   shortTermAnnual: number;
   shortTermAfterFees: number;
   breakEvenOccupancy: number;
-  shortTermNightly: number;
-  annualOccupancy: number;
   propertyType: 'rent_compare' | 'property_analyzer';
   createdAt: string;
 }
@@ -46,27 +44,17 @@ interface AnalyzerProperty {
   parkingSpaces: number;
   monthlyLevies: number;
   monthlyRatesTaxes: number;
-  shortTermNightlyRate: number | null;
-  annualOccupancy: number | null;
   ratePerSquareMeter: number;
   shortTermGrossYield: number | null;
   longTermGrossYield: number | null;
-  netOperatingIncome: {
-    year1: {
-      value: number;
-    };
-  };
-  investmentMetrics: {
-    shortTerm: Array<{
-      capRate: number;
-      cashOnCashReturn: number;
-    }>;
-  };
+  longTermAnnualRevenue: number | null;
   shortTermAnnualRevenue: number | null;
   createdAt: string;
 }
 
 type PropertyType = 'rent_compare' | 'property_analyzer';
+type SortField = keyof AnalyzerProperty;
+type SortDirection = 'asc' | 'desc';
 
 export default function PropertiesPage() {
   const queryClient = useQueryClient();
@@ -76,6 +64,10 @@ export default function PropertiesPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<AnalyzerProperty | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection }>({
+    field: 'address',
+    direction: 'asc'
+  });
 
   const { data: properties, isLoading: isLoadingProperties } = useQuery<Property[]>({
     queryKey: ['/api/properties', user?.id],
@@ -116,6 +108,49 @@ export default function PropertiesPage() {
       setDeleteError(error instanceof Error ? error.message : 'Failed to delete property');
     }
   };
+
+  const handleSort = (field: SortField) => {
+    setSortConfig(current => ({
+      field,
+      direction: current.field === field && current.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortConfig.field !== field) return <ArrowUpDown className="h-4 w-4 ml-1" />;
+    return sortConfig.direction === 'asc' ? 
+      <ChevronUp className="h-4 w-4 ml-1" /> : 
+      <ChevronDown className="h-4 w-4 ml-1" />;
+  };
+
+  const filteredAndSortedProperties = useMemo(() => {
+    if (!analyzerProperties) return [];
+
+    let filtered = analyzerProperties;
+    if (searchTerm) {
+      filtered = analyzerProperties.filter(property => 
+        property.address.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return [...filtered].sort((a, b) => {
+      const aValue = a[sortConfig.field];
+      const bValue = b[sortConfig.field];
+
+      if (aValue === null) return 1;
+      if (bValue === null) return -1;
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortConfig.direction === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      return sortConfig.direction === 'asc'
+        ? (aValue as number) - (bValue as number)
+        : (bValue as number) - (aValue as number);
+    });
+  }, [analyzerProperties, searchTerm, sortConfig]);
 
   return (
     <div className="p-8">
@@ -242,34 +277,97 @@ export default function PropertiesPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
-                      <th className="py-3 px-4 text-left">Address</th>
-                      <th className="py-3 px-4 text-right">Purchase Price</th>
-                      <th className="py-3 px-4 text-right">Area (m²)</th>
-                      <th className="py-3 px-4 text-center">Beds</th>
-                      <th className="py-3 px-4 text-center">Baths</th>
-                      <th className="py-3 px-4 text-center">Park</th>
-                      <th className="py-3 px-4 text-right">Levies</th>
-                      <th className="py-3 px-4 text-right">Rates & Tax</th>
-                      <th className="py-3 px-4 text-right">Nightly Rate</th>
-                      <th className="py-3 px-4 text-right">Occupancy</th>
-                      <th className="py-3 px-4 text-right">Rate/m²</th>
-                      <th className="py-3 px-4 text-right">ST Yield</th>
-                      <th className="py-3 px-4 text-right">LT Yield</th>
-                      <th className="py-3 px-4 text-right">Cash Return</th>
-                      <th className="py-3 px-4 text-right">Annual Rev.</th>
+                      <th onClick={() => handleSort('address')} className="py-3 px-4 text-left cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center">
+                          Address
+                          <SortIcon field="address" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('purchasePrice')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          Purchase Price
+                          <SortIcon field="purchasePrice" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('floorArea')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          Area (m²)
+                          <SortIcon field="floorArea" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('bedrooms')} className="py-3 px-4 text-center cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-center">
+                          Beds
+                          <SortIcon field="bedrooms" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('bathrooms')} className="py-3 px-4 text-center cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-center">
+                          Baths
+                          <SortIcon field="bathrooms" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('parkingSpaces')} className="py-3 px-4 text-center cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-center">
+                          Park
+                          <SortIcon field="parkingSpaces" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('monthlyLevies')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          Levies
+                          <SortIcon field="monthlyLevies" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('monthlyRatesTaxes')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          Rates & Tax
+                          <SortIcon field="monthlyRatesTaxes" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('shortTermGrossYield')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          ST Yield
+                          <SortIcon field="shortTermGrossYield" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('longTermGrossYield')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          LT Yield
+                          <SortIcon field="longTermGrossYield" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('shortTermAnnualRevenue')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          ST Revenue
+                          <SortIcon field="shortTermAnnualRevenue" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('longTermAnnualRevenue')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          LT Revenue
+                          <SortIcon field="longTermAnnualRevenue" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('ratePerSquareMeter')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          Rate/m²
+                          <SortIcon field="ratePerSquareMeter" />
+                        </div>
+                      </th>
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {isLoadingAnalyzer ? (
                       <tr>
-                        <td colSpan={16} className="text-center py-8 text-muted-foreground">
+                        <td colSpan={14} className="text-center py-8 text-muted-foreground">
                           Loading properties...
                         </td>
                       </tr>
-                    ) : !analyzerProperties?.length ? (
+                    ) : !filteredAndSortedProperties.length ? (
                       <tr>
-                        <td colSpan={16} className="text-center py-8 text-muted-foreground">
+                        <td colSpan={14} className="text-center py-8 text-muted-foreground">
                           No properties analyzed yet.{' '}
                           <Link href="/analyzer" className="text-primary hover:underline">
                             Analyze your first property
@@ -277,7 +375,7 @@ export default function PropertiesPage() {
                         </td>
                       </tr>
                     ) : (
-                      analyzerProperties.map((property) => (
+                      filteredAndSortedProperties.map((property) => (
                         <tr key={property.id} className="border-b hover:bg-muted/50">
                           <td className="py-3 px-4">
                             <div className="max-w-[200px]">
@@ -297,26 +395,20 @@ export default function PropertiesPage() {
                           <td className="py-3 px-4 text-right whitespace-nowrap">
                             {formatter.format(property.monthlyRatesTaxes)}
                           </td>
-                          <td className="py-3 px-4 text-right whitespace-nowrap">
-                            {formatter.format(property.shortTermNightlyRate || 0)}
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            {property.annualOccupancy || 0}%
-                          </td>
-                          <td className="py-3 px-4 text-right whitespace-nowrap">
-                            {formatter.format(property.ratePerSquareMeter)}
-                          </td>
                           <td className="py-3 px-4 text-right">
                             {property.shortTermGrossYield ? Number(property.shortTermGrossYield).toFixed(2) : '0.00'}%
                           </td>
                           <td className="py-3 px-4 text-right">
                             {property.longTermGrossYield ? Number(property.longTermGrossYield).toFixed(2) : '0.00'}%
                           </td>
-                          <td className="py-3 px-4 text-right">
-                            {(property.investmentMetrics?.shortTerm?.[0]?.cashOnCashReturn || 0).toFixed(2)}%
-                          </td>
                           <td className="py-3 px-4 text-right whitespace-nowrap">
                             {formatter.format(property.shortTermAnnualRevenue || 0)}
+                          </td>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            {formatter.format(property.longTermAnnualRevenue || 0)}
+                          </td>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            {formatter.format(property.ratePerSquareMeter)}
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex justify-end gap-2">
