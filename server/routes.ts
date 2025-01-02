@@ -7,6 +7,7 @@ import { eq, and } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields, type PropertyData } from "../analysis-engine/calculations";
+import { sql } from "drizzle-orm";
 
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
@@ -698,36 +699,47 @@ export function registerRoutes(app: Express): Server {
       console.log('Validated data:', JSON.stringify(data, null, 2));
 
       try {
-        // Prepare data for insertion
+        // Enable query logging for debugging
+        const debug = true;
+        if (debug) {
+          db.interceptors.push({
+            beforeExecute: (query) => {
+              console.log('Executing SQL:', query.sql);
+              console.log('SQL Parameters:', query.params);
+            },
+          });
+        }
+
+        // Prepare data for insertion with explicit type handling
         const insertData = {
           userId: data.userId,
           title: data.title,
           address: data.address,
-          propertyUrl: data.propertyUrl,
-          propertyDescription: data.propertyDescription,
-          propertyPhoto: data.propertyPhoto,
-          purchasePrice: data.purchasePrice,
-          floorArea: data.floorArea,
+          propertyUrl: data.propertyUrl ?? null,
+          propertyDescription: data.propertyDescription ?? null,
+          propertyPhoto: data.propertyPhoto ?? null,
+          purchasePrice: sql`CAST(${data.purchasePrice} AS DECIMAL(10,2))`,
+          floorArea: sql`CAST(${data.floorArea} AS DECIMAL(10,2))`,
           bedrooms: data.bedrooms,
           bathrooms: data.bathrooms,
           parkingSpaces: data.parkingSpaces,
-          depositAmount: data.depositAmount,
-          depositPercentage: data.depositPercentage,
-          interestRate: data.interestRate,
+          depositAmount: sql`CAST(${data.depositAmount} AS DECIMAL(10,2))`,
+          depositPercentage: sql`CAST(${data.depositPercentage} AS DECIMAL(5,2))`,
+          interestRate: sql`CAST(${data.interestRate} AS DECIMAL(5,2))`,
           loanTerm: data.loanTerm,
-          monthlyBondRepayment: data.monthlyBondRepayment,
-          monthlyLevies: data.monthlyLevies,
-          monthlyRatesTaxes: data.monthlyRatesTaxes,
-          otherMonthlyExpenses: data.otherMonthlyExpenses,
-          maintenancePercent: data.maintenancePercent,
-          managementFee: data.managementFee,
-          shortTermNightlyRate: data.shortTermNightlyRate,
-          annualOccupancy: data.annualOccupancy,
-          shortTermAnnualRevenue: data.shortTermAnnualRevenue,
-          longTermAnnualRevenue: data.longTermAnnualRevenue,
-          shortTermGrossYield: data.shortTermGrossYield,
-          longTermGrossYield: data.longTermGrossYield,
-          ratePerSquareMeter: data.ratePerSquareMeter,
+          monthlyBondRepayment: data.monthlyBondRepayment ? sql`CAST(${data.monthlyBondRepayment} AS DECIMAL(10,2))` : null,
+          monthlyLevies: sql`CAST(${data.monthlyLevies} AS DECIMAL(10,2))`,
+          monthlyRatesTaxes: sql`CAST(${data.monthlyRatesTaxes} AS DECIMAL(10,2))`,
+          otherMonthlyExpenses: sql`CAST(${data.otherMonthlyExpenses} AS DECIMAL(10,2))`,
+          maintenancePercent: sql`CAST(${data.maintenancePercent} AS DECIMAL(5,2))`,
+          managementFee: sql`CAST(${data.managementFee} AS DECIMAL(5,2))`,
+          shortTermNightlyRate: data.shortTermNightlyRate ? sql`CAST(${data.shortTermNightlyRate} AS DECIMAL(10,2))` : null,
+          annualOccupancy: data.annualOccupancy ? sql`CAST(${data.annualOccupancy} AS DECIMAL(5,2))` : null,
+          shortTermAnnualRevenue: data.shortTermAnnualRevenue ? sql`CAST(${data.shortTermAnnualRevenue} AS DECIMAL(10,2))` : null,
+          longTermAnnualRevenue: data.longTermAnnualRevenue ? sql`CAST(${data.longTermAnnualRevenue} AS DECIMAL(10,2))` : null,
+          shortTermGrossYield: data.shortTermGrossYield ? sql`CAST(${data.shortTermGrossYield} AS DECIMAL(5,2))` : null,
+          longTermGrossYield: data.longTermGrossYield ? sql`CAST(${data.longTermGrossYield} AS DECIMAL(5,2))` : null,
+          ratePerSquareMeter: sql`CAST(${data.ratePerSquareMeter} AS DECIMAL(10,2))`,
           revenueProjections: data.revenueProjections,
           operatingExpenses: data.operatingExpenses,
           netOperatingIncome: data.netOperatingIncome || {},
