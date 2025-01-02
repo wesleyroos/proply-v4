@@ -9,11 +9,9 @@ import {
   accessCodes,
   agencySettings,
   type SelectUser,
-  type InsertUser,
-  suburbs,
-  analysisDataPoints
+  type InsertUser
 } from "@db/schema";
-import { eq, like, desc } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
@@ -30,58 +28,15 @@ export function registerRoutes(app: Express): Server {
   // Setup authentication first
   setupAuth(app);
 
-  // Require authentication for all /api routes except login/register and suburb search
+  // Require authentication for all /api routes except login/register
   app.use('/api', (req, res, next) => {
-    if (
-      req.path === '/login' || 
-      req.path === '/register' || 
-      req.path === '/user' ||
-      req.path.startsWith('/suburbs/search')
-    ) {
+    if (req.path === '/login' || req.path === '/register' || req.path === '/user') {
       return next();
     }
     if (!req.isAuthenticated()) {
       return res.status(401).send('Not authenticated');
     }
     next();
-  });
-
-  // Suburb search endpoint - no authentication required
-  app.get("/api/suburbs/search", async (req, res) => {
-    try {
-      const { q } = req.query;
-
-      if (!q || typeof q !== 'string') {
-        return res.status(400).json({ error: "Search query is required" });
-      }
-
-      if (q.length < 2) {
-        return res.json({ suburbs: [] });
-      }
-
-      console.log('Searching suburbs with query:', q);
-
-      const results = await db
-        .select({
-          id: suburbs.id,
-          name: suburbs.name,
-          city: suburbs.city,
-          province: suburbs.province
-        })
-        .from(suburbs)
-        .where(like(suburbs.name, `%${q}%`))
-        .limit(10);
-
-      console.log('Search results:', results);
-
-      res.json({ suburbs: results });
-    } catch (error) {
-      console.error('Error searching suburbs:', error);
-      res.status(500).json({
-        error: "Failed to search suburbs",
-        details: error instanceof Error ? error.message : undefined
-      });
-    }
   });
 
   // Subscription upgrade endpoint
@@ -428,7 +383,6 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
-
 
 
   app.delete("/api/properties/:id", async (req, res) => {
@@ -802,62 +756,8 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Market Intelligence analysis endpoint
-  app.post("/api/market-intelligence/analyze", async (req, res) => {
-    try {
-      const { suburbId, suburb } = req.body;
-
-      if (!suburb) {
-        return res.status(400).json({ error: "Suburb name is required" });
-      }
-
-      console.log('Starting analysis for suburb:', suburb);
-
-      // Get recent analysis data points if they exist
-      const recentDataPoints = suburbId ? await db
-        .select()
-        .from(analysisDataPoints)
-        .where(eq(analysisDataPoints.suburbId, suburbId))
-        .orderBy(desc(analysisDataPoints.createdAt))
-        .limit(50) : [];
-
-      console.log(`Found ${recentDataPoints.length} recent data points`);
-
-      // Perform new analysis using OpenAI
-      const analysis = await analyzeSuburb(suburb, recentDataPoints);
-
-      // Store new analysis data points if we have a suburbId
-      if (suburbId && analysis.dataPointsForStorage?.length > 0) {
-        console.log('Storing new analysis data points');
-        await db.insert(analysisDataPoints).values(
-          analysis.dataPointsForStorage.map(dp => ({
-            suburbId,
-            type: dp.type,
-            source: dp.source,
-            title: dp.title,
-            content: dp.content,
-            date: new Date(dp.date),
-            sentiment: dp.sentiment,
-            category: dp.category,
-            relevanceScore: dp.relevanceScore,
-            impactScore: dp.impactScore,
-            reasoning: dp.reasoning
-          }))
-        );
-      }
-
-      res.json(analysis);
-    } catch (error) {
-      console.error('Error analyzing suburb:', error);
-      res.status(500).json({
-        error: "Failed to analyze suburb",
-        details: error instanceof Error ? error.message : undefined
-      });
-    }
-  });
-
   // Market Intelligence API endpoint
-  app.post("/api/market-intelligence/analyzeOld", async (req, res) => {
+  app.post("/api/market-intelligence/analyze", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
       return res.status(403).send("Not authorized");
     }
