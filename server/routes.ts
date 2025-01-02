@@ -805,7 +805,7 @@ export function registerRoutes(app: Express): Server {
   // Market Intelligence analysis endpoint
   app.post("/api/market-intelligence/analyze", async (req, res) => {
     try {
-      const { suburbId, suburb } = req.body;
+      const { suburb } = req.body;
 
       if (!suburb) {
         return res.status(400).json({ error: "Suburb name is required" });
@@ -813,66 +813,9 @@ export function registerRoutes(app: Express): Server {
 
       console.log('Starting analysis for suburb:', suburb);
 
-      // Get recent analysis data points if they exist
-      const recentDataPoints = suburbId ? await db
-        .select()
-        .from(analysisDataPoints)
-        .where(eq(analysisDataPoints.suburbId, suburbId))
-        .orderBy(desc(analysisDataPoints.createdAt))
-        .limit(50) : [];
-
-      console.log(`Found ${recentDataPoints.length} recent data points`);
-
-      // Perform new analysis using OpenAI
-      const analysis = await analyzeSuburb(suburb, recentDataPoints);
-
-      // Store new analysis data points if we have a suburbId
-      if (suburbId && analysis.dataPointsForStorage?.length > 0) {
-        console.log('Storing new analysis data points');
-
-        // Convert decimal fields to text for storage
-        const dataPointsToStore = analysis.dataPointsForStorage.map(dp => ({
-          suburbId,
-          type: dp.type,
-          source: dp.source,
-          title: dp.title,
-          content: dp.content,
-          date: new Date(dp.date),
-          sentiment: dp.sentiment.toString(),
-          category: dp.category,
-          relevanceScore: dp.relevanceScore.toString(),
-          impactScore: dp.impactScore.toString(),
-          reasoning: dp.reasoning,
-          createdAt: new Date()
-        }));
-
-        await db.insert(analysisDataPoints).values(dataPointsToStore);
-      }
-
-      res.json(analysis);
-    } catch (error) {
-      console.error('Error analyzing suburb:', error);
-      res.status(500).json({
-        error: "Failed to analyze suburb",
-        details: error instanceof Error ? error.message : undefined
-      });
-    }
-  });
-
-  // Market Intelligence API endpoint
-  app.post("/api/market-intelligence/analyzeOld", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user?.isAdmin) {
-      return res.status(403).send("Not authorized");
-    }
-
-    const { suburb } = req.body;
-
-    if (!suburb) {
-      return res.status(400).json({ error: "Suburb name is required" });
-    }
-
-    try {
+      // Perform analysis using OpenAI
       const analysis = await analyzeSuburb(suburb);
+
       res.json(analysis);
     } catch (error) {
       console.error('Error analyzing suburb:', error);
@@ -882,6 +825,30 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
+
+  // Market Intelligence API endpoint -removed this old endpoint
+  // app.post("/api/market-intelligence/analyzeOld", async (req, res) => {
+  //   if (!req.isAuthenticated() || !req.user?.isAdmin) {
+  //     return res.status(403).send("Not authorized");
+  //   }
+
+  //   const { suburb } = req.body;
+
+  //   if (!suburb) {
+  //     return res.status(400).json({ error: "Suburb name is required" });
+  //   }
+
+  //   try {
+  //     const analysis = await analyzeSuburb(suburb);
+  //     res.json(analysis);
+  //   } catch (error) {
+  //     console.error('Error analyzing suburb:', error);
+  //     res.status(500).json({
+  //       error: "Failed to analyze suburb",
+  //       details: error instanceof Error ? error.message : undefined
+  //     });
+  //   }
+  // });
 
   const httpServer = createServer(app);
   return httpServer;
