@@ -39,12 +39,12 @@ export default function Sidebar() {
     {
       title: "Property Analyzer",
       icon: Calculator,
-      href: "/property-analyzer",
+      href: "/dashboard/property-analyzer",
     },
     {
       title: "Rent Compare",
       icon: Building2,
-      href: "/rent-compare",
+      href: "/dashboard/rent-compare",
     },
     {
       title: "Properties",
