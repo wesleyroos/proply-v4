@@ -87,6 +87,12 @@ export default function DashboardPage() {
     ? (averageYields.longTerm.sum / averageYields.longTerm.count).toFixed(1)
     : '0.0';
 
+  // Property table display
+  const formatYield = (value: number | null) => {
+    if (value === null || isNaN(Number(value))) return '-';
+    return `${Number(value).toFixed(1)}%`;
+  };
+
   // Combine properties for map
   const allProperties: PropertyMapData[] = [
     ...(analyzerProperties?.map(p => ({
@@ -192,35 +198,35 @@ export default function DashboardPage() {
 
         <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Short-Term Average</CardTitle>
+            <CardTitle className="text-sm font-medium">Short-Term Gross Yield</CardTitle>
             <ChartBar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-900">{avgShortTermYield}%</div>
             <p className="text-xs text-muted-foreground mt-2">
-              Portfolio gross yield ({averageYields?.shortTerm.count || 0} properties)
+              Portfolio average ({averageYields?.shortTerm.count || 0} properties)
             </p>
           </CardContent>
         </Card>
 
         <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Long-Term Average</CardTitle>
+            <CardTitle className="text-sm font-medium">Long-Term Gross Yield</CardTitle>
             <ChartBar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-900">{avgLongTermYield}%</div>
             <p className="text-xs text-muted-foreground mt-2">
-              Portfolio gross yield ({averageYields?.longTerm.count || 0} properties)
+              Portfolio average ({averageYields?.longTerm.count || 0} properties)
             </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid gap-6 md:grid-cols-12 min-h-[600px]">
+      <div className="grid gap-6 md:grid-cols-2 min-h-[600px]">
         {/* Property Tables */}
-        <div className="md:col-span-5 space-y-6">
+        <div className="space-y-6">
           {/* Property Analyzer Properties */}
           <Card className="bg-white shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
@@ -263,14 +269,10 @@ export default function DashboardPage() {
                         </p>
                         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
                           <p className="text-xs text-muted-foreground">
-                            ST Yield: {property.shortTermGrossYield && !isNaN(Number(property.shortTermGrossYield))
-                              ? `${Number(property.shortTermGrossYield).toFixed(1)}%`
-                              : '-'}
+                            ST Yield: {formatYield(property.shortTermGrossYield)}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            LT Yield: {property.longTermGrossYield && !isNaN(Number(property.longTermGrossYield))
-                              ? `${Number(property.longTermGrossYield).toFixed(1)}%`
-                              : '-'}
+                            LT Yield: {formatYield(property.longTermGrossYield)}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             ST Revenue: {formatter.format(property.shortTermAnnualRevenue || 0)}

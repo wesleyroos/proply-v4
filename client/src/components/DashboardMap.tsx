@@ -60,7 +60,7 @@ export default function DashboardMap({ properties }: DashboardMapProps) {
               title: property.address,
               icon: {
                 path: "M21.47,11.88l-9-8a1,1,0,0,0-1.33,0l-9,8a1,1,0,0,0,1.33,1.49L4,12.88v8a1,1,0,0,0,1,1H19a1,1,0,0,0,1-1v-8l0.47,0.42a1,1,0,0,0,1.33-1.49Z",
-                fillColor: property.type === 'analyzer' ? '#3B82F6' : '#10b981', // Blue for analyzer, green for compare
+                fillColor: property.type === 'analyzer' ? '#3B82F6' : '#ef4444', // Blue for analyzer, red for compare
                 fillOpacity: 1,
                 strokeWeight: 1.5,
                 strokeColor: '#ffffff',
@@ -98,6 +98,6 @@ export default function DashboardMap({ properties }: DashboardMapProps) {
   }, [properties]);
 
   return (
-    <div ref={mapRef} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', bottom: '0.5rem', left: '0.5rem' }} />
+    <div ref={mapRef} style={{ position: 'absolute', top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }} />
   );
 }
