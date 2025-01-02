@@ -307,10 +307,10 @@ export default function PropertiesPage() {
                             {formatter.format(property.ratePerSquareMeter)}
                           </td>
                           <td className="py-3 px-4 text-right">
-                            {property.shortTermGrossYield?.toFixed(2)}%
+                            {property.shortTermGrossYield ? Number(property.shortTermGrossYield).toFixed(2) : '0.00'}%
                           </td>
                           <td className="py-3 px-4 text-right">
-                            {property.longTermGrossYield?.toFixed(2)}%
+                            {property.longTermGrossYield ? Number(property.longTermGrossYield).toFixed(2) : '0.00'}%
                           </td>
                           <td className="py-3 px-4 text-right">
                             {(property.investmentMetrics?.shortTerm?.[0]?.cashOnCashReturn || 0).toFixed(2)}%
