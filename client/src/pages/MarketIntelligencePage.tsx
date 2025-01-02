@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Loader2, TrendingUp, TrendingDown, Star, ExternalLink, LineChart } from "lucide-react";
-import { Command } from "cmdk";
 
 interface SuburbAnalysis {
   sentiment: {
@@ -32,42 +31,18 @@ interface SuburbAnalysis {
   dataPoints: number;
 }
 
-interface Suburb {
-  id: string;
-  name: string;
-  city: string;
-  province: string;
-}
-
 export default function MarketIntelligencePage() {
-  const [inputValue, setInputValue] = useState("");
-  const [suburbs, setSuburbs] = useState<Suburb[]>([]);
-  const [selectedSuburb, setSelectedSuburb] = useState<Suburb | null>(null);
+  const [suburb, setSuburb] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<SuburbAnalysis | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState<string[]>([]);
   const { toast } = useToast();
 
-  const searchSuburbs = async (search: string) => {
-    if (search.length < 2) return;
-
-    try {
-      const response = await fetch(`/api/suburbs/search?q=${search}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch suburbs');
-      }
-      const data = await response.json();
-      setSuburbs(data.suburbs);
-    } catch (error) {
-      console.error('Search error:', error);
-    }
-  };
-
   const handleAnalysis = async () => {
-    if (!selectedSuburb) {
+    if (!suburb.trim()) {
       toast({
         title: "Error",
-        description: "Please select a valid suburb",
+        description: "Please enter a suburb name",
         variant: "destructive",
       });
       return;
@@ -85,10 +60,7 @@ export default function MarketIntelligencePage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          suburbId: selectedSuburb.id,
-          suburb: `${selectedSuburb.name}, ${selectedSuburb.city}` 
-        }),
+        body: JSON.stringify({ suburb: suburb.trim() }),
       });
 
       if (!response.ok) {
@@ -110,8 +82,13 @@ export default function MarketIntelligencePage() {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleAnalysis();
+  };
+
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="h-full p-4 space-y-4">
       <h1 className="text-3xl font-bold">Market Intelligence</h1>
 
       <Card>
@@ -120,46 +97,17 @@ export default function MarketIntelligencePage() {
           <CardDescription>Analyze market sentiment and trends for any suburb</CardDescription>
         </CardHeader>
         <CardContent>
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleAnalysis();
-            }}
-            className="space-y-4"
-          >
-            <Command className="rounded-lg border shadow-sm">
-              <Command.Input
-                value={inputValue}
-                onValueChange={(value) => {
-                  setInputValue(value);
-                  searchSuburbs(value);
-                }}
-                placeholder="Search for a suburb..."
-                className="h-9 w-full rounded-md px-3"
-              />
-              {suburbs.length > 0 && (
-                <Command.List className="max-h-48 overflow-y-auto p-2">
-                  {suburbs.map((suburb) => (
-                    <Command.Item
-                      key={suburb.id}
-                      value={suburb.id}
-                      onSelect={() => {
-                        setSelectedSuburb(suburb);
-                        setInputValue(`${suburb.name}, ${suburb.city}`);
-                        setSuburbs([]);
-                      }}
-                      className="flex items-center px-2 py-1 text-sm rounded cursor-pointer hover:bg-accent"
-                    >
-                      {suburb.name}, {suburb.city}, {suburb.province}
-                    </Command.Item>
-                  ))}
-                </Command.List>
-              )}
-            </Command>
+          <form onSubmit={handleSubmit} className="flex gap-4">
+            <Input
+              placeholder="Enter suburb name (e.g., Sea Point, Cape Town)"
+              value={suburb}
+              onChange={(e) => setSuburb(e.target.value)}
+              className="flex-1"
+            />
             <Button
               type="submit"
               disabled={isAnalyzing}
-              className="w-full md:w-auto"
+              className="min-w-[120px]"
             >
               {isAnalyzing ? (
                 <>
@@ -199,7 +147,7 @@ export default function MarketIntelligencePage() {
       )}
 
       {analysis && (
-        <div className="space-y-4">
+        <>
           <Card>
             <CardHeader>
               <CardTitle>Overall Sentiment</CardTitle>
@@ -321,7 +269,7 @@ export default function MarketIntelligencePage() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </>
       )}
     </div>
   );
