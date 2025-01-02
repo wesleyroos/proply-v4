@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AnimatePresence } from "framer-motion";
+import { PageTransition } from "./components/PageTransition";
 import ComparisonPage from "./pages/ComparisonPage";
 import PropertiesPage from "./pages/PropertiesPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -57,67 +59,129 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
     <div className="flex min-h-screen">
       <Sidebar />
       <main className="flex-1">
-        <Component />
+        <PageTransition>
+          <Component />
+        </PageTransition>
       </main>
     </div>
   );
 }
 
 function App() {
+  const [location] = useLocation();
+
   return (
     <>
       <TooltipProvider>
-        <Switch>
-          {/* Public routes */}
-          <Route path="/" component={HomePage} />
-          <Route path="/login" component={LoginPage} />
-          <Route path="/register" component={RegisterPage} />
-          <Route path="/pricing" component={PricingPage} />
-          <Route path="/blog" component={BlogPage} />
-          <Route path="/blog/:slug" component={BlogPage} />
-          <Route path="/property-analyzer" component={PropertyAnalyzerProductPage} />
-          <Route path="/rent-compare" component={RentComparePage} />
-          <Route path="/privacy" component={PrivacyPage} />
-          <Route path="/terms" component={TermsPage} />
-          <Route path="/contact" component={ContactPage} />
-          <Route path="/payment/success" component={PaymentSuccessPage} />
-          <Route path="/payment/failure" component={PaymentFailurePage} />
+        <AnimatePresence mode="wait">
+          <Switch key={location}>
+            {/* Public routes */}
+            <Route path="/" component={() => (
+              <PageTransition>
+                <HomePage />
+              </PageTransition>
+            )} />
+            <Route path="/login" component={() => (
+              <PageTransition>
+                <LoginPage />
+              </PageTransition>
+            )} />
+            <Route path="/register" component={() => (
+              <PageTransition>
+                <RegisterPage />
+              </PageTransition>
+            )} />
+            <Route path="/pricing" component={() => (
+              <PageTransition>
+                <PricingPage />
+              </PageTransition>
+            )} />
+            <Route path="/blog" component={() => (
+              <PageTransition>
+                <BlogPage />
+              </PageTransition>
+            )} />
+            <Route path="/blog/:slug" component={() => (
+              <PageTransition>
+                <BlogPage />
+              </PageTransition>
+            )} />
+            <Route path="/property-analyzer" component={() => (
+              <PageTransition>
+                <PropertyAnalyzerProductPage />
+              </PageTransition>
+            )} />
+            <Route path="/rent-compare" component={() => (
+              <PageTransition>
+                <RentComparePage />
+              </PageTransition>
+            )} />
+            <Route path="/privacy" component={() => (
+              <PageTransition>
+                <PrivacyPage />
+              </PageTransition>
+            )} />
+            <Route path="/terms" component={() => (
+              <PageTransition>
+                <TermsPage />
+              </PageTransition>
+            )} />
+            <Route path="/contact" component={() => (
+              <PageTransition>
+                <ContactPage />
+              </PageTransition>
+            )} />
+            <Route path="/payment/success" component={() => (
+              <PageTransition>
+                <PaymentSuccessPage />
+              </PageTransition>
+            )} />
+            <Route path="/payment/failure" component={() => (
+              <PageTransition>
+                <PaymentFailurePage />
+              </PageTransition>
+            )} />
 
-          {/* Protected routes */}
-          <Route 
-            path="/dashboard" 
-            component={() => <ProtectedRoute component={DashboardPage} />} 
-          />
-          <Route 
-            path="/dashboard/property-analyzer" 
-            component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} 
-          />
-          <Route 
-            path="/dashboard/rent-compare" 
-            component={() => <ProtectedRoute component={ComparisonPage} />} 
-          />
-          <Route 
-            path="/properties" 
-            component={() => <ProtectedRoute component={PropertiesPage} />} 
-          />
-          <Route 
-            path="/settings" 
-            component={() => <ProtectedRoute component={SettingsPage} />} 
-          />
-          <Route 
-            path="/admin" 
-            component={() => <ProtectedRoute component={AdminPage} />} 
-          />
-          <Route 
-            path="/access-codes" 
-            component={() => <ProtectedRoute component={AccessCodePage} />} 
-          />
-          <Route
-            path="/subscription"
-            component={() => <ProtectedRoute component={SubscriptionPage} />}
-          />
-          <Route component={NotFound} />
-        </Switch>
+            {/* Protected routes */}
+            <Route 
+              path="/dashboard" 
+              component={() => <ProtectedRoute component={DashboardPage} />} 
+            />
+            <Route 
+              path="/dashboard/property-analyzer" 
+              component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} 
+            />
+            <Route 
+              path="/dashboard/rent-compare" 
+              component={() => <ProtectedRoute component={ComparisonPage} />} 
+            />
+            <Route 
+              path="/properties" 
+              component={() => <ProtectedRoute component={PropertiesPage} />} 
+            />
+            <Route 
+              path="/settings" 
+              component={() => <ProtectedRoute component={SettingsPage} />} 
+            />
+            <Route 
+              path="/admin" 
+              component={() => <ProtectedRoute component={AdminPage} />} 
+            />
+            <Route 
+              path="/access-codes" 
+              component={() => <ProtectedRoute component={AccessCodePage} />} 
+            />
+            <Route
+              path="/subscription"
+              component={() => <ProtectedRoute component={SubscriptionPage} />}
+            />
+            <Route component={() => (
+              <PageTransition>
+                <NotFound />
+              </PageTransition>
+            )} />
+          </Switch>
+        </AnimatePresence>
       </TooltipProvider>
       <Toaster />
     </>
