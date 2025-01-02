@@ -1,11 +1,12 @@
+import { useState } from "react";
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { useProAccess } from "@/hooks/use-pro-access";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
 import { formatter } from "../utils/formatting";
 import { Building2, Calculator, Home, ChartBar, ArrowRight, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import DashboardMap from "@/components/DashboardMap";
 
 interface CompareProperty {
@@ -61,6 +62,29 @@ export default function DashboardPage() {
   const analyzerCount = analyzerProperties?.length || 0;
   const compareCount = compareProperties?.length || 0;
   const totalProperties = analyzerCount + compareCount;
+
+  // Calculate average yields
+  const averageYields = analyzerProperties?.reduce(
+    (acc, property) => {
+      if (property.shortTermGrossYield) {
+        acc.shortTerm.sum += property.shortTermGrossYield;
+        acc.shortTerm.count++;
+      }
+      if (property.longTermGrossYield) {
+        acc.longTerm.sum += property.longTermGrossYield;
+        acc.longTerm.count++;
+      }
+      return acc;
+    },
+    { shortTerm: { sum: 0, count: 0 }, longTerm: { sum: 0, count: 0 } }
+  );
+
+  const avgShortTermYield = averageYields?.shortTerm.count 
+    ? (averageYields.shortTerm.sum / averageYields.shortTerm.count).toFixed(1) 
+    : '-';
+  const avgLongTermYield = averageYields?.longTerm.count 
+    ? (averageYields.longTerm.sum / averageYields.longTerm.count).toFixed(1) 
+    : '-';
 
   // Combine properties for map
   const allProperties: PropertyMapData[] = [
@@ -146,7 +170,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Portfolio Metrics */}
-      <div className="mb-6">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
@@ -164,6 +188,24 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Gross Yield</CardTitle>
+            <ChartBar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{avgShortTermYield}%</div>
+            <div className="flex gap-4 mt-2">
+              <p className="text-xs text-muted-foreground">
+                Short-term: {avgShortTermYield}%
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Long-term: {avgLongTermYield}%
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Content Grid */}
@@ -172,11 +214,17 @@ export default function DashboardPage() {
         <div className="md:col-span-5 space-y-6">
           {/* Property Analyzer Properties */}
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="flex items-center gap-2">
                 <Calculator className="h-4 w-4 text-primary" />
                 Property Analyzer Results
               </CardTitle>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/properties">
+                  See all properties
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent>
               {isLoadingAnalyzer ? (
@@ -192,7 +240,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {analyzerProperties.map((property) => (
+                  {analyzerProperties.slice(0, 5).map((property) => (
                     <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                       <div>
                         <h3 className="font-medium">{property.address}</h3>
@@ -223,11 +271,17 @@ export default function DashboardPage() {
 
           {/* Rent Compare Properties */}
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="flex items-center gap-2">
                 <ChartBar className="h-4 w-4 text-primary" />
                 Rent Compare Results
               </CardTitle>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/properties">
+                  See all properties
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent>
               {isLoadingCompare ? (
@@ -243,7 +297,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {compareProperties.map((property) => (
+                  {compareProperties.slice(0, 5).map((property) => (
                     <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                       <div>
                         <h3 className="font-medium">{property.title}</h3>
@@ -278,7 +332,7 @@ export default function DashboardPage() {
 
         {/* Right Column - Map */}
         {allProperties.length > 0 && (
-          <div className="md:col-span-7">
+          <div className="md:col-span-7 h-full">
             <Card className="h-full">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -286,7 +340,7 @@ export default function DashboardPage() {
                   Property Locations
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-grow">
                 <DashboardMap properties={allProperties} />
               </CardContent>
             </Card>
