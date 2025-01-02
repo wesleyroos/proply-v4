@@ -11,7 +11,8 @@ import {
   Library,
   Users,
   Ticket,
-  Calculator
+  Calculator,
+  Brain
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
@@ -40,6 +41,12 @@ export default function Sidebar() {
       title: "Property Analyzer",
       icon: Calculator,
       href: "/dashboard/property-analyzer",
+    },
+    {
+      title: "Market Intelligence",
+      icon: Brain,
+      href: "/dashboard/market-intelligence",
+      adminOnly: true,
     },
     {
       title: "Rent Compare",
@@ -90,6 +97,11 @@ export default function Sidebar() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location === item.href;
+
+            // Skip admin-only items for non-admin users
+            if (item.adminOnly && !user?.isAdmin) {
+              return null;
+            }
 
             return (
               <Link
