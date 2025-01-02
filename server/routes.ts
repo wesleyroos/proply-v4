@@ -2,12 +2,25 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { properties, propertyAnalyzerResults } from "@db/schema";
+import { 
+  properties, 
+  propertyAnalyzerResults, 
+  users,
+  accessCodes,
+  agencySettings,
+  type SelectUser,
+  type InsertUser
+} from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
-import { calculateYields, type PropertyData } from "../analysis-engine/calculations";
 
+// Extend Express.User to include our schema
+declare global {
+  namespace Express {
+    interface User extends SelectUser {}
+  }
+}
 
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
@@ -536,7 +549,6 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
-
 
   // Update user profile
   app.post("/api/subscription/downgrade", async (req, res) => {
