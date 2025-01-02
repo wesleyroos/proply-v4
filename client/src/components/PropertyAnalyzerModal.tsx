@@ -56,7 +56,7 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
-                  {property.address}
+                  Analysis Summary
                 </h2>
                 <p className="text-muted-foreground text-sm mb-4 max-w-2xl">
                   {property.propertyDescription}
@@ -65,7 +65,7 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
               {property.propertyPhoto && (
                 <img 
                   src={property.propertyPhoto} 
-                  alt={property.address}
+                  alt="Property"
                   className="w-32 h-32 object-cover rounded-lg shadow-lg"
                 />
               )}
@@ -78,16 +78,36 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3 mb-4">
                   <Coins className="w-5 h-5 text-primary" />
-                  <h3 className="text-sm font-medium">Purchase Price</h3>
+                  <h3 className="text-sm font-medium">Purchase Price & Details</h3>
                 </div>
-                <div className="text-2xl font-bold text-foreground">
+                <div className="text-2xl font-bold text-foreground mb-4">
                   {formatter.format(property.purchasePrice)}
                 </div>
-                <div className="mt-4 pt-4 border-t border-border/50">
-                  <p className="text-sm text-muted-foreground">Property Rate per m²</p>
-                  <p className="font-medium text-foreground">
-                    {formatter.format(calculateRatePerSqm())}/m²
-                  </p>
+                <div className="space-y-4 border-t border-border/50 pt-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Property Rate per m²</p>
+                    <p className="font-medium text-foreground">
+                      {formatter.format(calculateRatePerSqm())}/m²
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Floor Area</p>
+                      <p className="font-medium">{property.floorArea} m²</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Bedrooms</p>
+                      <p className="font-medium">{property.bedrooms || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Bathrooms</p>
+                      <p className="font-medium">{property.bathrooms || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Parking</p>
+                      <p className="font-medium">{property.parkingSpaces || 0}</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -99,6 +119,7 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                   <Home className="w-5 h-5 text-primary" />
                   <h3 className="text-sm font-medium">Location</h3>
                 </div>
+                <p className="text-sm text-muted-foreground mb-4">{property.address}</p>
                 <div 
                   ref={mapRef} 
                   className="w-full h-[200px] rounded-lg overflow-hidden"
@@ -159,6 +180,18 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                 </div>
                 <div className="space-y-6">
                   <div>
+                    <p className="text-sm text-muted-foreground mb-2">Nightly Rate</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {formatter.format(property.shortTermNightlyRate || 0)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Monthly Revenue</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {formatter.format((property.shortTermAnnualRevenue || 0) / 12)}
+                    </p>
+                  </div>
+                  <div>
                     <p className="text-sm text-muted-foreground mb-2">Annual Revenue</p>
                     <p className="text-2xl font-bold text-foreground">
                       {formatter.format(property.shortTermAnnualRevenue || 0)}
@@ -197,34 +230,6 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
               </CardContent>
             </Card>
           </div>
-
-          {/* Property Details with Enhanced Visual Hierarchy */}
-          <Card className="bg-gradient-to-br from-background/50 to-background border-primary/10">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3 mb-6">
-                <Home className="w-5 h-5 text-primary" />
-                <h3 className="text-lg font-semibold">Property Details</h3>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Floor Area</p>
-                  <p className="text-lg font-semibold">{property.floorArea} m²</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Bedrooms</p>
-                  <p className="text-lg font-semibold">{property.bedrooms}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Bathrooms</p>
-                  <p className="text-lg font-semibold">{property.bathrooms}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Parking Spaces</p>
-                  <p className="text-lg font-semibold">{property.parkingSpaces || 0}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </DialogContent>
     </Dialog>
