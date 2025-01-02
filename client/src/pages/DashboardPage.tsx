@@ -50,13 +50,13 @@ export default function DashboardPage() {
   // Fetch property analyzer properties
   const { data: analyzerProperties, isLoading: isLoadingAnalyzer } = useQuery<AnalyzerProperty[]>({
     queryKey: ['/api/property-analyzer/properties'],
-    enabled: !!user,
+    enabled: !!user?.id,
   });
 
   // Fetch rent compare properties
   const { data: compareProperties, isLoading: isLoadingCompare } = useQuery<CompareProperty[]>({
     queryKey: ['/api/properties'],
-    enabled: !!user,
+    enabled: !!user?.id,
   });
 
   // Calculate total properties and breakdown
