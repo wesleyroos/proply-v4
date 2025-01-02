@@ -180,9 +180,9 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                 </div>
                 <div className="space-y-6">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Nightly Rate</p>
+                    <p className="text-sm text-muted-foreground mb-2">Annual Revenue</p>
                     <p className="text-2xl font-bold text-foreground">
-                      {formatter.format(property.shortTermNightlyRate || 0)}
+                      {formatter.format(property.shortTermAnnualRevenue || 0)}
                     </p>
                   </div>
                   <div>
@@ -192,9 +192,9 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Annual Revenue</p>
+                    <p className="text-sm text-muted-foreground mb-2">Nightly Rate</p>
                     <p className="text-2xl font-bold text-foreground">
-                      {formatter.format(property.shortTermAnnualRevenue || 0)}
+                      {formatter.format(property.shortTermNightlyRate || 0)}
                     </p>
                   </div>
                   <div>
@@ -203,6 +203,8 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                       {property.annualOccupancy || 0}%
                     </p>
                   </div>
+                  
+                  
                 </div>
               </CardContent>
             </Card>
