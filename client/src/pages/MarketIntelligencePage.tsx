@@ -3,13 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Loader2, TrendingUp, TrendingDown, Star, ExternalLink, LineChart, InfoIcon } from "lucide-react";
+import { Search, Loader2, TrendingUp, TrendingDown, Star, ExternalLink, LineChart, InfoIcon, ChevronDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Command,
@@ -66,11 +66,13 @@ interface SuburbAnalysis {
 
 export default function MarketIntelligencePage() {
   const [suburb, setSuburb] = useState("");
+  const [selectedSuburb, setSelectedSuburb] = useState<Suburb | null>(null);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<SuburbAnalysis | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState<string[]>([]);
+  const [showDataPoints, setShowDataPoints] = useState(false);
   const { toast } = useToast();
 
   const { data: suburbs } = useQuery<Suburb[]>({
@@ -85,16 +87,25 @@ export default function MarketIntelligencePage() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedSuburb) {
+      toast({
+        title: "Error",
+        description: "Please select a suburb from the list",
+        variant: "destructive",
+      });
+      return;
+    }
+
     handleAnalysis();
   };
 
   const handleAnalysis = async () => {
-    if (!suburb.trim()) {
+    if (!selectedSuburb) {
       toast({
         title: "Error",
-        description: "Please enter a suburb name",
+        description: "Please select a valid suburb from the list",
         variant: "destructive",
       });
       return;
@@ -112,7 +123,7 @@ export default function MarketIntelligencePage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ suburb: suburb.trim() }),
+        body: JSON.stringify({ suburb: selectedSuburb.name }),
       });
 
       if (!response.ok) {
@@ -151,7 +162,7 @@ export default function MarketIntelligencePage() {
                   aria-expanded={open}
                   className="flex-1 justify-between"
                 >
-                  {suburb ? suburb : "Select a suburb..."}
+                  {selectedSuburb ? `${selectedSuburb.name}, ${selectedSuburb.city}` : "Select a suburb..."}
                   <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -168,8 +179,8 @@ export default function MarketIntelligencePage() {
                       <CommandItem
                         key={item.id}
                         value={item.name}
-                        onSelect={(currentValue) => {
-                          setSuburb(currentValue);
+                        onSelect={() => {
+                          setSelectedSuburb(item);
                           setOpen(false);
                         }}
                       >
@@ -185,7 +196,7 @@ export default function MarketIntelligencePage() {
             </Popover>
             <Button
               type="submit"
-              disabled={isAnalyzing || !suburb}
+              disabled={isAnalyzing || !selectedSuburb}
               className="min-w-[120px]"
             >
               {isAnalyzing ? (
@@ -238,22 +249,25 @@ export default function MarketIntelligencePage() {
                 <span className="text-sm text-muted-foreground ml-2">
                   Confidence: {(analysis.confidenceLevel * 100).toFixed(1)}%
                 </span>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="ml-2"
-                    >
-                      <InfoIcon className="h-4 w-4 mr-1" />
-                      {analysis.dataPoints} Data Points
-                    </Button>
-                  </DialogTrigger>
+                <Dialog open={showDataPoints} onOpenChange={setShowDataPoints}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-2"
+                    onClick={() => setShowDataPoints(true)}
+                  >
+                    <InfoIcon className="h-4 w-4 mr-1" />
+                    {analysis.dataPoints} Data Points
+                    <ChevronDown className="h-4 w-4 ml-1" />
+                  </Button>
                   <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>Analysis Data Sources</DialogTitle>
+                      <DialogDescription>
+                        Data points used to generate this analysis
+                      </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
+                    <div className="space-y-4 mt-4">
                       {analysis.rawDataPoints?.map((point, index) => (
                         <div key={index} className="border rounded-lg p-4 bg-muted/50">
                           <div className="flex justify-between items-center mb-2">
