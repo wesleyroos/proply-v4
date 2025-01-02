@@ -66,11 +66,11 @@ export default function DashboardPage() {
   // Calculate average yields
   const averageYields = analyzerProperties?.reduce(
     (acc, property) => {
-      if (property.shortTermGrossYield) {
+      if (property.shortTermGrossYield !== null) {
         acc.shortTerm.sum += property.shortTermGrossYield;
         acc.shortTerm.count++;
       }
-      if (property.longTermGrossYield) {
+      if (property.longTermGrossYield !== null) {
         acc.longTerm.sum += property.longTermGrossYield;
         acc.longTerm.count++;
       }
@@ -170,7 +170,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Portfolio Metrics */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 mb-6">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-3 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
@@ -191,25 +191,33 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Gross Yield</CardTitle>
+            <CardTitle className="text-sm font-medium">Short-Term Rental</CardTitle>
             <ChartBar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{avgShortTermYield}%</div>
-            <div className="flex gap-4 mt-2">
-              <p className="text-xs text-muted-foreground">
-                Short-term: {avgShortTermYield}%
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Long-term: {avgLongTermYield}%
-              </p>
-            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Average gross yield ({averageYields?.shortTerm.count || 0} properties)
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Long-Term Rental</CardTitle>
+            <ChartBar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{avgLongTermYield}%</div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Average gross yield ({averageYields?.longTerm.count || 0} properties)
+            </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid gap-6 md:grid-cols-12">
+      <div className="grid gap-6 md:grid-cols-12 min-h-[600px]">
         {/* Left Column - Property Tables */}
         <div className="md:col-span-5 space-y-6">
           {/* Property Analyzer Properties */}
@@ -333,15 +341,17 @@ export default function DashboardPage() {
         {/* Right Column - Map */}
         {allProperties.length > 0 && (
           <div className="md:col-span-7 h-full">
-            <Card className="h-full">
+            <Card className="h-full flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-primary" />
                   Property Locations
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-grow">
-                <DashboardMap properties={allProperties} />
+              <CardContent className="flex-1">
+                <div className="w-full h-full">
+                  <DashboardMap properties={allProperties} />
+                </div>
               </CardContent>
             </Card>
           </div>
