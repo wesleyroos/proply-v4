@@ -66,11 +66,11 @@ export default function DashboardPage() {
   // Calculate average yields
   const averageYields = analyzerProperties?.reduce(
     (acc, property) => {
-      if (property.shortTermGrossYield !== null) {
+      if (property.shortTermGrossYield !== null && !isNaN(property.shortTermGrossYield)) {
         acc.shortTerm.sum += property.shortTermGrossYield;
         acc.shortTerm.count++;
       }
-      if (property.longTermGrossYield !== null) {
+      if (property.longTermGrossYield !== null && !isNaN(property.longTermGrossYield)) {
         acc.longTerm.sum += property.longTermGrossYield;
         acc.longTerm.count++;
       }
@@ -79,12 +79,12 @@ export default function DashboardPage() {
     { shortTerm: { sum: 0, count: 0 }, longTerm: { sum: 0, count: 0 } }
   );
 
-  const avgShortTermYield = averageYields?.shortTerm.count 
+  const avgShortTermYield = averageYields?.shortTerm.count > 0
     ? (averageYields.shortTerm.sum / averageYields.shortTerm.count).toFixed(1) 
-    : '-';
-  const avgLongTermYield = averageYields?.longTerm.count 
+    : '0.0';
+  const avgLongTermYield = averageYields?.longTerm.count > 0
     ? (averageYields.longTerm.sum / averageYields.longTerm.count).toFixed(1) 
-    : '-';
+    : '0.0';
 
   // Combine properties for map
   const allProperties: PropertyMapData[] = [
@@ -257,10 +257,10 @@ export default function DashboardPage() {
                         </p>
                         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
                           <p className="text-xs text-muted-foreground">
-                            ST Yield: {typeof property.shortTermGrossYield === 'number' ? `${property.shortTermGrossYield.toFixed(1)}%` : '-'}
+                            ST Yield: {property.shortTermGrossYield !== null ? `${property.shortTermGrossYield.toFixed(1)}%` : '-'}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            LT Yield: {typeof property.longTermGrossYield === 'number' ? `${property.longTermGrossYield.toFixed(1)}%` : '-'}
+                            LT Yield: {property.longTermGrossYield !== null ? `${property.longTermGrossYield.toFixed(1)}%` : '-'}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             ST Revenue: {formatter.format(property.shortTermAnnualRevenue || 0)}
@@ -349,7 +349,7 @@ export default function DashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-1">
-                <div className="w-full h-full">
+                <div className="w-full h-full" style={{ minHeight: '100%' }}>
                   <DashboardMap properties={allProperties} />
                 </div>
               </CardContent>
