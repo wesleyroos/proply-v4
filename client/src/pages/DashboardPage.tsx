@@ -29,6 +29,7 @@ interface AnalyzerProperty {
   address: string;
   bedrooms: number;
   bathrooms: number;
+  purchasePrice: number;
   shortTermGrossYield: number | null;
   longTermGrossYield: number | null;
   longTermAnnualRevenue: number | null;
@@ -255,6 +256,9 @@ export default function DashboardPage() {
                         <p className="text-sm text-muted-foreground">
                           {property.bedrooms} bed • {property.bathrooms} bath
                         </p>
+                        <p className="text-sm text-muted-foreground">
+                          Purchase Price: {formatter.format(property.purchasePrice)}
+                        </p>
                         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
                           <p className="text-xs text-muted-foreground">
                             ST Yield: {property.shortTermGrossYield && !isNaN(Number(property.shortTermGrossYield))
@@ -346,14 +350,14 @@ export default function DashboardPage() {
         {allProperties.length > 0 && (
           <div className="md:col-span-7 h-full">
             <Card className="h-full flex flex-col">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-primary" />
                   Property Locations
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1" style={{ height: 'calc(100% - 4rem)' }}>
-                <div className="w-full h-full" style={{ minHeight: '100%', position: 'relative' }}>
+              <CardContent className="flex-1" style={{ position: 'relative' }}>
+                <div className="absolute inset-0">
                   <DashboardMap properties={allProperties} />
                 </div>
               </CardContent>

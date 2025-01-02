@@ -37,7 +37,7 @@ export default function DashboardMap({ properties }: DashboardMapProps) {
 
         // Create markers for all properties
         const geocoder = new google.maps.Geocoder();
-        
+
         // Process each property sequentially to avoid rate limiting
         for (const property of properties) {
           try {
@@ -53,18 +53,18 @@ export default function DashboardMap({ properties }: DashboardMapProps) {
 
             const location = result.geometry.location;
 
-            // Create marker with color based on property type
+            // Create marker with Proply's light blue color
             const marker = new google.maps.Marker({
               map: map,
               position: location,
               title: property.address,
               icon: {
                 path: google.maps.SymbolPath.CIRCLE,
-                fillColor: property.type === 'analyzer' ? '#1e40af' : '#047857',
+                fillColor: '#3B82F6', // Proply light blue
                 fillOpacity: 1,
-                strokeWeight: 1,
+                strokeWeight: 2,
                 strokeColor: '#ffffff',
-                scale: 8,
+                scale: 10,
               },
             });
 
@@ -97,6 +97,6 @@ export default function DashboardMap({ properties }: DashboardMapProps) {
   }, [properties]);
 
   return (
-    <div ref={mapRef} className="h-[400px] w-full rounded-lg overflow-hidden border" />
+    <div ref={mapRef} style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }} />
   );
 }
