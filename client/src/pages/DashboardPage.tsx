@@ -23,8 +23,8 @@ interface Property {
   annualOccupancy: number;
   createdAt: string;
   type: 'analyzer' | 'compare';
-  shortTermGrossYield?: number;
-  longTermGrossYield?: number;
+  shortTermGrossYield?: number | null;
+  longTermGrossYield?: number | null;
 }
 
 export default function DashboardPage() {
@@ -192,10 +192,10 @@ export default function DashboardPage() {
                       </p>
                       <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
                         <p className="text-xs text-muted-foreground">
-                          ST Yield: {property.shortTermGrossYield?.toFixed(1)}%
+                          ST Yield: {typeof property.shortTermGrossYield === 'number' ? `${property.shortTermGrossYield.toFixed(1)}%` : '-'}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          LT Yield: {property.longTermGrossYield?.toFixed(1)}%
+                          LT Yield: {typeof property.longTermGrossYield === 'number' ? `${property.longTermGrossYield.toFixed(1)}%` : '-'}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           ST Revenue: {formatter.format(property.shortTermAfterFees)}
