@@ -18,6 +18,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import type { SelectUser } from "@db/schema";
+import { PropertyAnalyzerModal } from "@/components/PropertyAnalyzerModal";
 
 interface Property {
   id: number;
@@ -64,10 +65,7 @@ export default function PropertiesPage() {
   const [propertyToDelete, setPropertyToDelete] = useState<Property | AnalyzerProperty | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof Property | keyof AnalyzerProperty;
-    direction: 'asc' | 'desc';
-  } | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<AnalyzerProperty | null>(null);
 
   // Query for rent compare properties
   const { data: properties, isLoading: isLoadingProperties } = useQuery<Property[]>({
@@ -264,7 +262,11 @@ export default function PropertiesPage() {
                       </tr>
                     ) : (
                       analyzerProperties.map((property) => (
-                        <tr key={property.id} className="border-b hover:bg-muted/50">
+                        <tr
+                          key={property.id}
+                          className="border-b hover:bg-muted/50 cursor-pointer"
+                          onClick={() => setSelectedProperty(property)}
+                        >
                           <td className="py-3 px-4">
                             <div>
                               <div className="text-sm text-muted-foreground">{property.address}</div>
@@ -293,7 +295,10 @@ export default function PropertiesPage() {
                               variant="ghost"
                               size="icon"
                               className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                              onClick={() => setPropertyToDelete(property)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPropertyToDelete(property);
+                              }}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -333,6 +338,13 @@ export default function PropertiesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Property Analysis Modal */}
+      <PropertyAnalyzerModal
+        property={selectedProperty}
+        open={!!selectedProperty}
+        onOpenChange={(open) => !open && setSelectedProperty(null)}
+      />
     </div>
   );
 }
