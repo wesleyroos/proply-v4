@@ -1,7 +1,9 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatter } from "../utils/formatting";
-import { Building2, Coins, LineChart, TrendingUp, Home, BarChart3, PiggyBank } from "lucide-react";
+import { Building2, Coins, TrendingUp, Home, BarChart3, PiggyBank } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { Loader } from "@googlemaps/js-api-loader";
 
 interface PropertyAnalyzerModalProps {
   property: any;
@@ -11,12 +13,39 @@ interface PropertyAnalyzerModalProps {
 
 export function PropertyAnalyzerModal({ property, open, onOpenChange }: PropertyAnalyzerModalProps) {
   if (!property) return null;
+  const mapRef = useRef<HTMLDivElement>(null);
 
   // Calculate the actual property rate per square meter
   const calculateRatePerSqm = () => {
     if (!property.floorArea || property.floorArea === 0) return 0;
     return property.purchasePrice / property.floorArea;
   };
+
+  useEffect(() => {
+    if (!open || !property.address) return;
+
+    const loader = new Loader({
+      apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
+      version: "weekly",
+    });
+
+    loader.load().then(() => {
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: property.address }, (results, status) => {
+        if (status === "OK" && results && results[0] && mapRef.current) {
+          const map = new google.maps.Map(mapRef.current, {
+            center: results[0].geometry.location,
+            zoom: 15,
+          });
+
+          new google.maps.Marker({
+            map,
+            position: results[0].geometry.location,
+          });
+        }
+      });
+    });
+  }, [open, property.address]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -41,21 +70,10 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                 />
               )}
             </div>
-            {property.propertyUrl && (
-              <a 
-                href={property.propertyUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-primary hover:text-primary/80 transition-colors"
-              >
-                <Home className="w-4 h-4 mr-2" />
-                View Property Listing
-              </a>
-            )}
           </div>
 
           {/* Key Financial Metrics - Enhanced Layout with Icons */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="bg-gradient-to-br from-background/50 to-background border-primary/10 hover:border-primary/20 transition-colors">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -74,35 +92,18 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
               </CardContent>
             </Card>
 
+            {/* Google Map */}
             <Card className="bg-gradient-to-br from-background/50 to-background border-primary/10 hover:border-primary/20 transition-colors">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <Building2 className="w-5 h-5 text-primary" />
-                  <h3 className="text-sm font-medium">Monthly Bond Payment</h3>
+                  <Home className="w-5 h-5 text-primary" />
+                  <h3 className="text-sm font-medium">Location</h3>
                 </div>
-                <div className="text-2xl font-bold text-foreground">
-                  {formatter.format(property.monthlyBondRepayment || 0)}
-                </div>
-                <div className="mt-4 pt-4 border-t border-border/50">
-                  <p className="text-sm text-muted-foreground">Interest Rate</p>
-                  <p className="font-medium text-foreground">{property.interestRate}% p.a.</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-background/50 to-background border-primary/10 hover:border-primary/20 transition-colors">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <LineChart className="w-5 h-5 text-primary" />
-                  <h3 className="text-sm font-medium">Net Operating Income</h3>
-                </div>
-                <div className="text-2xl font-bold text-foreground">
-                  {formatter.format(property.netOperatingIncome?.year1?.value || 0)}
-                </div>
-                <div className="mt-4 pt-4 border-t border-border/50">
-                  <p className="text-sm text-muted-foreground">Year 1 Projection</p>
-                  <p className="font-medium text-foreground">Based on current market</p>
-                </div>
+                <div 
+                  ref={mapRef} 
+                  className="w-full h-[200px] rounded-lg overflow-hidden"
+                  style={{ border: '1px solid var(--border)' }}
+                />
               </CardContent>
             </Card>
           </div>

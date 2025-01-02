@@ -14,6 +14,7 @@ import {
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
+import { calculateYields } from "../analysis-engine/calculations";
 
 // Extend Express.User to include our schema
 declare global {
