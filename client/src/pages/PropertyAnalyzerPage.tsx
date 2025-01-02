@@ -33,6 +33,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import CashflowChart from "@/components/CashflowChart";
 
 interface YearlyMetrics {
   grossYield: number;
@@ -944,7 +945,10 @@ export default function PropertyAnalyzerPage() {
                 annualAppreciation={formData?.annualPropertyAppreciation || 5}
               />
 
-              {/* Performance Projections removed */}
+              {/* Replace the old PerformanceProjections with new CashflowChart */}
+              <CashflowChart
+                netOperatingIncome={analysisResult.netOperatingIncome}
+              />
             </div>
           </>
         )}
