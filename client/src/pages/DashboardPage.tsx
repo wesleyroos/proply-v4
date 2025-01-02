@@ -352,7 +352,7 @@ export default function DashboardPage() {
 
         {/* Map Card */}
         {allProperties.length > 0 && (
-          <div className="md:col-span-7 h-full">
+          <div className="h-full">
             <Card className="h-full flex flex-col bg-white shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="flex items-center gap-2">
