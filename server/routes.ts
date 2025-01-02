@@ -841,7 +841,8 @@ export function registerRoutes(app: Express): Server {
             category: dp.category,
             relevanceScore: dp.relevanceScore,
             impactScore: dp.impactScore,
-            reasoning: dp.reasoning
+            reasoning: dp.reasoning,
+            createdAt: new Date()
           }))
         );
       }
