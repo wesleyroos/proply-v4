@@ -102,9 +102,9 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-gray-50">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Welcome{user?.firstName ? `, ${user.firstName}` : ''}!</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Welcome{user?.firstName ? `, ${user.firstName}` : ''}!</h1>
 
         {!hasProAccess && (
           <Button size="sm" asChild className="bg-primary hover:opacity-90">
@@ -172,13 +172,13 @@ export default function DashboardPage() {
 
       {/* Portfolio Metrics */}
       <div className="grid gap-6 grid-cols-1 md:grid-cols-3 mb-6">
-        <Card>
+        <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
+            <Building2 className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalProperties}</div>
+            <div className="text-2xl font-bold text-gray-900">{totalProperties}</div>
             <div className="flex gap-4 mt-2">
               <p className="text-xs text-muted-foreground">
                 {analyzerCount} property analyses
@@ -190,26 +190,26 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Short-Term Average</CardTitle>
             <ChartBar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgShortTermYield}%</div>
+            <div className="text-2xl font-bold text-gray-900">{avgShortTermYield}%</div>
             <p className="text-xs text-muted-foreground mt-2">
               Portfolio gross yield ({averageYields?.shortTerm.count || 0} properties)
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Long-Term Average</CardTitle>
             <ChartBar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgLongTermYield}%</div>
+            <div className="text-2xl font-bold text-gray-900">{avgLongTermYield}%</div>
             <p className="text-xs text-muted-foreground mt-2">
               Portfolio gross yield ({averageYields?.longTerm.count || 0} properties)
             </p>
@@ -219,10 +219,10 @@ export default function DashboardPage() {
 
       {/* Main Content Grid */}
       <div className="grid gap-6 md:grid-cols-12 min-h-[600px]">
-        {/* Left Column - Property Tables */}
+        {/* Property Tables */}
         <div className="md:col-span-5 space-y-6">
           {/* Property Analyzer Properties */}
-          <Card>
+          <Card className="bg-white shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="flex items-center gap-2">
                 <Calculator className="h-4 w-4 text-primary" />
@@ -251,13 +251,15 @@ export default function DashboardPage() {
                 <div className="space-y-4">
                   {analyzerProperties.slice(0, 5).map((property) => (
                     <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div>
-                        <h3 className="font-medium">{property.address}</h3>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium">{property.address}</h3>
+                          <span className="font-bold text-primary ml-4">
+                            {formatter.format(property.purchasePrice)}
+                          </span>
+                        </div>
                         <p className="text-sm text-muted-foreground">
                           {property.bedrooms} bed • {property.bathrooms} bath
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Purchase Price: {formatter.format(property.purchasePrice)}
                         </p>
                         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
                           <p className="text-xs text-muted-foreground">
@@ -286,7 +288,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Rent Compare Properties */}
-          <Card>
+          <Card className="bg-white shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="flex items-center gap-2">
                 <ChartBar className="h-4 w-4 text-primary" />
@@ -346,10 +348,10 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Right Column - Map */}
+        {/* Map Card */}
         {allProperties.length > 0 && (
           <div className="md:col-span-7 h-full">
-            <Card className="h-full flex flex-col">
+            <Card className="h-full flex flex-col bg-white shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-primary" />

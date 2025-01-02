@@ -53,18 +53,19 @@ export default function DashboardMap({ properties }: DashboardMapProps) {
 
             const location = result.geometry.location;
 
-            // Create marker with Proply's light blue color
+            // Create marker with house icon and type-based color
             const marker = new google.maps.Marker({
               map: map,
               position: location,
               title: property.address,
               icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                fillColor: '#3B82F6', // Proply light blue
+                path: "M21.47,11.88l-9-8a1,1,0,0,0-1.33,0l-9,8a1,1,0,0,0,1.33,1.49L4,12.88v8a1,1,0,0,0,1,1H19a1,1,0,0,0,1-1v-8l0.47,0.42a1,1,0,0,0,1.33-1.49Z",
+                fillColor: property.type === 'analyzer' ? '#3B82F6' : '#10b981', // Blue for analyzer, green for compare
                 fillOpacity: 1,
-                strokeWeight: 2,
+                strokeWeight: 1.5,
                 strokeColor: '#ffffff',
-                scale: 10,
+                scale: 1.2,
+                anchor: new google.maps.Point(12, 12),
               },
             });
 
@@ -97,6 +98,6 @@ export default function DashboardMap({ properties }: DashboardMapProps) {
   }, [properties]);
 
   return (
-    <div ref={mapRef} style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }} />
+    <div ref={mapRef} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', bottom: '0.5rem', left: '0.5rem' }} />
   );
 }
