@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatter } from "../utils/formatting";
-import { Trash2, ChevronDown, ChevronUp, Calculator, ArrowUpDown, Eye } from "lucide-react";
+import { Trash2, Calculator, ArrowUpDown, Eye } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -42,6 +42,15 @@ interface AnalyzerProperty {
   purchasePrice: number;
   bedrooms: number;
   bathrooms: number;
+  floorArea: number;
+  parkingSpaces: number;
+  monthlyLevies: number;
+  monthlyRatesTaxes: number;
+  shortTermNightlyRate: number | null;
+  annualOccupancy: number | null;
+  ratePerSquareMeter: number;
+  shortTermGrossYield: number | null;
+  longTermGrossYield: number | null;
   netOperatingIncome: {
     year1: {
       value: number;
@@ -53,6 +62,7 @@ interface AnalyzerProperty {
       cashOnCashReturn: number;
     }>;
   };
+  shortTermAnnualRevenue: number | null;
   createdAt: string;
 }
 
@@ -67,13 +77,11 @@ export default function PropertiesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<AnalyzerProperty | null>(null);
 
-  // Query for rent compare properties
   const { data: properties, isLoading: isLoadingProperties } = useQuery<Property[]>({
     queryKey: ['/api/properties', user?.id],
     enabled: !!user && activeTab === 'rent_compare',
   });
 
-  // Query for property analyzer results
   const { data: analyzerProperties, isLoading: isLoadingAnalyzer } = useQuery<AnalyzerProperty[]>({
     queryKey: ['/api/property-analyzer/properties', user?.id],
     enabled: !!user && activeTab === 'property_analyzer',
@@ -96,7 +104,6 @@ export default function PropertiesPage() {
         throw new Error(await response.text());
       }
 
-      // Invalidate the appropriate query
       queryClient.invalidateQueries({
         queryKey: activeTab === 'rent_compare'
           ? ['/api/properties']
@@ -235,25 +242,34 @@ export default function PropertiesPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
-                      <th className="py-3 px-4 text-left">Property</th>
+                      <th className="py-3 px-4 text-left">Address</th>
                       <th className="py-3 px-4 text-right">Purchase Price</th>
-                      <th className="py-3 px-4 text-right">Net Operating Income (Year 1)</th>
-                      <th className="py-3 px-4 text-right">Cap Rate</th>
-                      <th className="py-3 px-4 text-right">Cash on Cash Return</th>
-                      <th className="py-3 px-4 text-right">Added</th>
+                      <th className="py-3 px-4 text-right">Area (m²)</th>
+                      <th className="py-3 px-4 text-center">Beds</th>
+                      <th className="py-3 px-4 text-center">Baths</th>
+                      <th className="py-3 px-4 text-center">Park</th>
+                      <th className="py-3 px-4 text-right">Levies</th>
+                      <th className="py-3 px-4 text-right">Rates & Tax</th>
+                      <th className="py-3 px-4 text-right">Nightly Rate</th>
+                      <th className="py-3 px-4 text-right">Occupancy</th>
+                      <th className="py-3 px-4 text-right">Rate/m²</th>
+                      <th className="py-3 px-4 text-right">ST Yield</th>
+                      <th className="py-3 px-4 text-right">LT Yield</th>
+                      <th className="py-3 px-4 text-right">Cash Return</th>
+                      <th className="py-3 px-4 text-right">Annual Rev.</th>
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {isLoadingAnalyzer ? (
                       <tr>
-                        <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                        <td colSpan={16} className="text-center py-8 text-muted-foreground">
                           Loading properties...
                         </td>
                       </tr>
                     ) : !analyzerProperties?.length ? (
                       <tr>
-                        <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                        <td colSpan={16} className="text-center py-8 text-muted-foreground">
                           No properties analyzed yet.{' '}
                           <Link href="/analyzer" className="text-primary hover:underline">
                             Analyze your first property
@@ -262,34 +278,47 @@ export default function PropertiesPage() {
                       </tr>
                     ) : (
                       analyzerProperties.map((property) => (
-                        <tr
-                          key={property.id}
-                          className="border-b hover:bg-muted/50"
-                        >
+                        <tr key={property.id} className="border-b hover:bg-muted/50">
                           <td className="py-3 px-4">
-                            <div>
-                              <div className="text-sm text-muted-foreground">{property.address}</div>
-                              <div className="text-xs text-muted-foreground mt-1">
-                                {property.bedrooms} bed • {property.bathrooms} bath
-                              </div>
+                            <div className="max-w-[200px]">
+                              <div className="font-medium truncate">{property.address}</div>
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-right">
-                            {formatter.format(Number(property.purchasePrice))}
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            {formatter.format(property.purchasePrice)}
+                          </td>
+                          <td className="py-3 px-4 text-right">{property.floorArea}</td>
+                          <td className="py-3 px-4 text-center">{property.bedrooms}</td>
+                          <td className="py-3 px-4 text-center">{property.bathrooms}</td>
+                          <td className="py-3 px-4 text-center">{property.parkingSpaces}</td>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            {formatter.format(property.monthlyLevies)}
+                          </td>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            {formatter.format(property.monthlyRatesTaxes)}
+                          </td>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            {formatter.format(property.shortTermNightlyRate || 0)}
                           </td>
                           <td className="py-3 px-4 text-right">
-                            {formatter.format(property.netOperatingIncome?.year1?.value || 0)}
+                            {property.annualOccupancy || 0}%
+                          </td>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            {formatter.format(property.ratePerSquareMeter)}
                           </td>
                           <td className="py-3 px-4 text-right">
-                            {(property.investmentMetrics?.shortTerm?.[0]?.capRate || 0).toFixed(2)}%
+                            {property.shortTermGrossYield?.toFixed(2)}%
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            {property.longTermGrossYield?.toFixed(2)}%
                           </td>
                           <td className="py-3 px-4 text-right">
                             {(property.investmentMetrics?.shortTerm?.[0]?.cashOnCashReturn || 0).toFixed(2)}%
                           </td>
                           <td className="py-3 px-4 text-right whitespace-nowrap">
-                            {new Date(property.createdAt).toLocaleDateString()}
+                            {formatter.format(property.shortTermAnnualRevenue || 0)}
                           </td>
-                          <td className="py-3 px-4 text-right">
+                          <td className="py-3 px-4">
                             <div className="flex justify-end gap-2">
                               <Button
                                 variant="ghost"
@@ -320,7 +349,6 @@ export default function PropertiesPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!propertyToDelete} onOpenChange={() => setPropertyToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -345,7 +373,6 @@ export default function PropertiesPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Property Analysis Modal */}
       <PropertyAnalyzerModal
         property={selectedProperty}
         open={!!selectedProperty}
