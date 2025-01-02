@@ -358,7 +358,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get all rent compare properties for the current user.  This is now more concise and uses the same error handling pattern
+  // Get all rent compare properties for the current user.
   app.get("/api/properties", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.id) {
       return res.status(401).send("Not authenticated");
