@@ -102,6 +102,24 @@ export const agencySettings = pgTable("agency_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Add suburbs table to store valid locations
+export const suburbs = pgTable("suburbs", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  city: text("city").notNull(),
+  province: text("province").notNull(),
+  latitude: decimal("latitude", { precision: 10, scale: 6 }).notNull(),
+  longitude: decimal("longitude", { precision: 10, scale: 6 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Add schemas and types for the suburbs table
+export const insertSuburbSchema = createInsertSchema(suburbs);
+export const selectSuburbSchema = createSelectSchema(suburbs);
+export type InsertSuburb = typeof suburbs.$inferInsert;
+export type SelectSuburb = typeof suburbs.$inferSelect;
+
 export const reportTracking = pgTable("report_tracking", {
   id: serial("id").primaryKey(),
   listingId: integer("listing_id").notNull(), // Links to propdata_listings

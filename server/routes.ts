@@ -16,6 +16,9 @@ import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
 import { analyzeSuburb } from "./services/openai";
+import { sql } from 'drizzle-orm';
+import { suburbs } from '@db/schema';
+
 
 // Extend Express.User to include our schema
 declare global {
@@ -775,6 +778,37 @@ export function registerRoutes(app: Express): Server {
       console.error('Error analyzing suburb:', error);
       res.status(500).json({
         error: "Failed to analyze suburb",
+        details: error instanceof Error ? error.message : undefined
+      });
+    }
+  });
+
+  // Add suburb search endpoint
+  app.get("/api/suburbs/search", async (req, res) => {
+    const { query } = req.query;
+
+    if (!query || typeof query !== 'string') {
+      return res.status(400).json({ error: "Search query is required" });
+    }
+
+    try {
+      const matchingSuburbs = await db
+        .select({
+          id: suburbs.id,
+          name: suburbs.name,
+          city: suburbs.city,
+          province: suburbs.province,
+        })
+        .from(suburbs)
+        .where(sql`lower(${suburbs.name}) like ${`%${query.toLowerCase()}%`}`)
+        .orderBy(suburbs.name)
+        .limit(10);
+
+      res.json(matchingSuburbs);
+    } catch (error) {
+      console.error('Error searching suburbs:', error);
+      res.status(500).json({
+        error: "Failed to search suburbs",
         details: error instanceof Error ? error.message : undefined
       });
     }

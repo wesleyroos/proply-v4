@@ -3,12 +3,34 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Loader2, TrendingUp, TrendingDown, Star, ExternalLink, LineChart, ChevronDown } from "lucide-react";
+import { Search, Loader2, TrendingUp, TrendingDown, Star, ExternalLink, LineChart, InfoIcon } from "lucide-react";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useQuery } from "@tanstack/react-query";
+
+interface Suburb {
+  id: number;
+  name: string;
+  city: string;
+  province: string;
+}
 
 interface SuburbAnalysis {
   sentiment: {
@@ -44,11 +66,29 @@ interface SuburbAnalysis {
 
 export default function MarketIntelligencePage() {
   const [suburb, setSuburb] = useState("");
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<SuburbAnalysis | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState<string[]>([]);
-  const [isDataPointsOpen, setIsDataPointsOpen] = useState(false);
   const { toast } = useToast();
+
+  const { data: suburbs } = useQuery<Suburb[]>({
+    queryKey: ['/api/suburbs/search', search],
+    enabled: search.length > 2,
+    queryFn: async () => {
+      const response = await fetch(`/api/suburbs/search?query=${encodeURIComponent(search)}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch suburbs');
+      }
+      return response.json();
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleAnalysis();
+  };
 
   const handleAnalysis = async () => {
     if (!suburb.trim()) {
@@ -94,15 +134,8 @@ export default function MarketIntelligencePage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleAnalysis();
-  };
-
   return (
-    <div className="h-full p-4 space-y-4">
-      <h1 className="text-3xl font-bold">Market Intelligence</h1>
-
+    <div className="p-6">
       <Card>
         <CardHeader>
           <CardTitle>Suburb Analysis</CardTitle>
@@ -110,15 +143,49 @@ export default function MarketIntelligencePage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex gap-4">
-            <Input
-              placeholder="Enter suburb name (e.g., Sea Point, Cape Town)"
-              value={suburb}
-              onChange={(e) => setSuburb(e.target.value)}
-              className="flex-1"
-            />
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="flex-1 justify-between"
+                >
+                  {suburb ? suburb : "Select a suburb..."}
+                  <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[400px] p-0">
+                <Command>
+                  <CommandInput
+                    placeholder="Search suburbs..."
+                    value={search}
+                    onValueChange={setSearch}
+                  />
+                  <CommandEmpty>No suburbs found.</CommandEmpty>
+                  <CommandGroup>
+                    {suburbs?.map((item) => (
+                      <CommandItem
+                        key={item.id}
+                        value={item.name}
+                        onSelect={(currentValue) => {
+                          setSuburb(currentValue);
+                          setOpen(false);
+                        }}
+                      >
+                        {item.name}, {item.city}
+                        <span className="ml-2 text-sm text-muted-foreground">
+                          {item.province}
+                        </span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <Button
               type="submit"
-              disabled={isAnalyzing}
+              disabled={isAnalyzing || !suburb}
               className="min-w-[120px]"
             >
               {isAnalyzing ? (
@@ -138,7 +205,7 @@ export default function MarketIntelligencePage() {
       </Card>
 
       {isAnalyzing && (
-        <Card>
+        <Card className="mt-4">
           <CardHeader>
             <CardTitle>Analysis Progress</CardTitle>
           </CardHeader>
@@ -160,7 +227,7 @@ export default function MarketIntelligencePage() {
 
       {analysis && (
         <>
-          <Card>
+          <Card className="mt-4">
             <CardHeader>
               <CardTitle>Overall Sentiment</CardTitle>
             </CardHeader>
@@ -171,47 +238,45 @@ export default function MarketIntelligencePage() {
                 <span className="text-sm text-muted-foreground ml-2">
                   Confidence: {(analysis.confidenceLevel * 100).toFixed(1)}%
                 </span>
-                <Collapsible open={isDataPointsOpen} onOpenChange={setIsDataPointsOpen}>
-                  <CollapsibleTrigger asChild>
+                <Dialog>
+                  <DialogTrigger asChild>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
+                      className="ml-2"
                     >
-                      <span>Based on {analysis.dataPoints} data points</span>
-                      <ChevronDown
-                        className={`h-4 w-4 transition-transform ${isDataPointsOpen ? 'transform rotate-180' : ''}`}
-                      />
+                      <InfoIcon className="h-4 w-4 mr-1" />
+                      {analysis.dataPoints} Data Points
                     </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-4 space-y-2">
-                    <div className="border rounded-lg p-4 bg-muted/50">
-                      <h4 className="font-medium mb-2">Data Sources Used:</h4>
-                      <ul className="space-y-3">
-                        {analysis.rawDataPoints?.map((point, index) => (
-                          <li key={index} className="text-sm">
-                            <div className="flex justify-between">
-                              <span className="font-medium">{point.source}</span>
-                              <span className="text-muted-foreground">{point.type}</span>
-                            </div>
-                            <p className="text-muted-foreground mt-1">{point.content}</p>
-                            {point.date && (
-                              <span className="text-xs text-muted-foreground">
-                                Date: {new Date(point.date).toLocaleDateString()}
-                              </span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Analysis Data Sources</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      {analysis.rawDataPoints?.map((point, index) => (
+                        <div key={index} className="border rounded-lg p-4 bg-muted/50">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium">{point.source}</span>
+                            <span className="text-sm text-muted-foreground">{point.type}</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{point.content}</p>
+                          {point.date && (
+                            <p className="text-xs text-muted-foreground mt-2">
+                              Date: {new Date(point.date).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  </DialogContent>
+                </Dialog>
               </div>
               <p className="text-muted-foreground">{analysis.sentiment.summary}</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="mt-4">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <LineChart className="h-5 w-5" />
@@ -232,7 +297,7 @@ export default function MarketIntelligencePage() {
                       </div>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full bg-primary transition-all"
                         style={{ width: `${(category.score / 10) * 100}%` }}
                       />
@@ -243,7 +308,7 @@ export default function MarketIntelligencePage() {
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -277,7 +342,7 @@ export default function MarketIntelligencePage() {
             </Card>
           </div>
 
-          <Card>
+          <Card className="mt-4">
             <CardHeader>
               <CardTitle>Recent News & Developments</CardTitle>
             </CardHeader>
