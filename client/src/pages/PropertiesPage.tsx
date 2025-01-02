@@ -18,7 +18,6 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { PropertyAnalyzerModal } from "@/components/PropertyAnalyzerModal";
-import type { SelectUser } from "@db/schema";
 
 interface Property {
   id: number;
@@ -45,8 +44,8 @@ interface AnalyzerProperty {
   monthlyLevies: number;
   monthlyRatesTaxes: number;
   ratePerSquareMeter: number;
-  shortTermGrossYield: number | null;
-  longTermGrossYield: number | null;
+  shortTermGrossYield: string | null;
+  longTermGrossYield: string | null;
   longTermAnnualRevenue: number | null;
   shortTermAnnualRevenue: number | null;
   createdAt: string;
@@ -128,8 +127,9 @@ export default function PropertiesPage() {
 
     let filtered = analyzerProperties;
     if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
       filtered = analyzerProperties.filter(property => 
-        property.address.toLowerCase().includes(searchTerm.toLowerCase())
+        property.address.toLowerCase().includes(searchLower)
       );
     }
 
@@ -140,15 +140,19 @@ export default function PropertiesPage() {
       if (aValue === null) return 1;
       if (bValue === null) return -1;
 
+      // Handle number fields
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+
+      // Handle string fields
       if (typeof aValue === 'string' && typeof bValue === 'string') {
         return sortConfig.direction === 'asc' 
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       }
 
-      return sortConfig.direction === 'asc'
-        ? (aValue as number) - (bValue as number)
-        : (bValue as number) - (aValue as number);
+      return 0;
     });
   }, [analyzerProperties, searchTerm, sortConfig]);
 
@@ -195,6 +199,151 @@ export default function PropertiesPage() {
             Property Analyzer
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="property_analyzer">
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th onClick={() => handleSort('address')} className="py-3 px-4 text-left cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center">
+                          Address
+                          <SortIcon field="address" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('purchasePrice')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          Purchase Price
+                          <SortIcon field="purchasePrice" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('floorArea')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          Area (m²)
+                          <SortIcon field="floorArea" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('bedrooms')} className="py-3 px-4 text-center cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-center">
+                          Beds
+                          <SortIcon field="bedrooms" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('bathrooms')} className="py-3 px-4 text-center cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-center">
+                          Baths
+                          <SortIcon field="bathrooms" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('shortTermGrossYield')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          ST Yield
+                          <SortIcon field="shortTermGrossYield" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('longTermGrossYield')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          LT Yield
+                          <SortIcon field="longTermGrossYield" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('shortTermAnnualRevenue')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          ST Revenue
+                          <SortIcon field="shortTermAnnualRevenue" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('longTermAnnualRevenue')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          LT Revenue
+                          <SortIcon field="longTermAnnualRevenue" />
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('ratePerSquareMeter')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                        <div className="flex items-center justify-end">
+                          Rate/m²
+                          <SortIcon field="ratePerSquareMeter" />
+                        </div>
+                      </th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {isLoadingAnalyzer ? (
+                      <tr>
+                        <td colSpan={11} className="text-center py-8 text-muted-foreground">
+                          Loading properties...
+                        </td>
+                      </tr>
+                    ) : !filteredAndSortedProperties.length ? (
+                      <tr>
+                        <td colSpan={11} className="text-center py-8 text-muted-foreground">
+                          No properties analyzed yet.{' '}
+                          <Link href="/analyzer" className="text-primary hover:underline">
+                            Analyze your first property
+                          </Link>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredAndSortedProperties.map((property) => (
+                        <tr key={property.id} className="border-b hover:bg-muted/50">
+                          <td className="py-3 px-4">
+                            <div className="max-w-[200px]">
+                              <div className="font-medium truncate">{property.address}</div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            {formatter.format(property.purchasePrice)}
+                          </td>
+                          <td className="py-3 px-4 text-right">{property.floorArea}</td>
+                          <td className="py-3 px-4 text-center">{property.bedrooms}</td>
+                          <td className="py-3 px-4 text-center">{property.bathrooms}</td>
+                          <td className="py-3 px-4 text-right">
+                            {property.shortTermGrossYield ?? '--'}%
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            {property.longTermGrossYield ?? '--'}%
+                          </td>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            {formatter.format(property.shortTermAnnualRevenue || 0)}
+                          </td>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            {formatter.format(property.longTermAnnualRevenue || 0)}
+                          </td>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            {formatter.format(property.ratePerSquareMeter)}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                onClick={() => setSelectedProperty(property)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => setPropertyToDelete(property)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="rent_compare">
           <Card>
@@ -259,176 +408,6 @@ export default function PropertiesPage() {
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="property_analyzer">
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b bg-muted/50">
-                      <th onClick={() => handleSort('address')} className="py-3 px-4 text-left cursor-pointer hover:bg-muted/75">
-                        <div className="flex items-center">
-                          Address
-                          <SortIcon field="address" />
-                        </div>
-                      </th>
-                      <th onClick={() => handleSort('purchasePrice')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
-                        <div className="flex items-center justify-end">
-                          Purchase Price
-                          <SortIcon field="purchasePrice" />
-                        </div>
-                      </th>
-                      <th onClick={() => handleSort('floorArea')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
-                        <div className="flex items-center justify-end">
-                          Area (m²)
-                          <SortIcon field="floorArea" />
-                        </div>
-                      </th>
-                      <th onClick={() => handleSort('bedrooms')} className="py-3 px-4 text-center cursor-pointer hover:bg-muted/75">
-                        <div className="flex items-center justify-center">
-                          Beds
-                          <SortIcon field="bedrooms" />
-                        </div>
-                      </th>
-                      <th onClick={() => handleSort('bathrooms')} className="py-3 px-4 text-center cursor-pointer hover:bg-muted/75">
-                        <div className="flex items-center justify-center">
-                          Baths
-                          <SortIcon field="bathrooms" />
-                        </div>
-                      </th>
-                      <th onClick={() => handleSort('parkingSpaces')} className="py-3 px-4 text-center cursor-pointer hover:bg-muted/75">
-                        <div className="flex items-center justify-center">
-                          Park
-                          <SortIcon field="parkingSpaces" />
-                        </div>
-                      </th>
-                      <th onClick={() => handleSort('monthlyLevies')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
-                        <div className="flex items-center justify-end">
-                          Levies
-                          <SortIcon field="monthlyLevies" />
-                        </div>
-                      </th>
-                      <th onClick={() => handleSort('monthlyRatesTaxes')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
-                        <div className="flex items-center justify-end">
-                          Rates & Tax
-                          <SortIcon field="monthlyRatesTaxes" />
-                        </div>
-                      </th>
-                      <th onClick={() => handleSort('shortTermGrossYield')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
-                        <div className="flex items-center justify-end">
-                          ST Yield
-                          <SortIcon field="shortTermGrossYield" />
-                        </div>
-                      </th>
-                      <th onClick={() => handleSort('longTermGrossYield')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
-                        <div className="flex items-center justify-end">
-                          LT Yield
-                          <SortIcon field="longTermGrossYield" />
-                        </div>
-                      </th>
-                      <th onClick={() => handleSort('shortTermAnnualRevenue')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
-                        <div className="flex items-center justify-end">
-                          ST Revenue
-                          <SortIcon field="shortTermAnnualRevenue" />
-                        </div>
-                      </th>
-                      <th onClick={() => handleSort('longTermAnnualRevenue')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
-                        <div className="flex items-center justify-end">
-                          LT Revenue
-                          <SortIcon field="longTermAnnualRevenue" />
-                        </div>
-                      </th>
-                      <th onClick={() => handleSort('ratePerSquareMeter')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
-                        <div className="flex items-center justify-end">
-                          Rate/m²
-                          <SortIcon field="ratePerSquareMeter" />
-                        </div>
-                      </th>
-                      <th className="py-3 px-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {isLoadingAnalyzer ? (
-                      <tr>
-                        <td colSpan={14} className="text-center py-8 text-muted-foreground">
-                          Loading properties...
-                        </td>
-                      </tr>
-                    ) : !filteredAndSortedProperties.length ? (
-                      <tr>
-                        <td colSpan={14} className="text-center py-8 text-muted-foreground">
-                          No properties analyzed yet.{' '}
-                          <Link href="/analyzer" className="text-primary hover:underline">
-                            Analyze your first property
-                          </Link>
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredAndSortedProperties.map((property) => (
-                        <tr key={property.id} className="border-b hover:bg-muted/50">
-                          <td className="py-3 px-4">
-                            <div className="max-w-[200px]">
-                              <div className="font-medium truncate">{property.address}</div>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-right whitespace-nowrap">
-                            {formatter.format(property.purchasePrice)}
-                          </td>
-                          <td className="py-3 px-4 text-right">{property.floorArea}</td>
-                          <td className="py-3 px-4 text-center">{property.bedrooms}</td>
-                          <td className="py-3 px-4 text-center">{property.bathrooms}</td>
-                          <td className="py-3 px-4 text-center">{property.parkingSpaces}</td>
-                          <td className="py-3 px-4 text-right whitespace-nowrap">
-                            {formatter.format(property.monthlyLevies)}
-                          </td>
-                          <td className="py-3 px-4 text-right whitespace-nowrap">
-                            {formatter.format(property.monthlyRatesTaxes)}
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            {property.shortTermGrossYield ? Number(property.shortTermGrossYield).toFixed(2) : '0.00'}%
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            {property.longTermGrossYield ? Number(property.longTermGrossYield).toFixed(2) : '0.00'}%
-                          </td>
-                          <td className="py-3 px-4 text-right whitespace-nowrap">
-                            {formatter.format(property.shortTermAnnualRevenue || 0)}
-                          </td>
-                          <td className="py-3 px-4 text-right whitespace-nowrap">
-                            {formatter.format(property.longTermAnnualRevenue || 0)}
-                          </td>
-                          <td className="py-3 px-4 text-right whitespace-nowrap">
-                            {formatter.format(property.ratePerSquareMeter)}
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                                onClick={() => setSelectedProperty(property)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => setPropertyToDelete(property)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
                           </td>
                         </tr>
                       ))

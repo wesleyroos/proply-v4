@@ -118,7 +118,7 @@ export const reportTracking = pgTable("report_tracking", {
 });
 
 // Property analyzer schema with simplified validation
-const customPropertyAnalyzerSchema = z.object({
+const propertyAnalyzerSchema = z.object({
   userId: z.number(),
   title: z.string(),
   address: z.string(),
@@ -159,10 +159,10 @@ const customPropertyAnalyzerSchema = z.object({
   ratePerSquareMeter: z.coerce.number(),
 
   // Analysis results - using record type for better type safety
-  revenueProjections: z.record(z.unknown()),
-  operatingExpenses: z.record(z.unknown()),
-  netOperatingIncome: z.record(z.unknown()),
-  investmentMetrics: z.record(z.unknown())
+  revenueProjections: z.record(z.unknown()).optional(),
+  operatingExpenses: z.record(z.unknown()).optional(),
+  netOperatingIncome: z.record(z.unknown()).optional(),
+  investmentMetrics: z.record(z.unknown()).optional()
 });
 
 // Define the table
@@ -176,18 +176,18 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   propertyPhoto: text("property_photo"),
 
   // Property Details
-  purchasePrice: decimal("purchase_price", { precision: 10, scale: 2 }).notNull(),
+  purchasePrice: decimal("purchase_price", { precision: 12, scale: 2 }).notNull(),
   floorArea: decimal("floor_area", { precision: 10, scale: 2 }).notNull(),
   bedrooms: integer("bedrooms").notNull(),
   bathrooms: integer("bathrooms").notNull(),
   parkingSpaces: integer("parking_spaces"),
 
   // Financing details
-  depositAmount: decimal("deposit_amount", { precision: 10, scale: 2 }).notNull(),
+  depositAmount: decimal("deposit_amount", { precision: 12, scale: 2 }).notNull(),
   depositPercentage: decimal("deposit_percentage", { precision: 5, scale: 2 }).notNull(),
   interestRate: decimal("interest_rate", { precision: 5, scale: 2 }).notNull(),
   loanTerm: integer("loan_term").notNull(),
-  monthlyBondRepayment: decimal("monthly_bond_repayment", { precision: 10, scale: 2 }),
+  monthlyBondRepayment: decimal("monthly_bond_repayment", { precision: 12, scale: 2 }),
 
   // Operating expenses
   monthlyLevies: decimal("monthly_levies", { precision: 10, scale: 2 }).notNull(),
@@ -199,8 +199,8 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   // Revenue performance
   shortTermNightlyRate: decimal("short_term_nightly_rate", { precision: 10, scale: 2 }),
   annualOccupancy: decimal("annual_occupancy", { precision: 5, scale: 2 }),
-  shortTermAnnualRevenue: decimal("short_term_annual_revenue", { precision: 10, scale: 2 }),
-  longTermAnnualRevenue: decimal("long_term_annual_revenue", { precision: 10, scale: 2 }),
+  shortTermAnnualRevenue: decimal("short_term_annual_revenue", { precision: 12, scale: 2 }),
+  longTermAnnualRevenue: decimal("long_term_annual_revenue", { precision: 12, scale: 2 }),
   shortTermGrossYield: decimal("short_term_gross_yield", { precision: 5, scale: 2 }),
   longTermGrossYield: decimal("long_term_gross_yield", { precision: 5, scale: 2 }),
 
@@ -208,21 +208,27 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   ratePerSquareMeter: decimal("rate_per_square_meter", { precision: 10, scale: 2 }).notNull(),
 
   // Analysis results stored as JSON
-  revenueProjections: jsonb("revenue_projections").notNull(),
-  operatingExpenses: jsonb("operating_expenses").notNull(),
-  netOperatingIncome: jsonb("net_operating_income").notNull(),
-  investmentMetrics: jsonb("investment_metrics").notNull(),
+  revenueProjections: jsonb("revenue_projections"),
+  operatingExpenses: jsonb("operating_expenses"),
+  netOperatingIncome: jsonb("net_operating_income"),
+  investmentMetrics: jsonb("investment_metrics"),
 
   // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Export the schema
-export const insertPropertyAnalyzerResultSchema = customPropertyAnalyzerSchema;
+// Export the schema and types
+export const insertPropertyAnalyzerResultSchema = propertyAnalyzerSchema;
 export const selectPropertyAnalyzerResultSchema = createSelectSchema(propertyAnalyzerResults);
-export type InsertPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferInsert;
-export type SelectPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferSelect;
+
+// Add relations for the property analyzer results
+export const propertyAnalyzerResultsRelations = relations(propertyAnalyzerResults, ({ one }) => ({
+  user: one(users, {
+    fields: [propertyAnalyzerResults.userId],
+    references: [users.id],
+  }),
+}));
 
 // Relations
 export const usersRelations = relations(users, ({ one }) => ({
@@ -258,14 +264,6 @@ export const reportTrackingRelations = relations(reportTracking, ({ one }) => ({
   }),
 }));
 
-// Add relations for new table
-export const propertyAnalyzerResultsRelations = relations(propertyAnalyzerResults, ({ one }) => ({
-  user: one(users, {
-    fields: [propertyAnalyzerResults.userId],
-    references: [users.id],
-  }),
-}));
-
 
 // Schemas
 export const insertAccessCodeSchema = createInsertSchema(accessCodes);
@@ -283,9 +281,6 @@ export const selectAgencySettingsSchema = createSelectSchema(agencySettings);
 export const insertReportTrackingSchema = createInsertSchema(reportTracking);
 export const selectReportTrackingSchema = createSelectSchema(reportTracking);
 
-// Add schemas for new table
-
-
 // Types
 export type InsertAccessCode = typeof accessCodes.$inferInsert;
 export type SelectAccessCode = typeof accessCodes.$inferSelect;
@@ -302,6 +297,5 @@ export type SelectAgencySettings = typeof agencySettings.$inferSelect;
 export type InsertReportTracking = typeof reportTracking.$inferInsert;
 export type SelectReportTracking = typeof reportTracking.$inferSelect;
 
-// Add types for the new table
 export type InsertPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferInsert;
 export type SelectPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferSelect;

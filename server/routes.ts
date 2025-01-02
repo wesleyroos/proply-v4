@@ -2,12 +2,12 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { properties, users, accessCodes, propertyAnalyzerResults, insertPropertyAnalyzerResultSchema } from "@db/schema";
-import { eq, and } from "drizzle-orm";
+import { properties, propertyAnalyzerResults } from "@db/schema";
+import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields, type PropertyData } from "../analysis-engine/calculations";
-import { sql } from "drizzle-orm";
+
 
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
@@ -344,49 +344,31 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get all rent compare properties for the current user.  This is now more concise and uses the same error handling pattern
   app.get("/api/properties", async (req, res) => {
-    if (!req.isAuthenticated()) {
+    if (!req.isAuthenticated() || !req.user?.id) {
       return res.status(401).send("Not authenticated");
     }
 
     try {
-      // Log the current user and their ID for debugging
-      console.log('Fetching properties for user:', {
-        userId: req.user!.id,
-        email: req.user!.email,
-        userType: req.user!.userType
-      });
+      console.log('Fetching properties for user:', req.user.id);
 
-      // Strictly filter by userId for all users
       const userProperties = await db
-        .select({
-          id: properties.id,
-          userId: properties.userId,
-          title: properties.title,
-          address: properties.address,
-          bedrooms: properties.bedrooms,
-          bathrooms: properties.bathrooms,
-          longTermMonthly: properties.longTermMonthly,
-          shortTermAnnual: properties.shortTermAnnual,
-          shortTermAfterFees: properties.shortTermAfterFees,
-          breakEvenOccupancy: properties.breakEvenOccupancy,
-          shortTermNightly: properties.shortTermNightly,
-          annualOccupancy: properties.annualOccupancy,
-          createdAt: properties.createdAt
-        })
+        .select()
         .from(properties)
-        .where(eq(properties.userId, req.user!.id))
+        .where(eq(properties.userId, req.user.id))
         .orderBy(properties.createdAt);
-
-      // Log the number of properties found
-      console.log(`Found ${userProperties.length} properties for user ${req.user!.id}`);
 
       res.json(userProperties);
     } catch (error) {
       console.error('Error fetching properties:', error);
-      res.status(500).json({ error: "Failed to fetch properties" });
+      res.status(500).json({
+        error: "Failed to fetch properties",
+        details: error instanceof Error ? error.message : undefined
+      });
     }
   });
+
 
   app.delete("/api/properties/:id", async (req, res) => {
     if (!req.isAuthenticated()) {
@@ -663,150 +645,98 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Property analyzer save endpoint
+  // Property analyzer save endpoint - This is replaced with a more streamlined version
   app.post("/api/property-analyzer/save", async (req, res) => {
-    if (!req.isAuthenticated()) {
+    if (!req.isAuthenticated() || !req.user?.id) {
       return res.status(401).send("Not authenticated");
     }
 
     try {
-      console.log("\n=== Starting Property Analysis Save ===");
-      console.log("Request body:", JSON.stringify(req.body, null, 2));
+      console.log('Saving property analysis for user:', req.user.id);
+      console.log('Analysis data:', JSON.stringify(req.body, null, 2));
 
-      // First validate the form data
-      const validationResult = insertPropertyAnalyzerResultSchema.safeParse({
-        ...req.body,
-        userId: req.user!.id
-      });
+      // Insert into database
+      const [savedAnalysis] = await db
+        .insert(propertyAnalyzerResults)
+        .values({
+          ...req.body,
+          userId: req.user.id,
+          createdAt: new Date()
+        })
+        .returning();
 
-      if (!validationResult.success) {
-        const errorDetails = validationResult.error.issues.map(i => ({
-          path: i.path.join('.'),
-          message: i.message,
-          code: i.code
-        }));
-
-        console.error('Validation failed:', JSON.stringify(errorDetails, null, 2));
-
-        return res.status(400).json({
-          error: "Invalid input data",
-          details: errorDetails
-        });
-      }
-
-      const data = validationResult.data;
-      console.log('Validated data:', JSON.stringify(data, null, 2));
-
-      try {
-        // Basic data for testing
-        const insertData = {
-          userId: data.userId,
-          title: data.title,
-          address: data.address,
-          propertyUrl: data.propertyUrl ?? null,
-          propertyDescription: data.propertyDescription ?? null,
-          propertyPhoto: data.propertyPhoto ?? null,
-          purchasePrice: data.purchasePrice,
-          floorArea: data.floorArea,
-          bedrooms: data.bedrooms,
-          bathrooms: data.bathrooms,
-          parkingSpaces: data.parkingSpaces,
-          depositAmount: data.depositAmount,
-          depositPercentage: data.depositPercentage,
-          interestRate: data.interestRate,
-          loanTerm: data.loanTerm,
-          monthlyBondRepayment: data.monthlyBondRepayment ?? null,
-          monthlyLevies: data.monthlyLevies,
-          monthlyRatesTaxes: data.monthlyRatesTaxes,
-          otherMonthlyExpenses: data.otherMonthlyExpenses,
-          maintenancePercent: data.maintenancePercent,
-          managementFee: data.managementFee,
-          shortTermNightlyRate: data.shortTermNightlyRate ?? null,
-          annualOccupancy: data.annualOccupancy ?? null,
-          shortTermAnnualRevenue: data.shortTermAnnualRevenue ?? null,
-          longTermAnnualRevenue: data.longTermAnnualRevenue ?? null,
-          shortTermGrossYield: data.shortTermGrossYield ?? null,
-          longTermGrossYield: data.longTermGrossYield ?? null,
-          ratePerSquareMeter: data.ratePerSquareMeter,
-          revenueProjections: data.revenueProjections,
-          operatingExpenses: data.operatingExpenses,
-          netOperatingIncome: data.netOperatingIncome || {},
-          investmentMetrics: data.investmentMetrics
-        };
-
-        console.log('Attempting database insertion with data:', JSON.stringify(insertData, null, 2));
-
-        // Save to database
-        const [savedAnalysis] = await db
-          .insert(propertyAnalyzerResults)
-          .values(insertData)
-          .returning();
-
-        console.log('Successfully saved property analysis:', {
-          id: savedAnalysis.id,
-          title: savedAnalysis.title,
-          address: savedAnalysis.address
-        });
-
-        res.json(savedAnalysis);
-      } catch (dbError: any) {
-        console.error('Database Error Details:', {
-          error: dbError.toString(),
-          name: dbError.name,
-          code: dbError.code,
-          detail: dbError.detail,
-          schema: dbError.schema,
-          table: dbError.table,
-          column: dbError.column,
-          constraint: dbError.constraint,
-          stack: dbError.stack
-        });
-
-        res.status(500).json({
-          error: "Failed to save property analysis",
-          details: {
-            message: dbError.message,
-            code: dbError.code,
-            detail: dbError.detail
-          }
-        });
-      }
-    } catch (error: any) {
-      console.error('General Error in property analyzer save:', {
-        error: error.toString(),
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
-
+      res.json(savedAnalysis);
+    } catch (error) {
+      console.error('Error saving property analysis:', error);
       res.status(500).json({
         error: "Failed to save property analysis",
-        details: {
-          message: error.message,
-          name: error.name
-        }
+        details: error instanceof Error ? error.message : undefined
       });
     }
   });
 
-  // New endpoint to fetch property analyzer results
+  // Get all property analyzer results for the current user
   app.get("/api/property-analyzer/properties", async (req, res) => {
-    if (!req.isAuthenticated()) {
+    if (!req.isAuthenticated() || !req.user?.id) {
       return res.status(401).send("Not authenticated");
     }
 
     try {
-      const analyzerProperties = await db
+      console.log('Fetching property analyzer results for user:', req.user.id);
+
+      const results = await db
         .select()
         .from(propertyAnalyzerResults)
-        .where(eq(propertyAnalyzerResults.userId, req.user!.id))
+        .where(eq(propertyAnalyzerResults.userId, req.user.id))
         .orderBy(propertyAnalyzerResults.createdAt);
 
-      res.json(analyzerProperties);
+      res.json(results);
     } catch (error) {
-      console.error('Error fetching property analyses:', error);
+      console.error('Error fetching property analyzer results:', error);
       res.status(500).json({
-        error: "Failed to fetch property analyses",
+        error: "Failed to fetch property analyzer results",
+        details: error instanceof Error ? error.message : undefined
+      });
+    }
+  });
+
+  // Delete property analyzer result
+  app.delete("/api/property-analyzer/properties/:id", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.id) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const propertyId = parseInt(req.params.id);
+    if (isNaN(propertyId)) {
+      return res.status(400).send("Invalid property ID");
+    }
+
+    try {
+      // First check if the property exists and belongs to the user
+      const [property] = await db
+        .select()
+        .from(propertyAnalyzerResults)
+        .where(eq(propertyAnalyzerResults.id, propertyId))
+        .limit(1);
+
+      if (!property) {
+        return res.status(404).send("Property not found");
+      }
+
+      if (property.userId !== req.user.id) {
+        return res.status(403).send("Not authorized to delete this property");
+      }
+
+      // Delete the property
+      await db
+        .delete(propertyAnalyzerResults)
+        .where(eq(propertyAnalyzerResults.id, propertyId));
+
+      res.json({ message: "Property deleted successfully" });
+    } catch (error) {
+      console.error('Error deleting property:', error);
+      res.status(500).json({
+        error: "Failed to delete property",
         details: error instanceof Error ? error.message : undefined
       });
     }
