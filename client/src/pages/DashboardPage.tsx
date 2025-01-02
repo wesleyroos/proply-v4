@@ -40,8 +40,10 @@ export default function DashboardPage() {
     enabled: !!user,
   });
 
-  // Calculate total properties
-  const totalProperties = (analyzerProperties?.length || 0) + (compareProperties?.length || 0);
+  // Calculate total properties and breakdown
+  const analyzerCount = analyzerProperties?.length || 0;
+  const compareCount = compareProperties?.length || 0;
+  const totalProperties = analyzerCount + compareCount;
 
   return (
     <div className="p-8">
@@ -49,7 +51,7 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-bold">Welcome, {user?.firstName || user?.username}!</h1>
 
         {!hasProAccess && (
-          <Button size="sm" variant="default" asChild className="bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:opacity-90">
+          <Button size="sm" variant="default" asChild className="bg-primary hover:opacity-90">
             <Link href="/pricing">
               <Sparkles className="w-4 h-4 mr-2" />
               Upgrade to Pro
@@ -121,9 +123,14 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalProperties}</div>
-            <p className="text-xs text-muted-foreground">
-              Properties analyzed
-            </p>
+            <div className="flex gap-4 mt-2">
+              <p className="text-xs text-muted-foreground">
+                {analyzerCount} property analyses
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {compareCount} rental comparisons
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
