@@ -1,0 +1,180 @@
+// 1. DATA COLLECTION STRUCTURE
+interface DataSource {
+  name: string;
+  type: 'rss' | 'api' | 'web';
+  priority: number; // 1-5, with 1 being highest priority
+  reliability: number; // 1-5, with 5 being most reliable
+  url: string;
+}
+
+const DATA_SOURCES: DataSource[] = [
+  {
+    name: "Property24",
+    type: "api",
+    priority: 1,
+    reliability: 5,
+    url: "https://www.property24.com/api/"
+  },
+  {
+    name: "BusinessTech Property",
+    type: "rss",
+    priority: 2,
+    reliability: 4,
+    url: "https://businesstech.co.za/news/property/feed/"
+  },
+  // Add more sources
+];
+
+// 2. NEWS ITEM STRUCTURE
+interface NewsItem {
+  title: string;
+  content: string;
+  source: string;
+  date: Date;
+  url: string;
+  categories: string[];
+  locationRelevance: number; // 0-1 score for location match
+  timeRelevance: number; // 0-1 score based on recency
+  sourceReliability: number; // 0-1 score based on source
+  impactScore: number; // -1 to 1 (negative to positive impact)
+}
+
+// 3. ANALYSIS CATEGORIES
+interface AnalysisCategory {
+  name: string;
+  weight: number;
+  keywords: string[];
+}
+
+const ANALYSIS_CATEGORIES: AnalysisCategory[] = [
+  {
+    name: "Infrastructure Development",
+    weight: 0.25,
+    keywords: ["development", "construction", "infrastructure", "upgrade", "renovation"]
+  },
+  {
+    name: "Safety and Security",
+    weight: 0.2,
+    keywords: ["crime", "security", "police", "safety", "surveillance"]
+  },
+  {
+    name: "Economic Factors",
+    weight: 0.25,
+    keywords: ["business", "investment", "economy", "growth", "employment"]
+  },
+  {
+    name: "Amenities and Services",
+    weight: 0.15,
+    keywords: ["school", "shopping", "restaurant", "healthcare", "transport"]
+  },
+  {
+    name: "Property Market",
+    weight: 0.15,
+    keywords: ["property", "house price", "rental", "real estate", "market value"]
+  }
+];
+
+// 4. RELEVANCE SCORING FUNCTION
+function calculateRelevanceScore(newsItem: NewsItem, suburb: string): number {
+  // Location relevance (0.4 weight)
+  const locationScore = newsItem.locationRelevance * 0.4;
+  
+  // Time relevance (0.3 weight)
+  const timeScore = newsItem.timeRelevance * 0.3;
+  
+  // Source reliability (0.3 weight)
+  const reliabilityScore = newsItem.sourceReliability * 0.3;
+  
+  return locationScore + timeScore + reliabilityScore;
+}
+
+// 5. SENTIMENT ANALYSIS PROMPT STRUCTURE
+const ANALYSIS_PROMPT = `
+Analyze the following news article about ${suburb} in terms of its impact on property value and investment potential:
+
+Article: {article_text}
+
+Please analyze this content in terms of:
+1. Direct property market impact (high/medium/low)
+2. Timeline of impact (immediate/short-term/long-term)
+3. Reliability of information (scale 1-5)
+4. Category of impact (infrastructure/safety/economic/amenities/property)
+5. Sentiment score (-1 to +1)
+
+Provide reasoning for each assessment.
+`;
+
+// 6. WEIGHTED SCORING SYSTEM
+interface CategoryScore {
+  category: string;
+  score: number;
+  confidence: number;
+  supportingEvidence: NewsItem[];
+}
+
+function calculateOverallScore(categoryScores: CategoryScore[]): number {
+  return categoryScores.reduce((total, catScore) => {
+    const category = ANALYSIS_CATEGORIES.find(c => c.name === catScore.category);
+    if (!category) return total;
+    return total + (catScore.score * category.weight * catScore.confidence);
+  }, 0);
+}
+
+// 7. RESULT STRUCTURE
+interface SuburbAnalysisResult {
+  overallScore: number;
+  categoryScores: CategoryScore[];
+  trendingSentiment: {
+    positive: string[];
+    negative: string[];
+    neutral: string[];
+  };
+  recentDevelopments: NewsItem[];
+  confidenceLevel: number;
+  dataPoints: number;
+  lastUpdated: Date;
+  suggestions: string[];
+}
+
+// 8. API ENDPOINT STRUCTURE
+async function analyzeSuburb(suburb: string): Promise<SuburbAnalysisResult> {
+  const progressCallback = (status: string) => {
+    // Update UI with current status
+    console.log(status);
+  };
+
+  // 1. Data Collection
+  progressCallback("Collecting data from trusted sources...");
+  const newsItems = await collectNewsItems(suburb);
+
+  // 2. Initial Filtering
+  progressCallback("Filtering relevant information...");
+  const relevantNews = filterRelevantNews(newsItems, suburb);
+
+  // 3. AI Analysis
+  progressCallback("Performing detailed analysis...");
+  const analyzedItems = await analyzeNewsItems(relevantNews);
+
+  // 4. Category Scoring
+  progressCallback("Calculating category scores...");
+  const categoryScores = calculateCategoryScores(analyzedItems);
+
+  // 5. Final Scoring
+  progressCallback("Generating final analysis...");
+  const overallScore = calculateOverallScore(categoryScores);
+
+  // 6. Generate Insights
+  progressCallback("Extracting key insights...");
+  const insights = generateInsights(analyzedItems, categoryScores);
+
+  return {
+    overallScore,
+    categoryScores,
+    trendingSentiment: insights.sentiment,
+    recentDevelopments: insights.developments,
+    confidenceLevel: insights.confidence,
+    dataPoints: analyzedItems.length,
+    lastUpdated: new Date(),
+    suggestions: insights.suggestions
+  };
+}

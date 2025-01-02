@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Loader2, TrendingUp, TrendingDown, Star, ExternalLink } from "lucide-react";
+import { Search, Loader2, TrendingUp, TrendingDown, Star, ExternalLink, LineChart } from "lucide-react";
 
 interface SuburbAnalysis {
   sentiment: {
@@ -22,6 +22,13 @@ interface SuburbAnalysis {
     negative: string[];
   };
   overallScore: number;
+  categoryScores: Array<{
+    category: string;
+    score: number;
+    confidence: number;
+  }>;
+  confidenceLevel: number;
+  dataPoints: number;
 }
 
 export default function MarketIntelligencePage() {
@@ -57,12 +64,14 @@ export default function MarketIntelligencePage() {
       });
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to analyze suburb');
       }
 
       const result = await response.json();
       setAnalysis(result);
     } catch (error) {
+      console.error('Analysis error:', error);
       toast({
         title: "Analysis Failed",
         description: error instanceof Error ? error.message : "Failed to complete the analysis. Please try again.",
@@ -147,8 +156,46 @@ export default function MarketIntelligencePage() {
               <div className="flex items-center gap-2 mb-4">
                 <Star className="h-6 w-6 text-yellow-500" />
                 <span className="text-2xl font-bold">{analysis.overallScore.toFixed(1)}/10</span>
+                <span className="text-sm text-muted-foreground ml-2">
+                  Confidence: {(analysis.confidenceLevel * 100).toFixed(1)}%
+                </span>
+                <span className="text-sm text-muted-foreground ml-2">
+                  Based on {analysis.dataPoints} data points
+                </span>
               </div>
               <p className="text-muted-foreground">{analysis.sentiment.summary}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <LineChart className="h-5 w-5" />
+                Category Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {analysis.categoryScores.map((category, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">{category.category}</span>
+                      <div className="flex items-center gap-4">
+                        <span className="text-sm">Score: {category.score.toFixed(1)}/10</span>
+                        <span className="text-sm text-muted-foreground">
+                          Confidence: {(category.confidence * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-primary transition-all"
+                        style={{ width: `${(category.score / 10) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
