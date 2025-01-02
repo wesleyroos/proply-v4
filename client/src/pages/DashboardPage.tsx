@@ -198,7 +198,7 @@ export default function DashboardPage() {
 
         <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Short-Term Gross Yield</CardTitle>
+            <CardTitle className="text-sm font-medium">Avg. Short-Term Gross Yield</CardTitle>
             <ChartBar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -211,7 +211,7 @@ export default function DashboardPage() {
 
         <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Long-Term Gross Yield</CardTitle>
+            <CardTitle className="text-sm font-medium">Avg. Long-Term Gross Yield</CardTitle>
             <ChartBar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -255,35 +255,38 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {analyzerProperties.slice(0, 5).map((property) => (
-                    <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-medium">{property.address}</h3>
-                          <span className="font-bold text-primary ml-4">
-                            {formatter.format(property.purchasePrice)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {property.bedrooms} bed • {property.bathrooms} bath
-                        </p>
-                        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
-                          <p className="text-xs text-muted-foreground">
-                            ST Yield: {formatYield(property.shortTermGrossYield)}
+                  {analyzerProperties
+                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    .slice(0, 2)
+                    .map((property) => (
+                      <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-medium">{property.address}</h3>
+                            <span className="font-bold text-primary ml-4">
+                              {formatter.format(property.purchasePrice)}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {property.bedrooms} bed • {property.bathrooms} bath
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            LT Yield: {formatYield(property.longTermGrossYield)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            ST Revenue: {formatter.format(property.shortTermAnnualRevenue || 0)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            LT Revenue: {formatter.format(property.longTermAnnualRevenue || 0)}
-                          </p>
+                          <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+                            <p className="text-xs text-muted-foreground">
+                              ST Yield: {formatYield(property.shortTermGrossYield)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              LT Yield: {formatYield(property.longTermGrossYield)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              ST Revenue: {formatter.format(property.shortTermAnnualRevenue || 0)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              LT Revenue: {formatter.format(property.longTermAnnualRevenue || 0)}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </CardContent>
@@ -317,33 +320,36 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {compareProperties.slice(0, 5).map((property) => (
-                    <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div>
-                        <h3 className="font-medium">{property.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {property.address}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {property.bedrooms} bed • {property.bathrooms} bath
-                        </p>
-                        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
-                          <p className="text-xs text-muted-foreground">
-                            ST Rate: {formatter.format(property.shortTermNightly)} /night
+                  {compareProperties
+                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    .slice(0, 2)
+                    .map((property) => (
+                      <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                        <div>
+                          <h3 className="font-medium">{property.title}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {property.address}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            Occupancy: {property.annualOccupancy}%
+                          <p className="text-sm text-muted-foreground">
+                            {property.bedrooms} bed • {property.bathrooms} bath
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            ST Revenue: {formatter.format(property.shortTermAfterFees)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            LT Revenue: {formatter.format(property.longTermMonthly * 12)}
-                          </p>
+                          <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+                            <p className="text-xs text-muted-foreground">
+                              ST Rate: {formatter.format(property.shortTermNightly)} /night
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Occupancy: {property.annualOccupancy}%
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              ST Revenue: {formatter.format(property.shortTermAfterFees)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              LT Revenue: {formatter.format(property.longTermMonthly * 12)}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </CardContent>
