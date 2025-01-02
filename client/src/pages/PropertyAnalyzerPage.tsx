@@ -833,6 +833,65 @@ export default function PropertyAnalyzerPage() {
 
             {/* Detailed Analysis Section */}
             <div className="space-y-6">
+              {/* Investment Metrics */}
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-purple-500" />
+                    Investment Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {analysisResult && (
+                    <InvestmentMetrics
+                      yearlyMetrics={analysisResult.analysis.investmentMetrics}
+                      metricDescriptions={{
+                        grossYield: {
+                          title: "Gross Yield",
+                          explanation: "Annual gross rental income as a percentage of the property's purchase price",
+                          calculationMethod: "(Annual Gross Rental Income / Property Purchase Price) × 100"
+                        },
+                        netYield: {
+                          title: "Net Yield",
+                          explanation: "Annual net rental income (after expenses) as a percentage of the property's purchase price",
+                          calculationMethod: "(Annual Net Operating Income / Property Purchase Price) × 100"
+                        },
+                        returnOnEquity: {
+                          title: "Return on Equity",
+                          explanation: "Annual return relative to the equity invested in the property",
+                          calculationMethod: "(Annual Net Operating Income / Total Equity Invested) × 100"
+                        },
+                        annualReturn: {
+                          title: "Annual Return",
+                          explanation: "Total return including rental income and property appreciation for the year",
+                          calculationMethod: "((Net Operating Income + Property Value Increase) / Initial Investment) × 100"
+                        },
+                        capRate: {
+                          title: "Cap Rate",
+                          explanation: "Net operating income as a percentage of property value, indicating potential return regardless of financing",
+                          calculationMethod: "(Net Operating Income / Current Property Value) × 100"
+                        },
+                        cashOnCashReturn: {
+                          title: "Cash on Cash Return",
+                          explanation: "Annual pre-tax cash flow relative to total cash invested",
+                          calculationMethod: "(Annual Pre-Tax Cash Flow / Total Cash Invested) × 100"
+                        },
+                        irr: {
+                          title: "Internal Rate of Return (IRR)",
+                          explanation: "The discount rate that makes the net present value of all cash flows equal to zero",
+                          calculationMethod: "Complex calculation using all future cash flows and initial investment"
+                        },
+                        netWorthChange: {
+                          title: "Net Worth Change",
+                          explanation: "Total change in net worth including equity buildup, appreciation, and rental income",
+                          calculationMethod: "Property Value Increase + Loan Principal Paid + Cumulative Rental Income"
+                        }
+                      }}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Rental Performance */}
               <Card>
                 <CardHeader>
@@ -863,21 +922,12 @@ export default function PropertyAnalyzerPage() {
                 netOperatingIncome={analysisResult.analysis.netOperatingIncome}
               />
 
-
-              {/* Investment Metrics */}
-              <InvestmentMetrics
-                shortTermGrossYield={analysisResult.shortTermGrossYield}
-                longTermGrossYield={analysisResult.longTermGrossYield}
-                investmentMetrics={analysisResult.analysis.investmentMetrics}
-              />
-
               {/* Asset Growth & Equity */}
               <AssetGrowthMetrics
                 purchasePrice={analysisResult.analysis.purchasePrice}
                 deposit={analysisResult.deposit || 0}
                 interestRate={analysisResult.interestRate || 0}
                 loanTerm={analysisResult.loanTerm}
-                monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
                 annualAppreciation={formData?.annualPropertyAppreciation || 5}
               />
 
