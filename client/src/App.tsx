@@ -20,6 +20,7 @@ import PropertyAnalyzerProductPage from "./pages/PropertyAnalyzerProductPage";
 import RentComparePage from "./pages/RentComparePage";
 import DashboardPage from "./pages/DashboardPage";
 import PropertyAnalyzerPage from "./pages/PropertyAnalyzerPage";
+import MarketIntelligencePage from "./pages/MarketIntelligencePage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
 import ContactPage from "./pages/ContactPage";
@@ -150,6 +151,10 @@ function App() {
             <Route 
               path="/dashboard/property-analyzer" 
               component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} 
+            />
+            <Route 
+              path="/dashboard/market-intelligence" 
+              component={() => <ProtectedRoute component={MarketIntelligencePage} />} 
             />
             <Route 
               path="/dashboard/rent-compare" 
