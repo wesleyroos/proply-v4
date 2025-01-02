@@ -232,7 +232,7 @@ export default function DashboardPage() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="flex items-center gap-2">
                 <Calculator className="h-4 w-4 text-primary" />
-                Property Analyzer Results
+                Recent Properties Analysed
               </CardTitle>
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/properties">
@@ -297,11 +297,11 @@ export default function DashboardPage() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="flex items-center gap-2">
                 <ChartBar className="h-4 w-4 text-primary" />
-                Rent Compare Results
+                Recent Rent Comparisons
               </CardTitle>
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/properties">
-                  See all properties
+                  See all comparisons
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
