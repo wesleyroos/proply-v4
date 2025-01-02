@@ -25,7 +25,7 @@ interface SuburbAnalysisResult {
 export async function analyzeSuburb(suburb: string): Promise<SuburbAnalysisResult> {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4",
       messages: [
         {
           role: "system",
