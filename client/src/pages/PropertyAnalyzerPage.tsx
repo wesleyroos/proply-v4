@@ -33,7 +33,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import CashflowChart from "@/components/CashflowChart";
+
 
 interface YearlyMetrics {
   grossYield: number;
@@ -49,35 +49,25 @@ interface YearlyMetrics {
 }
 
 interface AnalysisResult {
-    shortTermGrossYield: number | null;
-    longTermGrossYield: number | null;
-    propertyDescription: string | null;
-    deposit: number | null;
-    depositPercentage: number | null;
-    interestRate: number | null;
-    monthlyBondRepayment: number | null;
-    floorArea: number | null;
-    ratePerSquareMeter: number | null;
-    shortTermNightlyRate: number | null;
-    annualOccupancy: number | null;
-    managementFee: number;
-    loanTerm: number;
-    analysis: {
-      shortTermAnnualRevenue: number | null;
-      longTermAnnualRevenue: number | null;
-      purchasePrice: number;
-      revenueProjections: {
-        shortTerm: {
-          year1: number;
-          year2: number;
-          year3: number;
-          year4: number;
-          year5: number;
-          year10: number;
-          year20: number;
-        } | null;
-      };
-      operatingExpenses: {
+  shortTermGrossYield: number | null;
+  longTermGrossYield: number | null;
+  propertyDescription: string | null;
+  deposit: number | null;
+  depositPercentage: number | null;
+  interestRate: number | null;
+  monthlyBondRepayment: number | null;
+  floorArea: number | null;
+  ratePerSquareMeter: number | null;
+  shortTermNightlyRate: number | null;
+  annualOccupancy: number | null;
+  managementFee: number;
+  loanTerm: number;
+  analysis: {
+    shortTermAnnualRevenue: number | null;
+    longTermAnnualRevenue: number | null;
+    purchasePrice: number;
+    revenueProjections: {
+      shortTerm: {
         year1: number;
         year2: number;
         year3: number;
@@ -85,25 +75,16 @@ interface AnalysisResult {
         year5: number;
         year10: number;
         year20: number;
-      };
-      netOperatingIncome: {
-        year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-        year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-        year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-        year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-        year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-        year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-        year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
       } | null;
-      investmentMetrics: {
-        year1: YearlyMetrics;
-        year2: YearlyMetrics;
-        year3: YearlyMetrics;
-        year4: YearlyMetrics;
-        year5: YearlyMetrics;
-        year10: YearlyMetrics;
-        year20: YearlyMetrics;
-      };
+    };
+    operatingExpenses: {
+      year1: number;
+      year2: number;
+      year3: number;
+      year4: number;
+      year5: number;
+      year10: number;
+      year20: number;
     };
     netOperatingIncome: {
       year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
@@ -114,9 +95,28 @@ interface AnalysisResult {
       year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
       year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
     } | null;
-    address: string;
-    propertyPhotoUrl?: string;
-  }
+    investmentMetrics: {
+      year1: YearlyMetrics;
+      year2: YearlyMetrics;
+      year3: YearlyMetrics;
+      year4: YearlyMetrics;
+      year5: YearlyMetrics;
+      year10: YearlyMetrics;
+      year20: YearlyMetrics;
+    };
+  };
+  netOperatingIncome: {
+    year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+  } | null;
+  address: string;
+  propertyPhotoUrl?: string;
+}
 
 export default function PropertyAnalyzerPage() {
   const { user } = useUser();
@@ -156,8 +156,8 @@ export default function PropertyAnalyzerPage() {
       });
 
       // Calculate deposit based on type
-      const deposit = formData.depositType === 'amount' 
-        ? parseFloat(formData.depositAmount) 
+      const deposit = formData.depositType === 'amount'
+        ? parseFloat(formData.depositAmount)
         : (parseFloat(formData.purchasePrice) * parseFloat(formData.depositPercentage)) / 100;
 
       // Ensure all numbers are properly parsed and validated
@@ -196,7 +196,7 @@ export default function PropertyAnalyzerPage() {
         annualExpenseGrowth: parseFloat(formData.annualExpenseGrowth || 0),
         annualPropertyAppreciation: parseFloat(formData.annualPropertyAppreciation || 0),
 
-        // Miscellaneous  
+        // Miscellaneous
         ratePerSquareMeter: parseFloat(formData.cmaRatePerSqm || 0),
         propertyDescription: formData.comments || "",
       };
@@ -337,7 +337,7 @@ export default function PropertyAnalyzerPage() {
                   </p>
                 </div>
                 <div className="space-x-2">
-                  <Button 
+                  <Button
                     onClick={async () => {
                       try {
                         const dataToSave = prepareAnalysisDataForSave();
@@ -398,8 +398,8 @@ export default function PropertyAnalyzerPage() {
             </div>
 
             {/* Add Alert Dialog for Save Status */}
-            <AlertDialog 
-              open={saveDialog.isOpen} 
+            <AlertDialog
+              open={saveDialog.isOpen}
               onOpenChange={(open) => setSaveDialog(prev => ({ ...prev, isOpen: open }))}
             >
               <AlertDialogContent>
@@ -819,8 +819,7 @@ export default function PropertyAnalyzerPage() {
                                     This shows how the property's price per
                                     square meter compares to the average rate in
                                     the area. A lower rate than the area average might indicate
-                                                                   better value for money, while a higher rate
-                                    suggests premium positioning.
+                                                                    better value for money, while a higherrate suggests premium positioning.
                                   </TooltipContent>
                                 </Tooltip>
 
@@ -879,14 +878,9 @@ export default function PropertyAnalyzerPage() {
                 annualAppreciation={formData?.annualPropertyAppreciation || 5}
               />
 
-              {/* Cashflow Chart */}
-              <CashflowChart
-                netOperatingIncome={analysisResult.netOperatingIncome}
-              />
-
               {/* Investment Metrics */}
               <InvestmentMetrics
-                metrics={analysisResult.analysis.investmentMetrics}
+                yearlyMetrics={analysisResult.analysis.investmentMetrics}
                 metricDescriptions={{
                   grossYield: {
                     title: "Gross Yield",
@@ -918,16 +912,6 @@ export default function PropertyAnalyzerPage() {
                     explanation: "Annual pre-tax cash flow relative to total cash invested",
                     calculationMethod: "(Annual Pre-tax Cash Flow / Total Cash Invested) × 100"
                   },
-                  roiWithoutAppreciation: {
-                    title: "ROI without Appreciation",
-                    explanation: "Return on investment considering only rental income and expenses",
-                    calculationMethod: "(Annual Net Operating Income / Total Investment) × 100"
-                  },
-                  roiWithAppreciation: {
-                    title: "ROI with Appreciation",
-                    explanation: "Total return including both rental income and property value appreciation",
-                    calculationMethod: "((Annual NOI + Property Value Increase) / Total Investment) × 100"
-                  },
                   irr: {
                     title: "Internal Rate of Return (IRR)",
                     explanation: "The discount rate that makes the net present value of all cash flows equal to zero",
@@ -940,7 +924,6 @@ export default function PropertyAnalyzerPage() {
                   }
                 }}
               />
-
             </div>
           </>
         )}
