@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Loader2, TrendingUp, TrendingDown, Star, ExternalLink, LineChart } from "lucide-react";
@@ -16,7 +15,8 @@ interface SuburbAnalysis {
     summary: string;
     relevance: number;
     sentiment: number;
-    source?: string;
+    source: string;
+    sourceUrl: string;
   }>;
   trends: {
     positive: string[];
@@ -49,17 +49,25 @@ export default function MarketIntelligencePage() {
   const { toast } = useToast();
 
   const searchSuburbs = async (search: string) => {
-    if (search.length < 2) return;
+    if (search.length < 2) {
+      setSuburbs([]);
+      return;
+    }
 
     try {
-      const response = await fetch(`/api/suburbs/search?q=${search}`);
+      const response = await fetch(`/api/suburbs/search?q=${encodeURIComponent(search)}`);
       if (!response.ok) {
         throw new Error('Failed to fetch suburbs');
       }
       const data = await response.json();
-      setSuburbs(data.suburbs);
+      setSuburbs(data.suburbs || []);
     } catch (error) {
       console.error('Search error:', error);
+      toast({
+        title: "Search Error",
+        description: "Failed to search suburbs. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -127,38 +135,46 @@ export default function MarketIntelligencePage() {
             }}
             className="space-y-4"
           >
-            <Command className="rounded-lg border shadow-sm">
-              <Command.Input
-                value={inputValue}
-                onValueChange={(value) => {
-                  setInputValue(value);
-                  searchSuburbs(value);
-                }}
-                placeholder="Search for a suburb..."
-                className="h-9 w-full rounded-md px-3"
-              />
-              {suburbs.length > 0 && (
-                <Command.List className="max-h-48 overflow-y-auto p-2">
-                  {suburbs.map((suburb) => (
-                    <Command.Item
-                      key={suburb.id}
-                      value={suburb.id}
-                      onSelect={() => {
-                        setSelectedSuburb(suburb);
-                        setInputValue(`${suburb.name}, ${suburb.city}`);
-                        setSuburbs([]);
-                      }}
-                      className="flex items-center px-2 py-1 text-sm rounded cursor-pointer hover:bg-accent"
-                    >
-                      {suburb.name}, {suburb.city}, {suburb.province}
-                    </Command.Item>
-                  ))}
-                </Command.List>
-              )}
-            </Command>
+            <div className="relative">
+              <Command className="rounded-lg border shadow-sm overflow-visible">
+                <Command.Input
+                  value={inputValue}
+                  onValueChange={(value) => {
+                    setInputValue(value);
+                    searchSuburbs(value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && selectedSuburb) {
+                      e.preventDefault();
+                      handleAnalysis();
+                    }
+                  }}
+                  placeholder="Search for a suburb..."
+                  className="h-9 w-full rounded-md px-3"
+                />
+                {suburbs.length > 0 && (
+                  <Command.List className="absolute w-full z-50 max-h-48 overflow-y-auto p-2 bg-white border rounded-md shadow-lg">
+                    {suburbs.map((suburb) => (
+                      <Command.Item
+                        key={suburb.id}
+                        value={suburb.id}
+                        onSelect={() => {
+                          setSelectedSuburb(suburb);
+                          setInputValue(`${suburb.name}, ${suburb.city}`);
+                          setSuburbs([]);
+                        }}
+                        className="flex items-center px-2 py-1 text-sm rounded cursor-pointer hover:bg-accent"
+                      >
+                        {suburb.name}, {suburb.city}, {suburb.province}
+                      </Command.Item>
+                    ))}
+                  </Command.List>
+                )}
+              </Command>
+            </div>
             <Button
               type="submit"
-              disabled={isAnalyzing}
+              disabled={isAnalyzing || !selectedSuburb}
               className="w-full md:w-auto"
             >
               {isAnalyzing ? (
@@ -295,15 +311,15 @@ export default function MarketIntelligencePage() {
                   <div key={index} className="border-b last:border-0 pb-4 last:pb-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-medium">{item.title}</h3>
-                      {item.source && (
+                      {item.sourceUrl && (
                         <a
-                          href={item.source}
+                          href={item.sourceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-500 hover:text-blue-600 inline-flex items-center gap-1"
                         >
                           <ExternalLink className="h-3 w-3" />
-                          <span className="text-xs">Source</span>
+                          <span className="text-xs">{item.source}</span>
                         </a>
                       )}
                     </div>

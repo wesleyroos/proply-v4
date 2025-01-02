@@ -829,22 +829,24 @@ export function registerRoutes(app: Express): Server {
       // Store new analysis data points if we have a suburbId
       if (suburbId && analysis.dataPointsForStorage?.length > 0) {
         console.log('Storing new analysis data points');
-        await db.insert(analysisDataPoints).values(
-          analysis.dataPointsForStorage.map(dp => ({
-            suburbId,
-            type: dp.type,
-            source: dp.source,
-            title: dp.title,
-            content: dp.content,
-            date: new Date(dp.date),
-            sentiment: dp.sentiment,
-            category: dp.category,
-            relevanceScore: dp.relevanceScore,
-            impactScore: dp.impactScore,
-            reasoning: dp.reasoning,
-            createdAt: new Date()
-          }))
-        );
+
+        // Convert decimal fields to text for storage
+        const dataPointsToStore = analysis.dataPointsForStorage.map(dp => ({
+          suburbId,
+          type: dp.type,
+          source: dp.source,
+          title: dp.title,
+          content: dp.content,
+          date: new Date(dp.date),
+          sentiment: dp.sentiment.toString(),
+          category: dp.category,
+          relevanceScore: dp.relevanceScore.toString(),
+          impactScore: dp.impactScore.toString(),
+          reasoning: dp.reasoning,
+          createdAt: new Date()
+        }));
+
+        await db.insert(analysisDataPoints).values(dataPointsToStore);
       }
 
       res.json(analysis);
