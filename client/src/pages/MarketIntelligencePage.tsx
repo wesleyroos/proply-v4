@@ -33,7 +33,7 @@ interface SuburbAnalysis {
 }
 
 interface Suburb {
-  id: string;
+  id: number;
   name: string;
   city: string;
   province: string;
@@ -45,7 +45,6 @@ export default function MarketIntelligencePage() {
   const [selectedSuburb, setSelectedSuburb] = useState<Suburb | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<SuburbAnalysis | null>(null);
-  const [analysisProgress, setAnalysisProgress] = useState<string[]>([]);
   const { toast } = useToast();
 
   const searchSuburbs = async (search: string) => {
@@ -55,11 +54,15 @@ export default function MarketIntelligencePage() {
     }
 
     try {
+      console.log('Searching for:', search);
       const response = await fetch(`/api/suburbs/search?q=${encodeURIComponent(search)}`);
+
       if (!response.ok) {
         throw new Error('Failed to fetch suburbs');
       }
+
       const data = await response.json();
+      console.log('Search results:', data);
       setSuburbs(data.suburbs || []);
     } catch (error) {
       console.error('Search error:', error);
@@ -82,19 +85,16 @@ export default function MarketIntelligencePage() {
     }
 
     setIsAnalyzing(true);
-    setAnalysisProgress([]);
     setAnalysis(null);
 
     try {
-      setAnalysisProgress(prev => [...prev, "Initiating suburb analysis..."]);
-
+      console.log('Analyzing suburb:', selectedSuburb);
       const response = await fetch("/api/market-intelligence/analyze", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ 
-          suburbId: selectedSuburb.id,
           suburb: `${selectedSuburb.name}, ${selectedSuburb.city}` 
         }),
       });
@@ -105,6 +105,7 @@ export default function MarketIntelligencePage() {
       }
 
       const result = await response.json();
+      console.log('Analysis result:', result);
       setAnalysis(result);
     } catch (error) {
       console.error('Analysis error:', error);
@@ -157,7 +158,7 @@ export default function MarketIntelligencePage() {
                     {suburbs.map((suburb) => (
                       <Command.Item
                         key={suburb.id}
-                        value={suburb.id}
+                        value={suburb.id.toString()}
                         onSelect={() => {
                           setSelectedSuburb(suburb);
                           setInputValue(`${suburb.name}, ${suburb.city}`);
@@ -193,27 +194,6 @@ export default function MarketIntelligencePage() {
         </CardContent>
       </Card>
 
-      {isAnalyzing && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Analysis Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {analysisProgress.map((progress, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 text-sm text-muted-foreground"
-                >
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {progress}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {analysis && (
         <div className="space-y-4">
           <Card>
@@ -232,38 +212,6 @@ export default function MarketIntelligencePage() {
                 </span>
               </div>
               <p className="text-muted-foreground">{analysis.sentiment.summary}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <LineChart className="h-5 w-5" />
-                Category Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {analysis.categoryScores.map((category, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">{category.category}</span>
-                      <div className="flex items-center gap-4">
-                        <span className="text-sm">Score: {category.score.toFixed(1)}/10</span>
-                        <span className="text-sm text-muted-foreground">
-                          Confidence: {(category.confidence * 100).toFixed(1)}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-primary transition-all"
-                        style={{ width: `${(category.score / 10) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
             </CardContent>
           </Card>
 

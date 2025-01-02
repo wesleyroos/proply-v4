@@ -815,6 +815,7 @@ export function registerRoutes(app: Express): Server {
 
       // Perform analysis using OpenAI
       const analysis = await analyzeSuburb(suburb);
+      console.log('Analysis completed:', analysis);
 
       res.json(analysis);
     } catch (error) {
@@ -826,29 +827,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Market Intelligence API endpoint -removed this old endpoint
-  // app.post("/api/market-intelligence/analyzeOld", async (req, res) => {
-  //   if (!req.isAuthenticated() || !req.user?.isAdmin) {
-  //     return res.status(403).send("Not authorized");
-  //   }
-
-  //   const { suburb } = req.body;
-
-  //   if (!suburb) {
-  //     return res.status(400).json({ error: "Suburb name is required" });
-  //   }
-
-  //   try {
-  //     const analysis = await analyzeSuburb(suburb);
-  //     res.json(analysis);
-  //   } catch (error) {
-  //     console.error('Error analyzing suburb:', error);
-  //     res.status(500).json({
-  //       error: "Failed to analyze suburb",
-  //       details: error instanceof Error ? error.message : undefined
-  //     });
-  //   }
-  // });
 
   const httpServer = createServer(app);
   return httpServer;
