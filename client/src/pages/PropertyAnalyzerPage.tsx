@@ -33,6 +33,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import CashflowChart from "@/components/CashflowChart";
 
 
 interface YearlyMetrics {
@@ -815,7 +816,7 @@ export default function PropertyAnalyzerPage() {
                                       </span>
                                     </p>
                                   </TooltipTrigger>
-                                  <TooltipContent className="max-w-[300px] text-sm">
+                                  <TooltipContent className="max-w-[300px text-sm">
                                     This shows how the property's price per
                                     square meter compares to the average rate in
                                     the area. A lower rate than the area average might indicate
@@ -866,7 +867,6 @@ export default function PropertyAnalyzerPage() {
                 netOperatingIncome={analysisResult.analysis.netOperatingIncome}
               />
 
-
               {/* Asset Growth and Investment Metrics */}
               <AssetGrowthMetrics
                 purchasePrice={analysisResult.analysis.purchasePrice}
@@ -876,6 +876,11 @@ export default function PropertyAnalyzerPage() {
                 monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
                 netOperatingIncome={analysisResult.netOperatingIncome}
                 annualAppreciation={formData?.annualPropertyAppreciation || 5}
+              />
+
+              {/* Cashflow Chart */}
+              <CashflowChart
+                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
               />
 
               {/* Investment Metrics */}
