@@ -85,7 +85,7 @@ export default function PropertiesPage() {
     if (!propertyToDelete) return;
 
     try {
-      const endpoint = activeTab === 'rent_compare' 
+      const endpoint = activeTab === 'rent_compare'
         ? `/api/properties/${propertyToDelete.id}`
         : `/api/property-analyzer/${propertyToDelete.id}`;
 
@@ -99,10 +99,10 @@ export default function PropertiesPage() {
       }
 
       // Invalidate the appropriate query
-      queryClient.invalidateQueries({ 
-        queryKey: activeTab === 'rent_compare' 
-          ? ['/api/properties'] 
-          : ['/api/property-analyzer/properties'] 
+      queryClient.invalidateQueries({
+        queryKey: activeTab === 'rent_compare'
+          ? ['/api/properties']
+          : ['/api/property-analyzer/properties']
       });
 
       setPropertyToDelete(null);
@@ -277,13 +277,13 @@ export default function PropertiesPage() {
                             {formatter.format(Number(property.purchasePrice))}
                           </td>
                           <td className="py-3 px-4 text-right">
-                            {formatter.format(property.netOperatingIncome.year1.value)}
+                            {formatter.format(property.netOperatingIncome?.year1?.value || 0)}
                           </td>
                           <td className="py-3 px-4 text-right">
-                            {property.investmentMetrics.shortTerm[0].capRate.toFixed(2)}%
+                            {(property.investmentMetrics?.shortTerm?.[0]?.capRate || 0).toFixed(2)}%
                           </td>
                           <td className="py-3 px-4 text-right">
-                            {property.investmentMetrics.shortTerm[0].cashOnCashReturn.toFixed(2)}%
+                            {(property.investmentMetrics?.shortTerm?.[0]?.cashOnCashReturn || 0).toFixed(2)}%
                           </td>
                           <td className="py-3 px-4 text-right whitespace-nowrap">
                             {new Date(property.createdAt).toLocaleDateString()}
