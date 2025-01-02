@@ -11,11 +11,12 @@ import {
   type SelectUser,
   type InsertUser
 } from "@db/schema";
-import { eq } from "drizzle-orm";
+import { eq, like, desc } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
 import { analyzeSuburb } from "./services/openai";
+import { suburbs, analysisDataPoints, type InsertAnalysisDataPoint, type SelectSuburb } from "@db/schema";
 
 // Extend Express.User to include our schema
 declare global {
@@ -756,8 +757,93 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Market Intelligence API endpoint
+  // Suburb search endpoint
+  app.get("/api/suburbs/search", async (req, res) => {
+    try {
+      const { q } = req.query;
+
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ error: "Search query is required" });
+      }
+
+      const results = await db
+        .select()
+        .from(suburbs)
+        .where(like(suburbs.name, `%${q}%`))
+        .limit(10);
+
+      res.json(results);
+    } catch (error) {
+      console.error('Error searching suburbs:', error);
+      res.status(500).json({
+        error: "Failed to search suburbs",
+        details: error instanceof Error ? error.message : undefined
+      });
+    }
+  });
+
+  // Market Intelligence analysis endpoint
   app.post("/api/market-intelligence/analyze", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const { suburb } = req.body;
+
+    if (!suburb) {
+      return res.status(400).json({ error: "Suburb name is required" });
+    }
+
+    try {
+      // Search for existing suburb
+      const [existingSuburb] = await db
+        .select()
+        .from(suburbs)
+        .where(eq(suburbs.name, suburb))
+        .limit(1);
+
+      // Get recent analysis data points if they exist
+      const recentDataPoints = existingSuburb ? await db
+        .select()
+        .from(analysisDataPoints)
+        .where(eq(analysisDataPoints.suburbId, existingSuburb.id))
+        .orderBy(desc(analysisDataPoints.createdAt))
+        .limit(50) : [];
+
+      // Perform new analysis using OpenAI
+      const analysis = await analyzeSuburb(suburb, recentDataPoints);
+
+      if (existingSuburb) {
+        // Store new analysis data points
+        await db.insert(analysisDataPoints).values(
+          analysis.dataPoints.map(dp => ({
+            suburbId: existingSuburb.id,
+            type: dp.type,
+            source: dp.source,
+            title: dp.title,
+            content: dp.content,
+            date: new Date(dp.date),
+            sentiment: dp.sentiment,
+            category: dp.category,
+            relevanceScore: dp.relevanceScore,
+            impactScore: dp.impactScore,
+            reasoning: dp.reasoning
+          }))
+        );
+      }
+
+      res.json(analysis);
+    } catch (error) {
+      console.error('Error analyzing suburb:', error);
+      res.status(500).json({
+        error: "Failed to analyze suburb",
+        details: error instanceof Error ? error.message : undefined
+      });
+    }
+  });
+
+  // Market Intelligence API endpoint
+  app.post("/api/market-intelligence/analyzeOld", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
       return res.status(403).send("Not authorized");
     }
