@@ -73,6 +73,11 @@ export default function MarketIntelligencePage() {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleAnalysis();
+  };
+
   return (
     <div className="h-full p-4 space-y-4">
       <h1 className="text-3xl font-bold">Market Intelligence</h1>
@@ -83,7 +88,7 @@ export default function MarketIntelligencePage() {
           <CardDescription>Analyze market sentiment and trends for any suburb</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
+          <form onSubmit={handleSubmit} className="flex gap-4">
             <Input
               placeholder="Enter suburb name (e.g., Sea Point, Cape Town)"
               value={suburb}
@@ -91,7 +96,7 @@ export default function MarketIntelligencePage() {
               className="flex-1"
             />
             <Button
-              onClick={handleAnalysis}
+              type="submit"
               disabled={isAnalyzing}
               className="min-w-[120px]"
             >
@@ -107,7 +112,7 @@ export default function MarketIntelligencePage() {
                 </>
               )}
             </Button>
-          </div>
+          </form>
         </CardContent>
       </Card>
 
