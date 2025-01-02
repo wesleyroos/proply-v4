@@ -28,13 +28,13 @@ export default function MarketIntelligencePage() {
       // Simulate progress for now (will be replaced with actual API calls)
       setAnalysisProgress(prev => [...prev, "Initiating suburb analysis..."]);
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       setAnalysisProgress(prev => [...prev, "Searching for recent news and developments..."]);
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       setAnalysisProgress(prev => [...prev, "Analyzing market sentiment..."]);
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
     } catch (error) {
       toast({
         title: "Analysis Failed",
@@ -47,10 +47,10 @@ export default function MarketIntelligencePage() {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Market Intelligence</h1>
-      
-      <Card className="mb-6">
+    <div className="h-full p-4 space-y-4">
+      <h1 className="text-3xl font-bold">Market Intelligence</h1>
+
+      <Card>
         <CardHeader>
           <CardTitle>Suburb Analysis</CardTitle>
         </CardHeader>
