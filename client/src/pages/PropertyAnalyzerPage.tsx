@@ -28,7 +28,6 @@ import AssetGrowthMetrics from "@/components/AssetGrowthMetrics";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
-import PerformanceProjections from "@/components/PerformanceProjections";
 import {
   Tooltip,
   TooltipContent,
@@ -945,22 +944,7 @@ export default function PropertyAnalyzerPage() {
                 annualAppreciation={formData?.annualPropertyAppreciation || 5}
               />
 
-              {/* Performance Projections */}
-              <PerformanceProjections
-                purchasePrice={analysisResult.analysis.purchasePrice}
-                deposit={analysisResult.deposit || 0}
-                interestRate={analysisResult.interestRate || 0}
-                loanTerm={analysisResult.loanTerm}
-                monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
-                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
-                revenueProjections={analysisResult.analysis.revenueProjections}
-                operatingExpenses={analysisResult.analysis.operatingExpenses}
-                netOperatingIncome={analysisResult.netOperatingIncome}
-                annualOccupancy={analysisResult.annualOccupancy || 0}
-                monthlyRatesTaxes={formData?.monthlyRatesTaxes || 0}
-                annualAppreciation={formData?.annualPropertyAppreciation}
-              />
+              {/* Performance Projections removed */}
             </div>
           </>
         )}
