@@ -43,7 +43,6 @@ interface AnalyzerProperty {
   parkingSpaces: number;
   monthlyLevies: number;
   monthlyRatesTaxes: number;
-  ratePerSquareMeter: number;
   shortTermGrossYield: string | null;
   longTermGrossYield: string | null;
   longTermAnnualRevenue: number | null;
@@ -69,12 +68,12 @@ export default function PropertiesPage() {
   });
 
   const { data: properties, isLoading: isLoadingProperties } = useQuery<Property[]>({
-    queryKey: ['/api/properties', user?.id],
+    queryKey: ['/api/properties'],
     enabled: !!user && activeTab === 'rent_compare',
   });
 
   const { data: analyzerProperties, isLoading: isLoadingAnalyzer } = useQuery<AnalyzerProperty[]>({
-    queryKey: ['/api/property-analyzer/properties', user?.id],
+    queryKey: ['/api/property-analyzer/properties'],
     enabled: !!user && activeTab === 'property_analyzer',
   });
 
@@ -117,8 +116,8 @@ export default function PropertiesPage() {
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortConfig.field !== field) return <ArrowUpDown className="h-4 w-4 ml-1" />;
-    return sortConfig.direction === 'asc' ? 
-      <ChevronUp className="h-4 w-4 ml-1" /> : 
+    return sortConfig.direction === 'asc' ?
+      <ChevronUp className="h-4 w-4 ml-1" /> :
       <ChevronDown className="h-4 w-4 ml-1" />;
   };
 
@@ -128,7 +127,7 @@ export default function PropertiesPage() {
     let filtered = analyzerProperties;
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
-      filtered = analyzerProperties.filter(property => 
+      filtered = analyzerProperties.filter(property =>
         property.address.toLowerCase().includes(searchLower)
       );
     }
@@ -147,7 +146,7 @@ export default function PropertiesPage() {
 
       // Handle string fields
       if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortConfig.direction === 'asc' 
+        return sortConfig.direction === 'asc'
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       }
@@ -155,6 +154,12 @@ export default function PropertiesPage() {
       return 0;
     });
   }, [analyzerProperties, searchTerm, sortConfig]);
+
+  // Calculate rate per square meter for a property
+  const calculateRatePerSqm = (property: AnalyzerProperty) => {
+    if (!property.floorArea || property.floorArea === 0) return 0;
+    return property.purchasePrice / property.floorArea;
+  };
 
   return (
     <div className="p-8">
@@ -313,7 +318,7 @@ export default function PropertiesPage() {
                             {formatter.format(property.longTermAnnualRevenue || 0)}
                           </td>
                           <td className="py-3 px-4 text-right whitespace-nowrap">
-                            {formatter.format(property.ratePerSquareMeter)}
+                            {formatter.format(calculateRatePerSqm(property))}
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex justify-end gap-2">

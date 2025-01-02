@@ -46,9 +46,7 @@ export const properties = pgTable("properties", {
   shortTermNightly: text("short_term_nightly").notNull(),
   annualOccupancy: text("annual_occupancy").notNull(),
   managementFee: text("management_fee").notNull(),
-  // Add property type to distinguish between rent compare and property analyzer
   propertyType: text("property_type").notNull().default('rent_compare'),
-  // Store computed results
   longTermMonthly: decimal("long_term_monthly", { precision: 10, scale: 2 }).notNull(),
   longTermAnnual: decimal("long_term_annual", { precision: 10, scale: 2 }).notNull(),
   shortTermMonthly: decimal("short_term_monthly", { precision: 10, scale: 2 }).notNull(),
