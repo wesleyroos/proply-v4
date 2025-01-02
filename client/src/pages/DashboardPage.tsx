@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import { formatter } from "../utils/formatting";
 import { Building2, Calculator, Home, ChartBar, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import DashboardMap from "@/components/DashboardMap";
 import type { SelectUser } from "@db/schema";
 
 interface Property {
@@ -22,6 +23,8 @@ interface Property {
   annualOccupancy: number;
   createdAt: string;
   type: 'analyzer' | 'compare';
+  shortTermGrossYield?: number;
+  longTermGrossYield?: number;
 }
 
 export default function DashboardPage() {
@@ -44,6 +47,12 @@ export default function DashboardPage() {
   const analyzerCount = analyzerProperties?.length || 0;
   const compareCount = compareProperties?.length || 0;
   const totalProperties = analyzerCount + compareCount;
+
+  // Combine properties for map
+  const allProperties = [
+    ...(analyzerProperties?.map(p => ({ ...p, type: 'analyzer' as const })) || []),
+    ...(compareProperties?.map(p => ({ ...p, type: 'compare' as const })) || []),
+  ];
 
   return (
     <div className="p-8">
@@ -135,6 +144,21 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      {/* Property Map */}
+      {allProperties.length > 0 && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-primary" />
+              Property Locations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DashboardMap properties={allProperties} />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Property Tables */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Property Analyzer Properties */}
@@ -166,14 +190,20 @@ export default function DashboardPage() {
                       <p className="text-sm text-muted-foreground">
                         {property.bedrooms} bed • {property.bathrooms} bath
                       </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">
-                        {formatter.format(property.shortTermAfterFees)} /year
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {property.annualOccupancy}% occupancy
-                      </p>
+                      <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+                        <p className="text-xs text-muted-foreground">
+                          ST Yield: {property.shortTermGrossYield?.toFixed(1)}%
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          LT Yield: {property.longTermGrossYield?.toFixed(1)}%
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          ST Revenue: {formatter.format(property.shortTermAfterFees)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          LT Revenue: {formatter.format(property.longTermMonthly * 12)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ))}
