@@ -15,6 +15,7 @@ import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
+import { analyzeSuburb } from "./services/openai";
 
 // Extend Express.User to include our schema
 declare global {
@@ -750,6 +751,30 @@ export function registerRoutes(app: Express): Server {
       console.error('Error deleting property:', error);
       res.status(500).json({
         error: "Failed to delete property",
+        details: error instanceof Error ? error.message : undefined
+      });
+    }
+  });
+
+  // Market Intelligence API endpoint
+  app.post("/api/market-intelligence/analyze", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    const { suburb } = req.body;
+
+    if (!suburb) {
+      return res.status(400).json({ error: "Suburb name is required" });
+    }
+
+    try {
+      const analysis = await analyzeSuburb(suburb);
+      res.json(analysis);
+    } catch (error) {
+      console.error('Error analyzing suburb:', error);
+      res.status(500).json({
+        error: "Failed to analyze suburb",
         details: error instanceof Error ? error.message : undefined
       });
     }

@@ -1,13 +1,33 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, TrendingUp, TrendingDown, Star } from "lucide-react";
+
+interface SuburbAnalysis {
+  sentiment: {
+    score: number;
+    summary: string;
+  };
+  news: Array<{
+    title: string;
+    summary: string;
+    relevance: number;
+    sentiment: number;
+    source?: string;
+  }>;
+  trends: {
+    positive: string[];
+    negative: string[];
+  };
+  overallScore: number;
+}
 
 export default function MarketIntelligencePage() {
   const [suburb, setSuburb] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState<SuburbAnalysis | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState<string[]>([]);
   const { toast } = useToast();
 
@@ -23,22 +43,29 @@ export default function MarketIntelligencePage() {
 
     setIsAnalyzing(true);
     setAnalysisProgress([]);
+    setAnalysis(null);
 
     try {
-      // Simulate progress for now (will be replaced with actual API calls)
       setAnalysisProgress(prev => [...prev, "Initiating suburb analysis..."]);
-      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      setAnalysisProgress(prev => [...prev, "Searching for recent news and developments..."]);
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch("/api/market-intelligence/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ suburb: suburb.trim() }),
+      });
 
-      setAnalysisProgress(prev => [...prev, "Analyzing market sentiment..."]);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
 
+      const result = await response.json();
+      setAnalysis(result);
     } catch (error) {
       toast({
         title: "Analysis Failed",
-        description: "Failed to complete the analysis. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to complete the analysis. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -53,6 +80,7 @@ export default function MarketIntelligencePage() {
       <Card>
         <CardHeader>
           <CardTitle>Suburb Analysis</CardTitle>
+          <CardDescription>Analyze market sentiment and trends for any suburb</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4">
@@ -83,7 +111,7 @@ export default function MarketIntelligencePage() {
         </CardContent>
       </Card>
 
-      {analysisProgress.length > 0 && (
+      {isAnalyzing && (
         <Card>
           <CardHeader>
             <CardTitle>Analysis Progress</CardTitle>
@@ -102,6 +130,81 @@ export default function MarketIntelligencePage() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {analysis && (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>Overall Sentiment</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2 mb-4">
+                <Star className="h-6 w-6 text-yellow-500" />
+                <span className="text-2xl font-bold">{analysis.overallScore.toFixed(1)}/10</span>
+              </div>
+              <p className="text-muted-foreground">{analysis.sentiment.summary}</p>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-green-500" />
+                  Positive Trends
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc list-inside space-y-2">
+                  {analysis.trends.positive.map((trend, index) => (
+                    <li key={index} className="text-sm">{trend}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingDown className="h-5 w-5 text-red-500" />
+                  Areas of Concern
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc list-inside space-y-2">
+                  {analysis.trends.negative.map((trend, index) => (
+                    <li key={index} className="text-sm">{trend}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent News & Developments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {analysis.news.map((item, index) => (
+                  <div key={index} className="border-b last:border-0 pb-4 last:pb-0">
+                    <h3 className="font-medium mb-1">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-2">{item.summary}</p>
+                    <div className="flex gap-4 text-sm">
+                      <span className="text-muted-foreground">
+                        Relevance: {item.relevance}/10
+                      </span>
+                      <span className={item.sentiment > 0 ? "text-green-500" : "text-red-500"}>
+                        Impact: {item.sentiment > 0 ? "Positive" : "Negative"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </>
       )}
     </div>
   );
