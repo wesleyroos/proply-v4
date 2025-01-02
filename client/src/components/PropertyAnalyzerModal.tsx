@@ -15,17 +15,27 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[90vh] overflow-y-auto">
         <div className="space-y-6 py-6">
+          {/* Header Info */}
           <div>
             <h2 className="text-2xl font-bold">{property.address}</h2>
             <p className="text-muted-foreground">{property.propertyDescription}</p>
+            {property.propertyUrl && (
+              <a href={property.propertyUrl} target="_blank" rel="noopener noreferrer" 
+                className="text-primary hover:underline">
+                View Property Listing
+              </a>
+            )}
           </div>
 
-          {/* Key Metrics */}
+          {/* Key Financial Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardContent className="pt-6">
                 <h3 className="font-semibold mb-2">Purchase Price</h3>
                 <div className="text-2xl font-bold">{formatter.format(property.purchasePrice)}</div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Rate per m²: {formatter.format(property.ratePerSquareMeter)}/m²
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -34,13 +44,16 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                 <div className="text-2xl font-bold">
                   {formatter.format(property.monthlyBondRepayment || 0)}
                 </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Interest Rate: {property.interestRate}%
+                </p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
-                <h3 className="font-semibold mb-2">Rate per m²</h3>
+                <h3 className="font-semibold mb-2">Net Operating Income (Year 1)</h3>
                 <div className="text-2xl font-bold">
-                  {formatter.format(property.ratePerSquareMeter || 0)}
+                  {formatter.format(property.netOperatingIncome?.year1?.value || 0)}
                 </div>
               </CardContent>
             </Card>
@@ -96,6 +109,84 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
             </CardContent>
           </Card>
 
+          {/* Revenue Analysis */}
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4">Revenue Analysis</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium mb-2">Short-Term Rental</h4>
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Nightly Rate</p>
+                      <p className="font-medium">
+                        {formatter.format(property.shortTermNightlyRate || 0)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Annual Occupancy</p>
+                      <p className="font-medium">{property.annualOccupancy || 0}%</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Annual Revenue</p>
+                      <p className="font-medium">
+                        {formatter.format(property.shortTermAnnualRevenue || 0)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Gross Yield</p>
+                      <p className="font-medium">{property.shortTermGrossYield || 0}%</p>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2">Long-Term Rental</h4>
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Annual Revenue</p>
+                      <p className="font-medium">
+                        {formatter.format(property.longTermAnnualRevenue || 0)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Gross Yield</p>
+                      <p className="font-medium">{property.longTermGrossYield || 0}%</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Operating Expenses */}
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4">Monthly Operating Expenses</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Levies</p>
+                  <p className="font-medium">{formatter.format(property.monthlyLevies || 0)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Rates & Taxes</p>
+                  <p className="font-medium">{formatter.format(property.monthlyRatesTaxes || 0)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Other Expenses</p>
+                  <p className="font-medium">{formatter.format(property.otherMonthlyExpenses || 0)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Maintenance (%)</p>
+                  <p className="font-medium">{property.maintenancePercent || 0}%</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Management Fee</p>
+                  <p className="font-medium">{property.managementFee || 0}%</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Investment Metrics */}
           <Card>
             <CardContent className="pt-6">
@@ -116,29 +207,17 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                         {(property.investmentMetrics?.shortTerm?.[0]?.cashOnCashReturn || 0).toFixed(2)}%
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Year 1 NOI</p>
-                      <p className="font-medium">
-                        {formatter.format(property.netOperatingIncome?.year1?.value || 0)}
-                      </p>
-                    </div>
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">Operating Expenses</h4>
+                  <h4 className="font-medium mb-2">Revenue Projections</h4>
                   <div className="space-y-2">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Monthly Levies</p>
-                      <p className="font-medium">{formatter.format(property.monthlyLevies || 0)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Monthly Rates & Taxes</p>
-                      <p className="font-medium">{formatter.format(property.monthlyRatesTaxes || 0)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Other Monthly Expenses</p>
-                      <p className="font-medium">{formatter.format(property.otherMonthlyExpenses || 0)}</p>
-                    </div>
+                    {Object.entries(property.revenueProjections || {}).map(([year, data]: [string, any]) => (
+                      <div key={year}>
+                        <p className="text-sm text-muted-foreground">Year {year}</p>
+                        <p className="font-medium">{formatter.format(data.value || 0)}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
