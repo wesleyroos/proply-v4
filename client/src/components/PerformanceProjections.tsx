@@ -16,6 +16,7 @@ interface YearlyMetrics {
   value: number;
   annualCashflow: number;
   cumulativeRentalIncome: number;
+  netWorthChange: number;
 }
 
 interface PerformanceProjectionsProps {
@@ -45,7 +46,7 @@ export default function PerformanceProjections({
     return {
       year: `Year ${year}`,
       'Annual Cashflow': yearData.annualCashflow,
-      'Cumulative Rental Income': yearData.cumulativeRentalIncome,
+      'Cumulative Income': yearData.cumulativeRentalIncome,
     };
   });
 
@@ -84,7 +85,7 @@ export default function PerformanceProjections({
                 />
                 <Line 
                   type="monotone" 
-                  dataKey="Cumulative Rental Income" 
+                  dataKey="Cumulative Income" 
                   stroke="#82ca9d"
                   strokeWidth={2}
                   dot={true}

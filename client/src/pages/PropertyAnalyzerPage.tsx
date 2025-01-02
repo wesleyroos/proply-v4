@@ -156,8 +156,8 @@ export default function PropertyAnalyzerPage() {
       });
 
       // Calculate deposit based on type
-      const deposit = formData.depositType === 'amount' 
-        ? parseFloat(formData.depositAmount) 
+      const deposit = formData.depositType === 'amount'
+        ? parseFloat(formData.depositAmount)
         : (parseFloat(formData.purchasePrice) * parseFloat(formData.depositPercentage)) / 100;
 
       // Ensure all numbers are properly parsed and validated
@@ -196,7 +196,7 @@ export default function PropertyAnalyzerPage() {
         annualExpenseGrowth: parseFloat(formData.annualExpenseGrowth || 0),
         annualPropertyAppreciation: parseFloat(formData.annualPropertyAppreciation || 0),
 
-        // Miscellaneous  
+        // Miscellaneous
         ratePerSquareMeter: parseFloat(formData.cmaRatePerSqm || 0),
         propertyDescription: formData.comments || "",
       };
@@ -337,7 +337,7 @@ export default function PropertyAnalyzerPage() {
                   </p>
                 </div>
                 <div className="space-x-2">
-                  <Button 
+                  <Button
                     onClick={async () => {
                       try {
                         const dataToSave = prepareAnalysisDataForSave();
@@ -398,8 +398,8 @@ export default function PropertyAnalyzerPage() {
             </div>
 
             {/* Add Alert Dialog for Save Status */}
-            <AlertDialog 
-              open={saveDialog.isOpen} 
+            <AlertDialog
+              open={saveDialog.isOpen}
               onOpenChange={(open) => setSaveDialog(prev => ({ ...prev, isOpen: open }))}
             >
               <AlertDialogContent>
@@ -813,17 +813,13 @@ export default function PropertyAnalyzerPage() {
                                         rate (
                                         {(Math.abs(difference) / actualRate * 100).toFixed(1)}%)
                                       </span>
+                                    </p>                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-sm">
+                                      Rate per square meter compared to similar properties in the area
                                     </p>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="max-w-[300px] text-sm">
-                                    This shows how the property's price per
-                                    square meter compares to the average rate in
-                                    the area. A lower rate than the area average might indicate
-                                    better value for money, while a higher rate
-                                    suggests premium positioning.
                                   </TooltipContent>
                                 </Tooltip>
-
                               </div>
                             );
                           })()}
@@ -869,98 +865,27 @@ export default function PropertyAnalyzerPage() {
 
 
               {/* Investment Metrics */}
-              <Card className="mt-6">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-purple-500" />
-                    Investment Performance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {analysisResult && (
-                    <InvestmentMetrics
-                      yearlyMetrics={analysisResult.analysis.investmentMetrics}
-                      metricDescriptions={{
-                        grossYield: {                          title: "Gross Yield",                    explanation: "Annual grossrental income as a percentage of the property's purchase price",
-                    calculationMethod: "(Annual Gross Rental Income / Property Purchase Price) × 100"
-                        },
-                        netYield: {
-                          title: "Net Yield",
-                          explanation: "Annual net rental income (after expenses) as a percentage of the property's purchase price",
-                          calculationMethod: "(Annual Net Operating Income / Property Purchase Price) × 100"
-                        },
-                        returnOnEquity: {
-                          title: "Return on Equity",
-                          explanation: "Annual return relative to the equity invested in the property",
-                          calculationMethod: "(Annual Net Operating Income / Total Equity Invested) × 100"
-                        },
-                        annualReturn: {
-                          title: "Annual Return",
-                          explanation: "Total return including rental income and property appreciation for the year",
-                          calculationMethod: "((Net Operating Income + Property Value Increase) / Initial Investment) × 100"
-                        },
-                        capRate: {
-                          title: "Cap Rate",
-                          explanation: "Net operating income as a percentage of property value, indicating potential return regardless of financing",
-                          calculationMethod: "(Net Operating Income / Current Property Value) × 100"
-                        },
-                        cashOnCashReturn: {
-                          title: "Cash on Cash Return",
-                          explanation: "Annual pre-tax cash flow relative to total cash invested",
-                          calculationMethod: "(Annual Pre-Tax Cash Flow / Total Cash Invested) × 100"
-                        },
-                        roiWithoutAppreciation: {
-                          title: "ROI without Appreciation",
-                          explanation: "Return on investment considering only rental income and expenses",
-                          calculationMethod: "(Annual Net Operating Income / Total Investment) × 100) × 100"
-                        },
-                        roiWithAppreciation: {
-                          title: "ROI with Appreciation",
-                          explanation: "Total return including both rental income and property value appreciation",
-                          calculationMethod: "((Annual NOI + Property Value Increase) / Total Investment) × 100"
-                        },
-                        irr: {
-                          title: "Internal Rate of Return (IRR)",
-                          explanation: "The discount rate that makes the net present value of all cash flows equal to zero",
-                          calculationMethod: "Complex calculation using all future cash flows and initial investment"
-                        },
-                        netWorthChange: {
-                          title: "Net Worth Change",
-                          explanation: "Total change in net worth including equity buildup, appreciation, and rental income",
-                          calculationMethod: "Property Value Increase + Loan Principal Paid + Cumulative Rental Income"
-                        }
-                      }}
-                    />
-                  )}
-                </CardContent>
-              </Card>
+              <InvestmentMetrics
+                shortTermGrossYield={analysisResult.shortTermGrossYield}
+                longTermGrossYield={analysisResult.longTermGrossYield}
+                investmentMetrics={analysisResult.analysis.investmentMetrics}
+              />
 
               {/* Asset Growth & Equity */}
               <AssetGrowthMetrics
                 purchasePrice={analysisResult.analysis.purchasePrice}
                 deposit={analysisResult.deposit || 0}
-                loanAmount={analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)}
-                interestRate={analysisResult.interestRate || 0}
-                loanTerm={analysisResult.loanTerm || 20}
-                annualAppreciation={formData?.annualPropertyAppreciation || 5}
-              />
-
-              {/* Performance Projections */}
-              <PerformanceProjections
-                purchasePrice={analysisResult.analysis.purchasePrice}
-                deposit={analysisResult.deposit || 0}
                 interestRate={analysisResult.interestRate || 0}
                 loanTerm={analysisResult.loanTerm}
                 monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
-                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
-                revenueProjections={analysisResult.analysis.revenueProjections}
-                operatingExpenses={analysisResult.analysis.operatingExpenses}
-                netOperatingIncome={analysisResult.netOperatingIncome}
-                annualOccupancy={analysisResult.annualOccupancy || 0}
-                monthlyRatesTaxes={formData?.monthlyRatesTaxes || 0}
-                annualAppreciation={formData?.annualPropertyAppreciation}
+                annualAppreciation={formData?.annualPropertyAppreciation || 5}
               />
+
+              {/* PerformanceProjections component with the correct props */}
+              <PerformanceProjections
+                netOperatingIncome={analysisResult?.netOperatingIncome}
+              />
+
             </div>
           </>
         )}
