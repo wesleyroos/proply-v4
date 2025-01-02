@@ -51,16 +51,13 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[90vh] overflow-y-auto bg-gradient-to-b from-background to-background/95">
         <div className="space-y-6 py-6">
-          {/* Header Info with Enhanced Styling */}
+          {/* Header */}
           <div className="border-b pb-6">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
                   Analysis Summary
                 </h2>
-                <p className="text-muted-foreground text-sm mb-4 max-w-2xl">
-                  {property.propertyDescription}
-                </p>
               </div>
               {property.propertyPhoto && (
                 <img 
@@ -84,6 +81,12 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                   {formatter.format(property.purchasePrice)}
                 </div>
                 <div className="space-y-4 border-t border-border/50 pt-4">
+                  {property.propertyDescription && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Description</p>
+                      <p className="font-medium text-foreground mt-1">{property.propertyDescription}</p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm text-muted-foreground">Property Rate per m²</p>
                     <p className="font-medium text-foreground">
@@ -180,9 +183,9 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                 </div>
                 <div className="space-y-6">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Annual Revenue</p>
+                    <p className="text-sm text-muted-foreground mb-2">Nightly Rate</p>
                     <p className="text-2xl font-bold text-foreground">
-                      {formatter.format(property.shortTermAnnualRevenue || 0)}
+                      {formatter.format(property.shortTermNightlyRate || 0)}
                     </p>
                   </div>
                   <div>
@@ -192,9 +195,9 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Nightly Rate</p>
+                    <p className="text-sm text-muted-foreground mb-2">Annual Revenue</p>
                     <p className="text-2xl font-bold text-foreground">
-                      {formatter.format(property.shortTermNightlyRate || 0)}
+                      {formatter.format(property.shortTermAnnualRevenue || 0)}
                     </p>
                   </div>
                   <div>
@@ -203,8 +206,6 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                       {property.annualOccupancy || 0}%
                     </p>
                   </div>
-                  
-                  
                 </div>
               </CardContent>
             </Card>
