@@ -18,8 +18,17 @@ import { useUser } from "@/hooks/use-user";
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(true);
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { user, logout } = useUser();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setLocation('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   const navItems = [
     {
@@ -30,12 +39,12 @@ export default function Sidebar() {
     {
       title: "Property Analyzer",
       icon: Calculator,
-      href: "/analyzer",
+      href: "/property-analyzer",
     },
     {
       title: "Rent Compare",
       icon: Building2,
-      href: "/compare",
+      href: "/rent-compare",
     },
     {
       title: "Properties",
@@ -145,7 +154,7 @@ export default function Sidebar() {
             <div
               className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center"
             >
-              {user?.firstName ? user.firstName.charAt(0).toUpperCase() : user?.username.charAt(0).toUpperCase()}
+              {user?.firstName ? user.firstName.charAt(0).toUpperCase() : user?.username?.charAt(0).toUpperCase()}
             </div>
             {expanded && (
               <div className="flex-1 min-w-0">
@@ -156,7 +165,7 @@ export default function Sidebar() {
                   variant="ghost"
                   size="sm"
                   className="text-xs text-white/80 -ml-3"
-                  onClick={() => logout()}
+                  onClick={handleLogout}
                 >
                   <LogOut className="h-3 w-3 mr-1 text-white" />
                   Logout
