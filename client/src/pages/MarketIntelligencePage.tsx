@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Loader2, TrendingUp, TrendingDown, Star } from "lucide-react";
+import { Search, Loader2, TrendingUp, TrendingDown, Star, ExternalLink } from "lucide-react";
 
 interface SuburbAnalysis {
   sentiment: {
@@ -194,7 +194,20 @@ export default function MarketIntelligencePage() {
               <div className="space-y-4">
                 {analysis.news.map((item, index) => (
                   <div key={index} className="border-b last:border-0 pb-4 last:pb-0">
-                    <h3 className="font-medium mb-1">{item.title}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-medium">{item.title}</h3>
+                      {item.source && (
+                        <a
+                          href={item.source}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:text-blue-600 inline-flex items-center gap-1"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span className="text-xs">Source</span>
+                        </a>
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground mb-2">{item.summary}</p>
                     <div className="flex gap-4 text-sm">
                       <span className="text-muted-foreground">
