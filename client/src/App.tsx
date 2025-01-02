@@ -89,11 +89,11 @@ function App() {
             component={() => <ProtectedRoute component={DashboardPage} />} 
           />
           <Route 
-            path="/analyzer" 
+            path="/dashboard/property-analyzer" 
             component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} 
           />
           <Route 
-            path="/compare" 
+            path="/dashboard/rent-compare" 
             component={() => <ProtectedRoute component={ComparisonPage} />} 
           />
           <Route 
@@ -124,6 +124,7 @@ function App() {
   );
 }
 
+// fallback 404 not found page
 function NotFound() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
