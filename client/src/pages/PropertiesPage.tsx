@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatter } from "../utils/formatting";
-import { Trash2, ChevronDown, ChevronUp, Calculator, ArrowUpDown } from "lucide-react";
+import { Trash2, ChevronDown, ChevronUp, Calculator, ArrowUpDown, Eye } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -264,8 +264,7 @@ export default function PropertiesPage() {
                       analyzerProperties.map((property) => (
                         <tr
                           key={property.id}
-                          className="border-b hover:bg-muted/50 cursor-pointer"
-                          onClick={() => setSelectedProperty(property)}
+                          className="border-b hover:bg-muted/50"
                         >
                           <td className="py-3 px-4">
                             <div>
@@ -291,17 +290,24 @@ export default function PropertiesPage() {
                             {new Date(property.createdAt).toLocaleDateString()}
                           </td>
                           <td className="py-3 px-4 text-right">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setPropertyToDelete(property);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                onClick={() => setSelectedProperty(property)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => setPropertyToDelete(property)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))
