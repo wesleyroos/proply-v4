@@ -683,8 +683,7 @@ export function registerRoutes(app: Express): Server {
         const errorDetails = validationResult.error.issues.map(i => ({
           path: i.path.join('.'),
           message: i.message,
-          code: i.code,
-          received: i.received
+          code: i.code
         }));
 
         console.error('Validation failed:', JSON.stringify(errorDetails, null, 2));
@@ -699,18 +698,7 @@ export function registerRoutes(app: Express): Server {
       console.log('Validated data:', JSON.stringify(data, null, 2));
 
       try {
-        // Enable query logging for debugging
-        const debug = true;
-        if (debug) {
-          db.interceptors.push({
-            beforeExecute: (query) => {
-              console.log('Executing SQL:', query.sql);
-              console.log('SQL Parameters:', query.params);
-            },
-          });
-        }
-
-        // Prepare data for insertion with explicit type handling
+        // Basic data for testing
         const insertData = {
           userId: data.userId,
           title: data.title,
@@ -718,28 +706,28 @@ export function registerRoutes(app: Express): Server {
           propertyUrl: data.propertyUrl ?? null,
           propertyDescription: data.propertyDescription ?? null,
           propertyPhoto: data.propertyPhoto ?? null,
-          purchasePrice: sql`CAST(${data.purchasePrice} AS DECIMAL(10,2))`,
-          floorArea: sql`CAST(${data.floorArea} AS DECIMAL(10,2))`,
+          purchasePrice: data.purchasePrice,
+          floorArea: data.floorArea,
           bedrooms: data.bedrooms,
           bathrooms: data.bathrooms,
           parkingSpaces: data.parkingSpaces,
-          depositAmount: sql`CAST(${data.depositAmount} AS DECIMAL(10,2))`,
-          depositPercentage: sql`CAST(${data.depositPercentage} AS DECIMAL(5,2))`,
-          interestRate: sql`CAST(${data.interestRate} AS DECIMAL(5,2))`,
+          depositAmount: data.depositAmount,
+          depositPercentage: data.depositPercentage,
+          interestRate: data.interestRate,
           loanTerm: data.loanTerm,
-          monthlyBondRepayment: data.monthlyBondRepayment ? sql`CAST(${data.monthlyBondRepayment} AS DECIMAL(10,2))` : null,
-          monthlyLevies: sql`CAST(${data.monthlyLevies} AS DECIMAL(10,2))`,
-          monthlyRatesTaxes: sql`CAST(${data.monthlyRatesTaxes} AS DECIMAL(10,2))`,
-          otherMonthlyExpenses: sql`CAST(${data.otherMonthlyExpenses} AS DECIMAL(10,2))`,
-          maintenancePercent: sql`CAST(${data.maintenancePercent} AS DECIMAL(5,2))`,
-          managementFee: sql`CAST(${data.managementFee} AS DECIMAL(5,2))`,
-          shortTermNightlyRate: data.shortTermNightlyRate ? sql`CAST(${data.shortTermNightlyRate} AS DECIMAL(10,2))` : null,
-          annualOccupancy: data.annualOccupancy ? sql`CAST(${data.annualOccupancy} AS DECIMAL(5,2))` : null,
-          shortTermAnnualRevenue: data.shortTermAnnualRevenue ? sql`CAST(${data.shortTermAnnualRevenue} AS DECIMAL(10,2))` : null,
-          longTermAnnualRevenue: data.longTermAnnualRevenue ? sql`CAST(${data.longTermAnnualRevenue} AS DECIMAL(10,2))` : null,
-          shortTermGrossYield: data.shortTermGrossYield ? sql`CAST(${data.shortTermGrossYield} AS DECIMAL(5,2))` : null,
-          longTermGrossYield: data.longTermGrossYield ? sql`CAST(${data.longTermGrossYield} AS DECIMAL(5,2))` : null,
-          ratePerSquareMeter: sql`CAST(${data.ratePerSquareMeter} AS DECIMAL(10,2))`,
+          monthlyBondRepayment: data.monthlyBondRepayment ?? null,
+          monthlyLevies: data.monthlyLevies,
+          monthlyRatesTaxes: data.monthlyRatesTaxes,
+          otherMonthlyExpenses: data.otherMonthlyExpenses,
+          maintenancePercent: data.maintenancePercent,
+          managementFee: data.managementFee,
+          shortTermNightlyRate: data.shortTermNightlyRate ?? null,
+          annualOccupancy: data.annualOccupancy ?? null,
+          shortTermAnnualRevenue: data.shortTermAnnualRevenue ?? null,
+          longTermAnnualRevenue: data.longTermAnnualRevenue ?? null,
+          shortTermGrossYield: data.shortTermGrossYield ?? null,
+          longTermGrossYield: data.longTermGrossYield ?? null,
+          ratePerSquareMeter: data.ratePerSquareMeter,
           revenueProjections: data.revenueProjections,
           operatingExpenses: data.operatingExpenses,
           netOperatingIncome: data.netOperatingIncome || {},
@@ -773,27 +761,6 @@ export function registerRoutes(app: Express): Server {
           constraint: dbError.constraint,
           stack: dbError.stack
         });
-
-        // Check for specific database errors
-        if (dbError.code === '23502') { // not_null_violation
-          return res.status(400).json({
-            error: "Missing required fields",
-            details: {
-              message: dbError.message,
-              column: dbError.column
-            }
-          });
-        }
-
-        if (dbError.code === '22P02') { // invalid_text_representation
-          return res.status(400).json({
-            error: "Invalid data type",
-            details: {
-              message: dbError.message,
-              detail: dbError.detail
-            }
-          });
-        }
 
         res.status(500).json({
           error: "Failed to save property analysis",
