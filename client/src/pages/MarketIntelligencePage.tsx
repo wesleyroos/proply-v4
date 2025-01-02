@@ -3,7 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Loader2, TrendingUp, TrendingDown, Star, ExternalLink, LineChart } from "lucide-react";
+import { Search, Loader2, TrendingUp, TrendingDown, Star, ExternalLink, LineChart, ChevronDown } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface SuburbAnalysis {
   sentiment: {
@@ -29,6 +34,12 @@ interface SuburbAnalysis {
   }>;
   confidenceLevel: number;
   dataPoints: number;
+  rawDataPoints?: Array<{
+    source: string;
+    type: string;
+    content: string;
+    date?: string;
+  }>;
 }
 
 export default function MarketIntelligencePage() {
@@ -36,6 +47,7 @@ export default function MarketIntelligencePage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<SuburbAnalysis | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState<string[]>([]);
+  const [isDataPointsOpen, setIsDataPointsOpen] = useState(false);
   const { toast } = useToast();
 
   const handleAnalysis = async () => {
@@ -159,9 +171,41 @@ export default function MarketIntelligencePage() {
                 <span className="text-sm text-muted-foreground ml-2">
                   Confidence: {(analysis.confidenceLevel * 100).toFixed(1)}%
                 </span>
-                <span className="text-sm text-muted-foreground ml-2">
-                  Based on {analysis.dataPoints} data points
-                </span>
+                <Collapsible open={isDataPointsOpen} onOpenChange={setIsDataPointsOpen}>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
+                    >
+                      <span>Based on {analysis.dataPoints} data points</span>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform ${isDataPointsOpen ? 'transform rotate-180' : ''}`}
+                      />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-4 space-y-2">
+                    <div className="border rounded-lg p-4 bg-muted/50">
+                      <h4 className="font-medium mb-2">Data Sources Used:</h4>
+                      <ul className="space-y-3">
+                        {analysis.rawDataPoints?.map((point, index) => (
+                          <li key={index} className="text-sm">
+                            <div className="flex justify-between">
+                              <span className="font-medium">{point.source}</span>
+                              <span className="text-muted-foreground">{point.type}</span>
+                            </div>
+                            <p className="text-muted-foreground mt-1">{point.content}</p>
+                            {point.date && (
+                              <span className="text-xs text-muted-foreground">
+                                Date: {new Date(point.date).toLocaleDateString()}
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
               <p className="text-muted-foreground">{analysis.sentiment.summary}</p>
             </CardContent>

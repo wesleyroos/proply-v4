@@ -56,6 +56,12 @@ interface SuburbAnalysisResult {
   }>;
   confidenceLevel: number;
   dataPoints: number;
+  rawDataPoints: Array<{
+    source: string;
+    type: string;
+    content: string;
+    date?: string;
+  }>;
 }
 
 export async function analyzeSuburb(suburb: string): Promise<SuburbAnalysisResult> {
@@ -97,7 +103,15 @@ Structure your response as JSON with this exact format:
   ],
   "overallScore": number (1-10),
   "confidenceLevel": number (0-1),
-  "dataPoints": number (count of data points analyzed)
+  "dataPoints": number (count of data points analyzed),
+  "rawDataPoints": [
+    {
+      "source": string (name of source),
+      "type": string (news/development/statistic),
+      "content": string (relevant excerpt or data point),
+      "date": string (ISO date if available)
+    }
+  ]
 }`
         },
         {
