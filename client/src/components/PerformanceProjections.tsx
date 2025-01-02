@@ -43,17 +43,17 @@ interface PerformanceProjectionsProps {
     year20: number;
   };
   netOperatingIncome: {
-    year1: number;
-    year2: number;
-    year3: number;
-    year4: number;
-    year5: number;
-    year10: number;
-    year20: number;
+    year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
   } | null;
   annualOccupancy: number;
   monthlyRatesTaxes: number;
-  annualAppreciation: number;  // Added property appreciation rate from form
+  annualAppreciation: number;
 }
 
 export default function PerformanceProjections({
@@ -75,13 +75,10 @@ export default function PerformanceProjections({
   const loanAmount = purchasePrice - deposit;
   const monthlyRate = interestRate / 100 / 12;
   const totalPayments = loanTerm * 12;
-  // Use the annualAppreciation passed from the form
 
-  // Calculate loan balance, property value, and equity for each year using the same logic as AssetGrowthMetrics
+  // Calculate loan balance, property value, and equity for each year
   const propertyValueData = years.map(year => {
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
-    
-    // Calculate remaining loan balance using the same formula as AssetGrowthMetrics
     const monthsPaid = year * 12;
     const remainingPayments = totalPayments - monthsPaid;
     const loanBalance = remainingPayments > 0 
@@ -89,10 +86,7 @@ export default function PerformanceProjections({
         / (Math.pow(1 + monthlyRate, totalPayments) - 1)
       : 0;
 
-    // Calculate property value
     const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
-
-    // Calculate total equity exactly as shown in the table
     const totalEquity = propertyValue - loanBalance;
 
     return {
@@ -103,27 +97,13 @@ export default function PerformanceProjections({
     };
   });
 
-  // Calculate annual and cumulative cashflow data
-  const annualBondPayments = monthlyBondRepayment * 12;
-  
+  // Simplified cashflow data directly from netOperatingIncome
   const cashflowData = years.map(year => {
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
-    const annualCashflow = netOperatingIncome ? 
-      (netOperatingIncome[yearKey] - annualBondPayments) : 0;
-
-    // Calculate cumulative cashflow directly from netOperatingIncome
-    const cumulativeCashflow = years
-      .filter(y => y <= year)
-      .reduce((acc, y) => {
-        const prevYearKey = `year${y}` as keyof typeof netOperatingIncome;
-        return acc + (netOperatingIncome?.[prevYearKey] ? 
-          (netOperatingIncome[prevYearKey] - annualBondPayments) : 0);
-      }, 0);
-
     return {
       year: `Year ${year}`,
-      'Annual Cashflow': annualCashflow,
-      'Cumulative Cashflow': cumulativeCashflow,
+      'Annual Cashflow': netOperatingIncome?.[yearKey]?.annualCashflow || 0,
+      'Cumulative Cashflow': netOperatingIncome?.[yearKey]?.cumulativeRentalIncome || 0,
     };
   });
 
@@ -148,8 +128,8 @@ export default function PerformanceProjections({
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="year" />
-                  <YAxis tickFormatter={(value) => formatter(value)} />
-                  <Tooltip formatter={(value) => formatter(value)} />
+                  <YAxis tickFormatter={(value: number) => formatter(value)} />
+                  <Tooltip formatter={(value: number) => formatter(value)} />
                   <Legend />
                   <Area 
                     type="monotone" 
@@ -191,8 +171,8 @@ export default function PerformanceProjections({
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="year" />
-                  <YAxis tickFormatter={(value) => formatter(value)} />
-                  <Tooltip formatter={(value) => formatter(value)} />
+                  <YAxis tickFormatter={(value: number) => formatter(value)} />
+                  <Tooltip formatter={(value: number) => formatter(value)} />
                   <Legend />
                   <Line 
                     type="monotone" 
