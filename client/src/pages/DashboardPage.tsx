@@ -80,10 +80,10 @@ export default function DashboardPage() {
   );
 
   const avgShortTermYield = averageYields?.shortTerm.count > 0
-    ? (averageYields.shortTerm.sum / averageYields.shortTerm.count).toFixed(1) 
+    ? (averageYields.shortTerm.sum / averageYields.shortTerm.count).toFixed(1)
     : '0.0';
   const avgLongTermYield = averageYields?.longTerm.count > 0
-    ? (averageYields.longTerm.sum / averageYields.longTerm.count).toFixed(1) 
+    ? (averageYields.longTerm.sum / averageYields.longTerm.count).toFixed(1)
     : '0.0';
 
   // Combine properties for map
@@ -257,10 +257,14 @@ export default function DashboardPage() {
                         </p>
                         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
                           <p className="text-xs text-muted-foreground">
-                            ST Yield: {property.shortTermGrossYield !== null ? `${property.shortTermGrossYield.toFixed(1)}%` : '-'}
+                            ST Yield: {property.shortTermGrossYield && !isNaN(Number(property.shortTermGrossYield))
+                              ? `${Number(property.shortTermGrossYield).toFixed(1)}%`
+                              : '-'}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            LT Yield: {property.longTermGrossYield !== null ? `${property.longTermGrossYield.toFixed(1)}%` : '-'}
+                            LT Yield: {property.longTermGrossYield && !isNaN(Number(property.longTermGrossYield))
+                              ? `${Number(property.longTermGrossYield).toFixed(1)}%`
+                              : '-'}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             ST Revenue: {formatter.format(property.shortTermAnnualRevenue || 0)}
