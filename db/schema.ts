@@ -263,6 +263,58 @@ export const reportTrackingRelations = relations(reportTracking, ({ one }) => ({
 }));
 
 
+// Add new tables for suburbs and analysis data
+export const suburbs = pgTable("suburbs", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  city: text("city").notNull(),
+  province: text("province").notNull(),
+  latitude: decimal("latitude", { precision: 10, scale: 6 }),
+  longitude: decimal("longitude", { precision: 10, scale: 6 }),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const analysisDataPoints = pgTable("analysis_data_points", {
+  id: serial("id").primaryKey(),
+  suburbId: integer("suburb_id").references(() => suburbs.id),
+  type: text("type").notNull(), // news, development, statistic, market_report
+  source: jsonb("source").notNull(), // { name: string, url: string, reliability: number }
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  date: timestamp("date").notNull(),
+  sentiment: decimal("sentiment", { precision: 3, scale: 2 }), // -1 to 1
+  category: text("category").notNull(),
+  relevanceScore: decimal("relevance_score", { precision: 3, scale: 2 }).notNull(),
+  impactScore: decimal("impact_score", { precision: 3, scale: 2 }).notNull(),
+  reasoning: text("reasoning"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Add relations
+export const suburbsRelations = relations(suburbs, ({ many }) => ({
+  dataPoints: many(analysisDataPoints),
+}));
+
+export const analysisDataPointsRelations = relations(analysisDataPoints, ({ one }) => ({
+  suburb: one(suburbs, {
+    fields: [analysisDataPoints.suburbId],
+    references: [suburbs.id],
+  }),
+}));
+
+// Export schemas and types
+export const insertSuburbSchema = createInsertSchema(suburbs);
+export const selectSuburbSchema = createSelectSchema(suburbs);
+export const insertAnalysisDataPointSchema = createInsertSchema(analysisDataPoints);
+export const selectAnalysisDataPointSchema = createSelectSchema(analysisDataPoints);
+
+export type InsertSuburb = typeof suburbs.$inferInsert;
+export type SelectSuburb = typeof suburbs.$inferSelect;
+export type InsertAnalysisDataPoint = typeof analysisDataPoints.$inferInsert;
+export type SelectAnalysisDataPoint = typeof analysisDataPoints.$inferSelect;
+
 // Schemas
 export const insertAccessCodeSchema = createInsertSchema(accessCodes);
 export const selectAccessCodeSchema = createSelectSchema(accessCodes);

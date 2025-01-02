@@ -1,0 +1,81 @@
+Let me help structure a clearer prompt and implementation plan for these improvements.
+
+
+
+Here's the implementation plan in plain English:
+
+1. Suburb Selection System:
+   - Create a predefined list of valid South African suburbs
+   - Implement an autocomplete search box that only allows selection from valid suburbs
+   - Include metadata with each suburb (city, province, coordinates)
+   - Store this data in your Supabase database
+
+2. Data Points Transparency:
+   - Create a new modal component to display all data points
+   - Implement filtering by data type (news, development, statistics, market reports)
+   - Add sorting options (relevance, date, impact)
+   - Show source reliability and impact scores for each data point
+
+3. Database Structure:
+```sql
+CREATE TABLE suburbs (
+    id UUID PRIMARY KEY,
+    name TEXT NOT NULL,
+    city TEXT NOT NULL,
+    province TEXT NOT NULL,
+    lat DECIMAL,
+    lng DECIMAL,
+    metadata JSONB
+);
+
+CREATE TABLE analysis_data_points (
+    id UUID PRIMARY KEY,
+    suburb_id UUID REFERENCES suburbs(id),
+    type TEXT NOT NULL,
+    source JSONB,
+    title TEXT,
+    content TEXT,
+    date TIMESTAMP,
+    sentiment DECIMAL,
+    category TEXT,
+    relevance_score DECIMAL,
+    impact_score DECIMAL,
+    reasoning TEXT
+);
+```
+
+4. Implementation Steps:
+
+Phase 1 - Setup (Week 1)
+- Set up suburbs database
+- Import comprehensive suburb list
+- Create search API endpoint
+- Implement suburb selection component
+
+Phase 2 - Data Points (Week 2)
+- Create data points modal component
+- Implement filtering and sorting
+- Add source reliability indicators
+- Create data point cards with expandable details
+
+Phase 3 - Analysis Improvements (Week 3)
+- Update analysis engine to store all data points
+- Add confidence scoring
+- Implement caching for repeated searches
+- Add historical trend tracking
+
+Phase 4 - UI/UX (Week 4)
+- Add loading states
+- Implement error handling
+- Add mobile responsiveness
+- Add data visualization components
+
+5. Key Features:
+- Suburb autocomplete with validation
+- Detailed data point viewing
+- Source reliability scoring
+- Impact assessment for each data point
+- Filtering and sorting capabilities
+- Historical analysis tracking
+
+Would you like me to elaborate on any of these aspects or provide more specific implementation details for a particular component?
