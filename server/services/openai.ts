@@ -43,8 +43,7 @@ export interface SuburbAnalysisResult {
     summary: string;
     relevance: number;
     sentiment: number;
-    source: string;
-    sourceUrl: string;
+    source?: string;
   }>;
   trends: {
     positive: string[];
@@ -108,8 +107,7 @@ Structure your response as JSON with this exact format:
       "summary": string (2-3 sentences),
       "relevance": number (1-10),
       "sentiment": number (-1 to 1),
-      "source": string (publisher name),
-      "sourceUrl": string (full URL to the article)
+      "source": string (URL)
     }
   ],
   "trends": {
@@ -131,7 +129,7 @@ Structure your response as JSON with this exact format:
       "type": string (news|development|statistic|market_report),
       "source": {
         "name": string,
-        "url": string (full URL),
+        "url": string,
         "reliability": number (0-1)
       },
       "title": string,

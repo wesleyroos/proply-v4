@@ -286,8 +286,8 @@ export const analysisDataPoints = pgTable("analysis_data_points", {
   date: timestamp("date").notNull(),
   sentiment: decimal("sentiment", { precision: 3, scale: 2 }), // -1 to 1
   category: text("category").notNull(),
-  relevanceScore: text("relevance_score").notNull(),
-  impactScore: text("impact_score").notNull(),
+  relevanceScore: decimal("relevance_score", { precision: 3, scale: 2 }).notNull(),
+  impactScore: decimal("impact_score", { precision: 3, scale: 2 }).notNull(),
   reasoning: text("reasoning"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
