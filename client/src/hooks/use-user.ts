@@ -125,7 +125,8 @@ export function useUser() {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
+      // Clear all queries from the cache on logout
+      queryClient.clear();
     },
   });
 

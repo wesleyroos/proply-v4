@@ -47,15 +47,15 @@ export default function DashboardPage() {
   const { user } = useUser();
   const hasProAccess = useProAccess();
 
-  // Fetch property analyzer properties
+  // Fetch property analyzer properties with user-specific query key
   const { data: analyzerProperties, isLoading: isLoadingAnalyzer } = useQuery<AnalyzerProperty[]>({
-    queryKey: ['/api/property-analyzer/properties'],
+    queryKey: ['/api/property-analyzer/properties', user?.id],
     enabled: !!user?.id,
   });
 
-  // Fetch rent compare properties
+  // Fetch rent compare properties with user-specific query key
   const { data: compareProperties, isLoading: isLoadingCompare } = useQuery<CompareProperty[]>({
-    queryKey: ['/api/properties'],
+    queryKey: ['/api/properties', user?.id],
     enabled: !!user?.id,
   });
 
