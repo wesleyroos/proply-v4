@@ -75,6 +75,8 @@ export async function analyzeSuburb(suburb: string): Promise<SuburbAnalysisResul
 
 ${ANALYSIS_CATEGORIES.map(cat => `- ${cat.name} (${cat.weight * 100}% weight): Focus on ${cat.keywords.join(', ')}`).join('\n')}
 
+All raw data points used in the analysis must be included in the rawDataPoints array of the response. The dataPoints count should match exactly with the number of items in the rawDataPoints array.
+
 Structure your response as JSON with this exact format:
 {
   "sentiment": {
@@ -103,7 +105,7 @@ Structure your response as JSON with this exact format:
   ],
   "overallScore": number (1-10),
   "confidenceLevel": number (0-1),
-  "dataPoints": number (count of data points analyzed),
+  "dataPoints": number (must match the length of rawDataPoints array),
   "rawDataPoints": [
     {
       "source": string (name of source),
@@ -116,7 +118,7 @@ Structure your response as JSON with this exact format:
         },
         {
           role: "user",
-          content: `Analyze the current market conditions, news, and trends for the suburb: ${suburb}. Focus on property values, development projects, infrastructure, safety, and community aspects. Include actual news sources where possible.`
+          content: `Analyze the current market conditions, news, and trends for the suburb: ${suburb}. Include ALL data points used in the analysis in the rawDataPoints array.`
         }
       ],
       response_format: { type: "json_object" }
@@ -127,6 +129,13 @@ Structure your response as JSON with this exact format:
     }
 
     const result = JSON.parse(response.choices[0].message.content) as SuburbAnalysisResult;
+
+    // Validate that dataPoints matches rawDataPoints length
+    if (result.dataPoints !== result.rawDataPoints.length) {
+      console.warn(`Warning: dataPoints count (${result.dataPoints}) does not match rawDataPoints length (${result.rawDataPoints.length})`);
+      result.dataPoints = result.rawDataPoints.length;
+    }
+
     return result;
   } catch (error) {
     console.error('OpenAI API Error:', error);

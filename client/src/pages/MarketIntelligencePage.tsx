@@ -18,11 +18,6 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { useQuery } from "@tanstack/react-query";
 
 interface Suburb {
@@ -65,10 +60,8 @@ interface SuburbAnalysis {
 }
 
 export default function MarketIntelligencePage() {
-  const [suburb, setSuburb] = useState("");
-  const [selectedSuburb, setSelectedSuburb] = useState<Suburb | null>(null);
-  const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [selectedSuburb, setSelectedSuburb] = useState<Suburb | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<SuburbAnalysis | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState<string[]>([]);
@@ -153,26 +146,15 @@ export default function MarketIntelligencePage() {
           <CardDescription>Analyze market sentiment and trends for any suburb</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="flex gap-4">
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="flex-1 justify-between"
-                >
-                  {selectedSuburb ? `${selectedSuburb.name}, ${selectedSuburb.city}` : "Select a suburb..."}
-                  <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[400px] p-0">
-                <Command>
-                  <CommandInput
-                    placeholder="Search suburbs..."
-                    value={search}
-                    onValueChange={setSearch}
-                  />
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <Command className="border rounded-lg">
+              <CommandInput 
+                placeholder="Type to search suburbs..." 
+                value={search}
+                onValueChange={setSearch}
+              />
+              {search.length > 2 && (
+                <div className="border-t max-h-48 overflow-y-auto">
                   <CommandEmpty>No suburbs found.</CommandEmpty>
                   <CommandGroup>
                     {suburbs?.map((item) => (
@@ -181,7 +163,7 @@ export default function MarketIntelligencePage() {
                         value={item.name}
                         onSelect={() => {
                           setSelectedSuburb(item);
-                          setOpen(false);
+                          setSearch(item.name);
                         }}
                       >
                         {item.name}, {item.city}
@@ -191,13 +173,13 @@ export default function MarketIntelligencePage() {
                       </CommandItem>
                     ))}
                   </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
+                </div>
+              )}
+            </Command>
             <Button
               type="submit"
               disabled={isAnalyzing || !selectedSuburb}
-              className="min-w-[120px]"
+              className="w-full"
             >
               {isAnalyzing ? (
                 <>
