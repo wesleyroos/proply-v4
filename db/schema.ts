@@ -102,7 +102,7 @@ export const agencySettings = pgTable("agency_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Add suburbs table to store valid locations
+// Update suburbs table with more precise schema
 export const suburbs = pgTable("suburbs", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
