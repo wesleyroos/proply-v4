@@ -13,6 +13,7 @@ type Year = 'year1' | 'year2' | 'year3' | 'year4' | 'year5' | 'year10' | 'year20
 interface PropertyData {
   propertyDetails: {
     address: string;
+    description: string;
     bedrooms: string | number;
     bathrooms: string | number;
     floorArea: number;
@@ -55,7 +56,23 @@ interface PropertyData {
   }>;
   revenueProjections: {
     shortTerm: Record<Year, number>;
+    longTerm: Record<Year, number>;
   };
+  monthlyPerformance?: {
+    [month: string]: {
+      nightlyRate: number;
+      occupancy: number;
+      revenue: number;
+    };
+  };
+  propertyValue?: Record<Year, number>;
+  loanBalance?: Record<Year, number>;
+  equityBuildUp?: Record<Year, number>;
+  appreciation?: Record<Year, {
+    value: number;
+    percentage: number;
+    rand: number;
+  }>;
 }
 
 interface YearlyMetrics {
@@ -91,68 +108,54 @@ interface SectionGroup {
 
 const defaultSectionGroups: SectionGroup[] = [
   {
-    title: "Property Details",
+    title: "Deal Summary",
     sections: [
-      { id: "address", label: "Address", checked: true },
-      { id: "purchasePrice", label: "Purchase Price", checked: true },
-      { id: "floorArea", label: "Floor Area", checked: true },
-      { id: "ratePerM2", label: "Rate per m²", checked: true },
-      { id: "areaRatePerM2", label: "Area Rate/m²", checked: true },
-      { id: "ratePerM2Difference", label: "Rate/m² Difference", checked: true }
+      { id: "propertyDetails", label: "Property Details", checked: true },
+      { id: "dealStructure", label: "Deal Structure", checked: true },
+      { id: "sizeAndRate", label: "Size and Rate/m²", checked: true }
     ]
   },
   {
-    title: "Short-Term Rental (Year 1)",
+    title: "Income Performance",
     sections: [
-      { id: "stAnnualRevenue", label: "Annual Revenue", checked: true },
-      { id: "stMonthlyRevenue", label: "Monthly Revenue", checked: true },
-      { id: "stGrossYield", label: "Gross Yield", checked: true },
-      { id: "stNightlyRate", label: "Nightly Rate", checked: true },
-      { id: "stFeeAdjustedRate", label: "Fee-adjusted Rate", checked: true },
-      { id: "stPlatformFee", label: "Platform Fee", checked: true },
-      { id: "stManagementFee", label: "Management Fee", checked: true },
-      { id: "stOccupancy", label: "Occupancy", checked: true }
+      { id: "shortTermYear1", label: "Short-Term Rental (Year 1)", checked: true },
+      { id: "longTermYear1", label: "Long-Term Rental (Year 1)", checked: true },
+      { id: "airbnbPerformance", label: "Airbnb Performance - Year 1", checked: true },
+      { id: "monthlyOccupancy", label: "Monthly Occupancy & Revenue", checked: true }
     ]
   },
   {
-    title: "Long-Term Rental (Year 1)",
+    title: "Cashflow Metrics",
     sections: [
-      { id: "ltAnnualRevenue", label: "Annual Revenue", checked: true },
-      { id: "ltMonthlyRevenue", label: "Monthly Revenue", checked: true },
-      { id: "ltGrossYield", label: "Gross Yield", checked: true }
+      { id: "revenue", label: "Revenue", checked: true },
+      { id: "operatingExpenses", label: "Operating Expenses", checked: true },
+      { id: "noi", label: "Net Operating Income", checked: true },
+      { id: "bondPayment", label: "Bond Payment", checked: true },
+      { id: "annualCashflow", label: "Annual Cashflow", checked: true },
+      { id: "cumulativeCashflow", label: "Cumulative Cashflow", checked: true },
+      { id: "equityBuildUp", label: "Equity Buildup", checked: true }
     ]
   },
   {
-    title: "Performance Projections",
-    sections: [
-      { id: "rentalPerformance", label: "Rental Performance Table & Chart", checked: true },
-      { id: "cashflowProjections", label: "Annual Cashflow Projections", checked: true },
-      { id: "propertyValueProjections", label: "Property Value Projections", checked: true },
-      { id: "loanBalanceProjections", label: "Loan Balance Over Time", checked: true },
-      { id: "netWorthProjections", label: "Net Worth Change", checked: true }
-    ]
-  },
-  {
-    title: "Investment Metrics (Year 1)",
+    title: "Investment Metrics",
     sections: [
       { id: "grossYield", label: "Gross Yield", checked: true },
       { id: "netYield", label: "Net Yield", checked: true },
-      { id: "returnOnEquity", label: "Return on Equity", checked: true },
+      { id: "roe", label: "Return on Equity", checked: true },
       { id: "annualReturn", label: "Annual Return", checked: true },
       { id: "capRate", label: "Cap Rate", checked: true },
-      { id: "cashOnCashReturn", label: "Cash on Cash Return", checked: true },
+      { id: "cashOnCash", label: "Cash on Cash Return", checked: true },
+      { id: "roi", label: "ROI", checked: true },
       { id: "irr", label: "IRR", checked: true }
     ]
   },
   {
-    title: "Operating Financials",
+    title: "Property Value",
     sections: [
-      { id: "opAnnualRevenue", label: "Annual Revenue (Year 1)", checked: true },
-      { id: "opNetExpenses", label: "Net Operating Expenses (Year 1)", checked: true },
-      { id: "opNetIncome", label: "Net Operating Income (Year 1)", checked: true },
-      { id: "opAnnualBondPayment", label: "Annual Bond Payment", checked: true },
-      { id: "opCumulativeCashflow", label: "Cumulative Cashflow (Year 1)", checked: true },
-      { id: "totalInterestPaid", label: "Total Interest Paid Over Time", checked: true }
+      { id: "loanBalance", label: "Loan Balance", checked: true },
+      { id: "equityBuildup", label: "Equity Buildup", checked: true },
+      { id: "propertyValue", label: "Property Value", checked: true },
+      { id: "appreciation", label: "Appreciation", checked: true }
     ]
   },
   {
@@ -240,159 +243,309 @@ export function PropertyReportGenerator({
         `;
       }
 
-      // Property Details Section
-      if (sectionGroups[0].sections.some(s => s.checked)) {
+      // Deal Summary Section
+      if (isSectionChecked("Deal Summary", "propertyDetails")) {
         content.innerHTML += `
           <div style="margin-bottom: 40px;">
-            <h2 style="color: #2d3748; margin-bottom: 20px;">Property Details</h2>
+            <h2 style="color: #2d3748; margin-bottom: 20px;">Deal Summary</h2>
             <table style="${tableStyle}">
               <tr>
                 <th style="${tableHeaderStyle}">Item</th>
                 <th style="${tableHeaderStyle}">Value</th>
               </tr>
-              ${isSectionChecked("Property Details", "address") ?
-                `<tr><td style="${tableCellStyle}">Property Address</td><td style="${tableCellStyle}">${data.propertyDetails.address}</td></tr>` : ''}
-              ${isSectionChecked("Property Details", "purchasePrice") ?
-                `<tr><td style="${tableCellStyle}">Purchase Price</td><td style="${tableCellStyle}">${formatter.format(data.propertyDetails.purchasePrice)}</td></tr>` : ''}
-              ${isSectionChecked("Property Details", "floorArea") ?
-                `<tr><td style="${tableCellStyle}">Floor Area</td><td style="${tableCellStyle}">${data.propertyDetails.floorArea}m²</td></tr>` : ''}
-              ${isSectionChecked("Property Details", "ratePerM2") ?
-                `<tr><td style="${tableCellStyle}">Rate per m²</td><td style="${tableCellStyle}">${formatter.format(data.propertyDetails.ratePerSquareMeter)}/m²</td></tr>` : ''}
-              ${isSectionChecked("Property Details", "areaRatePerM2") ?
-                `<tr><td style="${tableCellStyle}">Area Rate/m²</td><td style="${tableCellStyle}">${formatter.format(data.propertyDetails.ratePerSquareMeter)}/m²</td></tr>` : ''}
-              ${isSectionChecked("Property Details", "ratePerM2Difference") ?
-                `<tr><td style="${tableCellStyle}">Rate/m² Difference</td><td style="${tableCellStyle}">${formatter.format(data.propertyDetails.ratePerSquareMeter - data.propertyDetails.ratePerSquareMeter)}/m²</td></tr>` : ''}
+              <tr>
+                <td style="${tableCellStyle}">Property Address</td>
+                <td style="${tableCellStyle}">${data.propertyDetails.address}</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Property Description</td>
+                <td style="${tableCellStyle}">${data.propertyDetails.description}</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Purchase Price</td>
+                <td style="${tableCellStyle}">${formatter.format(data.propertyDetails.purchasePrice)}</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Deposit</td>
+                <td style="${tableCellStyle}">${formatter.format(data.financialMetrics.depositAmount)} (${data.financialMetrics.depositPercentage}%)</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Interest Rate</td>
+                <td style="${tableCellStyle}">${data.financialMetrics.interestRate}%</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Monthly Bond Repayment</td>
+                <td style="${tableCellStyle}">${formatter.format(data.financialMetrics.monthlyBondRepayment)}</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Bond Registration</td>
+                <td style="${tableCellStyle}">${formatter.format(data.financialMetrics.bondRegistration)}</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Transfer Costs</td>
+                <td style="${tableCellStyle}">${formatter.format(data.financialMetrics.transferCosts)}</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Total Capital Required</td>
+                <td style="${tableCellStyle}">${formatter.format(
+                  data.financialMetrics.depositAmount +
+                  data.financialMetrics.bondRegistration +
+                  data.financialMetrics.transferCosts
+                )}</td>
+              </tr>
             </table>
           </div>
         `;
       }
 
-      // Short-Term Rental Section
-      if (sectionGroups[1].sections.some(s => s.checked)) {
+      if (isSectionChecked("Deal Summary", "sizeAndRate")) {
         content.innerHTML += `
           <div style="margin-bottom: 40px;">
-            <h2 style="color: #2d3748; margin-bottom: 20px;">Short-Term Rental Performance</h2>
+            <h2 style="color: #2d3748; margin-bottom: 20px;">Size and Rate/m²</h2>
             <table style="${tableStyle}">
               <tr>
-                <th style="${tableHeaderStyle}">Metric</th>
+                <th style="${tableHeaderStyle}">Item</th>
                 <th style="${tableHeaderStyle}">Value</th>
               </tr>
-              ${isSectionChecked("Short-Term Rental (Year 1)", "stAnnualRevenue") ?
-                `<tr><td style="${tableCellStyle}">Annual Revenue</td><td style="${tableCellStyle}">${formatter.format(data.performance.shortTermAnnualRevenue)}</td></tr>` : ''}
-              ${isSectionChecked("Short-Term Rental (Year 1)", "stMonthlyRevenue") ?
-                `<tr><td style="${tableCellStyle}">Monthly Revenue</td><td style="${tableCellStyle}">${formatter.format(data.performance.shortTermAnnualRevenue / 12)}</td></tr>` : ''}
-              ${isSectionChecked("Short-Term Rental (Year 1)", "stGrossYield") ?
-                `<tr><td style="${tableCellStyle}">Gross Yield</td><td style="${tableCellStyle}">${data.performance.shortTermGrossYield.toFixed(1)}%</td></tr>` : ''}
-              ${isSectionChecked("Short-Term Rental (Year 1)", "stNightlyRate") ?
-                `<tr><td style="${tableCellStyle}">Nightly Rate</td><td style="${tableCellStyle}">${formatter.format(data.performance.shortTermNightlyRate)}</td></tr>` : ''}
-              ${isSectionChecked("Short-Term Rental (Year 1)", "stFeeAdjustedRate") ?
-                `<tr><td style="${tableCellStyle}">Fee-adjusted Rate</td><td style="${tableCellStyle}">${formatter.format(data.performance.shortTermNightlyRate * (1 - data.expenses.managementFee/100))}</td></tr>` : ''}
-              ${isSectionChecked("Short-Term Rental (Year 1)", "stManagementFee") ?
-                `<tr><td style="${tableCellStyle}">Management Fee</td><td style="${tableCellStyle}">${data.expenses.managementFee}%</td></tr>` : ''}
-              ${isSectionChecked("Short-Term Rental (Year 1)", "stOccupancy") ?
-                `<tr><td style="${tableCellStyle}">Occupancy</td><td style="${tableCellStyle}">${data.performance.annualOccupancy}%</td></tr>` : ''}
+              <tr>
+                <td style="${tableCellStyle}">Floor Area</td>
+                <td style="${tableCellStyle}">${data.propertyDetails.floorArea} m²</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Beds</td>
+                <td style="${tableCellStyle}">${data.propertyDetails.bedrooms}</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Baths</td>
+                <td style="${tableCellStyle}">${data.propertyDetails.bathrooms}</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Parking</td>
+                <td style="${tableCellStyle}">${data.propertyDetails.parkingSpaces}</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Avg. Rate per m²</td>
+                <td style="${tableCellStyle}">${formatter.format(data.propertyDetails.ratePerSquareMeter)}/m²</td>
+              </tr>
             </table>
           </div>
         `;
       }
 
-      // Long-Term Rental Section
-      if (sectionGroups[2].sections.some(s => s.checked)) {
+      // Income Performance Section
+      if (isSectionChecked("Income Performance", "shortTermYear1")) {
         content.innerHTML += `
           <div style="margin-bottom: 40px;">
-            <h2 style="color: #2d3748; margin-bottom: 20px;">Long-Term Rental Performance</h2>
+            <h2 style="color: #2d3748; margin-bottom: 20px;">Income Performance</h2>
             <table style="${tableStyle}">
               <tr>
-                <th style="${tableHeaderStyle}">Metric</th>
+                <th style="${tableHeaderStyle}">Item</th>
                 <th style="${tableHeaderStyle}">Value</th>
               </tr>
-              ${isSectionChecked("Long-Term Rental (Year 1)", "ltAnnualRevenue") ?
-                `<tr><td style="${tableCellStyle}">Annual Revenue</td><td style="${tableCellStyle}">${formatter.format(data.performance.longTermAnnualRevenue)}</td></tr>` : ''}
-              ${isSectionChecked("Long-Term Rental (Year 1)", "ltMonthlyRevenue") ?
-                `<tr><td style="${tableCellStyle}">Monthly Revenue</td><td style="${tableCellStyle}">${formatter.format(data.performance.longTermAnnualRevenue / 12)}</td></tr>` : ''}
-              ${isSectionChecked("Long-Term Rental (Year 1)", "ltGrossYield") ?
-                `<tr><td style="${tableCellStyle}">Gross Yield</td><td style="${tableCellStyle}">${data.performance.longTermGrossYield.toFixed(1)}%</td></tr>` : ''}
+              <tr>
+                <td style="${tableCellStyle}">STR Year 1 Revenue</td>
+                <td style="${tableCellStyle}">${formatter.format(data.performance.shortTermAnnualRevenue)}</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">STR Year 1 Gross Yield</td>
+                <td style="${tableCellStyle}">${data.performance.shortTermGrossYield.toFixed(2)}%</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Nightly Rate</td>
+                <td style="${tableCellStyle}">${formatter.format(data.performance.shortTermNightlyRate)}</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">Occupancy (%)</td>
+                <td style="${tableCellStyle}">${data.performance.annualOccupancy}%</td>
+              </tr>
+              <tr>
+                <td style="${tableCellStyle}">STR Monthly Revenue</td>
+                <td style="${tableCellStyle}">${formatter.format(data.performance.shortTermAnnualRevenue / 12)}</td>
+              </tr>
             </table>
           </div>
         `;
       }
 
-      // Performance Projections Section
-      if (sectionGroups[3].sections.some(s => s.checked)) {
-        if (isSectionChecked("Performance Projections", "cashflowProjections") && data.netOperatingIncome) {
-          const years: Year[] = ['year1', 'year2', 'year3', 'year4', 'year5', 'year10', 'year20'];
-          content.innerHTML += `
-            <div style="margin-bottom: 40px;">
-              <h2 style="color: #2d3748; margin-bottom: 20px;">Annual Cashflow Projections</h2>
-              <table style="${tableStyle}">
+      if (isSectionChecked("Income Performance", "airbnbPerformance") && data.monthlyPerformance) {
+        content.innerHTML += `
+          <div style="margin-bottom: 40px;">
+            <h2 style="color: #2d3748; margin-bottom: 20px;">Airbnb Performance - Year 1</h2>
+            <table style="${tableStyle}">
+              <tr>
+                <th style="${tableHeaderStyle}">Month</th>
+                <th style="${tableHeaderStyle}">Nightly Rate</th>
+                <th style="${tableHeaderStyle}">Occupancy</th>
+                <th style="${tableHeaderStyle}">Revenue</th>
+              </tr>
+              ${Object.entries(data.monthlyPerformance).map(([month, data]) => `
                 <tr>
-                  <th style="${tableHeaderStyle}">Year</th>
-                  <th style="${tableHeaderStyle}">Annual Cashflow</th>
+                  <td style="${tableCellStyle}">${month}</td>
+                  <td style="${tableCellStyle}">${formatter.format(data.nightlyRate)}</td>
+                  <td style="${tableCellStyle}">${data.occupancy}%</td>
+                  <td style="${tableCellStyle}">${formatter.format(data.revenue)}</td>
                 </tr>
-                ${years.map(year => data.netOperatingIncome[year] ? `
-                  <tr>
-                    <td style="${tableCellStyle}">Year ${year.replace('year', '')}</td>
-                    <td style="${tableCellStyle}">${formatter.format(data.netOperatingIncome[year].annualCashflow)}</td>
-                  </tr>
-                ` : '').join('')}
-              </table>
-            </div>
-          `;
-        }
+              `).join('')}
+            </table>
+          </div>
+        `;
+      }
+
+      // Cashflow Metrics Section
+      if (sectionGroups[2].sections.some(s => s.checked)) {
+        const years: Year[] = ['year1', 'year2', 'year3', 'year4', 'year5', 'year10', 'year20'];
+        content.innerHTML += `
+          <div style="margin-bottom: 40px;">
+            <h2 style="color: #2d3748; margin-bottom: 20px;">Cashflow Metrics</h2>
+            <table style="${tableStyle}">
+              <tr>
+                <th style="${tableHeaderStyle}">Metric</th>
+                ${years.map(year => `<th style="${tableHeaderStyle}">Year ${year.replace('year', '')}</th>`).join('')}
+              </tr>
+              ${isSectionChecked("Cashflow Metrics", "revenue") ? `
+                <tr>
+                  <td style="${tableCellStyle}">Revenue</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${formatter.format(data.revenueProjections.shortTerm[year])}</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Cashflow Metrics", "operatingExpenses") ? `
+                <tr>
+                  <td style="${tableCellStyle}">Operating Expenses</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${formatter.format(data.operatingExpenses[year])}</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Cashflow Metrics", "noi") ? `
+                <tr>
+                  <td style="${tableCellStyle}">NOI</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${formatter.format(data.netOperatingIncome[year].value)}</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Cashflow Metrics", "annualCashflow") ? `
+                <tr>
+                  <td style="${tableCellStyle}">Annual Cashflow</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${formatter.format(data.netOperatingIncome[year].annualCashflow)}</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Cashflow Metrics", "cumulativeCashflow") ? `
+                <tr>
+                  <td style="${tableCellStyle}">Cumulative Cashflow</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${formatter.format(data.netOperatingIncome[year].cumulativeRentalIncome)}</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Cashflow Metrics", "equityBuildUp") && data.equityBuildUp ? `
+                <tr>
+                  <td style="${tableCellStyle}">Equity Buildup</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${formatter.format(data.equityBuildUp[year])}</td>`).join('')}
+                </tr>
+              ` : ''}
+            </table>
+          </div>
+        `;
       }
 
       // Investment Metrics Section
-      if (sectionGroups[4].sections.some(s => s.checked)) {
-        const yearMetrics = data.investmentMetrics?.year1;
-        if (yearMetrics) {
-          content.innerHTML += `
-            <div style="margin-bottom: 40px;">
-              <h2 style="color: #2d3748; margin-bottom: 20px;">Investment Metrics (Year 1)</h2>
-              <table style="${tableStyle}">
-                <tr>
-                  <th style="${tableHeaderStyle}">Metric</th>
-                  <th style="${tableHeaderStyle}">Value</th>
-                </tr>
-                ${isSectionChecked("Investment Metrics (Year 1)", "grossYield") ?
-                  `<tr><td style="${tableCellStyle}">Gross Yield</td><td style="${tableCellStyle}">${yearMetrics.grossYield.toFixed(1)}%</td></tr>` : ''}
-                ${isSectionChecked("Investment Metrics (Year 1)", "netYield") ?
-                  `<tr><td style="${tableCellStyle}">Net Yield</td><td style="${tableCellStyle}">${yearMetrics.netYield.toFixed(1)}%</td></tr>` : ''}
-                ${isSectionChecked("Investment Metrics (Year 1)", "returnOnEquity") ?
-                  `<tr><td style="${tableCellStyle}">Return on Equity</td><td style="${tableCellStyle}">${yearMetrics.returnOnEquity.toFixed(1)}%</td></tr>` : ''}
-                ${isSectionChecked("Investment Metrics (Year 1)", "annualReturn") ?
-                  `<tr><td style="${tableCellStyle}">Annual Return</td><td style="${tableCellStyle}">${yearMetrics.annualReturn.toFixed(1)}%</td></tr>` : ''}
-                ${isSectionChecked("Investment Metrics (Year 1)", "capRate") ?
-                  `<tr><td style="${tableCellStyle}">Cap Rate</td><td style="${tableCellStyle}">${yearMetrics.capRate.toFixed(1)}%</td></tr>` : ''}
-                ${isSectionChecked("Investment Metrics (Year 1)", "cashOnCashReturn") ?
-                  `<tr><td style="${tableCellStyle}">Cash on Cash Return</td><td style="${tableCellStyle}">${yearMetrics.cashOnCashReturn.toFixed(1)}%</td></tr>` : ''}
-                ${isSectionChecked("Investment Metrics (Year 1)", "irr") ?
-                  `<tr><td style="${tableCellStyle}">IRR</td><td style="${tableCellStyle}">${yearMetrics.irr.toFixed(1)}%</td></tr>` : ''}
-              </table>
-            </div>
-          `;
-        }
-      }
-
-      // Operating Financials Section
-      if (sectionGroups[5].sections.some(s => s.checked) && data.netOperatingIncome?.year1) {
+      if (sectionGroups[3].sections.some(s => s.checked)) {
+        const years: Year[] = ['year1', 'year2', 'year3', 'year4', 'year5', 'year10', 'year20'];
         content.innerHTML += `
           <div style="margin-bottom: 40px;">
-            <h2 style="color: #2d3748; margin-bottom: 20px;">Operating Financials</h2>
+            <h2 style="color: #2d3748; margin-bottom: 20px;">Investment Metrics</h2>
             <table style="${tableStyle}">
               <tr>
                 <th style="${tableHeaderStyle}">Metric</th>
-                <th style="${tableHeaderStyle}">Value</th>
+                ${years.map(year => `<th style="${tableHeaderStyle}">Year ${year.replace('year', '')}</th>`).join('')}
               </tr>
-              ${isSectionChecked("Operating Financials", "opAnnualRevenue") ?
-                `<tr><td style="${tableCellStyle}">Annual Revenue (Year 1)</td><td style="${tableCellStyle}">${formatter.format(data.performance.shortTermAnnualRevenue)}</td></tr>` : ''}
-              ${isSectionChecked("Operating Financials", "opNetExpenses") ?
-                `<tr><td style="${tableCellStyle}">Net Operating Expenses (Year 1)</td><td style="${tableCellStyle}">${formatter.format(data.operatingExpenses.year1)}</td></tr>` : ''}
-              ${isSectionChecked("Operating Financials", "opNetIncome") ?
-                `<tr><td style="${tableCellStyle}">Net Operating Income (Year 1)</td><td style="${tableCellStyle}">${formatter.format(data.netOperatingIncome.year1.value)}</td></tr>` : ''}
-              ${isSectionChecked("Operating Financials", "opAnnualBondPayment") ?
-                `<tr><td style="${tableCellStyle}">Annual Bond Payment</td><td style="${tableCellStyle}">${formatter.format(data.financialMetrics.monthlyBondRepayment * 12)}</td></tr>` : ''}
-              ${isSectionChecked("Operating Financials", "opCumulativeCashflow") ?
-                `<tr><td style="${tableCellStyle}">Cumulative Cashflow (Year 1)</td><td style="${tableCellStyle}">${formatter.format(data.netOperatingIncome.year1.cumulativeRentalIncome)}</td></tr>` : ''}
+              ${isSectionChecked("Investment Metrics", "grossYield") ? `
+                <tr>
+                  <td style="${tableCellStyle}">Gross Yield</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].grossYield.toFixed(2)}%</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Investment Metrics", "netYield") ? `
+                <tr>
+                  <td style="${tableCellStyle}">Net Yield</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].netYield.toFixed(2)}%</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Investment Metrics", "roe") ? `
+                <tr>
+                  <td style="${tableCellStyle}">ROE</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].returnOnEquity.toFixed(2)}%</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Investment Metrics", "annualReturn") ? `
+                <tr>
+                  <td style="${tableCellStyle}">Annual Return</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].annualReturn.toFixed(2)}%</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Investment Metrics", "capRate") ? `
+                <tr>
+                  <td style="${tableCellStyle}">Cap Rate</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].capRate.toFixed(2)}%</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Investment Metrics", "cashOnCash") ? `
+                <tr>
+                  <td style="${tableCellStyle}">Cash on Cash</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].cashOnCashReturn.toFixed(2)}%</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Investment Metrics", "roi") ? `
+                <tr>
+                  <td style="${tableCellStyle}">ROI (with appreciation)</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].roiWithAppreciation.toFixed(2)}%</td>`).join('')}
+                </tr>
+                <tr>
+                  <td style="${tableCellStyle}">ROI (without appreciation)</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].roiWithoutAppreciation.toFixed(2)}%</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Investment Metrics", "irr") ? `
+                <tr>
+                  <td style="${tableCellStyle}">IRR</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].irr.toFixed(2)}%</td>`).join('')}
+                </tr>
+              ` : ''}
+            </table>
+          </div>
+        `;
+      }
+
+      // Property Value Section
+      if (sectionGroups[4].sections.some(s => s.checked)) {
+        const years: Year[] = ['year1', 'year2', 'year3', 'year4', 'year5', 'year10', 'year20'];
+        content.innerHTML += `
+          <div style="margin-bottom: 40px;">
+            <h2 style="color: #2d3748; margin-bottom: 20px;">Property Metrics</h2>
+            <table style="${tableStyle}">
+              <tr>
+                <th style="${tableHeaderStyle}">Metric</th>
+                ${years.map(year => `<th style="${tableHeaderStyle}">Year ${year.replace('year', '')}</th>`).join('')}
+              </tr>
+              ${isSectionChecked("Property Value", "loanBalance") && data.loanBalance ? `
+                <tr>
+                  <td style="${tableCellStyle}">Loan Balance</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${formatter.format(data.loanBalance[year])}</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Property Value", "equityBuildup") && data.equityBuildUp ? `
+                <tr>
+                  <td style="${tableCellStyle}">Equity Buildup</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${formatter.format(data.equityBuildUp[year])}</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Property Value", "propertyValue") && data.propertyValue ? `
+                <tr>
+                  <td style="${tableCellStyle}">Property Value</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${formatter.format(data.propertyValue[year])}</td>`).join('')}
+                </tr>
+              ` : ''}
+              ${isSectionChecked("Property Value", "appreciation") && data.appreciation ? `
+                <tr>
+                  <td style="${tableCellStyle}">Appreciation</td>
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.appreciation[year].percentage.toFixed(2)}%<br/>${formatter.format(data.appreciation[year].rand)}</td>`).join('')}
+                </tr>
+              ` : ''}
             </table>
           </div>
         `;
