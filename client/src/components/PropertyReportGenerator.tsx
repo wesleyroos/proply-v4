@@ -444,7 +444,7 @@ export function PropertyReportGenerator({
       }
 
       // Investment Metrics Section
-      if (sectionGroups[3].sections.some(s => s.checked)) {
+      if (sectionGroups[3].sections.some(s => s.checked) && data.investmentMetrics) {
         const years: Year[] = ['year1', 'year2', 'year3', 'year4', 'year5', 'year10', 'year20'];
         content.innerHTML += `
           <div style="margin-bottom: 40px;">
@@ -457,53 +457,53 @@ export function PropertyReportGenerator({
               ${isSectionChecked("Investment Metrics", "grossYield") ? `
                 <tr>
                   <td style="${tableCellStyle}">Gross Yield</td>
-                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].grossYield.toFixed(2)}%</td>`).join('')}
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year]?.grossYield.toFixed(2) ?? 'N/A'}%</td>`).join('')}
                 </tr>
               ` : ''}
               ${isSectionChecked("Investment Metrics", "netYield") ? `
                 <tr>
                   <td style="${tableCellStyle}">Net Yield</td>
-                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].netYield.toFixed(2)}%</td>`).join('')}
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year]?.netYield.toFixed(2) ?? 'N/A'}%</td>`).join('')}
                 </tr>
               ` : ''}
               ${isSectionChecked("Investment Metrics", "roe") ? `
                 <tr>
                   <td style="${tableCellStyle}">ROE</td>
-                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].returnOnEquity.toFixed(2)}%</td>`).join('')}
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year]?.returnOnEquity.toFixed(2) ?? 'N/A'}%</td>`).join('')}
                 </tr>
               ` : ''}
               ${isSectionChecked("Investment Metrics", "annualReturn") ? `
                 <tr>
                   <td style="${tableCellStyle}">Annual Return</td>
-                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].annualReturn.toFixed(2)}%</td>`).join('')}
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year]?.annualReturn.toFixed(2) ?? 'N/A'}%</td>`).join('')}
                 </tr>
               ` : ''}
               ${isSectionChecked("Investment Metrics", "capRate") ? `
                 <tr>
                   <td style="${tableCellStyle}">Cap Rate</td>
-                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].capRate.toFixed(2)}%</td>`).join('')}
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year]?.capRate.toFixed(2) ?? 'N/A'}%</td>`).join('')}
                 </tr>
               ` : ''}
               ${isSectionChecked("Investment Metrics", "cashOnCash") ? `
                 <tr>
                   <td style="${tableCellStyle}">Cash on Cash</td>
-                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].cashOnCashReturn.toFixed(2)}%</td>`).join('')}
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year]?.cashOnCashReturn.toFixed(2) ?? 'N/A'}%</td>`).join('')}
                 </tr>
               ` : ''}
               ${isSectionChecked("Investment Metrics", "roi") ? `
                 <tr>
                   <td style="${tableCellStyle}">ROI (with appreciation)</td>
-                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].roiWithAppreciation.toFixed(2)}%</td>`).join('')}
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year]?.roiWithAppreciation.toFixed(2) ?? 'N/A'}%</td>`).join('')}
                 </tr>
                 <tr>
                   <td style="${tableCellStyle}">ROI (without appreciation)</td>
-                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].roiWithoutAppreciation.toFixed(2)}%</td>`).join('')}
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year]?.roiWithoutAppreciation.toFixed(2) ?? 'N/A'}%</td>`).join('')}
                 </tr>
               ` : ''}
               ${isSectionChecked("Investment Metrics", "irr") ? `
                 <tr>
                   <td style="${tableCellStyle}">IRR</td>
-                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year].irr.toFixed(2)}%</td>`).join('')}
+                  ${years.map(year => `<td style="${tableCellStyle}">${data.investmentMetrics[year]?.irr.toFixed(2) ?? 'N/A'}%</td>`).join('')}
                 </tr>
               ` : ''}
             </table>
@@ -586,7 +586,7 @@ export function PropertyReportGenerator({
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to generate PDF report. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to generate PDF report. Please try again.",
         duration: 5000,
       });
     } finally {
