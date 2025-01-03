@@ -367,7 +367,7 @@ export function PropertyReportGenerator({
         `;
       }
 
-      if (isSectionChecked("Income Performance", "airbnbPerformance") && data.monthlyPerformance) {
+      if (data.monthlyPerformance && isSectionChecked("Income Performance", "airbnbPerformance")) {
         content.innerHTML += `
           <div style="margin-bottom: 40px;">
             <h2 style="color: #2d3748; margin-bottom: 20px;">Airbnb Performance - Year 1</h2>
@@ -414,19 +414,19 @@ export function PropertyReportGenerator({
                   ${years.map(year => `<td style="${tableCellStyle}">${formatter.format(data.operatingExpenses[year])}</td>`).join('')}
                 </tr>
               ` : ''}
-              ${isSectionChecked("Cashflow Metrics", "noi") ? `
+              ${isSectionChecked("Cashflow Metrics", "noi") && data.netOperatingIncome ? `
                 <tr>
                   <td style="${tableCellStyle}">NOI</td>
                   ${years.map(year => `<td style="${tableCellStyle}">${formatter.format(data.netOperatingIncome[year].value)}</td>`).join('')}
                 </tr>
               ` : ''}
-              ${isSectionChecked("Cashflow Metrics", "annualCashflow") ? `
+              ${isSectionChecked("Cashflow Metrics", "annualCashflow") && data.netOperatingIncome ? `
                 <tr>
                   <td style="${tableCellStyle}">Annual Cashflow</td>
                   ${years.map(year => `<td style="${tableCellStyle}">${formatter.format(data.netOperatingIncome[year].annualCashflow)}</td>`).join('')}
                 </tr>
               ` : ''}
-              ${isSectionChecked("Cashflow Metrics", "cumulativeCashflow") ? `
+              ${isSectionChecked("Cashflow Metrics", "cumulativeCashflow") && data.netOperatingIncome ? `
                 <tr>
                   <td style="${tableCellStyle}">Cumulative Cashflow</td>
                   ${years.map(year => `<td style="${tableCellStyle}">${formatter.format(data.netOperatingIncome[year].cumulativeRentalIncome)}</td>`).join('')}
@@ -565,7 +565,7 @@ export function PropertyReportGenerator({
       `;
 
       const options = {
-        margin: [15, 15],
+        margin: 15,
         filename: `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
