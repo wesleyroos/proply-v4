@@ -5,7 +5,7 @@ import type {
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 5000 // 5 seconds is more reasonable for notifications
+const TOAST_REMOVE_DELAY = 5000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -55,12 +55,14 @@ interface State {
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
 const addToRemoveQueue = (toastId: string, dispatch: React.Dispatch<Action>) => {
+  console.log(`Adding toast ${toastId} to remove queue`);
   if (toastTimeouts.has(toastId)) {
     return
   }
 
   const timeout = setTimeout(() => {
     toastTimeouts.delete(toastId)
+    console.log(`Removing toast ${toastId} from queue`);
     dispatch({
       type: "REMOVE_TOAST",
       toastId: toastId,
@@ -71,14 +73,18 @@ const addToRemoveQueue = (toastId: string, dispatch: React.Dispatch<Action>) => 
 }
 
 export const reducer = (state: State, action: Action): State => {
+  console.log('Toast reducer called with action:', action.type);
+
   switch (action.type) {
     case "ADD_TOAST":
+      console.log('Adding new toast:', action.toast);
       return {
         ...state,
         toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
       }
 
     case "UPDATE_TOAST":
+      console.log('Updating toast:', action.toast);
       return {
         ...state,
         toasts: state.toasts.map((t) =>
@@ -88,6 +94,7 @@ export const reducer = (state: State, action: Action): State => {
 
     case "DISMISS_TOAST": {
       const { toastId } = action
+      console.log('Dismissing toast:', toastId);
       return {
         ...state,
         toasts: state.toasts.map((t) =>
@@ -101,6 +108,7 @@ export const reducer = (state: State, action: Action): State => {
       }
     }
     case "REMOVE_TOAST":
+      console.log('Removing toast:', action.toastId);
       if (action.toastId === undefined) {
         return {
           ...state,
@@ -122,6 +130,7 @@ function useToast() {
   React.useEffect(() => {
     state.toasts.forEach((toast) => {
       if (!toast.open) {
+        console.log(`Toast ${toast.id} is closed, queuing for removal`);
         addToRemoveQueue(toast.id, dispatch)
       }
     })
@@ -129,6 +138,7 @@ function useToast() {
 
   const toast = React.useCallback(
     ({ ...props }: Omit<ToasterToast, "id">) => {
+      console.log('Creating new toast with props:', props);
       const id = genId()
 
       const update = (props: ToasterToast) =>
@@ -145,7 +155,10 @@ function useToast() {
           id,
           open: true,
           onOpenChange: (open) => {
-            if (!open) dismiss()
+            if (!open) {
+              console.log(`Toast ${id} open state changed to false`);
+              dismiss()
+            }
           },
         },
       })
