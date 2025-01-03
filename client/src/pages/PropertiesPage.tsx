@@ -62,6 +62,7 @@ export default function PropertiesPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<AnalyzerProperty | null>(null);
+  const [selectedProperties, setSelectedProperties] = useState<number[]>([]);
   const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection }>({
     field: 'address',
     direction: 'asc'
@@ -212,7 +213,19 @@ export default function PropertiesPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
-                      <th onClick={() => handleSort('address')} className="py-3 px-4 text-left cursor-pointer hover:bg-muted/75">
+                      <th className="py-3 px-4 text-left">
+                        <div className="flex items-center gap-2">
+                          <Checkbox 
+                            checked={selectedProperties.length === filteredAndSortedProperties.length}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedProperties(filteredAndSortedProperties.map(p => p.id));
+                              } else {
+                                setSelectedProperties([]);
+                              }
+                            }}
+                          />
+                          <span onClick={() => handleSort('address')} className="cursor-pointer hover:bg-muted/75 flex items-center">
                         <div className="flex items-center">
                           Address
                           <SortIcon field="address" />
@@ -295,7 +308,18 @@ export default function PropertiesPage() {
                       filteredAndSortedProperties.map((property) => (
                         <tr key={property.id} className="border-b hover:bg-muted/50">
                           <td className="py-3 px-4">
-                            <div className="max-w-[200px]">
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                checked={selectedProperties.includes(property.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedProperties([...selectedProperties, property.id]);
+                                  } else {
+                                    setSelectedProperties(selectedProperties.filter(id => id !== property.id));
+                                  }
+                                }}
+                              />
+                              <div className="max-w-[200px]">
                               <div className="font-medium truncate">{property.address}</div>
                             </div>
                           </td>
