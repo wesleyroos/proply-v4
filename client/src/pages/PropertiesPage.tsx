@@ -64,6 +64,7 @@ export default function PropertiesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<AnalyzerProperty | null>(null);
   const [selectedProperties, setSelectedProperties] = useState<number[]>([]);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection }>({
     field: 'address',
     direction: 'asc'
@@ -139,6 +140,16 @@ export default function PropertiesPage() {
     } catch (error) {
       setDeleteError(error instanceof Error ? error.message : 'Failed to delete properties');
     }
+  };
+
+  const handleDeleteConfirmed = async () => {
+    if (showDeleteConfirmation && selectedProperties.length > 0) {
+      await handleDeleteSelected();
+    } else if (propertyToDelete) {
+      await handleDelete();
+    }
+    setShowDeleteConfirmation(false);
+    setPropertyToDelete(null);
   };
 
   const handleSort = (field: SortField) => {
@@ -248,7 +259,7 @@ export default function PropertiesPage() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => handleDeleteSelected()}
+                      onClick={() => setShowDeleteConfirmation(true)}
                       className="flex items-center gap-2"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -498,23 +509,38 @@ export default function PropertiesPage() {
         </TabsContent>
       </Tabs>
 
-      <AlertDialog open={!!propertyToDelete} onOpenChange={() => setPropertyToDelete(null)}>
+      <AlertDialog open={!!propertyToDelete || showDeleteConfirmation} onOpenChange={(open) => {
+        if (!open) {
+          setPropertyToDelete(null);
+          setShowDeleteConfirmation(false);
+        }
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the property
-              {propertyToDelete && ` "${propertyToDelete.address}"`} and remove it from our servers.
+              {selectedProperties.length > 0 ? (
+                `This action cannot be undone. This will permanently delete ${selectedProperties.length} ${
+                  selectedProperties.length === 1 ? 'property' : 'properties'
+                } and remove them from our servers.`
+              ) : (
+                propertyToDelete && `This action cannot be undone. This will permanently delete the property "${propertyToDelete.address}" and remove it from our servers.`
+              )}
               {deleteError && (
                 <p className="mt-2 text-red-600">{deleteError}</p>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => {
+              setShowDeleteConfirmation(false);
+              setPropertyToDelete(null);
+            }}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-500 hover:bg-red-600"
-              onClick={handleDelete}
+              onClick={handleDeleteConfirmed}
             >
               Delete
             </AlertDialogAction>
