@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
-import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save, FileText } from "lucide-react";
+import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save, FileText, InfoIcon } from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
@@ -355,43 +355,6 @@ export default function PropertyAnalyzerPage() {
                 </div>
                 <div className="space-x-2">
                   <Button
-                    onClick={() => {
-                      if (!analysisResult) return;
-
-                      if (!analysisId) {
-                        toast({
-                          variant: "destructive",
-                          title: "Save Required",
-                          description: "Please save your analysis before exporting to PDF.",
-                          duration: 3000,
-                        });
-                        return;
-                      }
-
-                      const data = {
-                        address: analysisResult.address,
-                        longTermMonthly: analysisResult.analysis.longTermAnnualRevenue / 12,
-                        shortTermMonthly: analysisResult.analysis.shortTermAnnualRevenue / 12,
-                        longTermAnnual: analysisResult.analysis.longTermAnnualRevenue,
-                        shortTermAnnual: analysisResult.analysis.shortTermAnnualRevenue,
-                        shortTermAfterFees: analysisResult.analysis.shortTermAnnualRevenue * (1 - analysisResult.managementFee/100),
-                        breakEvenOccupancy: 65,
-                        shortTermNightly: analysisResult.shortTermNightlyRate || 0,
-                        managementFee: analysisResult.managementFee,
-                        annualOccupancy: analysisResult.annualOccupancy || 0,
-                        bedrooms: formData?.bedrooms || "N/A",
-                        bathrooms: formData?.bathrooms || "N/A"
-                      };
-                      setShowPDFReport(true);
-                      setPDFData(data);
-                    }}
-                    disabled={!analysisResult || !analysisId}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Export PDF
-                  </Button>
-                  <Button
                     onClick={async () => {
                       try {
                         const dataToSave = prepareAnalysisDataForSave();
@@ -451,6 +414,55 @@ export default function PropertyAnalyzerPage() {
                     <Save className="w-4 h-4 mr-2" />
                     Save Analysis
                   </Button>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <Button
+                          onClick={() => {
+                            if (!analysisResult) return;
+
+                            if (!analysisId) {
+                              toast({
+                                variant: "destructive",
+                                title: "Save Required",
+                                description: "Please save your analysis before exporting to PDF.",
+                                duration: 3000,
+                              });
+                              return;
+                            }
+
+                            const data = {
+                              address: analysisResult.address,
+                              longTermMonthly: analysisResult.analysis.longTermAnnualRevenue / 12,
+                              shortTermMonthly: analysisResult.analysis.shortTermAnnualRevenue / 12,
+                              longTermAnnual: analysisResult.analysis.longTermAnnualRevenue,
+                              shortTermAnnual: analysisResult.analysis.shortTermAnnualRevenue,
+                              shortTermAfterFees: analysisResult.analysis.shortTermAnnualRevenue * (1 - analysisResult.managementFee/100),
+                              breakEvenOccupancy: 65,
+                              shortTermNightly: analysisResult.shortTermNightlyRate || 0,
+                              managementFee: analysisResult.managementFee,
+                              annualOccupancy: analysisResult.annualOccupancy || 0,
+                              bedrooms: formData?.bedrooms || "N/A",
+                              bathrooms: formData?.bathrooms || "N/A"
+                            };
+                            setShowPDFReport(true);
+                            setPDFData(data);
+                          }}
+                          disabled={!analysisResult || !analysisId}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Export PDF
+                        </Button>
+                      </div>
+                    </TooltipTrigger>
+                    {!analysisId && (
+                      <TooltipContent>
+                        <p>Please save the analysis first</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
                 </div>
               </div>
             </div>
@@ -806,59 +818,57 @@ export default function PropertyAnalyzerPage() {
                           </p>
                         </div>
                       </div>
+
                       <div className="grid grid-cols-2 gap-6">
                         <div>
                           <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                            Area Rate/m²
+                            Rate per m²
                             <AnalyzerIndicator />
                           </h3>
                           <p className="mt-2 text-lg font-bold text-slate-800">
-                            R
-                            {analysisResult.ratePerSquareMeter?.toLocaleString() ||
-                              "0"}
+                            R{analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}
                           </p>
                         </div>
+
                         <div>
                           {(() => {
                             const actualRate =
                               analysisResult.analysis.purchasePrice /
-                              (analysisResult.floorArea ||1);
+                              (analysisResult.floorArea || 1);
                             const areaRate =
                               analysisResult.ratePerSquareMeter || 0;
                             const difference = areaRate - actualRate;
-                            const isPositive = difference > 0;
+                            const percentageDiff = (difference / areaRate) * 100;
 
                             return (
                               <div>
-                                                               <h3 className="text-sm font-semibold text-slate600 flex items-center gap-2">
+                                <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
                                   Rate/m² Difference
                                   <AnalyzerIndicator />
                                 </h3>
-                                <Tooltip delayDuration={0}>
-                                  <TooltipTrigger className="cursor-help">
-                                    <p className="mt-2 text-lg font-bold">
-                                      <span
-                                        className={
-                                          isPositive
-                                            ? "text-green-600"
-                                            : "text-red-600"
-                                        }
-                                      >
-                                        R{Math.abs(difference).toLocaleString()}{" "}
-                                        {isPositive ? "above" : "below"} area
-                                        rate (
-                                        {(Math.abs(difference) / actualRate * 100).toFixed(1)}%)
-                                      </span>
-                                    </p>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="max-w-[300px] text-sm">
-                                    This shows how the property's price per
-                                    square meter compares to the average rate in
-                                    the area.                                    A lower rate than the area average might indicate
-                                    better value for money, while a higher rate suggests premium positioning.
-                                  </TooltipContent>
-                                </Tooltip>
-
+                                <p className="mt-2 text-lg font-bold text-slate-800 flex items-center">
+                                  <span
+                                    className={`${
+                                      difference > 0
+                                        ? "text-green-600"
+                                        : "text-red-600"
+                                    }`}
+                                  >
+                                    {difference > 0 ? "+" : ""}
+                                    {percentageDiff.toFixed(1)}%
+                                  </span>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <InfoIcon className="h-4 w-4 ml-2 text-slate-400" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-[300px] text-sm">
+                                      This shows how the property's price per
+                                      square meter compares to the average rate in
+                                      the area. A lower rate than the area average might indicate
+                                      better value for money, while a higher rate suggests premium positioning.
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </p>
                               </div>
                             );
                           })()}
