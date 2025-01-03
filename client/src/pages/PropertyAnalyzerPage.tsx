@@ -230,13 +230,19 @@ export default function PropertyAnalyzerPage() {
         loanTerm: requestBody.loanTerm
       });
 
-      // Smooth scroll to results after analysis is complete
-      if (resultsRef.current) {
-        resultsRef.current.scrollIntoView({ 
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
+      // Add a slight delay to ensure the DOM has updated
+      setTimeout(() => {
+        if (resultsRef.current) {
+          const yOffset = -100; // Offset to account for any fixed headers
+          const y = resultsRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+          window.scrollTo({
+            top: y,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+
     } catch (error) {
       console.error("Analysis failed:", error);
       setAnalysisError(
@@ -805,7 +811,7 @@ export default function PropertyAnalyzerPage() {
                           {(() => {
                             const actualRate =
                               analysisResult.analysis.purchasePrice /
-                              (analysisResult.floorArea || 1);
+                              (analysisResult.floorArea ||1);
                             const areaRate =
                               analysisResult.ratePerSquareMeter || 0;
                             const difference = areaRate - actualRate;
