@@ -5,8 +5,6 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AnimatePresence } from "framer-motion";
-import { Toaster } from "@/components/ui/toaster";
-import { ToastProvider } from "@/components/ui/toast";
 import { PageTransition } from "./components/PageTransition";
 import ComparisonPage from "./pages/ComparisonPage";
 import PropertiesPage from "./pages/PropertiesPage";
@@ -92,7 +90,6 @@ function App() {
 
   return (
     <TooltipProvider>
-      <ToastProvider> {/*Added ToastProvider */}
       <AnimatePresence mode="wait">
         <Switch key={location}>
           <Route path="/" component={() => (
@@ -178,7 +175,6 @@ function App() {
           )} />
         </Switch>
       </AnimatePresence>
-      </ToastProvider> {/*Closed ToastProvider*/}
       <Toaster />
     </TooltipProvider>
   );
