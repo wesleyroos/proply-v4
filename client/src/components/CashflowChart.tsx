@@ -60,7 +60,10 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
           <XAxis dataKey="year" />
           <YAxis 
             domain={[Math.floor(minValue - domainPadding), Math.ceil(maxValue + domainPadding)]}
-            tickFormatter={(value: number) => formatter(value)} 
+            tickFormatter={(value: number) => formatter(value).replace('R', 'R ')} 
+            style={{
+              fontSize: '12px'
+            }}
           />
           <Tooltip 
             formatter={(value: number) => formatter(value)}
