@@ -71,10 +71,10 @@ function App() {
   const [location] = useLocation();
 
   return (
-    <>
-      <TooltipProvider>
-        <AnimatePresence mode="wait">
-          <Switch key={location}>
+    <TooltipProvider>
+      <Toaster />
+      <AnimatePresence mode="wait">
+        <Switch key={location}>
             <Route path="/" component={() => (
               <PageTransition>
                 <HomePage />
@@ -186,8 +186,6 @@ function App() {
           </Switch>
         </AnimatePresence>
       </TooltipProvider>
-      <Toaster />
-    </>
   );
 }
 
