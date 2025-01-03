@@ -11,3 +11,10 @@ export const formatter = new Intl.NumberFormat('en-ZA', {
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 });
+
+export const formatCurrency = (value: number | undefined | null): string => {
+  if (value === undefined || value === null) {
+    return 'N/A';
+  }
+  return formatter.format(value);
+};
