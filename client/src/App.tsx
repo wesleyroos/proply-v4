@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +28,7 @@ import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import PaymentFailurePage from "./pages/PaymentFailurePage";
 import { useUser } from "./hooks/use-user";
 import Sidebar from "./components/Sidebar";
+import { ToastDemo } from "./components/ToastDemo";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -162,6 +162,7 @@ function App() {
           <Route path="/dashboard/property-analyzer" component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} />
           <Route path="/dashboard/market-intelligence" component={() => <ProtectedRoute component={MarketIntelligencePage} />} />
           <Route path="/dashboard/rent-compare" component={() => <ProtectedRoute component={ComparisonPage} />} />
+          <Route path="/dashboard/toast-demo" component={() => <ProtectedRoute component={ToastDemo} />} />
           <Route path="/properties" component={() => <ProtectedRoute component={PropertiesPage} />} />
           <Route path="/settings" component={() => <ProtectedRoute component={SettingsPage} />} />
           <Route path="/admin" component={() => <ProtectedRoute component={AdminPage} />} />
