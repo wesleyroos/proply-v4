@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
+import { ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 import {
   Tooltip,
   TooltipContent,
@@ -69,7 +70,21 @@ export default function AssetGrowthMetrics({
     }
   };
 
-  return (
+  // Create data for the chart
+const chartData = years.map(year => {
+  const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
+  const loanBalance = calculateLoanBalance(year * 12);
+  const totalEquity = propertyValue - loanBalance;
+
+  return {
+    year: `Year ${year}`,
+    'Property Value': propertyValue,
+    'Loan Balance': loanBalance,
+    'Total Equity': totalEquity
+  };
+});
+
+return (
     <Card className="mt-6">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -77,7 +92,21 @@ export default function AssetGrowthMetrics({
           Asset Growth & Equity
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
+        <div className="h-[400px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 70 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="year" />
+              <YAxis tickFormatter={(value) => `R${(value / 1000000).toFixed(1)}M`} />
+              <Tooltip formatter={(value) => `R${value.toLocaleString()}`} />
+              <Legend />
+              <Area type="monotone" dataKey="Property Value" fill="#8884d8" stroke="#8884d8" fillOpacity={0.3} />
+              <Area type="monotone" dataKey="Loan Balance" fill="#82ca9d" stroke="#82ca9d" fillOpacity={0.3} />
+              <Line type="monotone" dataKey="Total Equity" stroke="#ff7300" strokeWidth={2} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
         <div className="rounded-lg border">
           <table className="w-full">
             <thead>
