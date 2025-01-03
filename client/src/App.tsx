@@ -73,6 +73,7 @@ function App() {
 
   return (
     <>
+      <Toaster />
       <TooltipProvider>
         <AnimatePresence mode="wait">
           <Switch key={location}>
