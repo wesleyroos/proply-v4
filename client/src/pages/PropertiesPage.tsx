@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { formatter } from "../utils/formatting";
 import { Trash2, Calculator, ArrowUpDown, Eye, ChevronUp, ChevronDown } from "lucide-react";
 import {
@@ -215,7 +216,7 @@ export default function PropertiesPage() {
                     <tr className="border-b bg-muted/50">
                       <th className="py-3 px-4 text-left">
                         <div className="flex items-center gap-2">
-                          <Checkbox 
+                          <Checkbox
                             checked={selectedProperties.length === filteredAndSortedProperties.length}
                             onCheckedChange={(checked) => {
                               if (checked) {
@@ -225,12 +226,13 @@ export default function PropertiesPage() {
                               }
                             }}
                           />
-                          <span onClick={() => handleSort('address')} className="cursor-pointer hover:bg-muted/75 flex items-center">
+                          <span onClick={() => handleSort('address')} className="cursor-pointer hover:bg-muted/75">
                             <div className="flex items-center">
                               Address
                               <SortIcon field="address" />
                             </div>
                           </span>
+                        </div>
                       </th>
                       <th onClick={() => handleSort('purchasePrice')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
                         <div className="flex items-center justify-end">
@@ -321,7 +323,8 @@ export default function PropertiesPage() {
                                 }}
                               />
                               <div className="max-w-[200px]">
-                              <div className="font-medium truncate">{property.address}</div>
+                                <div className="font-medium truncate">{property.address}</div>
+                              </div>
                             </div>
                           </td>
                           <td className="py-3 px-4 text-right whitespace-nowrap">
