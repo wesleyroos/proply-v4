@@ -365,68 +365,74 @@ export default function PropertyAnalyzerPage() {
                     <FileText className="w-4 h-4 mr-2" />
                     Export PDF
                   </Button>
-                  <Button
-                    onClick={async () => {
-                      try {
-                        const dataToSave = prepareAnalysisDataForSave();
-                        if (!dataToSave) {
-                          setSaveDialog({
-                            isOpen: true,
-                            type: 'error',
-                            message: 'Missing required data for saving analysis. Please ensure all fields are filled correctly.'
-                          });
-                          return;
-                        }
+                  {/* Replaced Save Analysis button */}
+                  <Card>
+                    <CardContent className="space-y-6">
+                      <Button
+                        onClick={async () => {
+                          try {
+                            const dataToSave = prepareAnalysisDataForSave();
+                            if (!dataToSave) {
+                              toast({
+                                variant: "destructive",
+                                title: "Error",
+                                description: 'Missing required data for saving analysis. Please ensure all fields are filled correctly.',
+                                duration: 5000,
+                              });
+                              return;
+                            }
 
-                        console.log('Data being saved:', dataToSave);
+                            console.log('Data being saved:', dataToSave);
 
-                        const response = await fetch('/api/property-analyzer/save', {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                          body: JSON.stringify(dataToSave),
-                          credentials: 'include'
-                        });
+                            const response = await fetch('/api/property-analyzer/save', {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify(dataToSave),
+                              credentials: 'include'
+                            });
 
-                        const responseData = await response.json();
+                            const responseData = await response.json();
 
-                        if (!response.ok) {
-                          console.error('Save response error:', responseData);
-                          let errorMessage = 'Failed to save analysis. ';
-                          if (responseData.details && Array.isArray(responseData.details)) {
-                            errorMessage += responseData.details.join('\n');
-                          } else if (responseData.error) {
-                            errorMessage += responseData.error;
+                            if (!response.ok) {
+                              console.error('Save response error:', responseData);
+                              let errorMessage = 'Failed to save analysis. ';
+                              if (responseData.details && Array.isArray(responseData.details)) {
+                                errorMessage += responseData.details.join('\n');
+                              } else if (responseData.error) {
+                                errorMessage += responseData.error;
+                              }
+                              throw new Error(errorMessage);
+                            }
+
+                            setAnalysisId(responseData.id);
+                            toast({
+                              variant: "success",
+                              title: "Analysis Saved",
+                              description: `Property analysis for ${dataToSave.address} has been successfully saved!`,
+                              duration: 5000,
+                            });
+                          } catch (error) {
+                            console.error('Save error:', error);
+                            toast({
+                              variant: "destructive",
+                              title: "Error",
+                              description: error instanceof Error ? error.message : 'Failed to save analysis',
+                              duration: 7000,
+                            });
                           }
-                          throw new Error(errorMessage);
-                        }
-
-                        setAnalysisId(responseData.id);
-                        toast({
-                          title: "Analysis Saved",
-                          description: "Property analysis saved successfully!",
-                          variant: "default"
-                        });
-                      } catch (error) {
-                        console.error('Save error:', error);
-                        toast({
-                          title: "Error",
-                          description: error instanceof Error ? error.message : 'Failed to save analysis',
-                          variant: "destructive"
-                        });
-                      }
-                    }}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Analysis
-                  </Button>
+                        }}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Analysis
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             </div>
-
-            {/* Toast notifications handled by Toaster component */}
 
 
             {/* Deal Summary Section */}
@@ -803,7 +809,7 @@ export default function PropertyAnalyzerPage() {
 
                             return (
                               <div>
-                                <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                                <h3 className="text-sm font-semibold text-slate600 flex items-center gap-2">
                                   Rate/m² Difference
                                   <AnalyzerIndicator />
                                 </h3>
@@ -958,7 +964,7 @@ export default function PropertyAnalyzerPage() {
               />
 
             </div>
-            
+
             <PDFReportModal
               open={showPDFReport}
               onOpenChange={setShowPDFReport}
