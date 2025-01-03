@@ -353,7 +353,7 @@ export default function PropertyAnalyzerPage() {
                     Based on your provided property details
                   </p>
                 </div>
-                <div className="space-x-2">
+                <div className="flex items-center space-x-3">
                   <Button
                     onClick={async () => {
                       try {
