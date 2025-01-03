@@ -25,7 +25,7 @@ export default function AssetGrowthMetrics({
   annualAppreciation,
 }: AssetGrowthMetricsProps) {
   const years = [1, 2, 3, 4, 5, 10, 20];
-  const monthlyRate = interestRate / 100 / 12;
+  const monthlyRate = (interestRate > 0 ? interestRate : 0) / 100 / 12;
   const totalPayments = loanTerm * 12;
 
   const MetricLabel = ({ label, tooltip }: { label: string; tooltip: string }) => (
@@ -41,6 +41,33 @@ export default function AssetGrowthMetrics({
       </Tooltip>
     </div>
   );
+
+  // Helper function to calculate loan balance for a given period
+  const calculateLoanBalance = (monthsPaid: number): number => {
+    if (loanAmount <= 0 || monthlyRate <= 0) return 0;
+
+    const remainingPayments = totalPayments - monthsPaid;
+    if (remainingPayments <= 0) return 0;
+
+    try {
+      return (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
+        / (Math.pow(1 + monthlyRate, totalPayments) - 1);
+    } catch (error) {
+      return 0;
+    }
+  };
+
+  // Helper function to calculate monthly payment
+  const calculateMonthlyPayment = (): number => {
+    if (loanAmount <= 0 || monthlyRate <= 0) return 0;
+
+    try {
+      return (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) 
+        / (Math.pow(1 + monthlyRate, totalPayments) - 1);
+    } catch (error) {
+      return 0;
+    }
+  };
 
   return (
     <Card className="mt-6">
@@ -116,11 +143,7 @@ export default function AssetGrowthMetrics({
                 </td>
                 {years.map(year => {
                   const monthsPaid = year * 12;
-                  const remainingPayments = totalPayments - monthsPaid;
-                  const loanBalance = remainingPayments > 0 
-                    ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
-                      / (Math.pow(1 + monthlyRate, totalPayments) - 1)
-                    : 0;
+                  const loanBalance = calculateLoanBalance(monthsPaid);
                   return (
                     <td key={year} className="text-right py-3 px-6">
                       <div className="flex items-center justify-end gap-2">
@@ -142,16 +165,14 @@ export default function AssetGrowthMetrics({
                 </td>
                 {years.map(year => {
                   const monthsPaid = year * 12;
-                  const totalPaid = monthsPaid * (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) 
-                    / (Math.pow(1 + monthlyRate, totalPayments) - 1);
-                  const principalPaid = loanAmount - ((loanAmount * (Math.pow(1 + monthlyRate, totalPayments) 
-                    - Math.pow(1 + monthlyRate, monthsPaid))) 
-                    / (Math.pow(1 + monthlyRate, totalPayments) - 1));
+                  const monthlyPayment = calculateMonthlyPayment();
+                  const totalPaid = monthsPaid * monthlyPayment;
+                  const principalPaid = loanAmount - calculateLoanBalance(monthsPaid);
                   const interestPaid = totalPaid - principalPaid;
                   return (
                     <td key={year} className="text-right py-3 px-6">
                       <div className="flex items-center justify-end gap-2">
-                        R{Math.round(interestPaid).toLocaleString()}
+                        R{Math.round(Math.max(0, interestPaid)).toLocaleString()}
                         <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                       </div>
                     </td>
@@ -169,14 +190,11 @@ export default function AssetGrowthMetrics({
                 </td>
                 {years.map(year => {
                   const monthsPaid = year * 12;
-                  const monthlyPayment = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) 
-                    / (Math.pow(1 + monthlyRate, totalPayments) - 1);
-                  const remainingBalance = (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) 
-                    - Math.pow(1 + monthlyRate, monthsPaid))) 
-                    / (Math.pow(1 + monthlyRate, totalPayments) - 1);
-                  const interestPayment = remainingBalance * monthlyRate;
+                  const monthlyPayment = calculateMonthlyPayment();
+                  const loanBalance = calculateLoanBalance(monthsPaid);
+                  const interestPayment = loanBalance * monthlyRate;
                   const principalPayment = monthlyPayment - interestPayment;
-                  const ratio = (interestPayment / principalPayment) * 100;
+                  const ratio = principalPayment > 0 ? (interestPayment / principalPayment) * 100 : 0;
                   return (
                     <td key={year} className="text-right py-3 px-6">
                       <div className="flex items-center justify-end gap-2">
@@ -188,8 +206,6 @@ export default function AssetGrowthMetrics({
                 })}
               </tr>
 
-              
-
               {/* Total Equity */}
               <tr className="hover:bg-gray-50">
                 <td className="py-3 px-6">
@@ -200,17 +216,12 @@ export default function AssetGrowthMetrics({
                 </td>
                 {years.map(year => {
                   const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
-                  const monthsPaid = year * 12;
-                  const remainingPayments = totalPayments - monthsPaid;
-                  const loanBalance = remainingPayments > 0 
-                    ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
-                      / (Math.pow(1 + monthlyRate, totalPayments) - 1)
-                    : 0;
+                  const loanBalance = calculateLoanBalance(year * 12);
                   const totalEquity = propertyValue - loanBalance;
                   return (
                     <td key={year} className="text-right py-3 px-6">
                       <div className="flex items-center justify-end gap-2">
-                        R{Math.round(totalEquity).toLocaleString()}
+                        R{Math.round(Math.max(0, totalEquity)).toLocaleString()}
                         <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                       </div>
                     </td>
@@ -228,16 +239,12 @@ export default function AssetGrowthMetrics({
                 </td>
                 {years.map(year => {
                   const monthsPaid = year * 12;
-                  const remainingPayments = totalPayments - monthsPaid;
-                  const loanBalance = remainingPayments > 0 
-                    ? (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
-                      / (Math.pow(1 + monthlyRate, totalPayments) - 1)
-                    : 0;
+                  const loanBalance = calculateLoanBalance(monthsPaid);
                   const equityFromRepayment = loanAmount - loanBalance;
                   return (
                     <td key={year} className="text-right py-3 px-6">
                       <div className="flex items-center justify-end gap-2">
-                        R{Math.round(equityFromRepayment).toLocaleString()}
+                        R{Math.round(Math.max(0, equityFromRepayment)).toLocaleString()}
                         <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
                       </div>
                     </td>

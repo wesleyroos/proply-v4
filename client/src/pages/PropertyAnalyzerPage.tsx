@@ -816,11 +816,11 @@ export default function PropertyAnalyzerPage() {
                                       </span>
                                     </p>
                                   </TooltipTrigger>
-                                  <TooltipContent className="max-w-[300px text-sm">
+                                  <TooltipContent className="max-w-[300px] text-sm">
                                     This shows how the property's price per
                                     square meter compares to the average rate in
                                     the area. A lower rate than the area average might indicate
-                                                                    better value for money, while a higherrate suggests premium positioning.
+                                    better value for money, while a higher rate suggests premium positioning.
                                   </TooltipContent>
                                 </Tooltip>
 
@@ -871,16 +871,15 @@ export default function PropertyAnalyzerPage() {
               <AssetGrowthMetrics
                 purchasePrice={analysisResult.analysis.purchasePrice}
                 deposit={analysisResult.deposit || 0}
+                loanAmount={analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)}
                 interestRate={analysisResult.interestRate || 0}
-                loanTerm={analysisResult.loanTerm}
-                monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
-                netOperatingIncome={analysisResult.netOperatingIncome}
+                loanTerm={analysisResult.loanTerm || 20}
                 annualAppreciation={formData?.annualPropertyAppreciation || 5}
               />
 
               {/* Cashflow Chart */}
               <CashflowChart
-                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+                netOperatingIncome={analysisResult.netOperatingIncome}
               />
 
               {/* Investment Metrics */}
