@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import html2pdf from "html2pdf.js";
 import { formatter } from "@/lib/utils";
 
@@ -171,6 +172,7 @@ export function PropertyReportGenerator({
 }: PropertyReportGeneratorProps) {
   const [sectionGroups, setSectionGroups] = useState<SectionGroup[]>(defaultSectionGroups);
   const [generating, setGenerating] = useState(false);
+  const { toast } = useToast();
 
   const toggleSection = (groupTitle: string, sectionId: string) => {
     setSectionGroups(sectionGroups.map(group => {
@@ -281,17 +283,17 @@ export function PropertyReportGenerator({
 
       // Performance Projections Section
       if (sectionGroups[3].sections.some(s => s.checked)) {
-        if (isSectionChecked("Performance Projections", "cashflowProjections")) {
+        if (isSectionChecked("Performance Projections", "cashflowProjections") && data.netOperatingIncome) {
           const years: Year[] = ['year1', 'year2', 'year3', 'year4', 'year5', 'year10', 'year20'];
           content.innerHTML += `
             <div style="margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
               <h2 style="color: #2d3748; margin-bottom: 15px;">Annual Cashflow Projections</h2>
               <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                ${years.map(year => `
+                ${years.map(year => data.netOperatingIncome[year] ? `
                   <div>
                     <p><strong>Year ${year.replace('year', '')}:</strong><br>${formatter.format(data.netOperatingIncome[year].annualCashflow)}</p>
                   </div>
-                `).join('')}
+                ` : '').join('')}
               </div>
             </div>
           `;
@@ -300,32 +302,34 @@ export function PropertyReportGenerator({
 
       // Investment Metrics Section
       if (sectionGroups[4].sections.some(s => s.checked)) {
-        const year1Metrics = data.investmentMetrics.year1;
-        content.innerHTML += `
-          <div style="margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
-            <h2 style="color: #2d3748; margin-bottom: 15px;">Investment Metrics (Year 1)</h2>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-              ${isSectionChecked("Investment Metrics (Year 1)", "grossYield") ?
-                `<p><strong>Gross Yield:</strong><br>${year1Metrics.grossYield.toFixed(1)}%</p>` : ''}
-              ${isSectionChecked("Investment Metrics (Year 1)", "netYield") ?
-                `<p><strong>Net Yield:</strong><br>${year1Metrics.netYield.toFixed(1)}%</p>` : ''}
-              ${isSectionChecked("Investment Metrics (Year 1)", "returnOnEquity") ?
-                `<p><strong>Return on Equity:</strong><br>${year1Metrics.returnOnEquity.toFixed(1)}%</p>` : ''}
-              ${isSectionChecked("Investment Metrics (Year 1)", "annualReturn") ?
-                `<p><strong>Annual Return:</strong><br>${year1Metrics.annualReturn.toFixed(1)}%</p>` : ''}
-              ${isSectionChecked("Investment Metrics (Year 1)", "capRate") ?
-                `<p><strong>Cap Rate:</strong><br>${year1Metrics.capRate.toFixed(1)}%</p>` : ''}
-              ${isSectionChecked("Investment Metrics (Year 1)", "cashOnCashReturn") ?
-                `<p><strong>Cash on Cash Return:</strong><br>${year1Metrics.cashOnCashReturn.toFixed(1)}%</p>` : ''}
-              ${isSectionChecked("Investment Metrics (Year 1)", "irr") ?
-                `<p><strong>IRR:</strong><br>${year1Metrics.irr.toFixed(1)}%</p>` : ''}
+        const yearMetrics = data.investmentMetrics?.year1;
+        if (yearMetrics) {
+          content.innerHTML += `
+            <div style="margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <h2 style="color: #2d3748; margin-bottom: 15px;">Investment Metrics (Year 1)</h2>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                ${isSectionChecked("Investment Metrics (Year 1)", "grossYield") ?
+                  `<p><strong>Gross Yield:</strong><br>${yearMetrics.grossYield.toFixed(1)}%</p>` : ''}
+                ${isSectionChecked("Investment Metrics (Year 1)", "netYield") ?
+                  `<p><strong>Net Yield:</strong><br>${yearMetrics.netYield.toFixed(1)}%</p>` : ''}
+                ${isSectionChecked("Investment Metrics (Year 1)", "returnOnEquity") ?
+                  `<p><strong>Return on Equity:</strong><br>${yearMetrics.returnOnEquity.toFixed(1)}%</p>` : ''}
+                ${isSectionChecked("Investment Metrics (Year 1)", "annualReturn") ?
+                  `<p><strong>Annual Return:</strong><br>${yearMetrics.annualReturn.toFixed(1)}%</p>` : ''}
+                ${isSectionChecked("Investment Metrics (Year 1)", "capRate") ?
+                  `<p><strong>Cap Rate:</strong><br>${yearMetrics.capRate.toFixed(1)}%</p>` : ''}
+                ${isSectionChecked("Investment Metrics (Year 1)", "cashOnCashReturn") ?
+                  `<p><strong>Cash on Cash Return:</strong><br>${yearMetrics.cashOnCashReturn.toFixed(1)}%</p>` : ''}
+                ${isSectionChecked("Investment Metrics (Year 1)", "irr") ?
+                  `<p><strong>IRR:</strong><br>${yearMetrics.irr.toFixed(1)}%</p>` : ''}
+              </div>
             </div>
-          </div>
-        `;
+          `;
+        }
       }
 
       // Operating Financials Section
-      if (sectionGroups[5].sections.some(s => s.checked)) {
+      if (sectionGroups[5].sections.some(s => s.checked) && data.netOperatingIncome?.year1) {
         content.innerHTML += `
           <div style="margin-bottom: 30px; background: #f0f9ff; padding: 20px; border-radius: 8px;">
             <h2 style="color: #2d3748; margin-bottom: 15px;">Operating Financials</h2>
@@ -367,9 +371,22 @@ export function PropertyReportGenerator({
       };
 
       await html2pdf().set(options).from(content).save();
+
+      toast({
+        title: "Success",
+        description: "PDF report has been generated successfully!",
+        duration: 5000,
+      });
+
       onOpenChange(false);
     } catch (error) {
       console.error('PDF generation error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to generate PDF report. Please try again.",
+        duration: 5000,
+      });
     } finally {
       setGenerating(false);
     }
