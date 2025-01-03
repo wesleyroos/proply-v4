@@ -7,6 +7,8 @@ import { FileText } from "lucide-react";
 import html2pdf from "html2pdf.js";
 import { formatter } from "@/lib/utils";
 
+type Year = 'year1' | 'year2' | 'year3' | 'year4' | 'year5' | 'year10' | 'year20';
+
 interface PropertyData {
   propertyDetails: {
     address: string;
@@ -42,43 +44,16 @@ interface PropertyData {
     shortTermGrossYield: number;
     longTermGrossYield: number;
   };
-  investmentMetrics: {
-    year1: YearlyMetrics;
-    year2: YearlyMetrics;
-    year3: YearlyMetrics;
-    year4: YearlyMetrics;
-    year5: YearlyMetrics;
-    year10: YearlyMetrics;
-    year20: YearlyMetrics;
-  };
-  operatingExpenses: {
-    year1: number;
-    year2: number;
-    year3: number;
-    year4: number;
-    year5: number;
-    year10: number;
-    year20: number;
-  };
-  netOperatingIncome: {
-    year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-  };
+  investmentMetrics: Record<Year, YearlyMetrics>;
+  operatingExpenses: Record<Year, number>;
+  netOperatingIncome: Record<Year, {
+    value: number;
+    annualCashflow: number;
+    cumulativeRentalIncome: number;
+    netWorthChange: number;
+  }>;
   revenueProjections: {
-    shortTerm: {
-      year1: number;
-      year2: number;
-      year3: number;
-      year4: number;
-      year5: number;
-      year10: number;
-      year20: number;
-    };
+    shortTerm: Record<Year, number>;
   };
 }
 
@@ -115,53 +90,84 @@ interface SectionGroup {
 
 const defaultSectionGroups: SectionGroup[] = [
   {
-    title: "Deal Structure",
+    title: "Property Details",
     sections: [
-      { id: "propertyDetails", label: "Property Details", checked: true },
-      { id: "rateAnalysis", label: "Rate Analysis", checked: true },
-      { id: "financing", label: "Financing", checked: true },
+      { id: "address", label: "Address", checked: true },
+      { id: "purchasePrice", label: "Purchase Price", checked: true },
+      { id: "floorArea", label: "Floor Area", checked: true },
+      { id: "ratePerM2", label: "Rate per m²", checked: true },
+      { id: "areaRatePerM2", label: "Area Rate/m²", checked: true },
+      { id: "ratePerM2Difference", label: "Rate/m² Difference", checked: true }
     ]
   },
   {
-    title: "Revenue Performance",
+    title: "Short-Term Rental (Year 1)",
     sections: [
-      { id: "shortTermRental", label: "Short-Term Rental Analysis", checked: true },
-      { id: "longTermRental", label: "Long-Term Rental Analysis", checked: true },
-      { id: "seasonalRates", label: "Monthly Seasonal Rates", checked: true },
-      { id: "occupancyRates", label: "Occupancy Rates", checked: true },
+      { id: "stAnnualRevenue", label: "Annual Revenue", checked: true },
+      { id: "stMonthlyRevenue", label: "Monthly Revenue", checked: true },
+      { id: "stGrossYield", label: "Gross Yield", checked: true },
+      { id: "stNightlyRate", label: "Nightly Rate", checked: true },
+      { id: "stFeeAdjustedRate", label: "Fee-adjusted Rate", checked: true },
+      { id: "stPlatformFee", label: "Platform Fee", checked: true },
+      { id: "stManagementFee", label: "Management Fee", checked: true },
+      { id: "stOccupancy", label: "Occupancy", checked: true }
     ]
   },
   {
-    title: "Investment Performance",
+    title: "Long-Term Rental (Year 1)",
     sections: [
+      { id: "ltAnnualRevenue", label: "Annual Revenue", checked: true },
+      { id: "ltMonthlyRevenue", label: "Monthly Revenue", checked: true },
+      { id: "ltGrossYield", label: "Gross Yield", checked: true }
+    ]
+  },
+  {
+    title: "Performance Projections",
+    sections: [
+      { id: "rentalPerformance", label: "Rental Performance Table & Chart", checked: true },
       { id: "cashflowProjections", label: "Annual Cashflow Projections", checked: true },
       { id: "propertyValueProjections", label: "Property Value Projections", checked: true },
       { id: "loanBalanceProjections", label: "Loan Balance Over Time", checked: true },
-      { id: "netWorthProjections", label: "Net Worth Change", checked: true },
-      { id: "investmentMetrics", label: "Investment Metrics Year 1", checked: true },
+      { id: "netWorthProjections", label: "Net Worth Change", checked: true }
+    ]
+  },
+  {
+    title: "Investment Metrics (Year 1)",
+    sections: [
+      { id: "grossYield", label: "Gross Yield", checked: true },
+      { id: "netYield", label: "Net Yield", checked: true },
+      { id: "returnOnEquity", label: "Return on Equity", checked: true },
+      { id: "annualReturn", label: "Annual Return", checked: true },
+      { id: "capRate", label: "Cap Rate", checked: true },
+      { id: "cashOnCashReturn", label: "Cash on Cash Return", checked: true },
+      { id: "irr", label: "IRR", checked: true }
     ]
   },
   {
     title: "Operating Financials",
     sections: [
-      { id: "operatingFinancials", label: "Operating Financials Year 1", checked: true },
-      { id: "interestPaid", label: "Total Interest Paid Over Time", checked: true },
+      { id: "opAnnualRevenue", label: "Annual Revenue (Year 1)", checked: true },
+      { id: "opNetExpenses", label: "Net Operating Expenses (Year 1)", checked: true },
+      { id: "opNetIncome", label: "Net Operating Income (Year 1)", checked: true },
+      { id: "opAnnualBondPayment", label: "Annual Bond Payment", checked: true },
+      { id: "opCumulativeCashflow", label: "Cumulative Cashflow (Year 1)", checked: true },
+      { id: "totalInterestPaid", label: "Total Interest Paid Over Time", checked: true }
     ]
   },
   {
     title: "Branding",
     sections: [
       { id: "companyBranding", label: "Include Company Branding", checked: true },
-      { id: "proplyBranding", label: "Include Proply Branding", checked: true },
+      { id: "proplyBranding", label: "Include Proply Branding", checked: true }
     ]
   }
 ];
 
-export function PropertyReportGenerator({ 
-  open, 
-  onOpenChange, 
-  data, 
-  companyLogo 
+export function PropertyReportGenerator({
+  open,
+  onOpenChange,
+  data,
+  companyLogo
 }: PropertyReportGeneratorProps) {
   const [sectionGroups, setSectionGroups] = useState<SectionGroup[]>(defaultSectionGroups);
   const [generating, setGenerating] = useState(false);
@@ -193,7 +199,7 @@ export function PropertyReportGenerator({
       content.style.padding = '20px';
       content.style.fontFamily = 'Arial, sans-serif';
 
-      // Header with branding
+      // Add branding if selected
       if (isSectionChecked("Branding", "companyBranding")) {
         content.innerHTML += `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -208,142 +214,132 @@ export function PropertyReportGenerator({
         `;
       }
 
-      // Deal Structure Section
-      if (isSectionChecked("Deal Structure", "propertyDetails")) {
+      // Property Details Section
+      if (sectionGroups[0].sections.some(s => s.checked)) {
         content.innerHTML += `
           <div style="margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
             <h2 style="color: #2d3748; margin-bottom: 15px;">Property Details</h2>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-              <div>
-                <p><strong>Address:</strong><br>${data.propertyDetails.address}</p>
-                <p><strong>Purchase Price:</strong><br>${formatter.format(data.propertyDetails.purchasePrice)}</p>
-                <p><strong>Floor Area:</strong><br>${data.propertyDetails.floorArea}m²</p>
-                <p><strong>Rate per m²:</strong><br>${formatter.format(data.propertyDetails.ratePerSquareMeter)}/m²</p>
-              </div>
-              <div>
-                <p><strong>Area Rate/m²:</strong><br>${formatter.format(data.propertyDetails.ratePerSquareMeter)}/m²</p>
-                <p><strong>Rate/m² Difference:</strong><br>${formatter.format(data.propertyDetails.ratePerSquareMeter - data.propertyDetails.ratePerSquareMeter)}/m²</p>
-              </div>
+              ${isSectionChecked("Property Details", "address") ?
+                `<p><strong>Address:</strong><br>${data.propertyDetails.address}</p>` : ''}
+              ${isSectionChecked("Property Details", "purchasePrice") ?
+                `<p><strong>Purchase Price:</strong><br>${formatter.format(data.propertyDetails.purchasePrice)}</p>` : ''}
+              ${isSectionChecked("Property Details", "floorArea") ?
+                `<p><strong>Floor Area:</strong><br>${data.propertyDetails.floorArea}m²</p>` : ''}
+              ${isSectionChecked("Property Details", "ratePerM2") ?
+                `<p><strong>Rate per m²:</strong><br>${formatter.format(data.propertyDetails.ratePerSquareMeter)}/m²</p>` : ''}
+              ${isSectionChecked("Property Details", "areaRatePerM2") ?
+                `<p><strong>Area Rate/m²:</strong><br>${formatter.format(data.propertyDetails.ratePerSquareMeter)}/m²</p>` : ''}
+              ${isSectionChecked("Property Details", "ratePerM2Difference") ?
+                `<p><strong>Rate/m² Difference:</strong><br>${formatter.format(data.propertyDetails.ratePerSquareMeter - data.propertyDetails.ratePerSquareMeter)}/m²</p>` : ''}
             </div>
           </div>
         `;
       }
 
-      if (isSectionChecked("Deal Structure", "financing")) {
-        content.innerHTML += `
-          <div style="margin-bottom: 30px; background: #f0f9ff; padding: 20px; border-radius: 8px;">
-            <h2 style="color: #2d3748; margin-bottom: 15px;">Financing</h2>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-              <div>
-                <p><strong>Deposit:</strong><br>${data.financialMetrics.depositPercentage}%</p>
-                <p><strong>Interest Rate:</strong><br>${data.financialMetrics.interestRate}%</p>
-                <p><strong>Loan Term:</strong><br>${data.financialMetrics.loanTerm} years</p>
-                <p><strong>Monthly Bond Payment:</strong><br>${formatter.format(data.financialMetrics.monthlyBondRepayment)}</p>
-              </div>
-              <div>
-                <p><strong>Bond Registration:</strong><br>${formatter.format(data.financialMetrics.bondRegistration)}</p>
-                <p><strong>Transfer Costs:</strong><br>${formatter.format(data.financialMetrics.transferCosts)}</p>
-                <p><strong>Total Capital Required:</strong><br>${formatter.format(
-                  data.financialMetrics.depositAmount + 
-                  data.financialMetrics.bondRegistration + 
-                  data.financialMetrics.transferCosts
-                )}</p>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
-      // Revenue Performance Section
-      if (isSectionChecked("Revenue Performance", "shortTermRental")) {
+      // Short-Term Rental Section
+      if (sectionGroups[1].sections.some(s => s.checked)) {
         content.innerHTML += `
           <div style="margin-bottom: 30px; background: #f7f9fc; padding: 20px; border-radius: 8px;">
             <h2 style="color: #2d3748; margin-bottom: 15px;">Short-Term Rental (Year 1)</h2>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-              <div>
-                <p><strong>Annual Revenue:</strong><br>${formatter.format(data.performance.shortTermAnnualRevenue)}</p>
-                <p><strong>Monthly Revenue:</strong><br>${formatter.format(data.performance.shortTermAnnualRevenue / 12)}</p>
-                <p><strong>Gross Yield:</strong><br>${data.performance.shortTermGrossYield.toFixed(1)}%</p>
-                <p><strong>Nightly Rate:</strong><br>${formatter.format(data.performance.shortTermNightlyRate)}</p>
-              </div>
-              <div>
-                <p><strong>Fee-adjusted Rate:</strong><br>${formatter.format(data.performance.shortTermNightlyRate * (1 - data.expenses.managementFee/100))}</p>
-                <p><strong>Management Fee:</strong><br>${data.expenses.managementFee}%</p>
-                <p><strong>Occupancy:</strong><br>${data.performance.annualOccupancy}%</p>
-              </div>
+              ${isSectionChecked("Short-Term Rental (Year 1)", "stAnnualRevenue") ?
+                `<p><strong>Annual Revenue:</strong><br>${formatter.format(data.performance.shortTermAnnualRevenue)}</p>` : ''}
+              ${isSectionChecked("Short-Term Rental (Year 1)", "stMonthlyRevenue") ?
+                `<p><strong>Monthly Revenue:</strong><br>${formatter.format(data.performance.shortTermAnnualRevenue / 12)}</p>` : ''}
+              ${isSectionChecked("Short-Term Rental (Year 1)", "stGrossYield") ?
+                `<p><strong>Gross Yield:</strong><br>${data.performance.shortTermGrossYield.toFixed(1)}%</p>` : ''}
+              ${isSectionChecked("Short-Term Rental (Year 1)", "stNightlyRate") ?
+                `<p><strong>Nightly Rate:</strong><br>${formatter.format(data.performance.shortTermNightlyRate)}</p>` : ''}
+              ${isSectionChecked("Short-Term Rental (Year 1)", "stFeeAdjustedRate") ?
+                `<p><strong>Fee-adjusted Rate:</strong><br>${formatter.format(data.performance.shortTermNightlyRate * (1 - data.expenses.managementFee / 100))}</p>` : ''}
+              ${isSectionChecked("Short-Term Rental (Year 1)", "stManagementFee") ?
+                `<p><strong>Management Fee:</strong><br>${data.expenses.managementFee}%</p>` : ''}
+              ${isSectionChecked("Short-Term Rental (Year 1)", "stOccupancy") ?
+                `<p><strong>Occupancy:</strong><br>${data.performance.annualOccupancy}%</p>` : ''}
             </div>
           </div>
         `;
       }
 
-      if (isSectionChecked("Revenue Performance", "longTermRental")) {
+      // Long-Term Rental Section
+      if (sectionGroups[2].sections.some(s => s.checked)) {
         content.innerHTML += `
           <div style="margin-bottom: 30px; background: #f7f9fc; padding: 20px; border-radius: 8px;">
             <h2 style="color: #2d3748; margin-bottom: 15px;">Long-Term Rental (Year 1)</h2>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-              <div>
-                <p><strong>Annual Revenue:</strong><br>${formatter.format(data.performance.longTermAnnualRevenue)}</p>
-                <p><strong>Monthly Revenue:</strong><br>${formatter.format(data.performance.longTermAnnualRevenue / 12)}</p>
-                <p><strong>Gross Yield:</strong><br>${data.performance.longTermGrossYield.toFixed(1)}%</p>
+              ${isSectionChecked("Long-Term Rental (Year 1)", "ltAnnualRevenue") ?
+                `<p><strong>Annual Revenue:</strong><br>${formatter.format(data.performance.longTermAnnualRevenue)}</p>` : ''}
+              ${isSectionChecked("Long-Term Rental (Year 1)", "ltMonthlyRevenue") ?
+                `<p><strong>Monthly Revenue:</strong><br>${formatter.format(data.performance.longTermAnnualRevenue / 12)}</p>` : ''}
+              ${isSectionChecked("Long-Term Rental (Year 1)", "ltGrossYield") ?
+                `<p><strong>Gross Yield:</strong><br>${data.performance.longTermGrossYield.toFixed(1)}%</p>` : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      // Performance Projections Section
+      if (sectionGroups[3].sections.some(s => s.checked)) {
+        if (isSectionChecked("Performance Projections", "cashflowProjections")) {
+          const years: Year[] = ['year1', 'year2', 'year3', 'year4', 'year5', 'year10', 'year20'];
+          content.innerHTML += `
+            <div style="margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <h2 style="color: #2d3748; margin-bottom: 15px;">Annual Cashflow Projections</h2>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                ${years.map(year => `
+                  <div>
+                    <p><strong>Year ${year.replace('year', '')}:</strong><br>${formatter.format(data.netOperatingIncome[year].annualCashflow)}</p>
+                  </div>
+                `).join('')}
               </div>
             </div>
-          </div>
-        `;
+          `;
+        }
       }
 
-      // Investment Performance Section
-      if (isSectionChecked("Investment Performance", "cashflowProjections")) {
-        content.innerHTML += `
-          <div style="margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
-            <h2 style="color: #2d3748; margin-bottom: 15px;">Annual Cashflow Projections</h2>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-              ${['year1', 'year2', 'year3', 'year4', 'year5', 'year10', 'year20'].map(year => `
-                <div>
-                  <p><strong>Year ${year.replace('year', '')}:</strong><br>${formatter.format(data.netOperatingIncome[year].annualCashflow)}</p>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
-      }
-
-      if (isSectionChecked("Investment Performance", "investmentMetrics")) {
+      // Investment Metrics Section
+      if (sectionGroups[4].sections.some(s => s.checked)) {
         const year1Metrics = data.investmentMetrics.year1;
         content.innerHTML += `
           <div style="margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
             <h2 style="color: #2d3748; margin-bottom: 15px;">Investment Metrics (Year 1)</h2>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-              <div>
-                <p><strong>Gross Yield:</strong><br>${year1Metrics.grossYield.toFixed(1)}%</p>
-                <p><strong>Net Yield:</strong><br>${year1Metrics.netYield.toFixed(1)}%</p>
-                <p><strong>Return on Equity:</strong><br>${year1Metrics.returnOnEquity.toFixed(1)}%</p>
-                <p><strong>Annual Return:</strong><br>${year1Metrics.annualReturn.toFixed(1)}%</p>
-              </div>
-              <div>
-                <p><strong>Cap Rate:</strong><br>${year1Metrics.capRate.toFixed(1)}%</p>
-                <p><strong>Cash on Cash Return:</strong><br>${year1Metrics.cashOnCashReturn.toFixed(1)}%</p>
-                <p><strong>IRR:</strong><br>${year1Metrics.irr.toFixed(1)}%</p>
-              </div>
+              ${isSectionChecked("Investment Metrics (Year 1)", "grossYield") ?
+                `<p><strong>Gross Yield:</strong><br>${year1Metrics.grossYield.toFixed(1)}%</p>` : ''}
+              ${isSectionChecked("Investment Metrics (Year 1)", "netYield") ?
+                `<p><strong>Net Yield:</strong><br>${year1Metrics.netYield.toFixed(1)}%</p>` : ''}
+              ${isSectionChecked("Investment Metrics (Year 1)", "returnOnEquity") ?
+                `<p><strong>Return on Equity:</strong><br>${year1Metrics.returnOnEquity.toFixed(1)}%</p>` : ''}
+              ${isSectionChecked("Investment Metrics (Year 1)", "annualReturn") ?
+                `<p><strong>Annual Return:</strong><br>${year1Metrics.annualReturn.toFixed(1)}%</p>` : ''}
+              ${isSectionChecked("Investment Metrics (Year 1)", "capRate") ?
+                `<p><strong>Cap Rate:</strong><br>${year1Metrics.capRate.toFixed(1)}%</p>` : ''}
+              ${isSectionChecked("Investment Metrics (Year 1)", "cashOnCashReturn") ?
+                `<p><strong>Cash on Cash Return:</strong><br>${year1Metrics.cashOnCashReturn.toFixed(1)}%</p>` : ''}
+              ${isSectionChecked("Investment Metrics (Year 1)", "irr") ?
+                `<p><strong>IRR:</strong><br>${year1Metrics.irr.toFixed(1)}%</p>` : ''}
             </div>
           </div>
         `;
       }
 
       // Operating Financials Section
-      if (isSectionChecked("Operating Financials", "operatingFinancials")) {
+      if (sectionGroups[5].sections.some(s => s.checked)) {
         content.innerHTML += `
           <div style="margin-bottom: 30px; background: #f0f9ff; padding: 20px; border-radius: 8px;">
-            <h2 style="color: #2d3748; margin-bottom: 15px;">Operating Financials (Year 1)</h2>
+            <h2 style="color: #2d3748; margin-bottom: 15px;">Operating Financials</h2>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-              <div>
-                <p><strong>Annual Revenue:</strong><br>${formatter.format(data.performance.shortTermAnnualRevenue)}</p>
-                <p><strong>Net Operating Expenses:</strong><br>${formatter.format(data.operatingExpenses.year1)}</p>
-                <p><strong>Net Operating Income:</strong><br>${formatter.format(data.netOperatingIncome.year1.value)}</p>
-              </div>
-              <div>
-                <p><strong>Annual Bond Payment:</strong><br>${formatter.format(data.financialMetrics.monthlyBondRepayment * 12)}</p>
-                <p><strong>Cumulative Cashflow:</strong><br>${formatter.format(data.netOperatingIncome.year1.cumulativeRentalIncome)}</p>
-              </div>
+              ${isSectionChecked("Operating Financials", "opAnnualRevenue") ?
+                `<p><strong>Annual Revenue (Year 1):</strong><br>${formatter.format(data.performance.shortTermAnnualRevenue)}</p>` : ''}
+              ${isSectionChecked("Operating Financials", "opNetExpenses") ?
+                `<p><strong>Net Operating Expenses (Year 1):</strong><br>${formatter.format(data.operatingExpenses.year1)}</p>` : ''}
+              ${isSectionChecked("Operating Financials", "opNetIncome") ?
+                `<p><strong>Net Operating Income (Year 1):</strong><br>${formatter.format(data.netOperatingIncome.year1.value)}</p>` : ''}
+              ${isSectionChecked("Operating Financials", "opAnnualBondPayment") ?
+                `<p><strong>Annual Bond Payment:</strong><br>${formatter.format(data.financialMetrics.monthlyBondRepayment * 12)}</p>` : ''}
+              ${isSectionChecked("Operating Financials", "opCumulativeCashflow") ?
+                `<p><strong>Cumulative Cashflow (Year 1):</strong><br>${formatter.format(data.netOperatingIncome.year1.cumulativeRentalIncome)}</p>` : ''}
             </div>
           </div>
         `;
@@ -394,13 +390,13 @@ export function PropertyReportGenerator({
                 <div className="grid grid-cols-2 gap-4">
                   {group.sections.map((section) => (
                     <div key={section.id} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={section.id} 
+                      <Checkbox
+                        id={section.id}
                         checked={section.checked}
                         onCheckedChange={() => toggleSection(group.title, section.id)}
                       />
-                      <label 
-                        htmlFor={section.id} 
+                      <label
+                        htmlFor={section.id}
                         className="text-sm cursor-pointer"
                       >
                         {section.label}
@@ -412,8 +408,8 @@ export function PropertyReportGenerator({
             </Card>
           ))}
 
-          <Button 
-            onClick={generatePDF} 
+          <Button
+            onClick={generatePDF}
             disabled={generating}
             className="w-full"
           >
