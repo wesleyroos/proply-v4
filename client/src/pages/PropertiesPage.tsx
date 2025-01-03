@@ -226,10 +226,11 @@ export default function PropertiesPage() {
                             }}
                           />
                           <span onClick={() => handleSort('address')} className="cursor-pointer hover:bg-muted/75 flex items-center">
-                        <div className="flex items-center">
-                          Address
-                          <SortIcon field="address" />
-                        </div>
+                            <div className="flex items-center">
+                              Address
+                              <SortIcon field="address" />
+                            </div>
+                          </span>
                       </th>
                       <th onClick={() => handleSort('purchasePrice')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
                         <div className="flex items-center justify-end">
