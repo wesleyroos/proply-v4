@@ -130,50 +130,66 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
                  alt="Company Logo" 
                  style="height: 60px; object-fit: contain;" />
           ` : ''}
+          <div style="text-align: right;">
+            <img src="/proply-logo.png" alt="Proply Logo" style="height: 30px;" />
+            <p style="margin: 0; font-size: 12px; color: #666;">Powered by Proply</p>
           </div>
+        </div>
 
         <h1 style="color: #1a365d; margin-bottom: 20px;">Property Analysis Report</h1>
 
         ${getSelectedSections("Property Details").includes("address") ? `
-          <div style="margin-bottom: 30px;">
-            <h2 style="color: #2d3748; margin-bottom: 15px;">Property Details</h2>
-            <p><strong>Address:</strong> ${data.address}</p>
-            ${getSelectedSections("Property Details").includes("purchasePrice") ? 
-              `<p><strong>Purchase Price:</strong> ${formatter.format(data.purchasePrice)}</p>` : ''}
-            ${getSelectedSections("Property Details").includes("floorArea") ? 
-              `<p><strong>Floor Area:</strong> ${data.floorArea}m²</p>` : ''}
+          <div style="margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #2d3748; margin-bottom: 15px; font-size: 1.5rem;">Property Overview</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+              <div>
+                <p style="margin-bottom: 10px;"><strong>Address:</strong><br>${data.address}</p>
+                ${getSelectedSections("Property Details").includes("purchasePrice") ? 
+                  `<p style="margin-bottom: 10px;"><strong>Purchase Price:</strong><br>${formatter.format(data.purchasePrice)}</p>` : ''}
+              </div>
+              <div>
+                ${getSelectedSections("Property Details").includes("floorArea") ? 
+                  `<p style="margin-bottom: 10px;"><strong>Floor Area:</strong><br>${data.floorArea}m²</p>` : ''}
+                ${getSelectedSections("Property Details").includes("ratePerM2") ? 
+                  `<p style="margin-bottom: 10px;"><strong>Rate per m²:</strong><br>${formatter.format(data.ratePerM2)}/m²</p>` : ''}
+              </div>
+            </div>
           </div>
         ` : ''}
 
         ${getSelectedSections("Revenue Performance").includes("shortTermY1") ? `
-          <div style="margin-bottom: 30px;">
-            <h2 style="color: #2d3748; margin-bottom: 15px;">Short-Term Rental Performance (Year 1)</h2>
-            <p><strong>Monthly Revenue:</strong> ${formatter.format(data.shortTermMonthly)}</p>
-            <p><strong>Annual Revenue:</strong> ${formatter.format(data.shortTermAnnual)}</p>
-            <p><strong>Revenue After Fees:</strong> ${formatter.format(data.shortTermAfterFees)}</p>
-            <p><strong>Occupancy Rate:</strong> ${data.annualOccupancy}%</p>
-          </div>
-        ` : ''}
-
-        ${getSelectedSections("Revenue Performance").includes("longTermY1") ? `
-          <div style="margin-bottom: 30px;">
-            <h2 style="color: #2d3748; margin-bottom: 15px;">Long-Term Rental Performance (Year 1)</h2>
-            <p><strong>Monthly Revenue:</strong> ${formatter.format(data.longTermMonthly)}</p>
-            <p><strong>Annual Revenue:</strong> ${formatter.format(data.longTermAnnual)}</p>
+          <div style="margin-bottom: 30px; background: #f0f9ff; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #2d3748; margin-bottom: 15px; font-size: 1.5rem;">Short-Term Rental Performance</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+              <div>
+                <p style="margin-bottom: 10px;"><strong>Monthly Revenue:</strong><br>${formatter.format(data.shortTermMonthly)}</p>
+                <p style="margin-bottom: 10px;"><strong>Annual Revenue:</strong><br>${formatter.format(data.shortTermAnnual)}</p>
+              </div>
+              <div>
+                <p style="margin-bottom: 10px;"><strong>Revenue After Fees:</strong><br>${formatter.format(data.shortTermAfterFees)}</p>
+                <p style="margin-bottom: 10px;"><strong>Occupancy Rate:</strong><br>${data.annualOccupancy}%</p>
+              </div>
+            </div>
           </div>
         ` : ''}
 
         ${getSelectedSections("Performance Metrics").includes("operatingFinancials") ? `
-          <div style="margin-bottom: 30px;">
-            <h2 style="color: #2d3748; margin-bottom: 15px;">Operating Financials</h2>
-            <p><strong>Management Fee:</strong> ${data.managementFee}%</p>
-            <p><strong>Break-even Occupancy:</strong> ${data.breakEvenOccupancy}%</p>
+          <div style="margin-bottom: 30px; background: #f7f9fc; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #2d3748; margin-bottom: 15px; font-size: 1.5rem;">Operating Financials</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+              <div>
+                <p style="margin-bottom: 10px;"><strong>Management Fee:</strong><br>${data.managementFee}%</p>
+              </div>
+              <div>
+                <p style="margin-bottom: 10px;"><strong>Break-even Occupancy:</strong><br>${data.breakEvenOccupancy}%</p>
+              </div>
+            </div>
           </div>
         ` : ''}
 
-        <footer style="margin-top: 40px; text-align: center; color: #718096; font-size: 0.875rem;">
-          <p>Generated on ${new Date().toLocaleDateString()}</p>
-          <p>This report is for informational purposes only.</p>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center;">
+          <p style="color: #718096; font-size: 0.875rem; margin-bottom: 5px;">Generated on ${new Date().toLocaleDateString()}</p>
+          <p style="color: #718096; font-size: 0.875rem;">This report is for informational purposes only and should not be considered as financial advice.</p>
         </footer>
       </div>
     `;
