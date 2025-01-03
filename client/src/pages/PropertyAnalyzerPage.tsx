@@ -35,7 +35,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
-import PDFReport from "@/components/PDFReport";
+import { PDFReportModal } from "@/components/PDFReportModal";
 
 
 interface YearlyMetrics {
@@ -959,12 +959,11 @@ export default function PropertyAnalyzerPage() {
 
             </div>
             
-            {showPDFReport && pdfData && (
-              <PDFReport 
-                data={pdfData}
-                onClose={() => setShowPDFReport(false)}
-              />
-            )}
+            <PDFReportModal
+              open={showPDFReport}
+              onOpenChange={setShowPDFReport}
+              data={pdfData}
+            />
           </>
         )}
       </div>
