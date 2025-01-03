@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { FileText, Upload } from "lucide-react";
+import { useUser } from "@/hooks/use-user";
 import html2pdf from "html2pdf.js";
 import { formatter } from "@/utils/formatting";
 
@@ -78,16 +79,46 @@ const defaultSectionGroups: SectionGroup[] = [
       { id: "revenueChart", label: "Revenue Charts", checked: true },
       { id: "propertyValueChart", label: "Property Value Charts", checked: true },
     ]
+  },
+  {
+    title: "Branding",
+    sections: [
+      { id: "companyLogo", label: "Include Company Logo", checked: true },
+      { id: "poweredByProply", label: "Include 'Powered by Proply'", checked: true },
+    ]
   }
 ];
 
 export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps) {
+  const { user } = useUser();
   const [sectionGroups, setSectionGroups] = useState<SectionGroup[]>(defaultSectionGroups);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+    }
+  };
 
   const generatePDF = async () => {
     const element = document.createElement('div');
     element.innerHTML = `
       <div style="padding: 20px; font-family: Arial, sans-serif;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          ${getSelectedSections("Branding").includes("companyLogo") && (user?.companyLogo || logoFile) ? `
+            <img src="${user?.companyLogo || (logoFile ? URL.createObjectURL(logoFile) : '')}" 
+                 alt="Company Logo" 
+                 style="height: 60px; object-fit: contain;" />
+          ` : ''}
+          ${getSelectedSections("Branding").includes("poweredByProply") ? `
+            <div style="text-align: right;">
+              <img src="/proply-logo.png" alt="Proply Logo" style="height: 30px;" />
+              <p style="margin: 0; font-size: 12px; color: #666;">Powered by Proply</p>
+            </div>
+          ` : ''}
+        </div>
+
         <h1 style="color: #1a365d; margin-bottom: 20px;">Property Analysis Report</h1>
 
         ${getSelectedSections("Property Details").includes("address") ? `
@@ -197,6 +228,30 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
                     </div>
                   ))}
                 </div>
+
+                {group.title === "Branding" && !user?.companyLogo && !logoFile && (
+                  <div className="mt-4 p-4 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      No company logo found. Upload your logo to include it in the report.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                        id="logo-upload"
+                      />
+                      <label
+                        htmlFor="logo-upload"
+                        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90"
+                      >
+                        <Upload className="w-4 h-4" />
+                        Upload Logo
+                      </label>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
