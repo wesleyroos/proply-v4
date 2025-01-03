@@ -72,8 +72,7 @@ function App() {
   const [location] = useLocation();
 
   return (
-    <>
-      <Toaster />
+    <ToastProvider>
       <TooltipProvider>
         <AnimatePresence mode="wait">
           <Switch key={location}>
@@ -190,7 +189,7 @@ function App() {
         </AnimatePresence>
       </TooltipProvider>
       <Toaster />
-    </>
+    </ToastProvider>
   );
 }
 

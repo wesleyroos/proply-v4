@@ -359,7 +359,7 @@ export default function PropertyAnalyzerPage() {
                       setShowPDFReport(true);
                       setPDFData(data);
                     }}
-                    disabled={!analysisId}
+                    disabled={!analysisResult}
                     className="bg-blue-600 hover:bg-blue-700 mr-2"
                   >
                     <FileText className="w-4 h-4 mr-2" />
