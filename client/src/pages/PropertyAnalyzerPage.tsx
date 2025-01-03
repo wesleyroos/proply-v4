@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/toast-context";
 import {
   Card,
   CardContent,
@@ -365,7 +365,6 @@ export default function PropertyAnalyzerPage() {
                     <FileText className="w-4 h-4 mr-2" />
                     Export PDF
                   </Button>
-                  {/* Replaced Save Analysis button */}
                   <Card>
                     <CardContent className="space-y-6">
                       <Button
@@ -375,8 +374,8 @@ export default function PropertyAnalyzerPage() {
                             if (!dataToSave) {
                               toast({
                                 variant: "destructive",
-                                title: "Error",
-                                description: 'Missing required data for saving analysis. Please ensure all fields are filled correctly.',
+                                title: "Error Saving Analysis",
+                                description: 'Missing required data. Please ensure all fields are filled correctly.',
                                 duration: 5000,
                               });
                               return;
@@ -409,8 +408,8 @@ export default function PropertyAnalyzerPage() {
                             setAnalysisId(responseData.id);
                             toast({
                               variant: "success",
-                              title: "Analysis Saved",
-                              description: `Property analysis for ${dataToSave.address} has been successfully saved!`,
+                              title: "Success",
+                              description: `Property analysis for ${dataToSave.address} has been saved!`,
                               duration: 5000,
                             });
                           } catch (error) {
