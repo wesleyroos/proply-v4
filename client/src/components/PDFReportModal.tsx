@@ -83,8 +83,7 @@ const defaultSectionGroups: SectionGroup[] = [
   {
     title: "Branding",
     sections: [
-      { id: "companyLogo", label: "Include Company Logo", checked: true },
-      { id: "poweredByProply", label: "Include 'Powered by Proply'", checked: true },
+      { id: "companyLogo", label: "Include Company Branding", checked: true },
     ]
   }
 ];
@@ -93,11 +92,31 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   const { user } = useUser();
   const [sectionGroups, setSectionGroups] = useState<SectionGroup[]>(defaultSectionGroups);
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
 
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setLogoFile(file);
+      setLogoPreviewUrl(URL.createObjectURL(file));
+
+      // Create FormData and upload to server
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      try {
+        const response = await fetch('/api/user/logo', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to upload logo');
+        }
+      } catch (error) {
+        console.error('Error uploading logo:', error);
+      }
     }
   };
 
@@ -106,18 +125,12 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
     element.innerHTML = `
       <div style="padding: 20px; font-family: Arial, sans-serif;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          ${getSelectedSections("Branding").includes("companyLogo") && (user?.companyLogo || logoFile) ? `
-            <img src="${user?.companyLogo || (logoFile ? URL.createObjectURL(logoFile) : '')}" 
+          ${getSelectedSections("Branding").includes("companyLogo") && (user?.companyLogo || logoPreviewUrl) ? `
+            <img src="${logoPreviewUrl || user?.companyLogo}" 
                  alt="Company Logo" 
                  style="height: 60px; object-fit: contain;" />
           ` : ''}
-          ${getSelectedSections("Branding").includes("poweredByProply") ? `
-            <div style="text-align: right;">
-              <img src="/proply-logo.png" alt="Proply Logo" style="height: 30px;" />
-              <p style="margin: 0; font-size: 12px; color: #666;">Powered by Proply</p>
-            </div>
-          ` : ''}
-        </div>
+          </div>
 
         <h1 style="color: #1a365d; margin-bottom: 20px;">Property Analysis Report</h1>
 
@@ -229,27 +242,55 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
                   ))}
                 </div>
 
-                {group.title === "Branding" && !user?.companyLogo && !logoFile && (
-                  <div className="mt-4 p-4 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      No company logo found. Upload your logo to include it in the report.
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="hidden"
-                        id="logo-upload"
-                      />
-                      <label
-                        htmlFor="logo-upload"
-                        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90"
-                      >
-                        <Upload className="w-4 h-4" />
-                        Upload Logo
-                      </label>
-                    </div>
+                {group.title === "Branding" && (
+                  <div className="mt-4">
+                    {(user?.companyLogo || logoPreviewUrl) ? (
+                      <div className="p-4 bg-muted rounded-lg">
+                        <div className="mb-4">
+                          <img 
+                            src={logoPreviewUrl || user?.companyLogo}
+                            alt="Company Logo"
+                            className="h-12 object-contain"
+                          />
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="hidden"
+                          id="logo-update"
+                        />
+                        <label
+                          htmlFor="logo-update"
+                          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90 w-fit"
+                        >
+                          <Upload className="w-4 h-4" />
+                          Update Logo
+                        </label>
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-muted rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-2">
+                          No company logo found. Upload your logo to include it in the report.
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            className="hidden"
+                            id="logo-upload"
+                          />
+                          <label
+                            htmlFor="logo-upload"
+                            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90"
+                          >
+                            <Upload className="w-4 h-4" />
+                            Upload Logo
+                          </label>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
