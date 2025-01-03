@@ -433,18 +433,41 @@ export default function PropertyAnalyzerPage() {
                             }
 
                             const data = {
-                              address: analysisResult.address,
-                              longTermMonthly: analysisResult.analysis.longTermAnnualRevenue / 12,
-                              shortTermMonthly: analysisResult.analysis.shortTermAnnualRevenue / 12,
-                              longTermAnnual: analysisResult.analysis.longTermAnnualRevenue,
-                              shortTermAnnual: analysisResult.analysis.shortTermAnnualRevenue,
-                              shortTermAfterFees: analysisResult.analysis.shortTermAnnualRevenue * (1 - analysisResult.managementFee/100),
-                              breakEvenOccupancy: 65,
-                              shortTermNightly: analysisResult.shortTermNightlyRate || 0,
-                              managementFee: analysisResult.managementFee,
-                              annualOccupancy: analysisResult.annualOccupancy || 0,
-                              bedrooms: formData?.bedrooms || "N/A",
-                              bathrooms: formData?.bathrooms || "N/A"
+                              propertyDetails: {
+                                address: analysisResult.address,
+                                bedrooms: formData?.bedrooms || "N/A",
+                                bathrooms: formData?.bathrooms || "N/A",
+                                floorArea: Number(formData?.floorArea) || 0,
+                                parkingSpaces: Number(formData?.parkingSpaces) || 0,
+                                purchasePrice: analysisResult.analysis.purchasePrice,
+                                ratePerSquareMeter: Number(formData?.cmaRatePerSqm) || 0,
+                              },
+                              financialMetrics: {
+                                depositAmount: Number(analysisResult.deposit) || 0,
+                                depositPercentage: Number(analysisResult.depositPercentage) || 0,
+                                interestRate: Number(analysisResult.interestRate) || 0,
+                                loanTerm: Number(analysisResult.loanTerm) || 0,
+                                monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment) || 0,
+                              },
+                              expenses: {
+                                monthlyLevies: Number(formData?.monthlyLevies) || 0,
+                                monthlyRatesTaxes: Number(formData?.monthlyRatesTaxes) || 0,
+                                otherMonthlyExpenses: Number(formData?.otherMonthlyExpenses) || 0,
+                                maintenancePercent: Number(formData?.maintenancePercent) || 0,
+                              },
+                              performance: {
+                                shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate) || 0,
+                                annualOccupancy: Number(analysisResult.annualOccupancy) || 0,
+                                shortTermAnnualRevenue: Number(analysisResult.analysis.shortTermAnnualRevenue) || 0,
+                                longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue) || 0,
+                                shortTermGrossYield: Number(analysisResult.shortTermGrossYield) || 0,
+                                longTermGrossYield: Number(analysisResult.longTermGrossYield) || 0,
+                                managementFee: Number(analysisResult.managementFee) || 0,
+                              },
+                              investmentMetrics: {
+                                shortTerm: analysisResult.analysis.investmentMetrics.year1,
+                                longTerm: analysisResult.analysis.investmentMetrics.year20,
+                              }
                             };
                             setShowPDFReport(true);
                             setPDFData(data);
@@ -787,7 +810,7 @@ export default function PropertyAnalyzerPage() {
                 {/* Size and Rate */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <CardTitle className="text-xl fontbold text-slate-800 flex items-center gap-2">
                       <BarChart3 className="h-5 w-5 text-cyan-500" />
                       Size and Rate/m²
                     </CardTitle>
