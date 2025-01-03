@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
-import { ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import { ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend } from "recharts";
 import {
   Tooltip,
   TooltipContent,
@@ -99,7 +99,7 @@ return (
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="year" />
               <YAxis tickFormatter={(value) => `R${(value / 1000000).toFixed(1)}M`} />
-              <Tooltip formatter={(value) => `R${value.toLocaleString()}`} />
+              <RechartsTooltip formatter={(value) => `R${value.toLocaleString()}`} />
               <Legend />
               <Area type="monotone" dataKey="Property Value" fill="#8884d8" stroke="#8884d8" fillOpacity={0.3} />
               <Area type="monotone" dataKey="Loan Balance" fill="#82ca9d" stroke="#82ca9d" fillOpacity={0.3} />
