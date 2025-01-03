@@ -854,8 +854,10 @@ export default function PropertyAnalyzerPage() {
                                         : "text-red-600"
                                     }`}
                                   >
-                                    {difference > 0 ? "+" : ""}
-                                    {percentageDiff.toFixed(1)}%
+                                    {difference > 0 ? "+" : ""}R{Math.abs(difference).toLocaleString()} 
+                                    <span className="ml-1">
+                                      ({difference > 0 ? "+" : ""}{percentageDiff.toFixed(1)}%)
+                                    </span>
                                   </span>
                                   <Tooltip>
                                     <TooltipTrigger asChild>

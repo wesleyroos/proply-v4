@@ -5,18 +5,59 @@ import { formatter } from "../utils/formatting";
 
 interface PDFReportProps {
   data: {
-    address: string;
-    longTermMonthly: number;
-    shortTermMonthly: number;
-    longTermAnnual: number;
-    shortTermAnnual: number;
-    shortTermAfterFees: number;
-    breakEvenOccupancy: number;
-    shortTermNightly: number;
-    managementFee: number;
-    annualOccupancy: number;
-    bedrooms: string;
-    bathrooms: string;
+    propertyDetails: {
+      address: string;
+      bedrooms: string;
+      bathrooms: string;
+      floorArea: number;
+      parkingSpaces: number;
+      purchasePrice: number;
+      ratePerSquareMeter: number;
+    };
+    financialMetrics: {
+      depositAmount: number;
+      depositPercentage: number;
+      interestRate: number;
+      loanTerm: number;
+      monthlyBondRepayment: number;
+    };
+    expenses: {
+      monthlyLevies: number;
+      monthlyRatesTaxes: number;
+      otherMonthlyExpenses: number;
+      maintenancePercent: number;
+    };
+    performance: {
+      shortTermNightlyRate: number;
+      annualOccupancy: number;
+      shortTermAnnualRevenue: number;
+      longTermAnnualRevenue: number;
+      shortTermGrossYield: number;
+      longTermGrossYield: number;
+      managementFee: number;
+    };
+    investmentMetrics: {
+      shortTerm: Array<{
+        grossYield: number;
+        netYield: number;
+        returnOnEquity: number;
+        annualReturn: number;
+        capRate: number;
+        cashOnCashReturn: number;
+        irr: number;
+        netWorthChange: number;
+      }>;
+      longTerm: Array<{
+        grossYield: number;
+        netYield: number;
+        returnOnEquity: number;
+        annualReturn: number;
+        capRate: number;
+        cashOnCashReturn: number;
+        irr: number;
+        netWorthChange: number;
+      }>;
+    };
   };
   onClose: () => void;
 }
@@ -37,7 +78,7 @@ export default function PDFReport({ data, onClose }: PDFReportProps) {
       // Title
       doc.setFontSize(24);
       doc.setTextColor(0);
-      doc.text("Property Analysis Report", 20, 30);
+      doc.text("Property Investment Analysis", 20, 30);
 
       // Property Details Section
       doc.setFontSize(16);
@@ -48,56 +89,108 @@ export default function PDFReport({ data, onClose }: PDFReportProps) {
         startY: 55,
         head: [["Property Details", "Specifications"]],
         body: [
-          ["Address", data.address],
-          ["Bedrooms", data.bedrooms],
-          ["Bathrooms", data.bathrooms],
+          ["Address", data.propertyDetails.address],
+          ["Bedrooms", data.propertyDetails.bedrooms],
+          ["Bathrooms", data.propertyDetails.bathrooms],
+          ["Floor Area", `${data.propertyDetails.floorArea} m²`],
+          ["Parking Spaces", data.propertyDetails.parkingSpaces.toString()],
+          ["Purchase Price", formatter.format(data.propertyDetails.purchasePrice)],
+          ["Rate per m²", formatter.format(data.propertyDetails.ratePerSquareMeter)],
         ],
         theme: 'striped',
         styles: { fontSize: 12, cellPadding: 5 },
         headStyles: { fillColor: [0, 121, 255] }
       });
 
-      // Revenue Analysis Section
+      // Financial Details Section
       doc.setFontSize(16);
       doc.setTextColor(0, 121, 255);
-      doc.text("Revenue Analysis", 20, doc.lastAutoTable.finalY + 20);
+      doc.text("Financial Details", 20, doc.lastAutoTable.finalY + 20);
 
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 25,
+        head: [["Financial Metric", "Value"]],
+        body: [
+          ["Deposit Amount", formatter.format(data.financialMetrics.depositAmount)],
+          ["Deposit Percentage", `${data.financialMetrics.depositPercentage}%`],
+          ["Interest Rate", `${data.financialMetrics.interestRate}%`],
+          ["Loan Term", `${data.financialMetrics.loanTerm} years`],
+          ["Monthly Bond Repayment", formatter.format(data.financialMetrics.monthlyBondRepayment)],
+        ],
+        theme: 'striped',
+        styles: { fontSize: 12, cellPadding: 5 },
+        headStyles: { fillColor: [0, 121, 255] }
+      });
+
+      // Monthly Expenses Section
+      doc.setFontSize(16);
+      doc.setTextColor(0, 121, 255);
+      doc.text("Monthly Expenses", 20, doc.lastAutoTable.finalY + 20);
+
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 25,
+        head: [["Expense Type", "Amount"]],
+        body: [
+          ["Monthly Levies", formatter.format(data.expenses.monthlyLevies)],
+          ["Monthly Rates & Taxes", formatter.format(data.expenses.monthlyRatesTaxes)],
+          ["Other Monthly Expenses", formatter.format(data.expenses.otherMonthlyExpenses)],
+          ["Maintenance", `${data.expenses.maintenancePercent}% of rental income`],
+        ],
+        theme: 'striped',
+        styles: { fontSize: 12, cellPadding: 5 },
+        headStyles: { fillColor: [0, 121, 255] }
+      });
+
+      // Add new page for performance metrics
+      doc.addPage();
+
+      // Rental Performance Section
+      doc.setFontSize(16);
+      doc.setTextColor(0, 121, 255);
+      doc.text("Rental Performance", 20, 20);
+
+      autoTable(doc, {
+        startY: 25,
+        head: [["Performance Metric", "Value"]],
+        body: [
+          ["Short-Term Nightly Rate", formatter.format(data.performance.shortTermNightlyRate)],
+          ["Annual Occupancy", `${data.performance.annualOccupancy}%`],
+          ["Short-Term Annual Revenue", formatter.format(data.performance.shortTermAnnualRevenue)],
+          ["Long-Term Annual Revenue", formatter.format(data.performance.longTermAnnualRevenue)],
+          ["Short-Term Gross Yield", `${data.performance.shortTermGrossYield.toFixed(1)}%`],
+          ["Long-Term Gross Yield", `${data.performance.longTermGrossYield.toFixed(1)}%`],
+          ["Management Fee", `${data.performance.managementFee}%`],
+        ],
+        theme: 'striped',
+        styles: { fontSize: 12, cellPadding: 5 },
+        headStyles: { fillColor: [0, 121, 255] }
+      });
+
+      // Investment Metrics Section
+      doc.setFontSize(16);
+      doc.setTextColor(0, 121, 255);
+      doc.text("Short-Term Investment Metrics (Year 1)", 20, doc.lastAutoTable.finalY + 20);
+
+      const shortTermMetrics = data.investmentMetrics.shortTerm[0];
       autoTable(doc, {
         startY: doc.lastAutoTable.finalY + 25,
         head: [["Metric", "Value"]],
         body: [
-          ["Average Nightly Rate", formatter.format(data.shortTermNightly)],
-          ["Monthly Short-Term Revenue", formatter.format(data.shortTermMonthly)],
-          ["Monthly Long-Term Revenue", formatter.format(data.longTermMonthly)],
-          ["Annual Short-Term Revenue", formatter.format(data.shortTermAfterFees)],
-          ["Annual Long-Term Revenue", formatter.format(data.longTermAnnual)],
-          ["Current Occupancy Rate", `${data.annualOccupancy}%`],
-          ["Management Fee", data.managementFee ? `${(data.managementFee * 100).toFixed(1)}%` : "N/A"],
+          ["Gross Yield", `${shortTermMetrics.grossYield.toFixed(1)}%`],
+          ["Net Yield", `${shortTermMetrics.netYield.toFixed(1)}%`],
+          ["Return on Equity", `${shortTermMetrics.returnOnEquity.toFixed(1)}%`],
+          ["Annual Return", `${shortTermMetrics.annualReturn.toFixed(1)}%`],
+          ["Cap Rate", `${shortTermMetrics.capRate.toFixed(1)}%`],
+          ["Cash on Cash Return", `${shortTermMetrics.cashOnCashReturn.toFixed(1)}%`],
+          ["IRR", `${shortTermMetrics.irr.toFixed(1)}%`],
+          ["Net Worth Change", formatter.format(shortTermMetrics.netWorthChange)],
         ],
         theme: 'striped',
         styles: { fontSize: 12, cellPadding: 5 },
         headStyles: { fillColor: [0, 121, 255] }
       });
 
-      // Analysis Summary Section
-      doc.setFontSize(16);
-      doc.setTextColor(0, 121, 255);
-      doc.text("Analysis Summary", 20, doc.lastAutoTable.finalY + 20);
-
-      const summaryText = data.annualOccupancy > data.breakEvenOccupancy
-        ? `At ${data.annualOccupancy}% projected occupancy, short-term rental strategy shows higher potential returns than long-term rental.`
-        : `At ${data.annualOccupancy}% projected occupancy, long-term rental strategy may be more suitable for this property.`;
-
-      doc.setFontSize(12);
-      doc.setTextColor(60);
-      const splitSummary = doc.splitTextToSize(summaryText, 170);
-      doc.text(splitSummary, 20, doc.lastAutoTable.finalY + 30);
-
-      const breakEvenText = `Break-even analysis shows that ${data.breakEvenOccupancy}% occupancy is needed to match long-term rental income.`;
-      const splitBreakEven = doc.splitTextToSize(breakEvenText, 170);
-      doc.text(splitBreakEven, 20, doc.lastAutoTable.finalY + 45);
-
-      // Footer
+      // Footer on all pages
       const pageCount = doc.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
@@ -116,7 +209,7 @@ export default function PDFReport({ data, onClose }: PDFReportProps) {
       doc.text("Disclaimer: All data is based on current market analysis and may vary. Proply assumes no liability for discrepancies.", 20, 290);
 
       // Save the PDF
-      doc.save(`Property-Analysis-${data.address.split(",")[0]}.pdf`);
+      doc.save(`Property-Analysis-${data.propertyDetails.address.split(",")[0]}.pdf`);
       onClose();
     };
 
