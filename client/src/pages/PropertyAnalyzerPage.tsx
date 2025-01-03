@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useToast } from "@/components/ui/toast-context";
 import {
   Card,
@@ -132,6 +132,7 @@ export default function PropertyAnalyzerPage() {
   const [analysisId, setAnalysisId] = useState<string | null>(null);
   const [showPDFReport, setShowPDFReport] = useState(false);
   const [pdfData, setPDFData] = useState<any>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
@@ -228,6 +229,14 @@ export default function PropertyAnalyzerPage() {
         managementFee: requestBody.managementFee,
         loanTerm: requestBody.loanTerm
       });
+
+      // Smooth scroll to results after analysis is complete
+      if (resultsRef.current) {
+        resultsRef.current.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
     } catch (error) {
       console.error("Analysis failed:", error);
       setAnalysisError(
@@ -325,7 +334,7 @@ export default function PropertyAnalyzerPage() {
         )}
 
         {analysisResult && (
-          <>
+          <div ref={resultsRef}>
             {/* Analysis Results Header */}
             <div className="mb-6">
               <div className="flex items-center justify-between">
@@ -804,7 +813,7 @@ export default function PropertyAnalyzerPage() {
 
                             return (
                               <div>
-                                <h3 className="text-sm font-semibold text-slate600 flex items-center gap-2">
+                                                               <h3 className="text-sm font-semibold text-slate600 flex items-center gap-2">
                                   Rate/m² Difference
                                   <AnalyzerIndicator />
                                 </h3>
@@ -965,7 +974,7 @@ export default function PropertyAnalyzerPage() {
               onOpenChange={setShowPDFReport}
               data={pdfData}
             />
-          </>
+          </div>
         )}
       </div>
     </div>
