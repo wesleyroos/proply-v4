@@ -35,8 +35,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
-import { PDFReportModal } from "@/components/PDFReportModal";
-
+//import { PDFReportModal } from "@/components/PDFReportModal"; // Commented out as it's replaced
+import { PropertyReportGenerator } from "@/components/PropertyReportGenerator";
 
 interface YearlyMetrics {
   grossYield: number;
@@ -432,7 +432,8 @@ export default function PropertyAnalyzerPage() {
                               return;
                             }
 
-                            const data = {
+                            // Prepare the data for the PDF report
+                            const reportData = {
                               propertyDetails: {
                                 address: analysisResult.address,
                                 bedrooms: formData?.bedrooms || "N/A",
@@ -441,6 +442,7 @@ export default function PropertyAnalyzerPage() {
                                 parkingSpaces: Number(formData?.parkingSpaces) || 0,
                                 purchasePrice: analysisResult.analysis.purchasePrice,
                                 ratePerSquareMeter: Number(formData?.cmaRatePerSqm) || 0,
+                                propertyPhoto: formData?.propertyPhoto || null,
                               },
                               financialMetrics: {
                                 depositAmount: Number(analysisResult.deposit) || 0,
@@ -448,12 +450,19 @@ export default function PropertyAnalyzerPage() {
                                 interestRate: Number(analysisResult.interestRate) || 0,
                                 loanTerm: Number(analysisResult.loanTerm) || 0,
                                 monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment) || 0,
+                                bondRegistration: calculateBondRegistration(analysisResult.analysis.purchasePrice, !removeVat),
+                                transferCosts: calculateTransferCosts(
+                                  analysisResult.analysis.purchasePrice,
+                                  !removeVat,
+                                  !removeTransferDuty
+                                ),
                               },
                               expenses: {
                                 monthlyLevies: Number(formData?.monthlyLevies) || 0,
                                 monthlyRatesTaxes: Number(formData?.monthlyRatesTaxes) || 0,
                                 otherMonthlyExpenses: Number(formData?.otherMonthlyExpenses) || 0,
                                 maintenancePercent: Number(formData?.maintenancePercent) || 0,
+                                managementFee: Number(analysisResult.managementFee) || 0,
                               },
                               performance: {
                                 shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate) || 0,
@@ -462,15 +471,15 @@ export default function PropertyAnalyzerPage() {
                                 longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue) || 0,
                                 shortTermGrossYield: Number(analysisResult.shortTermGrossYield) || 0,
                                 longTermGrossYield: Number(analysisResult.longTermGrossYield) || 0,
-                                managementFee: Number(analysisResult.managementFee) || 0,
                               },
-                              investmentMetrics: {
-                                shortTerm: analysisResult.analysis.investmentMetrics.year1,
-                                longTerm: analysisResult.analysis.investmentMetrics.year20,
-                              }
+                              investmentMetrics: analysisResult.analysis.investmentMetrics,
+                              operatingExpenses: analysisResult.analysis.operatingExpenses,
+                              netOperatingIncome: analysisResult.netOperatingIncome,
+                              revenueProjections: analysisResult.analysis.revenueProjections,
                             };
+
                             setShowPDFReport(true);
-                            setPDFData(data);
+                            setPDFData(reportData);
                           }}
                           disabled={!analysisResult || !analysisId}
                           className="bg-blue-600 hover:bg-blue-700"
@@ -791,7 +800,7 @@ export default function PropertyAnalyzerPage() {
                               /month
                             </p>
                           </div>
-                          <p className="text-sm flex items-center gap-2">
+                          <p className="textsm flex items-center gap-2">
                             <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
                               {analysisResult.longTermGrossYield?.toFixed(2) ||
                                 "0"}
@@ -1021,7 +1030,7 @@ export default function PropertyAnalyzerPage() {
 
             </div>
 
-            <PDFReportModal
+            <PropertyReportGenerator
               open={showPDFReport}
               onOpenChange={setShowPDFReport}
               data={pdfData}
