@@ -357,6 +357,17 @@ export default function PropertyAnalyzerPage() {
                   <Button
                     onClick={() => {
                       if (!analysisResult) return;
+
+                      if (!analysisId) {
+                        toast({
+                          variant: "destructive",
+                          title: "Save Required",
+                          description: "Please save your analysis before exporting to PDF.",
+                          duration: 3000,
+                        });
+                        return;
+                      }
+
                       const data = {
                         address: analysisResult.address,
                         longTermMonthly: analysisResult.analysis.longTermAnnualRevenue / 12,
@@ -364,7 +375,7 @@ export default function PropertyAnalyzerPage() {
                         longTermAnnual: analysisResult.analysis.longTermAnnualRevenue,
                         shortTermAnnual: analysisResult.analysis.shortTermAnnualRevenue,
                         shortTermAfterFees: analysisResult.analysis.shortTermAnnualRevenue * (1 - analysisResult.managementFee/100),
-                        breakEvenOccupancy: 65, // You may want to calculate this
+                        breakEvenOccupancy: 65,
                         shortTermNightly: analysisResult.shortTermNightlyRate || 0,
                         managementFee: analysisResult.managementFee,
                         annualOccupancy: analysisResult.annualOccupancy || 0,
@@ -374,7 +385,7 @@ export default function PropertyAnalyzerPage() {
                       setShowPDFReport(true);
                       setPDFData(data);
                     }}
-                    disabled={!analysisResult}
+                    disabled={!analysisResult || !analysisId}
                     className="bg-blue-600 hover:bg-blue-700"
                   >
                     <FileText className="w-4 h-4 mr-2" />
