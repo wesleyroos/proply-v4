@@ -232,6 +232,7 @@ export default function PropertiesPage() {
                               <SortIcon field="address" />
                             </div>
                           </span>
+                        </div>
                       </th>
                       <th onClick={() => handleSort('purchasePrice')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
                         <div className="flex items-center justify-end">
