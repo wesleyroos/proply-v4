@@ -19,30 +19,70 @@ interface ReportSection {
   checked: boolean;
 }
 
-const defaultSections: ReportSection[] = [
-  { id: "propertyDetails", label: "Property Details", checked: true },
-  { id: "address", label: "Address", checked: true },
-  { id: "purchasePrice", label: "Purchase Price", checked: true },
-  { id: "floorArea", label: "Floor Area", checked: true },
-  { id: "ratePerM2", label: "Rate per m²", checked: true },
-  { id: "areaRateM2", label: "Area Rate/m²", checked: true },
-  { id: "rateDifference", label: "Rate/m² Difference", checked: true },
-  { id: "financing", label: "Financing Details", checked: true },
-  { id: "shortTermY1", label: "Short-Term Rental (Year 1)", checked: true },
-  { id: "longTermY1", label: "Long-Term Rental (Year 1)", checked: true },
-  { id: "monthlyRates", label: "Monthly Seasonal Rates", checked: true },
-  { id: "cashflow", label: "Annual Cashflow Projections", checked: true },
-  { id: "propertyValue", label: "Property Value Projections", checked: true },
-  { id: "loanBalance", label: "Loan Balance Over Time", checked: true },
-  { id: "netWorth", label: "Net Worth Change", checked: true },
-  { id: "investmentMetrics", label: "Investment Metrics Year 1", checked: true },
-  { id: "operatingFinancials", label: "Operating Financials", checked: true },
-  { id: "totalInterest", label: "Total Interest Paid Over Time", checked: true },
-  { id: "visualizations", label: "Data Visualizations", checked: true },
+interface SectionGroup {
+  title: string;
+  sections: ReportSection[];
+}
+
+const defaultSectionGroups: SectionGroup[] = [
+  {
+    title: "Property Details",
+    sections: [
+      { id: "address", label: "Address", checked: true },
+      { id: "purchasePrice", label: "Purchase Price", checked: true },
+      { id: "floorArea", label: "Floor Area", checked: true },
+      { id: "ratePerM2", label: "Rate per m²", checked: true },
+      { id: "areaRateM2", label: "Area Rate/m²", checked: true },
+      { id: "rateDifference", label: "Rate/m² Difference", checked: true },
+    ]
+  },
+  {
+    title: "Financing Details",
+    sections: [
+      { id: "deposit", label: "Deposit & Bond Details", checked: true },
+      { id: "interestRate", label: "Interest Rate", checked: true },
+      { id: "loanTerm", label: "Loan Term", checked: true },
+      { id: "bondRegistration", label: "Bond Registration", checked: true },
+      { id: "transferCosts", label: "Transfer Costs", checked: true },
+    ]
+  },
+  {
+    title: "Revenue Performance",
+    sections: [
+      { id: "shortTermY1", label: "Short-Term Rental (Year 1)", checked: true },
+      { id: "longTermY1", label: "Long-Term Rental (Year 1)", checked: true },
+      { id: "monthlyRates", label: "Monthly Seasonal Rates", checked: true },
+    ]
+  },
+  {
+    title: "Financial Projections",
+    sections: [
+      { id: "cashflow", label: "Annual Cashflow Projections", checked: true },
+      { id: "propertyValue", label: "Property Value Projections", checked: true },
+      { id: "loanBalance", label: "Loan Balance Over Time", checked: true },
+      { id: "netWorth", label: "Net Worth Change", checked: true },
+    ]
+  },
+  {
+    title: "Performance Metrics",
+    sections: [
+      { id: "investmentMetrics", label: "Investment Metrics Year 1", checked: true },
+      { id: "operatingFinancials", label: "Operating Financials", checked: true },
+      { id: "totalInterest", label: "Total Interest Paid Over Time", checked: true },
+    ]
+  },
+  {
+    title: "Visualizations",
+    sections: [
+      { id: "cashflowChart", label: "Cashflow Charts", checked: true },
+      { id: "revenueChart", label: "Revenue Charts", checked: true },
+      { id: "propertyValueChart", label: "Property Value Charts", checked: true },
+    ]
+  }
 ];
 
 export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps) {
-  const [sections, setSections] = useState<ReportSection[]>(defaultSections);
+  const [sectionGroups, setSectionGroups] = useState<SectionGroup[]>(defaultSectionGroups);
 
   const generatePDF = async () => {
     const element = document.createElement('div');
@@ -50,19 +90,18 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
       <div style="padding: 20px; font-family: Arial, sans-serif;">
         <h1 style="color: #1a365d; margin-bottom: 20px;">Property Analysis Report</h1>
 
-        ${sections.find(s => s.id === "propertyDetails")?.checked ? `
+        ${getSelectedSections("Property Details").includes("address") ? `
           <div style="margin-bottom: 30px;">
             <h2 style="color: #2d3748; margin-bottom: 15px;">Property Details</h2>
-            ${sections.find(s => s.id === "address")?.checked ? 
-              `<p><strong>Address:</strong> ${data.address}</p>` : ''}
-            ${sections.find(s => s.id === "purchasePrice")?.checked ? 
+            <p><strong>Address:</strong> ${data.address}</p>
+            ${getSelectedSections("Property Details").includes("purchasePrice") ? 
               `<p><strong>Purchase Price:</strong> ${formatter.format(data.purchasePrice)}</p>` : ''}
-            ${sections.find(s => s.id === "floorArea")?.checked ? 
+            ${getSelectedSections("Property Details").includes("floorArea") ? 
               `<p><strong>Floor Area:</strong> ${data.floorArea}m²</p>` : ''}
           </div>
         ` : ''}
 
-        ${sections.find(s => s.id === "shortTermY1")?.checked ? `
+        ${getSelectedSections("Revenue Performance").includes("shortTermY1") ? `
           <div style="margin-bottom: 30px;">
             <h2 style="color: #2d3748; margin-bottom: 15px;">Short-Term Rental Performance (Year 1)</h2>
             <p><strong>Monthly Revenue:</strong> ${formatter.format(data.shortTermMonthly)}</p>
@@ -72,7 +111,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
           </div>
         ` : ''}
 
-        ${sections.find(s => s.id === "longTermY1")?.checked ? `
+        ${getSelectedSections("Revenue Performance").includes("longTermY1") ? `
           <div style="margin-bottom: 30px;">
             <h2 style="color: #2d3748; margin-bottom: 15px;">Long-Term Rental Performance (Year 1)</h2>
             <p><strong>Monthly Revenue:</strong> ${formatter.format(data.longTermMonthly)}</p>
@@ -80,7 +119,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
           </div>
         ` : ''}
 
-        ${sections.find(s => s.id === "operatingFinancials")?.checked ? `
+        ${getSelectedSections("Performance Metrics").includes("operatingFinancials") ? `
           <div style="margin-bottom: 30px;">
             <h2 style="color: #2d3748; margin-bottom: 15px;">Operating Financials</h2>
             <p><strong>Management Fee:</strong> ${data.managementFee}%</p>
@@ -111,40 +150,56 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
     }
   };
 
-  const toggleSection = (sectionId: string) => {
-    setSections(sections.map(section =>
-      section.id === sectionId ? { ...section, checked: !section.checked } : section
-    ));
+  const getSelectedSections = (groupTitle: string): string[] => {
+    const group = sectionGroups.find(g => g.title === groupTitle);
+    return group ? group.sections.filter(s => s.checked).map(s => s.id) : [];
+  };
+
+  const toggleSection = (groupTitle: string, sectionId: string) => {
+    setSectionGroups(sectionGroups.map(group => {
+      if (group.title === groupTitle) {
+        return {
+          ...group,
+          sections: group.sections.map(section =>
+            section.id === sectionId ? { ...section, checked: !section.checked } : section
+          )
+        };
+      }
+      return group;
+    }));
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>Generate PDF Report</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-2 gap-4">
-                {sections.map((section) => (
-                  <div key={section.id} className="flex items-center space-x-2">
-                    <Checkbox 
-                      id={section.id} 
-                      checked={section.checked}
-                      onCheckedChange={() => toggleSection(section.id)}
-                    />
-                    <label 
-                      htmlFor={section.id} 
-                      className="text-sm cursor-pointer"
-                    >
-                      {section.label}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
+          {sectionGroups.map((group) => (
+            <Card key={group.title}>
+              <CardContent className="pt-6">
+                <h3 className="text-lg font-semibold mb-4">{group.title}</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {group.sections.map((section) => (
+                    <div key={section.id} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={section.id} 
+                        checked={section.checked}
+                        onCheckedChange={() => toggleSection(group.title, section.id)}
+                      />
+                      <label 
+                        htmlFor={section.id} 
+                        className="text-sm cursor-pointer"
+                      >
+                        {section.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
           <Button onClick={generatePDF} className="w-full">
             <FileText className="w-4 h-4 mr-2" />
             Generate PDF
