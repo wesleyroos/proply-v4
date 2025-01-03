@@ -9,11 +9,13 @@ export function ToastDemo() {
       <h2 className="text-2xl font-bold mb-4">Toast Notifications Demo</h2>
       <div className="grid grid-cols-2 gap-4">
         <Button
+          variant="default"
           onClick={() => {
             toast({
               title: "Success",
               description: "Operation completed successfully",
-              variant: "default",
+              variant: "success",
+              duration: 3000,
             });
           }}
         >
@@ -27,6 +29,7 @@ export function ToastDemo() {
               title: "Error",
               description: "Something went wrong!",
               variant: "destructive",
+              duration: 3000,
             });
           }}
         >
@@ -39,6 +42,8 @@ export function ToastDemo() {
             toast({
               title: "Information",
               description: "Here's some useful information.",
+              variant: "info",
+              duration: 3000,
             });
           }}
         >
@@ -46,15 +51,37 @@ export function ToastDemo() {
         </Button>
 
         <Button
+          variant="secondary"
+          onClick={() => {
+            toast({
+              title: "Warning",
+              description: "Please be careful!",
+              variant: "warning",
+              duration: 3000,
+            });
+          }}
+        >
+          Show Warning Toast
+        </Button>
+
+        <Button
           onClick={() => {
             toast({
               title: "Action Required",
               description: "Please take action",
+              variant: "default",
               action: (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => console.log("Action clicked")}
+                  onClick={() => {
+                    toast({
+                      title: "Action taken",
+                      description: "You clicked the action button",
+                      variant: "success",
+                      duration: 2000,
+                    });
+                  }}
                 >
                   Undo
                 </Button>
