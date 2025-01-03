@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PropertyReport } from "./PropertyReport";
+import html2pdf from 'html2pdf.js';
 
 type Year = 'year1' | 'year2' | 'year3' | 'year4' | 'year5' | 'year10' | 'year20';
 
@@ -203,6 +204,7 @@ export function PropertyReportGenerator({
   const [sectionGroups, setSectionGroups] = useState<SectionGroup[]>(defaultSectionGroups);
   const [generating, setGenerating] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const toggleSection = (groupTitle: string, sectionId: string) => {
@@ -225,25 +227,77 @@ export function PropertyReportGenerator({
     return section?.checked || false;
   };
 
-  const generateReport = () => {
+  const generatePDF = async () => {
     try {
       setGenerating(true);
+
+      // Show the report modal first to ensure content is rendered
       setShowReport(true);
+
+      // Wait for the content to be rendered
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      if (!reportRef.current) {
+        throw new Error("Report content not found");
+      }
+
+      const options = {
+        filename: `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          windowWidth: 1200
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      // Generate PDF from the rendered content
+      const element = reportRef.current.cloneNode(true) as HTMLElement;
+      document.body.appendChild(element);
+      element.style.width = '1200px';
+
+      await html2pdf()
+        .set(options)
+        .from(element)
+        .save();
+
+      document.body.removeChild(element);
+
       toast({
         title: "Success",
-        description: "Report generated successfully!",
+        description: "PDF report has been generated successfully!",
         duration: 5000,
       });
+
+      // Close both modals after successful generation
+      setShowReport(false);
+      onOpenChange(false);
     } catch (error) {
-      console.error('Report generation error:', error);
+      console.error('PDF generation error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate report. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to generate PDF report. Please try again.",
         duration: 5000,
       });
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const previewReport = () => {
+    try {
+      setShowReport(true);
+    } catch (error) {
+      console.error('Preview error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to show report preview. Please try again.",
+        duration: 5000,
+      });
     }
   };
 
@@ -281,19 +335,29 @@ export function PropertyReportGenerator({
               </Card>
             ))}
 
-            <Button
-              onClick={generateReport}
-              disabled={generating}
-              className="w-full"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              {generating ? 'Generating Report...' : 'Generate Report'}
-            </Button>
+            <div className="flex gap-4">
+              <Button
+                onClick={previewReport}
+                variant="outline"
+                className="flex-1"
+              >
+                Preview Report
+              </Button>
+              <Button
+                onClick={generatePDF}
+                disabled={generating}
+                className="flex-1"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                {generating ? 'Generating PDF...' : 'Export as PDF'}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
       <PropertyReport
+        ref={reportRef}
         open={showReport}
         onOpenChange={setShowReport}
         data={data}
