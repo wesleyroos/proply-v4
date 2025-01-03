@@ -1,9 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
-import { ToastProvider } from "@/components/ui/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "./components/PageTransition";
@@ -31,14 +31,12 @@ import PaymentFailurePage from "./pages/PaymentFailurePage";
 import { useUser } from "./hooks/use-user";
 import Sidebar from "./components/Sidebar";
 
-// Protected route wrapper
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
   const [, setLocation] = useLocation();
 
   useEffect(() => {
     if (!isLoading && !user) {
-      // Store the attempted URL to redirect back after login
       const currentPath = window.location.pathname;
       sessionStorage.setItem('redirectUrl', currentPath);
       setLocation("/login");
@@ -77,7 +75,6 @@ function App() {
       <TooltipProvider>
         <AnimatePresence mode="wait">
           <Switch key={location}>
-            {/* Public routes */}
             <Route path="/" component={() => (
               <PageTransition>
                 <HomePage />
@@ -194,7 +191,6 @@ function App() {
   );
 }
 
-// fallback 404 not found page
 function NotFound() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
