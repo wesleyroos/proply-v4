@@ -56,6 +56,8 @@
     "framer-motion": "^11.13.1",
     "html2pdf.js": "^0.10.2",
     "input-otp": "^1.2.4",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
     "lucide-react": "^0.453.0",
     "memorystore": "^1.6.7",
     "node-fetch": "^3.3.2",

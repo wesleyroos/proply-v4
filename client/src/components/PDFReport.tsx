@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import html2pdf from "html2pdf.js";
+import { jsPDF } from "jspdf";
+import autoTable from 'jspdf-autotable';
 import { formatter } from "../utils/formatting";
 
 interface PDFReportProps {
@@ -24,173 +25,103 @@ export default function PDFReport({ data, onClose }: PDFReportProps) {
   const reportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (reportRef.current) {
-      const options = {
-        margin: 0.5,
-        filename: `Property-Analysis-${data.address.split(",")[0]}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-      };
+    const generatePDF = () => {
+      const doc = new jsPDF();
 
-      html2pdf()
-        .set(options)
-        .from(reportRef.current)
-        .save()
-        .then(() => onClose())
-        .catch((error) => {
-          console.error("PDF generation failed:", error);
-          onClose();
-        });
-    }
-  }, []);
+      // Add company logo and Proply branding
+      doc.addImage("/proply-logo.png", "PNG", 160, 10, 40, 20);
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text("Powered by Proply", 160, 35);
 
-  return (
-    <div
-      ref={reportRef}
-      style={{
-        fontFamily: "Arial, sans-serif",
-        color: "#333",
-        padding: "1.5rem",
-        maxWidth: "210mm",
-        minHeight: "297mm",
-        background: "white",
-        margin: "0 auto",
-      }}
-    >
-      {/* Header */}
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "2rem",
-          borderBottom: "2px solid #007bff",
-          paddingBottom: "1rem",
-        }}
-      >
-        <h1 style={{ fontSize: "1.5rem", margin: 0 }}>Property Analysis Report</h1>
-        <img
-          src="/proply-logo.png"
-          alt="Proply Logo"
-          style={{ height: "40px", marginRight: "1rem" }}
-        />
-      </header>
+      // Title
+      doc.setFontSize(24);
+      doc.setTextColor(0);
+      doc.text("Property Analysis Report", 20, 30);
 
-      {/* Deal Summary */}
-      <section style={{ marginBottom: "2rem" }}>
-        <h2 style={{ fontSize: "1.2rem", color: "#007bff", marginBottom: "0.5rem" }}>
-          Deal Summary
-        </h2>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <tbody>
-            {[
-              ["Property Address", data.address],
-              ["Bedrooms", data.bedrooms],
-              ["Bathrooms", data.bathrooms],
-              ["Monthly Long-Term Revenue", formatter.format(data.longTermMonthly)],
-              ["Annual Long-Term Revenue", formatter.format(data.longTermAnnual)],
-              ["Short Term Annual Revenue", formatter.format(data.shortTermAnnual)],
-              ["Break-even Occupancy", `${data.breakEvenOccupancy}%`],
-            ].map(([label, value], idx) => (
-              <tr
-                key={label}
-                style={{
-                  backgroundColor: idx % 2 === 0 ? "#f8f9fa" : "white",
-                }}
-              >
-                <td
-                  style={{
-                    padding: "0.75rem",
-                    borderBottom: "1px solid #ddd",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {label}
-                </td>
-                <td style={{ padding: "0.75rem", borderBottom: "1px solid #ddd" }}>
-                  {value}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      // Property Details Section
+      doc.setFontSize(16);
+      doc.setTextColor(0, 121, 255);
+      doc.text("Property Overview", 20, 50);
 
-      {/* Revenue Analysis */}
-      <section style={{ marginBottom: "2rem" }}>
-        <h2 style={{ fontSize: "1.2rem", color: "#007bff", marginBottom: "0.5rem" }}>
-          Revenue Analysis
-        </h2>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <tbody>
-            {[
-              ["Average Nightly Rate", formatter.format(data.shortTermNightly)],
-              ["Monthly Short-Term Revenue", formatter.format(data.shortTermMonthly)],
-              ["Monthly Long-Term Revenue", formatter.format(data.longTermMonthly)],
-              ["Annual Short-Term Revenue", formatter.format(data.shortTermAfterFees)],
-              ["Annual Long-Term Revenue", formatter.format(data.longTermAnnual)],
-              ["Current Occupancy Rate", `${data.annualOccupancy}%`],
-              ["Management Fee", data.managementFee ? `${(data.managementFee * 100).toFixed(1)}%` : "N/A"],
-            ].map(([label, value], idx) => (
-              <tr
-                key={label}
-                style={{
-                  backgroundColor: idx % 2 === 0 ? "#f8f9fa" : "white",
-                }}
-              >
-                <td
-                  style={{
-                    padding: "0.75rem",
-                    borderBottom: "1px solid #ddd",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {label}
-                </td>
-                <td style={{ padding: "0.75rem", borderBottom: "1px solid #ddd" }}>
-                  {value}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      autoTable(doc, {
+        startY: 55,
+        head: [["Property Details", "Specifications"]],
+        body: [
+          ["Address", data.address],
+          ["Bedrooms", data.bedrooms],
+          ["Bathrooms", data.bathrooms],
+        ],
+        theme: 'striped',
+        styles: { fontSize: 12, cellPadding: 5 },
+        headStyles: { fillColor: [0, 121, 255] }
+      });
 
-      {/* Analysis Summary */}
-      <section style={{ marginBottom: "2rem" }}>
-        <h2 style={{ fontSize: "1.2rem", color: "#007bff", marginBottom: "0.5rem" }}>
-          Analysis Summary
-        </h2>
-        <div style={{ backgroundColor: "#f8f9fa", padding: "1rem", borderRadius: "4px" }}>
-          <p style={{ marginBottom: "1rem", lineHeight: "1.5" }}>
-            {data.annualOccupancy > data.breakEvenOccupancy
-              ? `At ${data.annualOccupancy}% projected occupancy, short-term rental strategy shows higher potential returns than long-term rental.`
-              : `At ${data.annualOccupancy}% projected occupancy, long-term rental strategy may be more suitable for this property.`}
-          </p>
-          <p style={{ marginBottom: "1rem", lineHeight: "1.5" }}>
-            Break-even analysis shows that {data.breakEvenOccupancy}% occupancy is needed to match long-term rental income.
-          </p>
-        </div>
-      </section>
+      // Revenue Analysis Section
+      doc.setFontSize(16);
+      doc.setTextColor(0, 121, 255);
+      doc.text("Revenue Analysis", 20, doc.lastAutoTable.finalY + 20);
 
-      {/* Footer */}
-      <footer
-        style={{
-          borderTop: "2px solid #007bff",
-          marginTop: "2rem",
-          paddingTop: "1rem",
-          textAlign: "center",
-          fontSize: "0.8rem",
-          color: "#777",
-        }}
-      >
-        <p>Report generated by Proply on {new Date().toLocaleDateString()}</p>
-        <p>
-          Disclaimer: All data is based on current market analysis and may vary.
-          Proply assumes no liability for discrepancies.
-        </p>
-      </footer>
-    </div>
-  );
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 25,
+        head: [["Metric", "Value"]],
+        body: [
+          ["Average Nightly Rate", formatter.format(data.shortTermNightly)],
+          ["Monthly Short-Term Revenue", formatter.format(data.shortTermMonthly)],
+          ["Monthly Long-Term Revenue", formatter.format(data.longTermMonthly)],
+          ["Annual Short-Term Revenue", formatter.format(data.shortTermAfterFees)],
+          ["Annual Long-Term Revenue", formatter.format(data.longTermAnnual)],
+          ["Current Occupancy Rate", `${data.annualOccupancy}%`],
+          ["Management Fee", data.managementFee ? `${(data.managementFee * 100).toFixed(1)}%` : "N/A"],
+        ],
+        theme: 'striped',
+        styles: { fontSize: 12, cellPadding: 5 },
+        headStyles: { fillColor: [0, 121, 255] }
+      });
+
+      // Analysis Summary Section
+      doc.setFontSize(16);
+      doc.setTextColor(0, 121, 255);
+      doc.text("Analysis Summary", 20, doc.lastAutoTable.finalY + 20);
+
+      const summaryText = data.annualOccupancy > data.breakEvenOccupancy
+        ? `At ${data.annualOccupancy}% projected occupancy, short-term rental strategy shows higher potential returns than long-term rental.`
+        : `At ${data.annualOccupancy}% projected occupancy, long-term rental strategy may be more suitable for this property.`;
+
+      doc.setFontSize(12);
+      doc.setTextColor(60);
+      const splitSummary = doc.splitTextToSize(summaryText, 170);
+      doc.text(splitSummary, 20, doc.lastAutoTable.finalY + 30);
+
+      const breakEvenText = `Break-even analysis shows that ${data.breakEvenOccupancy}% occupancy is needed to match long-term rental income.`;
+      const splitBreakEven = doc.splitTextToSize(breakEvenText, 170);
+      doc.text(splitBreakEven, 20, doc.lastAutoTable.finalY + 45);
+
+      // Footer
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(10);
+        doc.setTextColor(150);
+        // Add line above footer
+        doc.line(20, 280, 190, 280);
+        // Add footer text
+        doc.text(`Report generated by Proply on ${new Date().toLocaleDateString()}`, 20, 285);
+        doc.text(`Page ${i} of ${pageCount}`, 180, 285);
+      }
+
+      // Add disclaimer
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text("Disclaimer: All data is based on current market analysis and may vary. Proply assumes no liability for discrepancies.", 20, 290);
+
+      // Save the PDF
+      doc.save(`Property-Analysis-${data.address.split(",")[0]}.pdf`);
+      onClose();
+    };
+
+    generatePDF();
+  }, [data, onClose]);
+
+  return <div ref={reportRef} style={{ display: 'none' }}></div>;
 }
