@@ -7,14 +7,18 @@ import {
   ToastTitle,
   ToastViewport,
 } from "@/components/ui/toast"
+import { useEffect } from "react"
 
 export function Toaster() {
   const { toasts } = useToast()
-  console.log('Toaster rendering with toasts:', toasts);
+
+  useEffect(() => {
+    console.log('Toasts updated:', toasts)
+  }, [toasts])
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
+      {toasts.map(({ id, title, description, action, ...props }) => {
         console.log('Rendering toast:', { id, title, description, props });
         return (
           <Toast key={id} {...props}>
@@ -29,7 +33,7 @@ export function Toaster() {
           </Toast>
         )
       })}
-      <ToastViewport />
+      <ToastViewport className="fixed bottom-0 right-0 flex flex-col p-4 sm:bottom-0 sm:right-0 sm:top-auto md:max-w-[420px] gap-2" />
     </ToastProvider>
   )
 }
