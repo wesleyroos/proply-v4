@@ -18,7 +18,6 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { PropertyAnalyzerModal } from "@/components/PropertyAnalyzerModal";
-import Checkbox from "@/components/ui/checkbox";
 
 interface Property {
   id: number;
@@ -227,11 +226,9 @@ export default function PropertiesPage() {
                             }}
                           />
                           <span onClick={() => handleSort('address')} className="cursor-pointer hover:bg-muted/75 flex items-center">
-                            <div className="flex items-center">
-                              Address
-                              <SortIcon field="address" />
-                            </div>
-                          </span>
+                        <div className="flex items-center">
+                          Address
+                          <SortIcon field="address" />
                         </div>
                       </th>
                       <th onClick={() => handleSort('purchasePrice')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
@@ -323,8 +320,7 @@ export default function PropertiesPage() {
                                 }}
                               />
                               <div className="max-w-[200px]">
-                                <div className="font-medium truncate">{property.address}</div>
-                              </div>
+                              <div className="font-medium truncate">{property.address}</div>
                             </div>
                           </td>
                           <td className="py-3 px-4 text-right whitespace-nowrap">
