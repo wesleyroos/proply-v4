@@ -18,7 +18,7 @@ interface CashflowChartProps {
 export default function CashflowChart({ netOperatingIncome }: CashflowChartProps) {
   if (!netOperatingIncome) return null;
   const years = [1, 2, 3, 4, 5, 10, 20];
-
+  
   const chartData = years.map(year => {
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
     return {
