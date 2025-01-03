@@ -339,6 +339,14 @@ export default function PropertyAnalyzerPage() {
                 </div>
                 <div className="space-x-2">
                   <Button
+                    onClick={() => setSaveDialog(prev => ({ ...prev, isOpen: true, type: 'pdf' }))}
+                    disabled={!analysisResult?.id}
+                    className="bg-blue-600 hover:bg-blue-700 mr-2"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export PDF
+                  </Button>
+                  <Button
                     onClick={async () => {
                       try {
                         const dataToSave = prepareAnalysisDataForSave();

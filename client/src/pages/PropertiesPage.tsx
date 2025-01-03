@@ -83,7 +83,7 @@ export default function PropertiesPage() {
     try {
       const endpoint = activeTab === 'rent_compare'
         ? `/api/properties/${propertyToDelete.id}`
-        : `/api/property-analyzer/${propertyToDelete.id}`;
+        : `/api/property-analyzer/properties/${propertyToDelete.id}`;
 
       const response = await fetch(endpoint, {
         method: 'DELETE',
