@@ -109,6 +109,38 @@ export default function PropertiesPage() {
     }
   };
 
+  const handleDeleteSelected = async () => {
+    if (!selectedProperties.length) return;
+
+    try {
+      for (const propertyId of selectedProperties) {
+        const endpoint = activeTab === 'rent_compare'
+          ? `/api/properties/${propertyId}`
+          : `/api/property-analyzer/properties/${propertyId}`;
+
+        const response = await fetch(endpoint, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+      }
+
+      queryClient.invalidateQueries({
+        queryKey: activeTab === 'rent_compare'
+          ? ['/api/properties']
+          : ['/api/property-analyzer/properties']
+      });
+
+      setSelectedProperties([]);
+      setDeleteError(null);
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : 'Failed to delete properties');
+    }
+  };
+
   const handleSort = (field: SortField) => {
     setSortConfig(current => ({
       field,
@@ -141,12 +173,10 @@ export default function PropertiesPage() {
       if (aValue === null) return 1;
       if (bValue === null) return -1;
 
-      // Handle number fields
       if (typeof aValue === 'number' && typeof bValue === 'number') {
         return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
       }
 
-      // Handle string fields
       if (typeof aValue === 'string' && typeof bValue === 'string') {
         return sortConfig.direction === 'asc'
           ? aValue.localeCompare(bValue)
@@ -157,7 +187,6 @@ export default function PropertiesPage() {
     });
   }, [analyzerProperties, searchTerm, sortConfig]);
 
-  // Calculate rate per square meter for a property
   const calculateRatePerSqm = (property: AnalyzerProperty) => {
     if (!property.floorArea || property.floorArea === 0) return 0;
     return property.purchasePrice / property.floorArea;
@@ -211,6 +240,22 @@ export default function PropertiesPage() {
           <Card>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
+                {selectedProperties.length > 0 && (
+                  <div className="p-4 border-b flex items-center justify-between bg-muted/50">
+                    <div className="text-sm text-muted-foreground">
+                      {selectedProperties.length} {selectedProperties.length === 1 ? 'property' : 'properties'} selected
+                    </div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteSelected()}
+                      className="flex items-center gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete Selected
+                    </Button>
+                  </div>
+                )}
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
