@@ -5,13 +5,13 @@ export function ToastDemo() {
   const { toast } = useToast();
   console.log('ToastDemo component rendered, toast function:', !!toast);
 
-  const showToast = (type: string) => {
-    console.log(`Attempting to show ${type} toast`);
+  const showToast = (variant: 'default' | 'destructive' | 'success' | 'warning' | 'info') => {
+    console.log(`Attempting to show ${variant} toast`);
     try {
       const toastData = {
-        title: type.charAt(0).toUpperCase() + type.slice(1),
-        description: `This is a ${type} message`,
-        variant: type === 'error' ? 'destructive' : type,
+        title: variant.charAt(0).toUpperCase() + variant.slice(1),
+        description: `This is a ${variant} message`,
+        variant,
         duration: 3000,
       };
       console.log('Creating toast with data:', toastData);
@@ -35,7 +35,7 @@ export function ToastDemo() {
 
         <Button
           variant="destructive"
-          onClick={() => showToast('error')}
+          onClick={() => showToast('destructive')}
         >
           Show Error Toast
         </Button>
