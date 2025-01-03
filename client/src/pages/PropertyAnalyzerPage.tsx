@@ -925,9 +925,19 @@ export default function PropertyAnalyzerPage() {
               </Card>
 
               {/* Cashflow Chart */}
-              <CashflowChart 
-                netOperatingIncome={analysisResult.netOperatingIncome} 
-              />
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-purple-500" />
+                    Cashflow Projections
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CashflowChart
+                    netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+                  />
+                </CardContent>
+              </Card>
 
               {/* Asset Growth Metrics */}
               <AssetGrowthMetrics
@@ -938,6 +948,7 @@ export default function PropertyAnalyzerPage() {
                 loanTerm={analysisResult.loanTerm || 20}
                 annualAppreciation={formData?.annualPropertyAppreciation || 5}
               />
+
             </div>
           </>
         )}
