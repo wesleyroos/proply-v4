@@ -360,75 +360,71 @@ export default function PropertyAnalyzerPage() {
                       setPDFData(data);
                     }}
                     disabled={!analysisResult}
-                    className="bg-blue-600 hover:bg-blue-700 mr-2"
+                    className="bg-blue-600 hover:bg-blue-700"
                   >
                     <FileText className="w-4 h-4 mr-2" />
                     Export PDF
                   </Button>
-                  <Card>
-                    <CardContent className="space-y-6">
-                      <Button
-                        onClick={async () => {
-                          try {
-                            const dataToSave = prepareAnalysisDataForSave();
-                            if (!dataToSave) {
-                              toast({
-                                variant: "destructive",
-                                title: "Error Saving Analysis",
-                                description: 'Missing required data. Please ensure all fields are filled correctly.',
-                                duration: 5000,
-                              });
-                              return;
-                            }
+                  <Button
+                    onClick={async () => {
+                      try {
+                        const dataToSave = prepareAnalysisDataForSave();
+                        if (!dataToSave) {
+                          toast({
+                            variant: "destructive",
+                            title: "Error Saving Analysis",
+                            description: 'Missing required data. Please ensure all fields are filled correctly.',
+                            duration: 5000,
+                          });
+                          return;
+                        }
 
-                            console.log('Data being saved:', dataToSave);
+                        console.log('Data being saved:', dataToSave);
 
-                            const response = await fetch('/api/property-analyzer/save', {
-                              method: 'POST',
-                              headers: {
-                                'Content-Type': 'application/json',
-                              },
-                              body: JSON.stringify(dataToSave),
-                              credentials: 'include'
-                            });
+                        const response = await fetch('/api/property-analyzer/save', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify(dataToSave),
+                          credentials: 'include'
+                        });
 
-                            const responseData = await response.json();
+                        const responseData = await response.json();
 
-                            if (!response.ok) {
-                              console.error('Save response error:', responseData);
-                              let errorMessage = 'Failed to save analysis. ';
-                              if (responseData.details && Array.isArray(responseData.details)) {
-                                errorMessage += responseData.details.join('\n');
-                              } else if (responseData.error) {
-                                errorMessage += responseData.error;
-                              }
-                              throw new Error(errorMessage);
-                            }
-
-                            setAnalysisId(responseData.id);
-                            toast({
-                              variant: "success",
-                              title: "Success",
-                              description: `Property analysis for ${dataToSave.address} has been saved!`,
-                              duration: 5000,
-                            });
-                          } catch (error) {
-                            console.error('Save error:', error);
-                            toast({
-                              variant: "destructive",
-                              title: "Error",
-                              description: error instanceof Error ? error.message : 'Failed to save analysis',
-                              duration: 7000,
-                            });
+                        if (!response.ok) {
+                          console.error('Save response error:', responseData);
+                          let errorMessage = 'Failed to save analysis. ';
+                          if (responseData.details && Array.isArray(responseData.details)) {
+                            errorMessage += responseData.details.join('\n');
+                          } else if (responseData.error) {
+                            errorMessage += responseData.error;
                           }
-                        }}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Analysis
-                      </Button>
-                    </CardContent>
-                  </Card>
+                          throw new Error(errorMessage);
+                        }
+
+                        setAnalysisId(responseData.id);
+                        toast({
+                          variant: "success",
+                          title: "Success",
+                          description: `Property analysis for ${dataToSave.address} has been saved!`,
+                          duration: 5000,
+                        });
+                      } catch (error) {
+                        console.error('Save error:', error);
+                        toast({
+                          variant: "destructive",
+                          title: "Error",
+                          description: error instanceof Error ? error.message : 'Failed to save analysis',
+                          duration: 7000,
+                        });
+                      }
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Analysis
+                  </Button>
                 </div>
               </div>
             </div>
