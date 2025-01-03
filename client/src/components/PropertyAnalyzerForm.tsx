@@ -220,7 +220,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         depositAmount: Number(data.depositAmount),
         depositPercentage: Number(data.depositPercentage),
         interestRate: Number(data.interestRate),
-        loanTerm: Number(data.loanTerm), // Ensure loan term is converted to number
+        loanTerm: Number(data.loanTerm),
 
         // Operating Expenses
         monthlyLevies: Number(data.monthlyLevies || 0),
@@ -260,21 +260,25 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       }
 
       const result = await response.json();
-      setAnalysisResult(result); // Store the analysis result
+      setAnalysisResult(result);
 
       if (props.onAnalysisComplete) {
         await props.onAnalysisComplete(analysisData);
       }
+
       toast({
-        title: "Success",
-        description: "Property analysis completed successfully.",
+        variant: "success",
+        title: "Analysis Saved",
+        description: `Property analysis for ${data.address} has been successfully saved.`,
+        duration: 5000,
       });
     } catch (error) {
       console.error('Analysis error:', error);
       toast({
-        title: "Error",
-        description: "Failed to analyze property data.",
         variant: "destructive",
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "Failed to analyze property data.",
+        duration: 7000,
       });
     } finally {
       setIsSubmitting(false);
@@ -1087,11 +1091,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                                 </span>
                               </>
                             )}
-                                                    </Button>
+                          </Button>
                           <p className="text-xs text-muted-foreground">
                             Get accurate rates from Airbnb listings in your area
-                          </p>
-                        </div>
+                          </p>                        </div>
                       </FormControl>
                     </FormItem>
                   </div>
