@@ -324,6 +324,7 @@ export default function PropertiesPage() {
                               <div className="max-w-[200px]">
                                 <div className="font-medium truncate">{property.address}</div>
                               </div>
+                            </div>
                           </td>
                           <td className="py-3 px-4 text-right whitespace-nowrap">
                             {formatter.format(property.purchasePrice)}
