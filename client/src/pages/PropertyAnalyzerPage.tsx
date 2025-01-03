@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -34,6 +35,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
+import PDFReport from "@/components/PDFReport";
 
 
 interface YearlyMetrics {
@@ -126,11 +128,10 @@ export default function PropertyAnalyzerPage() {
   const [formData, setFormData] = useState<any>(null);
   const [removeVat, setRemoveVat] = useState(false);
   const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
-  const [saveDialog, setSaveDialog] = useState<{ isOpen: boolean; type: 'success' | 'error'; message: string }>({
-    isOpen: false,
-    type: 'success',
-    message: ''
-  });
+  const { toast } = useToast();
+  const [analysisId, setAnalysisId] = useState<string | null>(null);
+  const [showPDFReport, setShowPDFReport] = useState(false);
+  const [pdfData, setPDFData] = useState<any>(null);
 
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
@@ -339,8 +340,26 @@ export default function PropertyAnalyzerPage() {
                 </div>
                 <div className="space-x-2">
                   <Button
-                    onClick={() => setSaveDialog(prev => ({ ...prev, isOpen: true, type: 'pdf' }))}
-                    disabled={!analysisResult?.id}
+                    onClick={() => {
+                      if (!analysisResult) return;
+                      const data = {
+                        address: analysisResult.address,
+                        longTermMonthly: analysisResult.analysis.longTermAnnualRevenue / 12,
+                        shortTermMonthly: analysisResult.analysis.shortTermAnnualRevenue / 12,
+                        longTermAnnual: analysisResult.analysis.longTermAnnualRevenue,
+                        shortTermAnnual: analysisResult.analysis.shortTermAnnualRevenue,
+                        shortTermAfterFees: analysisResult.analysis.shortTermAnnualRevenue * (1 - analysisResult.managementFee/100),
+                        breakEvenOccupancy: 65, // You may want to calculate this
+                        shortTermNightly: analysisResult.shortTermNightlyRate || 0,
+                        managementFee: analysisResult.managementFee,
+                        annualOccupancy: analysisResult.annualOccupancy || 0,
+                        bedrooms: formData?.bedrooms || "N/A",
+                        bathrooms: formData?.bathrooms || "N/A"
+                      };
+                      setShowPDFReport(true);
+                      setPDFData(data);
+                    }}
+                    disabled={!analysisId}
                     className="bg-blue-600 hover:bg-blue-700 mr-2"
                   >
                     <FileText className="w-4 h-4 mr-2" />
@@ -383,17 +402,18 @@ export default function PropertyAnalyzerPage() {
                           throw new Error(errorMessage);
                         }
 
-                        setSaveDialog({
-                          isOpen: true,
-                          type: 'success',
-                          message: 'Property analysis saved successfully! You can view it in the Properties page.'
+                        setAnalysisId(responseData.id);
+                        toast({
+                          title: "Analysis Saved",
+                          description: "Property analysis saved successfully!",
+                          variant: "default"
                         });
                       } catch (error) {
                         console.error('Save error:', error);
-                        setSaveDialog({
-                          isOpen: true,
-                          type: 'error',
-                          message: error instanceof Error ? error.message : 'Failed to save analysis'
+                        toast({
+                          title: "Error",
+                          description: error instanceof Error ? error.message : 'Failed to save analysis',
+                          variant: "destructive"
                         });
                       }
                     }}
@@ -406,27 +426,7 @@ export default function PropertyAnalyzerPage() {
               </div>
             </div>
 
-            {/* Add Alert Dialog for Save Status */}
-            <AlertDialog
-              open={saveDialog.isOpen}
-              onOpenChange={(open) => setSaveDialog(prev => ({ ...prev, isOpen: open }))}
-            >
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    {saveDialog.type === 'success' ? 'Success' : 'Error'}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription className="whitespace-pre-line">
-                    {saveDialog.message}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogAction>
-                    {saveDialog.type === 'success' ? 'Continue' : 'Try Again'}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {/* Toast notifications handled by Toaster component */}
 
 
             {/* Deal Summary Section */}
@@ -958,6 +958,13 @@ export default function PropertyAnalyzerPage() {
               />
 
             </div>
+            
+            {showPDFReport && pdfData && (
+              <PDFReport 
+                data={pdfData}
+                onClose={() => setShowPDFReport(false)}
+              />
+            )}
           </>
         )}
       </div>
