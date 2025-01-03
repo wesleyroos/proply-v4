@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
-import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save, FileText } from "lucide-react";
+import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save, FileText, Wand2 } from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
 import { PDFReportModal } from "@/components/PDFReportModal";
-
+import { faker } from '@faker-js/faker';
 
 interface YearlyMetrics {
   grossYield: number;
@@ -121,6 +121,41 @@ interface AnalysisResult {
   propertyPhotoUrl?: string;
 }
 
+function generateRandomPropertyData() {
+  const purchasePrice = faker.number.int({ min: 1000000, max: 5000000 });
+  const deposit = faker.number.int({ min: 100000, max: purchasePrice * 0.3 });
+  const depositPercentage = Math.round((deposit / purchasePrice) * 100);
+
+  return {
+    address: faker.location.streetAddress(true) + ", " + faker.location.city(),
+    propertyUrl: faker.internet.url(),
+    purchasePrice: purchasePrice,
+    floorArea: faker.number.int({ min: 50, max: 200 }),
+    bedrooms: faker.number.int({ min: 1, max: 4 }),
+    bathrooms: faker.number.int({ min: 1, max: 3 }),
+    parkingSpaces: faker.number.int({ min: 0, max: 2 }),
+    depositType: 'amount',
+    depositAmount: deposit,
+    depositPercentage: depositPercentage,
+    interestRate: faker.number.float({ min: 11, max: 13.5, precision: 0.1 }),
+    loanTerm: faker.number.int({ min: 20, max: 30 }),
+    monthlyLevies: faker.number.int({ min: 500, max: 2000 }),
+    monthlyRatesTaxes: faker.number.int({ min: 1000, max: 3000 }),
+    otherMonthlyExpenses: faker.number.int({ min: 200, max: 1000 }),
+    maintenancePercent: faker.number.float({ min: 0.5, max: 2, precision: 0.1 }),
+    managementFee: faker.number.int({ min: 5, max: 15 }),
+    airbnbNightlyRate: faker.number.int({ min: 1500, max: 3500 }),
+    occupancyRate: faker.number.int({ min: 50, max: 80 }),
+    longTermRental: faker.number.int({ min: 15000, max: 30000 }),
+    leaseCycleGap: faker.number.int({ min: 0, max: 1 }),
+    annualIncomeGrowth: faker.number.float({ min: 5, max: 10, precision: 0.1 }),
+    annualExpenseGrowth: faker.number.float({ min: 4, max: 8, precision: 0.1 }),
+    annualPropertyAppreciation: faker.number.float({ min: 3, max: 7, precision: 0.1 }),
+    cmaRatePerSqm: faker.number.int({ min: 20000, max: 40000 }),
+    comments: faker.lorem.paragraph()
+  };
+}
+
 export default function PropertyAnalyzerPage() {
   const { user } = useUser();
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -132,6 +167,8 @@ export default function PropertyAnalyzerPage() {
   const [analysisId, setAnalysisId] = useState<string | null>(null);
   const [showPDFReport, setShowPDFReport] = useState(false);
   const [pdfData, setPDFData] = useState<any>(null);
+  const [saveDialog, setSaveDialog] = useState<{ isOpen: boolean; type: 'success' | 'error'; message: string } | null>(null);
+  const form = useRef<HTMLFormElement>(null);
 
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
@@ -311,7 +348,9 @@ export default function PropertyAnalyzerPage() {
       </div>
 
       <div className="space-y-6">
-        <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+        <form ref={form}> {/* Added ref to the form */}
+          <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+        </form>
 
         {analysisError && (
           <Card className="border-red-200 bg-red-50">
@@ -425,8 +464,6 @@ export default function PropertyAnalyzerPage() {
                 </div>
               </div>
             </div>
-
-            {/* Toast notifications handled by Toaster component */}
 
 
             {/* Deal Summary Section */}
@@ -730,7 +767,7 @@ export default function PropertyAnalyzerPage() {
                             </p>
                           </div>
                           <p className="text-sm flex items-center gap-2">
-                            <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
+                            <span className="font-semibold textemerald-600 text-base flex items-center gap-2">
                               {analysisResult.longTermGrossYield?.toFixed(2) ||
                                 "0"}
                               % Gross Yield
@@ -958,7 +995,7 @@ export default function PropertyAnalyzerPage() {
               />
 
             </div>
-            
+
             <PDFReportModal
               open={showPDFReport}
               onOpenChange={setShowPDFReport}
