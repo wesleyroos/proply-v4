@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,6 +29,7 @@ import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import PaymentFailurePage from "./pages/PaymentFailurePage";
 import { useUser } from "./hooks/use-user";
 import Sidebar from "./components/Sidebar";
+import {ToastProvider} from "@/components/ui/toast"; //Assuming this import is needed
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -90,6 +90,7 @@ function App() {
 
   return (
     <TooltipProvider>
+      <ToastProvider> {/*Added ToastProvider */}
       <AnimatePresence mode="wait">
         <Switch key={location}>
           <Route path="/" component={() => (
@@ -175,6 +176,7 @@ function App() {
           )} />
         </Switch>
       </AnimatePresence>
+      </ToastProvider> {/*Closed ToastProvider*/}
       <Toaster />
     </TooltipProvider>
   );
