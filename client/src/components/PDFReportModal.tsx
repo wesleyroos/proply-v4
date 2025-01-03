@@ -11,7 +11,43 @@ import { formatter } from "@/utils/formatting";
 interface PDFReportModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  data: any;
+  data: {
+    propertyDetails: {
+      address: string;
+      bedrooms: string;
+      bathrooms: string;
+      floorArea: number;
+      parkingSpaces: number;
+      purchasePrice: number;
+      ratePerSquareMeter: number;
+    };
+    financialMetrics: {
+      depositAmount: number;
+      depositPercentage: number;
+      interestRate: number;
+      loanTerm: number;
+      monthlyBondRepayment: number;
+    };
+    expenses: {
+      monthlyLevies: number;
+      monthlyRatesTaxes: number;
+      otherMonthlyExpenses: number;
+      maintenancePercent: number;
+    };
+    performance: {
+      shortTermNightlyRate: number;
+      annualOccupancy: number;
+      shortTermAnnualRevenue: number;
+      longTermAnnualRevenue: number;
+      shortTermGrossYield: number;
+      longTermGrossYield: number;
+      managementFee: number;
+    };
+    investmentMetrics: {
+      shortTerm: any;
+      longTerm: any;
+    };
+  };
 }
 
 interface ReportSection {
@@ -33,8 +69,6 @@ const defaultSectionGroups: SectionGroup[] = [
       { id: "purchasePrice", label: "Purchase Price", checked: true },
       { id: "floorArea", label: "Floor Area", checked: true },
       { id: "ratePerM2", label: "Rate per m²", checked: true },
-      { id: "areaRateM2", label: "Area Rate/m²", checked: true },
-      { id: "rateDifference", label: "Rate/m² Difference", checked: true },
     ]
   },
   {
@@ -43,41 +77,31 @@ const defaultSectionGroups: SectionGroup[] = [
       { id: "deposit", label: "Deposit & Bond Details", checked: true },
       { id: "interestRate", label: "Interest Rate", checked: true },
       { id: "loanTerm", label: "Loan Term", checked: true },
-      { id: "bondRegistration", label: "Bond Registration", checked: true },
-      { id: "transferCosts", label: "Transfer Costs", checked: true },
+      { id: "monthlyBond", label: "Monthly Bond Payment", checked: true },
     ]
   },
   {
     title: "Revenue Performance",
     sections: [
-      { id: "shortTermY1", label: "Short-Term Rental (Year 1)", checked: true },
-      { id: "longTermY1", label: "Long-Term Rental (Year 1)", checked: true },
-      { id: "monthlyRates", label: "Monthly Seasonal Rates", checked: true },
+      { id: "shortTerm", label: "Short-Term Rental Performance", checked: true },
+      { id: "longTerm", label: "Long-Term Rental Performance", checked: true },
+      { id: "occupancyRate", label: "Occupancy Rate", checked: true },
     ]
   },
   {
-    title: "Financial Projections",
+    title: "Investment Metrics",
     sections: [
-      { id: "cashflow", label: "Annual Cashflow Projections", checked: true },
-      { id: "propertyValue", label: "Property Value Projections", checked: true },
-      { id: "loanBalance", label: "Loan Balance Over Time", checked: true },
-      { id: "netWorth", label: "Net Worth Change", checked: true },
+      { id: "yields", label: "Yield Analysis", checked: true },
+      { id: "returns", label: "Return Metrics", checked: true },
+      { id: "cashflow", label: "Cashflow Analysis", checked: true },
     ]
   },
   {
-    title: "Performance Metrics",
+    title: "Operating Expenses",
     sections: [
-      { id: "investmentMetrics", label: "Investment Metrics Year 1", checked: true },
-      { id: "operatingFinancials", label: "Operating Financials", checked: true },
-      { id: "totalInterest", label: "Total Interest Paid Over Time", checked: true },
-    ]
-  },
-  {
-    title: "Visualizations",
-    sections: [
-      { id: "cashflowChart", label: "Cashflow Charts", checked: true },
-      { id: "revenueChart", label: "Revenue Charts", checked: true },
-      { id: "propertyValueChart", label: "Property Value Charts", checked: true },
+      { id: "monthlyExpenses", label: "Monthly Expenses", checked: true },
+      { id: "maintenance", label: "Maintenance Costs", checked: true },
+      { id: "managementFees", label: "Management Fees", checked: true },
     ]
   },
   {
@@ -136,52 +160,54 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
           </div>
         </div>
 
-        <h1 style="color: #1a365d; margin-bottom: 20px;">Property Analysis Report</h1>
+        <h1 style="color: #1a365d; margin-bottom: 20px;">Property Investment Analysis</h1>
 
         ${getSelectedSections("Property Details").includes("address") ? `
           <div style="margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
             <h2 style="color: #2d3748; margin-bottom: 15px; font-size: 1.5rem;">Property Overview</h2>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
               <div>
-                <p style="margin-bottom: 10px;"><strong>Address:</strong><br>${data.address}</p>
+                <p style="margin-bottom: 10px;"><strong>Address:</strong><br>${data.propertyDetails.address}</p>
                 ${getSelectedSections("Property Details").includes("purchasePrice") ? 
-                  `<p style="margin-bottom: 10px;"><strong>Purchase Price:</strong><br>${formatter.format(data.purchasePrice)}</p>` : ''}
+                  `<p style="margin-bottom: 10px;"><strong>Purchase Price:</strong><br>${formatter.format(data.propertyDetails.purchasePrice)}</p>` : ''}
               </div>
               <div>
                 ${getSelectedSections("Property Details").includes("floorArea") ? 
-                  `<p style="margin-bottom: 10px;"><strong>Floor Area:</strong><br>${data.floorArea}m²</p>` : ''}
+                  `<p style="margin-bottom: 10px;"><strong>Floor Area:</strong><br>${data.propertyDetails.floorArea}m²</p>` : ''}
                 ${getSelectedSections("Property Details").includes("ratePerM2") ? 
-                  `<p style="margin-bottom: 10px;"><strong>Rate per m²:</strong><br>${formatter.format(data.ratePerM2)}/m²</p>` : ''}
+                  `<p style="margin-bottom: 10px;"><strong>Rate per m²:</strong><br>${formatter.format(data.propertyDetails.ratePerSquareMeter)}/m²</p>` : ''}
               </div>
             </div>
           </div>
         ` : ''}
 
-        ${getSelectedSections("Revenue Performance").includes("shortTermY1") ? `
+        ${getSelectedSections("Revenue Performance").includes("shortTerm") ? `
           <div style="margin-bottom: 30px; background: #f0f9ff; padding: 20px; border-radius: 8px;">
             <h2 style="color: #2d3748; margin-bottom: 15px; font-size: 1.5rem;">Short-Term Rental Performance</h2>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
               <div>
-                <p style="margin-bottom: 10px;"><strong>Monthly Revenue:</strong><br>${formatter.format(data.shortTermMonthly)}</p>
-                <p style="margin-bottom: 10px;"><strong>Annual Revenue:</strong><br>${formatter.format(data.shortTermAnnual)}</p>
+                <p style="margin-bottom: 10px;"><strong>Nightly Rate:</strong><br>${formatter.format(data.performance.shortTermNightlyRate)}</p>
+                <p style="margin-bottom: 10px;"><strong>Annual Revenue:</strong><br>${formatter.format(data.performance.shortTermAnnualRevenue)}</p>
               </div>
               <div>
-                <p style="margin-bottom: 10px;"><strong>Revenue After Fees:</strong><br>${formatter.format(data.shortTermAfterFees)}</p>
-                <p style="margin-bottom: 10px;"><strong>Occupancy Rate:</strong><br>${data.annualOccupancy}%</p>
+                <p style="margin-bottom: 10px;"><strong>Gross Yield:</strong><br>${data.performance.shortTermGrossYield.toFixed(1)}%</p>
+                <p style="margin-bottom: 10px;"><strong>Occupancy Rate:</strong><br>${data.performance.annualOccupancy}%</p>
               </div>
             </div>
           </div>
         ` : ''}
 
-        ${getSelectedSections("Performance Metrics").includes("operatingFinancials") ? `
+        ${getSelectedSections("Operating Expenses").includes("monthlyExpenses") ? `
           <div style="margin-bottom: 30px; background: #f7f9fc; padding: 20px; border-radius: 8px;">
-            <h2 style="color: #2d3748; margin-bottom: 15px; font-size: 1.5rem;">Operating Financials</h2>
+            <h2 style="color: #2d3748; margin-bottom: 15px; font-size: 1.5rem;">Operating Expenses</h2>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
               <div>
-                <p style="margin-bottom: 10px;"><strong>Management Fee:</strong><br>${data.managementFee}%</p>
+                <p style="margin-bottom: 10px;"><strong>Monthly Levies:</strong><br>${formatter.format(data.expenses.monthlyLevies)}</p>
+                <p style="margin-bottom: 10px;"><strong>Monthly Rates & Taxes:</strong><br>${formatter.format(data.expenses.monthlyRatesTaxes)}</p>
               </div>
               <div>
-                <p style="margin-bottom: 10px;"><strong>Break-even Occupancy:</strong><br>${data.breakEvenOccupancy}%</p>
+                <p style="margin-bottom: 10px;"><strong>Management Fee:</strong><br>${data.performance.managementFee}%</p>
+                <p style="margin-bottom: 10px;"><strong>Maintenance:</strong><br>${data.expenses.maintenancePercent}%</p>
               </div>
             </div>
           </div>
@@ -196,7 +222,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
 
     const opt = {
       margin: 1,
-      filename: `${data.address.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`,
+      filename: `${data.propertyDetails.address.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
