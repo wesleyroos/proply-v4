@@ -819,7 +819,7 @@ export default function PropertyAnalyzerPage() {
                                   <TooltipContent className="max-w-[300px] text-sm">
                                     This shows how the property's price per
                                     square meter compares to the average rate in
-                                    the area. A lower rate than the area average might indicate
+                                    the area.                                    A lower rate than the area average might indicate
                                     better value for money, while a higher rate suggests premium positioning.
                                   </TooltipContent>
                                 </Tooltip>
