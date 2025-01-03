@@ -71,10 +71,11 @@ function App() {
   const [location] = useLocation();
 
   return (
-    <TooltipProvider>
+    <>
       <Toaster />
-      <AnimatePresence mode="wait">
-        <Switch key={location}>
+      <TooltipProvider>
+        <AnimatePresence mode="wait">
+          <Switch key={location}>
             <Route path="/" component={() => (
               <PageTransition>
                 <HomePage />
@@ -142,42 +143,15 @@ function App() {
             )} />
 
             {/* Protected routes */}
-            <Route 
-              path="/dashboard" 
-              component={() => <ProtectedRoute component={DashboardPage} />} 
-            />
-            <Route 
-              path="/dashboard/property-analyzer" 
-              component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} 
-            />
-            <Route 
-              path="/dashboard/market-intelligence" 
-              component={() => <ProtectedRoute component={MarketIntelligencePage} />} 
-            />
-            <Route 
-              path="/dashboard/rent-compare" 
-              component={() => <ProtectedRoute component={ComparisonPage} />} 
-            />
-            <Route 
-              path="/properties" 
-              component={() => <ProtectedRoute component={PropertiesPage} />} 
-            />
-            <Route 
-              path="/settings" 
-              component={() => <ProtectedRoute component={SettingsPage} />} 
-            />
-            <Route 
-              path="/admin" 
-              component={() => <ProtectedRoute component={AdminPage} />} 
-            />
-            <Route 
-              path="/access-codes" 
-              component={() => <ProtectedRoute component={AccessCodePage} />} 
-            />
-            <Route
-              path="/subscription"
-              component={() => <ProtectedRoute component={SubscriptionPage} />}
-            />
+            <Route path="/dashboard" component={() => <ProtectedRoute component={DashboardPage} />} />
+            <Route path="/dashboard/property-analyzer" component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} />
+            <Route path="/dashboard/market-intelligence" component={() => <ProtectedRoute component={MarketIntelligencePage} />} />
+            <Route path="/dashboard/rent-compare" component={() => <ProtectedRoute component={ComparisonPage} />} />
+            <Route path="/properties" component={() => <ProtectedRoute component={PropertiesPage} />} />
+            <Route path="/settings" component={() => <ProtectedRoute component={SettingsPage} />} />
+            <Route path="/admin" component={() => <ProtectedRoute component={AdminPage} />} />
+            <Route path="/access-codes" component={() => <ProtectedRoute component={AccessCodePage} />} />
+            <Route path="/subscription" component={() => <ProtectedRoute component={SubscriptionPage} />} />
             <Route component={() => (
               <PageTransition>
                 <NotFound />
@@ -186,6 +160,7 @@ function App() {
           </Switch>
         </AnimatePresence>
       </TooltipProvider>
+    </>
   );
 }
 
