@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FileText, Upload } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import { generatePropertyReport } from "@/utils/pdfGenerator";
+import { extractRentalPerformanceData } from "@/utils/chartCapture";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -111,7 +112,6 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         const base64Data = reader.result as string;
         setLogoPreviewUrl(base64Data);
 
-        // Also update user profile with the new logo
         try {
           const response = await fetch('/api/profile', {
             method: 'POST',
@@ -162,9 +162,16 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         return acc;
       }, {} as Record<string, string[]>);
 
-      // Use either the newly uploaded logo or the existing user logo
+      const rentalPerformanceData = extractRentalPerformanceData(data);
+
       const logo = logoPreviewUrl || user?.companyLogo;
-      const doc = await generatePropertyReport(data, selectedSections, logo);
+
+      const reportData = {
+        ...data,
+        rentalPerformanceData
+      };
+
+      const doc = await generatePropertyReport(reportData, selectedSections, logo);
       const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
       doc.save(filename);
 
