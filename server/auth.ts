@@ -108,7 +108,8 @@ export function setupAuth(app: Express) {
         .from(users)
         .where(eq(users.id, id))
         .limit(1);
-      done(null, user);
+
+    done(null, user);
     } catch (err) {
       done(err);
     }
@@ -264,6 +265,7 @@ export function setupAuth(app: Express) {
           lastName: user.lastName,
           userType: user.userType,
           company: user.company,
+          companyLogo: user.companyLogo,
           subscriptionStatus: user.subscriptionStatus,
           subscriptionExpiryDate: user.subscriptionExpiryDate,
           isAdmin: user.isAdmin
@@ -283,7 +285,20 @@ export function setupAuth(app: Express) {
 
   app.get("/api/user", (req, res) => {
     if (req.isAuthenticated()) {
-      return res.json(req.user);
+      const user = req.user;
+      return res.json({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        userType: user.userType,
+        company: user.company,
+        companyLogo: user.companyLogo,
+        subscriptionStatus: user.subscriptionStatus,
+        subscriptionExpiryDate: user.subscriptionExpiryDate,
+        isAdmin: user.isAdmin,
+        pendingDowngrade: user.pendingDowngrade
+      });
     }
     res.status(401).send("Not logged in");
   });
