@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generatePropertyReport } from "@/utils/pdfGenerator";
+import { extractRentalPerformanceData } from "@/utils/chartCapture";
 
 interface PropertyReportGeneratorProps {
   data: any;
@@ -20,10 +21,18 @@ export function PropertyReportGenerator({
     try {
       setGenerating(true);
 
-      const doc = generatePropertyReport(data, companyLogo);
+      // Extract rental performance data
+      const rentalPerformanceData = extractRentalPerformanceData(data);
+
+      // Generate PDF with the extracted data
+      const doc = await generatePropertyReport({
+        ...data,
+        rentalPerformanceData
+      }, companyLogo);
+
       const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
 
-      doc.save(filename);
+      await doc.save(filename);
 
       toast({
         title: "Success",

@@ -135,40 +135,11 @@ function createMonthlyRevenueTable(
     shortTermNightly: number;
     longTermMonthly: number;
     managementFee: number;
+    rentalPerformanceData: RentalPerformanceData;
   }
 ) {
-  const calculateMonthlyRevenue = (scenario: 'low' | 'medium' | 'high', monthIndex: number) => {
-    const occupancyRates = {
-      low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70],
-      medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85],
-      high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
-    };
-
-    const seasonalRates = {
-      peak: 1.2,
-      shoulder: 1.1,
-      low: 0.9
-    };
-
-    let rateMultiplier = 1;
-    if ([11, 0, 1].includes(monthIndex)) {
-      rateMultiplier = seasonalRates.peak;
-    } else if ([2, 3, 9, 10].includes(monthIndex)) {
-      rateMultiplier = seasonalRates.shoulder;
-    } else {
-      rateMultiplier = seasonalRates.low;
-    }
-
-    const nightlyRate = data.shortTermNightly * rateMultiplier;
-    const daysInMonth = new Date(2024, monthIndex + 1, 0).getDate();
-    const occupancy = occupancyRates[scenario][monthIndex] / 100;
-    const grossRevenue = nightlyRate * daysInMonth * occupancy;
-    const platformFee = data.managementFee > 0 ? 0.15 : 0.03;
-    const totalFees = platformFee + data.managementFee;
-    return grossRevenue * (1 - totalFees);
-  };
-
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const { monthlyData, occupancyRates } = data.rentalPerformanceData;
 
   const tableData = [
     ['Nightly Rate', ...months.map((_, i) => {
@@ -178,20 +149,20 @@ function createMonthlyRevenueTable(
       );
       return formatCurrency(seasonalRate);
     }), '', formatCurrency(data.shortTermNightly)],
-    ['Occupancy Low', ...months.map((_, i) => [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70][i] + '%'), '', '60%'],
-    ['Occupancy Medium', ...months.map((_, i) => [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85][i] + '%'), '', '71%'],
-    ['Occupancy High', ...months.map((_, i) => [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95][i] + '%'), '', '82%'],
-    ['Revenue Low', ...months.map((_, i) => formatCurrency(calculateMonthlyRevenue('low', i))),
-      formatCurrency(months.reduce((sum, _, i) => sum + calculateMonthlyRevenue('low', i), 0)),
-      formatCurrency(months.reduce((sum, _, i) => sum + calculateMonthlyRevenue('low', i), 0) / 12)
+    ['Occupancy Low', ...occupancyRates.low.map(rate => rate + '%'), '', (occupancyRates.low.reduce((a, b) => a + b, 0) / 12).toFixed(0) + '%'],
+    ['Occupancy Medium', ...occupancyRates.medium.map(rate => rate + '%'), '', (occupancyRates.medium.reduce((a, b) => a + b, 0) / 12).toFixed(0) + '%'],
+    ['Occupancy High', ...occupancyRates.high.map(rate => rate + '%'), '', (occupancyRates.high.reduce((a, b) => a + b, 0) / 12).toFixed(0) + '%'],
+    ['Revenue Low', ...monthlyData.low.map(revenue => formatCurrency(revenue)),
+      formatCurrency(monthlyData.low.reduce((a, b) => a + b, 0)),
+      formatCurrency(monthlyData.low.reduce((a, b) => a + b, 0) / 12)
     ],
-    ['Revenue Medium', ...months.map((_, i) => formatCurrency(calculateMonthlyRevenue('medium', i))),
-      formatCurrency(months.reduce((sum, _, i) => sum + calculateMonthlyRevenue('medium', i), 0)),
-      formatCurrency(months.reduce((sum, _, i) => sum + calculateMonthlyRevenue('medium', i), 0) / 12)
+    ['Revenue Medium', ...monthlyData.medium.map(revenue => formatCurrency(revenue)),
+      formatCurrency(monthlyData.medium.reduce((a, b) => a + b, 0)),
+      formatCurrency(monthlyData.medium.reduce((a, b) => a + b, 0) / 12)
     ],
-    ['Revenue High', ...months.map((_, i) => formatCurrency(calculateMonthlyRevenue('high', i))),
-      formatCurrency(months.reduce((sum, _, i) => sum + calculateMonthlyRevenue('high', i), 0)),
-      formatCurrency(months.reduce((sum, _, i) => sum + calculateMonthlyRevenue('high', i), 0) / 12)
+    ['Revenue High', ...monthlyData.high.map(revenue => formatCurrency(revenue)),
+      formatCurrency(monthlyData.high.reduce((a, b) => a + b, 0)),
+      formatCurrency(monthlyData.high.reduce((a, b) => a + b, 0) / 12)
     ],
     ['Long Term', ...Array(12).fill(formatCurrency(data.longTermMonthly)),
       formatCurrency(data.longTermMonthly * 12),
@@ -224,8 +195,21 @@ function createMonthlyRevenueTable(
   });
 }
 
+interface RentalPerformanceData {
+  monthlyData: {
+    low: number[];
+    medium: number[];
+    high: number[];
+  };
+  occupancyRates: {
+    low: number[];
+    medium: number[];
+    high: number[];
+  };
+}
+
 export async function generatePropertyReport(
-  data: PropertyData,
+  data: PropertyData & { rentalPerformanceData: RentalPerformanceData },
   selectedSections: Record<string, string[]>,
   companyLogo?: string | null
 ): Promise<jsPDF> {
@@ -503,38 +487,14 @@ export async function generatePropertyReport(
     doc.text('Rental Performance Analysis', MARGIN, yPos);
     yPos += 10;
 
-    // Calculate monthly revenues for the graph
-    const monthlyLow = Array(12).fill(0).map((_, i) => {
-      const occupancyRates = [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70];
-      const daysInMonth = new Date(2024, i + 1, 0).getDate();
-      return data.performance.shortTermNightlyRate * daysInMonth * (occupancyRates[i] / 100) * (1 - (data.expenses.managementFee || 0 > 0 ? 0.15 : 0.03));
-    });
-
-    const monthlyMedium = Array(12).fill(0).map((_, i) => {
-      const occupancyRates = [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85];
-      const daysInMonth = new Date(2024, i + 1, 0).getDate();
-      return data.performance.shortTermNightlyRate * daysInMonth * (occupancyRates[i] / 100) * (1 - (data.expenses.managementFee || 0 > 0 ? 0.15 : 0.03));
-    });
-
-    const monthlyHigh = Array(12).fill(0).map((_, i) => {
-      const occupancyRates = [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95];
-      const daysInMonth = new Date(2024, i + 1, 0).getDate();
-      return data.performance.shortTermNightlyRate * daysInMonth * (occupancyRates[i] / 100) * (1 - (data.expenses.managementFee || 0 > 0 ? 0.15 : 0.03));
-    });
-
-    // Draw the performance graph
+    // Draw the performance graph using the provided data
     drawRentalPerformanceGraph(
       doc,
       MARGIN,
       yPos,
       CONTENT_WIDTH,
       GRAPH_HEIGHT,
-      {
-        longTerm: data.performance.longTermAnnualRevenue / 12,
-        low: monthlyLow,
-        medium: monthlyMedium,
-        high: monthlyHigh
-      }
+      data.rentalPerformanceData.monthlyData
     );
     yPos += GRAPH_HEIGHT + 30;
 
@@ -549,7 +509,8 @@ export async function generatePropertyReport(
     createMonthlyRevenueTable(doc, {
       shortTermNightly: data.performance.shortTermNightlyRate,
       longTermMonthly: data.performance.longTermAnnualRevenue / 12,
-      managementFee: data.expenses.managementFee || 0
+      managementFee: data.expenses.managementFee || 0,
+      rentalPerformanceData: data.rentalPerformanceData
     });
     yPos = (doc as any).lastAutoTable.finalY + 15;
 
