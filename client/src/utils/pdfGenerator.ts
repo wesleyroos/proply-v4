@@ -156,7 +156,9 @@ export function generatePropertyReport(
       ['Short-Term Nightly Rate', formatter.format(data.performance.shortTermNightlyRate)],
       ['Annual Occupancy', `${data.performance.annualOccupancy}%`],
       ['Short-Term Annual Revenue', formatter.format(data.performance.shortTermAnnualRevenue)],
+      ['Short-Term Monthly Average', formatter.format(data.performance.shortTermAnnualRevenue / 12)],
       ['Long-Term Annual Revenue', formatter.format(data.performance.longTermAnnualRevenue)],
+      ['Long-Term Monthly Revenue', formatter.format(data.performance.longTermAnnualRevenue / 12)],
       ['Short-Term Gross Yield', `${data.performance.shortTermGrossYield}%`],
       ['Long-Term Gross Yield', `${data.performance.longTermGrossYield}%`]
     ];
@@ -242,35 +244,35 @@ export function generatePropertyReport(
       startY: yPos,
       head: [[
         'Month',
-        'Nightly Rate',
-        'Fee-Adjusted Rate',
-        'Low Occ.',
-        'Low Revenue',
-        'Med Occ.',
-        'Med Revenue',
-        'High Occ.',
-        'High Revenue',
-        'Long-Term Monthly'
+        'Rate',
+        'Adj Rate',
+        'Low %',
+        'Low Rev',
+        'Med %',
+        'Med Rev',
+        'High %',
+        'High Rev',
+        'Long-Term'
       ]],
       body: monthlyPerformanceData,
       theme: 'striped',
-      styles: { fontSize: 8, cellPadding: 2 },
+      styles: { fontSize: 7, cellPadding: 1 },
       headStyles: { 
         fillColor: [243, 244, 246], 
         textColor: [31, 41, 55],
-        fontSize: 8
+        fontSize: 7
       },
       columnStyles: {
-        0: { cellWidth: 20 },
-        1: { cellWidth: 25 },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 20 },
-        4: { fillColor: [254, 242, 242], cellWidth: 25 },
-        5: { cellWidth: 20 },
-        6: { fillColor: [255, 251, 235], cellWidth: 25 },
-        7: { cellWidth: 20 },
-        8: { fillColor: [240, 253, 244], cellWidth: 25 },
-        9: { fillColor: [239, 246, 255], cellWidth: 25 },
+        0: { cellWidth: 15 },
+        1: { cellWidth: 18 },
+        2: { cellWidth: 18 },
+        3: { cellWidth: 15 },
+        4: { fillColor: [254, 242, 242], cellWidth: 20 },
+        5: { cellWidth: 15 },
+        6: { fillColor: [255, 251, 235], cellWidth: 20 },
+        7: { cellWidth: 15 },
+        8: { fillColor: [240, 253, 244], cellWidth: 20 },
+        9: { fillColor: [239, 246, 255], cellWidth: 20 },
       },
       didDrawCell: (data) => {
         if (data.row.index === monthlyPerformanceData.length - 2 || 
@@ -283,20 +285,20 @@ export function generatePropertyReport(
     });
     yPos = (doc as any).lastAutoTable.finalY + 15;
 
-    doc.setFontSize(8);
+    doc.setFontSize(7);
     doc.setTextColor(100);
     doc.text('Color Legend:', 20, yPos);
     yPos += 5;
 
     const legendItems = [
-      { color: [254, 242, 242], text: 'Low Occupancy Scenario' },
-      { color: [255, 251, 235], text: 'Medium Occupancy Scenario' },
-      { color: [240, 253, 244], text: 'High Occupancy Scenario' },
-      { color: [239, 246, 255], text: 'Long-Term Rental' }
+      { color: [254, 242, 242], text: 'Low Occupancy' },
+      { color: [255, 251, 235], text: 'Medium Occupancy' },
+      { color: [240, 253, 244], text: 'High Occupancy' },
+      { color: [239, 246, 255], text: 'Long-Term' }
     ];
 
     legendItems.forEach((item, index) => {
-      const xPos = 20 + (index * 45);
+      const xPos = 20 + (index * 40);
       doc.setFillColor(...item.color);
       doc.rect(xPos, yPos, 3, 3, 'F');
       doc.text(item.text, xPos + 5, yPos + 2);
@@ -304,7 +306,7 @@ export function generatePropertyReport(
 
     yPos += 10;
 
-    doc.setFontSize(8);
+    doc.setFontSize(7);
     doc.text(`Note: Platform fees of ${data.expenses.managementFee > 0 ? '15%' : '3%'} are applied to nightly rates.`, 20, yPos);
     yPos += 10;
   }
