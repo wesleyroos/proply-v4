@@ -69,48 +69,48 @@ export function generatePropertyReport(
   const doc = new jsPDF();
   let yPos = 20;
 
-  console.group('PDF Generator - Data Processing');
-  console.log('Selected Sections:', selectedSections);
-  console.log('Available Data Keys:', Object.keys(data));
-
+  // Add company logo (user's logo) on the left
   if (companyLogo && selectedSections["Company Branding"]?.includes("companyLogo")) {
-    doc.addImage(companyLogo, "PNG", 160, 10, 40, 20);
-    yPos = 50;
+    // Maintain aspect ratio by setting only width
+    doc.addImage(companyLogo, "PNG", 20, 10, 40, 20);
   }
 
+  // Add Proply logo and text on the right
+  // Note: Replace this with actual Proply logo path when available
+  doc.addImage("/Proply Logo 1.png", "PNG", 140, 10, 40, 20);
+  doc.setFontSize(8);
+  doc.setTextColor(100);
+  doc.text("Powered by Proply", 140, 35);
+
+  yPos = 50;
+
   if (selectedSections["Property Details"]) {
-    console.log('Processing Property Details:', selectedSections["Property Details"]);
-    if (selectedSections["Property Details"].includes("propertyAddress") ||
-        selectedSections["Property Details"].includes("propertySpecs") ||
-        selectedSections["Property Details"].includes("propertyPrice")) {
-      doc.setFontSize(14);
-      doc.text('Property Details', 20, yPos);
-      yPos += 10;
+    doc.setFontSize(14);
+    doc.text('Property Details', 20, yPos);
+    yPos += 10;
 
-      const propertyData = [
-        ['Address', data.propertyDetails.address],
-        ['Bedrooms', data.propertyDetails.bedrooms || 'N/A'],
-        ['Bathrooms', data.propertyDetails.bathrooms || 'N/A'],
-        ['Floor Area', `${data.propertyDetails.floorArea}m²`],
-        ['Parking Spaces', data.propertyDetails.parkingSpaces.toString()],
-        ['Purchase Price', formatter.format(data.propertyDetails.purchasePrice)],
-        ['Rate per m²', formatter.format(data.propertyDetails.ratePerSquareMeter)]
-      ];
+    const propertyData = [
+      ['Address', data.propertyDetails.address],
+      ['Bedrooms', data.propertyDetails.bedrooms || 'N/A'],
+      ['Bathrooms', data.propertyDetails.bathrooms || 'N/A'],
+      ['Floor Area', `${data.propertyDetails.floorArea}m²`],
+      ['Parking Spaces', data.propertyDetails.parkingSpaces.toString()],
+      ['Purchase Price', formatter.format(data.propertyDetails.purchasePrice)],
+      ['Rate per m²', formatter.format(data.propertyDetails.ratePerSquareMeter)]
+    ];
 
-      autoTable(doc, {
-        startY: yPos,
-        head: [['Detail', 'Value']],
-        body: propertyData,
-        theme: 'striped',
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
-      });
-      yPos = (doc as any).lastAutoTable.finalY + 15;
-    }
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Detail', 'Value']],
+      body: propertyData,
+      theme: 'striped',
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
+    });
+    yPos = (doc as any).lastAutoTable.finalY + 15;
   }
 
   if (selectedSections["Deal Structure"]) {
-    console.log('Processing Deal Structure:', selectedSections["Deal Structure"]);
     if (yPos > 220) {
       doc.addPage();
       yPos = 20;
@@ -142,7 +142,6 @@ export function generatePropertyReport(
   }
 
   if (selectedSections["Rental Performance"]) {
-    console.log('Processing Rental Performance:', selectedSections["Rental Performance"]);
     if (yPos > 220) {
       doc.addPage();
       yPos = 20;
@@ -152,24 +151,37 @@ export function generatePropertyReport(
     doc.text('Rental Performance Overview', 20, yPos);
     yPos += 10;
 
-    const rentalOverviewData = [
-      ['Short-Term Nightly Rate', formatter.format(data.performance.shortTermNightlyRate)],
+    // Short-term rental performance
+    const shortTermData = [
+      ['Short-Term Performance', ''],
+      ['Nightly Rate', formatter.format(data.performance.shortTermNightlyRate)],
       ['Annual Occupancy', `${data.performance.annualOccupancy}%`],
-      ['Short-Term Annual Revenue', formatter.format(data.performance.shortTermAnnualRevenue)],
-      ['Short-Term Monthly Average', formatter.format(data.performance.shortTermAnnualRevenue / 12)],
-      ['Long-Term Annual Revenue', formatter.format(data.performance.longTermAnnualRevenue)],
-      ['Long-Term Monthly Revenue', formatter.format(data.performance.longTermAnnualRevenue / 12)],
-      ['Short-Term Gross Yield', `${data.performance.shortTermGrossYield}%`],
-      ['Long-Term Gross Yield', `${data.performance.longTermGrossYield}%`]
+      ['Annual Revenue', formatter.format(data.performance.shortTermAnnualRevenue)],
+      ['Monthly Average', formatter.format(data.performance.shortTermAnnualRevenue / 12)],
+      ['Gross Yield', `${data.performance.shortTermGrossYield}%`]
     ];
 
+    // Long-term rental performance
+    const longTermData = [
+      ['Long-Term Performance', ''],
+      ['Annual Revenue', formatter.format(data.performance.longTermAnnualRevenue)],
+      ['Monthly Revenue', formatter.format(data.performance.longTermAnnualRevenue / 12)],
+      ['Gross Yield', `${data.performance.longTermGrossYield}%`]
+    ];
+
+    // Combine both tables with a gap between them
     autoTable(doc, {
       startY: yPos,
-      head: [['Metric', 'Value']],
-      body: rentalOverviewData,
+      body: [...shortTermData, ['', ''], ...longTermData],
       theme: 'striped',
       styles: { fontSize: 10 },
-      headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
+      headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] },
+      didParseCell: function(data) {
+        if (data.row.index === 0 || data.row.index === 7) {
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.fillColor = [243, 244, 246];
+        }
+      }
     });
     yPos = (doc as any).lastAutoTable.finalY + 15;
 
@@ -272,14 +284,15 @@ export function generatePropertyReport(
         6: { fillColor: [255, 251, 235], cellWidth: 20 },
         7: { cellWidth: 15 },
         8: { fillColor: [240, 253, 244], cellWidth: 20 },
-        9: { fillColor: [239, 246, 255], cellWidth: 20 },
+        9: { fillColor: [239, 246, 255], cellWidth: 20 }
       },
-      didDrawCell: (data) => {
+      didParseCell: function(data) {
+        // Make total and average rows bold
         if (data.row.index === monthlyPerformanceData.length - 2 || 
             data.row.index === monthlyPerformanceData.length - 1) {
-          doc.setFillColor(243, 244, 246);
-          doc.setTextColor(31, 41, 55);
-          doc.setFont(undefined, 'bold');
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.fillColor = [243, 244, 246];
+          data.cell.styles.textColor = [31, 41, 55];
         }
       }
     });
