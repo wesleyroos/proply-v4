@@ -24,6 +24,10 @@ interface PropertyData {
     parkingSpaces: number;
     purchasePrice: number;
     ratePerSquareMeter: number;
+    areaAverageRate?: number;
+    rateDifference?: number;
+    bondRegistrationCosts?: number;
+    transferCosts?: number;
     description?: string;
   };
   financialMetrics: {
@@ -179,6 +183,24 @@ export async function generatePropertyReport(
       }
       if (selectedSections["Property Details"].includes("ratePerM2")) {
         details.push(['Rate per m²', formatCurrency(data.propertyDetails.ratePerSquareMeter)]);
+
+        // Add area average rate and difference if available
+        if (data.propertyDetails.areaAverageRate && selectedSections["Property Details"].includes("areaAverageRate")) {
+          details.push(['Area Average Rate/m²', formatCurrency(data.propertyDetails.areaAverageRate)]);
+        }
+        if (data.propertyDetails.rateDifference && selectedSections["Property Details"].includes("rateDifference")) {
+          const difference = data.propertyDetails.rateDifference;
+          const differenceText = difference > 0 ? 
+            `${formatCurrency(Math.abs(difference))} above average` : 
+            `${formatCurrency(Math.abs(difference))} below average`;
+          details.push(['Rate/m² Difference', differenceText]);
+        }
+      }
+      if (selectedSections["Property Details"].includes("bondRegistrationCosts") && data.propertyDetails.bondRegistrationCosts) {
+        details.push(['Bond Registration Costs', formatCurrency(data.propertyDetails.bondRegistrationCosts)]);
+      }
+      if (selectedSections["Property Details"].includes("transferCosts") && data.propertyDetails.transferCosts) {
+        details.push(['Transfer Costs', formatCurrency(data.propertyDetails.transferCosts)]);
       }
       if (selectedSections["Property Details"].includes("description") && data.propertyDetails.description) {
         details.push(['Description', data.propertyDetails.description]);

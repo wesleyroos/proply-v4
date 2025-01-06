@@ -34,6 +34,14 @@ const defaultSectionGroups: SectionGroup[] = [
       { id: "purchasePrice", label: "Purchase Price", checked: true },
       { id: "floorArea", label: "Floor Area", checked: true },
       { id: "ratePerM2", label: "Rate per m²", checked: true },
+      { id: "areaAverageRate", label: "Area Average Rate/m²", checked: true },
+      { id: "rateDifference", label: "Rate/m² Difference", checked: true },
+      { id: "bondRegistrationCosts", label: "Bond Registration Costs", checked: true },
+      { id: "transferCosts", label: "Transfer Costs", checked: true },
+      { id: "bedrooms", label: "Bedrooms", checked: true },
+      { id: "bathrooms", label: "Bathrooms", checked: true },
+      { id: "parkingSpaces", label: "Parking Spaces", checked: true },
+      { id: "description", label: "Property Description", checked: true },
     ]
   },
   {
