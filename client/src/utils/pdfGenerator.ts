@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatter } from '@/utils/formatting';
-import { SEASONALITY_FACTORS, OCCUPANCY_RATES, getSeasonalNightlyRate, getFeeAdjustedRate } from '@/utils/rentalPerformance';
+import { SEASONALITY_FACTORS, OCCUPANCY_RATES, getSeasonalNightlyRate, getFeeAdjustedRate, calculateMonthlyRevenue } from '@/utils/rentalPerformance';
 
 export function generatePropertyReport(
   data: {
@@ -73,13 +73,11 @@ export function generatePropertyReport(
   console.log('Selected Sections:', selectedSections);
   console.log('Available Data Keys:', Object.keys(data));
 
-  // Add company logo if provided
   if (companyLogo && selectedSections["Company Branding"]?.includes("companyLogo")) {
     doc.addImage(companyLogo, "PNG", 160, 10, 40, 20);
     yPos = 50;
   }
 
-  // Property Details Section
   if (selectedSections["Property Details"]) {
     console.log('Processing Property Details:', selectedSections["Property Details"]);
     if (selectedSections["Property Details"].includes("propertyAddress") ||
@@ -111,7 +109,6 @@ export function generatePropertyReport(
     }
   }
 
-  // Deal Structure Section
   if (selectedSections["Deal Structure"]) {
     console.log('Processing Deal Structure:', selectedSections["Deal Structure"]);
     if (yPos > 220) {
@@ -144,7 +141,6 @@ export function generatePropertyReport(
     yPos = (doc as any).lastAutoTable.finalY + 15;
   }
 
-  // Rental Performance Section with Monthly Details
   if (selectedSections["Rental Performance"]) {
     console.log('Processing Rental Performance:', selectedSections["Rental Performance"]);
     if (yPos > 220) {
@@ -175,44 +171,144 @@ export function generatePropertyReport(
     });
     yPos = (doc as any).lastAutoTable.finalY + 15;
 
-    // Monthly Performance Breakdown
     doc.text('Monthly Performance Analysis', 20, yPos);
     yPos += 10;
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    let totalSeasonalRate = 0;
+    let totalFeeAdjustedRate = 0;
+    let totalLowRevenue = 0;
+    let totalMediumRevenue = 0;
+    let totalHighRevenue = 0;
+    let totalLongTermMonthly = data.performance.longTermAnnualRevenue;
+
     const monthlyPerformanceData = months.map((month, index) => {
       const baseRate = data.performance.shortTermNightlyRate;
       const seasonalRate = getSeasonalNightlyRate(baseRate, index);
       const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, data.expenses.managementFee > 0);
+
+      const lowRevenue = calculateMonthlyRevenue('low', index, baseRate, data.expenses.managementFee > 0);
+      const mediumRevenue = calculateMonthlyRevenue('medium', index, baseRate, data.expenses.managementFee > 0);
+      const highRevenue = calculateMonthlyRevenue('high', index, baseRate, data.expenses.managementFee > 0);
+      const longTermMonthly = data.performance.longTermAnnualRevenue / 12;
+
+      totalSeasonalRate += seasonalRate;
+      totalFeeAdjustedRate += feeAdjustedRate;
+      totalLowRevenue += lowRevenue;
+      totalMediumRevenue += mediumRevenue;
+      totalHighRevenue += highRevenue;
 
       return [
         month,
         formatter.format(seasonalRate),
         formatter.format(feeAdjustedRate),
         `${OCCUPANCY_RATES.low[index]}%`,
+        formatter.format(lowRevenue),
         `${OCCUPANCY_RATES.medium[index]}%`,
+        formatter.format(mediumRevenue),
         `${OCCUPANCY_RATES.high[index]}%`,
-        formatter.format(data.performance.longTermAnnualRevenue / 12)
+        formatter.format(highRevenue),
+        formatter.format(longTermMonthly)
       ];
     });
 
+    monthlyPerformanceData.push([
+      'Total',
+      formatter.format(totalSeasonalRate),
+      formatter.format(totalFeeAdjustedRate),
+      '-',
+      formatter.format(totalLowRevenue),
+      '-',
+      formatter.format(totalMediumRevenue),
+      '-',
+      formatter.format(totalHighRevenue),
+      formatter.format(totalLongTermMonthly)
+    ]);
+
+    monthlyPerformanceData.push([
+      'Average',
+      formatter.format(totalSeasonalRate / 12),
+      formatter.format(totalFeeAdjustedRate / 12),
+      `${Math.round(OCCUPANCY_RATES.low.reduce((a, b) => a + b, 0) / 12)}%`,
+      formatter.format(totalLowRevenue / 12),
+      `${Math.round(OCCUPANCY_RATES.medium.reduce((a, b) => a + b, 0) / 12)}%`,
+      formatter.format(totalMediumRevenue / 12),
+      `${Math.round(OCCUPANCY_RATES.high.reduce((a, b) => a + b, 0) / 12)}%`,
+      formatter.format(totalHighRevenue / 12),
+      formatter.format(totalLongTermMonthly / 12)
+    ]);
+
     autoTable(doc, {
       startY: yPos,
-      head: [['Month', 'Nightly Rate', 'Fee-Adjusted Rate', 'Low Occ.', 'Med Occ.', 'High Occ.', 'Long-Term Monthly']],
+      head: [[
+        'Month',
+        'Nightly Rate',
+        'Fee-Adjusted Rate',
+        'Low Occ.',
+        'Low Revenue',
+        'Med Occ.',
+        'Med Revenue',
+        'High Occ.',
+        'High Revenue',
+        'Long-Term Monthly'
+      ]],
       body: monthlyPerformanceData,
       theme: 'striped',
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { 
+        fillColor: [243, 244, 246], 
+        textColor: [31, 41, 55],
+        fontSize: 8
+      },
+      columnStyles: {
+        0: { cellWidth: 20 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 20 },
+        4: { fillColor: [254, 242, 242], cellWidth: 25 },
+        5: { cellWidth: 20 },
+        6: { fillColor: [255, 251, 235], cellWidth: 25 },
+        7: { cellWidth: 20 },
+        8: { fillColor: [240, 253, 244], cellWidth: 25 },
+        9: { fillColor: [239, 246, 255], cellWidth: 25 },
+      },
+      didDrawCell: (data) => {
+        if (data.row.index === monthlyPerformanceData.length - 2 || 
+            data.row.index === monthlyPerformanceData.length - 1) {
+          doc.setFillColor(243, 244, 246);
+          doc.setTextColor(31, 41, 55);
+          doc.setFontStyle('bold');
+        }
+      }
     });
     yPos = (doc as any).lastAutoTable.finalY + 15;
 
-    // Add a note about the fees
-    doc.setFontSize(10);
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text('Color Legend:', 20, yPos);
+    yPos += 5;
+
+    const legendItems = [
+      { color: [254, 242, 242], text: 'Low Occupancy Scenario' },
+      { color: [255, 251, 235], text: 'Medium Occupancy Scenario' },
+      { color: [240, 253, 244], text: 'High Occupancy Scenario' },
+      { color: [239, 246, 255], text: 'Long-Term Rental' }
+    ];
+
+    legendItems.forEach((item, index) => {
+      const xPos = 20 + (index * 45);
+      doc.setFillColor(...item.color);
+      doc.rect(xPos, yPos, 3, 3, 'F');
+      doc.text(item.text, xPos + 5, yPos + 2);
+    });
+
+    yPos += 10;
+
+    doc.setFontSize(8);
     doc.text(`Note: Platform fees of ${data.expenses.managementFee > 0 ? '15%' : '3%'} are applied to nightly rates.`, 20, yPos);
     yPos += 10;
   }
 
-  // Operating Expenses Section
   if (selectedSections["Operating Expenses"]) {
     if (yPos > 220) {
       doc.addPage();
@@ -242,7 +338,6 @@ export function generatePropertyReport(
     yPos = (doc as any).lastAutoTable.finalY + 15;
   }
 
-  // Investment Metrics Section
   if (selectedSections["Investment Metrics"] && data.investmentMetrics?.year1) {
     if (yPos > 220) {
       doc.addPage();
@@ -277,7 +372,6 @@ export function generatePropertyReport(
     yPos = (doc as any).lastAutoTable.finalY + 15;
   }
 
-  // Cashflow Analysis Section
   if (selectedSections["Cashflow Analysis"] && data.netOperatingIncome) {
     if (yPos > 220) {
       doc.addPage();
@@ -311,7 +405,6 @@ export function generatePropertyReport(
     yPos = (doc as any).lastAutoTable.finalY + 15;
   }
 
-  // Add footer with page numbers
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
