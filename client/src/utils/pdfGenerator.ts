@@ -38,8 +38,17 @@ export function generatePropertyReport(
       shortTermGrossYield: number;
       longTermGrossYield: number;
     };
-    investmentMetrics: {
-      shortTerm: Array<{
+    netOperatingIncome?: {
+      year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    };
+    investmentMetrics?: {
+      year1: {
         grossYield: number;
         netYield: number;
         returnOnEquity: number;
@@ -50,19 +59,8 @@ export function generatePropertyReport(
         roiWithAppreciation: number;
         irr: number;
         netWorthChange: number;
-      }>;
-      longTerm: Array<{
-        grossYield: number;
-        netYield: number;
-        returnOnEquity: number;
-        annualReturn: number;
-        capRate: number;
-        cashOnCashReturn: number;
-        roiWithoutAppreciation: number;
-        roiWithAppreciation: number;
-        irr: number;
-        netWorthChange: number;
-      }>;
+      };
+      // ... same structure for other years
     };
   },
   selectedSections: Record<string, string[]>,
@@ -134,8 +132,42 @@ export function generatePropertyReport(
     yPos = (doc as any).lastAutoTable.finalY + 15;
   }
 
+  // Cashflow Metrics Section
+  if (sections.includes("cashflowMetrics") && data.netOperatingIncome) {
+    if (yPos > 220) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    doc.setFontSize(14);
+    doc.text('Cashflow Metrics', 20, yPos);
+    yPos += 10;
+
+    const years = [1, 2, 3, 4, 5, 10, 20];
+    const cashflowData = years.map(year => {
+      const yearKey = `year${year}` as keyof typeof data.netOperatingIncome;
+      const yearData = data.netOperatingIncome![yearKey];
+      return [
+        `Year ${year}`,
+        formatter.format(yearData.annualCashflow),
+        formatter.format(yearData.cumulativeRentalIncome),
+        formatter.format(yearData.netWorthChange)
+      ];
+    });
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Year', 'Annual Cashflow', 'Cumulative Rental Income', 'Net Worth Change']],
+      body: cashflowData,
+      theme: 'striped',
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
+    });
+    yPos = (doc as any).lastAutoTable.finalY + 15;
+  }
+
   // Investment Metrics Section
-  if (sections.includes("investmentMetrics")) {
+  if (sections.includes("investmentMetrics") && data.investmentMetrics?.year1) {
     if (yPos > 220) {
       doc.addPage();
       yPos = 20;
@@ -145,18 +177,17 @@ export function generatePropertyReport(
     doc.text('Investment Metrics', 20, yPos);
     yPos += 10;
 
-    // Get year 1 metrics
-    const year1Metrics = data.investmentMetrics.shortTerm[0];
+    const metrics = data.investmentMetrics.year1;
     const investmentData = [
-      ['Gross Yield', `${year1Metrics.grossYield.toFixed(1)}%`],
-      ['Net Yield', `${year1Metrics.netYield.toFixed(1)}%`],
-      ['Return on Equity', `${year1Metrics.returnOnEquity.toFixed(1)}%`],
-      ['Annual Return', `${year1Metrics.annualReturn.toFixed(1)}%`],
-      ['Cap Rate', `${year1Metrics.capRate.toFixed(1)}%`],
-      ['Cash on Cash Return', `${year1Metrics.cashOnCashReturn.toFixed(1)}%`],
-      ['ROI (Without Appreciation)', `${year1Metrics.roiWithoutAppreciation.toFixed(1)}%`],
-      ['ROI (With Appreciation)', `${year1Metrics.roiWithAppreciation.toFixed(1)}%`],
-      ['IRR', `${year1Metrics.irr.toFixed(1)}%`]
+      ['Gross Yield', `${metrics.grossYield?.toFixed(1) || 0}%`],
+      ['Net Yield', `${metrics.netYield?.toFixed(1) || 0}%`],
+      ['Return on Equity', `${metrics.returnOnEquity?.toFixed(1) || 0}%`],
+      ['Annual Return', `${metrics.annualReturn?.toFixed(1) || 0}%`],
+      ['Cap Rate', `${metrics.capRate?.toFixed(1) || 0}%`],
+      ['Cash on Cash Return', `${metrics.cashOnCashReturn?.toFixed(1) || 0}%`],
+      ['ROI (Without Appreciation)', `${metrics.roiWithoutAppreciation?.toFixed(1) || 0}%`],
+      ['ROI (With Appreciation)', `${metrics.roiWithAppreciation?.toFixed(1) || 0}%`],
+      ['IRR', `${metrics.irr?.toFixed(1) || 0}%`]
     ];
 
     autoTable(doc, {
