@@ -4,68 +4,66 @@ import { formatter } from '@/utils/formatting';
 
 export function generatePropertyReport(
   data: {
-    address: string;
-    analysis: {
+    propertyDetails: {
+      address: string;
+      bedrooms?: string;
+      bathrooms?: string;
+      floorArea: number;
+      parkingSpaces: number;
       purchasePrice: number;
+      ratePerSquareMeter: number;
+      propertyPhoto?: string | null;
+    };
+    financialMetrics: {
+      depositAmount: number;
+      depositPercentage: number;
+      interestRate: number;
+      loanTerm: number;
+      monthlyBondRepayment: number;
+      bondRegistration: number;
+      transferCosts: number;
+    };
+    expenses: {
+      monthlyLevies: number;
+      monthlyRatesTaxes: number;
+      otherMonthlyExpenses: number;
+      maintenancePercent: number;
+      managementFee: number;
+    };
+    performance: {
+      shortTermNightlyRate: number;
+      annualOccupancy: number;
       shortTermAnnualRevenue: number;
       longTermAnnualRevenue: number;
-      revenueProjections: {
-        shortTerm: {
-          year1: number;
-          year2: number;
-          year3: number;
-          year4: number;
-          year5: number;
-          year10: number;
-          year20: number;
-        };
-      };
-      operatingExpenses: {
-        year1: number;
-        year2: number;
-        year3: number;
-        year4: number;
-        year5: number;
-        year10: number;
-        year20: number;
-      };
-      netOperatingIncome: {
-        year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-        year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-        year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-        year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-        year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-        year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-        year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-      };
-      investmentMetrics: {
-        year1: {
-          grossYield: number;
-          netYield: number;
-          returnOnEquity: number;
-          annualReturn: number;
-          capRate: number;
-          cashOnCashReturn: number;
-          roiWithoutAppreciation: number;
-          roiWithAppreciation: number;
-          irr: number;
-          netWorthChange: number;
-        };
-        year2: typeof year1;
-        year3: typeof year1;
-        year4: typeof year1;
-        year5: typeof year1;
-        year10: typeof year1;
-        year20: typeof year1;
-      };
+      shortTermGrossYield: number;
+      longTermGrossYield: number;
     };
-    shortTermGrossYield: number;
-    longTermGrossYield: number;
-    deposit: number;
-    depositPercentage: number;
-    interestRate: number;
-    monthlyBondRepayment: number;
-    propertyDescription?: string;
+    investmentMetrics: {
+      shortTerm: Array<{
+        grossYield: number;
+        netYield: number;
+        returnOnEquity: number;
+        annualReturn: number;
+        capRate: number;
+        cashOnCashReturn: number;
+        roiWithoutAppreciation: number;
+        roiWithAppreciation: number;
+        irr: number;
+        netWorthChange: number;
+      }>;
+      longTerm: Array<{
+        grossYield: number;
+        netYield: number;
+        returnOnEquity: number;
+        annualReturn: number;
+        capRate: number;
+        cashOnCashReturn: number;
+        roiWithoutAppreciation: number;
+        roiWithAppreciation: number;
+        irr: number;
+        netWorthChange: number;
+      }>;
+    };
   },
   selectedSections: Record<string, string[]>,
   companyLogo?: string | null
@@ -93,12 +91,12 @@ export function generatePropertyReport(
     yPos += 10;
 
     const dealStructureData = [
-      ['Property Address', data.address],
-      ['Purchase Price', formatter.format(data.analysis.purchasePrice)],
-      ['Deposit Amount', formatter.format(data.deposit)],
-      ['Deposit Percentage', `${data.depositPercentage}%`],
-      ['Interest Rate', `${data.interestRate}%`],
-      ['Monthly Bond Payment', formatter.format(data.monthlyBondRepayment)],
+      ['Property Address', data.propertyDetails.address],
+      ['Purchase Price', formatter.format(data.propertyDetails.purchasePrice)],
+      ['Deposit Amount', formatter.format(data.financialMetrics.depositAmount)],
+      ['Deposit Percentage', `${data.financialMetrics.depositPercentage}%`],
+      ['Interest Rate', `${data.financialMetrics.interestRate}%`],
+      ['Monthly Bond Payment', formatter.format(data.financialMetrics.monthlyBondRepayment)]
     ];
 
     autoTable(doc, {
@@ -119,50 +117,16 @@ export function generatePropertyReport(
     yPos += 10;
 
     const rentalData = [
-      ['Short-Term Annual Revenue', formatter.format(data.analysis.shortTermAnnualRevenue)],
-      ['Long-Term Annual Revenue', formatter.format(data.analysis.longTermAnnualRevenue)],
-      ['Short-Term Gross Yield', `${data.shortTermGrossYield}%`],
-      ['Long-Term Gross Yield', `${data.longTermGrossYield}%`],
+      ['Short-Term Annual Revenue', formatter.format(data.performance.shortTermAnnualRevenue)],
+      ['Long-Term Annual Revenue', formatter.format(data.performance.longTermAnnualRevenue)],
+      ['Short-Term Gross Yield', `${data.performance.shortTermGrossYield}%`],
+      ['Long-Term Gross Yield', `${data.performance.longTermGrossYield}%`]
     ];
 
     autoTable(doc, {
       startY: yPos,
       head: [['Metric', 'Value']],
       body: rentalData,
-      theme: 'striped',
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
-    });
-    yPos = (doc as any).lastAutoTable.finalY + 15;
-  }
-
-  // Cashflow Metrics Section
-  if (sections.includes("cashflowMetrics")) {
-    if (yPos > 220) {
-      doc.addPage();
-      yPos = 20;
-    }
-
-    doc.setFontSize(14);
-    doc.text('Cashflow Metrics', 20, yPos);
-    yPos += 10;
-
-    const years = [1, 2, 3, 4, 5, 10, 20];
-    const cashflowData = years.map(year => {
-      const yearKey = `year${year}` as keyof typeof data.analysis.netOperatingIncome;
-      const yearData = data.analysis.netOperatingIncome[yearKey];
-      return [
-        `Year ${year}`,
-        formatter.format(yearData.annualCashflow),
-        formatter.format(yearData.cumulativeRentalIncome),
-        formatter.format(yearData.netWorthChange)
-      ];
-    });
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Year', 'Annual Cashflow', 'Cumulative Rental Income', 'Net Worth Change']],
-      body: cashflowData,
       theme: 'striped',
       styles: { fontSize: 10 },
       headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
@@ -181,8 +145,8 @@ export function generatePropertyReport(
     doc.text('Investment Metrics', 20, yPos);
     yPos += 10;
 
-    // Get year 1 investment metrics as shown in the UI
-    const year1Metrics = data.analysis.investmentMetrics.year1;
+    // Get year 1 metrics
+    const year1Metrics = data.investmentMetrics.shortTerm[0];
     const investmentData = [
       ['Gross Yield', `${year1Metrics.grossYield.toFixed(1)}%`],
       ['Net Yield', `${year1Metrics.netYield.toFixed(1)}%`],
@@ -192,7 +156,7 @@ export function generatePropertyReport(
       ['Cash on Cash Return', `${year1Metrics.cashOnCashReturn.toFixed(1)}%`],
       ['ROI (Without Appreciation)', `${year1Metrics.roiWithoutAppreciation.toFixed(1)}%`],
       ['ROI (With Appreciation)', `${year1Metrics.roiWithAppreciation.toFixed(1)}%`],
-      ['IRR', `${year1Metrics.irr.toFixed(1)}%`],
+      ['IRR', `${year1Metrics.irr.toFixed(1)}%`]
     ];
 
     autoTable(doc, {
