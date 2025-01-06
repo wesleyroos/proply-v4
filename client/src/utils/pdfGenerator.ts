@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatter } from '@/utils/formatting';
+import { SEASONALITY_FACTORS, OCCUPANCY_RATES, getSeasonalNightlyRate, getFeeAdjustedRate } from '@/utils/rentalPerformance';
 
 export function generatePropertyReport(
   data: {
@@ -60,7 +61,6 @@ export function generatePropertyReport(
         irr: number;
         netWorthChange: number;
       };
-      // ... same structure for other years
     };
   },
   selectedSections: Record<string, string[]>,
@@ -69,7 +69,6 @@ export function generatePropertyReport(
   const doc = new jsPDF();
   let yPos = 20;
 
-  // Log what sections were selected and what data is being processed
   console.group('PDF Generator - Data Processing');
   console.log('Selected Sections:', selectedSections);
   console.log('Available Data Keys:', Object.keys(data));
@@ -145,9 +144,76 @@ export function generatePropertyReport(
     yPos = (doc as any).lastAutoTable.finalY + 15;
   }
 
+  // Rental Performance Section with Monthly Details
+  if (selectedSections["Rental Performance"]) {
+    console.log('Processing Rental Performance:', selectedSections["Rental Performance"]);
+    if (yPos > 220) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    doc.setFontSize(14);
+    doc.text('Rental Performance Overview', 20, yPos);
+    yPos += 10;
+
+    const rentalOverviewData = [
+      ['Short-Term Nightly Rate', formatter.format(data.performance.shortTermNightlyRate)],
+      ['Annual Occupancy', `${data.performance.annualOccupancy}%`],
+      ['Short-Term Annual Revenue', formatter.format(data.performance.shortTermAnnualRevenue)],
+      ['Long-Term Annual Revenue', formatter.format(data.performance.longTermAnnualRevenue)],
+      ['Short-Term Gross Yield', `${data.performance.shortTermGrossYield}%`],
+      ['Long-Term Gross Yield', `${data.performance.longTermGrossYield}%`]
+    ];
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Metric', 'Value']],
+      body: rentalOverviewData,
+      theme: 'striped',
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
+    });
+    yPos = (doc as any).lastAutoTable.finalY + 15;
+
+    // Monthly Performance Breakdown
+    doc.text('Monthly Performance Analysis', 20, yPos);
+    yPos += 10;
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyPerformanceData = months.map((month, index) => {
+      const baseRate = data.performance.shortTermNightlyRate;
+      const seasonalRate = getSeasonalNightlyRate(baseRate, index);
+      const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, data.expenses.managementFee > 0);
+
+      return [
+        month,
+        formatter.format(seasonalRate),
+        formatter.format(feeAdjustedRate),
+        `${OCCUPANCY_RATES.low[index]}%`,
+        `${OCCUPANCY_RATES.medium[index]}%`,
+        `${OCCUPANCY_RATES.high[index]}%`,
+        formatter.format(data.performance.longTermAnnualRevenue / 12)
+      ];
+    });
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Month', 'Nightly Rate', 'Fee-Adjusted Rate', 'Low Occ.', 'Med Occ.', 'High Occ.', 'Long-Term Monthly']],
+      body: monthlyPerformanceData,
+      theme: 'striped',
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
+    });
+    yPos = (doc as any).lastAutoTable.finalY + 15;
+
+    // Add a note about the fees
+    doc.setFontSize(10);
+    doc.text(`Note: Platform fees of ${data.expenses.managementFee > 0 ? '15%' : '3%'} are applied to nightly rates.`, 20, yPos);
+    yPos += 10;
+  }
+
   // Operating Expenses Section
   if (selectedSections["Operating Expenses"]) {
-    console.log('Processing Operating Expenses:', selectedSections["Operating Expenses"]);
     if (yPos > 220) {
       doc.addPage();
       yPos = 20;
@@ -176,41 +242,8 @@ export function generatePropertyReport(
     yPos = (doc as any).lastAutoTable.finalY + 15;
   }
 
-  // Rental Performance Section
-  if (selectedSections["Rental Performance"]) {
-    console.log('Processing Rental Performance:', selectedSections["Rental Performance"]);
-    if (yPos > 220) {
-      doc.addPage();
-      yPos = 20;
-    }
-
-    doc.setFontSize(14);
-    doc.text('Rental Performance', 20, yPos);
-    yPos += 10;
-
-    const rentalData = [
-      ['Short-Term Nightly Rate', formatter.format(data.performance.shortTermNightlyRate)],
-      ['Annual Occupancy', `${data.performance.annualOccupancy}%`],
-      ['Short-Term Annual Revenue', formatter.format(data.performance.shortTermAnnualRevenue)],
-      ['Long-Term Annual Revenue', formatter.format(data.performance.longTermAnnualRevenue)],
-      ['Short-Term Gross Yield', `${data.performance.shortTermGrossYield}%`],
-      ['Long-Term Gross Yield', `${data.performance.longTermGrossYield}%`]
-    ];
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Metric', 'Value']],
-      body: rentalData,
-      theme: 'striped',
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
-    });
-    yPos = (doc as any).lastAutoTable.finalY + 15;
-  }
-
   // Investment Metrics Section
   if (selectedSections["Investment Metrics"] && data.investmentMetrics?.year1) {
-    console.log('Processing Investment Metrics:', selectedSections["Investment Metrics"]);
     if (yPos > 220) {
       doc.addPage();
       yPos = 20;
@@ -246,7 +279,6 @@ export function generatePropertyReport(
 
   // Cashflow Analysis Section
   if (selectedSections["Cashflow Analysis"] && data.netOperatingIncome) {
-    console.log('Processing Cashflow Analysis:', selectedSections["Cashflow Analysis"]);
     if (yPos > 220) {
       doc.addPage();
       yPos = 20;
@@ -278,8 +310,6 @@ export function generatePropertyReport(
     });
     yPos = (doc as any).lastAutoTable.finalY + 15;
   }
-
-  console.groupEnd();
 
   // Add footer with page numbers
   const pageCount = doc.getNumberOfPages();
