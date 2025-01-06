@@ -25,13 +25,13 @@ function drawRentalPerformanceGraph(
   y: number,
   width: number,
   height: number,
-  monthlyData: {
-    longTerm: number;
-    low: number[];
-    medium: number[];
-    high: number[];
-  }
+  monthlyData: RentalPerformanceData['monthlyData']
 ) {
+  if (!monthlyData) {
+    console.warn('Monthly data is missing, skipping graph');
+    return;
+  }
+
   // Calculate scales
   const values = [
     monthlyData.longTerm,
@@ -129,6 +129,7 @@ function drawRentalPerformanceGraph(
   doc.setTextColor(0);
 }
 
+// Update the createMonthlyRevenueTable function signature and error handling
 function createMonthlyRevenueTable(
   doc: jsPDF,
   data: {
@@ -138,6 +139,11 @@ function createMonthlyRevenueTable(
     rentalPerformanceData: RentalPerformanceData;
   }
 ) {
+  if (!data.rentalPerformanceData?.monthlyData || !data.rentalPerformanceData?.occupancyRates) {
+    console.warn('Rental performance data is missing, skipping table');
+    return;
+  }
+
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const { monthlyData, occupancyRates } = data.rentalPerformanceData;
 
@@ -197,6 +203,7 @@ function createMonthlyRevenueTable(
 
 interface RentalPerformanceData {
   monthlyData: {
+    longTerm: number;
     low: number[];
     medium: number[];
     high: number[];
@@ -206,6 +213,10 @@ interface RentalPerformanceData {
     medium: number[];
     high: number[];
   };
+  fees: {
+    platformFee: number;
+    managementFee: number;
+  };
 }
 
 export async function generatePropertyReport(
@@ -213,6 +224,11 @@ export async function generatePropertyReport(
   selectedSections: Record<string, string[]>,
   companyLogo?: string | null
 ): Promise<jsPDF> {
+  // Validate required data
+  if (!data.rentalPerformanceData?.monthlyData) {
+    throw new Error('Rental performance data is required for generating the report');
+  }
+
   const doc = new jsPDF();
   let yPos = MARGIN;
 
@@ -487,7 +503,7 @@ export async function generatePropertyReport(
     doc.text('Rental Performance Analysis', MARGIN, yPos);
     yPos += 10;
 
-    // Draw the performance graph using the provided data
+    // When drawing the performance graph, pass the monthlyData
     drawRentalPerformanceGraph(
       doc,
       MARGIN,

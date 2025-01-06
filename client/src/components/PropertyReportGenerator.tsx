@@ -24,11 +24,20 @@ export function PropertyReportGenerator({
       // Extract rental performance data
       const rentalPerformanceData = extractRentalPerformanceData(data);
 
+      // Define sections to include in the PDF
+      const selectedSections = {
+        "Property Details": ["address", "bedrooms", "bathrooms", "floorArea", "parkingSpaces", "purchasePrice", "ratePerM2"],
+        "Financing Details": ["deposit", "interestRate", "loanTerm", "monthlyBond"],
+        "Operating Expenses": ["monthlyExpenses", "maintenance", "managementFees"],
+        "Investment Metrics": ["yields", "returns", "cashflow"],
+        "Company Branding": ["companyLogo"]
+      };
+
       // Generate PDF with the extracted data
       const doc = await generatePropertyReport({
         ...data,
         rentalPerformanceData
-      }, companyLogo);
+      }, selectedSections, companyLogo);
 
       const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
 
