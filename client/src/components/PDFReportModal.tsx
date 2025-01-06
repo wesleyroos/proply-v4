@@ -9,117 +9,16 @@ import { generatePropertyReport } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
-interface PDFReportModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  data: {
-    propertyDetails: {
-      address: string;
-      bedrooms?: string;
-      bathrooms?: string;
-      floorArea: number;
-      parkingSpaces: number;
-      purchasePrice: number;
-      ratePerSquareMeter: number;
-    };
-    financialMetrics: {
-      depositAmount: number;
-      depositPercentage: number;
-      interestRate: number;
-      loanTerm: number;
-      monthlyBondRepayment: number;
-      bondRegistration: number;
-      transferCosts: number;
-    };
-    expenses: {
-      monthlyLevies: number;
-      monthlyRatesTaxes: number;
-      otherMonthlyExpenses: number;
-      maintenancePercent: number;
-      managementFee: number;
-    };
-    performance: {
-      shortTermNightlyRate: number;
-      annualOccupancy: number;
-      shortTermAnnualRevenue: number;
-      longTermAnnualRevenue: number;
-      shortTermGrossYield: number;
-      longTermGrossYield: number;
-    };
-  };
-}
-
-interface ReportSection {
-  id: string;
-  label: string;
-  checked: boolean;
-}
-
-interface SectionGroup {
-  title: string;
-  sections: ReportSection[];
-}
-
-const defaultSectionGroups: SectionGroup[] = [
+// Matches the exact sections we show in PropertyAnalyzerPage.tsx
+const defaultSectionGroups = [
   {
-    title: "Property Overview",
+    title: "Analysis Results",
     sections: [
-      { id: "address", label: "Property Address", checked: true },
-      { id: "propertyPhoto", label: "Property Photo", checked: true },
-      { id: "purchasePrice", label: "Purchase Price", checked: true },
-      { id: "floorArea", label: "Floor Area", checked: true },
-      { id: "ratePerM2", label: "Rate per m²", checked: true },
-      { id: "bedrooms", label: "Number of Bedrooms", checked: true },
-      { id: "bathrooms", label: "Number of Bathrooms", checked: true },
-      { id: "parkingSpaces", label: "Parking Spaces", checked: true }
-    ]
-  },
-  {
-    title: "Deal Structure",
-    sections: [
-      { id: "deposit", label: "Deposit Amount & Percentage", checked: true },
-      { id: "interestRate", label: "Interest Rate", checked: true },
-      { id: "loanTerm", label: "Loan Term", checked: true },
-      { id: "monthlyBond", label: "Monthly Bond Payment", checked: true },
-      { id: "bondRegistration", label: "Bond Registration Costs", checked: true },
-      { id: "transferCosts", label: "Transfer Costs", checked: true }
-    ]
-  },
-  {
-    title: "Revenue Performance",
-    sections: [
-      { id: "shortTermRevenue", label: "Short-Term Rental Revenue", checked: true },
-      { id: "longTermRevenue", label: "Long-Term Rental Revenue", checked: true },
-      { id: "revenueComparison", label: "Revenue Comparison Table", checked: true },
-      { id: "monthlyBreakdown", label: "Monthly Revenue Breakdown", checked: true },
-      { id: "occupancyRate", label: "Occupancy Rate", checked: true },
-      { id: "managementFees", label: "Management Fees", checked: true }
-    ]
-  },
-  {
-    title: "Operating Expenses",
-    sections: [
-      { id: "monthlyLevies", label: "Monthly Levies", checked: true },
-      { id: "ratesTaxes", label: "Rates & Taxes", checked: true },
-      { id: "otherExpenses", label: "Other Monthly Expenses", checked: true },
-      { id: "maintenanceCosts", label: "Maintenance Costs", checked: true }
-    ]
-  },
-  {
-    title: "Cashflow Analysis",
-    sections: [
-      { id: "annualCashflow", label: "Annual Cashflow", checked: true },
-      { id: "cumulativeCashflow", label: "Cumulative Cashflow", checked: true },
-      { id: "cashflowChart", label: "Cashflow Chart", checked: true }
-    ]
-  },
-  {
-    title: "Investment Metrics",
-    sections: [
-      { id: "grossYield", label: "Gross Yield Analysis", checked: true },
-      { id: "netYield", label: "Net Yield Analysis", checked: true },
-      { id: "roi", label: "Return on Investment", checked: true },
-      { id: "capRate", label: "Capitalization Rate", checked: true }
+      { id: "dealStructure", label: "Deal Structure", checked: true },
+      { id: "rentalPerformance", label: "Rental Performance", checked: true },
+      { id: "cashflowMetrics", label: "Cashflow Metrics", checked: true },
+      { id: "investmentMetrics", label: "Investment Metrics", checked: true },
+      { id: "assetGrowth", label: "Asset Growth Metrics", checked: true }
     ]
   },
   {
@@ -133,19 +32,17 @@ const defaultSectionGroups: SectionGroup[] = [
 export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps) {
   const { user } = useUser();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [sectionGroups, setSectionGroups] = useState<SectionGroup[]>(defaultSectionGroups);
+  const [sectionGroups, setSectionGroups] = useState(defaultSectionGroups);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
 
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64Data = reader.result as string;
-        setLogoPreviewUrl(base64Data);
+      reader.onloadend = () => {
+        setLogoPreviewUrl(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -294,4 +191,44 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
       </DialogContent>
     </Dialog>
   );
+}
+
+interface PDFReportModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  data: {
+    propertyDetails: {
+      address: string;
+      bedrooms?: string;
+      bathrooms?: string;
+      floorArea: number;
+      parkingSpaces: number;
+      purchasePrice: number;
+      ratePerSquareMeter: number;
+    };
+    financialMetrics: {
+      depositAmount: number;
+      depositPercentage: number;
+      interestRate: number;
+      loanTerm: number;
+      monthlyBondRepayment: number;
+      bondRegistration: number;
+      transferCosts: number;
+    };
+    expenses: {
+      monthlyLevies: number;
+      monthlyRatesTaxes: number;
+      otherMonthlyExpenses: number;
+      maintenancePercent: number;
+      managementFee: number;
+    };
+    performance: {
+      shortTermNightlyRate: number;
+      annualOccupancy: number;
+      shortTermAnnualRevenue: number;
+      longTermAnnualRevenue: number;
+      shortTermGrossYield: number;
+      longTermGrossYield: number;
+    };
+  };
 }
