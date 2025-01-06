@@ -60,15 +60,33 @@ export function generatePropertyReport(
   const doc = new jsPDF();
   let yPos = MARGIN;
 
+  // Constants for logo sizing
+  const LOGO_MAX_WIDTH = 40;
+  const LOGO_MAX_HEIGHT = 20;
+  const PROPLY_LOGO_ASPECT_RATIO = 3.5; // Width:Height ratio of the logo
+
   // Add company logo if provided (top-left)
   if (selectedSections["Company Branding"]?.includes("companyLogo") && companyLogo) {
-    doc.addImage(companyLogo, "PNG", MARGIN, yPos, 40, 20);
+    const img = new Image();
+    img.src = companyLogo;
+    const aspectRatio = img.width / img.height;
+    let width = LOGO_MAX_WIDTH;
+    let height = width / aspectRatio;
+
+    if (height > LOGO_MAX_HEIGHT) {
+      height = LOGO_MAX_HEIGHT;
+      width = height * aspectRatio;
+    }
+
+    doc.addImage(companyLogo, "PNG", MARGIN, yPos, width, height);
   }
 
   // Add Proply branding (top-right, always included)
-  doc.addImage("/proply-logo.png", "PNG", PAGE_WIDTH - MARGIN - 40, yPos, 40, 20);
+  const proplyLogoWidth = LOGO_MAX_WIDTH;
+  const proplyLogoHeight = proplyLogoWidth / PROPLY_LOGO_ASPECT_RATIO;
+  doc.addImage("/proply-logo-black.png", "PNG", PAGE_WIDTH - MARGIN - proplyLogoWidth, yPos, proplyLogoWidth, proplyLogoHeight);
   doc.setFontSize(10);
-  doc.setTextColor(100);
+  doc.setTextColor(33, 33, 33); // Darker text color to match black logo
   doc.text("Powered by Proply", PAGE_WIDTH - MARGIN - 40, yPos + 25);
   yPos += 40;
 

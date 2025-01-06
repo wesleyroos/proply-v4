@@ -36,7 +36,6 @@ import {
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
 import { PDFReportModal } from "@/components/PDFReportModal";
-import { PropertyReportGenerator } from "@/components/PropertyReportGenerator";
 
 interface YearlyMetrics {
   grossYield: number;
@@ -219,7 +218,7 @@ export default function PropertyAnalyzerPage() {
 
       setTimeout(() => {
         if (resultsRef.current) {
-          const yOffset = -100; 
+          const yOffset = -100;
           const y = resultsRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
 
           window.scrollTo({
@@ -830,7 +829,7 @@ export default function PropertyAnalyzerPage() {
                                         : "text-red-600"
                                     }`}
                                   >
-                                    {difference > 0 ? "+" : ""}R{Math.abs(difference).toLocaleString()} 
+                                    {difference > 0 ? "+" : ""}R{Math.abs(difference).toLocaleString()}
                                     <span className="ml-1">
                                       ({difference > 0 ? "+" : ""}{percentageDiff.toFixed(1)}%)
                                     </span>
@@ -968,11 +967,6 @@ export default function PropertyAnalyzerPage() {
 
             </div>
 
-            <PropertyReportGenerator
-              open={showPDFReport}
-              onOpenChange={setShowPDFReport}
-              data={pdfData}
-            />
             <PDFReportModal
               open={showPDFReport}
               onOpenChange={setShowPDFReport}
