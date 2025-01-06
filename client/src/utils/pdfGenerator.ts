@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatCurrency } from "@/lib/utils";
+import { captureCharts } from './chartCapture';
 
 // Constants for PDF layout
 const PAGE_WIDTH = 210; // A4 width in mm
@@ -131,6 +132,16 @@ export async function generatePropertyReport(
     });
   };
 
+  // Function to check if we need a new page
+  const checkNewPage = (requiredHeight: number) => {
+    if (yPos + requiredHeight > PAGE_HEIGHT - MARGIN) {
+      doc.addPage();
+      yPos = MARGIN;
+      return true;
+    }
+    return false;
+  };
+
   try {
     // Add company logo if provided and selected
     if (selectedSections["Company Branding"]?.includes("companyLogo") && companyLogo) {
@@ -190,8 +201,8 @@ export async function generatePropertyReport(
         }
         if (data.propertyDetails.rateDifference && selectedSections["Property Details"].includes("rateDifference")) {
           const difference = data.propertyDetails.rateDifference;
-          const differenceText = difference > 0 ? 
-            `${formatCurrency(Math.abs(difference))} above average` : 
+          const differenceText = difference > 0 ?
+            `${formatCurrency(Math.abs(difference))} above average` :
             `${formatCurrency(Math.abs(difference))} below average`;
           details.push(['Rate/m² Difference', differenceText]);
         }
@@ -280,11 +291,7 @@ export async function generatePropertyReport(
       }
 
       if (expenses.length > 0) {
-        // Check if we need a new page
-        if (yPos > PAGE_HEIGHT - 100) {
-          doc.addPage();
-          yPos = MARGIN;
-        }
+        checkNewPage(expenses.length * 15); //Check for new page
 
         doc.setFontSize(16);
         doc.setTextColor(31, 41, 55);
@@ -320,11 +327,7 @@ export async function generatePropertyReport(
       }
 
       if (performance.length > 0) {
-        // Check if we need a new page
-        if (yPos > PAGE_HEIGHT - 100) {
-          doc.addPage();
-          yPos = MARGIN;
-        }
+        checkNewPage(performance.length * 15); //Check for new page
 
         doc.setFontSize(16);
         doc.setTextColor(31, 41, 55);
@@ -345,9 +348,7 @@ export async function generatePropertyReport(
 
     // Investment Metrics Section
     if (selectedSections["Investment Metrics"]?.length > 0) {
-      // Add new page for investment metrics
-      doc.addPage();
-      yPos = MARGIN;
+      checkNewPage(100); //Check for new page
 
       doc.setFontSize(16);
       doc.setTextColor(31, 41, 55);
@@ -356,8 +357,8 @@ export async function generatePropertyReport(
 
       // Short-term metrics
       if (selectedSections["Investment Metrics"].includes("yields") ||
-          selectedSections["Investment Metrics"].includes("returns") ||
-          selectedSections["Investment Metrics"].includes("cashflow")) {
+        selectedSections["Investment Metrics"].includes("returns") ||
+        selectedSections["Investment Metrics"].includes("cashflow")) {
 
         const shortTermMetrics = data.investmentMetrics.shortTerm[0]; // First year metrics
         const metrics = [];
@@ -393,6 +394,65 @@ export async function generatePropertyReport(
       }
     }
 
+
+    // Add Charts and Visualizations Section
+    if (selectedSections["Charts and Visualizations"]?.length > 0) {
+      checkNewPage(120); // Check if we need a new page for charts section
+
+      const charts = await captureCharts(data); // Pass data to captureCharts
+
+      if (selectedSections["Charts and Visualizations"].includes("revenueChart") && charts.revenueChart) {
+        doc.setFontSize(16);
+        doc.setTextColor(31, 41, 55);
+        doc.text('Revenue Comparison Chart', MARGIN, yPos);
+        yPos += 10;
+
+        const chartWidth = CONTENT_WIDTH;
+        const chartHeight = 100;
+        doc.addImage(charts.revenueChart, 'PNG', MARGIN, yPos, chartWidth, chartHeight);
+        yPos += chartHeight + 20;
+      }
+
+      if (selectedSections["Charts and Visualizations"].includes("occupancyChart") && charts.occupancyChart) {
+        checkNewPage(120);
+
+        doc.setFontSize(16);
+        doc.text('Occupancy Analysis', MARGIN, yPos);
+        yPos += 10;
+
+        const chartWidth = CONTENT_WIDTH;
+        const chartHeight = 80;
+        doc.addImage(charts.occupancyChart, 'PNG', MARGIN, yPos, chartWidth, chartHeight);
+        yPos += chartHeight + 20;
+      }
+
+      if (selectedSections["Charts and Visualizations"].includes("monthlyRevenueTable") && charts.monthlyRevenueTable) {
+        checkNewPage(120);
+
+        doc.setFontSize(16);
+        doc.text('Monthly Revenue Breakdown', MARGIN, yPos);
+        yPos += 10;
+
+        const tableWidth = CONTENT_WIDTH;
+        const tableHeight = 120;
+        doc.addImage(charts.monthlyRevenueTable, 'PNG', MARGIN, yPos, tableWidth, tableHeight);
+        yPos += tableHeight + 20;
+      }
+
+      if (selectedSections["Charts and Visualizations"].includes("performanceTable") && charts.performanceTable) {
+        checkNewPage(120);
+
+        doc.setFontSize(16);
+        doc.text('Performance Metrics', MARGIN, yPos);
+        yPos += 10;
+
+        const tableWidth = CONTENT_WIDTH;
+        const tableHeight = 100;
+        doc.addImage(charts.performanceTable, 'PNG', MARGIN, yPos, tableWidth, tableHeight);
+        yPos += tableHeight + 20;
+      }
+    }
+
     // Footer on all pages
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
@@ -409,7 +469,7 @@ export async function generatePropertyReport(
     // Disclaimer
     doc.setFontSize(8);
     doc.setTextColor(150);
-    const disclaimer = 
+    const disclaimer =
       'This report is generated based on provided data and market assumptions. ' +
       'While we strive for accuracy, all projections are estimates and actual ' +
       'results may vary. Professional advice should be sought before making investment decisions.';

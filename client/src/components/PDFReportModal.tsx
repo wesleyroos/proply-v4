@@ -62,6 +62,15 @@ const defaultSectionGroups: SectionGroup[] = [
     ]
   },
   {
+    title: "Charts and Visualizations",
+    sections: [
+      { id: "revenueChart", label: "Revenue Comparison Chart", checked: true },
+      { id: "occupancyChart", label: "Occupancy Analysis Chart", checked: true },
+      { id: "monthlyRevenueTable", label: "Monthly Revenue Breakdown", checked: true },
+      { id: "performanceTable", label: "Performance Metrics Table", checked: true },
+    ]
+  },
+  {
     title: "Investment Metrics",
     sections: [
       { id: "yields", label: "Yield Analysis", checked: true },
@@ -206,13 +215,13 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
                 <div className="grid grid-cols-2 gap-4">
                   {group.sections.map((section) => (
                     <div key={section.id} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={section.id} 
+                      <Checkbox
+                        id={section.id}
                         checked={section.checked}
                         onCheckedChange={() => toggleSection(group.title, section.id)}
                       />
-                      <label 
-                        htmlFor={section.id} 
+                      <label
+                        htmlFor={section.id}
                         className="text-sm cursor-pointer"
                       >
                         {section.label}
@@ -226,7 +235,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
                     {(user?.companyLogo || logoPreviewUrl) ? (
                       <div className="p-4 bg-muted rounded-lg">
                         <div className="mb-4">
-                          <img 
+                          <img
                             src={logoPreviewUrl || user?.companyLogo}
                             alt="Company Logo"
                             className="h-12 object-contain"
@@ -275,8 +284,8 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
               </CardContent>
             </Card>
           ))}
-          <Button 
-            onClick={generatePDF} 
+          <Button
+            onClick={generatePDF}
             className="w-full"
             disabled={generating}
           >
