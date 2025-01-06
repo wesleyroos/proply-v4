@@ -69,32 +69,69 @@ export function generatePropertyReport(
   const doc = new jsPDF();
   let yPos = 20;
 
+  // Log what sections were selected and what data is being processed
+  console.group('PDF Generator - Data Processing');
+  console.log('Selected Sections:', selectedSections);
+  console.log('Available Data Keys:', Object.keys(data));
+
   // Add company logo if provided
   if (companyLogo && selectedSections["Company Branding"]?.includes("companyLogo")) {
     doc.addImage(companyLogo, "PNG", 160, 10, 40, 20);
     yPos = 50;
   }
 
-  // Add title and property info
-  doc.setFontSize(20);
-  doc.text('Property Analysis Report', 20, yPos);
-  yPos += 15;
+  // Property Details Section
+  if (selectedSections["Property Details"]) {
+    console.log('Processing Property Details:', selectedSections["Property Details"]);
+    if (selectedSections["Property Details"].includes("propertyAddress") ||
+        selectedSections["Property Details"].includes("propertySpecs") ||
+        selectedSections["Property Details"].includes("propertyPrice")) {
+      doc.setFontSize(14);
+      doc.text('Property Details', 20, yPos);
+      yPos += 10;
 
-  const sections = selectedSections["Analysis Results"] || [];
+      const propertyData = [
+        ['Address', data.propertyDetails.address],
+        ['Bedrooms', data.propertyDetails.bedrooms || 'N/A'],
+        ['Bathrooms', data.propertyDetails.bathrooms || 'N/A'],
+        ['Floor Area', `${data.propertyDetails.floorArea}m²`],
+        ['Parking Spaces', data.propertyDetails.parkingSpaces.toString()],
+        ['Purchase Price', formatter.format(data.propertyDetails.purchasePrice)],
+        ['Rate per m²', formatter.format(data.propertyDetails.ratePerSquareMeter)]
+      ];
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Detail', 'Value']],
+        body: propertyData,
+        theme: 'striped',
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
+      });
+      yPos = (doc as any).lastAutoTable.finalY + 15;
+    }
+  }
 
   // Deal Structure Section
-  if (sections.includes("dealStructure")) {
+  if (selectedSections["Deal Structure"]) {
+    console.log('Processing Deal Structure:', selectedSections["Deal Structure"]);
+    if (yPos > 220) {
+      doc.addPage();
+      yPos = 20;
+    }
+
     doc.setFontSize(14);
     doc.text('Deal Structure', 20, yPos);
     yPos += 10;
 
     const dealStructureData = [
-      ['Property Address', data.propertyDetails.address],
-      ['Purchase Price', formatter.format(data.propertyDetails.purchasePrice)],
       ['Deposit Amount', formatter.format(data.financialMetrics.depositAmount)],
       ['Deposit Percentage', `${data.financialMetrics.depositPercentage}%`],
       ['Interest Rate', `${data.financialMetrics.interestRate}%`],
-      ['Monthly Bond Payment', formatter.format(data.financialMetrics.monthlyBondRepayment)]
+      ['Loan Term', `${data.financialMetrics.loanTerm} years`],
+      ['Monthly Bond Payment', formatter.format(data.financialMetrics.monthlyBondRepayment)],
+      ['Bond Registration', formatter.format(data.financialMetrics.bondRegistration)],
+      ['Transfer Costs', formatter.format(data.financialMetrics.transferCosts)]
     ];
 
     autoTable(doc, {
@@ -108,13 +145,52 @@ export function generatePropertyReport(
     yPos = (doc as any).lastAutoTable.finalY + 15;
   }
 
+  // Operating Expenses Section
+  if (selectedSections["Operating Expenses"]) {
+    console.log('Processing Operating Expenses:', selectedSections["Operating Expenses"]);
+    if (yPos > 220) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    doc.setFontSize(14);
+    doc.text('Operating Expenses', 20, yPos);
+    yPos += 10;
+
+    const expensesData = [
+      ['Monthly Levies', formatter.format(data.expenses.monthlyLevies)],
+      ['Monthly Rates & Taxes', formatter.format(data.expenses.monthlyRatesTaxes)],
+      ['Other Monthly Expenses', formatter.format(data.expenses.otherMonthlyExpenses)],
+      ['Maintenance (%)', `${data.expenses.maintenancePercent}%`],
+      ['Management Fee (%)', `${data.expenses.managementFee}%`]
+    ];
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Expense Type', 'Amount']],
+      body: expensesData,
+      theme: 'striped',
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
+    });
+    yPos = (doc as any).lastAutoTable.finalY + 15;
+  }
+
   // Rental Performance Section
-  if (sections.includes("rentalPerformance")) {
+  if (selectedSections["Rental Performance"]) {
+    console.log('Processing Rental Performance:', selectedSections["Rental Performance"]);
+    if (yPos > 220) {
+      doc.addPage();
+      yPos = 20;
+    }
+
     doc.setFontSize(14);
     doc.text('Rental Performance', 20, yPos);
     yPos += 10;
 
     const rentalData = [
+      ['Short-Term Nightly Rate', formatter.format(data.performance.shortTermNightlyRate)],
+      ['Annual Occupancy', `${data.performance.annualOccupancy}%`],
       ['Short-Term Annual Revenue', formatter.format(data.performance.shortTermAnnualRevenue)],
       ['Long-Term Annual Revenue', formatter.format(data.performance.longTermAnnualRevenue)],
       ['Short-Term Gross Yield', `${data.performance.shortTermGrossYield}%`],
@@ -132,49 +208,16 @@ export function generatePropertyReport(
     yPos = (doc as any).lastAutoTable.finalY + 15;
   }
 
-  // Cashflow Metrics Section
-  if (sections.includes("cashflowMetrics") && data.netOperatingIncome) {
-    if (yPos > 220) {
-      doc.addPage();
-      yPos = 20;
-    }
-
-    doc.setFontSize(14);
-    doc.text('Cashflow Metrics', 20, yPos);
-    yPos += 10;
-
-    const years = [1, 2, 3, 4, 5, 10, 20];
-    const cashflowData = years.map(year => {
-      const yearKey = `year${year}` as keyof typeof data.netOperatingIncome;
-      const yearData = data.netOperatingIncome![yearKey];
-      return [
-        `Year ${year}`,
-        formatter.format(yearData.annualCashflow),
-        formatter.format(yearData.cumulativeRentalIncome),
-        formatter.format(yearData.netWorthChange)
-      ];
-    });
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Year', 'Annual Cashflow', 'Cumulative Rental Income', 'Net Worth Change']],
-      body: cashflowData,
-      theme: 'striped',
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
-    });
-    yPos = (doc as any).lastAutoTable.finalY + 15;
-  }
-
   // Investment Metrics Section
-  if (sections.includes("investmentMetrics") && data.investmentMetrics?.year1) {
+  if (selectedSections["Investment Metrics"] && data.investmentMetrics?.year1) {
+    console.log('Processing Investment Metrics:', selectedSections["Investment Metrics"]);
     if (yPos > 220) {
       doc.addPage();
       yPos = 20;
     }
 
     doc.setFontSize(14);
-    doc.text('Investment Metrics', 20, yPos);
+    doc.text('Investment Metrics (Year 1)', 20, yPos);
     yPos += 10;
 
     const metrics = data.investmentMetrics.year1;
@@ -200,6 +243,43 @@ export function generatePropertyReport(
     });
     yPos = (doc as any).lastAutoTable.finalY + 15;
   }
+
+  // Cashflow Analysis Section
+  if (selectedSections["Cashflow Analysis"] && data.netOperatingIncome) {
+    console.log('Processing Cashflow Analysis:', selectedSections["Cashflow Analysis"]);
+    if (yPos > 220) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    doc.setFontSize(14);
+    doc.text('Cashflow Analysis', 20, yPos);
+    yPos += 10;
+
+    const years = [1, 2, 3, 4, 5, 10, 20];
+    const cashflowData = years.map(year => {
+      const yearKey = `year${year}` as keyof typeof data.netOperatingIncome;
+      const yearData = data.netOperatingIncome![yearKey];
+      return [
+        `Year ${year}`,
+        formatter.format(yearData.annualCashflow),
+        formatter.format(yearData.cumulativeRentalIncome),
+        formatter.format(yearData.netWorthChange)
+      ];
+    });
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Year', 'Annual Cashflow', 'Cumulative Rental Income', 'Net Worth Change']],
+      body: cashflowData,
+      theme: 'striped',
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
+    });
+    yPos = (doc as any).lastAutoTable.finalY + 15;
+  }
+
+  console.groupEnd();
 
   // Add footer with page numbers
   const pageCount = doc.getNumberOfPages();
