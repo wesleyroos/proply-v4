@@ -14,6 +14,8 @@ const LOGO_MAX_HEIGHT = 20;
 const PROPLY_LOGO_ASPECT_RATIO = 3.5; // Width:Height ratio of the logo
 
 interface PropertyData {
+  title: string;
+  propertyUrl?: string;
   propertyDetails: {
     address: string;
     bedrooms: string | number;
@@ -22,7 +24,7 @@ interface PropertyData {
     parkingSpaces: number;
     purchasePrice: number;
     ratePerSquareMeter: number;
-    description: string;
+    description?: string;
   };
   financialMetrics: {
     depositAmount: number;
@@ -30,6 +32,13 @@ interface PropertyData {
     interestRate: number;
     loanTerm: number;
     monthlyBondRepayment: number;
+  };
+  expenses: {
+    monthlyLevies: number;
+    monthlyRatesTaxes: number;
+    otherMonthlyExpenses: number;
+    maintenancePercent: number;
+    managementFee?: number;
   };
   performance: {
     shortTermNightlyRate: number;
@@ -39,26 +48,43 @@ interface PropertyData {
     shortTermGrossYield: number;
     longTermGrossYield: number;
   };
-  investmentMetrics?: Record<string, {
-    grossYield: number;
-    netYield: number;
-    returnOnEquity: number;
-    annualReturn: number;
-    capRate: number;
-    cashOnCashReturn: number;
-    irr: number;
-    netWorthChange: number;
-  }>;
-  netOperatingIncome?: Record<string, {
-    value: number;
-    annualCashflow: number;
-    cumulativeRentalIncome: number;
-    netWorthChange: number;
-  }>;
+  revenueProjections: {
+    shortTerm: {
+      [key: string]: number;
+    };
+    longTerm: {
+      [key: string]: number;
+    };
+  };
+  operatingExpenses: {
+    [key: string]: number;
+  };
+  investmentMetrics: {
+    shortTerm: Array<{
+      grossYield: number;
+      netYield: number;
+      returnOnEquity: number;
+      annualReturn: number;
+      capRate: number;
+      cashOnCashReturn: number;
+      irr: number;
+      netWorthChange: number;
+    }>;
+    longTerm: Array<{
+      grossYield: number;
+      netYield: number;
+      returnOnEquity: number;
+      annualReturn: number;
+      capRate: number;
+      cashOnCashReturn: number;
+      irr: number;
+      netWorthChange: number;
+    }>;
+  };
 }
 
 export async function generatePropertyReport(
-  data: PropertyData, 
+  data: PropertyData,
   selectedSections: Record<string, string[]>,
   companyLogo?: string | null
 ): Promise<jsPDF> {
@@ -69,21 +95,19 @@ export async function generatePropertyReport(
   const addImage = async (src: string, x: number, y: number, width: number, height: number): Promise<void> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
-      img.crossOrigin = "anonymous"; // Enable cross-origin image loading
+      img.crossOrigin = "anonymous";
       img.onload = () => {
         try {
           const aspectRatio = img.width / img.height;
           let finalWidth = width;
           let finalHeight = height;
 
-          // Maintain aspect ratio
           if (width / height > aspectRatio) {
             finalWidth = height * aspectRatio;
           } else {
             finalHeight = width / aspectRatio;
           }
 
-          // Convert image to base64 for reliable PDF embedding
           const canvas = document.createElement('canvas');
           canvas.width = img.width;
           canvas.height = img.height;
@@ -104,22 +128,14 @@ export async function generatePropertyReport(
   };
 
   try {
-    // Add company logo if provided (top-left)
+    // Add company logo if provided and selected
     if (selectedSections["Company Branding"]?.includes("companyLogo") && companyLogo) {
-      await addImage(
-        companyLogo,
-        MARGIN,
-        yPos,
-        LOGO_MAX_WIDTH,
-        LOGO_MAX_HEIGHT
-      );
+      await addImage(companyLogo, MARGIN, yPos, LOGO_MAX_WIDTH, LOGO_MAX_HEIGHT);
     }
 
-    // Add Proply branding (top-right, always included)
+    // Add Proply branding (top-right)
     const proplyLogoWidth = LOGO_MAX_WIDTH;
     const proplyLogoHeight = proplyLogoWidth / PROPLY_LOGO_ASPECT_RATIO;
-
-    // Use the direct path to the image in the public directory
     await addImage(
       '/proply-logo-1.png',
       PAGE_WIDTH - MARGIN - proplyLogoWidth,
@@ -129,7 +145,7 @@ export async function generatePropertyReport(
     );
 
     doc.setFontSize(10);
-    doc.setTextColor(33, 33, 33); 
+    doc.setTextColor(33, 33, 33);
     doc.text("Powered by Proply", PAGE_WIDTH - MARGIN - 40, yPos + 25);
     yPos += 40;
 
@@ -139,91 +155,124 @@ export async function generatePropertyReport(
     doc.text('Property Analysis Report', MARGIN, yPos);
     yPos += 10;
 
-    // Property address
-    if (selectedSections["Property Details"]?.includes("address")) {
-      doc.setFontSize(12);
-      doc.setTextColor(75, 85, 99);
-      doc.text(data.propertyDetails.address, MARGIN, yPos);
-      yPos += 15;
-    }
-
     // Property Details Section
-    if (selectedSections["Property Details"]?.some(id => ["bedrooms", "bathrooms", "floorArea", "parkingSpaces", "description"].includes(id))) {
-      doc.setFillColor(249, 250, 251);
-      doc.rect(MARGIN, yPos, CONTENT_WIDTH, 40, 'F');
-      yPos += 5;
+    if (selectedSections["Property Details"]?.length > 0) {
+      const details = [];
 
-      const detailsData = [];
+      if (selectedSections["Property Details"].includes("address")) {
+        details.push(['Address', data.propertyDetails.address]);
+      }
       if (selectedSections["Property Details"].includes("bedrooms")) {
-        detailsData.push({
-          label: 'Bedrooms',
-          value: data.propertyDetails.bedrooms.toString()
-        });
+        details.push(['Bedrooms', data.propertyDetails.bedrooms.toString()]);
       }
       if (selectedSections["Property Details"].includes("bathrooms")) {
-        detailsData.push({
-          label: 'Bathrooms',
-          value: data.propertyDetails.bathrooms.toString()
-        });
+        details.push(['Bathrooms', data.propertyDetails.bathrooms.toString()]);
       }
       if (selectedSections["Property Details"].includes("floorArea")) {
-        detailsData.push({
-          label: 'Floor Area',
-          value: `${data.propertyDetails.floorArea}m²`
-        });
+        details.push(['Floor Area', `${data.propertyDetails.floorArea} m²`]);
       }
       if (selectedSections["Property Details"].includes("parkingSpaces")) {
-        detailsData.push({
-          label: 'Parking',
-          value: data.propertyDetails.parkingSpaces.toString()
-        });
+        details.push(['Parking Spaces', data.propertyDetails.parkingSpaces.toString()]);
       }
-      if (selectedSections["Property Details"].includes("description")) {
-        detailsData.push({
-          label: 'Description',
-          value: data.propertyDetails.description
-        });
+      if (selectedSections["Property Details"].includes("purchasePrice")) {
+        details.push(['Purchase Price', formatCurrency(data.propertyDetails.purchasePrice)]);
+      }
+      if (selectedSections["Property Details"].includes("ratePerM2")) {
+        details.push(['Rate per m²', formatCurrency(data.propertyDetails.ratePerSquareMeter)]);
+      }
+      if (selectedSections["Property Details"].includes("description") && data.propertyDetails.description) {
+        details.push(['Description', data.propertyDetails.description]);
       }
 
-      const detailsColWidth = CONTENT_WIDTH / detailsData.length;
-      detailsData.forEach((detail, index) => {
-        const xPos = MARGIN + (detailsColWidth * index);
-        doc.setFontSize(10);
-        doc.setTextColor(75, 85, 99);
-        doc.text(detail.label, xPos, yPos);
-        doc.setFontSize(12);
+      if (details.length > 0) {
+        doc.setFontSize(16);
         doc.setTextColor(31, 41, 55);
-        doc.text(detail.value, xPos, yPos + 7);
-      });
-      yPos += 20;
-    }
+        doc.text('Property Details', MARGIN, yPos);
+        yPos += 5;
 
-    // Financial Metrics Section
-    if (selectedSections["Financing Details"]?.length > 0) {
-      doc.setFontSize(14);
-      doc.setTextColor(31, 41, 55);
-      doc.text('Financial Details', MARGIN, yPos);
-      yPos += 10;
-
-      const financialData = [];
-      if (selectedSections["Financing Details"].includes("purchasePrice")) {
-        financialData.push(['Purchase Price', formatCurrency(data.propertyDetails.purchasePrice)]);
-      }
-      if (selectedSections["Financing Details"].includes("deposit")) {
-        financialData.push([
-          'Deposit', 
-          `${formatCurrency(data.financialMetrics.depositAmount)} (${data.financialMetrics.depositPercentage}%)`
-        ]);
-      }
-      if (selectedSections["Financing Details"].includes("monthlyBond")) {
-        financialData.push(['Monthly Bond', formatCurrency(data.financialMetrics.monthlyBondRepayment)]);
-      }
-
-      if (financialData.length > 0) {
         autoTable(doc, {
           startY: yPos,
-          head: [['Metric', 'Value']],
-          body: financialData,
+          head: [['Detail', 'Value']],
+          body: details,
+          theme: 'striped',
+          styles: { fontSize: 10, cellPadding: 5 },
+          headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
+        });
+        yPos = (doc as any).lastAutoTable.finalY + 15;
+      }
+    }
+
+    // Financial Details Section
+    if (selectedSections["Financing Details"]?.length > 0) {
+      const financials = [];
+
+      if (selectedSections["Financing Details"].includes("deposit")) {
+        financials.push([
+          'Deposit Amount',
+          formatCurrency(data.financialMetrics.depositAmount),
+          `${data.financialMetrics.depositPercentage}%`
+        ]);
+      }
+      if (selectedSections["Financing Details"].includes("interestRate")) {
+        financials.push(['Interest Rate', `${data.financialMetrics.interestRate}%`]);
+      }
+      if (selectedSections["Financing Details"].includes("loanTerm")) {
+        financials.push(['Loan Term', `${data.financialMetrics.loanTerm} years`]);
+      }
+      if (selectedSections["Financing Details"].includes("monthlyBond")) {
+        financials.push(['Monthly Bond Repayment', formatCurrency(data.financialMetrics.monthlyBondRepayment)]);
+      }
+
+      if (financials.length > 0) {
+        doc.setFontSize(16);
+        doc.setTextColor(31, 41, 55);
+        doc.text('Financial Details', MARGIN, yPos);
+        yPos += 5;
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Metric', 'Value', 'Additional Info'].slice(0, financials[0].length)],
+          body: financials,
+          theme: 'striped',
+          styles: { fontSize: 10, cellPadding: 5 },
+          headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
+        });
+        yPos = (doc as any).lastAutoTable.finalY + 15;
+      }
+    }
+
+    // Operating Expenses Section
+    if (selectedSections["Operating Expenses"]?.length > 0) {
+      const expenses = [];
+
+      if (selectedSections["Operating Expenses"].includes("monthlyExpenses")) {
+        expenses.push(['Monthly Levies', formatCurrency(data.expenses.monthlyLevies)]);
+        expenses.push(['Monthly Rates & Taxes', formatCurrency(data.expenses.monthlyRatesTaxes)]);
+        expenses.push(['Other Monthly Expenses', formatCurrency(data.expenses.otherMonthlyExpenses)]);
+      }
+      if (selectedSections["Operating Expenses"].includes("maintenance")) {
+        expenses.push(['Maintenance', `${data.expenses.maintenancePercent}% of rental income`]);
+      }
+      if (selectedSections["Operating Expenses"].includes("managementFees") && data.expenses.managementFee) {
+        expenses.push(['Management Fee', `${data.expenses.managementFee}%`]);
+      }
+
+      if (expenses.length > 0) {
+        // Check if we need a new page
+        if (yPos > PAGE_HEIGHT - 100) {
+          doc.addPage();
+          yPos = MARGIN;
+        }
+
+        doc.setFontSize(16);
+        doc.setTextColor(31, 41, 55);
+        doc.text('Operating Expenses', MARGIN, yPos);
+        yPos += 5;
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Expense Type', 'Amount']],
+          body: expenses,
           theme: 'striped',
           styles: { fontSize: 10, cellPadding: 5 },
           headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
@@ -234,32 +283,86 @@ export async function generatePropertyReport(
 
     // Revenue Performance Section
     if (selectedSections["Revenue Performance"]?.length > 0) {
-      doc.setFontSize(14);
-      doc.setTextColor(31, 41, 55);
-      doc.text('Rental Performance', MARGIN, yPos);
-      yPos += 10;
+      const performance = [];
 
-      const performanceData = [];
       if (selectedSections["Revenue Performance"].includes("shortTerm")) {
-        performanceData.push(
-          ['Short-Term Annual Revenue', formatCurrency(data.performance.shortTermAnnualRevenue)],
-          ['Short-Term Nightly Rate', formatCurrency(data.performance.shortTermNightlyRate)],
-          ['Annual Occupancy', `${data.performance.annualOccupancy}%`],
-          ['Short-Term Gross Yield', `${data.performance.shortTermGrossYield.toFixed(1)}%`]
-        );
-      }
-      if (selectedSections["Revenue Performance"].includes("longTerm")) {
-        performanceData.push(
-          ['Long-Term Annual Revenue', formatCurrency(data.performance.longTermAnnualRevenue)],
-          ['Long-Term Gross Yield', `${data.performance.longTermGrossYield.toFixed(1)}%`]
-        );
+        performance.push(['Short-Term Nightly Rate', formatCurrency(data.performance.shortTermNightlyRate)]);
+        performance.push(['Annual Occupancy', `${data.performance.annualOccupancy}%`]);
+        performance.push(['Short-Term Annual Revenue', formatCurrency(data.performance.shortTermAnnualRevenue)]);
+        performance.push(['Short-Term Gross Yield', `${data.performance.shortTermGrossYield.toFixed(1)}%`]);
       }
 
-      if (performanceData.length > 0) {
+      if (selectedSections["Revenue Performance"].includes("longTerm")) {
+        performance.push(['Long-Term Annual Revenue', formatCurrency(data.performance.longTermAnnualRevenue)]);
+        performance.push(['Long-Term Gross Yield', `${data.performance.longTermGrossYield.toFixed(1)}%`]);
+      }
+
+      if (performance.length > 0) {
+        // Check if we need a new page
+        if (yPos > PAGE_HEIGHT - 100) {
+          doc.addPage();
+          yPos = MARGIN;
+        }
+
+        doc.setFontSize(16);
+        doc.setTextColor(31, 41, 55);
+        doc.text('Revenue Performance', MARGIN, yPos);
+        yPos += 5;
+
         autoTable(doc, {
           startY: yPos,
           head: [['Metric', 'Value']],
-          body: performanceData,
+          body: performance,
+          theme: 'striped',
+          styles: { fontSize: 10, cellPadding: 5 },
+          headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
+        });
+        yPos = (doc as any).lastAutoTable.finalY + 15;
+      }
+    }
+
+    // Investment Metrics Section
+    if (selectedSections["Investment Metrics"]?.length > 0) {
+      // Add new page for investment metrics
+      doc.addPage();
+      yPos = MARGIN;
+
+      doc.setFontSize(16);
+      doc.setTextColor(31, 41, 55);
+      doc.text('Investment Metrics', MARGIN, yPos);
+      yPos += 10;
+
+      // Short-term metrics
+      if (selectedSections["Investment Metrics"].includes("yields") ||
+          selectedSections["Investment Metrics"].includes("returns") ||
+          selectedSections["Investment Metrics"].includes("cashflow")) {
+
+        const shortTermMetrics = data.investmentMetrics.shortTerm[0]; // First year metrics
+        const metrics = [];
+
+        if (selectedSections["Investment Metrics"].includes("yields")) {
+          metrics.push(['Gross Yield', `${shortTermMetrics.grossYield.toFixed(1)}%`]);
+          metrics.push(['Net Yield', `${shortTermMetrics.netYield.toFixed(1)}%`]);
+        }
+        if (selectedSections["Investment Metrics"].includes("returns")) {
+          metrics.push(['Return on Equity', `${shortTermMetrics.returnOnEquity.toFixed(1)}%`]);
+          metrics.push(['Annual Return', `${shortTermMetrics.annualReturn.toFixed(1)}%`]);
+          metrics.push(['Cap Rate', `${shortTermMetrics.capRate.toFixed(1)}%`]);
+        }
+        if (selectedSections["Investment Metrics"].includes("cashflow")) {
+          metrics.push(['Cash on Cash Return', `${shortTermMetrics.cashOnCashReturn.toFixed(1)}%`]);
+          metrics.push(['IRR', `${shortTermMetrics.irr.toFixed(1)}%`]);
+          metrics.push(['Net Worth Change', formatCurrency(shortTermMetrics.netWorthChange)]);
+        }
+
+        doc.setFontSize(14);
+        doc.text('Short-Term Investment Metrics (Year 1)', MARGIN, yPos);
+        yPos += 5;
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Metric', 'Value']],
+          body: metrics,
           theme: 'striped',
           styles: { fontSize: 10, cellPadding: 5 },
           headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
