@@ -78,29 +78,88 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
 
-  // Log available data when modal opens
+  // Enhanced logging when modal opens
   useEffect(() => {
     if (open) {
-      console.group('PDF Report - Available Data Structure');
-      console.log('Complete data object:', data);
+      console.group('=== PDF Report - Complete Data Flow Analysis ===');
+
+      console.group('1. Available Data Structure from Property Analyzer');
+      console.log('Property Details:', {
+        address: data.propertyDetails.address,
+        specs: {
+          bedrooms: data.propertyDetails.bedrooms,
+          bathrooms: data.propertyDetails.bathrooms,
+          floorArea: data.propertyDetails.floorArea,
+          parkingSpaces: data.propertyDetails.parkingSpaces
+        },
+        pricing: {
+          purchasePrice: data.propertyDetails.purchasePrice,
+          ratePerSquareMeter: data.propertyDetails.ratePerSquareMeter
+        }
+      });
+
+      console.log('Financial Structure:', {
+        deposit: {
+          amount: data.financialMetrics.depositAmount,
+          percentage: data.financialMetrics.depositPercentage
+        },
+        loan: {
+          interestRate: data.financialMetrics.interestRate,
+          term: data.financialMetrics.loanTerm,
+          monthlyPayment: data.financialMetrics.monthlyBondRepayment
+        },
+        costs: {
+          bondRegistration: data.financialMetrics.bondRegistration,
+          transferCosts: data.financialMetrics.transferCosts
+        }
+      });
+
+      console.log('Operating Expenses:', {
+        monthly: {
+          levies: data.expenses.monthlyLevies,
+          ratesTaxes: data.expenses.monthlyRatesTaxes,
+          other: data.expenses.otherMonthlyExpenses
+        },
+        maintenance: data.expenses.maintenancePercent,
+        managementFee: data.expenses.managementFee
+      });
+
+      console.log('Rental Performance:', {
+        shortTerm: {
+          nightlyRate: data.performance.shortTermNightlyRate,
+          occupancy: data.performance.annualOccupancy,
+          annualRevenue: data.performance.shortTermAnnualRevenue,
+          grossYield: data.performance.shortTermGrossYield
+        },
+        longTerm: {
+          annualRevenue: data.performance.longTermAnnualRevenue,
+          grossYield: data.performance.longTermGrossYield
+        }
+      });
+
+      if (data.investmentMetrics) {
+        console.log('Investment Metrics (Year 1):', data.investmentMetrics.year1);
+      }
+
+      if (data.netOperatingIncome) {
+        console.log('Net Operating Income:', {
+          year1: data.netOperatingIncome.year1,
+          year5: data.netOperatingIncome.year5,
+          year20: data.netOperatingIncome.year20
+        });
+      }
       console.groupEnd();
 
-      console.group('PDF Report - Default Section Configuration');
-      console.log('Available sections:', defaultSectionGroups);
+      console.group('2. Available Report Sections');
+      console.table(defaultSectionGroups.map(group => ({
+        group: group.title,
+        sections: group.sections.map(s => s.label).join(', ')
+      })));
+      console.groupEnd();
+
       console.groupEnd();
     }
   }, [open, data]);
-
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const toggleSection = (groupTitle: string, sectionId: string) => {
     setSectionGroups(prevGroups => {
@@ -116,15 +175,16 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         return group;
       });
 
-      // Log section selections whenever they change
-      console.group('PDF Report - Current Section Selections');
-      newGroups.forEach(group => {
-        console.log(`${group.title}:`, 
-          group.sections
-            .filter(section => section.checked)
-            .map(section => ({ id: section.id, label: section.label }))
-        );
-      });
+      // Enhanced logging of section changes
+      console.group('3. Section Selection Update');
+      console.log('Changed Group:', groupTitle);
+      console.log('Changed Section:', sectionId);
+      console.log('Current Selections:', newGroups.map(group => ({
+        group: group.title,
+        selectedSections: group.sections
+          .filter(section => section.checked)
+          .map(section => section.label)
+      })));
       console.groupEnd();
 
       return newGroups;
@@ -145,11 +205,11 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         return acc;
       }, {} as Record<string, string[]>);
 
-      // Log the complete data flow
-      console.group('PDF Report - Data Flow Analysis');
-      console.log('1. Selected Sections Configuration:', selectedSections);
+      // Enhanced logging of final data being sent
+      console.group('4. PDF Generation Data Flow');
 
-      // Create the data structure based on selections
+      console.log('Selected Section Configuration:', selectedSections);
+
       const pdfData = {
         propertyDetails: data.propertyDetails,
         financialMetrics: data.financialMetrics,
@@ -163,7 +223,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         })
       };
 
-      console.log('2. Data Being Passed to PDF Generator:', pdfData);
+      console.log('Final Data Structure Being Sent to PDF Generator:', pdfData);
       console.groupEnd();
 
       const doc = await generatePropertyReport(data, selectedSections, logoPreviewUrl || user?.companyLogo);
