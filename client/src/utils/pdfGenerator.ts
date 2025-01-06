@@ -397,9 +397,9 @@ export async function generatePropertyReport(
 
     // Add Charts and Visualizations Section
     if (selectedSections["Charts and Visualizations"]?.length > 0) {
-      checkNewPage(120); // Check if we need a new page for charts section
+      checkNewPage(120);
 
-      const charts = await captureCharts(data); // Pass data to captureCharts
+      const charts = await captureCharts();
 
       if (selectedSections["Charts and Visualizations"].includes("revenueChart") && charts.revenueChart) {
         doc.setFontSize(16);
@@ -415,7 +415,6 @@ export async function generatePropertyReport(
 
       if (selectedSections["Charts and Visualizations"].includes("occupancyChart") && charts.occupancyChart) {
         checkNewPage(120);
-
         doc.setFontSize(16);
         doc.text('Occupancy Analysis', MARGIN, yPos);
         yPos += 10;
@@ -428,7 +427,6 @@ export async function generatePropertyReport(
 
       if (selectedSections["Charts and Visualizations"].includes("monthlyRevenueTable") && charts.monthlyRevenueTable) {
         checkNewPage(120);
-
         doc.setFontSize(16);
         doc.text('Monthly Revenue Breakdown', MARGIN, yPos);
         yPos += 10;
@@ -441,7 +439,6 @@ export async function generatePropertyReport(
 
       if (selectedSections["Charts and Visualizations"].includes("performanceTable") && charts.performanceTable) {
         checkNewPage(120);
-
         doc.setFontSize(16);
         doc.text('Performance Metrics', MARGIN, yPos);
         yPos += 10;
