@@ -82,8 +82,9 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   const [sectionGroups, setSectionGroups] = useState<SectionGroup[]>(defaultSectionGroups);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
 
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setLogoFile(file);
@@ -92,7 +93,10 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   };
 
   const generatePDF = async () => {
+    if (generating) return;
+
     try {
+      setGenerating(true);
       const selectedSections = sectionGroups.reduce((acc, group) => {
         acc[group.title] = group.sections
           .filter(section => section.checked)
@@ -101,9 +105,9 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
       }, {} as Record<string, string[]>);
 
       const logo = user?.companyLogo || logoPreviewUrl;
-      const report = await generatePropertyReport(data, selectedSections, logo);
+      const doc = await generatePropertyReport(data, selectedSections, logo);
       const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
-      report.save(filename);
+      doc.save(filename);
 
       onOpenChange(false);
       toast({
@@ -116,9 +120,11 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to generate PDF report. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to generate PDF report. Please try again.",
         duration: 5000,
       });
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -219,9 +225,13 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
               </CardContent>
             </Card>
           ))}
-          <Button onClick={generatePDF} className="w-full">
+          <Button 
+            onClick={generatePDF} 
+            className="w-full"
+            disabled={generating}
+          >
             <FileText className="w-4 h-4 mr-2" />
-            Generate PDF Report
+            {generating ? 'Generating PDF...' : 'Generate PDF Report'}
           </Button>
         </div>
       </DialogContent>
