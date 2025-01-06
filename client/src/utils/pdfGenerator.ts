@@ -1,7 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatCurrency } from "@/lib/utils";
-import { captureCharts } from './chartCapture';
 
 // Constants for PDF layout
 const PAGE_WIDTH = 210; // A4 width in mm
@@ -12,80 +11,211 @@ const CONTENT_WIDTH = PAGE_WIDTH - (2 * MARGIN);
 // Constants for logo sizing
 const LOGO_MAX_WIDTH = 40;
 const LOGO_MAX_HEIGHT = 20;
-const PROPLY_LOGO_ASPECT_RATIO = 3.5; // Width:Height ratio of the logo
+const PROPLY_LOGO_ASPECT_RATIO = 3.5;
 
-interface PropertyData {
-  title: string;
-  propertyUrl?: string;
-  propertyDetails: {
-    address: string;
-    bedrooms: string | number;
-    bathrooms: string | number;
-    floorArea: number;
-    parkingSpaces: number;
-    purchasePrice: number;
-    ratePerSquareMeter: number;
-    areaAverageRate?: number;
-    rateDifference?: number;
-    bondRegistrationCosts?: number;
-    transferCosts?: number;
-    description?: string;
+// Constants for graph
+const GRAPH_HEIGHT = 80;
+const GRAPH_PADDING = 10;
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// Function to draw the rental performance graph
+function drawRentalPerformanceGraph(
+  doc: jsPDF,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  longTermMonthly: number,
+  shortTermData: {
+    low: number[];
+    medium: number[];
+    high: number[];
+  }
+) {
+  // Calculate scales
+  const values = [
+    longTermMonthly,
+    ...shortTermData.low,
+    ...shortTermData.medium,
+    ...shortTermData.high
+  ];
+  const maxValue = Math.max(...values);
+  const minValue = Math.min(...values);
+  const valueRange = maxValue - minValue;
+  const padding = valueRange * 0.1; // 10% padding
+
+  const yScale = (height - GRAPH_PADDING * 2) / (valueRange + 2 * padding);
+  const xStep = (width - GRAPH_PADDING * 2) / 11; // 12 months - 1 for spacing
+
+  // Draw axes
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.1);
+
+  // Draw horizontal grid lines
+  const gridLines = 5;
+  for (let i = 0; i <= gridLines; i++) {
+    const yPos = y + height - GRAPH_PADDING - (i * (height - GRAPH_PADDING * 2) / gridLines);
+    doc.line(x + GRAPH_PADDING, yPos, x + width - GRAPH_PADDING, yPos);
+
+    // Add value labels
+    const value = minValue - padding + (i * (valueRange + 2 * padding) / gridLines);
+    doc.setFontSize(6);
+    doc.text(formatCurrency(value), x + GRAPH_PADDING - 15, yPos + 1);
+  }
+
+  // Draw vertical grid lines and month labels
+  MONTHS.forEach((month, i) => {
+    const xPos = x + GRAPH_PADDING + i * xStep;
+    doc.line(xPos, y + GRAPH_PADDING, xPos, y + height - GRAPH_PADDING);
+    doc.setFontSize(6);
+    doc.text(month, xPos - 3, y + height - 2);
+  });
+
+  // Function to draw a line series
+  const drawLine = (data: number[], color: string, dashLength = 0) => {
+    doc.setDrawColor(color);
+    doc.setLineWidth(0.3);
+
+    if (dashLength > 0) {
+      doc.setLineDashPattern([dashLength], 0);
+    } else {
+      doc.setLineDashPattern([], 0);
+    }
+
+    for (let i = 0; i < data.length - 1; i++) {
+      const x1 = x + GRAPH_PADDING + i * xStep;
+      const x2 = x + GRAPH_PADDING + (i + 1) * xStep;
+      const y1 = y + height - GRAPH_PADDING - ((data[i] - minValue + padding) * yScale);
+      const y2 = y + height - GRAPH_PADDING - ((data[i + 1] - minValue + padding) * yScale);
+      doc.line(x1, y1, x2, y2);
+    }
   };
-  financialMetrics: {
-    depositAmount: number;
-    depositPercentage: number;
-    interestRate: number;
-    loanTerm: number;
-    monthlyBondRepayment: number;
-  };
-  expenses: {
-    monthlyLevies: number;
-    monthlyRatesTaxes: number;
-    otherMonthlyExpenses: number;
-    maintenancePercent: number;
-    managementFee?: number;
-  };
-  performance: {
-    shortTermNightlyRate: number;
-    annualOccupancy: number;
-    shortTermAnnualRevenue: number;
-    longTermAnnualRevenue: number;
-    shortTermGrossYield: number;
-    longTermGrossYield: number;
-  };
-  revenueProjections: {
-    shortTerm: {
-      [key: string]: number;
+
+  // Draw the revenue lines
+  drawLine(Array(12).fill(longTermMonthly), '#FFE66D', 2); // Long-term (dashed)
+  drawLine(shortTermData.low, '#FF6B6B'); // Low scenario
+  drawLine(shortTermData.medium, '#4ECDC4'); // Medium scenario
+  drawLine(shortTermData.high, '#45B7D1'); // High scenario
+
+  // Add legend
+  const legendY = y + height + 10;
+  const legendSpacing = 25;
+  doc.setFontSize(8);
+
+  // Long-term
+  doc.setLineDashPattern([2], 0);
+  doc.setDrawColor('#FFE66D');
+  doc.line(x + 5, legendY, x + 15, legendY);
+  doc.setTextColor('#B8860B');
+  doc.text('Long Term', x + 20, legendY + 2);
+
+  // Low scenario
+  doc.setLineDashPattern([], 0);
+  doc.setDrawColor('#FF6B6B');
+  doc.line(x + 5 + legendSpacing, legendY, x + 15 + legendSpacing, legendY);
+  doc.setTextColor('#FF6B6B');
+  doc.text('Low', x + 20 + legendSpacing, legendY + 2);
+
+  // Medium scenario
+  doc.setDrawColor('#4ECDC4');
+  doc.line(x + 5 + legendSpacing * 2, legendY, x + 15 + legendSpacing * 2, legendY);
+  doc.setTextColor('#4ECDC4');
+  doc.text('Medium', x + 20 + legendSpacing * 2, legendY + 2);
+
+  // High scenario
+  doc.setDrawColor('#45B7D1');
+  doc.line(x + 5 + legendSpacing * 3, legendY, x + 15 + legendSpacing * 3, legendY);
+  doc.setTextColor('#45B7D1');
+  doc.text('High', x + 20 + legendSpacing * 3, legendY + 2);
+
+  // Reset styles
+  doc.setLineDashPattern([], 0);
+  doc.setTextColor(0);
+}
+
+// Function to create the monthly revenue table
+function createMonthlyRevenueTable(
+  doc: jsPDF,
+  data: {
+    shortTermNightly: number;
+    managementFee: number;
+    longTermMonthly: number;
+  }
+) {
+  const getMonthlyRevenue = (scenario: 'low' | 'medium' | 'high', monthIndex: number) => {
+    const occupancyRates = {
+      low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70],
+      medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85],
+      high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
     };
-    longTerm: {
-      [key: string]: number;
+
+    const seasonalRates = {
+      peak: 1.2, // Peak season adjustment
+      shoulder: 1.1, // Shoulder season adjustment
+      low: 0.9 // Low season adjustment
     };
+
+    // Determine season multiplier based on month
+    let rateMultiplier = 1;
+    if ([11, 0, 1].includes(monthIndex)) { // Dec, Jan, Feb
+      rateMultiplier = seasonalRates.peak;
+    } else if ([2, 3, 9, 10].includes(monthIndex)) { // Mar, Apr, Oct, Nov
+      rateMultiplier = seasonalRates.shoulder;
+    } else { // May through Sep
+      rateMultiplier = seasonalRates.low;
+    }
+
+    const nightlyRate = data.shortTermNightly * rateMultiplier;
+    const daysInMonth = new Date(2024, monthIndex + 1, 0).getDate();
+    const occupancy = occupancyRates[scenario][monthIndex] / 100;
+    const grossRevenue = nightlyRate * daysInMonth * occupancy;
+
+    // Apply platform and management fees
+    const platformFee = data.managementFee > 0 ? 0.15 : 0.03;
+    const totalFees = platformFee + (data.managementFee || 0);
+
+    return grossRevenue * (1 - totalFees);
   };
-  operatingExpenses: {
-    [key: string]: number;
-  };
-  investmentMetrics: {
-    shortTerm: Array<{
-      grossYield: number;
-      netYield: number;
-      returnOnEquity: number;
-      annualReturn: number;
-      capRate: number;
-      cashOnCashReturn: number;
-      irr: number;
-      netWorthChange: number;
-    }>;
-    longTerm: Array<{
-      grossYield: number;
-      netYield: number;
-      returnOnEquity: number;
-      annualReturn: number;
-      capRate: number;
-      cashOnCashReturn: number;
-      irr: number;
-      netWorthChange: number;
-    }>;
-  };
+
+  const tableData = [
+    ['Nightly Rate', ...MONTHS.map((_, i) => {
+      const seasonalRate = data.shortTermNightly * (
+        [11, 0, 1].includes(i) ? 1.2 :
+        [2, 3, 9, 10].includes(i) ? 1.1 : 0.9
+      );
+      return formatCurrency(seasonalRate);
+    })],
+    ['Occupancy Low', ...MONTHS.map((_, i) => [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70][i] + '%')],
+    ['Occupancy Medium', ...MONTHS.map((_, i) => [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85][i] + '%')],
+    ['Occupancy High', ...MONTHS.map((_, i) => [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95][i] + '%')],
+    ['Revenue Low', ...MONTHS.map((_, i) => formatCurrency(getMonthlyRevenue('low', i)))],
+    ['Revenue Medium', ...MONTHS.map((_, i) => formatCurrency(getMonthlyRevenue('medium', i)))],
+    ['Revenue High', ...MONTHS.map((_, i) => formatCurrency(getMonthlyRevenue('high', i)))],
+    ['Long Term', ...Array(12).fill(formatCurrency(data.longTermMonthly))]
+  ];
+
+  autoTable(doc, {
+    head: [['Metric', ...MONTHS]],
+    body: tableData,
+    theme: 'striped',
+    styles: { fontSize: 8, cellPadding: 2 },
+    headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] },
+    columnStyles: {
+      0: { fontStyle: 'bold' }
+    },
+    didParseCell: function(data) {
+      // Style specific rows
+      if (data.row.index === 4) { // Revenue Low
+        data.cell.styles.textColor = '#FF6B6B';
+      } else if (data.row.index === 5) { // Revenue Medium
+        data.cell.styles.textColor = '#4ECDC4';
+      } else if (data.row.index === 6) { // Revenue High
+        data.cell.styles.textColor = '#45B7D1';
+      } else if (data.row.index === 7) { // Long Term
+        data.cell.styles.textColor = '#B8860B';
+      }
+    }
+  });
 }
 
 export async function generatePropertyReport(
@@ -312,38 +442,58 @@ export async function generatePropertyReport(
 
     // Revenue Performance Section
     if (selectedSections["Revenue Performance"]?.length > 0) {
-      const performance = [];
+      checkNewPage(GRAPH_HEIGHT + 150); // Height for graph + table
 
-      if (selectedSections["Revenue Performance"].includes("shortTerm")) {
-        performance.push(['Short-Term Nightly Rate', formatCurrency(data.performance.shortTermNightlyRate)]);
-        performance.push(['Annual Occupancy', `${data.performance.annualOccupancy}%`]);
-        performance.push(['Short-Term Annual Revenue', formatCurrency(data.performance.shortTermAnnualRevenue)]);
-        performance.push(['Short-Term Gross Yield', `${data.performance.shortTermGrossYield.toFixed(1)}%`]);
+      doc.setFontSize(16);
+      doc.setTextColor(31, 41, 55);
+      doc.text('Rental Performance Analysis', MARGIN, yPos);
+      yPos += 10;
+
+      // Calculate monthly revenues for the graph
+      const monthlyRevenues = {
+        low: MONTHS.map((_, i) => {
+          const occupancyRates = [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70];
+          const daysInMonth = new Date(2024, i + 1, 0).getDate();
+          return data.performance.shortTermNightlyRate * daysInMonth * (occupancyRates[i] / 100) * (1 - (data.expenses.managementFee > 0 ? 0.15 : 0.03));
+        }),
+        medium: MONTHS.map((_, i) => {
+          const occupancyRates = [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85];
+          const daysInMonth = new Date(2024, i + 1, 0).getDate();
+          return data.performance.shortTermNightlyRate * daysInMonth * (occupancyRates[i] / 100) * (1 - (data.expenses.managementFee > 0 ? 0.15 : 0.03));
+        }),
+        high: MONTHS.map((_, i) => {
+          const occupancyRates = [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95];
+          const daysInMonth = new Date(2024, i + 1, 0).getDate();
+          return data.performance.shortTermNightlyRate * daysInMonth * (occupancyRates[i] / 100) * (1 - (data.expenses.managementFee > 0 ? 0.15 : 0.03));
+        })
+      };
+
+      // Draw the performance graph
+      drawRentalPerformanceGraph(
+        doc,
+        MARGIN,
+        yPos,
+        CONTENT_WIDTH,
+        GRAPH_HEIGHT,
+        data.performance.longTermAnnualRevenue / 12,
+        monthlyRevenues
+      );
+      yPos += GRAPH_HEIGHT + 30;
+
+      // Add the monthly revenue table
+      if (checkNewPage(100)) {
+        yPos += 10;
       }
+      doc.setFontSize(14);
+      doc.text('Monthly Revenue Breakdown', MARGIN, yPos);
+      yPos += 10;
 
-      if (selectedSections["Revenue Performance"].includes("longTerm")) {
-        performance.push(['Long-Term Annual Revenue', formatCurrency(data.performance.longTermAnnualRevenue)]);
-        performance.push(['Long-Term Gross Yield', `${data.performance.longTermGrossYield.toFixed(1)}%`]);
-      }
-
-      if (performance.length > 0) {
-        checkNewPage(performance.length * 15); //Check for new page
-
-        doc.setFontSize(16);
-        doc.setTextColor(31, 41, 55);
-        doc.text('Revenue Performance', MARGIN, yPos);
-        yPos += 5;
-
-        autoTable(doc, {
-          startY: yPos,
-          head: [['Metric', 'Value']],
-          body: performance,
-          theme: 'striped',
-          styles: { fontSize: 10, cellPadding: 5 },
-          headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
-        });
-        yPos = (doc as any).lastAutoTable.finalY + 15;
-      }
+      createMonthlyRevenueTable(doc, {
+        shortTermNightly: data.performance.shortTermNightlyRate,
+        managementFee: data.expenses.managementFee || 0,
+        longTermMonthly: data.performance.longTermAnnualRevenue / 12
+      });
+      yPos = (doc as any).lastAutoTable.finalY + 15;
     }
 
     // Investment Metrics Section
@@ -479,4 +629,78 @@ export async function generatePropertyReport(
     console.error('Error generating PDF:', error);
     throw new Error('Failed to generate PDF report: ' + (error instanceof Error ? error.message : String(error)));
   }
+}
+
+interface PropertyData {
+  title: string;
+  propertyUrl?: string;
+  propertyDetails: {
+    address: string;
+    bedrooms: string | number;
+    bathrooms: string | number;
+    floorArea: number;
+    parkingSpaces: number;
+    purchasePrice: number;
+    ratePerSquareMeter: number;
+    areaAverageRate?: number;
+    rateDifference?: number;
+    bondRegistrationCosts?: number;
+    transferCosts?: number;
+    description?: string;
+  };
+  financialMetrics: {
+    depositAmount: number;
+    depositPercentage: number;
+    interestRate: number;
+    loanTerm: number;
+    monthlyBondRepayment: number;
+  };
+  expenses: {
+    monthlyLevies: number;
+    monthlyRatesTaxes: number;
+    otherMonthlyExpenses: number;
+    maintenancePercent: number;
+    managementFee?: number;
+  };
+  performance: {
+    shortTermNightlyRate: number;
+    annualOccupancy: number;
+    shortTermAnnualRevenue: number;
+    longTermAnnualRevenue: number;
+    shortTermGrossYield: number;
+    longTermGrossYield: number;
+  };
+  revenueProjections: {
+    shortTerm: {
+      [key: string]: number;
+    };
+    longTerm: {
+      [key: string]: number;
+    };
+  };
+  operatingExpenses: {
+    [key: string]: number;
+  };
+  investmentMetrics: {
+    shortTerm: Array<{
+      grossYield: number;
+      netYield: number;
+      returnOnEquity: number;
+      annualReturn: number;
+      capRate: number;
+      cashOnCashReturn: number;
+      irr: number;
+      netWorthChange: number;
+    }>;
+    longTerm: Array<{
+      grossYield: number;
+      netYield: number;
+      returnOnEquity: number;
+      annualReturn: number;
+      capRate: number;
+      cashOnCashReturn: number;
+      irr: number;
+      netWorthChange: number;
+    }>;
+  };
 }
