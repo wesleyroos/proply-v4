@@ -5,49 +5,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { FileText, Upload } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
-import html2pdf from "html2pdf.js";
-import { formatter } from "@/utils/formatting";
+import { generatePropertyReport } from "@/utils/pdfGenerator";
+import { useToast } from "@/hooks/use-toast";
 
 interface PDFReportModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  data: {
-    propertyDetails: {
-      address: string;
-      bedrooms: string;
-      bathrooms: string;
-      floorArea: number;
-      parkingSpaces: number;
-      purchasePrice: number;
-      ratePerSquareMeter: number;
-    };
-    financialMetrics: {
-      depositAmount: number;
-      depositPercentage: number;
-      interestRate: number;
-      loanTerm: number;
-      monthlyBondRepayment: number;
-    };
-    expenses: {
-      monthlyLevies: number;
-      monthlyRatesTaxes: number;
-      otherMonthlyExpenses: number;
-      maintenancePercent: number;
-    };
-    performance: {
-      shortTermNightlyRate: number;
-      annualOccupancy: number;
-      shortTermAnnualRevenue: number;
-      longTermAnnualRevenue: number;
-      shortTermGrossYield: number;
-      longTermGrossYield: number;
-      managementFee: number;
-    };
-    investmentMetrics: {
-      shortTerm: any;
-      longTerm: any;
-    };
-  };
+  data: any;
 }
 
 interface ReportSection {
@@ -105,15 +69,16 @@ const defaultSectionGroups: SectionGroup[] = [
     ]
   },
   {
-    title: "Branding",
+    title: "Company Branding",
     sections: [
-      { id: "companyLogo", label: "Include Company Branding", checked: true },
+      { id: "companyLogo", label: "Include Company Logo", checked: true },
     ]
   }
 ];
 
 export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps) {
   const { user } = useUser();
+  const { toast } = useToast();
   const [sectionGroups, setSectionGroups] = useState<SectionGroup[]>(defaultSectionGroups);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
@@ -123,122 +88,38 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
     if (file) {
       setLogoFile(file);
       setLogoPreviewUrl(URL.createObjectURL(file));
-
-      // Create FormData and upload to server
-      const formData = new FormData();
-      formData.append('logo', file);
-
-      try {
-        const response = await fetch('/api/user/logo', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include'
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to upload logo');
-        }
-      } catch (error) {
-        console.error('Error uploading logo:', error);
-      }
     }
   };
 
   const generatePDF = async () => {
-    const element = document.createElement('div');
-    element.innerHTML = `
-      <div style="padding: 20px; font-family: Arial, sans-serif;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          ${getSelectedSections("Branding").includes("companyLogo") && (user?.companyLogo || logoPreviewUrl) ? `
-            <img src="${logoPreviewUrl || user?.companyLogo}" 
-                 alt="Company Logo" 
-                 style="height: 60px; object-fit: contain;" />
-          ` : ''}
-          <div style="text-align: right;">
-            <img src="/proply-logo.png" alt="Proply Logo" style="height: 30px;" />
-            <p style="margin: 0; font-size: 12px; color: #666;">Powered by Proply</p>
-          </div>
-        </div>
-
-        <h1 style="color: #1a365d; margin-bottom: 20px;">Property Investment Analysis</h1>
-
-        ${getSelectedSections("Property Details").includes("address") ? `
-          <div style="margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
-            <h2 style="color: #2d3748; margin-bottom: 15px; font-size: 1.5rem;">Property Overview</h2>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-              <div>
-                <p style="margin-bottom: 10px;"><strong>Address:</strong><br>${data.propertyDetails.address}</p>
-                ${getSelectedSections("Property Details").includes("purchasePrice") ? 
-                  `<p style="margin-bottom: 10px;"><strong>Purchase Price:</strong><br>${formatter.format(data.propertyDetails.purchasePrice)}</p>` : ''}
-              </div>
-              <div>
-                ${getSelectedSections("Property Details").includes("floorArea") ? 
-                  `<p style="margin-bottom: 10px;"><strong>Floor Area:</strong><br>${data.propertyDetails.floorArea}m²</p>` : ''}
-                ${getSelectedSections("Property Details").includes("ratePerM2") ? 
-                  `<p style="margin-bottom: 10px;"><strong>Rate per m²:</strong><br>${formatter.format(data.propertyDetails.ratePerSquareMeter)}/m²</p>` : ''}
-              </div>
-            </div>
-          </div>
-        ` : ''}
-
-        ${getSelectedSections("Revenue Performance").includes("shortTerm") ? `
-          <div style="margin-bottom: 30px; background: #f0f9ff; padding: 20px; border-radius: 8px;">
-            <h2 style="color: #2d3748; margin-bottom: 15px; font-size: 1.5rem;">Short-Term Rental Performance</h2>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-              <div>
-                <p style="margin-bottom: 10px;"><strong>Nightly Rate:</strong><br>${formatter.format(data.performance.shortTermNightlyRate)}</p>
-                <p style="margin-bottom: 10px;"><strong>Annual Revenue:</strong><br>${formatter.format(data.performance.shortTermAnnualRevenue)}</p>
-              </div>
-              <div>
-                <p style="margin-bottom: 10px;"><strong>Gross Yield:</strong><br>${data.performance.shortTermGrossYield.toFixed(1)}%</p>
-                <p style="margin-bottom: 10px;"><strong>Occupancy Rate:</strong><br>${data.performance.annualOccupancy}%</p>
-              </div>
-            </div>
-          </div>
-        ` : ''}
-
-        ${getSelectedSections("Operating Expenses").includes("monthlyExpenses") ? `
-          <div style="margin-bottom: 30px; background: #f7f9fc; padding: 20px; border-radius: 8px;">
-            <h2 style="color: #2d3748; margin-bottom: 15px; font-size: 1.5rem;">Operating Expenses</h2>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-              <div>
-                <p style="margin-bottom: 10px;"><strong>Monthly Levies:</strong><br>${formatter.format(data.expenses.monthlyLevies)}</p>
-                <p style="margin-bottom: 10px;"><strong>Monthly Rates & Taxes:</strong><br>${formatter.format(data.expenses.monthlyRatesTaxes)}</p>
-              </div>
-              <div>
-                <p style="margin-bottom: 10px;"><strong>Management Fee:</strong><br>${data.performance.managementFee}%</p>
-                <p style="margin-bottom: 10px;"><strong>Maintenance:</strong><br>${data.expenses.maintenancePercent}%</p>
-              </div>
-            </div>
-          </div>
-        ` : ''}
-
-        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center;">
-          <p style="color: #718096; font-size: 0.875rem; margin-bottom: 5px;">Generated on ${new Date().toLocaleDateString()}</p>
-          <p style="color: #718096; font-size: 0.875rem;">This report is for informational purposes only and should not be considered as financial advice.</p>
-        </footer>
-      </div>
-    `;
-
-    const opt = {
-      margin: 1,
-      filename: `${data.propertyDetails.address.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    };
-
     try {
-      await html2pdf().set(opt).from(element).save();
+      const selectedSections = sectionGroups.reduce((acc, group) => {
+        acc[group.title] = group.sections
+          .filter(section => section.checked)
+          .map(section => section.id);
+        return acc;
+      }, {} as Record<string, string[]>);
+
+      const logo = user?.companyLogo || logoPreviewUrl;
+      const report = await generatePropertyReport(data, selectedSections, logo);
+      const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
+      report.save(filename);
+
       onOpenChange(false);
+      toast({
+        title: "Success",
+        description: "PDF report has been generated successfully!",
+        duration: 3000,
+      });
     } catch (error) {
       console.error('PDF generation error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to generate PDF report. Please try again.",
+        duration: 5000,
+      });
     }
-  };
-
-  const getSelectedSections = (groupTitle: string): string[] => {
-    const group = sectionGroups.find(g => g.title === groupTitle);
-    return group ? group.sections.filter(s => s.checked).map(s => s.id) : [];
   };
 
   const toggleSection = (groupTitle: string, sectionId: string) => {
@@ -284,7 +165,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
                   ))}
                 </div>
 
-                {group.title === "Branding" && (
+                {group.title === "Company Branding" && (
                   <div className="mt-4">
                     {(user?.companyLogo || logoPreviewUrl) ? (
                       <div className="p-4 bg-muted rounded-lg">
@@ -340,7 +221,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
           ))}
           <Button onClick={generatePDF} className="w-full">
             <FileText className="w-4 h-4 mr-2" />
-            Generate PDF
+            Generate PDF Report
           </Button>
         </div>
       </DialogContent>

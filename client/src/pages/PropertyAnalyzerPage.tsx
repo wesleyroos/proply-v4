@@ -35,7 +35,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
-//import { PDFReportModal } from "@/components/PDFReportModal"; // Commented out as it's replaced
+import { PDFReportModal } from "@/components/PDFReportModal";
 import { PropertyReportGenerator } from "@/components/PropertyReportGenerator";
 
 interface YearlyMetrics {
@@ -158,14 +158,11 @@ export default function PropertyAnalyzerPage() {
         propertyPhoto: formData.propertyPhoto
       });
 
-      // Calculate deposit based on type
       const deposit = formData.depositType === 'amount'
         ? parseFloat(formData.depositAmount)
         : (parseFloat(formData.purchasePrice) * parseFloat(formData.depositPercentage)) / 100;
 
-      // Ensure all numbers are properly parsed and validated
       const requestBody = {
-        // Property Details
         address: formData.address,
         propertyUrl: formData.propertyUrl,
         purchasePrice: parseFloat(formData.purchasePrice),
@@ -173,33 +170,23 @@ export default function PropertyAnalyzerPage() {
         bedrooms: parseInt(formData.bedrooms),
         bathrooms: parseInt(formData.bathrooms),
         parkingSpaces: parseInt(formData.parkingSpaces || 0),
-
-        // Financing Details
         depositType: formData.depositType,
         deposit: deposit,
         depositPercentage: parseFloat(formData.depositPercentage),
         interestRate: parseFloat(formData.interestRate),
         loanTerm: parseInt(formData.loanTerm),
-
-        // Operating Expenses
         monthlyLevies: parseFloat(formData.monthlyLevies || 0),
         monthlyRatesTaxes: parseFloat(formData.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: parseFloat(formData.otherMonthlyExpenses || 0),
         maintenancePercent: parseFloat(formData.maintenancePercent || 0),
         managementFee: parseFloat(formData.managementFee || 0),
-
-        // Revenue Performance
         shortTermNightlyRate: parseFloat(formData.airbnbNightlyRate || 0),
         annualOccupancy: parseFloat(formData.occupancyRate || 0),
         longTermRental: parseFloat(formData.longTermRental || 0),
         leaseCycleGap: parseInt(formData.leaseCycleGap || 0),
-
-        // Escalations
         annualIncomeGrowth: parseFloat(formData.annualIncomeGrowth || 0),
         annualExpenseGrowth: parseFloat(formData.annualExpenseGrowth || 0),
         annualPropertyAppreciation: parseFloat(formData.annualPropertyAppreciation || 0),
-
-        // Miscellaneous
         ratePerSquareMeter: parseFloat(formData.cmaRatePerSqm || 0),
         propertyDescription: formData.comments || "",
       };
@@ -230,10 +217,9 @@ export default function PropertyAnalyzerPage() {
         loanTerm: requestBody.loanTerm
       });
 
-      // Add a slight delay to ensure the DOM has updated
       setTimeout(() => {
         if (resultsRef.current) {
-          const yOffset = -100; // Offset to account for any fixed headers
+          const yOffset = -100; 
           const y = resultsRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
 
           window.scrollTo({
@@ -260,51 +246,35 @@ export default function PropertyAnalyzerPage() {
       return null;
     }
 
-    // Prepare the data with proper type conversions and validation
     const data = {
-      // Required user ID from auth
       userId: user.id,
-
-      // Property Details
       title: `${analysisResult.address} Analysis`,
       address: analysisResult.address,
       propertyUrl: formData.propertyUrl || "",
       propertyDescription: formData.comments || "",
       propertyPhoto: formData.propertyPhoto || "",
-
-      // Property Details
       purchasePrice: Number(analysisResult.analysis.purchasePrice),
       floorArea: Number(formData.floorArea),
       bedrooms: Number(formData.bedrooms),
       bathrooms: Number(formData.bathrooms),
       parkingSpaces: Number(formData.parkingSpaces || 0),
-
-      // Financing details
       depositAmount: Number(analysisResult.deposit),
       depositPercentage: Number(analysisResult.depositPercentage),
       interestRate: Number(analysisResult.interestRate),
       loanTerm: Number(analysisResult.loanTerm),
       monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment),
-
-      // Operating expenses
       monthlyLevies: Number(formData.monthlyLevies || 0),
       monthlyRatesTaxes: Number(formData.monthlyRatesTaxes || 0),
       otherMonthlyExpenses: Number(formData.otherMonthlyExpenses || 0),
       maintenancePercent: Number(formData.maintenancePercent || 0),
       managementFee: Number(formData.managementFee || 0),
-
-      // Revenue performance
       shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate || 0),
       annualOccupancy: Number(analysisResult.annualOccupancy || 0),
       shortTermAnnualRevenue: Number(analysisResult.analysis.shortTermAnnualRevenue || 0),
       longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue || 0),
       shortTermGrossYield: Number(analysisResult.shortTermGrossYield || 0),
       longTermGrossYield: Number(analysisResult.longTermGrossYield || 0),
-
-      // Rate comparison
       ratePerSquareMeter: Number(formData.cmaRatePerSqm || 0),
-
-      // Analysis results - ensure these are objects, not null
       revenueProjections: analysisResult.analysis.revenueProjections || {},
       operatingExpenses: analysisResult.analysis.operatingExpenses || {},
       netOperatingIncome: analysisResult.netOperatingIncome || {},
@@ -341,7 +311,6 @@ export default function PropertyAnalyzerPage() {
 
         {analysisResult && (
           <div ref={resultsRef}>
-            {/* Analysis Results Header */}
             <div className="mb-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -368,8 +337,6 @@ export default function PropertyAnalyzerPage() {
                           return;
                         }
 
-                        console.log('Data being saved:', dataToSave);
-
                         const response = await fetch('/api/property-analyzer/save', {
                           method: 'POST',
                           headers: {
@@ -382,14 +349,7 @@ export default function PropertyAnalyzerPage() {
                         const responseData = await response.json();
 
                         if (!response.ok) {
-                          console.error('Save response error:', responseData);
-                          let errorMessage = 'Failed to save analysis. ';
-                          if (responseData.details && Array.isArray(responseData.details)) {
-                            errorMessage += responseData.details.join('\n');
-                          } else if (responseData.error) {
-                            errorMessage += responseData.error;
-                          }
-                          throw new Error(errorMessage);
+                          throw new Error(responseData.error || 'Failed to save analysis');
                         }
 
                         setAnalysisId(responseData.id);
@@ -432,8 +392,7 @@ export default function PropertyAnalyzerPage() {
                               return;
                             }
 
-                            // Prepare the data for the PDF report
-                            const reportData = {
+                            setPDFData({
                               propertyDetails: {
                                 address: analysisResult.address,
                                 bedrooms: formData?.bedrooms || "N/A",
@@ -476,10 +435,8 @@ export default function PropertyAnalyzerPage() {
                               operatingExpenses: analysisResult.analysis.operatingExpenses,
                               netOperatingIncome: analysisResult.netOperatingIncome,
                               revenueProjections: analysisResult.analysis.revenueProjections,
-                            };
-
+                            });
                             setShowPDFReport(true);
-                            setPDFData(reportData);
                           }}
                           disabled={!analysisResult || !analysisId}
                           className="bg-blue-600 hover:bg-blue-700"
@@ -500,9 +457,7 @@ export default function PropertyAnalyzerPage() {
             </div>
 
 
-            {/* Deal Summary Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {/* Location and Photo Column */}
               <div className="space-y-4">
                 <Card>
                   <CardHeader>
@@ -549,7 +504,6 @@ export default function PropertyAnalyzerPage() {
                 </Card>
               </div>
 
-              {/* Deal Structure */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -568,7 +522,6 @@ export default function PropertyAnalyzerPage() {
                     </p>
                   </div>
 
-                  {/* Purchase Price and Deposit */}
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
@@ -593,7 +546,6 @@ export default function PropertyAnalyzerPage() {
                     </div>
                   </div>
 
-                  {/* Interest Rate and Term */}
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
@@ -615,7 +567,6 @@ export default function PropertyAnalyzerPage() {
                     </div>
                   </div>
 
-                  {/* Monthly Bond Payment and Bond Registration */}
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
@@ -637,7 +588,6 @@ export default function PropertyAnalyzerPage() {
                     </div>
                   </div>
 
-                  {/* Transfer Costs */}
                   <div>
                     <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
                       Transfer Costs
@@ -680,7 +630,6 @@ export default function PropertyAnalyzerPage() {
                     </div>
                   </div>
 
-                  {/* Total Capital Required */}
                   <div className="pt-4 mt-4 border-t border-gray-200">
                     <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
                       Total Capital Required
@@ -696,9 +645,7 @@ export default function PropertyAnalyzerPage() {
                 </CardContent>
               </Card>
 
-              {/* Middle Column with Revenue and Size/Rate */}
               <div className="space-y-4">
-                {/* Revenue Performance */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -808,18 +755,15 @@ export default function PropertyAnalyzerPage() {
                               <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
                             </span>
                           </p>
-
-                          {/* No fee adjustment section needed for long-term rental */}
                         </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Size and Rate */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-xl fontbold text-slate-800 flex items-center gap-2">
+                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
                       <BarChart3 className="h-5 w-5 text-cyan-500" />
                       Size and Rate/m²
                     </CardTitle>
@@ -914,9 +858,7 @@ export default function PropertyAnalyzerPage() {
               </div>
             </div>
 
-            {/* Detailed Analysis Section */}
             <div className="space-y-6">
-              {/* Rental Performance */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -933,7 +875,6 @@ export default function PropertyAnalyzerPage() {
                 </CardContent>
               </Card>
 
-              {/* Cashflow Metrics */}
               <CashflowMetrics
                 shortTermNightly={analysisResult.shortTermNightlyRate || 0}
                 longTermMonthly={analysisResult.analysis.longTermAnnualRevenue ? analysisResult.analysis.longTermAnnualRevenue / 12 : 0}
@@ -946,7 +887,6 @@ export default function PropertyAnalyzerPage() {
                 netOperatingIncome={analysisResult.analysis.netOperatingIncome}
               />
 
-              {/* Investment Metrics */}
               <Card className="mt-6">
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -1003,7 +943,6 @@ export default function PropertyAnalyzerPage() {
                 </CardContent>
               </Card>
 
-              {/* Cashflow Chart */}
               <Card className="mt-6">
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -1018,7 +957,6 @@ export default function PropertyAnalyzerPage() {
                 </CardContent>
               </Card>
 
-              {/* Asset Growth Metrics */}
               <AssetGrowthMetrics
                 purchasePrice={analysisResult.analysis.purchasePrice}
                 deposit={analysisResult.deposit || 0}
@@ -1031,6 +969,11 @@ export default function PropertyAnalyzerPage() {
             </div>
 
             <PropertyReportGenerator
+              open={showPDFReport}
+              onOpenChange={setShowPDFReport}
+              data={pdfData}
+            />
+            <PDFReportModal
               open={showPDFReport}
               onOpenChange={setShowPDFReport}
               data={pdfData}
