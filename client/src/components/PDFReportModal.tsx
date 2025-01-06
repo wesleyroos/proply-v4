@@ -45,17 +45,68 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
       headStyles: { fillColor: [0, 121, 255] }
     });
 
-    // Monthly Revenue Table
+    // Rental Performance Section
     doc.setFontSize(16);
-    doc.text("Monthly Revenue Analysis", 20, doc.lastAutoTable.finalY + 20);
+    doc.text("Rental Performance Analysis", 20, doc.lastAutoTable.finalY + 20);
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const revenueData = Array(12).fill(0).map((_, i) => ({
-      low: calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee),
-      medium: calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee),
-      high: calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee),
-      longTerm: data.longTermMonthly
-    }));
+    
+    // Nightly Rates Table
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 25,
+      head: [["Rate Type", ...months, "Annual", "Monthly Avg"]],
+      body: [
+        ["Nightly Rate", ...months.map((_, i) => formatter.format(getSeasonalNightlyRate(data.shortTermNightly, i))), "-", "-"],
+        ["Fee-Adjusted Rate", ...months.map((_, i) => formatter.format(getFeeAdjustedRate(getSeasonalNightlyRate(data.shortTermNightly, i), data.managementFee > 0))), "-", "-"],
+        ["Occupancy Low", ...OCCUPANCY_RATES.low.map(rate => `${rate}%`), "-", `${OCCUPANCY_RATES.low.reduce((a, b) => a + b, 0) / 12}%`],
+        ["Occupancy Medium", ...OCCUPANCY_RATES.medium.map(rate => `${rate}%`), "-", `${OCCUPANCY_RATES.medium.reduce((a, b) => a + b, 0) / 12}%`],
+        ["Occupancy High", ...OCCUPANCY_RATES.high.map(rate => `${rate}%`), "-", `${OCCUPANCY_RATES.high.reduce((a, b) => a + b, 0) / 12}%`],
+      ],
+      theme: 'striped',
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [0, 121, 255] }
+    });
+
+    // Revenue Scenarios Table
+    const scenarios = ['low', 'medium', 'high'] as const;
+    const revenueData = scenarios.map(scenario => {
+      const monthlyRevenues = months.map((_, i) => 
+        calculateMonthlyRevenue(scenario, i, data.shortTermNightly, data.managementFee > 0, data.managementFee)
+      );
+      const total = monthlyRevenues.reduce((sum, rev) => sum + rev, 0);
+      return {
+        scenario: scenario.charAt(0).toUpperCase() + scenario.slice(1),
+        revenues: monthlyRevenues,
+        total,
+        average: total / 12
+      };
+    });
+
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 10,
+      head: [["Revenue Scenario", ...months, "Annual", "Monthly Avg"]],
+      body: [
+        ...revenueData.map(data => [
+          `Revenue ${data.scenario}`,
+          ...data.revenues.map(rev => formatter.format(rev)),
+          formatter.format(data.total),
+          formatter.format(data.average)
+        ]),
+        [
+          "Long Term Rental",
+          ...Array(12).fill(formatter.format(data.longTermMonthly)),
+          formatter.format(data.longTermMonthly * 12),
+          formatter.format(data.longTermMonthly)
+        ]
+      ],
+      theme: 'striped',
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [0, 121, 255] }
+    });
+
+    // Break-even Analysis
+    doc.setFontSize(16);
+    doc.text("Break-even Analysis", 20, doc.lastAutoTable.finalY + 20);
 
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 25,
