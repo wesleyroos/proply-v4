@@ -1,9 +1,14 @@
-
-import { useRef, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { jsPDF } from "jspdf";
-import autoTable from 'jspdf-autotable';
-import { formatter } from "@/utils/formatting";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { FileText, Upload } from "lucide-react";
+import { useUser } from "@/hooks/use-user";
+import { generatePropertyReport } from "@/utils/pdfGenerator";
+import { extractRentalPerformanceData } from "@/utils/chartCapture";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface PDFReportModalProps {
   open: boolean;
@@ -11,164 +16,291 @@ interface PDFReportModalProps {
   data: any;
 }
 
-const OCCUPANCY_RATES = {
-  low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 65],
-  medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 80],
-  high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
-};
-
-const SEASONALITY_FACTORS = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
-
-function getSeasonalMultiplier(month: number): number {
-  return SEASONALITY_FACTORS[month];
+interface ReportSection {
+  id: string;
+  label: string;
+  checked: boolean;
 }
 
-function getSeasonalNightlyRate(baseRate: number, month: number): number {
-  return baseRate * getSeasonalMultiplier(month);
+interface SectionGroup {
+  title: string;
+  sections: ReportSection[];
 }
 
-function getFeeAdjustedRate(rate: number, hasManagementFee: boolean): number {
-  return hasManagementFee ? rate * 0.85 : rate * 0.97;
-}
-
-function calculateMonthlyRevenue(
-  scenario: 'low' | 'medium' | 'high',
-  month: number,
-  nightly: number,
-  hasManagementFee: boolean,
-  managementFeePercent: number
-): number {
-  const occupancyRate = OCCUPANCY_RATES[scenario][month] / 100;
-  const daysInMonth = new Date(2024, month + 1, 0).getDate();
-  const seasonalRate = getSeasonalNightlyRate(nightly, month);
-  const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, hasManagementFee);
-  let revenue = feeAdjustedRate * daysInMonth * occupancyRate;
-  if (hasManagementFee) {
-    revenue *= (1 - managementFeePercent);
+const defaultSectionGroups: SectionGroup[] = [
+  {
+    title: "Property Details",
+    sections: [
+      { id: "address", label: "Address", checked: true },
+      { id: "purchasePrice", label: "Purchase Price", checked: true },
+      { id: "floorArea", label: "Floor Area", checked: true },
+      { id: "ratePerM2", label: "Rate per m²", checked: true },
+      { id: "areaAverageRate", label: "Area Average Rate/m²", checked: true },
+      { id: "rateDifference", label: "Rate/m² Difference", checked: true },
+      { id: "bondRegistrationCosts", label: "Bond Registration Costs", checked: true },
+      { id: "transferCosts", label: "Transfer Costs", checked: true },
+      { id: "bedrooms", label: "Bedrooms", checked: true },
+      { id: "bathrooms", label: "Bathrooms", checked: true },
+      { id: "parkingSpaces", label: "Parking Spaces", checked: true },
+      { id: "description", label: "Property Description", checked: true },
+    ]
+  },
+  {
+    title: "Financing Details",
+    sections: [
+      { id: "deposit", label: "Deposit & Bond Details", checked: true },
+      { id: "interestRate", label: "Interest Rate", checked: true },
+      { id: "loanTerm", label: "Loan Term", checked: true },
+      { id: "monthlyBond", label: "Monthly Bond Payment", checked: true },
+    ]
+  },
+  {
+    title: "Revenue Performance",
+    sections: [
+      { id: "shortTerm", label: "Short-Term Rental Performance", checked: true },
+      { id: "longTerm", label: "Long-Term Rental Performance", checked: true },
+      { id: "occupancyRate", label: "Occupancy Rate", checked: true },
+    ]
+  },
+  {
+    title: "Charts and Visualizations",
+    sections: [
+      { id: "revenueChart", label: "Revenue Comparison Chart", checked: true },
+      { id: "occupancyChart", label: "Occupancy Analysis Chart", checked: true },
+      { id: "monthlyRevenueTable", label: "Monthly Revenue Breakdown", checked: true },
+      { id: "performanceTable", label: "Performance Metrics Table", checked: true },
+    ]
+  },
+  {
+    title: "Investment Metrics",
+    sections: [
+      { id: "yields", label: "Yield Analysis", checked: true },
+      { id: "returns", label: "Return Metrics", checked: true },
+      { id: "cashflow", label: "Cashflow Analysis", checked: true },
+    ]
+  },
+  {
+    title: "Operating Expenses",
+    sections: [
+      { id: "monthlyExpenses", label: "Monthly Expenses", checked: true },
+      { id: "maintenance", label: "Maintenance Costs", checked: true },
+      { id: "managementFees", label: "Management Fees", checked: true },
+    ]
+  },
+  {
+    title: "Company Branding",
+    sections: [
+      { id: "companyLogo", label: "Include Company Logo", checked: true },
+    ]
   }
-  return revenue;
-}
+];
 
 export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps) {
-  const reportRef = useRef<HTMLDivElement>(null);
+  const { user } = useUser();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [sectionGroups, setSectionGroups] = useState<SectionGroup[]>(defaultSectionGroups);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
 
-  const generateReport = () => {
-    const doc = new jsPDF();
-    let yPos = 20;
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Data = reader.result as string;
+        setLogoPreviewUrl(base64Data);
 
-    // Header with logo
-    doc.addImage("/proply-logo.png", "PNG", 160, 10, 40, 20);
-    doc.setFontSize(24);
-    doc.text("Property Analysis Report", 20, 30);
+        try {
+          const response = await fetch('/api/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              firstName: user?.firstName || '',
+              lastName: user?.lastName || '',
+              companyLogo: base64Data
+            }),
+            credentials: 'include'
+          });
 
-    // Property Details
-    doc.setFontSize(16);
-    doc.setTextColor(0, 121, 255);
-    doc.text("Property Details", 20, 50);
+          if (!response.ok) {
+            throw new Error(await response.text());
+          }
 
-    autoTable(doc, {
-      startY: 55,
-      head: [["Detail", "Value"]],
-      body: [
-        ["Address", data.address],
-        ["Bedrooms", data.bedrooms || 'N/A'],
-        ["Bathrooms", data.bathrooms || 'N/A'],
-        ["Short-Term Nightly Rate", formatter.format(data.shortTermNightly)],
-        ["Annual Occupancy", `${data.annualOccupancy}%`],
-        ["Management Fee", `${(data.managementFee * 100).toFixed(1)}%`]
-      ],
-      theme: 'striped',
-      styles: { fontSize: 12 },
-      headStyles: { fillColor: [0, 121, 255] }
-    });
+          const updatedUser = await response.json();
+          queryClient.setQueryData(['user'], updatedUser);
 
-    // Rental Performance Section
-    doc.setFontSize(16);
-    doc.text("Rental Performance Analysis", 20, doc.lastAutoTable.finalY + 20);
-
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    // Prepare revenue data
-    const revenueData = ['low', 'medium', 'high'].map(scenario => {
-      const monthlyRevenues = months.map((_, i) => 
-        calculateMonthlyRevenue(
-          scenario as 'low' | 'medium' | 'high',
-          i,
-          data.shortTermNightly,
-          data.managementFee > 0,
-          data.managementFee
-        )
-      );
-      const total = monthlyRevenues.reduce((sum, rev) => sum + rev, 0);
-      return {
-        scenario,
-        revenues: monthlyRevenues,
-        total,
-        average: total / 12
+          toast({
+            title: "Success",
+            description: "Company logo updated successfully",
+            duration: 3000,
+          });
+        } catch (error) {
+          console.error('Error updating company logo:', error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error instanceof Error ? error.message : "Failed to update company logo",
+            duration: 5000,
+          });
+        }
       };
-    });
-
-    // Revenue table
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 25,
-      head: [["Revenue Scenario", ...months, "Annual", "Monthly Avg"]],
-      body: [
-        ...revenueData.map(data => [
-          `Revenue ${data.scenario.charAt(0).toUpperCase() + data.scenario.slice(1)}`,
-          ...data.revenues.map(rev => formatter.format(rev)),
-          formatter.format(data.total),
-          formatter.format(data.average)
-        ]),
-        [
-          "Long Term Rental",
-          ...Array(12).fill(formatter.format(data.longTermMonthly)),
-          formatter.format(data.longTermMonthly * 12),
-          formatter.format(data.longTermMonthly)
-        ]
-      ],
-      theme: 'striped',
-      styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: [0, 121, 255] }
-    });
-
-    // Occupancy Analysis
-    doc.setFontSize(16);
-    doc.text("Occupancy Analysis", 20, doc.lastAutoTable.finalY + 20);
-
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 25,
-      head: [["Metric", "Value"]],
-      body: [
-        ["Projected Occupancy", `${data.annualOccupancy}%`],
-        ["Break-even Occupancy", `${data.breakEvenOccupancy}%`],
-        ["Revenue Comparison", data.annualOccupancy > data.breakEvenOccupancy 
-          ? `At ${data.annualOccupancy}% projected occupancy, short-term rental is more profitable.`
-          : `At ${data.annualOccupancy}% projected occupancy, long-term rental may be more suitable.`]
-      ],
-      theme: 'striped',
-      styles: { fontSize: 12 },
-      headStyles: { fillColor: [0, 121, 255] }
-    });
-
-    // Footer
-    const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(10);
-      doc.setTextColor(150);
-      doc.text(`Generated by Proply on ${new Date().toLocaleDateString()}`, 20, 285);
-      doc.text(`Page ${i} of ${pageCount}`, 180, 285);
+      reader.readAsDataURL(file);
     }
-
-    doc.save(`Property-Analysis-${data.address ? data.address.split(",")[0] : 'Property'}.pdf`);
   };
 
-  useEffect(() => {
-    if (open && data) {
-      generateReport();
-      onOpenChange(false);
-    }
-  }, [open, data]);
+  const generatePDF = async () => {
+    if (generating) return;
 
-  return null;
+    try {
+      setGenerating(true);
+      const selectedSections = sectionGroups.reduce((acc, group) => {
+        acc[group.title] = group.sections
+          .filter(section => section.checked)
+          .map(section => section.id);
+        return acc;
+      }, {} as Record<string, string[]>);
+
+      const rentalPerformanceData = extractRentalPerformanceData(data);
+
+      const logo = logoPreviewUrl || user?.companyLogo;
+
+      const reportData = {
+        ...data,
+        rentalPerformanceData
+      };
+
+      const doc = await generatePropertyReport(reportData, selectedSections, logo);
+      const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
+      doc.save(filename);
+
+      onOpenChange(false);
+      toast({
+        title: "Success",
+        description: "PDF report has been generated successfully!",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate PDF report. Please try again.",
+        duration: 5000,
+      });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const toggleSection = (groupTitle: string, sectionId: string) => {
+    setSectionGroups(sectionGroups.map(group => {
+      if (group.title === groupTitle) {
+        return {
+          ...group,
+          sections: group.sections.map(section =>
+            section.id === sectionId ? { ...section, checked: !section.checked } : section
+          )
+        };
+      }
+      return group;
+    }));
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[700px]">
+        <DialogHeader>
+          <DialogTitle>Generate PDF Report</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
+          {sectionGroups.map((group) => (
+            <Card key={group.title}>
+              <CardContent className="pt-6">
+                <h3 className="text-lg font-semibold mb-4">{group.title}</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {group.sections.map((section) => (
+                    <div key={section.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={section.id}
+                        checked={section.checked}
+                        onCheckedChange={() => toggleSection(group.title, section.id)}
+                      />
+                      <label
+                        htmlFor={section.id}
+                        className="text-sm cursor-pointer"
+                      >
+                        {section.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+                {group.title === "Company Branding" && (
+                  <div className="mt-4">
+                    {(user?.companyLogo || logoPreviewUrl) ? (
+                      <div className="p-4 bg-muted rounded-lg">
+                        <div className="mb-4">
+                          <img
+                            src={logoPreviewUrl || user?.companyLogo}
+                            alt="Company Logo"
+                            className="h-12 object-contain"
+                          />
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="hidden"
+                          id="logo-update"
+                        />
+                        <label
+                          htmlFor="logo-update"
+                          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90 w-fit"
+                        >
+                          <Upload className="w-4 h-4" />
+                          Update Logo
+                        </label>
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-muted rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-2">
+                          No company logo found. Upload your logo to include it in the report.
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            className="hidden"
+                            id="logo-upload"
+                          />
+                          <label
+                            htmlFor="logo-upload"
+                            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90"
+                          >
+                            <Upload className="w-4 h-4" />
+                            Upload Logo
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+          <Button
+            onClick={generatePDF}
+            className="w-full"
+            disabled={generating}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            {generating ? 'Generating PDF...' : 'Generate PDF Report'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
