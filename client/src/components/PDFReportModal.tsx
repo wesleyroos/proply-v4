@@ -1,5 +1,4 @@
-
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
@@ -14,7 +13,7 @@ interface PDFReportModalProps {
 export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps) {
   const reportRef = useRef<HTMLDivElement>(null);
 
-  const generatePDF = () => {
+  const generateReport = () => {
     const doc = new jsPDF();
     let yPos = 20;
 
@@ -155,26 +154,14 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
     doc.save(`${data.title.replace(/[^a-zA-Z0-9]/g, '-')}-analysis.pdf`);
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Generate PDF Report</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Generate a detailed PDF report containing your property analysis results.
-          </p>
-          <button
-            onClick={generatePDF}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-          >
-            Download Report
-          </button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+  useEffect(() => {
+    if (open && data) {
+      generateReport();
+      onOpenChange(false);
+    }
+  }, [open, data]);
+
+  return null;
 }
 
 // Reuse the same calculation functions from ComparisonChart
