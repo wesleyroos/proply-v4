@@ -38,14 +38,31 @@ function drawRentalPerformanceGraph(
     ...monthlyData.low,
     ...monthlyData.medium,
     ...monthlyData.high
-  ];
+  ].filter(val => typeof val === 'number' && !isNaN(val));
+
+  if (values.length === 0) {
+    console.warn('No valid values for graph, skipping');
+    return;
+  }
+
   const maxValue = Math.max(...values);
   const minValue = Math.min(...values);
   const valueRange = maxValue - minValue;
   const padding = valueRange * 0.1;
 
-  const yScale = (height - 20) / (valueRange + 2 * padding);
-  const xStep = (width - 20) / 11;
+  // Calculate graph dimensions
+  const graphTop = y + GRAPH_PADDING;
+  const graphBottom = y + height - GRAPH_PADDING;
+  const graphLeft = x + GRAPH_PADDING * 2;
+  const graphRight = x + width - GRAPH_PADDING * 2;
+  const graphWidth = graphRight - graphLeft;
+  const graphHeight = graphBottom - graphTop;
+
+  // Scale function to map values to graph coordinates
+  const scaleY = (value: number) => {
+    const scaled = ((value - minValue + padding) / (valueRange + 2 * padding));
+    return graphBottom - (scaled * graphHeight);
+  };
 
   // Draw grid and axes
   doc.setDrawColor(200, 200, 200);
@@ -54,75 +71,77 @@ function drawRentalPerformanceGraph(
   // Draw horizontal grid lines
   const gridLines = 5;
   for (let i = 0; i <= gridLines; i++) {
-    const yPos = y + height - 10 - (i * (height - 20) / gridLines);
-    doc.line(x + 10, yPos, x + width - 10, yPos);
+    const yPos = graphTop + (i * graphHeight / gridLines);
+    if (isNaN(yPos)) continue;
+
+    doc.line(graphLeft, yPos, graphRight, yPos);
 
     // Add value labels
     const value = minValue - padding + (i * (valueRange + 2 * padding) / gridLines);
     doc.setFontSize(6);
-    doc.text(formatCurrency(value), x - 5, yPos);
+    doc.text(formatCurrency(value), graphLeft - 15, yPos);
   }
 
   // Draw vertical grid lines and month labels
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  months.forEach((month, i) => {
-    const xPos = x + 10 + i * xStep;
-    doc.line(xPos, y + 10, xPos, y + height - 10);
+  const xStep = graphWidth / 11;
+  MONTHS.forEach((month, i) => {
+    const xPos = graphLeft + (i * xStep);
+    if (isNaN(xPos)) return;
+
+    doc.line(xPos, graphTop, xPos, graphBottom);
     doc.setFontSize(6);
-    doc.text(month, xPos - 3, y + height + 5);
+    doc.text(month, xPos - 3, graphBottom + 10);
   });
 
-  // Draw the lines
-  const drawLine = (data: number[], color: string, isDashed = false) => {
+  // Function to draw a line series
+  const drawLineSeries = (data: number[], color: string, isDashed = false) => {
+    if (!Array.isArray(data) || data.length === 0) return;
+
     doc.setDrawColor(color);
     doc.setLineWidth(0.3);
     doc.setLineDashPattern(isDashed ? [2] : [], 0);
 
-    for (let i = 0; i < data.length - 1; i++) {
-      const x1 = x + 10 + i * xStep;
-      const x2 = x + 10 + (i + 1) * xStep;
-      const y1 = y + height - 10 - ((data[i] - minValue + padding) * yScale);
-      const y2 = y + height - 10 - ((data[i + 1] - minValue + padding) * yScale);
-      doc.line(x1, y1, x2, y2);
+    let prevX = graphLeft;
+    let prevY = scaleY(data[0]);
+
+    for (let i = 1; i < data.length; i++) {
+      const x = graphLeft + (i * xStep);
+      const y = scaleY(data[i]);
+
+      if (!isNaN(prevX) && !isNaN(prevY) && !isNaN(x) && !isNaN(y)) {
+        doc.line(prevX, prevY, x, y);
+      }
+
+      prevX = x;
+      prevY = y;
     }
   };
 
-  // Draw lines
-  drawLine(Array(12).fill(monthlyData.longTerm), '#FFE66D', true);
-  drawLine(monthlyData.low, '#FF6B6B');
-  drawLine(monthlyData.medium, '#4ECDC4');
-  drawLine(monthlyData.high, '#45B7D1');
+  // Draw data lines
+  const longTermData = Array(12).fill(monthlyData.longTerm);
+  drawLineSeries(longTermData, '#FFE66D', true);
+  drawLineSeries(monthlyData.low, '#FF6B6B');
+  drawLineSeries(monthlyData.medium, '#4ECDC4');
+  drawLineSeries(monthlyData.high, '#45B7D1');
 
   // Add legend
-  const legendY = y + height + 15;
+  const legendY = graphBottom + 20;
   const legendSpacing = 35;
   doc.setFontSize(8);
 
-  // Long-term
-  doc.setLineDashPattern([2], 0);
-  doc.setDrawColor('#FFE66D');
-  doc.line(x + 5, legendY, x + 15, legendY);
-  doc.setTextColor('#B8860B');
-  doc.text('Long Term', x + 20, legendY);
+  // Draw legend items
+  const drawLegendItem = (x: number, label: string, color: string, isDashed = false) => {
+    doc.setLineDashPattern(isDashed ? [2] : [], 0);
+    doc.setDrawColor(color);
+    doc.line(x, legendY, x + 10, legendY);
+    doc.setTextColor(color);
+    doc.text(label, x + 15, legendY);
+  };
 
-  // Low
-  doc.setLineDashPattern([], 0);
-  doc.setDrawColor('#FF6B6B');
-  doc.line(x + 5 + legendSpacing, legendY, x + 15 + legendSpacing, legendY);
-  doc.setTextColor('#FF6B6B');
-  doc.text('Low', x + 20 + legendSpacing, legendY);
-
-  // Medium
-  doc.setDrawColor('#4ECDC4');
-  doc.line(x + 5 + legendSpacing * 2, legendY, x + 15 + legendSpacing * 2, legendY);
-  doc.setTextColor('#4ECDC4');
-  doc.text('Medium', x + 20 + legendSpacing * 2, legendY);
-
-  // High
-  doc.setDrawColor('#45B7D1');
-  doc.line(x + 5 + legendSpacing * 3, legendY, x + 15 + legendSpacing * 3, legendY);
-  doc.setTextColor('#45B7D1');
-  doc.text('High', x + 20 + legendSpacing * 3, legendY);
+  drawLegendItem(graphLeft, 'Long Term', '#FFE66D', true);
+  drawLegendItem(graphLeft + legendSpacing, 'Low', '#FF6B6B');
+  drawLegendItem(graphLeft + legendSpacing * 2, 'Medium', '#4ECDC4');
+  drawLegendItem(graphLeft + legendSpacing * 3, 'High', '#45B7D1');
 
   // Reset styles
   doc.setLineDashPattern([], 0);
