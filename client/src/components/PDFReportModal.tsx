@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -7,6 +7,7 @@ import { FileText, Upload } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import { generatePropertyReport } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
+import DashboardMap from "./DashboardMap";
 
 // Matches all available data from PropertyAnalyzerPage
 const defaultSectionGroups = [
@@ -77,6 +78,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const mapRef = useRef<HTMLDivElement>(null);
 
   // Enhanced logging when modal opens
   useEffect(() => {
@@ -210,7 +212,6 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
     try {
       setGenerating(true);
 
-      // Get selected sections
       const selectedSections = sectionGroups.reduce((acc, group) => {
         acc[group.title] = group.sections
           .filter(section => section.checked)
@@ -218,30 +219,42 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         return acc;
       }, {} as Record<string, string[]>);
 
-      // Enhanced logging of final data being sent
-      console.group('4. PDF Generation Data Flow');
+      // Create a temporary map element for the PDF
+      const tempMapContainer = document.createElement('div');
+      tempMapContainer.style.width = '800px';
+      tempMapContainer.style.height = '400px';
+      document.body.appendChild(tempMapContainer);
 
-      console.log('Selected Section Configuration:', selectedSections);
+      // Render the map
+      const map = <DashboardMap properties={[{ 
+        id: 1, 
+        address: data.propertyDetails.address,
+        type: 'analyzer'
+      }]} />;
+      ReactDOM.render(map, tempMapContainer);
+
+      // Wait for the map to load and capture it
+      const mapElement = await new Promise<HTMLElement>((resolve) => {
+        const interval = setInterval(() => {
+          if (tempMapContainer.firstChild) {
+            clearInterval(interval);
+            resolve(tempMapContainer.firstChild as HTMLElement);
+          }
+        }, 100); // Check every 100ms
+      });
+
 
       const pdfData = {
-        propertyDetails: data.propertyDetails,
-        financialMetrics: data.financialMetrics,
-        expenses: data.expenses,
-        performance: data.performance,
-        ...(selectedSections["Investment Metrics"]?.length > 0 && { 
-          investmentMetrics: data.investmentMetrics 
-        }),
-        ...(selectedSections["Cashflow Analysis"]?.length > 0 && { 
-          netOperatingIncome: data.netOperatingIncome 
-        })
+        ...data,
+        mapElement // Pass the map element to the PDF generator
       };
 
-      console.log('Final Data Structure Being Sent to PDF Generator:', pdfData);
-      console.groupEnd();
-
-      const doc = await generatePropertyReport(data, selectedSections, logoPreviewUrl || user?.companyLogo);
+      const doc = await generatePropertyReport(pdfData, selectedSections, logoPreviewUrl || user?.companyLogo);
       const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
       doc.save(filename);
+
+      // Clean up
+      document.body.removeChild(tempMapContainer);
 
       onOpenChange(false);
       toast({
@@ -420,5 +433,6 @@ interface PDFReportModalProps {
       year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
       year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
     };
+    mapElement?: HTMLElement; // Added mapElement type
   };
 }

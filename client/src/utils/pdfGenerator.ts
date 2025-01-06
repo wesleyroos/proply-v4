@@ -1,9 +1,10 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import html2canvas from 'html2canvas';
 import { formatter } from '@/utils/formatting';
 import { SEASONALITY_FACTORS, OCCUPANCY_RATES, getSeasonalNightlyRate, getFeeAdjustedRate, calculateMonthlyRevenue } from '@/utils/rentalPerformance';
 
-export function generatePropertyReport(
+export async function generatePropertyReport(
   data: {
     propertyDetails: {
       address: string;
@@ -39,41 +40,31 @@ export function generatePropertyReport(
       shortTermGrossYield: number;
       longTermGrossYield: number;
     };
-    netOperatingIncome?: {
-      year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-      year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-      year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-      year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-      year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-      year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-      year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    };
-    investmentMetrics?: {
-      year1: {
-        grossYield: number;
-        netYield: number;
-        returnOnEquity: number;
-        annualReturn: number;
-        capRate: number;
-        cashOnCashReturn: number;
-        roiWithoutAppreciation: number;
-        roiWithAppreciation: number;
-        irr: number;
-        netWorthChange: number;
-      };
-    };
+    mapElement?: HTMLElement;
+    investmentMetrics?: any;
+    netOperatingIncome?: any;
   },
   selectedSections: Record<string, string[]>,
   companyLogo?: string | null
-): jsPDF {
+): Promise<jsPDF> {
   const doc = new jsPDF();
   let yPos = 20;
 
   // Add company logo (user's logo) on the left
   if (companyLogo && selectedSections["Company Branding"]?.includes("companyLogo")) {
     try {
-      // Maintain aspect ratio by setting only width
-      doc.addImage(companyLogo, "PNG", 20, 10, 40, 20);
+      // Set fixed width and calculate height to maintain aspect ratio
+      const logoWidth = 40;
+      await new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const aspectRatio = img.naturalHeight / img.naturalWidth;
+          const logoHeight = logoWidth * aspectRatio;
+          doc.addImage(companyLogo, "PNG", 20, 10, logoWidth, logoHeight);
+          resolve();
+        };
+        img.src = companyLogo;
+      });
     } catch (error) {
       console.error('Error loading company logo:', error);
     }
@@ -81,16 +72,38 @@ export function generatePropertyReport(
 
   // Add Proply logo and text on the right
   try {
-    doc.addImage("/proply-logo-1.png", "PNG", 140, 10, 40, 20);
-    doc.setFontSize(8);
-    doc.setTextColor(100);
-    doc.text("Powered by Proply", 140, 35);
+    // Set fixed width and calculate height for Proply logo
+    const proplyLogoWidth = 40;
+    await new Promise<void>((resolve) => {
+      const proplyLogo = new Image();
+      proplyLogo.onload = () => {
+        const proplyAspectRatio = proplyLogo.naturalHeight / proplyLogo.naturalWidth;
+        const proplyLogoHeight = proplyLogoWidth * proplyAspectRatio;
+        doc.addImage("/proply-logo-1.png", "PNG", 140, 10, proplyLogoWidth, proplyLogoHeight);
+        doc.setFontSize(8);
+        doc.setTextColor(100);
+        doc.text("Powered by Proply", 140, 35);
+        resolve();
+      };
+      proplyLogo.src = "/proply-logo-1.png";
+    });
   } catch (error) {
     console.error('Error loading Proply logo:', error);
-    // Continue generating PDF without the logo
   }
 
   yPos = 50;
+
+  // Add map if available
+  if (data.mapElement) {
+    try {
+      const canvas = await html2canvas(data.mapElement);
+      const mapImage = canvas.toDataURL('image/png');
+      doc.addImage(mapImage, 'PNG', 20, yPos, 170, 80);
+      yPos += 90; // Add space after map
+    } catch (error) {
+      console.error('Error adding map to PDF:', error);
+    }
+  }
 
   if (selectedSections["Property Details"]) {
     doc.setFontSize(14);
