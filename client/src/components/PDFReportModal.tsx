@@ -8,16 +8,58 @@ import { useUser } from "@/hooks/use-user";
 import { generatePropertyReport } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
 
-// Matches the exact sections we show in PropertyAnalyzerPage.tsx
+// Matches all available data from PropertyAnalyzerPage
 const defaultSectionGroups = [
   {
-    title: "Analysis Results",
+    title: "Property Details",
     sections: [
-      { id: "dealStructure", label: "Deal Structure", checked: true },
-      { id: "rentalPerformance", label: "Rental Performance", checked: true },
-      { id: "cashflowMetrics", label: "Cashflow Metrics", checked: true },
-      { id: "investmentMetrics", label: "Investment Metrics", checked: true },
-      { id: "assetGrowth", label: "Asset Growth Metrics", checked: true }
+      { id: "propertyAddress", label: "Property Address", checked: true },
+      { id: "propertySpecs", label: "Property Specifications", checked: true },
+      { id: "propertyPhoto", label: "Property Photo", checked: true },
+      { id: "propertyPrice", label: "Purchase Price & Rate/m²", checked: true }
+    ]
+  },
+  {
+    title: "Deal Structure",
+    sections: [
+      { id: "depositDetails", label: "Deposit Information", checked: true },
+      { id: "loanDetails", label: "Loan Details", checked: true },
+      { id: "bondPayments", label: "Bond Payments", checked: true },
+      { id: "registrationCosts", label: "Registration & Transfer Costs", checked: true }
+    ]
+  },
+  {
+    title: "Operating Expenses",
+    sections: [
+      { id: "monthlyExpenses", label: "Monthly Fixed Expenses", checked: true },
+      { id: "maintenanceCosts", label: "Maintenance Costs", checked: true },
+      { id: "managementFees", label: "Management Fees", checked: true }
+    ]
+  },
+  {
+    title: "Rental Performance",
+    sections: [
+      { id: "shortTermRental", label: "Short-Term Rental Analysis", checked: true },
+      { id: "longTermRental", label: "Long-Term Rental Analysis", checked: true },
+      { id: "occupancyRates", label: "Occupancy Rates", checked: true },
+      { id: "grossYields", label: "Gross Yields", checked: true }
+    ]
+  },
+  {
+    title: "Investment Metrics",
+    sections: [
+      { id: "yearOneMetrics", label: "Year 1 Performance", checked: true },
+      { id: "yearlyProjections", label: "5-Year Projections", checked: true },
+      { id: "longTermProjections", label: "10-20 Year Outlook", checked: true },
+      { id: "returnMetrics", label: "ROI & IRR Analysis", checked: true }
+    ]
+  },
+  {
+    title: "Cashflow Analysis",
+    sections: [
+      { id: "annualCashflow", label: "Annual Cashflow", checked: true },
+      { id: "cumulativeIncome", label: "Cumulative Rental Income", checked: true },
+      { id: "netWorthChanges", label: "Net Worth Changes", checked: true }
     ]
   },
   {
@@ -39,13 +81,12 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   // Log available data when modal opens
   useEffect(() => {
     if (open) {
-      console.group('PDF Report - Available Data');
-      console.log('Property Details:', data.propertyDetails);
-      console.log('Financial Metrics:', data.financialMetrics);
-      console.log('Expenses:', data.expenses);
-      console.log('Performance:', data.performance);
-      console.log('Investment Metrics:', data.investmentMetrics);
-      console.log('Net Operating Income:', data.netOperatingIncome);
+      console.group('PDF Report - Available Data Structure');
+      console.log('Complete data object:', data);
+      console.groupEnd();
+
+      console.group('PDF Report - Default Section Configuration');
+      console.log('Available sections:', defaultSectionGroups);
       console.groupEnd();
     }
   }, [open, data]);
@@ -76,12 +117,12 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
       });
 
       // Log section selections whenever they change
-      console.group('PDF Report - Selected Sections');
+      console.group('PDF Report - Current Section Selections');
       newGroups.forEach(group => {
-        console.log(`${group.title}:`,
+        console.log(`${group.title}:`, 
           group.sections
             .filter(section => section.checked)
-            .map(section => section.id)
+            .map(section => ({ id: section.id, label: section.label }))
         );
       });
       console.groupEnd();
@@ -104,17 +145,25 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         return acc;
       }, {} as Record<string, string[]>);
 
-      // Log what's actually being passed to the PDF generator
-      console.group('PDF Report - Data Being Sent to Generator');
-      console.log('Selected Sections:', selectedSections);
-      console.log('Data Structure:', {
+      // Log the complete data flow
+      console.group('PDF Report - Data Flow Analysis');
+      console.log('1. Selected Sections Configuration:', selectedSections);
+
+      // Create the data structure based on selections
+      const pdfData = {
         propertyDetails: data.propertyDetails,
         financialMetrics: data.financialMetrics,
         expenses: data.expenses,
         performance: data.performance,
-        ...(selectedSections["Analysis Results"].includes("investmentMetrics") && { investmentMetrics: data.investmentMetrics }),
-        ...(selectedSections["Analysis Results"].includes("cashflowMetrics") && { netOperatingIncome: data.netOperatingIncome })
-      });
+        ...(selectedSections["Investment Metrics"]?.length > 0 && { 
+          investmentMetrics: data.investmentMetrics 
+        }),
+        ...(selectedSections["Cashflow Analysis"]?.length > 0 && { 
+          netOperatingIncome: data.netOperatingIncome 
+        })
+      };
+
+      console.log('2. Data Being Passed to PDF Generator:', pdfData);
       console.groupEnd();
 
       const doc = await generatePropertyReport(data, selectedSections, logoPreviewUrl || user?.companyLogo);
