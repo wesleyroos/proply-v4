@@ -1,14 +1,9 @@
-import { useState } from "react";
+
+import { useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { FileText, Upload } from "lucide-react";
-import { useUser } from "@/hooks/use-user";
-import { generatePropertyReport } from "@/utils/pdfGenerator";
-import { extractRentalPerformanceData } from "@/utils/chartCapture";
-import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { jsPDF } from "jspdf";
+import autoTable from 'jspdf-autotable';
+import { formatter } from "@/utils/formatting";
 
 interface PDFReportModalProps {
   open: boolean;
@@ -16,291 +11,156 @@ interface PDFReportModalProps {
   data: any;
 }
 
-interface ReportSection {
-  id: string;
-  label: string;
-  checked: boolean;
-}
-
-interface SectionGroup {
-  title: string;
-  sections: ReportSection[];
-}
-
-const defaultSectionGroups: SectionGroup[] = [
-  {
-    title: "Property Details",
-    sections: [
-      { id: "address", label: "Address", checked: true },
-      { id: "purchasePrice", label: "Purchase Price", checked: true },
-      { id: "floorArea", label: "Floor Area", checked: true },
-      { id: "ratePerM2", label: "Rate per m²", checked: true },
-      { id: "areaAverageRate", label: "Area Average Rate/m²", checked: true },
-      { id: "rateDifference", label: "Rate/m² Difference", checked: true },
-      { id: "bondRegistrationCosts", label: "Bond Registration Costs", checked: true },
-      { id: "transferCosts", label: "Transfer Costs", checked: true },
-      { id: "bedrooms", label: "Bedrooms", checked: true },
-      { id: "bathrooms", label: "Bathrooms", checked: true },
-      { id: "parkingSpaces", label: "Parking Spaces", checked: true },
-      { id: "description", label: "Property Description", checked: true },
-    ]
-  },
-  {
-    title: "Financing Details",
-    sections: [
-      { id: "deposit", label: "Deposit & Bond Details", checked: true },
-      { id: "interestRate", label: "Interest Rate", checked: true },
-      { id: "loanTerm", label: "Loan Term", checked: true },
-      { id: "monthlyBond", label: "Monthly Bond Payment", checked: true },
-    ]
-  },
-  {
-    title: "Revenue Performance",
-    sections: [
-      { id: "shortTerm", label: "Short-Term Rental Performance", checked: true },
-      { id: "longTerm", label: "Long-Term Rental Performance", checked: true },
-      { id: "occupancyRate", label: "Occupancy Rate", checked: true },
-    ]
-  },
-  {
-    title: "Charts and Visualizations",
-    sections: [
-      { id: "revenueChart", label: "Revenue Comparison Chart", checked: true },
-      { id: "occupancyChart", label: "Occupancy Analysis Chart", checked: true },
-      { id: "monthlyRevenueTable", label: "Monthly Revenue Breakdown", checked: true },
-      { id: "performanceTable", label: "Performance Metrics Table", checked: true },
-    ]
-  },
-  {
-    title: "Investment Metrics",
-    sections: [
-      { id: "yields", label: "Yield Analysis", checked: true },
-      { id: "returns", label: "Return Metrics", checked: true },
-      { id: "cashflow", label: "Cashflow Analysis", checked: true },
-    ]
-  },
-  {
-    title: "Operating Expenses",
-    sections: [
-      { id: "monthlyExpenses", label: "Monthly Expenses", checked: true },
-      { id: "maintenance", label: "Maintenance Costs", checked: true },
-      { id: "managementFees", label: "Management Fees", checked: true },
-    ]
-  },
-  {
-    title: "Company Branding",
-    sections: [
-      { id: "companyLogo", label: "Include Company Logo", checked: true },
-    ]
-  }
-];
-
 export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps) {
-  const { user } = useUser();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [sectionGroups, setSectionGroups] = useState<SectionGroup[]>(defaultSectionGroups);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
-  const [generating, setGenerating] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
 
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64Data = reader.result as string;
-        setLogoPreviewUrl(base64Data);
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    let yPos = 20;
 
-        try {
-          const response = await fetch('/api/profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              firstName: user?.firstName || '',
-              lastName: user?.lastName || '',
-              companyLogo: base64Data
-            }),
-            credentials: 'include'
-          });
+    // Header with logo
+    doc.addImage("/proply-logo.png", "PNG", 160, 10, 40, 20);
+    doc.setFontSize(24);
+    doc.text("Property Analysis Report", 20, 30);
 
-          if (!response.ok) {
-            throw new Error(await response.text());
-          }
+    // Property Details
+    doc.setFontSize(16);
+    doc.setTextColor(0, 121, 255);
+    doc.text("Property Details", 20, 50);
 
-          const updatedUser = await response.json();
-          queryClient.setQueryData(['user'], updatedUser);
+    autoTable(doc, {
+      startY: 55,
+      head: [["Detail", "Value"]],
+      body: [
+        ["Title", data.title],
+        ["Address", data.address],
+        ["Bedrooms", data.bedrooms || 'N/A'],
+        ["Bathrooms", data.bathrooms || 'N/A'],
+        ["Short-Term Nightly Rate", formatter.format(data.shortTermNightly)],
+        ["Annual Occupancy", `${data.annualOccupancy}%`],
+        ["Management Fee", `${(data.managementFee * 100).toFixed(1)}%`]
+      ],
+      theme: 'striped',
+      styles: { fontSize: 12 },
+      headStyles: { fillColor: [0, 121, 255] }
+    });
 
-          toast({
-            title: "Success",
-            description: "Company logo updated successfully",
-            duration: 3000,
-          });
-        } catch (error) {
-          console.error('Error updating company logo:', error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: error instanceof Error ? error.message : "Failed to update company logo",
-            duration: 5000,
-          });
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+    // Monthly Revenue Table
+    doc.setFontSize(16);
+    doc.text("Monthly Revenue Analysis", 20, doc.lastAutoTable.finalY + 20);
 
-  const generatePDF = async () => {
-    if (generating) return;
-
-    try {
-      setGenerating(true);
-      const selectedSections = sectionGroups.reduce((acc, group) => {
-        acc[group.title] = group.sections
-          .filter(section => section.checked)
-          .map(section => section.id);
-        return acc;
-      }, {} as Record<string, string[]>);
-
-      const rentalPerformanceData = extractRentalPerformanceData(data);
-
-      const logo = logoPreviewUrl || user?.companyLogo;
-
-      const reportData = {
-        ...data,
-        rentalPerformanceData
-      };
-
-      const doc = await generatePropertyReport(reportData, selectedSections, logo);
-      const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
-      doc.save(filename);
-
-      onOpenChange(false);
-      toast({
-        title: "Success",
-        description: "PDF report has been generated successfully!",
-        duration: 3000,
-      });
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate PDF report. Please try again.",
-        duration: 5000,
-      });
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const toggleSection = (groupTitle: string, sectionId: string) => {
-    setSectionGroups(sectionGroups.map(group => {
-      if (group.title === groupTitle) {
-        return {
-          ...group,
-          sections: group.sections.map(section =>
-            section.id === sectionId ? { ...section, checked: !section.checked } : section
-          )
-        };
-      }
-      return group;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const revenueData = Array(12).fill(0).map((_, i) => ({
+      low: calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee),
+      medium: calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee),
+      high: calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee),
+      longTerm: data.longTermMonthly
     }));
+
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 25,
+      head: [['Month', 'Low Revenue', 'Medium Revenue', 'High Revenue', 'Long Term']],
+      body: months.map((month, i) => [
+        month,
+        formatter.format(revenueData[i].low),
+        formatter.format(revenueData[i].medium),
+        formatter.format(revenueData[i].high),
+        formatter.format(revenueData[i].longTerm)
+      ]),
+      theme: 'striped',
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [0, 121, 255] }
+    });
+
+    // Occupancy Analysis
+    doc.setFontSize(16);
+    doc.text("Occupancy Analysis", 20, doc.lastAutoTable.finalY + 20);
+
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 25,
+      head: [["Metric", "Value"]],
+      body: [
+        ["Projected Occupancy", `${data.annualOccupancy}%`],
+        ["Break-even Occupancy", `${data.breakEvenOccupancy}%`],
+        ["Revenue Comparison", data.annualOccupancy > data.breakEvenOccupancy 
+          ? `At ${data.annualOccupancy}% projected occupancy, short-term rental is more profitable.`
+          : `At ${data.annualOccupancy}% projected occupancy, long-term rental may be more suitable.`]
+      ],
+      theme: 'striped',
+      styles: { fontSize: 12 },
+      headStyles: { fillColor: [0, 121, 255] }
+    });
+
+    // Footer
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.setTextColor(150);
+      doc.text(`Generated by Proply on ${new Date().toLocaleDateString()}`, 20, 285);
+      doc.text(`Page ${i} of ${pageCount}`, 180, 285);
+    }
+
+    doc.save(`${data.title.replace(/[^a-zA-Z0-9]/g, '-')}-analysis.pdf`);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Generate PDF Report</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
-          {sectionGroups.map((group) => (
-            <Card key={group.title}>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-semibold mb-4">{group.title}</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {group.sections.map((section) => (
-                    <div key={section.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={section.id}
-                        checked={section.checked}
-                        onCheckedChange={() => toggleSection(group.title, section.id)}
-                      />
-                      <label
-                        htmlFor={section.id}
-                        className="text-sm cursor-pointer"
-                      >
-                        {section.label}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-
-                {group.title === "Company Branding" && (
-                  <div className="mt-4">
-                    {(user?.companyLogo || logoPreviewUrl) ? (
-                      <div className="p-4 bg-muted rounded-lg">
-                        <div className="mb-4">
-                          <img
-                            src={logoPreviewUrl || user?.companyLogo}
-                            alt="Company Logo"
-                            className="h-12 object-contain"
-                          />
-                        </div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleLogoUpload}
-                          className="hidden"
-                          id="logo-update"
-                        />
-                        <label
-                          htmlFor="logo-update"
-                          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90 w-fit"
-                        >
-                          <Upload className="w-4 h-4" />
-                          Update Logo
-                        </label>
-                      </div>
-                    ) : (
-                      <div className="p-4 bg-muted rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-2">
-                          No company logo found. Upload your logo to include it in the report.
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleLogoUpload}
-                            className="hidden"
-                            id="logo-upload"
-                          />
-                          <label
-                            htmlFor="logo-upload"
-                            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90"
-                          >
-                            <Upload className="w-4 h-4" />
-                            Upload Logo
-                          </label>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-          <Button
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Generate a detailed PDF report containing your property analysis results.
+          </p>
+          <button
             onClick={generatePDF}
-            className="w-full"
-            disabled={generating}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
-            <FileText className="w-4 h-4 mr-2" />
-            {generating ? 'Generating PDF...' : 'Generate PDF Report'}
-          </Button>
+            Download Report
+          </button>
         </div>
       </DialogContent>
     </Dialog>
   );
+}
+
+// Reuse the same calculation functions from ComparisonChart
+const OCCUPANCY_RATES = {
+  low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 65],
+  medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 80],
+  high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
+};
+
+const SEASONALITY_FACTORS = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
+
+function getSeasonalMultiplier(month: number): number {
+  return SEASONALITY_FACTORS[month];
+}
+
+function getSeasonalNightlyRate(baseRate: number, month: number): number {
+  return baseRate * getSeasonalMultiplier(month);
+}
+
+function getFeeAdjustedRate(rate: number, hasManagementFee: boolean): number {
+  return hasManagementFee ? rate * 0.85 : rate * 0.97;
+}
+
+function calculateMonthlyRevenue(
+  scenario: 'low' | 'medium' | 'high',
+  month: number,
+  nightly: number,
+  hasManagementFee: boolean,
+  managementFeePercent: number
+): number {
+  const occupancyRate = OCCUPANCY_RATES[scenario][month] / 100;
+  const daysInMonth = new Date(2024, month + 1, 0).getDate();
+  const seasonalRate = getSeasonalNightlyRate(nightly, month);
+  const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, hasManagementFee);
+  let revenue = feeAdjustedRate * daysInMonth * occupancyRate;
+  if (hasManagementFee) {
+    revenue *= (1 - managementFeePercent);
+  }
+  return revenue;
 }
