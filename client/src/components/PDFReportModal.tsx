@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -7,7 +7,6 @@ import { FileText, Upload } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import { generatePropertyReport } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
 
 // Matches the exact sections we show in PropertyAnalyzerPage.tsx
 const defaultSectionGroups = [
@@ -37,6 +36,20 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
 
+  // Log available data when modal opens
+  useEffect(() => {
+    if (open) {
+      console.group('PDF Report - Available Data');
+      console.log('Property Details:', data.propertyDetails);
+      console.log('Financial Metrics:', data.financialMetrics);
+      console.log('Expenses:', data.expenses);
+      console.log('Performance:', data.performance);
+      console.log('Investment Metrics:', data.investmentMetrics);
+      console.log('Net Operating Income:', data.netOperatingIncome);
+      console.groupEnd();
+    }
+  }, [open, data]);
+
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -48,17 +61,61 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
     }
   };
 
+  const toggleSection = (groupTitle: string, sectionId: string) => {
+    setSectionGroups(prevGroups => {
+      const newGroups = prevGroups.map(group => {
+        if (group.title === groupTitle) {
+          return {
+            ...group,
+            sections: group.sections.map(section =>
+              section.id === sectionId ? { ...section, checked: !section.checked } : section
+            )
+          };
+        }
+        return group;
+      });
+
+      // Log section selections whenever they change
+      console.group('PDF Report - Selected Sections');
+      newGroups.forEach(group => {
+        console.log(`${group.title}:`,
+          group.sections
+            .filter(section => section.checked)
+            .map(section => section.id)
+        );
+      });
+      console.groupEnd();
+
+      return newGroups;
+    });
+  };
+
   const generatePDF = async () => {
     if (generating) return;
 
     try {
       setGenerating(true);
+
+      // Get selected sections
       const selectedSections = sectionGroups.reduce((acc, group) => {
         acc[group.title] = group.sections
           .filter(section => section.checked)
           .map(section => section.id);
         return acc;
       }, {} as Record<string, string[]>);
+
+      // Log what's actually being passed to the PDF generator
+      console.group('PDF Report - Data Being Sent to Generator');
+      console.log('Selected Sections:', selectedSections);
+      console.log('Data Structure:', {
+        propertyDetails: data.propertyDetails,
+        financialMetrics: data.financialMetrics,
+        expenses: data.expenses,
+        performance: data.performance,
+        ...(selectedSections["Analysis Results"].includes("investmentMetrics") && { investmentMetrics: data.investmentMetrics }),
+        ...(selectedSections["Analysis Results"].includes("cashflowMetrics") && { netOperatingIncome: data.netOperatingIncome })
+      });
+      console.groupEnd();
 
       const doc = await generatePropertyReport(data, selectedSections, logoPreviewUrl || user?.companyLogo);
       const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
@@ -81,20 +138,6 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
     } finally {
       setGenerating(false);
     }
-  };
-
-  const toggleSection = (groupTitle: string, sectionId: string) => {
-    setSectionGroups(prevGroups => prevGroups.map(group => {
-      if (group.title === groupTitle) {
-        return {
-          ...group,
-          sections: group.sections.map(section =>
-            section.id === sectionId ? { ...section, checked: !section.checked } : section
-          )
-        };
-      }
-      return group;
-    }));
   };
 
   return (
@@ -205,6 +248,7 @@ interface PDFReportModalProps {
       parkingSpaces: number;
       purchasePrice: number;
       ratePerSquareMeter: number;
+      propertyPhoto?: string | null;
     };
     financialMetrics: {
       depositAmount: number;
@@ -229,6 +273,30 @@ interface PDFReportModalProps {
       longTermAnnualRevenue: number;
       shortTermGrossYield: number;
       longTermGrossYield: number;
+    };
+    investmentMetrics?: {
+      year1: {
+        grossYield: number;
+        netYield: number;
+        returnOnEquity: number;
+        annualReturn: number;
+        capRate: number;
+        cashOnCashReturn: number;
+        roiWithoutAppreciation: number;
+        roiWithAppreciation: number;
+        irr: number;
+        netWorthChange: number;
+      };
+      // same structure for other years
+    };
+    netOperatingIncome?: {
+      year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
     };
   };
 }
