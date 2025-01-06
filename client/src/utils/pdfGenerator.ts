@@ -277,7 +277,7 @@ export function generatePropertyReport(
             data.row.index === monthlyPerformanceData.length - 1) {
           doc.setFillColor(243, 244, 246);
           doc.setTextColor(31, 41, 55);
-          doc.setFontStyle('bold');
+          doc.setFont(undefined, 'bold');
         }
       }
     });
