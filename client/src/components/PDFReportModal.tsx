@@ -161,6 +161,19 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
     }
   }, [open, data]);
 
+  // Restore handleLogoUpload function
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const toggleSection = (groupTitle: string, sectionId: string) => {
     setSectionGroups(prevGroups => {
       const newGroups = prevGroups.map(group => {
