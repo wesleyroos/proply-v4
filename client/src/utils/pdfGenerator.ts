@@ -454,17 +454,17 @@ export async function generatePropertyReport(
         low: MONTHS.map((_, i) => {
           const occupancyRates = [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70];
           const daysInMonth = new Date(2024, i + 1, 0).getDate();
-          return data.performance.shortTermNightlyRate * daysInMonth * (occupancyRates[i] / 100) * (1 - (data.expenses.managementFee > 0 ? 0.15 : 0.03));
+          return data.performance.shortTermNightlyRate * daysInMonth * (occupancyRates[i] / 100) * (1 - (data.expenses.managementFee || 0 > 0 ? 0.15 : 0.03));
         }),
         medium: MONTHS.map((_, i) => {
           const occupancyRates = [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85];
           const daysInMonth = new Date(2024, i + 1, 0).getDate();
-          return data.performance.shortTermNightlyRate * daysInMonth * (occupancyRates[i] / 100) * (1 - (data.expenses.managementFee > 0 ? 0.15 : 0.03));
+          return data.performance.shortTermNightlyRate * daysInMonth * (occupancyRates[i] / 100) * (1 - (data.expenses.managementFee || 0 > 0 ? 0.15 : 0.03));
         }),
         high: MONTHS.map((_, i) => {
           const occupancyRates = [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95];
           const daysInMonth = new Date(2024, i + 1, 0).getDate();
-          return data.performance.shortTermNightlyRate * daysInMonth * (occupancyRates[i] / 100) * (1 - (data.expenses.managementFee > 0 ? 0.15 : 0.03));
+          return data.performance.shortTermNightlyRate * daysInMonth * (occupancyRates[i] / 100) * (1 - (data.expenses.managementFee || 0 > 0 ? 0.15 : 0.03));
         })
       };
 
@@ -541,62 +541,6 @@ export async function generatePropertyReport(
           headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
         });
         yPos = (doc as any).lastAutoTable.finalY + 15;
-      }
-    }
-
-
-    // Add Charts and Visualizations Section
-    if (selectedSections["Charts and Visualizations"]?.length > 0) {
-      checkNewPage(120);
-
-      const charts = await captureCharts();
-
-      if (selectedSections["Charts and Visualizations"].includes("revenueChart") && charts.revenueChart) {
-        doc.setFontSize(16);
-        doc.setTextColor(31, 41, 55);
-        doc.text('Revenue Comparison Chart', MARGIN, yPos);
-        yPos += 10;
-
-        const chartWidth = CONTENT_WIDTH;
-        const chartHeight = 100;
-        doc.addImage(charts.revenueChart, 'PNG', MARGIN, yPos, chartWidth, chartHeight);
-        yPos += chartHeight + 20;
-      }
-
-      if (selectedSections["Charts and Visualizations"].includes("occupancyChart") && charts.occupancyChart) {
-        checkNewPage(120);
-        doc.setFontSize(16);
-        doc.text('Occupancy Analysis', MARGIN, yPos);
-        yPos += 10;
-
-        const chartWidth = CONTENT_WIDTH;
-        const chartHeight = 80;
-        doc.addImage(charts.occupancyChart, 'PNG', MARGIN, yPos, chartWidth, chartHeight);
-        yPos += chartHeight + 20;
-      }
-
-      if (selectedSections["Charts and Visualizations"].includes("monthlyRevenueTable") && charts.monthlyRevenueTable) {
-        checkNewPage(120);
-        doc.setFontSize(16);
-        doc.text('Monthly Revenue Breakdown', MARGIN, yPos);
-        yPos += 10;
-
-        const tableWidth = CONTENT_WIDTH;
-        const tableHeight = 120;
-        doc.addImage(charts.monthlyRevenueTable, 'PNG', MARGIN, yPos, tableWidth, tableHeight);
-        yPos += tableHeight + 20;
-      }
-
-      if (selectedSections["Charts and Visualizations"].includes("performanceTable") && charts.performanceTable) {
-        checkNewPage(120);
-        doc.setFontSize(16);
-        doc.text('Performance Metrics', MARGIN, yPos);
-        yPos += 10;
-
-        const tableWidth = CONTENT_WIDTH;
-        const tableHeight = 100;
-        doc.addImage(charts.performanceTable, 'PNG', MARGIN, yPos, tableWidth, tableHeight);
-        yPos += tableHeight + 20;
       }
     }
 
