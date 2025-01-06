@@ -7,6 +7,7 @@ import { FileText, Upload } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import { generatePropertyReport } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface PDFReportModalProps {
   open: boolean;
@@ -79,16 +80,56 @@ const defaultSectionGroups: SectionGroup[] = [
 export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps) {
   const { user } = useUser();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [sectionGroups, setSectionGroups] = useState<SectionGroup[]>(defaultSectionGroups);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
 
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setLogoFile(file);
-      setLogoPreviewUrl(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Data = reader.result as string;
+        setLogoPreviewUrl(base64Data);
+
+        // Also update user profile with the new logo
+        try {
+          const response = await fetch('/api/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              firstName: user?.firstName || '',
+              lastName: user?.lastName || '',
+              companyLogo: base64Data
+            }),
+            credentials: 'include'
+          });
+
+          if (!response.ok) {
+            throw new Error(await response.text());
+          }
+
+          const updatedUser = await response.json();
+          queryClient.setQueryData(['user'], updatedUser);
+
+          toast({
+            title: "Success",
+            description: "Company logo updated successfully",
+            duration: 3000,
+          });
+        } catch (error) {
+          console.error('Error updating company logo:', error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error instanceof Error ? error.message : "Failed to update company logo",
+            duration: 5000,
+          });
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -104,7 +145,8 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         return acc;
       }, {} as Record<string, string[]>);
 
-      const logo = user?.companyLogo || logoPreviewUrl;
+      // Use either the newly uploaded logo or the existing user logo
+      const logo = logoPreviewUrl || user?.companyLogo;
       const doc = await generatePropertyReport(data, selectedSections, logo);
       const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
       doc.save(filename);

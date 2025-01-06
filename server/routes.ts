@@ -453,18 +453,33 @@ export function registerRoutes(app: Express): Server {
     const { firstName, lastName, companyLogo } = req.body;
 
     try {
+      // Validate the logo data if present
+      if (companyLogo && !companyLogo.startsWith('data:image')) {
+        return res.status(400).json({ error: "Invalid logo format" });
+      }
+
       const [updatedUser] = await db.update(users)
         .set({
           firstName,
           lastName,
-          companyLogo
+          companyLogo,
+          updatedAt: new Date()
         })
         .where(eq(users.id, req.user!.id))
         .returning();
 
+      console.log('Profile updated successfully:', {
+        userId: updatedUser.id,
+        hasLogo: !!updatedUser.companyLogo
+      });
+
       res.json(updatedUser);
     } catch (error) {
-      res.status(500).json({ error: "Failed to update profile" });
+      console.error('Error updating profile:', error);
+      res.status(500).json({ 
+        error: "Failed to update profile",
+        details: error instanceof Error ? error.message : undefined
+      });
     }
   });
 

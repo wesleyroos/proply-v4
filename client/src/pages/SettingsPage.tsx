@@ -37,7 +37,7 @@ interface ProfileFormData {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
-  companyLogo?: FileList;
+  companyLogo?: string; // Changed to string to hold base64
 }
 
 export default function SettingsPage() {
@@ -58,12 +58,15 @@ export default function SettingsPage() {
     },
   });
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreviewLogo(reader.result as string);
+        const base64Data = reader.result as string;
+        setPreviewLogo(base64Data);
+        // Store the base64 data to be sent with the form
+        form.setValue("companyLogo", base64Data);
       };
       reader.readAsDataURL(file);
     }
@@ -78,7 +81,7 @@ export default function SettingsPage() {
         body: JSON.stringify({
           firstName: data.firstName,
           lastName: data.lastName,
-          companyLogo: previewLogo
+          companyLogo: data.companyLogo || previewLogo // Include the logo data
         }),
         credentials: 'include'
       });
@@ -90,10 +93,20 @@ export default function SettingsPage() {
       const updatedUser = await response.json();
       queryClient.setQueryData(['user'], updatedUser);
 
-      console.log("Profile Updated:", updatedUser);
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+        duration: 3000,
+      });
 
     } catch (error) {
       console.error("Error updating profile:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update profile",
+        duration: 5000,
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -284,7 +297,7 @@ export default function SettingsPage() {
                             <Input
                               type="file"
                               accept="image/*"
-                              onChange={handleLogoChange}
+                              onChange={handleLogoUpload} // Changed to handleLogoUpload
                               className="mb-2"
                             />
                             <p className="text-sm text-gray-500">
