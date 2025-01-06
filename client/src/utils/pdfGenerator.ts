@@ -2,23 +2,42 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatter } from '@/utils/formatting';
 
-interface ComparisonData {
-  title: string;
-  longTermMonthly: number;
-  shortTermMonthly: number;
-  longTermAnnual: number;
-  shortTermAnnual: number;
-  shortTermAfterFees: number;
-  breakEvenOccupancy: number;
-  shortTermNightly: number;
-  managementFee: number;
-  annualOccupancy: number;
-  bedrooms?: string;
-  bathrooms?: string;
-}
-
 export function generatePropertyReport(
-  data: ComparisonData,
+  data: {
+    propertyDetails: {
+      address: string;
+      bedrooms?: string;
+      bathrooms?: string;
+      floorArea: number;
+      parkingSpaces: number;
+      purchasePrice: number;
+      ratePerSquareMeter: number;
+    };
+    financialMetrics: {
+      depositAmount: number;
+      depositPercentage: number;
+      interestRate: number;
+      loanTerm: number;
+      monthlyBondRepayment: number;
+      bondRegistration: number;
+      transferCosts: number;
+    };
+    expenses: {
+      monthlyLevies: number;
+      monthlyRatesTaxes: number;
+      otherMonthlyExpenses: number;
+      maintenancePercent: number;
+      managementFee: number;
+    };
+    performance: {
+      shortTermNightlyRate: number;
+      annualOccupancy: number;
+      shortTermAnnualRevenue: number;
+      longTermAnnualRevenue: number;
+      shortTermGrossYield: number;
+      longTermGrossYield: number;
+    };
+  },
   selectedSections: Record<string, string[]>,
   companyLogo?: string | null
 ): jsPDF {
@@ -36,11 +55,14 @@ export function generatePropertyReport(
   yPos += 10;
 
   const details = [
-    ['Property', data.title],
-    ['Short-Term Nightly Rate', formatter.format(data.shortTermNightly)],
-    ['Annual Occupancy', `${data.annualOccupancy}%`],
-    ['Management Fee', `${(data.managementFee * 100).toFixed(1)}%`],
-    ['Break-even Occupancy', `${data.breakEvenOccupancy.toFixed(1)}%`]
+    ['Property', data.propertyDetails.address],
+    ['Purchase Price', formatter.format(data.propertyDetails.purchasePrice)],
+    ['Floor Area', `${data.propertyDetails.floorArea} m²`],
+    ['Rate per m²', formatter.format(data.propertyDetails.ratePerSquareMeter)],
+    ['Deposit', `${formatter.format(data.financialMetrics.depositAmount)} (${data.financialMetrics.depositPercentage}%)`],
+    ['Interest Rate', `${data.financialMetrics.interestRate}%`],
+    ['Loan Term', `${data.financialMetrics.loanTerm} years`],
+    ['Monthly Bond Payment', formatter.format(data.financialMetrics.monthlyBondRepayment)]
   ];
 
   autoTable(doc, {
@@ -60,16 +82,20 @@ export function generatePropertyReport(
   yPos += 10;
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const longTermMonthly = data.performance.longTermAnnualRevenue / 12;
+  const shortTermMonthly = data.performance.shortTermAnnualRevenue / 12;
+  const shortTermAfterFees = data.performance.shortTermAnnualRevenue * (1 - data.expenses.managementFee);
+
   const tableData = [
-    ['Long Term', ...Array(12).fill(formatter.format(data.longTermMonthly)),
-      formatter.format(data.longTermAnnual),
-      formatter.format(data.longTermMonthly)],
-    ['Short Term', ...Array(12).fill(formatter.format(data.shortTermMonthly)),
-      formatter.format(data.shortTermAnnual),
-      formatter.format(data.shortTermMonthly)],
-    ['After Fees', ...Array(12).fill(formatter.format(data.shortTermAfterFees / 12)),
-      formatter.format(data.shortTermAfterFees),
-      formatter.format(data.shortTermAfterFees / 12)]
+    ['Long Term', ...Array(12).fill(formatter.format(longTermMonthly)),
+      formatter.format(data.performance.longTermAnnualRevenue),
+      formatter.format(longTermMonthly)],
+    ['Short Term', ...Array(12).fill(formatter.format(shortTermMonthly)),
+      formatter.format(data.performance.shortTermAnnualRevenue),
+      formatter.format(shortTermMonthly)],
+    ['After Fees', ...Array(12).fill(formatter.format(shortTermAfterFees / 12)),
+      formatter.format(shortTermAfterFees),
+      formatter.format(shortTermAfterFees / 12)]
   ];
 
   autoTable(doc, {
