@@ -71,16 +71,24 @@ export function generatePropertyReport(
 
   // Add company logo (user's logo) on the left
   if (companyLogo && selectedSections["Company Branding"]?.includes("companyLogo")) {
-    // Maintain aspect ratio by setting only width
-    doc.addImage(companyLogo, "PNG", 20, 10, 40, 20);
+    try {
+      // Maintain aspect ratio by setting only width
+      doc.addImage(companyLogo, "PNG", 20, 10, 40, 20);
+    } catch (error) {
+      console.error('Error loading company logo:', error);
+    }
   }
 
   // Add Proply logo and text on the right
-  // Note: Replace this with actual Proply logo path when available
-  doc.addImage("/Proply Logo 1.png", "PNG", 140, 10, 40, 20);
-  doc.setFontSize(8);
-  doc.setTextColor(100);
-  doc.text("Powered by Proply", 140, 35);
+  try {
+    doc.addImage("/proply-logo-1.png", "PNG", 140, 10, 40, 20);
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text("Powered by Proply", 140, 35);
+  } catch (error) {
+    console.error('Error loading Proply logo:', error);
+    // Continue generating PDF without the logo
+  }
 
   yPos = 50;
 
