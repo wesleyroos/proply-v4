@@ -121,7 +121,7 @@ export async function generatePropertyReport(
 
     // Use the direct path to the image in the public directory
     await addImage(
-      './proply-logo-black.png',
+      '/proply-logo-1.png',
       PAGE_WIDTH - MARGIN - proplyLogoWidth,
       yPos,
       proplyLogoWidth,
@@ -129,7 +129,7 @@ export async function generatePropertyReport(
     );
 
     doc.setFontSize(10);
-    doc.setTextColor(33, 33, 33); // Darker text color to match black logo
+    doc.setTextColor(33, 33, 33); 
     doc.text("Powered by Proply", PAGE_WIDTH - MARGIN - 40, yPos + 25);
     yPos += 40;
 
