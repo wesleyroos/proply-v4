@@ -160,7 +160,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
       doc.text(`Page ${i} of ${pageCount}`, 180, 285);
     }
 
-    doc.save(`Property-Analysis-${data.address.split(",")[0]}.pdf`);
+    doc.save(`Property-Analysis-${data.address ? data.address.split(",")[0] : 'Property'}.pdf`);
   };
 
   useEffect(() => {
