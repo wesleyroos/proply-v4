@@ -22,7 +22,7 @@ interface PropertyData {
     parkingSpaces: number;
     purchasePrice: number;
     ratePerSquareMeter: number;
-    description: string; // Added missing description field
+    description: string;
   };
   financialMetrics: {
     depositAmount: number;
@@ -69,6 +69,7 @@ export async function generatePropertyReport(
   const addImage = async (src: string, x: number, y: number, width: number, height: number): Promise<void> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
+      img.crossOrigin = "anonymous"; // Enable cross-origin image loading
       img.onload = () => {
         try {
           const aspectRatio = img.width / img.height;
@@ -82,7 +83,16 @@ export async function generatePropertyReport(
             finalHeight = width / aspectRatio;
           }
 
-          doc.addImage(img, 'PNG', x, y, finalWidth, finalHeight);
+          // Convert image to base64 for reliable PDF embedding
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Failed to get canvas context');
+          ctx.drawImage(img, 0, 0);
+          const base64 = canvas.toDataURL('image/png');
+
+          doc.addImage(base64, 'PNG', x, y, finalWidth, finalHeight);
           resolve();
         } catch (error) {
           reject(error);
@@ -109,8 +119,9 @@ export async function generatePropertyReport(
     const proplyLogoWidth = LOGO_MAX_WIDTH;
     const proplyLogoHeight = proplyLogoWidth / PROPLY_LOGO_ASPECT_RATIO;
 
+    // Use the direct path to the image in the public directory
     await addImage(
-      '/proply-logo-black.png', // Make sure this path matches your public assets directory
+      './proply-logo-black.png',
       PAGE_WIDTH - MARGIN - proplyLogoWidth,
       yPos,
       proplyLogoWidth,
