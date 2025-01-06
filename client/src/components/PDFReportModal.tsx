@@ -8,6 +8,7 @@ import { useUser } from "@/hooks/use-user";
 import { generatePropertyReport } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
 import DashboardMap from "./DashboardMap";
+import { createRoot } from 'react-dom/client';
 
 // Matches all available data from PropertyAnalyzerPage
 const defaultSectionGroups = [
@@ -225,28 +226,27 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
       tempMapContainer.style.height = '400px';
       document.body.appendChild(tempMapContainer);
 
-      // Render the map
-      const map = <DashboardMap properties={[{ 
-        id: 1, 
-        address: data.propertyDetails.address,
-        type: 'analyzer'
-      }]} />;
-      ReactDOM.render(map, tempMapContainer);
+      // Create a root for React rendering
+      const root = createRoot(tempMapContainer);
 
-      // Wait for the map to load and capture it
-      const mapElement = await new Promise<HTMLElement>((resolve) => {
-        const interval = setInterval(() => {
-          if (tempMapContainer.firstChild) {
-            clearInterval(interval);
-            resolve(tempMapContainer.firstChild as HTMLElement);
-          }
-        }, 100); // Check every 100ms
+      // Render the map and wait for it to be ready
+      await new Promise<void>((resolve) => {
+        root.render(
+          <DashboardMap 
+            properties={[{ 
+              id: 1, 
+              address: data.propertyDetails.address,
+              type: 'analyzer'
+            }]} 
+          />
+        );
+        // Give the map some time to load
+        setTimeout(resolve, 1000);
       });
-
 
       const pdfData = {
         ...data,
-        mapElement // Pass the map element to the PDF generator
+        mapElement: tempMapContainer // Pass the container element
       };
 
       const doc = await generatePropertyReport(pdfData, selectedSections, logoPreviewUrl || user?.companyLogo);
@@ -254,6 +254,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
       doc.save(filename);
 
       // Clean up
+      root.unmount();
       document.body.removeChild(tempMapContainer);
 
       onOpenChange(false);

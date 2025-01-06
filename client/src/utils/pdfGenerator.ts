@@ -15,6 +15,7 @@ export async function generatePropertyReport(
       purchasePrice: number;
       ratePerSquareMeter: number;
       propertyPhoto?: string | null;
+      areaRatePerSquareMeter?: number; // Added to handle area rate
     };
     financialMetrics: {
       depositAmount: number;
@@ -117,7 +118,9 @@ export async function generatePropertyReport(
       ['Floor Area', `${data.propertyDetails.floorArea}m²`],
       ['Parking Spaces', data.propertyDetails.parkingSpaces.toString()],
       ['Purchase Price', formatter.format(data.propertyDetails.purchasePrice)],
-      ['Rate per m²', formatter.format(data.propertyDetails.ratePerSquareMeter)]
+      ['Rate per m²', formatter.format(data.propertyDetails.ratePerSquareMeter)],
+      ['Area Rate/m²', formatter.format(data.propertyDetails.areaRatePerSquareMeter || 0)], 
+      ['Rate/m² Difference', formatter.format(data.propertyDetails.ratePerSquareMeter - (data.propertyDetails.areaRatePerSquareMeter || 0))] 
     ];
 
     autoTable(doc, {
