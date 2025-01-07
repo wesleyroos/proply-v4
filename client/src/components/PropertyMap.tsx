@@ -57,7 +57,8 @@ export default function PropertyMap({ address }: PropertyMapProps) {
           backgroundColor: '#ffffff',
           disableDefaultUI: false,
           clickableIcons: false,
-          preserveDrawingBuffer: true
+          preserveDrawingBuffer: true,
+          willReadFrequently: true
         };
 
         const map = new google.maps.Map(container, mapOptions);

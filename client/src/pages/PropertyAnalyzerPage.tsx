@@ -139,8 +139,6 @@ export default function PropertyAnalyzerPage() {
   const captureMap = async () => {
     if (!mapRef.current) return null;
     try {
-      // Wait for map to be fully rendered
-      await new Promise(resolve => setTimeout(resolve, 1000));
       const canvas = await html2canvas(mapRef.current, {
         useCORS: true,
         allowTaint: true,
