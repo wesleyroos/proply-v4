@@ -92,62 +92,29 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
     try {
       // Specifically target the property analysis map
       const mapElement = document.getElementById('property-analysis-map');
-      console.log('Looking for map element with ID: property-analysis-map');
+      console.log('Looking for map element:', mapElement);
 
       if (!mapElement) {
         console.error('Could not find property analysis map element');
         return;
       }
 
-      console.log('Map element found:', {
-        width: mapElement.clientWidth,
-        height: mapElement.clientHeight,
-        offsetWidth: mapElement.offsetWidth,
-        offsetHeight: mapElement.offsetHeight,
-        boundingRect: mapElement.getBoundingClientRect()
-      });
-
-      // Ensure the map has dimensions before capturing
-      if (!mapElement.offsetWidth || !mapElement.offsetHeight) {
-        console.error('Map element has no dimensions, waiting...');
-        return;
-      }
+      // Wait for Google Maps to finish rendering
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Capture the map
-      console.log('Starting map capture...');
       const canvas = await html2canvas(mapElement, {
         useCORS: true,
         allowTaint: true,
         logging: true,
         backgroundColor: '#ffffff',
         scale: 2, // Increase quality
-        onclone: (clonedDoc, element) => {
-          console.log('Cloned element dimensions:', {
-            width: element.clientWidth,
-            height: element.clientHeight
-          });
-          // Ensure the cloned element maintains its size
-          element.style.width = `${mapElement.offsetWidth}px`;
-          element.style.height = `${mapElement.offsetHeight}px`;
-        }
-      });
-
-      console.log('Map captured to canvas:', {
-        canvasWidth: canvas.width,
-        canvasHeight: canvas.height
       });
 
       const mapDataUrl = canvas.toDataURL('image/png');
-      console.log('Map converted to data URL, length:', mapDataUrl.length);
-
-      if (mapDataUrl.length < 1000) {
-        console.error('Map data URL seems too small, might be empty');
-        return;
-      }
+      console.log('Map captured successfully, data URL length:', mapDataUrl.length);
 
       setMapImage(mapDataUrl);
-      console.log('Map image state updated successfully');
-
     } catch (error) {
       console.error('Error capturing map:', error);
     }
