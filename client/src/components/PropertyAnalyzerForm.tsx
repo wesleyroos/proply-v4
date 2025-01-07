@@ -887,8 +887,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           min="1"
                           placeholder="Enter loan term in years"
                           {...field}
-                          type="number"
-                          min="1"
                           onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         />
                       </FormControl>

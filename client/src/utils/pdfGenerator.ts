@@ -15,7 +15,7 @@ const formatter = (value: number | undefined | null): string => {
 
 export async function generatePropertyReport(
   data: {
-    console.log('pdfGenerator: Starting property report generation with data:', JSON.stringify(data, null, 2));
+    propertyDetails: {
     propertyDetails: {
       address: string;
       bedrooms?: string;
