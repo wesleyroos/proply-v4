@@ -11,11 +11,13 @@ export default function PropertyMap({ address }: PropertyMapProps) {
   const [mapLoaded, setMapLoaded] = useState(false);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const markerInstance = useRef<google.maps.Marker | null>(null);
+  const [mapInitialized, setMapInitialized] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
 
     const initializeMap = async () => {
+      if (mapInitialized) return;
       try {
         console.log('Starting map initialization for address:', address);
 
@@ -48,7 +50,7 @@ export default function PropertyMap({ address }: PropertyMapProps) {
 
         // Initialize map with default location
         const defaultLocation = { lat: -33.918861, lng: 18.4233 }; // Cape Town
-        mapInstance.current = new google.maps.Map(container, {
+        const mapOptions = {
           center: defaultLocation,
           zoom: 13,
           mapTypeControl: false,
@@ -56,9 +58,13 @@ export default function PropertyMap({ address }: PropertyMapProps) {
           fullscreenControl: false,
           gestureHandling: 'cooperative',
           mapId: "8c097f85efc9c75f",
-          preserveDrawingBuffer: true,
-          backgroundColor: '#ffffff'
-        });
+          backgroundColor: '#ffffff',
+          disableDefaultUI: false,
+          clickableIcons: false
+        };
+
+        mapInstance.current = new google.maps.Map(container, mapOptions);
+        setMapInitialized(true);
 
         console.log('Map instance created');
 
@@ -116,7 +122,16 @@ export default function PropertyMap({ address }: PropertyMapProps) {
       if (markerInstance.current) {
         markerInstance.current.setMap(null);
       }
+      if (mapInstance.current) {
+        const div = mapRef.current;
+        if (div) {
+          while (div.firstChild) {
+            div.removeChild(div.firstChild);
+          }
+        }
+      }
       setMapLoaded(false);
+      setMapInitialized(false);
     };
   }, [address]);
 
