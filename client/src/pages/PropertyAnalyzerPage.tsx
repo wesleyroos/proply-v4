@@ -391,13 +391,13 @@ export default function PropertyAnalyzerPage() {
                     <TooltipTrigger asChild>
                       <div>
                         <Button
-                          onClick={() => {
+                          onClick={async () => {
                             if (!analysisResult) return;
 
                             if (!analysisId) {
                               toast({
                                 variant: "destructive",
-                                title: "Save Required",
+                                title: "Save Required", 
                                 description: "Please save your analysis before exporting to PDF.",
                                 duration: 3000,
                               });
