@@ -144,31 +144,17 @@ export async function generatePropertyReport(
         doc.text('Property Location', 20, yPos);
         yPos += 10;
 
-        // Calculate dimensions while maintaining aspect ratio
-        const maxWidth = 170; // Maximum width (leaving margins)
-        const maxHeight = 100; // Maximum height for the map
+        // Set fixed dimensions for the map
+        const mapWidth = 120; // Smaller width
+        const mapHeight = 80; // Smaller height
 
         // Create a temporary image to get dimensions
         const img = new Image();
         await new Promise<void>((resolve, reject) => {
           img.onload = () => {
             try {
-              // Calculate dimensions maintaining aspect ratio
-              const aspectRatio = img.height / img.width;
-              let finalWidth = maxWidth;
-              let finalHeight = maxWidth * aspectRatio;
-
-              // If height exceeds maximum, scale down
-              if (finalHeight > maxHeight) {
-                finalHeight = maxHeight;
-                finalWidth = maxHeight / aspectRatio;
-              }
-
-              // Center the map horizontally
-              const xPos = 20 + (maxWidth - finalWidth) / 2;
-
-              // Add the map with calculated dimensions
-              doc.addImage(data.propertyDetails.mapImage, 'PNG', xPos, yPos, finalWidth, finalHeight);
+              // Add the map at a fixed position
+              doc.addImage(data.propertyDetails.mapImage, 'PNG', 20, yPos, mapWidth, mapHeight);
               yPos += finalHeight + 15; // Add space after map
 
               console.log('Map added successfully:', {
