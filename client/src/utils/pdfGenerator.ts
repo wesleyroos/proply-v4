@@ -166,9 +166,6 @@ export async function generatePropertyReport(
         }
 
         console.log('Map processing completed at position:', yPos);
-                width: finalWidth,
-                height: finalHeight,
-                position: { x: xPos, y: yPos }
               });
             } catch (error) {
               console.error('Error adding map to PDF:', error);
