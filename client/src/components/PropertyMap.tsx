@@ -10,6 +10,7 @@ interface PropertyMapProps {
 export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const loadedRef = useRef(false);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const markerInstance = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
   const listenerRef = useRef<google.maps.MapsEventListener | null>(null);
@@ -46,7 +47,8 @@ export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
 
         // Single event listener for map load
         listenerRef.current = google.maps.event.addListenerOnce(map, 'tilesloaded', () => {
-          if (isMounted && onMapLoad) {
+          if (isMounted && onMapLoad && !loadedRef.current) {
+            loadedRef.current = true;
             onMapLoad();
           }
         });
