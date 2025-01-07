@@ -172,12 +172,6 @@ export async function generatePropertyReport(
     } else {
       console.log('No map image available to add to PDF');
     }
-      } catch (error) {
-        console.error('Error processing map:', error);
-      }
-    } else {
-      console.log('No map image available to add to PDF');
-    }
   }
 
   if (selectedSections["Deal Structure"]) {
