@@ -98,6 +98,10 @@ export default function DashboardMap({ properties }: DashboardMapProps) {
   }, [properties]);
 
   return (
-    <div ref={mapRef} style={{ position: 'absolute', top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }} />
+    <div 
+      ref={mapRef} 
+      data-map-container="true"
+      style={{ position: 'absolute', top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }} 
+    />
   );
 }

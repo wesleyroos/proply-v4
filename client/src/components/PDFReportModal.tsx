@@ -7,9 +7,7 @@ import { FileText, Upload } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import { generatePropertyReport } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
-import DashboardMap from "./DashboardMap";
 import html2canvas from 'html2canvas';
-import { createRoot } from 'react-dom/client';
 
 // Matches all available data from PropertyAnalyzerPage
 const defaultSectionGroups = [
@@ -82,76 +80,45 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   const [generating, setGenerating] = useState(false);
   const [mapImage, setMapImage] = useState<string | null>(null);
 
-  // Capture map when modal opens
+  // Capture existing map when modal opens
   useEffect(() => {
     if (open) {
-      captureMap();
+      captureExistingMap();
     }
   }, [open]);
 
-  const captureMap = async () => {
+  const captureExistingMap = async () => {
     try {
-      console.log('Starting map capture process');
+      console.log('Starting map capture from existing element');
 
-      // Create a temporary div to render the map
-      const mapContainer = document.createElement('div');
-      mapContainer.style.width = '800px';
-      mapContainer.style.height = '400px';
-      mapContainer.style.position = 'fixed'; // Change to fixed
-      mapContainer.style.top = '0';
-      mapContainer.style.left = '0';
-      mapContainer.style.zIndex = '-1000'; // Hide but keep rendered
-      mapContainer.style.backgroundColor = '#ffffff';
-      document.body.appendChild(mapContainer);
+      // Find the existing map element - adjust the selector based on your DOM structure
+      const mapElement = document.querySelector('[data-map-container="true"]');
 
-      console.log('Map container created and styled');
-
-      // Render the map component
-      const root = createRoot(mapContainer);
-      root.render(
-        <DashboardMap
-          properties={[
-            {
-              id: 1,
-              address: data.propertyDetails.address,
-              type: 'analyzer'
-            }
-          ]}
-        />
-      );
-
-      console.log('Map component rendered');
-
-      // Wait longer for map to load and initialize
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      console.log('Waited for map initialization');
-
-      try {
-        const canvas = await html2canvas(mapContainer, {
-          useCORS: true,
-          allowTaint: true,
-          logging: true,
-          backgroundColor: '#ffffff'
-        });
-
-        console.log('Map captured to canvas');
-        const mapDataUrl = canvas.toDataURL('image/png');
-        console.log('Map converted to data URL, length:', mapDataUrl.length);
-        setMapImage(mapDataUrl);
-      } catch (captureError) {
-        console.error('Error during map capture:', captureError);
+      if (!mapElement) {
+        console.error('Could not find existing map element');
+        return;
       }
 
-      // Cleanup
-      root.unmount();
-      document.body.removeChild(mapContainer);
-      console.log('Map capture cleanup completed');
+      console.log('Found existing map element, capturing...');
+
+      // Capture the existing map element
+      const canvas = await html2canvas(mapElement as HTMLElement, {
+        useCORS: true,
+        allowTaint: true,
+        logging: true,
+        backgroundColor: '#ffffff'
+      });
+
+      console.log('Map captured to canvas');
+      const mapDataUrl = canvas.toDataURL('image/png');
+      console.log('Map converted to data URL, length:', mapDataUrl.length);
+      setMapImage(mapDataUrl);
+
     } catch (error) {
-      console.error('Error in map capture process:', error);
+      console.error('Error capturing existing map:', error);
     }
   };
 
-  // Restore handleLogoUpload function
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -177,19 +144,6 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         }
         return group;
       });
-
-      // Enhanced logging of section changes
-      console.group('3. Section Selection Update');
-      console.log('Changed Group:', groupTitle);
-      console.log('Changed Section:', sectionId);
-      console.log('Current Selections:', newGroups.map(group => ({
-        group: group.title,
-        selectedSections: group.sections
-          .filter(section => section.checked)
-          .map(section => section.label)
-      })));
-      console.groupEnd();
-
       return newGroups;
     });
   };
@@ -211,9 +165,9 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         ...data,
         propertyDetails: {
           ...data.propertyDetails,
-          areaRatePerSquareMeter: 45000, // Set the correct area rate
+          areaRatePerSquareMeter: 45000,
           ratePerSquareMeter: Math.round(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea),
-          mapImage // Add captured map image
+          mapImage
         }
       };
 
