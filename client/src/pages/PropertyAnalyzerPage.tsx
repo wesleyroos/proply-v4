@@ -131,7 +131,20 @@ export default function PropertyAnalyzerPage() {
   const [analysisId, setAnalysisId] = useState<string | null>(null);
   const [showPDFReport, setShowPDFReport] = useState(false);
   const [pdfData, setPDFData] = useState<any>(null);
+  const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  const captureMap = async () => {
+    if (!mapRef.current) return null;
+    try {
+      const canvas = await html2canvas(mapRef.current);
+      return canvas.toDataURL('image/png');
+    } catch (error) {
+      console.error('Error capturing map:', error);
+      return null;
+    }
+  };
 
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
@@ -435,6 +448,8 @@ export default function PropertyAnalyzerPage() {
                               netOperatingIncome: analysisResult.netOperatingIncome,
                               revenueProjections: analysisResult.analysis.revenueProjections,
                             });
+                            const mapImage = await captureMap();
+                            setCapturedMapImage(mapImage);
                             setShowPDFReport(true);
                           }}
                           disabled={!analysisResult || !analysisId}
@@ -472,7 +487,9 @@ export default function PropertyAnalyzerPage() {
                     {analysisResult && (
                       <>
                         <div className="rounded-lg overflow-hidden">
+                          <div ref={mapRef}>
                           <PropertyMap address={analysisResult.address} />
+                        </div>
                         </div>
 
                         {formData?.propertyPhoto && (
@@ -971,6 +988,7 @@ export default function PropertyAnalyzerPage() {
               open={showPDFReport}
               onOpenChange={setShowPDFReport}
               data={pdfData}
+              capturedMapImage={capturedMapImage}
             />
           </div>
         )}
