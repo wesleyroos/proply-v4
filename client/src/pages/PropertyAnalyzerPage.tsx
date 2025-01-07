@@ -491,8 +491,6 @@ export default function PropertyAnalyzerPage() {
                               netOperatingIncome: analysisResult.netOperatingIncome,
                               revenueProjections: analysisResult.analysis.revenueProjections,
                             });
-                            const mapImage = await captureMap();
-                            setCapturedMapImage(mapImage);
                             setShowPDFReport(true);
                           }}
                           disabled={!analysisResult || !analysisId}

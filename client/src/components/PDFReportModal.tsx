@@ -183,16 +183,23 @@ export function PDFReportModal({
     try {
       setGenerating(true);
 
-      // Verify we have the map image
-      if (!capturedMapImage) {
+      const mapContainer = document.querySelector('[data-map-container="true"]');
+      if (!mapContainer) {
         toast({
           variant: "destructive",
-          title: "Missing Map",
-          description: "Map image is not available. Please try reopening the analyzer.",
+          title: "Map Error",
+          description: "Map container not found. Please try again.",
           duration: 3000,
         });
         return;
       }
+
+      const mapImage = await html2canvas(mapContainer as HTMLElement, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        scale: 2
+      }).then(canvas => canvas.toDataURL('image/png', 1.0));
 
       // Validate map image data with timeout
       try {
