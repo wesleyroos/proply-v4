@@ -80,42 +80,71 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   const [generating, setGenerating] = useState(false);
   const [mapImage, setMapImage] = useState<string | null>(null);
 
-  // Capture existing map when modal opens
   useEffect(() => {
     if (open) {
+      console.log('Modal opened, starting map capture process');
       captureExistingMap();
     }
   }, [open]);
 
   const captureExistingMap = async () => {
     try {
-      console.log('Starting map capture from existing element');
+      // First, find all elements with data-map-container attribute
+      const mapElements = document.querySelectorAll('[data-map-container="true"]');
+      console.log('Found map elements:', mapElements.length);
 
-      // Find the existing map element - adjust the selector based on your DOM structure
-      const mapElement = document.querySelector('[data-map-container="true"]');
+      // Get the first map element
+      const mapElement = mapElements[0];
 
       if (!mapElement) {
-        console.error('Could not find existing map element');
+        console.error('Could not find map element - no elements with data-map-container="true"');
         return;
       }
 
-      console.log('Found existing map element, capturing...');
+      console.log('Map element found:', {
+        width: mapElement.clientWidth,
+        height: mapElement.clientHeight,
+        offsetWidth: mapElement.offsetWidth,
+        offsetHeight: mapElement.offsetHeight,
+        boundingRect: mapElement.getBoundingClientRect()
+      });
 
-      // Capture the existing map element
+      // Wait a bit for the map to be fully rendered
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Capture the map
+      console.log('Starting map capture...');
       const canvas = await html2canvas(mapElement as HTMLElement, {
         useCORS: true,
         allowTaint: true,
         logging: true,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        onclone: (clonedDoc, element) => {
+          console.log('Cloned element dimensions:', {
+            width: element.clientWidth,
+            height: element.clientHeight
+          });
+        }
       });
 
-      console.log('Map captured to canvas');
+      console.log('Map captured to canvas:', {
+        canvasWidth: canvas.width,
+        canvasHeight: canvas.height
+      });
+
       const mapDataUrl = canvas.toDataURL('image/png');
       console.log('Map converted to data URL, length:', mapDataUrl.length);
+
+      if (mapDataUrl.length < 1000) {
+        console.error('Map data URL seems too small, might be empty');
+        return;
+      }
+
       setMapImage(mapDataUrl);
+      console.log('Map image state updated');
 
     } catch (error) {
-      console.error('Error capturing existing map:', error);
+      console.error('Error capturing map:', error);
     }
   };
 
@@ -153,6 +182,9 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
 
     try {
       setGenerating(true);
+      console.log('Starting PDF generation');
+      console.log('Map image available:', mapImage ? 'Yes' : 'No');
+      console.log('Map image length:', mapImage?.length);
 
       const selectedSections = sectionGroups.reduce((acc, group) => {
         acc[group.title] = group.sections
@@ -161,15 +193,22 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         return acc;
       }, {} as Record<string, string[]>);
 
+      console.log('Selected sections:', selectedSections);
+
       const pdfData = {
         ...data,
         propertyDetails: {
           ...data.propertyDetails,
           areaRatePerSquareMeter: 45000,
           ratePerSquareMeter: Math.round(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea),
-          mapImage
+          mapImage // Pass the captured map image
         }
       };
+
+      console.log('PDF data prepared:', {
+        hasMapImage: !!pdfData.propertyDetails.mapImage,
+        mapImageLength: pdfData.propertyDetails.mapImage?.length
+      });
 
       const doc = await generatePropertyReport(pdfData, selectedSections, logoPreviewUrl || user?.companyLogo);
       const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
