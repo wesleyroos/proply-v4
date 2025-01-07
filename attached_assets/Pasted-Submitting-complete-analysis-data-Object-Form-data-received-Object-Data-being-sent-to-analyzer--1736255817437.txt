@@ -1,0 +1,52 @@
+Submitting complete analysis data: Object
+ Form data received: Object
+ Data being sent to analyzer: Object
+ Analysis response: Object
+ Creating new toast with props: Object
+ Toast reducer called with action: ADD_TOAST
+ Adding new toast: Object
+ Toast reducer called with action: ADD_TOAST
+ Adding new toast: Object
+ Starting map initialization for address: 27 Leeuwen St, Cape Town City Centre, 8001
+ Initializing Google Maps...
+ Cleaning up map component
+ Starting map initialization for address: 27 Leeuwen St, Cape Town City Centre, 8001
+ Google Maps script loaded successfully
+ Google Maps API loaded successfully
+ Component unmounted during initialization
+initializeMap @ /src/components/PropertyMap.tsx:35Understand this warningAI
+ Google Maps API loaded successfully
+ Map container dimensions: Object
+ Map instance created
+ Map idle event fired
+ Geocoding address: 27 Leeuwen St, Cape Town City Centre, 8001
+ Geocoding status: OK
+ Location found: Object
+main.js:222 As of February 21st, 2024, google.maps.Marker is deprecated. Please use google.maps.marker.AdvancedMarkerElement instead. At this time, google.maps.Marker is not scheduled to be discontinued, but google.maps.marker.AdvancedMarkerElement is recommended over google.maps.Marker. While google.maps.Marker will continue to receive bug fixes for any major regressions, existing bugs in google.maps.Marker will not be addressed. At least 12 months notice will be given before support is discontinued. Please see https://developers.google.com/maps/deprecations for additional details and https://developers.google.com/maps/documentation/javascript/advanced-markers/migration for the migration guide.
+(anonymous) @ main.js:222Understand this warningAI
+ Marker placed successfully
+ Toast reducer called with action: ADD_TOAST
+ Adding new toast: Object
+ Toast reducer called with action: ADD_TOAST
+ Adding new toast: Object
+ #1 56ms Unable to clone WebGL context as it has preserveDrawingBuffer=false <canvas width=​"468" height=​"298" style=​"width:​ 468px;​ height:​ 298px;​">​
+Logger2.warn @ html2canvas.js:7555Understand this warningAI
+2 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ chunk-DRCEIWUP.js:334Understand this warningAI
+ Map processing completed at position: 280.84722222222223
+ Of the table content, 6 units width could not fit page
+calculateWidths @ jspdf-autotable.js:2035Understand this warningAI
+ Creating new toast with props: Object
+ Toast reducer called with action: DISMISS_TOAST
+ Dismissing toast: cbqfqry0tow
+ Toast reducer called with action: DISMISS_TOAST
+ Dismissing toast: cbqfqry0tow
+ Toast reducer called with action: DISMISS_TOAST
+ Dismissing toast: cbqfqry0tow
+ Toast reducer called with action: DISMISS_TOAST
+ Dismissing toast: cbqfqry0tow
+ Toast reducer called with action: ADD_TOAST
+ Adding new toast: Object
+ Toast reducer called with action: ADD_TOAST
+ Adding new toast: Object
+4Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.Understand this warningAI
