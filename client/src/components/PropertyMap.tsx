@@ -39,6 +39,11 @@ export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
           disableDefaultUI: false,
           clickableIcons: false,
           preserveDrawingBuffer: true,
+          webglContextAttributes: {
+            preserveDrawingBuffer: true,
+            antialias: true,
+            powerPreference: 'high-performance'
+          },
           mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 

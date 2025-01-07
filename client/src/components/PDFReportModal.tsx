@@ -201,40 +201,62 @@ export function PDFReportModal({
         return;
       }
 
+      // Wait for map to be fully loaded and rendered
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const mapImage = await html2canvas(mapContainer as HTMLElement, {
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        scale: 2
+        scale: 2,
+        logging: true,
+        width: mapContainer.offsetWidth,
+        height: mapContainer.offsetHeight,
+        imageTimeout: 15000,
+        onclone: (clonedDoc) => {
+          const clonedMap = clonedDoc.querySelector('[data-map-container="true"]');
+          if (clonedMap) {
+            clonedMap.classList.remove('transition');
+            (clonedMap as HTMLElement).style.transform = 'none';
+          }
+        }
       }).then(canvas => canvas.toDataURL('image/png', 1.0));
 
       // Validate map image data with timeout
       try {
-        await new Promise((resolve, reject) => {
-          const img = new Image();
-          const timeout = setTimeout(() => {
-            reject(new Error('Map image loading timed out'));
-          }, 5000);
+        const validateMapImage = async (imageData: string) => {
+          return new Promise((resolve, reject) => {
+            const img = new Image();
+            const timeout = setTimeout(() => {
+              reject(new Error('Map image loading timed out'));
+            }, 15000);
 
-          img.onload = () => {
-            clearTimeout(timeout);
-            resolve(true);
-          };
-          
-          img.onerror = () => {
-            clearTimeout(timeout);
-            reject(new Error('Failed to load map image'));
-          };
-          
-          img.src = capturedMapImage;
-        });
+            img.onload = () => {
+              clearTimeout(timeout);
+              if (img.width < 10 || img.height < 10) {
+                reject(new Error('Invalid map image dimensions'));
+              } else {
+                resolve(true);
+              }
+            };
+            
+            img.onerror = () => {
+              clearTimeout(timeout);
+              reject(new Error('Failed to load map image'));
+            };
+            
+            img.src = imageData;
+          });
+        };
+
+        await validateMapImage(mapImage);
       } catch (error) {
         console.error('Invalid map image data:', error);
         toast({
           variant: "destructive",
           title: "Map Error",
-          description: "Failed to process map image. Please try again.",
-          duration: 3000,
+          description: `Failed to process map image: ${error.message}. Please try again.`,
+          duration: 5000,
         });
         return;
       }
