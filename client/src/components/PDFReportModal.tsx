@@ -7,7 +7,6 @@ import { FileText, Upload } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import { generatePropertyReport } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
-import html2canvas from 'html2canvas';
 
 // Matches all available data from PropertyAnalyzerPage
 const defaultSectionGroups = [
@@ -71,63 +70,84 @@ const defaultSectionGroups = [
   }
 ];
 
-export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps) {
+interface PDFReportModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  data: {
+    propertyDetails: {
+      address: string;
+      bedrooms?: string;
+      bathrooms?: string;
+      floorArea: number;
+      parkingSpaces: number;
+      purchasePrice: number;
+      ratePerSquareMeter: number;
+      propertyPhoto?: string | null;
+    };
+    financialMetrics: {
+      depositAmount: number;
+      depositPercentage: number;
+      interestRate: number;
+      loanTerm: number;
+      monthlyBondRepayment: number;
+      bondRegistration: number;
+      transferCosts: number;
+    };
+    expenses: {
+      monthlyLevies: number;
+      monthlyRatesTaxes: number;
+      otherMonthlyExpenses: number;
+      maintenancePercent: number;
+      managementFee: number;
+    };
+    performance: {
+      shortTermNightlyRate: number;
+      annualOccupancy: number;
+      shortTermAnnualRevenue: number;
+      longTermAnnualRevenue: number;
+      shortTermGrossYield: number;
+      longTermGrossYield: number;
+    };
+    investmentMetrics?: {
+      year1: {
+        grossYield: number;
+        netYield: number;
+        returnOnEquity: number;
+        annualReturn: number;
+        capRate: number;
+        cashOnCashReturn: number;
+        roiWithoutAppreciation: number;
+        roiWithAppreciation: number;
+        irr: number;
+        netWorthChange: number;
+      };
+      // same structure for other years
+    };
+    netOperatingIncome?: {
+      year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+      year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
+    };
+  };
+  capturedMapImage?: string; // Add this new prop
+}
+
+export function PDFReportModal({ 
+  open, 
+  onOpenChange, 
+  data,
+  capturedMapImage 
+}: PDFReportModalProps) {
   const { user } = useUser();
   const { toast } = useToast();
   const [sectionGroups, setSectionGroups] = useState(defaultSectionGroups);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
-  const [mapImage, setMapImage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (open) {
-      console.log('Modal opened, starting map capture process');
-      captureExistingMap(); // Call captureExistingMap directly
-    }
-  }, [open]);
-
-  const captureExistingMap = async () => {
-    try {
-      const mapElement = document.getElementById('property-analysis-map');
-      if (!mapElement) {
-        console.error('Could not find property analysis map element');
-        return;
-      }
-
-      // Force explicit dimensions for capture
-      const originalStyle = mapElement.getAttribute('style');
-      mapElement.style.width = '600px';
-      mapElement.style.height = '400px';
-      mapElement.style.position = 'relative';
-
-      try {
-        // Wait for Google Maps to fully render
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const canvas = await html2canvas(mapElement, {
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          scale: 2,
-          width: 600,
-          height: 400,
-        });
-
-        const mapDataUrl = canvas.toDataURL('image/png', 1.0);
-        if (mapDataUrl.length > 1000) {
-          setMapImage(mapDataUrl);
-        }
-      } finally {
-        // Restore original style
-        if (originalStyle) {
-          mapElement.setAttribute('style', originalStyle);
-        }
-      }
-    } catch (error) {
-      console.error('Error capturing map:', error);
-    }
-  };
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -163,10 +183,6 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
     try {
       setGenerating(true);
 
-      // Always try to capture the map first
-      await captureExistingMap();
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
       const selectedSections = sectionGroups.reduce((acc, group) => {
         acc[group.title] = group.sections
           .filter(section => section.checked)
@@ -174,14 +190,14 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         return acc;
       }, {} as Record<string, string[]>);
 
-      // Prepare PDF data
+      // Prepare PDF data using the pre-captured map image
       const pdfData = {
         ...data,
         propertyDetails: {
           ...data.propertyDetails,
           areaRatePerSquareMeter: 45000,
           ratePerSquareMeter: Math.round(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea),
-          mapImage // Include the captured map
+          mapImage: capturedMapImage // Use the pre-captured map image
         }
       };
 
@@ -302,69 +318,4 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
       </DialogContent>
     </Dialog>
   );
-}
-
-interface PDFReportModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  data: {
-    propertyDetails: {
-      address: string;
-      bedrooms?: string;
-      bathrooms?: string;
-      floorArea: number;
-      parkingSpaces: number;
-      purchasePrice: number;
-      ratePerSquareMeter: number;
-      propertyPhoto?: string | null;
-    };
-    financialMetrics: {
-      depositAmount: number;
-      depositPercentage: number;
-      interestRate: number;
-      loanTerm: number;
-      monthlyBondRepayment: number;
-      bondRegistration: number;
-      transferCosts: number;
-    };
-    expenses: {
-      monthlyLevies: number;
-      monthlyRatesTaxes: number;
-      otherMonthlyExpenses: number;
-      maintenancePercent: number;
-      managementFee: number;
-    };
-    performance: {
-      shortTermNightlyRate: number;
-      annualOccupancy: number;
-      shortTermAnnualRevenue: number;
-      longTermAnnualRevenue: number;
-      shortTermGrossYield: number;
-      longTermGrossYield: number;
-    };
-    investmentMetrics?: {
-      year1: {
-        grossYield: number;
-        netYield: number;
-        returnOnEquity: number;
-        annualReturn: number;
-        capRate: number;
-        cashOnCashReturn: number;
-        roiWithoutAppreciation: number;
-        roiWithAppreciation: number;
-        irr: number;
-        netWorthChange: number;
-      };
-      // same structure for other years
-    };
-    netOperatingIncome?: {
-      year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-      year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-      year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-      year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-      year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-      year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-      year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
-    };
-  };
 }

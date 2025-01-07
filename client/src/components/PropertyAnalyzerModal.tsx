@@ -2,23 +2,70 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatter } from "../utils/formatting";
 import { Building2, Coins, TrendingUp, Home, BarChart3, PiggyBank } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader } from "@googlemaps/js-api-loader";
+import html2canvas from 'html2canvas';
 
 interface PropertyAnalyzerModalProps {
   property: any;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onMapImageCapture?: (imageData: string) => void;
 }
 
-export function PropertyAnalyzerModal({ property, open, onOpenChange }: PropertyAnalyzerModalProps) {
+export function PropertyAnalyzerModal({ 
+  property, 
+  open, 
+  onOpenChange,
+  onMapImageCapture 
+}: PropertyAnalyzerModalProps) {
   if (!property) return null;
+
   const mapRef = useRef<HTMLDivElement>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   // Calculate the actual property rate per square meter
   const calculateRatePerSqm = () => {
     if (!property.floorArea || property.floorArea === 0) return 0;
     return property.purchasePrice / property.floorArea;
+  };
+
+  const captureMap = async () => {
+    if (!mapRef.current || !mapLoaded) return;
+
+    try {
+      // Set explicit dimensions for capture
+      const originalStyle = mapRef.current.getAttribute('style');
+      mapRef.current.style.width = '600px';
+      mapRef.current.style.height = '400px';
+      mapRef.current.style.position = 'relative';
+
+      // Wait a bit for any visual changes to settle
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const canvas = await html2canvas(mapRef.current, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        scale: 2,
+        width: 600,
+        height: 400,
+      });
+
+      const mapImage = canvas.toDataURL('image/png', 1.0);
+
+      // Only use the image if it's valid (longer than 1000 chars)
+      if (mapImage.length > 1000) {
+        onMapImageCapture?.(mapImage);
+      }
+
+      // Restore original style
+      if (originalStyle) {
+        mapRef.current.setAttribute('style', originalStyle);
+      }
+    } catch (error) {
+      console.error('Error capturing map:', error);
+    }
   };
 
   useEffect(() => {
@@ -36,15 +83,27 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
           const map = new google.maps.Map(mapRef.current, {
             center: results[0].geometry.location,
             zoom: 15,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
           });
 
           new google.maps.Marker({
             map,
             position: results[0].geometry.location,
           });
+
+          setMapLoaded(true);
+
+          // Capture the map after it's fully loaded
+          setTimeout(captureMap, 1000);
         }
       });
     });
+
+    return () => {
+      setMapLoaded(false);
+    };
   }, [open, property.address]);
 
   return (
