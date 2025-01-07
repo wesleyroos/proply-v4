@@ -531,7 +531,12 @@ export default function PropertyAnalyzerPage() {
                       <>
                         <div className="rounded-lg overflow-hidden">
                           <div ref={mapRef}>
-                          <PropertyMap address={analysisResult.address} />
+                          <PropertyMap 
+                            address={analysisResult.address} 
+                            onMapLoad={() => {
+                              console.log('Map fully loaded and ready for capture');
+                            }} 
+                          />
                         </div>
                         </div>
 

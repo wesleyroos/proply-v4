@@ -42,6 +42,11 @@ export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
         const map = new google.maps.Map(container, mapOptions);
         mapInstance.current = map;
 
+        // Wait for map to be fully loaded before calling onMapLoad
+        google.maps.event.addListenerOnce(map, 'tilesloaded', () => {
+          if (onMapLoad) onMapLoad();
+        });
+
         // Wait for map to be fully loaded
         await new Promise<void>((resolve) => {
           google.maps.event.addListenerOnce(map, 'tilesloaded', () => {
