@@ -15,7 +15,7 @@ export async function generatePropertyReport(
       purchasePrice: number;
       ratePerSquareMeter: number;
       propertyPhoto?: string | null;
-      areaRatePerSquareMeter?: number; // Added to handle area rate
+      areaRatePerSquareMeter?: number;
     };
     financialMetrics: {
       depositAmount: number;
@@ -97,7 +97,13 @@ export async function generatePropertyReport(
   // Add map if available
   if (data.mapElement) {
     try {
-      const canvas = await html2canvas(data.mapElement);
+      const canvas = await html2canvas(data.mapElement, {
+        useCORS: true,
+        allowTaint: true,
+        logging: true,
+        width: 800,
+        height: 400
+      });
       const mapImage = canvas.toDataURL('image/png');
       doc.addImage(mapImage, 'PNG', 20, yPos, 170, 80);
       yPos += 90; // Add space after map
@@ -111,16 +117,21 @@ export async function generatePropertyReport(
     doc.text('Property Details', 20, yPos);
     yPos += 10;
 
+    // Calculate the actual rate per square meter
+    const actualRatePerSqM = Math.round(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea);
+    const areaRatePerSqM = data.propertyDetails.areaRatePerSquareMeter || 0;
+    const rateDifference = areaRatePerSqM - actualRatePerSqM;
+
     const propertyData = [
       ['Address', data.propertyDetails.address],
       ['Bedrooms', data.propertyDetails.bedrooms || 'N/A'],
       ['Bathrooms', data.propertyDetails.bathrooms || 'N/A'],
       ['Floor Area', `${data.propertyDetails.floorArea}m²`],
       ['Parking Spaces', data.propertyDetails.parkingSpaces.toString()],
-      ['Purchase Price', formatter.format(data.propertyDetails.purchasePrice)],
-      ['Rate per m²', formatter.format(data.propertyDetails.ratePerSquareMeter)],
-      ['Area Rate/m²', formatter.format(data.propertyDetails.areaRatePerSquareMeter || 0)], 
-      ['Rate/m² Difference', formatter.format(data.propertyDetails.ratePerSquareMeter - (data.propertyDetails.areaRatePerSquareMeter || 0))] 
+      ['Purchase Price', formatter(data.propertyDetails.purchasePrice)],
+      ['Rate per m²', formatter(actualRatePerSqM)],
+      ['Area Rate/m²', formatter(areaRatePerSqM)],
+      ['Rate/m² Difference', formatter(rateDifference)]
     ];
 
     autoTable(doc, {
@@ -293,8 +304,8 @@ export async function generatePropertyReport(
       body: monthlyPerformanceData,
       theme: 'striped',
       styles: { fontSize: 7, cellPadding: 1 },
-      headStyles: { 
-        fillColor: [243, 244, 246], 
+      headStyles: {
+        fillColor: [243, 244, 246],
         textColor: [31, 41, 55],
         fontSize: 7
       },
@@ -312,7 +323,7 @@ export async function generatePropertyReport(
       },
       didParseCell: function(data) {
         // Make total and average rows bold
-        if (data.row.index === monthlyPerformanceData.length - 2 || 
+        if (data.row.index === monthlyPerformanceData.length - 2 ||
             data.row.index === monthlyPerformanceData.length - 1) {
           data.cell.styles.fontStyle = 'bold';
           data.cell.styles.fillColor = [243, 244, 246];

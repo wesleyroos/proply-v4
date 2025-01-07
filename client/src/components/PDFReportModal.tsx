@@ -246,7 +246,12 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
 
       const pdfData = {
         ...data,
-        mapElement: tempMapContainer // Pass the container element
+        propertyDetails: {
+          ...data.propertyDetails,
+          areaRatePerSquareMeter: 45000, // Set the correct area rate
+          ratePerSquareMeter: Math.round(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea)
+        },
+        mapElement: tempMapContainer
       };
 
       const doc = await generatePropertyReport(pdfData, selectedSections, logoPreviewUrl || user?.companyLogo);
