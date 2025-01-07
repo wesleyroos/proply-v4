@@ -1,6 +1,5 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import html2canvas from 'html2canvas';
 import { formatter } from '@/utils/formatting';
 import { SEASONALITY_FACTORS, OCCUPANCY_RATES, getSeasonalNightlyRate, getFeeAdjustedRate, calculateMonthlyRevenue } from '@/utils/rentalPerformance';
 
@@ -94,19 +93,22 @@ export async function generatePropertyReport(
 
   yPos = 50;
 
-  // Add map if available
-  if (data.mapElement) {
+  // Add static map if address is available
+  if (data.propertyDetails.address) {
     try {
-      const canvas = await html2canvas(data.mapElement, {
-        useCORS: true,
-        allowTaint: true,
-        logging: true,
-        width: 800,
-        height: 400
+      const encodedAddress = encodeURIComponent(data.propertyDetails.address);
+      const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodedAddress}&zoom=15&size=800x400&markers=color:red%7C${encodedAddress}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`;
+
+      await new Promise<void>((resolve) => {
+        const mapImage = new Image();
+        mapImage.crossOrigin = "anonymous";
+        mapImage.onload = () => {
+          doc.addImage(mapImage, 'PNG', 20, yPos, 170, 80);
+          yPos += 90; // Add space after map
+          resolve();
+        };
+        mapImage.src = mapUrl;
       });
-      const mapImage = canvas.toDataURL('image/png');
-      doc.addImage(mapImage, 'PNG', 20, yPos, 170, 80);
-      yPos += 90; // Add space after map
     } catch (error) {
       console.error('Error adding map to PDF:', error);
     }
@@ -156,13 +158,13 @@ export async function generatePropertyReport(
     yPos += 10;
 
     const dealStructureData = [
-      ['Deposit Amount', formatter.format(data.financialMetrics.depositAmount)],
+      ['Deposit Amount', formatter(data.financialMetrics.depositAmount)],
       ['Deposit Percentage', `${data.financialMetrics.depositPercentage}%`],
       ['Interest Rate', `${data.financialMetrics.interestRate}%`],
       ['Loan Term', `${data.financialMetrics.loanTerm} years`],
-      ['Monthly Bond Payment', formatter.format(data.financialMetrics.monthlyBondRepayment)],
-      ['Bond Registration', formatter.format(data.financialMetrics.bondRegistration)],
-      ['Transfer Costs', formatter.format(data.financialMetrics.transferCosts)]
+      ['Monthly Bond Payment', formatter(data.financialMetrics.monthlyBondRepayment)],
+      ['Bond Registration', formatter(data.financialMetrics.bondRegistration)],
+      ['Transfer Costs', formatter(data.financialMetrics.transferCosts)]
     ];
 
     autoTable(doc, {
@@ -189,18 +191,18 @@ export async function generatePropertyReport(
     // Short-term rental performance
     const shortTermData = [
       ['Short-Term Performance', ''],
-      ['Nightly Rate', formatter.format(data.performance.shortTermNightlyRate)],
+      ['Nightly Rate', formatter(data.performance.shortTermNightlyRate)],
       ['Annual Occupancy', `${data.performance.annualOccupancy}%`],
-      ['Annual Revenue', formatter.format(data.performance.shortTermAnnualRevenue)],
-      ['Monthly Average', formatter.format(data.performance.shortTermAnnualRevenue / 12)],
+      ['Annual Revenue', formatter(data.performance.shortTermAnnualRevenue)],
+      ['Monthly Average', formatter(data.performance.shortTermAnnualRevenue / 12)],
       ['Gross Yield', `${data.performance.shortTermGrossYield}%`]
     ];
 
     // Long-term rental performance
     const longTermData = [
       ['Long-Term Performance', ''],
-      ['Annual Revenue', formatter.format(data.performance.longTermAnnualRevenue)],
-      ['Monthly Revenue', formatter.format(data.performance.longTermAnnualRevenue / 12)],
+      ['Annual Revenue', formatter(data.performance.longTermAnnualRevenue)],
+      ['Monthly Revenue', formatter(data.performance.longTermAnnualRevenue / 12)],
       ['Gross Yield', `${data.performance.longTermGrossYield}%`]
     ];
 
@@ -249,42 +251,42 @@ export async function generatePropertyReport(
 
       return [
         month,
-        formatter.format(seasonalRate),
-        formatter.format(feeAdjustedRate),
+        formatter(seasonalRate),
+        formatter(feeAdjustedRate),
         `${OCCUPANCY_RATES.low[index]}%`,
-        formatter.format(lowRevenue),
+        formatter(lowRevenue),
         `${OCCUPANCY_RATES.medium[index]}%`,
-        formatter.format(mediumRevenue),
+        formatter(mediumRevenue),
         `${OCCUPANCY_RATES.high[index]}%`,
-        formatter.format(highRevenue),
-        formatter.format(longTermMonthly)
+        formatter(highRevenue),
+        formatter(longTermMonthly)
       ];
     });
 
     monthlyPerformanceData.push([
       'Total',
-      formatter.format(totalSeasonalRate),
-      formatter.format(totalFeeAdjustedRate),
+      formatter(totalSeasonalRate),
+      formatter(totalFeeAdjustedRate),
       '-',
-      formatter.format(totalLowRevenue),
+      formatter(totalLowRevenue),
       '-',
-      formatter.format(totalMediumRevenue),
+      formatter(totalMediumRevenue),
       '-',
-      formatter.format(totalHighRevenue),
-      formatter.format(totalLongTermMonthly)
+      formatter(totalHighRevenue),
+      formatter(totalLongTermMonthly)
     ]);
 
     monthlyPerformanceData.push([
       'Average',
-      formatter.format(totalSeasonalRate / 12),
-      formatter.format(totalFeeAdjustedRate / 12),
+      formatter(totalSeasonalRate / 12),
+      formatter(totalFeeAdjustedRate / 12),
       `${Math.round(OCCUPANCY_RATES.low.reduce((a, b) => a + b, 0) / 12)}%`,
-      formatter.format(totalLowRevenue / 12),
+      formatter(totalLowRevenue / 12),
       `${Math.round(OCCUPANCY_RATES.medium.reduce((a, b) => a + b, 0) / 12)}%`,
-      formatter.format(totalMediumRevenue / 12),
+      formatter(totalMediumRevenue / 12),
       `${Math.round(OCCUPANCY_RATES.high.reduce((a, b) => a + b, 0) / 12)}%`,
-      formatter.format(totalHighRevenue / 12),
-      formatter.format(totalLongTermMonthly / 12)
+      formatter(totalHighRevenue / 12),
+      formatter(totalLongTermMonthly / 12)
     ]);
 
     autoTable(doc, {
@@ -370,9 +372,9 @@ export async function generatePropertyReport(
     yPos += 10;
 
     const expensesData = [
-      ['Monthly Levies', formatter.format(data.expenses.monthlyLevies)],
-      ['Monthly Rates & Taxes', formatter.format(data.expenses.monthlyRatesTaxes)],
-      ['Other Monthly Expenses', formatter.format(data.expenses.otherMonthlyExpenses)],
+      ['Monthly Levies', formatter(data.expenses.monthlyLevies)],
+      ['Monthly Rates & Taxes', formatter(data.expenses.monthlyRatesTaxes)],
+      ['Other Monthly Expenses', formatter(data.expenses.otherMonthlyExpenses)],
       ['Maintenance (%)', `${data.expenses.maintenancePercent}%`],
       ['Management Fee (%)', `${data.expenses.managementFee}%`]
     ];
@@ -438,9 +440,9 @@ export async function generatePropertyReport(
       const yearData = data.netOperatingIncome![yearKey];
       return [
         `Year ${year}`,
-        formatter.format(yearData.annualCashflow),
-        formatter.format(yearData.cumulativeRentalIncome),
-        formatter.format(yearData.netWorthChange)
+        formatter(yearData.annualCashflow),
+        formatter(yearData.cumulativeRentalIncome),
+        formatter(yearData.netWorthChange)
       ];
     });
 

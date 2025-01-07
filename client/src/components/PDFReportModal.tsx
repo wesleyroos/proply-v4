@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -79,7 +79,6 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
-  const mapRef = useRef<HTMLDivElement>(null);
 
   // Enhanced logging when modal opens
   useEffect(() => {
@@ -220,47 +219,18 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         return acc;
       }, {} as Record<string, string[]>);
 
-      // Create a temporary map element for the PDF
-      const tempMapContainer = document.createElement('div');
-      tempMapContainer.style.width = '800px';
-      tempMapContainer.style.height = '400px';
-      document.body.appendChild(tempMapContainer);
-
-      // Create a root for React rendering
-      const root = createRoot(tempMapContainer);
-
-      // Render the map and wait for it to be ready
-      await new Promise<void>((resolve) => {
-        root.render(
-          <DashboardMap 
-            properties={[{ 
-              id: 1, 
-              address: data.propertyDetails.address,
-              type: 'analyzer'
-            }]} 
-          />
-        );
-        // Give the map some time to load
-        setTimeout(resolve, 1000);
-      });
-
       const pdfData = {
         ...data,
         propertyDetails: {
           ...data.propertyDetails,
           areaRatePerSquareMeter: 45000, // Set the correct area rate
           ratePerSquareMeter: Math.round(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea)
-        },
-        mapElement: tempMapContainer
+        }
       };
 
       const doc = await generatePropertyReport(pdfData, selectedSections, logoPreviewUrl || user?.companyLogo);
       const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
       doc.save(filename);
-
-      // Clean up
-      root.unmount();
-      document.body.removeChild(tempMapContainer);
 
       onOpenChange(false);
       toast({
@@ -439,6 +409,5 @@ interface PDFReportModalProps {
       year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
       year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
     };
-    mapElement?: HTMLElement; // Added mapElement type
   };
 }
