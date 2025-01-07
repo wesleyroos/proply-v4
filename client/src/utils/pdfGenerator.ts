@@ -16,7 +16,6 @@ const formatter = (value: number | undefined | null): string => {
 export async function generatePropertyReport(
   data: {
     propertyDetails: {
-    propertyDetails: {
       address: string;
       bedrooms?: string;
       bathrooms?: string;
