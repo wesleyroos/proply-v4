@@ -1,7 +1,17 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { formatter } from '@/utils/formatting';
 import { SEASONALITY_FACTORS, OCCUPANCY_RATES, getSeasonalNightlyRate, getFeeAdjustedRate, calculateMonthlyRevenue } from '@/utils/rentalPerformance';
+
+// Define the formatter function locally to ensure consistency
+const formatter = (value: number | undefined | null): string => {
+  if (value === undefined || value === null || isNaN(value)) {
+    return 'R 0';
+  }
+  return `R ${value.toLocaleString('en-ZA', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })}`;
+};
 
 export async function generatePropertyReport(
   data: {
