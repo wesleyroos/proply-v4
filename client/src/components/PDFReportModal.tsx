@@ -178,10 +178,16 @@ export function PDFReportModal({
   };
 
   const generatePDF = async () => {
-    if (generating) return;
+    console.log('PDFReportModal: Starting PDF generation process');
+    if (generating) {
+      console.log('PDFReportModal: Generation already in progress, aborting');
+      return;
+    }
 
     try {
+      console.log('PDFReportModal: Setting generating state to true');
       setGenerating(true);
+      console.log('PDFReportModal: Initial data:', data);
 
       const mapContainer = document.querySelector('[data-map-container="true"]');
       if (!mapContainer) {

@@ -14,17 +14,20 @@ export function PropertyReportGenerator({
   data,
   companyLogo
 }: PropertyReportGeneratorProps) {
+  console.log('PropertyReportGenerator: Initializing with data:', JSON.stringify(data, null, 2));
   const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
 
   const generatePDF = async () => {
     try {
+      console.log('generatePDF: Starting PDF generation process.');
       setGenerating(true);
 
-      // Extract rental performance data
+      console.log('generatePDF: Extracting rental performance data.');
       const rentalPerformanceData = extractRentalPerformanceData(data);
+      console.log('generatePDF: Rental performance data extracted:', JSON.stringify(rentalPerformanceData, null, 2));
 
-      // Define sections to include in the PDF
+      console.log('generatePDF: Defining sections for the PDF.');
       const selectedSections = {
         "Property Details": ["address", "bedrooms", "bathrooms", "floorArea", "parkingSpaces", "purchasePrice", "ratePerM2"],
         "Financing Details": ["deposit", "interestRate", "loanTerm", "monthlyBond"],
@@ -33,15 +36,18 @@ export function PropertyReportGenerator({
         "Company Branding": ["companyLogo"]
       };
 
-      // Generate PDF with the extracted data
+      console.log('generatePDF: Generating PDF report.');
       const doc = await generatePropertyReport({
         ...data,
         rentalPerformanceData
       }, selectedSections, companyLogo);
+      console.log('generatePDF: PDF report generated.');
 
       const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
 
+      console.log('generatePDF: Saving PDF as:', filename);
       await doc.save(filename);
+      console.log('generatePDF: PDF saved successfully.');
 
       toast({
         title: "Success",
@@ -49,7 +55,7 @@ export function PropertyReportGenerator({
         duration: 5000,
       });
     } catch (error) {
-      console.error('PDF generation error:', error);
+      console.error('generatePDF: PDF generation error:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -57,6 +63,7 @@ export function PropertyReportGenerator({
         duration: 5000,
       });
     } finally {
+      console.log('generatePDF: PDF generation process complete.');
       setGenerating(false);
     }
   };

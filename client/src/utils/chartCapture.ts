@@ -1,7 +1,9 @@
 import html2canvas from 'html2canvas';
 
 export async function captureElement(elementId: string): Promise<string> {
+  console.log(`chartCapture: Attempting to capture element with id: ${elementId}`);
   const element = document.getElementById(elementId);
+  console.log(`chartCapture: Element found: ${!!element}`);
   if (!element) {
     console.warn(`Element with id ${elementId} not found, skipping capture`);
     return '';

@@ -60,6 +60,7 @@ interface Props {
 
 // Format currency values with null safety
 const formatCurrency = (value: number | undefined | null): string => {
+  console.log('formatCurrency: Formatting value:', value);
   if (value === undefined || value === null) {
     return 'N/A';
   }
@@ -77,15 +78,24 @@ export const PropertyReport = forwardRef<HTMLDivElement, Props>(({
   data, 
   companyLogo 
 }, ref) => {
+  console.log('PropertyReport: Rendering with data:', JSON.stringify(data, null, 2));
+
   // Process cashflow data for chart
-  const cashflowData = [1, 2, 3, 4, 5, 10, 20].map(year => ({
-    year: `Year ${year}`,
-    Annual: data?.netOperatingIncome?.[`year${year}`]?.annualCashflow ?? 0,
-    Cumulative: data?.netOperatingIncome?.[`year${year}`]?.cumulativeRentalIncome ?? 0
-  }));
+  const cashflowData = [1, 2, 3, 4, 5, 10, 20].map(year => {
+    console.log('PropertyReport: Processing cashflow data for year:', year);
+    const annualCashflow = data?.netOperatingIncome?.[`year${year}`]?.annualCashflow ?? 0;
+    const cumulativeRentalIncome = data?.netOperatingIncome?.[`year${year}`]?.cumulativeRentalIncome ?? 0;
+    return {
+      year: `Year ${year}`,
+      Annual: annualCashflow,
+      Cumulative: cumulativeRentalIncome
+    };
+  });
+  console.log('PropertyReport: Cashflow data processed:', cashflowData);
 
   // Process asset data for chart
   const calculateLoanBalance = (initialLoan: number, rate: number, years: number): number => {
+    console.log('PropertyReport: Calculating loan balance. Initial loan:', initialLoan, ', Rate:', rate, ', Years:', years);
     const monthlyRate = rate / 12 / 100;
     const months = years * 12;
     const monthlyPayment = (initialLoan * monthlyRate * Math.pow(1 + monthlyRate, months)) /
@@ -97,10 +107,12 @@ export const PropertyReport = forwardRef<HTMLDivElement, Props>(({
       const principal = monthlyPayment - interest;
       balance = balance - principal;
     }
+    console.log('PropertyReport: Loan balance calculated:', balance);
     return Math.max(0, balance);
   };
 
   const assetData = [1, 2, 3, 4, 5, 10, 20].map(year => {
+    console.log('PropertyReport: Processing asset data for year:', year);
     const appreciation = Math.pow(1 + (data?.financialMetrics?.annualAppreciation ?? 5) / 100, year);
     const propertyValue = (data?.propertyDetails?.purchasePrice ?? 0) * appreciation;
     const loanBalance = calculateLoanBalance(
@@ -116,10 +128,12 @@ export const PropertyReport = forwardRef<HTMLDivElement, Props>(({
       Equity: propertyValue - loanBalance
     };
   });
+  console.log('PropertyReport: Asset data processed:', assetData);
 
   const reportContent = (
     <div ref={ref} className="bg-white p-8">
       {/* Header */}
+      console.log('PropertyReport: Rendering header section.');
       <div className="flex justify-between items-center border-b pb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Property Analysis Report</h1>
@@ -134,6 +148,7 @@ export const PropertyReport = forwardRef<HTMLDivElement, Props>(({
       </div>
 
       {/* Key Metrics Summary */}
+      console.log('PropertyReport: Rendering key metrics summary.');
       <div className="grid grid-cols-3 gap-6 mt-6">
         <div className="bg-white p-6 rounded-lg shadow">
           <p className="text-gray-600 text-sm">Purchase Price</p>
@@ -161,6 +176,7 @@ export const PropertyReport = forwardRef<HTMLDivElement, Props>(({
       </div>
 
       {/* Revenue Performance */}
+      console.log('PropertyReport: Rendering revenue performance section.');
       <div className="grid grid-cols-2 gap-6 mt-6">
         <div className="bg-blue-50 p-6 rounded-lg">
           <h3 className="text-lg font-semibold text-blue-900 mb-4">Short-Term Rental</h3>
@@ -207,6 +223,7 @@ export const PropertyReport = forwardRef<HTMLDivElement, Props>(({
       </div>
 
       {/* Cashflow Chart */}
+      console.log('PropertyReport: Rendering cashflow chart.');
       <div className="bg-white p-6 rounded-lg shadow mt-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Cashflow Projections</h3>
         <div className="h-[300px]">
@@ -225,6 +242,7 @@ export const PropertyReport = forwardRef<HTMLDivElement, Props>(({
       </div>
 
       {/* Asset Growth Chart */}
+      console.log('PropertyReport: Rendering asset growth chart.');
       <div className="bg-white p-6 rounded-lg shadow mt-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Asset Growth & Equity</h3>
         <div className="h-[300px]">
@@ -244,6 +262,7 @@ export const PropertyReport = forwardRef<HTMLDivElement, Props>(({
       </div>
 
       {/* 20-Year Summary */}
+      console.log('PropertyReport: Rendering 20-year summary.');
       <div className="grid grid-cols-4 gap-6 mt-6">
         <div className="bg-green-50 p-6 rounded-lg">
           <p className="text-gray-600">Total Return</p>
@@ -277,6 +296,7 @@ export const PropertyReport = forwardRef<HTMLDivElement, Props>(({
       </div>
 
       {/* Disclaimer */}
+      console.log('PropertyReport: Rendering disclaimer section.');
       <div className="mt-12 pt-6 border-t text-sm text-gray-600">
         <h3 className="font-semibold text-gray-800 mb-2">DISCLAIMER</h3>
         <p className="mb-4">
@@ -294,9 +314,11 @@ export const PropertyReport = forwardRef<HTMLDivElement, Props>(({
 
   if (!open) {
     // When generating PDF, render without dialog
+    console.log('PropertyReport: Rendering without dialog (PDF generation).');
     return <div className="hidden">{reportContent}</div>;
   }
 
+  console.log('PropertyReport: Rendering within dialog.');
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
