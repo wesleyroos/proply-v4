@@ -17,8 +17,12 @@ export default function PropertyMap({ address }: PropertyMapProps) {
     const initializeMap = async () => {
       try {
         await initGoogleMaps();
+        console.log("Google Maps initialized successfully");
 
-        if (!isMounted || !mapRef.current || !address) return;
+        if (!isMounted || !mapRef.current || !address) {
+          console.error("Missing required elements for map initialization");
+          return;
+        }
 
         // Initialize map with default location
         const defaultLocation = { lat: -33.918861, lng: 18.4233 }; // Cape Town
@@ -28,7 +32,12 @@ export default function PropertyMap({ address }: PropertyMapProps) {
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
+          gestureHandling: 'cooperative',
+          mapId: "8c097f85efc9c75f",
         });
+
+        // Wait for map to be ready
+        await new Promise((resolve) => google.maps.event.addListenerOnce(map, 'idle', resolve));
 
         // Geocode the address
         const geocoder = new google.maps.Geocoder();
