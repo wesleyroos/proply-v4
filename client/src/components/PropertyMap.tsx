@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import { initGoogleMaps } from '../lib/maps';
 
@@ -11,6 +12,7 @@ export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
   const [error, setError] = useState<string | null>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const markerInstance = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
+  const listenerRef = useRef<google.maps.MapsEventListener | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -36,23 +38,17 @@ export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
           disableDefaultUI: false,
           clickableIcons: false,
           preserveDrawingBuffer: true,
-          willReadFrequently: true
+          mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 
         const map = new google.maps.Map(container, mapOptions);
         mapInstance.current = map;
 
-        // Wait for map to be fully loaded before calling onMapLoad
-        google.maps.event.addListenerOnce(map, 'tilesloaded', () => {
-          if (onMapLoad) onMapLoad();
-        });
-
-        // Wait for map to be fully loaded
-        await new Promise<void>((resolve) => {
-          google.maps.event.addListenerOnce(map, 'tilesloaded', () => {
-            if (onMapLoad) onMapLoad();
-            resolve();
-          });
+        // Single event listener for map load
+        listenerRef.current = google.maps.event.addListenerOnce(map, 'tilesloaded', () => {
+          if (isMounted && onMapLoad) {
+            onMapLoad();
+          }
         });
 
         const geocoder = new google.maps.Geocoder();
@@ -65,6 +61,8 @@ export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
             }
           });
         });
+
+        if (!isMounted) return;
 
         const location = result.geometry.location;
         map.setCenter(location);
@@ -80,7 +78,9 @@ export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
 
       } catch (error) {
         console.error('Map initialization error:', error);
-        setError(error instanceof Error ? error.message : 'Failed to load map');
+        if (isMounted) {
+          setError(error instanceof Error ? error.message : 'Failed to load map');
+        }
       }
     };
 
@@ -88,14 +88,26 @@ export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
 
     return () => {
       isMounted = false;
+      
+      // Clean up event listener
+      if (listenerRef.current) {
+        google.maps.event.removeListener(listenerRef.current);
+        listenerRef.current = null;
+      }
+
+      // Clean up marker
       if (markerInstance.current) {
         markerInstance.current.map = null;
       }
+
+      // Clean up map
+      if (mapInstance.current) {
+        mapInstance.current = null;
+      }
+
+      // Clean up container
       if (mapRef.current) {
-        const div = mapRef.current;
-        while (div.firstChild) {
-          div.removeChild(div.firstChild);
-        }
+        mapRef.current.innerHTML = '';
       }
     };
   }, [address, onMapLoad]);
@@ -111,6 +123,7 @@ export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
   return (
     <div 
       ref={mapRef} 
+      data-map-container="true"
       className="h-[300px] w-full rounded-lg overflow-hidden border relative"
       style={{ minHeight: '300px', minWidth: '100%' }}
     />
