@@ -166,18 +166,12 @@ export async function generatePropertyReport(
         }
 
         console.log('Map processing completed at position:', yPos);
-              });
-            } catch (error) {
-              console.error('Error adding map to PDF:', error);
-            }
-            resolve();
-          };
-          img.onerror = () => {
-            console.error('Error loading map image');
-            reject(new Error('Failed to load map image'));
-          };
-          img.src = data.propertyDetails.mapImage;
-        });
+      } catch (error) {
+        console.error('Error processing map:', error);
+      }
+    } else {
+      console.log('No map image available to add to PDF');
+    }
       } catch (error) {
         console.error('Error processing map:', error);
       }
