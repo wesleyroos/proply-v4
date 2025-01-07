@@ -136,58 +136,7 @@ export default function PropertyAnalyzerPage() {
   const resultsRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
-  const captureMap = async () => {
-    if (!mapRef.current) return null;
-    try {
-      // Force a small delay to ensure map is fully rendered
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Store original dimensions
-      const originalStyle = mapRef.current.getAttribute('style');
-      const computedStyle = window.getComputedStyle(mapRef.current);
-      const originalWidth = computedStyle.width;
-      const originalHeight = computedStyle.height;
-
-      // Set explicit dimensions for capture
-      mapRef.current.style.width = '600px';
-      mapRef.current.style.height = '400px';
-      
-      // Wait for size change to take effect
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const canvas = await html2canvas(mapRef.current, {
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        scale: 2,
-        logging: true,
-        width: 600,
-        height: 400,
-        windowWidth: 600,
-        windowHeight: 400
-      });
-
-      // Restore original dimensions
-      if (originalStyle) {
-        mapRef.current.setAttribute('style', originalStyle);
-      } else {
-        mapRef.current.style.width = originalWidth;
-        mapRef.current.style.height = originalHeight;
-      }
-
-      const mapImage = canvas.toDataURL('image/png', 1.0);
-      
-      // Validate captured image
-      if (!mapImage || mapImage.length < 5000) {
-        throw new Error('Invalid map capture');
-      }
-
-      return mapImage;
-    } catch (error) {
-      console.error('Error capturing map:', error);
-      return null;
-    }
-  };
+  // Map capture is now handled in PDFReportModal
 
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
