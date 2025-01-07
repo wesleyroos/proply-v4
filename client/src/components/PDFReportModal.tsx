@@ -83,8 +83,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   useEffect(() => {
     if (open) {
       console.log('Modal opened, starting map capture process');
-      // Wait for the map to be fully rendered
-      setTimeout(captureExistingMap, 1000);
+      captureExistingMap(); // Call captureExistingMap directly
     }
   }, [open]);
 
@@ -96,38 +95,28 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         return;
       }
 
-      // Wait for Google Maps to fully render and stabilize
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
       // Force explicit dimensions for capture
       const originalStyle = mapElement.getAttribute('style');
-      mapElement.style.width = '600px';  // Fixed width for PDF
-      mapElement.style.height = '400px'; // Fixed height for PDF
+      mapElement.style.width = '600px';
+      mapElement.style.height = '400px';
       mapElement.style.position = 'relative';
-      mapElement.style.overflow = 'hidden';
 
       try {
+        // Wait for Google Maps to fully render
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
         const canvas = await html2canvas(mapElement, {
           useCORS: true,
           allowTaint: true,
-          logging: true,
           backgroundColor: '#ffffff',
           scale: 2,
           width: 600,
           height: 400,
-          onclone: (clonedDoc, element) => {
-            element.style.width = '600px';
-            element.style.height = '400px';
-          }
         });
 
         const mapDataUrl = canvas.toDataURL('image/png', 1.0);
-        console.log('Map captured successfully, data URL length:', mapDataUrl.length);
-
         if (mapDataUrl.length > 1000) {
           setMapImage(mapDataUrl);
-        } else {
-          console.error('Map capture failed - generated image is too small');
         }
       } finally {
         // Restore original style
@@ -174,12 +163,9 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
     try {
       setGenerating(true);
 
-      // If no map image, try to capture it one last time
-      if (!mapImage) {
-        await captureExistingMap();
-        // Wait for state to update
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
+      // Always try to capture the map first
+      await captureExistingMap();
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const selectedSections = sectionGroups.reduce((acc, group) => {
         acc[group.title] = group.sections
@@ -188,21 +174,16 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         return acc;
       }, {} as Record<string, string[]>);
 
-      // Prepare PDF data with explicit map image
+      // Prepare PDF data
       const pdfData = {
         ...data,
         propertyDetails: {
           ...data.propertyDetails,
           areaRatePerSquareMeter: 45000,
           ratePerSquareMeter: Math.round(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea),
-          mapImage: mapImage // Ensure map image is included
+          mapImage // Include the captured map
         }
       };
-
-      console.log('PDF data prepared:', {
-        hasMapImage: !!pdfData.propertyDetails.mapImage,
-        mapImageLength: pdfData.propertyDetails.mapImage?.length
-      });
 
       const doc = await generatePropertyReport(pdfData, selectedSections, logoPreviewUrl || user?.companyLogo);
       const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
