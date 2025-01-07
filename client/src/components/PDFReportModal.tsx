@@ -90,7 +90,6 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
 
   const captureExistingMap = async () => {
     try {
-      // Specifically target the property analysis map
       const mapElement = document.getElementById('property-analysis-map');
       console.log('Looking for map element:', mapElement);
 
@@ -99,20 +98,39 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         return;
       }
 
-      // Wait for Google Maps to finish rendering
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for Google Maps to fully render
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Capture the map
+      // Set explicit dimensions to ensure the map is visible
+      const originalHeight = mapElement.style.height;
+      mapElement.style.height = '300px';
+
+      // Capture with higher quality settings
       const canvas = await html2canvas(mapElement, {
         useCORS: true,
         allowTaint: true,
         logging: true,
         backgroundColor: '#ffffff',
-        scale: 2, // Increase quality
+        scale: 2,
+        width: mapElement.offsetWidth,
+        height: mapElement.offsetHeight,
+        onclone: (clonedDoc, element) => {
+          // Ensure cloned element maintains dimensions
+          element.style.width = `${mapElement.offsetWidth}px`;
+          element.style.height = `${mapElement.offsetHeight}px`;
+        }
       });
 
-      const mapDataUrl = canvas.toDataURL('image/png');
+      // Restore original height
+      mapElement.style.height = originalHeight;
+
+      const mapDataUrl = canvas.toDataURL('image/png', 1.0);
       console.log('Map captured successfully, data URL length:', mapDataUrl.length);
+
+      if (mapDataUrl.length < 1000) {
+        console.error('Map capture failed - generated image is too small');
+        return;
+      }
 
       setMapImage(mapDataUrl);
     } catch (error) {
