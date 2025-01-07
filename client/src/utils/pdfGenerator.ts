@@ -97,20 +97,41 @@ export async function generatePropertyReport(
   if (data.propertyDetails.address) {
     try {
       const encodedAddress = encodeURIComponent(data.propertyDetails.address);
-      const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodedAddress}&zoom=15&size=800x400&markers=color:red%7C${encodedAddress}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`;
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-      await new Promise<void>((resolve) => {
-        const mapImage = new Image();
-        mapImage.crossOrigin = "anonymous";
-        mapImage.onload = () => {
-          doc.addImage(mapImage, 'PNG', 20, yPos, 170, 80);
-          yPos += 90; // Add space after map
-          resolve();
-        };
-        mapImage.src = mapUrl;
-      });
+      // Only attempt to add map if we have an API key
+      if (apiKey) {
+        const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodedAddress}&zoom=15&size=800x400&scale=2&markers=color:red%7C${encodedAddress}&key=${apiKey}`;
+
+        await new Promise<void>((resolve, reject) => {
+          const mapImage = new Image();
+          mapImage.crossOrigin = "anonymous";
+
+          mapImage.onload = () => {
+            try {
+              doc.addImage(mapImage, 'PNG', 20, yPos, 170, 80);
+              yPos += 90; // Add space after map
+              resolve();
+            } catch (e) {
+              console.error('Error adding map to PDF:', e);
+              resolve(); // Continue without map
+            }
+          };
+
+          mapImage.onerror = () => {
+            console.error('Error loading map image');
+            resolve(); // Continue without map
+          };
+
+          // Set timeout to avoid hanging
+          setTimeout(() => resolve(), 5000);
+
+          mapImage.src = mapUrl;
+        });
+      }
     } catch (error) {
       console.error('Error adding map to PDF:', error);
+      // Continue without map
     }
   }
 
