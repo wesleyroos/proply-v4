@@ -463,40 +463,43 @@ export async function generatePropertyReport(
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
 
-    // Add disclaimer at the bottom of each page
-    doc.setFontSize(6);
-    doc.setTextColor(100);
+    // Only add disclaimer on the last page
+    if (i === pageCount) {
+      // Calculate starting Y position for disclaimer (80mm from bottom to leave space for page info)
+      const disclaimerY = doc.internal.pageSize.height - 80;
 
-    // Split disclaimer into sections with proper width calculation
-    const maxWidth = 170; // Maximum width in points (leaving margins)
-    const disclaimerText = [
-      "DISCLAIMER: The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.",
-      "",
-      "This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice. Any decisions made based on this information are solely the responsibility of the user. Property investment carries inherent risks, and market conditions can change rapidly.",
-      "",
-      "Proply Tech (Pty) Ltd and its affiliates expressly disclaim any and all liability for any direct, indirect, incidental, or consequential damages arising from the use of this information. Actual results may vary significantly from the projections and estimates presented.",
-      "",
-      "By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.",
-      "",
-      "© 2025 Proply Tech (Pty) Ltd. All rights reserved."
-    ];
+      // Add disclaimer
+      doc.setFontSize(6);
+      doc.setTextColor(100);
 
-    // Calculate starting Y position for disclaimer (20mm from bottom)
-    const disclaimerY = doc.internal.pageSize.height - 50;
+      // Split disclaimer into sections with proper width calculation
+      const maxWidth = 170; // Maximum width in points (leaving margins)
+      const disclaimerText = [
+        "DISCLAIMER: The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.",
+        "",
+        "This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice. Any decisions made based on this information are solely the responsibility of the user. Property investment carries inherent risks, and market conditions can change rapidly.",
+        "",
+        "Proply Tech (Pty) Ltd and its affiliates expressly disclaim any and all liability for any direct, indirect, incidental, or consequential damages arising from the use of this information. Actual results may vary significantly from the projections and estimates presented.",
+        "",
+        "By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.",
+        "",
+        "© 2025 Proply Tech (Pty) Ltd. All rights reserved."
+      ];
 
-    // Add each line of the disclaimer with proper wrapping
-    let currentY = disclaimerY;
-    for (const text of disclaimerText) {
-      if (text === "") {
-        currentY += 3; // Add space between paragraphs
-        continue;
-      }
+      // Add each line of the disclaimer with proper wrapping
+      let currentY = disclaimerY;
+      for (const text of disclaimerText) {
+        if (text === "") {
+          currentY += 3; // Add space between paragraphs
+          continue;
+        }
 
-      // Split text into lines that fit within maxWidth
-      const lines = doc.splitTextToSize(text, maxWidth);
-      for (const line of lines) {
-        doc.text(line, 20, currentY);
-        currentY += 3;
+        // Split text into lines that fit within maxWidth
+        const lines = doc.splitTextToSize(text, maxWidth);
+        for (const line of lines) {
+          doc.text(line, 20, currentY);
+          currentY += 3;
+        }
       }
     }
 
@@ -505,12 +508,12 @@ export async function generatePropertyReport(
     doc.text(
       `Generated on ${new Date().toLocaleDateString()}`,
       20,
-      doc.internal.pageSize.height - 55
+      doc.internal.pageSize.height - 20
     );
     doc.text(
       `Page ${i} of ${pageCount}`,
       170,
-      doc.internal.pageSize.height - 55
+      doc.internal.pageSize.height - 20
     );
   }
 
