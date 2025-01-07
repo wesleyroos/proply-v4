@@ -126,9 +126,12 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                 <div 
                   ref={mapRef} 
                   id="property-analysis-map"
-                  data-map-container="true"
                   className="w-full h-[200px] rounded-lg overflow-hidden"
-                  style={{ border: '1px solid var(--border)' }}
+                  style={{ 
+                    border: '1px solid var(--border)',
+                    width: '100%',  
+                    height: '300px' 
+                  }}
                 />
               </CardContent>
             </Card>

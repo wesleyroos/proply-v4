@@ -91,48 +91,50 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   const captureExistingMap = async () => {
     try {
       const mapElement = document.getElementById('property-analysis-map');
-      console.log('Looking for map element:', mapElement);
-
       if (!mapElement) {
         console.error('Could not find property analysis map element');
         return;
       }
 
-      // Wait for Google Maps to fully render
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Wait for Google Maps to fully render and stabilize
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Set explicit dimensions to ensure the map is visible
-      const originalHeight = mapElement.style.height;
-      mapElement.style.height = '300px';
+      // Force explicit dimensions for capture
+      const originalStyle = mapElement.getAttribute('style');
+      mapElement.style.width = '600px';  // Fixed width for PDF
+      mapElement.style.height = '400px'; // Fixed height for PDF
+      mapElement.style.position = 'relative';
+      mapElement.style.overflow = 'hidden';
 
-      // Capture with higher quality settings
-      const canvas = await html2canvas(mapElement, {
-        useCORS: true,
-        allowTaint: true,
-        logging: true,
-        backgroundColor: '#ffffff',
-        scale: 2,
-        width: mapElement.offsetWidth,
-        height: mapElement.offsetHeight,
-        onclone: (clonedDoc, element) => {
-          // Ensure cloned element maintains dimensions
-          element.style.width = `${mapElement.offsetWidth}px`;
-          element.style.height = `${mapElement.offsetHeight}px`;
+      try {
+        const canvas = await html2canvas(mapElement, {
+          useCORS: true,
+          allowTaint: true,
+          logging: true,
+          backgroundColor: '#ffffff',
+          scale: 2,
+          width: 600,
+          height: 400,
+          onclone: (clonedDoc, element) => {
+            element.style.width = '600px';
+            element.style.height = '400px';
+          }
+        });
+
+        const mapDataUrl = canvas.toDataURL('image/png', 1.0);
+        console.log('Map captured successfully, data URL length:', mapDataUrl.length);
+
+        if (mapDataUrl.length > 1000) {
+          setMapImage(mapDataUrl);
+        } else {
+          console.error('Map capture failed - generated image is too small');
         }
-      });
-
-      // Restore original height
-      mapElement.style.height = originalHeight;
-
-      const mapDataUrl = canvas.toDataURL('image/png', 1.0);
-      console.log('Map captured successfully, data URL length:', mapDataUrl.length);
-
-      if (mapDataUrl.length < 1000) {
-        console.error('Map capture failed - generated image is too small');
-        return;
+      } finally {
+        // Restore original style
+        if (originalStyle) {
+          mapElement.setAttribute('style', originalStyle);
+        }
       }
-
-      setMapImage(mapDataUrl);
     } catch (error) {
       console.error('Error capturing map:', error);
     }
@@ -171,15 +173,11 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
 
     try {
       setGenerating(true);
-      console.log('Starting PDF generation');
-      console.log('Map image available:', mapImage ? 'Yes' : 'No');
-      console.log('Map image length:', mapImage?.length);
 
       // If no map image, try to capture it one last time
       if (!mapImage) {
-        console.log('No map image found, attempting one final capture');
         await captureExistingMap();
-        // Wait a moment for the state to update
+        // Wait for state to update
         await new Promise(resolve => setTimeout(resolve, 500));
       }
 
@@ -190,15 +188,14 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         return acc;
       }, {} as Record<string, string[]>);
 
-      console.log('Selected sections:', selectedSections);
-
+      // Prepare PDF data with explicit map image
       const pdfData = {
         ...data,
         propertyDetails: {
           ...data.propertyDetails,
           areaRatePerSquareMeter: 45000,
           ratePerSquareMeter: Math.round(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea),
-          mapImage
+          mapImage: mapImage // Ensure map image is included
         }
       };
 
