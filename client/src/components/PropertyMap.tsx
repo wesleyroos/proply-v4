@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { initGoogleMaps } from '../lib/maps';
 
@@ -19,7 +18,7 @@ export default function PropertyMap({ address }: PropertyMapProps) {
     const initializeMap = async () => {
       try {
         console.log('Starting map initialization for address:', address);
-        
+
         await initGoogleMaps();
         console.log('Google Maps API loaded successfully');
 
@@ -65,7 +64,7 @@ export default function PropertyMap({ address }: PropertyMapProps) {
 
         // Wait for map to be ready
         await new Promise((resolve) => {
-          google.maps.event.addListenerOnce(map!, 'idle', () => {
+          google.maps.event.addListenerOnce(mapInstance.current!, 'idle', () => {
             console.log('Map idle event fired');
             resolve(null);
           });
@@ -88,14 +87,14 @@ export default function PropertyMap({ address }: PropertyMapProps) {
 
         const location = result.geometry.location;
         console.log('Location found:', { lat: location.lat(), lng: location.lng() });
-        
+
         // Update map view
-        map.setCenter(location);
-        map.setZoom(16);
+        mapInstance.current!.setCenter(location);
+        mapInstance.current!.setZoom(16);
 
         // Create marker
-        marker = new google.maps.Marker({
-          map: map,
+        markerInstance.current = new google.maps.Marker({
+          map: mapInstance.current,
           position: location,
           title: "Property Location",
         });
@@ -114,8 +113,8 @@ export default function PropertyMap({ address }: PropertyMapProps) {
     return () => {
       console.log('Cleaning up map component');
       isMounted = false;
-      if (marker) {
-        marker.setMap(null);
+      if (markerInstance.current) {
+        markerInstance.current.setMap(null);
       }
       setMapLoaded(false);
     };
