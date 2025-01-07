@@ -139,8 +139,18 @@ export default function PropertyAnalyzerPage() {
   const captureMap = async () => {
     if (!mapRef.current) return null;
     try {
-      const canvas = await html2canvas(mapRef.current);
-      return canvas.toDataURL('image/png');
+      // Wait for map to be fully rendered
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const canvas = await html2canvas(mapRef.current, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        scale: 2,
+        logging: true,
+        width: mapRef.current.clientWidth,
+        height: mapRef.current.clientHeight
+      });
+      return canvas.toDataURL('image/png', 1.0);
     } catch (error) {
       console.error('Error capturing map:', error);
       return null;

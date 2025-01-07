@@ -10,11 +10,11 @@ export default function PropertyMap({ address }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const mapInstance = useRef<google.maps.Map | null>(null);
+  const markerInstance = useRef<google.maps.Marker | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    let map: google.maps.Map | null = null;
-    let marker: google.maps.Marker | null = null;
 
     const initializeMap = async () => {
       try {
@@ -49,7 +49,7 @@ export default function PropertyMap({ address }: PropertyMapProps) {
 
         // Initialize map with default location
         const defaultLocation = { lat: -33.918861, lng: 18.4233 }; // Cape Town
-        map = new google.maps.Map(container, {
+        mapInstance.current = new google.maps.Map(container, {
           center: defaultLocation,
           zoom: 13,
           mapTypeControl: false,
@@ -57,6 +57,8 @@ export default function PropertyMap({ address }: PropertyMapProps) {
           fullscreenControl: false,
           gestureHandling: 'cooperative',
           mapId: "8c097f85efc9c75f",
+          preserveDrawingBuffer: true,
+          backgroundColor: '#ffffff'
         });
 
         console.log('Map instance created');
