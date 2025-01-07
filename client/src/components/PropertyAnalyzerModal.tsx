@@ -125,6 +125,8 @@ export function PropertyAnalyzerModal({ property, open, onOpenChange }: Property
                 <p className="text-sm text-muted-foreground mb-4">{property.address}</p>
                 <div 
                   ref={mapRef} 
+                  id="property-analysis-map"
+                  data-map-container="true"
                   className="w-full h-[200px] rounded-lg overflow-hidden"
                   style={{ border: '1px solid var(--border)' }}
                 />

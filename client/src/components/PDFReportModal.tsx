@@ -83,21 +83,19 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   useEffect(() => {
     if (open) {
       console.log('Modal opened, starting map capture process');
-      captureExistingMap();
+      // Wait for the map to be fully rendered
+      setTimeout(captureExistingMap, 1000);
     }
   }, [open]);
 
   const captureExistingMap = async () => {
     try {
-      // First, find all elements with data-map-container attribute
-      const mapElements = document.querySelectorAll('[data-map-container="true"]');
-      console.log('Found map elements:', mapElements.length);
-
-      // Get the first map element
-      const mapElement = mapElements[0];
+      // Specifically target the property analysis map
+      const mapElement = document.getElementById('property-analysis-map');
+      console.log('Looking for map element with ID: property-analysis-map');
 
       if (!mapElement) {
-        console.error('Could not find map element - no elements with data-map-container="true"');
+        console.error('Could not find property analysis map element');
         return;
       }
 
@@ -109,21 +107,28 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         boundingRect: mapElement.getBoundingClientRect()
       });
 
-      // Wait a bit for the map to be fully rendered
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Ensure the map has dimensions before capturing
+      if (!mapElement.offsetWidth || !mapElement.offsetHeight) {
+        console.error('Map element has no dimensions, waiting...');
+        return;
+      }
 
       // Capture the map
       console.log('Starting map capture...');
-      const canvas = await html2canvas(mapElement as HTMLElement, {
+      const canvas = await html2canvas(mapElement, {
         useCORS: true,
         allowTaint: true,
         logging: true,
         backgroundColor: '#ffffff',
+        scale: 2, // Increase quality
         onclone: (clonedDoc, element) => {
           console.log('Cloned element dimensions:', {
             width: element.clientWidth,
             height: element.clientHeight
           });
+          // Ensure the cloned element maintains its size
+          element.style.width = `${mapElement.offsetWidth}px`;
+          element.style.height = `${mapElement.offsetHeight}px`;
         }
       });
 
@@ -141,7 +146,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
       }
 
       setMapImage(mapDataUrl);
-      console.log('Map image state updated');
+      console.log('Map image state updated successfully');
 
     } catch (error) {
       console.error('Error capturing map:', error);
@@ -162,7 +167,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
 
   const toggleSection = (groupTitle: string, sectionId: string) => {
     setSectionGroups(prevGroups => {
-      const newGroups = prevGroups.map(group => {
+      return prevGroups.map(group => {
         if (group.title === groupTitle) {
           return {
             ...group,
@@ -173,7 +178,6 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         }
         return group;
       });
-      return newGroups;
     });
   };
 
@@ -185,6 +189,14 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
       console.log('Starting PDF generation');
       console.log('Map image available:', mapImage ? 'Yes' : 'No');
       console.log('Map image length:', mapImage?.length);
+
+      // If no map image, try to capture it one last time
+      if (!mapImage) {
+        console.log('No map image found, attempting one final capture');
+        await captureExistingMap();
+        // Wait a moment for the state to update
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
 
       const selectedSections = sectionGroups.reduce((acc, group) => {
         acc[group.title] = group.sections
@@ -201,7 +213,7 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
           ...data.propertyDetails,
           areaRatePerSquareMeter: 45000,
           ratePerSquareMeter: Math.round(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea),
-          mapImage // Pass the captured map image
+          mapImage
         }
       };
 
