@@ -133,7 +133,7 @@ interface PDFReportModalProps {
       year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number; netWorthChange: number };
     };
   };
-  capturedMapImage?: string; // Add this new prop
+  capturedMapImage?: string;
 }
 
 export function PDFReportModal({ 
@@ -183,6 +183,17 @@ export function PDFReportModal({
     try {
       setGenerating(true);
 
+      // Verify we have the map image
+      if (!capturedMapImage) {
+        toast({
+          variant: "destructive",
+          title: "Missing Map",
+          description: "Map image is not available. Please try reopening the analyzer.",
+          duration: 3000,
+        });
+        return;
+      }
+
       const selectedSections = sectionGroups.reduce((acc, group) => {
         acc[group.title] = group.sections
           .filter(section => section.checked)
@@ -190,14 +201,14 @@ export function PDFReportModal({
         return acc;
       }, {} as Record<string, string[]>);
 
-      // Prepare PDF data using the pre-captured map image
+      // Prepare PDF data with the pre-captured map image
       const pdfData = {
         ...data,
         propertyDetails: {
           ...data.propertyDetails,
           areaRatePerSquareMeter: 45000,
           ratePerSquareMeter: Math.round(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea),
-          mapImage: capturedMapImage // Use the pre-captured map image
+          mapImage: capturedMapImage
         }
       };
 

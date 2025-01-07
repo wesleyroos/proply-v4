@@ -23,6 +23,8 @@ export function PropertyAnalyzerModal({
 
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [captureAttempts, setCaptureAttempts] = useState(0);
+  const MAX_CAPTURE_ATTEMPTS = 3;
 
   // Calculate the actual property rate per square meter
   const calculateRatePerSqm = () => {
@@ -34,14 +36,18 @@ export function PropertyAnalyzerModal({
     if (!mapRef.current || !mapLoaded) return;
 
     try {
-      // Set explicit dimensions for capture
+      // Store original dimensions
       const originalStyle = mapRef.current.getAttribute('style');
+      const originalWidth = mapRef.current.style.width;
+      const originalHeight = mapRef.current.style.height;
+
+      // Set explicit dimensions for capture
       mapRef.current.style.width = '600px';
       mapRef.current.style.height = '400px';
       mapRef.current.style.position = 'relative';
 
-      // Wait a bit for any visual changes to settle
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for any transitions to complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const canvas = await html2canvas(mapRef.current, {
         useCORS: true,
@@ -50,26 +56,44 @@ export function PropertyAnalyzerModal({
         scale: 2,
         width: 600,
         height: 400,
+        logging: true,
       });
 
       const mapImage = canvas.toDataURL('image/png', 1.0);
 
-      // Only use the image if it's valid (longer than 1000 chars)
+      // Validate captured image
       if (mapImage.length > 1000) {
+        console.log('Map captured successfully');
         onMapImageCapture?.(mapImage);
+        setCaptureAttempts(0); // Reset attempts on success
+      } else {
+        console.error('Invalid map capture - retrying');
+        if (captureAttempts < MAX_CAPTURE_ATTEMPTS) {
+          setCaptureAttempts(prev => prev + 1);
+          setTimeout(captureMap, 1000);
+        }
       }
 
-      // Restore original style
+      // Restore original dimensions
       if (originalStyle) {
         mapRef.current.setAttribute('style', originalStyle);
+      } else {
+        mapRef.current.style.width = originalWidth;
+        mapRef.current.style.height = originalHeight;
       }
     } catch (error) {
       console.error('Error capturing map:', error);
+      if (captureAttempts < MAX_CAPTURE_ATTEMPTS) {
+        setCaptureAttempts(prev => prev + 1);
+        setTimeout(captureMap, 1000);
+      }
     }
   };
 
   useEffect(() => {
     if (!open || !property.address) return;
+
+    let isMounted = true;
 
     const loader = new Loader({
       apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
@@ -77,6 +101,8 @@ export function PropertyAnalyzerModal({
     });
 
     loader.load().then(() => {
+      if (!isMounted) return;
+
       const geocoder = new google.maps.Geocoder();
       geocoder.geocode({ address: property.address }, (results, status) => {
         if (status === "OK" && results && results[0] && mapRef.current) {
@@ -95,14 +121,16 @@ export function PropertyAnalyzerModal({
 
           setMapLoaded(true);
 
-          // Capture the map after it's fully loaded
-          setTimeout(captureMap, 1000);
+          // Capture after map is loaded
+          setTimeout(captureMap, 1500);
         }
       });
     });
 
     return () => {
+      isMounted = false;
       setMapLoaded(false);
+      setCaptureAttempts(0);
     };
   }, [open, property.address]);
 
