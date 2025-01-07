@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import { initGoogleMaps } from '../lib/maps';
 
@@ -10,24 +11,19 @@ export default function PropertyMap({ address }: PropertyMapProps) {
   const [error, setError] = useState<string | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const mapInstance = useRef<google.maps.Map | null>(null);
-  const markerInstance = useRef<google.maps.Marker | null>(null);
-  const [mapInitialized, setMapInitialized] = useState(false);
+  const markerInstance = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
     const initializeMap = async () => {
-      if (mapInitialized) return;
       try {
         console.log('Starting map initialization for address:', address);
 
         await initGoogleMaps();
         console.log('Google Maps API loaded successfully');
 
-        if (!isMounted) {
-          console.warn('Component unmounted during initialization');
-          return;
-        }
+        if (!isMounted) return;
 
         if (!mapRef.current) {
           console.error('Map container ref is not available');
@@ -50,7 +46,7 @@ export default function PropertyMap({ address }: PropertyMapProps) {
 
         // Initialize map with default location
         const defaultLocation = { lat: -33.918861, lng: 18.4233 }; // Cape Town
-        const mapOptions = {
+        const mapOptions: google.maps.MapOptions = {
           center: defaultLocation,
           zoom: 13,
           mapTypeControl: false,
@@ -60,19 +56,19 @@ export default function PropertyMap({ address }: PropertyMapProps) {
           mapId: "8c097f85efc9c75f",
           backgroundColor: '#ffffff',
           disableDefaultUI: false,
-          clickableIcons: false
+          clickableIcons: false,
+          preserveDrawingBuffer: true
         };
 
-        mapInstance.current = new google.maps.Map(container, mapOptions);
-        setMapInitialized(true);
-
+        const map = new google.maps.Map(container, mapOptions);
+        mapInstance.current = map;
         console.log('Map instance created');
 
         // Wait for map to be ready
-        await new Promise((resolve) => {
-          google.maps.event.addListenerOnce(mapInstance.current!, 'idle', () => {
+        await new Promise<void>((resolve) => {
+          google.maps.event.addListenerOnce(map, 'idle', () => {
             console.log('Map idle event fired');
-            resolve(null);
+            resolve();
           });
         });
 
@@ -95,16 +91,17 @@ export default function PropertyMap({ address }: PropertyMapProps) {
         console.log('Location found:', { lat: location.lat(), lng: location.lng() });
 
         // Update map view
-        mapInstance.current!.setCenter(location);
-        mapInstance.current!.setZoom(16);
+        map.setCenter(location);
+        map.setZoom(16);
 
-        // Create marker
-        markerInstance.current = new google.maps.Marker({
-          map: mapInstance.current,
+        // Create marker using AdvancedMarkerElement
+        const marker = new google.maps.marker.AdvancedMarkerElement({
+          map,
           position: location,
-          title: "Property Location",
+          title: "Property Location"
         });
 
+        markerInstance.current = marker;
         console.log('Marker placed successfully');
         setMapLoaded(true);
 
@@ -120,7 +117,7 @@ export default function PropertyMap({ address }: PropertyMapProps) {
       console.log('Cleaning up map component');
       isMounted = false;
       if (markerInstance.current) {
-        markerInstance.current.setMap(null);
+        markerInstance.current.map = null;
       }
       if (mapInstance.current) {
         const div = mapRef.current;
@@ -131,7 +128,6 @@ export default function PropertyMap({ address }: PropertyMapProps) {
         }
       }
       setMapLoaded(false);
-      setMapInitialized(false);
     };
   }, [address]);
 
