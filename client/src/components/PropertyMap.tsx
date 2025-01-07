@@ -1,15 +1,14 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { initGoogleMaps } from '../lib/maps';
 
 interface PropertyMapProps {
   address: string;
+  onMapLoad?: () => void;
 }
 
-export default function PropertyMap({ address }: PropertyMapProps) {
+export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const markerInstance = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
 
@@ -18,37 +17,16 @@ export default function PropertyMap({ address }: PropertyMapProps) {
 
     const initializeMap = async () => {
       try {
-        console.log('Starting map initialization for address:', address);
-
         await initGoogleMaps();
-        console.log('Google Maps API loaded successfully');
 
-        if (!isMounted) return;
+        if (!isMounted || !mapRef.current) return;
 
-        if (!mapRef.current) {
-          console.error('Map container ref is not available');
-          setError('Map container not found');
-          return;
-        }
-
-        if (!address) {
-          console.error('No address provided');
-          setError('Address is required');
-          return;
-        }
-
-        // Get container dimensions
         const container = mapRef.current;
-        console.log('Map container dimensions:', {
-          width: container.clientWidth,
-          height: container.clientHeight
-        });
+        const defaultLocation = { lat: -33.918861, lng: 18.4233 };
 
-        // Initialize map with default location
-        const defaultLocation = { lat: -33.918861, lng: 18.4233 }; // Cape Town
         const mapOptions: google.maps.MapOptions = {
           center: defaultLocation,
-          zoom: 13,
+          zoom: 15,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
@@ -63,23 +41,18 @@ export default function PropertyMap({ address }: PropertyMapProps) {
 
         const map = new google.maps.Map(container, mapOptions);
         mapInstance.current = map;
-        console.log('Map instance created');
 
-        // Wait for map to be ready
+        // Wait for map to be fully loaded
         await new Promise<void>((resolve) => {
-          google.maps.event.addListenerOnce(map, 'idle', () => {
-            console.log('Map idle event fired');
+          google.maps.event.addListenerOnce(map, 'tilesloaded', () => {
+            if (onMapLoad) onMapLoad();
             resolve();
           });
         });
 
-        // Geocode the address
         const geocoder = new google.maps.Geocoder();
-        console.log('Geocoding address:', address);
-
         const result = await new Promise<google.maps.GeocoderResult>((resolve, reject) => {
           geocoder.geocode({ address }, (results, status) => {
-            console.log('Geocoding status:', status);
             if (status === "OK" && results?.[0]) {
               resolve(results[0]);
             } else {
@@ -89,13 +62,9 @@ export default function PropertyMap({ address }: PropertyMapProps) {
         });
 
         const location = result.geometry.location;
-        console.log('Location found:', { lat: location.lat(), lng: location.lng() });
-
-        // Update map view
         map.setCenter(location);
         map.setZoom(16);
 
-        // Create marker using AdvancedMarkerElement
         const marker = new google.maps.marker.AdvancedMarkerElement({
           map,
           position: location,
@@ -103,8 +72,6 @@ export default function PropertyMap({ address }: PropertyMapProps) {
         });
 
         markerInstance.current = marker;
-        console.log('Marker placed successfully');
-        setMapLoaded(true);
 
       } catch (error) {
         console.error('Map initialization error:', error);
@@ -115,22 +82,18 @@ export default function PropertyMap({ address }: PropertyMapProps) {
     initializeMap();
 
     return () => {
-      console.log('Cleaning up map component');
       isMounted = false;
       if (markerInstance.current) {
         markerInstance.current.map = null;
       }
-      if (mapInstance.current) {
+      if (mapRef.current) {
         const div = mapRef.current;
-        if (div) {
-          while (div.firstChild) {
-            div.removeChild(div.firstChild);
-          }
+        while (div.firstChild) {
+          div.removeChild(div.firstChild);
         }
       }
-      setMapLoaded(false);
     };
-  }, [address]);
+  }, [address, onMapLoad]);
 
   if (error) {
     return (
@@ -144,7 +107,7 @@ export default function PropertyMap({ address }: PropertyMapProps) {
     <div 
       ref={mapRef} 
       className="h-[300px] w-full rounded-lg overflow-hidden border relative"
-      style={{ minHeight: '300px' }}
+      style={{ minHeight: '300px', minWidth: '100%' }}
     />
   );
 }
