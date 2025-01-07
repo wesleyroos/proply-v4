@@ -91,13 +91,20 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
 
   const captureMap = async () => {
     try {
+      console.log('Starting map capture process');
+
       // Create a temporary div to render the map
       const mapContainer = document.createElement('div');
       mapContainer.style.width = '800px';
       mapContainer.style.height = '400px';
-      mapContainer.style.position = 'absolute';
-      mapContainer.style.left = '-9999px';
+      mapContainer.style.position = 'fixed'; // Change to fixed
+      mapContainer.style.top = '0';
+      mapContainer.style.left = '0';
+      mapContainer.style.zIndex = '-1000'; // Hide but keep rendered
+      mapContainer.style.backgroundColor = '#ffffff';
       document.body.appendChild(mapContainer);
+
+      console.log('Map container created and styled');
 
       // Render the map component
       const root = createRoot(mapContainer);
@@ -113,17 +120,34 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         />
       );
 
-      // Wait for map to load and capture
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const canvas = await html2canvas(mapContainer);
-      const mapDataUrl = canvas.toDataURL('image/png');
-      setMapImage(mapDataUrl);
+      console.log('Map component rendered');
+
+      // Wait longer for map to load and initialize
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      console.log('Waited for map initialization');
+
+      try {
+        const canvas = await html2canvas(mapContainer, {
+          useCORS: true,
+          allowTaint: true,
+          logging: true,
+          backgroundColor: '#ffffff'
+        });
+
+        console.log('Map captured to canvas');
+        const mapDataUrl = canvas.toDataURL('image/png');
+        console.log('Map converted to data URL, length:', mapDataUrl.length);
+        setMapImage(mapDataUrl);
+      } catch (captureError) {
+        console.error('Error during map capture:', captureError);
+      }
 
       // Cleanup
       root.unmount();
       document.body.removeChild(mapContainer);
+      console.log('Map capture cleanup completed');
     } catch (error) {
-      console.error('Error capturing map:', error);
+      console.error('Error in map capture process:', error);
     }
   };
 

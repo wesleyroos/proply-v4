@@ -138,11 +138,14 @@ export async function generatePropertyReport(
     // Add the captured map image if available
     if (data.propertyDetails.mapImage) {
       try {
+        console.log('Adding map to PDF, data URL length:', data.propertyDetails.mapImage.length);
         doc.addImage(data.propertyDetails.mapImage, 'PNG', 20, yPos, 170, 80);
         yPos += 90; // Add space after map
       } catch (error) {
         console.error('Error adding map to PDF:', error);
       }
+    } else {
+      console.log('No map image available to add to PDF');
     }
   }
 
@@ -463,6 +466,9 @@ export async function generatePropertyReport(
     // Add disclaimer at the bottom of each page
     doc.setFontSize(6);
     doc.setTextColor(100);
+
+    // Split disclaimer into sections with proper width calculation
+    const maxWidth = 170; // Maximum width in points (leaving margins)
     const disclaimerText = [
       "DISCLAIMER: The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.",
       "",
@@ -478,10 +484,21 @@ export async function generatePropertyReport(
     // Calculate starting Y position for disclaimer (20mm from bottom)
     const disclaimerY = doc.internal.pageSize.height - 50;
 
-    // Add each line of the disclaimer
-    disclaimerText.forEach((line, index) => {
-      doc.text(line, 20, disclaimerY + (index * 3));
-    });
+    // Add each line of the disclaimer with proper wrapping
+    let currentY = disclaimerY;
+    for (const text of disclaimerText) {
+      if (text === "") {
+        currentY += 3; // Add space between paragraphs
+        continue;
+      }
+
+      // Split text into lines that fit within maxWidth
+      const lines = doc.splitTextToSize(text, maxWidth);
+      for (const line of lines) {
+        doc.text(line, 20, currentY);
+        currentY += 3;
+      }
+    }
 
     // Add page info above disclaimer
     doc.setFontSize(10);
