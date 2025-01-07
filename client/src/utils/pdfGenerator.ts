@@ -25,6 +25,7 @@ export async function generatePropertyReport(
       ratePerSquareMeter: number;
       propertyPhoto?: string | null;
       areaRatePerSquareMeter?: number;
+      mapImage?: string | null; // Add map image to the interface
     };
     financialMetrics: {
       depositAmount: number;
@@ -50,7 +51,6 @@ export async function generatePropertyReport(
       shortTermGrossYield: number;
       longTermGrossYield: number;
     };
-    mapElement?: HTMLElement;
     investmentMetrics?: any;
     netOperatingIncome?: any;
   },
@@ -135,45 +135,13 @@ export async function generatePropertyReport(
     });
     yPos = (doc as any).lastAutoTable.finalY + 15;
 
-    // Add static map if address is available
-    if (data.propertyDetails.address) {
+    // Add the captured map image if available
+    if (data.propertyDetails.mapImage) {
       try {
-        const encodedAddress = encodeURIComponent(data.propertyDetails.address);
-        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-        // Only attempt to add map if we have an API key
-        if (apiKey) {
-          const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodedAddress}&zoom=15&size=800x400&scale=2&markers=color:red%7C${encodedAddress}&key=${apiKey}`;
-
-          await new Promise<void>((resolve, reject) => {
-            const mapImage = new Image();
-            mapImage.crossOrigin = "anonymous";
-
-            mapImage.onload = () => {
-              try {
-                doc.addImage(mapImage, 'PNG', 20, yPos, 170, 80);
-                yPos += 90; // Add space after map
-                resolve();
-              } catch (e) {
-                console.error('Error adding map to PDF:', e);
-                resolve(); // Continue without map
-              }
-            };
-
-            mapImage.onerror = () => {
-              console.error('Error loading map image');
-              resolve(); // Continue without map
-            };
-
-            // Set timeout to avoid hanging
-            setTimeout(() => resolve(), 5000);
-
-            mapImage.src = mapUrl;
-          });
-        }
+        doc.addImage(data.propertyDetails.mapImage, 'PNG', 20, yPos, 170, 80);
+        yPos += 90; // Add space after map
       } catch (error) {
         console.error('Error adding map to PDF:', error);
-        // Continue without map
       }
     }
   }
@@ -491,17 +459,41 @@ export async function generatePropertyReport(
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setFontSize(10);
+
+    // Add disclaimer at the bottom of each page
+    doc.setFontSize(6);
     doc.setTextColor(100);
+    const disclaimerText = [
+      "DISCLAIMER: The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.",
+      "",
+      "This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice. Any decisions made based on this information are solely the responsibility of the user. Property investment carries inherent risks, and market conditions can change rapidly.",
+      "",
+      "Proply Tech (Pty) Ltd and its affiliates expressly disclaim any and all liability for any direct, indirect, incidental, or consequential damages arising from the use of this information. Actual results may vary significantly from the projections and estimates presented.",
+      "",
+      "By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.",
+      "",
+      "© 2025 Proply Tech (Pty) Ltd. All rights reserved."
+    ];
+
+    // Calculate starting Y position for disclaimer (20mm from bottom)
+    const disclaimerY = doc.internal.pageSize.height - 50;
+
+    // Add each line of the disclaimer
+    disclaimerText.forEach((line, index) => {
+      doc.text(line, 20, disclaimerY + (index * 3));
+    });
+
+    // Add page info above disclaimer
+    doc.setFontSize(10);
     doc.text(
       `Generated on ${new Date().toLocaleDateString()}`,
       20,
-      280
+      doc.internal.pageSize.height - 55
     );
     doc.text(
       `Page ${i} of ${pageCount}`,
       170,
-      280
+      doc.internal.pageSize.height - 55
     );
   }
 

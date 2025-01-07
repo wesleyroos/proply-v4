@@ -8,6 +8,7 @@ import { useUser } from "@/hooks/use-user";
 import { generatePropertyReport } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
 import DashboardMap from "./DashboardMap";
+import html2canvas from 'html2canvas';
 import { createRoot } from 'react-dom/client';
 
 // Matches all available data from PropertyAnalyzerPage
@@ -79,89 +80,52 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [mapImage, setMapImage] = useState<string | null>(null);
 
-  // Enhanced logging when modal opens
+  // Capture map when modal opens
   useEffect(() => {
     if (open) {
-      console.group('=== PDF Report - Complete Data Flow Analysis ===');
-
-      console.group('1. Available Data Structure from Property Analyzer');
-      console.log('Property Details:', {
-        address: data.propertyDetails.address,
-        specs: {
-          bedrooms: data.propertyDetails.bedrooms,
-          bathrooms: data.propertyDetails.bathrooms,
-          floorArea: data.propertyDetails.floorArea,
-          parkingSpaces: data.propertyDetails.parkingSpaces
-        },
-        pricing: {
-          purchasePrice: data.propertyDetails.purchasePrice,
-          ratePerSquareMeter: data.propertyDetails.ratePerSquareMeter
-        }
-      });
-
-      console.log('Financial Structure:', {
-        deposit: {
-          amount: data.financialMetrics.depositAmount,
-          percentage: data.financialMetrics.depositPercentage
-        },
-        loan: {
-          interestRate: data.financialMetrics.interestRate,
-          term: data.financialMetrics.loanTerm,
-          monthlyPayment: data.financialMetrics.monthlyBondRepayment
-        },
-        costs: {
-          bondRegistration: data.financialMetrics.bondRegistration,
-          transferCosts: data.financialMetrics.transferCosts
-        }
-      });
-
-      console.log('Operating Expenses:', {
-        monthly: {
-          levies: data.expenses.monthlyLevies,
-          ratesTaxes: data.expenses.monthlyRatesTaxes,
-          other: data.expenses.otherMonthlyExpenses
-        },
-        maintenance: data.expenses.maintenancePercent,
-        managementFee: data.expenses.managementFee
-      });
-
-      console.log('Rental Performance:', {
-        shortTerm: {
-          nightlyRate: data.performance.shortTermNightlyRate,
-          occupancy: data.performance.annualOccupancy,
-          annualRevenue: data.performance.shortTermAnnualRevenue,
-          grossYield: data.performance.shortTermGrossYield
-        },
-        longTerm: {
-          annualRevenue: data.performance.longTermAnnualRevenue,
-          grossYield: data.performance.longTermGrossYield
-        }
-      });
-
-      if (data.investmentMetrics) {
-        console.log('Investment Metrics (Year 1):', data.investmentMetrics.year1);
-      }
-
-      if (data.netOperatingIncome) {
-        console.log('Net Operating Income:', {
-          year1: data.netOperatingIncome.year1,
-          year5: data.netOperatingIncome.year5,
-          year20: data.netOperatingIncome.year20
-        });
-      }
-      console.groupEnd();
-
-      console.group('2. Available Report Sections');
-      console.table(defaultSectionGroups.map(group => ({
-        group: group.title,
-        sections: group.sections.map(s => s.label).join(', ')
-      })));
-      console.groupEnd();
-
-      console.groupEnd();
+      captureMap();
     }
-  }, [open, data]);
+  }, [open]);
+
+  const captureMap = async () => {
+    try {
+      // Create a temporary div to render the map
+      const mapContainer = document.createElement('div');
+      mapContainer.style.width = '800px';
+      mapContainer.style.height = '400px';
+      mapContainer.style.position = 'absolute';
+      mapContainer.style.left = '-9999px';
+      document.body.appendChild(mapContainer);
+
+      // Render the map component
+      const root = createRoot(mapContainer);
+      root.render(
+        <DashboardMap
+          properties={[
+            {
+              id: 1,
+              address: data.propertyDetails.address,
+              type: 'analyzer'
+            }
+          ]}
+        />
+      );
+
+      // Wait for map to load and capture
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      const canvas = await html2canvas(mapContainer);
+      const mapDataUrl = canvas.toDataURL('image/png');
+      setMapImage(mapDataUrl);
+
+      // Cleanup
+      root.unmount();
+      document.body.removeChild(mapContainer);
+    } catch (error) {
+      console.error('Error capturing map:', error);
+    }
+  };
 
   // Restore handleLogoUpload function
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -224,7 +188,8 @@ export function PDFReportModal({ open, onOpenChange, data }: PDFReportModalProps
         propertyDetails: {
           ...data.propertyDetails,
           areaRatePerSquareMeter: 45000, // Set the correct area rate
-          ratePerSquareMeter: Math.round(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea)
+          ratePerSquareMeter: Math.round(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea),
+          mapImage // Add captured map image
         }
       };
 
