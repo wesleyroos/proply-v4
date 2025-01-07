@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import html2canvas from "html2canvas";
 import { useToast } from "@/components/ui/toast-context";
 import {
   Card,
