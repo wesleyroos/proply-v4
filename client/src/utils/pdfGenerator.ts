@@ -145,19 +145,27 @@ export async function generatePropertyReport(
         yPos += 10;
 
         // Set fixed dimensions for the map
-        const mapWidth = 120; // Smaller width
-        const mapHeight = 80; // Smaller height
+        const mapWidth = 170;  // Full width
+        const mapHeight = 100; // Taller height
 
-        // Create a temporary image to get dimensions
-        const img = new Image();
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => {
-            try {
-              // Add the map at a fixed position
-              doc.addImage(data.propertyDetails.mapImage, 'PNG', 20, yPos, mapWidth, mapHeight);
-              yPos += finalHeight + 15; // Add space after map
+        if (data.propertyDetails.mapImage) {
+          try {
+            await new Promise<void>((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => {
+                doc.addImage(data.propertyDetails.mapImage, 'PNG', 20, yPos, mapWidth, mapHeight);
+                resolve();
+              };
+              img.onerror = () => reject(new Error('Failed to load map image'));
+              img.src = data.propertyDetails.mapImage;
+            });
+            yPos += mapHeight + 20; // Add consistent spacing after map
+          } catch (error) {
+            console.error('Error adding map to PDF:', error);
+          }
+        }
 
-              console.log('Map added successfully:', {
+        console.log('Map processing completed at position:', yPos);
                 width: finalWidth,
                 height: finalHeight,
                 position: { x: xPos, y: yPos }
