@@ -139,24 +139,56 @@ export async function generatePropertyReport(
     // Add map image if available
     if (data.propertyDetails.mapImage) {
       try {
-        console.log('Adding map to PDF after property details table');
-        console.log('Map position:', { yPos });
-        console.log('Map data URL length:', data.propertyDetails.mapImage.length);
-
         // Add a subheading for the map
         doc.setFontSize(12);
         doc.text('Property Location', 20, yPos);
         yPos += 10;
 
-        // Add the map with proper dimensions
-        const mapWidth = 170; // Width of the map (leaving margins)
-        const mapHeight = 80; // Height of the map
-        doc.addImage(data.propertyDetails.mapImage, 'PNG', 20, yPos, mapWidth, mapHeight);
-        yPos += mapHeight + 15; // Add space after map
+        // Calculate dimensions while maintaining aspect ratio
+        const maxWidth = 170; // Maximum width (leaving margins)
+        const maxHeight = 100; // Maximum height for the map
 
-        console.log('Map added successfully at position:', { yPos });
+        // Create a temporary image to get dimensions
+        const img = new Image();
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => {
+            try {
+              // Calculate dimensions maintaining aspect ratio
+              const aspectRatio = img.height / img.width;
+              let finalWidth = maxWidth;
+              let finalHeight = maxWidth * aspectRatio;
+
+              // If height exceeds maximum, scale down
+              if (finalHeight > maxHeight) {
+                finalHeight = maxHeight;
+                finalWidth = maxHeight / aspectRatio;
+              }
+
+              // Center the map horizontally
+              const xPos = 20 + (maxWidth - finalWidth) / 2;
+
+              // Add the map with calculated dimensions
+              doc.addImage(data.propertyDetails.mapImage, 'PNG', xPos, yPos, finalWidth, finalHeight);
+              yPos += finalHeight + 15; // Add space after map
+
+              console.log('Map added successfully:', {
+                width: finalWidth,
+                height: finalHeight,
+                position: { x: xPos, y: yPos }
+              });
+            } catch (error) {
+              console.error('Error adding map to PDF:', error);
+            }
+            resolve();
+          };
+          img.onerror = () => {
+            console.error('Error loading map image');
+            reject(new Error('Failed to load map image'));
+          };
+          img.src = data.propertyDetails.mapImage;
+        });
       } catch (error) {
-        console.error('Error adding map to PDF:', error);
+        console.error('Error processing map:', error);
       }
     } else {
       console.log('No map image available to add to PDF');
