@@ -194,12 +194,24 @@ export function PDFReportModal({
         return;
       }
 
-      // Validate map image data
+      // Validate map image data with timeout
       try {
-        const img = new Image();
         await new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
+          const img = new Image();
+          const timeout = setTimeout(() => {
+            reject(new Error('Map image loading timed out'));
+          }, 5000);
+
+          img.onload = () => {
+            clearTimeout(timeout);
+            resolve(true);
+          };
+          
+          img.onerror = () => {
+            clearTimeout(timeout);
+            reject(new Error('Failed to load map image'));
+          };
+          
           img.src = capturedMapImage;
         });
       } catch (error) {
