@@ -194,6 +194,25 @@ export function PDFReportModal({
         return;
       }
 
+      // Validate map image data
+      try {
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = capturedMapImage;
+        });
+      } catch (error) {
+        console.error('Invalid map image data:', error);
+        toast({
+          variant: "destructive",
+          title: "Map Error",
+          description: "Failed to process map image. Please try again.",
+          duration: 3000,
+        });
+        return;
+      }
+
       const selectedSections = sectionGroups.reduce((acc, group) => {
         acc[group.title] = group.sections
           .filter(section => section.checked)

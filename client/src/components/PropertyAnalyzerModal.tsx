@@ -36,18 +36,19 @@ export function PropertyAnalyzerModal({
     if (!mapRef.current || !mapLoaded) return;
 
     try {
-      // Store original dimensions
+      // Store original dimensions.  Using getComputedStyle for more reliable dimensions
       const originalStyle = mapRef.current.getAttribute('style');
-      const originalWidth = mapRef.current.style.width;
-      const originalHeight = mapRef.current.style.height;
+      const computedStyle = window.getComputedStyle(mapRef.current);
+      const originalWidth = computedStyle.width;
+      const originalHeight = computedStyle.height;
 
-      // Set explicit dimensions for capture
+      // Set explicit dimensions for capture.  Using inline styles for better control
       mapRef.current.style.width = '600px';
       mapRef.current.style.height = '400px';
       mapRef.current.style.position = 'relative';
 
-      // Wait for any transitions to complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Wait for any transitions to complete - Increased timeout for more complex maps
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
       const canvas = await html2canvas(mapRef.current, {
         useCORS: true,
@@ -61,16 +62,16 @@ export function PropertyAnalyzerModal({
 
       const mapImage = canvas.toDataURL('image/png', 1.0);
 
-      // Validate captured image
-      if (mapImage.length > 1000) {
+      // Validate captured image - More robust check
+      if (mapImage && mapImage.length > 5000) { // Increased minimum length for validation
         console.log('Map captured successfully');
         onMapImageCapture?.(mapImage);
         setCaptureAttempts(0); // Reset attempts on success
       } else {
-        console.error('Invalid map capture - retrying');
+        console.error('Invalid map capture - retrying:', mapImage ? mapImage.length : 'No image data');
         if (captureAttempts < MAX_CAPTURE_ATTEMPTS) {
           setCaptureAttempts(prev => prev + 1);
-          setTimeout(captureMap, 1000);
+          setTimeout(captureMap, 2000); // Increased retry delay
         }
       }
 
@@ -85,7 +86,7 @@ export function PropertyAnalyzerModal({
       console.error('Error capturing map:', error);
       if (captureAttempts < MAX_CAPTURE_ATTEMPTS) {
         setCaptureAttempts(prev => prev + 1);
-        setTimeout(captureMap, 1000);
+        setTimeout(captureMap, 2000); // Increased retry delay
       }
     }
   };
@@ -94,6 +95,35 @@ export function PropertyAnalyzerModal({
     if (!open || !property.address) return;
 
     let isMounted = true;
+    let map: google.maps.Map | null = null;
+    let marker: google.maps.Marker | null = null;
+    let mapLoadTimeout: NodeJS.Timeout;
+
+    const initializeMap = async () => {
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: property.address }, (results, status) => {
+        if (status === "OK" && results && results[0] && mapRef.current) {
+          map = new google.maps.Map(mapRef.current, {
+            center: results[0].geometry.location,
+            zoom: 15,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+          });
+
+          marker = new google.maps.Marker({
+            map,
+            position: results[0].geometry.location,
+          });
+          setMapLoaded(true);
+          // Capture after map is loaded with a delay to allow for rendering
+          mapLoadTimeout = setTimeout(captureMap, 3000); // Increased timeout
+        } else {
+          console.error("Geocoding failed:", status);
+        }
+      });
+    };
+
 
     const loader = new Loader({
       apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
@@ -102,35 +132,20 @@ export function PropertyAnalyzerModal({
 
     loader.load().then(() => {
       if (!isMounted) return;
-
-      const geocoder = new google.maps.Geocoder();
-      geocoder.geocode({ address: property.address }, (results, status) => {
-        if (status === "OK" && results && results[0] && mapRef.current) {
-          const map = new google.maps.Map(mapRef.current, {
-            center: results[0].geometry.location,
-            zoom: 15,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: false,
-          });
-
-          new google.maps.Marker({
-            map,
-            position: results[0].geometry.location,
-          });
-
-          setMapLoaded(true);
-
-          // Capture after map is loaded
-          setTimeout(captureMap, 1500);
-        }
-      });
+      initializeMap();
     });
 
     return () => {
       isMounted = false;
       setMapLoaded(false);
       setCaptureAttempts(0);
+      clearTimeout(mapLoadTimeout); // Clear timeout on unmount
+      if (map) {
+        map.setMap(null); // Clear the map to prevent memory leaks.
+      }
+      if (marker) {
+        marker.setMap(null); // Clear the marker to prevent memory leaks.
+      }
     };
   }, [open, property.address]);
 
