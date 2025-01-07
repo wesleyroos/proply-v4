@@ -25,7 +25,7 @@ export async function generatePropertyReport(
       ratePerSquareMeter: number;
       propertyPhoto?: string | null;
       areaRatePerSquareMeter?: number;
-      mapImage?: string | null; // Add map image to the interface
+      mapImage?: string | null;
     };
     financialMetrics: {
       depositAmount: number;
@@ -82,7 +82,6 @@ export async function generatePropertyReport(
 
   // Add Proply logo and text on the right
   try {
-    // Set fixed width and calculate height for Proply logo
     const proplyLogoWidth = 40;
     await new Promise<void>((resolve) => {
       const proplyLogo = new Image();
@@ -133,14 +132,29 @@ export async function generatePropertyReport(
       styles: { fontSize: 10 },
       headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
     });
+
+    // Get the ending Y position of the table and add some spacing
     yPos = (doc as any).lastAutoTable.finalY + 15;
 
-    // Add the captured map image if available
+    // Add map image if available
     if (data.propertyDetails.mapImage) {
       try {
-        console.log('Adding map to PDF, data URL length:', data.propertyDetails.mapImage.length);
-        doc.addImage(data.propertyDetails.mapImage, 'PNG', 20, yPos, 170, 80);
-        yPos += 90; // Add space after map
+        console.log('Adding map to PDF after property details table');
+        console.log('Map position:', { yPos });
+        console.log('Map data URL length:', data.propertyDetails.mapImage.length);
+
+        // Add a subheading for the map
+        doc.setFontSize(12);
+        doc.text('Property Location', 20, yPos);
+        yPos += 10;
+
+        // Add the map with proper dimensions
+        const mapWidth = 170; // Width of the map (leaving margins)
+        const mapHeight = 80; // Height of the map
+        doc.addImage(data.propertyDetails.mapImage, 'PNG', 20, yPos, mapWidth, mapHeight);
+        yPos += mapHeight + 15; // Add space after map
+
+        console.log('Map added successfully at position:', { yPos });
       } catch (error) {
         console.error('Error adding map to PDF:', error);
       }
