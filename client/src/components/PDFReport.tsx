@@ -23,6 +23,8 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
   };
 
   const showCharts = isSelected('dataVisualizations', 'charts');
+  const selectedMetricsType = data.investmentMetrics.shortTerm ? 'shortTerm' : 'longTerm';
+  const metricsData = data.investmentMetrics[selectedMetricsType][0] || {};
 
   return (
     <div ref={ref} className="bg-white p-8 max-w-[210mm] mx-auto">
@@ -49,7 +51,7 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
         <div className="mb-8">
           <PropertyMap 
             address={data.propertyDetails.address}
-            className="w-full h-[300px] rounded-lg overflow-hidden"
+            mapClassName="w-full h-[300px] rounded-lg overflow-hidden"
           />
         </div>
       )}
@@ -147,22 +149,6 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
                   </p>
                 </div>
               )}
-              {isSelected('dealStructure', 'bondRegistration') && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Bond Registration</h3>
-                  <p className="text-xl font-bold">
-                    {formatCurrency(data.dealStructure.bondRegistration)}
-                  </p>
-                </div>
-              )}
-              {isSelected('dealStructure', 'transferCosts') && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Transfer Costs</h3>
-                  <p className="text-xl font-bold">
-                    {formatCurrency(data.dealStructure.transferCosts)}
-                  </p>
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -193,14 +179,6 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
                   </p>
                 </div>
               )}
-              {isSelected('operatingExpenses', 'otherMonthlyExpenses') && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Other Monthly Expenses</h3>
-                  <p className="text-xl font-bold">
-                    {formatCurrency(data.operatingExpenses.otherMonthlyExpenses)}
-                  </p>
-                </div>
-              )}
               {isSelected('operatingExpenses', 'maintenancePercentage') && (
                 <div>
                   <h3 className="text-sm font-semibold text-gray-600">Maintenance Percentage</h3>
@@ -213,69 +191,7 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
                 <div>
                   <h3 className="text-sm font-semibold text-gray-600">Management Fee</h3>
                   <p className="text-xl font-bold">
-                    {formatCurrency(data.operatingExpenses.managementFee)}
-                  </p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Rental Performance */}
-      {Object.values(selections.rentalPerformance || {}).some(Boolean) && (
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Rental Performance
-            </h2>
-            <div className="grid grid-cols-2 gap-6">
-              {isSelected('rentalPerformance', 'shortTermNightlyRate') && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Short-Term Nightly Rate</h3>
-                  <p className="text-xl font-bold">
-                    {formatCurrency(data.performance.shortTermNightlyRate)}
-                  </p>
-                </div>
-              )}
-              {isSelected('rentalPerformance', 'annualOccupancy') && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Annual Occupancy</h3>
-                  <p className="text-xl font-bold">
-                    {formatPercentage(data.performance.annualOccupancy)}
-                  </p>
-                </div>
-              )}
-              {isSelected('rentalPerformance', 'shortTermAnnualRevenue') && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Short-Term Annual Revenue</h3>
-                  <p className="text-xl font-bold">
-                    {formatCurrency(data.performance.shortTermAnnualRevenue)}
-                  </p>
-                </div>
-              )}
-              {isSelected('rentalPerformance', 'longTermAnnualRevenue') && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Long-Term Annual Revenue</h3>
-                  <p className="text-xl font-bold">
-                    {formatCurrency(data.performance.longTermAnnualRevenue)}
-                  </p>
-                </div>
-              )}
-              {isSelected('rentalPerformance', 'shortTermGrossYield') && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Short-Term Gross Yield</h3>
-                  <p className="text-xl font-bold">
-                    {formatPercentage(data.performance.shortTermGrossYield)}
-                  </p>
-                </div>
-              )}
-              {isSelected('rentalPerformance', 'longTermGrossYield') && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Long-Term Gross Yield</h3>
-                  <p className="text-xl font-bold">
-                    {formatPercentage(data.performance.longTermGrossYield)}
+                    {formatPercentage(data.operatingExpenses.managementFee)}
                   </p>
                 </div>
               )}
@@ -297,7 +213,7 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
                 <div>
                   <h3 className="text-sm font-semibold text-gray-600">Gross Yield</h3>
                   <p className="text-xl font-bold">
-                    {formatPercentage(data.investmentMetrics.grossYield)}
+                    {formatPercentage(metricsData.grossYield)}
                   </p>
                 </div>
               )}
@@ -305,7 +221,7 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
                 <div>
                   <h3 className="text-sm font-semibold text-gray-600">Net Yield</h3>
                   <p className="text-xl font-bold">
-                    {formatPercentage(data.investmentMetrics.netYield)}
+                    {formatPercentage(metricsData.netYield)}
                   </p>
                 </div>
               )}
@@ -313,7 +229,7 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
                 <div>
                   <h3 className="text-sm font-semibold text-gray-600">Return on Equity</h3>
                   <p className="text-xl font-bold">
-                    {formatPercentage(data.investmentMetrics.returnOnEquity)}
+                    {formatPercentage(metricsData.returnOnEquity)}
                   </p>
                 </div>
               )}
@@ -321,7 +237,7 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
                 <div>
                   <h3 className="text-sm font-semibold text-gray-600">Annual Return</h3>
                   <p className="text-xl font-bold">
-                    {formatPercentage(data.investmentMetrics.annualReturn)}
+                    {formatPercentage(metricsData.annualReturn)}
                   </p>
                 </div>
               )}
@@ -329,7 +245,7 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
                 <div>
                   <h3 className="text-sm font-semibold text-gray-600">Cap Rate</h3>
                   <p className="text-xl font-bold">
-                    {formatPercentage(data.investmentMetrics.capRate)}
+                    {formatPercentage(metricsData.capRate)}
                   </p>
                 </div>
               )}
@@ -337,23 +253,7 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
                 <div>
                   <h3 className="text-sm font-semibold text-gray-600">Cash on Cash Return</h3>
                   <p className="text-xl font-bold">
-                    {formatPercentage(data.investmentMetrics.cashOnCashReturn)}
-                  </p>
-                </div>
-              )}
-              {isSelected('investmentMetrics', 'irr') && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">IRR</h3>
-                  <p className="text-xl font-bold">
-                    {formatPercentage(data.investmentMetrics.irr)}
-                  </p>
-                </div>
-              )}
-              {isSelected('investmentMetrics', 'netWorthChange') && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Net Worth Change</h3>
-                  <p className="text-xl font-bold">
-                    {formatCurrency(data.investmentMetrics.netWorthChange)}
+                    {formatPercentage(metricsData.cashOnCashReturn)}
                   </p>
                 </div>
               )}
@@ -389,7 +289,6 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
                 </ResponsiveContainer>
               </div>
             )}
-            {/* Cashflow metrics table */}
           </CardContent>
         </Card>
       )}

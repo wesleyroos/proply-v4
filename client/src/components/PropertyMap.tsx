@@ -1,13 +1,13 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { initGoogleMaps } from '../lib/maps';
 
 interface PropertyMapProps {
   address: string;
   onMapLoad?: () => void;
+  mapClassName?: string;
 }
 
-export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
+export default function PropertyMap({ address, onMapLoad, mapClassName }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const loadedRef = useRef(false);
@@ -95,7 +95,7 @@ export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
 
     return () => {
       isMounted = false;
-      
+
       // Clean up event listener
       if (listenerRef.current) {
         google.maps.event.removeListener(listenerRef.current);
@@ -121,7 +121,7 @@ export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
 
   if (error) {
     return (
-      <div className="h-[300px] w-full rounded-lg overflow-hidden border bg-gray-100 flex items-center justify-center">
+      <div className={`${mapClassName || 'h-[300px] w-full'} rounded-lg overflow-hidden border bg-gray-100 flex items-center justify-center`}>
         <p className="text-red-500">Error: {error}</p>
       </div>
     );
@@ -131,7 +131,7 @@ export default function PropertyMap({ address, onMapLoad }: PropertyMapProps) {
     <div 
       ref={mapRef} 
       data-map-container="true"
-      className="h-[300px] w-full rounded-lg overflow-hidden border relative"
+      className={`${mapClassName || 'h-[300px] w-full'} rounded-lg overflow-hidden border relative`}
       style={{ minHeight: '300px', minWidth: '100%' }}
     />
   );
