@@ -2,80 +2,16 @@ import React, { forwardRef } from 'react';
 import { format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, Building2, TrendingUp, BarChart3 } from "lucide-react";
+import { FileText, Building2, TrendingUp } from "lucide-react";
 import PropertyMap from "@/components/PropertyMap";
+import { PropertyData, ReportSelections } from '../types/propertyReport';
+import { formatCurrency, formatPercentage } from '../utils/formatting';
 
 interface PDFReportProps {
-  data: {
-    propertyDetails: {
-      address: string;
-      bedrooms: number;
-      bathrooms: number;
-      floorArea: number;
-      parkingSpaces: number;
-      purchasePrice: number;
-      ratePerSquareMeter: number;
-      propertyPhoto?: string;
-    };
-    dealStructure: {
-      depositAmount: number;
-      depositPercentage: number;
-      interestRate: number;
-      loanTerm: number;
-      monthlyBondRepayment: number;
-      bondRegistration: number;
-      transferCosts: number;
-    };
-    operatingExpenses: {
-      monthlyLevies: number;
-      monthlyRatesTaxes: number;
-      otherMonthlyExpenses: number;
-      maintenancePercentage: number;
-      managementFee: number;
-    };
-    performance: {
-      shortTermNightlyRate: number;
-      annualOccupancy: number;
-      shortTermAnnualRevenue: number;
-      longTermAnnualRevenue: number;
-      shortTermGrossYield: number;
-      longTermGrossYield: number;
-    };
-    investmentMetrics: Record<string, {
-      grossYield: number;
-      netYield: number;
-      returnOnEquity: number;
-      annualReturn: number;
-      capRate: number;
-      cashOnCashReturn: number;
-      irr: number;
-      netWorthChange: number;
-    }>;
-    cashflow: {
-      [key: string]: {
-        annualCashflow: number;
-        cumulativeRentalIncome: number;
-      };
-    };
-  };
-  selections: Record<string, Record<string, boolean>>;
+  data: PropertyData;
+  selections: ReportSelections;
   companyLogo?: string;
 }
-
-// Format currency values consistently
-const formatCurrency = (value: number): string => {
-  if (value >= 1000000) {
-    return `R${(value / 1000000).toFixed(1)}M`;
-  } else if (value >= 1000) {
-    return `R${(value / 1000).toFixed(0)}k`;
-  }
-  return `R${value.toFixed(0)}`;
-};
-
-// Format percentage values consistently
-const formatPercentage = (value: number): string => {
-  return `${value.toFixed(1)}%`;
-};
 
 export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({ 
   data,
@@ -136,11 +72,28 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
             <p className="text-xl font-bold">{data.propertyDetails.bedrooms}</p>
           </div>
         )}
-        {/* Similar blocks for bathrooms, floor area, parking spaces */}
+        {isSelected('propertyDetails', 'bathrooms') && (
+          <div>
+            <h3 className="text-sm font-semibold text-gray-600">Bathrooms</h3>
+            <p className="text-xl font-bold">{data.propertyDetails.bathrooms}</p>
+          </div>
+        )}
+        {isSelected('propertyDetails', 'floorArea') && (
+          <div>
+            <h3 className="text-sm font-semibold text-gray-600">Floor Area</h3>
+            <p className="text-xl font-bold">{data.propertyDetails.floorArea} m²</p>
+          </div>
+        )}
+        {isSelected('propertyDetails', 'parkingSpaces') && (
+          <div>
+            <h3 className="text-sm font-semibold text-gray-600">Parking Spaces</h3>
+            <p className="text-xl font-bold">{data.propertyDetails.parkingSpaces}</p>
+          </div>
+        )}
       </div>
 
       {/* Deal Structure */}
-      {selections.dealStructure && Object.values(selections.dealStructure).some(Boolean) && (
+      {Object.values(selections.dealStructure || {}).some(Boolean) && (
         <Card className="mb-8">
           <CardContent className="p-6">
             <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
@@ -148,7 +101,6 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
               Deal Structure
             </h2>
             <div className="grid grid-cols-2 gap-6">
-              {/* Purchase Price */}
               {isSelected('dealStructure', 'purchasePrice') && (
                 <div>
                   <h3 className="text-sm font-semibold text-gray-600">Purchase Price</h3>
@@ -157,23 +109,261 @@ export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
                   </p>
                 </div>
               )}
-              {/* Similar blocks for other deal structure items */}
+              {isSelected('dealStructure', 'depositAmount') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Deposit Amount</h3>
+                  <p className="text-xl font-bold">
+                    {formatCurrency(data.dealStructure.depositAmount)}
+                  </p>
+                </div>
+              )}
+              {isSelected('dealStructure', 'depositPercentage') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Deposit Percentage</h3>
+                  <p className="text-xl font-bold">
+                    {formatPercentage(data.dealStructure.depositPercentage)}
+                  </p>
+                </div>
+              )}
+              {isSelected('dealStructure', 'interestRate') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Interest Rate</h3>
+                  <p className="text-xl font-bold">
+                    {formatPercentage(data.dealStructure.interestRate)}
+                  </p>
+                </div>
+              )}
+              {isSelected('dealStructure', 'loanTerm') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Loan Term</h3>
+                  <p className="text-xl font-bold">{data.dealStructure.loanTerm} years</p>
+                </div>
+              )}
+              {isSelected('dealStructure', 'monthlyBondRepayment') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Monthly Bond Repayment</h3>
+                  <p className="text-xl font-bold">
+                    {formatCurrency(data.dealStructure.monthlyBondRepayment)}
+                  </p>
+                </div>
+              )}
+              {isSelected('dealStructure', 'bondRegistration') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Bond Registration</h3>
+                  <p className="text-xl font-bold">
+                    {formatCurrency(data.dealStructure.bondRegistration)}
+                  </p>
+                </div>
+              )}
+              {isSelected('dealStructure', 'transferCosts') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Transfer Costs</h3>
+                  <p className="text-xl font-bold">
+                    {formatCurrency(data.dealStructure.transferCosts)}
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
       )}
 
       {/* Operating Expenses */}
-      {/* Similar structure to Deal Structure section */}
+      {Object.values(selections.operatingExpenses || {}).some(Boolean) && (
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Operating Expenses
+            </h2>
+            <div className="grid grid-cols-2 gap-6">
+              {isSelected('operatingExpenses', 'monthlyLevies') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Monthly Levies</h3>
+                  <p className="text-xl font-bold">
+                    {formatCurrency(data.operatingExpenses.monthlyLevies)}
+                  </p>
+                </div>
+              )}
+              {isSelected('operatingExpenses', 'monthlyRatesTaxes') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Monthly Rates & Taxes</h3>
+                  <p className="text-xl font-bold">
+                    {formatCurrency(data.operatingExpenses.monthlyRatesTaxes)}
+                  </p>
+                </div>
+              )}
+              {isSelected('operatingExpenses', 'otherMonthlyExpenses') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Other Monthly Expenses</h3>
+                  <p className="text-xl font-bold">
+                    {formatCurrency(data.operatingExpenses.otherMonthlyExpenses)}
+                  </p>
+                </div>
+              )}
+              {isSelected('operatingExpenses', 'maintenancePercentage') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Maintenance Percentage</h3>
+                  <p className="text-xl font-bold">
+                    {formatPercentage(data.operatingExpenses.maintenancePercentage)}
+                  </p>
+                </div>
+              )}
+              {isSelected('operatingExpenses', 'managementFee') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Management Fee</h3>
+                  <p className="text-xl font-bold">
+                    {formatCurrency(data.operatingExpenses.managementFee)}
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Rental Performance */}
-      {/* Similar structure to Deal Structure section */}
+      {Object.values(selections.rentalPerformance || {}).some(Boolean) && (
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Rental Performance
+            </h2>
+            <div className="grid grid-cols-2 gap-6">
+              {isSelected('rentalPerformance', 'shortTermNightlyRate') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Short-Term Nightly Rate</h3>
+                  <p className="text-xl font-bold">
+                    {formatCurrency(data.performance.shortTermNightlyRate)}
+                  </p>
+                </div>
+              )}
+              {isSelected('rentalPerformance', 'annualOccupancy') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Annual Occupancy</h3>
+                  <p className="text-xl font-bold">
+                    {formatPercentage(data.performance.annualOccupancy)}
+                  </p>
+                </div>
+              )}
+              {isSelected('rentalPerformance', 'shortTermAnnualRevenue') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Short-Term Annual Revenue</h3>
+                  <p className="text-xl font-bold">
+                    {formatCurrency(data.performance.shortTermAnnualRevenue)}
+                  </p>
+                </div>
+              )}
+              {isSelected('rentalPerformance', 'longTermAnnualRevenue') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Long-Term Annual Revenue</h3>
+                  <p className="text-xl font-bold">
+                    {formatCurrency(data.performance.longTermAnnualRevenue)}
+                  </p>
+                </div>
+              )}
+              {isSelected('rentalPerformance', 'shortTermGrossYield') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Short-Term Gross Yield</h3>
+                  <p className="text-xl font-bold">
+                    {formatPercentage(data.performance.shortTermGrossYield)}
+                  </p>
+                </div>
+              )}
+              {isSelected('rentalPerformance', 'longTermGrossYield') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Long-Term Gross Yield</h3>
+                  <p className="text-xl font-bold">
+                    {formatPercentage(data.performance.longTermGrossYield)}
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Investment Metrics */}
-      {/* Similar structure to Deal Structure section */}
+      {Object.values(selections.investmentMetrics || {}).some(Boolean) && (
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Investment Metrics
+            </h2>
+            <div className="grid grid-cols-2 gap-6">
+              {isSelected('investmentMetrics', 'grossYield') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Gross Yield</h3>
+                  <p className="text-xl font-bold">
+                    {formatPercentage(data.investmentMetrics.grossYield)}
+                  </p>
+                </div>
+              )}
+              {isSelected('investmentMetrics', 'netYield') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Net Yield</h3>
+                  <p className="text-xl font-bold">
+                    {formatPercentage(data.investmentMetrics.netYield)}
+                  </p>
+                </div>
+              )}
+              {isSelected('investmentMetrics', 'returnOnEquity') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Return on Equity</h3>
+                  <p className="text-xl font-bold">
+                    {formatPercentage(data.investmentMetrics.returnOnEquity)}
+                  </p>
+                </div>
+              )}
+              {isSelected('investmentMetrics', 'annualReturn') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Annual Return</h3>
+                  <p className="text-xl font-bold">
+                    {formatPercentage(data.investmentMetrics.annualReturn)}
+                  </p>
+                </div>
+              )}
+              {isSelected('investmentMetrics', 'capRate') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Cap Rate</h3>
+                  <p className="text-xl font-bold">
+                    {formatPercentage(data.investmentMetrics.capRate)}
+                  </p>
+                </div>
+              )}
+              {isSelected('investmentMetrics', 'cashOnCashReturn') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Cash on Cash Return</h3>
+                  <p className="text-xl font-bold">
+                    {formatPercentage(data.investmentMetrics.cashOnCashReturn)}
+                  </p>
+                </div>
+              )}
+              {isSelected('investmentMetrics', 'irr') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">IRR</h3>
+                  <p className="text-xl font-bold">
+                    {formatPercentage(data.investmentMetrics.irr)}
+                  </p>
+                </div>
+              )}
+              {isSelected('investmentMetrics', 'netWorthChange') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600">Net Worth Change</h3>
+                  <p className="text-xl font-bold">
+                    {formatCurrency(data.investmentMetrics.netWorthChange)}
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Cashflow Analysis */}
-      {selections.cashflowAnalysis && Object.values(selections.cashflowAnalysis).some(Boolean) && (
+      {Object.values(selections.cashflowAnalysis || {}).some(Boolean) && (
         <Card className="mb-8">
           <CardContent className="p-6">
             <h2 className="text-xl font-bold mb-6 flex items-center gap-2">

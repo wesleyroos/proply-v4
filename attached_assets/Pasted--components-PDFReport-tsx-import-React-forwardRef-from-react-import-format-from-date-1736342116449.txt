@@ -1,0 +1,128 @@
+// components/PDFReport.tsx
+
+import React, { forwardRef } from 'react';
+import { format } from 'date-fns';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PropertyData, ReportSelections } from '../types/propertyReport';
+import { formatCurrency, formatPercentage } from '../utils/pdfUtils';
+import PropertyMap from './PropertyMap';
+
+interface PDFReportProps {
+  data: PropertyData;
+  selections: ReportSelections;
+  companyLogo?: string;
+}
+
+export const PDFReport = forwardRef<HTMLDivElement, PDFReportProps>(({
+  data,
+  selections,
+  companyLogo
+}, ref) => {
+  const isSelected = (section: string, item: string): boolean => {
+    return selections[section]?.[item] ?? false;
+  };
+
+  const showCharts = isSelected('dataVisualizations', 'charts');
+
+  return (
+    <div ref={ref} className="bg-white p-8 max-w-[210mm] mx-auto">
+      {/* Header with Branding */}
+      <div className="flex justify-between items-center border-b pb-6 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Property Analysis Report</h1>
+          <p className="text-gray-600">{data.propertyDetails.address}</p>
+          <p className="text-sm text-gray-500">Generated on {format(new Date(), 'dd MMMM yyyy')}</p>
+        </div>
+        <div className="flex items-center gap-8">
+          {companyLogo && (
+            <img src={companyLogo} alt="Company Logo" className="h-12 object-contain" />
+          )}
+          <div className="text-right">
+            <p className="text-sm font-semibold">Powered by</p>
+            <p className="text-lg font-bold text-primary">Proply</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Property Details Section */}
+      {isSelected('propertyDetails', 'description') && (
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-4">Property Description</h2>
+          <p className="text-gray-700">{data.propertyDetails.description}</p>
+        </div>
+      )}
+
+      {/* Map Section */}
+      {isSelected('propertyDetails', 'map') && (
+        <div className="mb-8">
+          <PropertyMap 
+            address={data.propertyDetails.address}
+            className="w-full h-[300px] rounded-lg overflow-hidden"
+          />
+        </div>
+      )}
+
+      {/* Property Information Grid */}
+      <div className="grid grid-cols-2 gap-6 mb-8">
+        {isSelected('propertyDetails', 'bedrooms') && (
+          <div>
+            <h3 className="text-sm font-semibold text-gray-600">Bedrooms</h3>
+            <p className="text-xl font-bold">{data.propertyDetails.bedrooms}</p>
+          </div>
+        )}
+        {isSelected('propertyDetails', 'bathrooms') && (
+          <div>
+            <h3 className="text-sm font-semibold text-gray-600">Bathrooms</h3>
+            <p className="text-xl font-bold">{data.propertyDetails.bathrooms}</p>
+          </div>
+        )}
+        {isSelected('propertyDetails', 'floorArea') && (
+          <div>
+            <h3 className="text-sm font-semibold text-gray-600">Floor Area</h3>
+            <p className="text-xl font-bold">{data.propertyDetails.floorArea} m²</p>
+          </div>
+        )}
+        {isSelected('propertyDetails', 'parkingSpaces') && (
+          <div>
+            <h3 className="text-sm font-semibold text-gray-600">Parking Spaces</h3>
+            <p className="text-xl font-bold">{data.propertyDetails.parkingSpaces}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Deal Structure Section */}
+      {Object.values(selections.dealStructure || {}).some(Boolean) && (
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-4">Deal Structure</h2>
+          <div className="grid grid-cols-2 gap-6">
+            {isSelected('dealStructure', 'purchasePrice') && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-600">Purchase Price</h3>
+                <p className="text-xl font-bold">{formatCurrency(data.dealStructure.purchasePrice)}</p>
+              </div>
+            )}
+            {/* Add other deal structure items similarly */}
+          </div>
+        </div>
+      )}
+
+      {/* Operating Expenses Section */}
+      {Object.values(selections.operatingExpenses || {}).some(Boolean) && (
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-4">Operating Expenses</h2>
+          <div className="grid grid-cols-2 gap-6">
+            {isSelected('operatingExpenses', 'monthlyLevies') && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-600">Monthly Levies</h3>
+                <p className="text-xl font-bold">{formatCurrency(data.operatingExpenses.monthlyLevies)}</p>
+              </div>
+            )}
+            {/* Add other operating expenses items similarly */}
+          </div>
+        </div>
+      )}
+
+      {/* Rental Performance Section */}
+      {Object.values(selections.performance || {}).some(Boolean) && (
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-4">Rental Performance</h2>
