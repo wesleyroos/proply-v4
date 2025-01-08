@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -165,6 +165,7 @@ export function PropertyAnalyzerPDF({
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const mapRef = useRef<HTMLDivElement>(null);
 
   // Handle logo file upload
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,31 +197,73 @@ export function PropertyAnalyzerPDF({
     });
   };
 
-  // Main PDF generation function
+  const captureMap = async (): Promise<string | null> => {
+    if (!mapRef.current) {
+      console.log('Map reference not found');
+      return null;
+    }
+
+    try {
+      const canvas = await html2canvas(mapRef.current, {
+        useCORS: true,
+        allowTaint: true,
+        logging: true,
+        onclone: (clonedDoc) => {
+          // Ensure map is visible in cloned document
+          const clonedMap = clonedDoc.querySelector('#map-container');
+          if (clonedMap) {
+            clonedMap.style.display = 'block';
+            clonedMap.style.height = '300px';
+            clonedMap.style.width = '100%';
+          }
+        }
+      });
+      return canvas.toDataURL('image/png');
+    } catch (error) {
+      console.error('Error capturing map:', error);
+      return null;
+    }
+  };
+
   const generatePDF = async () => {
     if (generating) return;
-    
+
     try {
       setGenerating(true);
       const doc = new jsPDF();
       let yPos = 20;
 
+      // Try to capture map first if needed
+      let mapImageData = null;
+      if (sectionGroups.find(g => g.title === "Property Details")?.sections.some(s => s.checked)) {
+        mapImageData = await captureMap();
+      }
+
       // Add company logo if available
-      if ((logoPreviewUrl || user?.companyLogo) && sectionGroups.find(g => g.title === "Company Branding")?.sections.find(s => s.id === "companyLogo")?.checked) {
+      if ((logoPreviewUrl || user?.companyLogo) && 
+          sectionGroups.find(g => g.title === "Company Branding")?.sections.find(s => s.id === "companyLogo")?.checked) {
         try {
-          const logoWidth = 40;
-          await new Promise<void>((resolve) => {
+          const logoUrl = logoPreviewUrl || user?.companyLogo;
+          if (logoUrl) {
+            const logoWidth = 40;
             const img = new Image();
-            img.onload = () => {
-              const aspectRatio = img.height / img.width;
-              const logoHeight = logoWidth * aspectRatio;
-              doc.addImage(img.src, "PNG", 20, 10, logoWidth, logoHeight);
-              resolve();
-            };
-            img.src = logoPreviewUrl || user?.companyLogo || '';
-          });
+            await new Promise<void>((resolve, reject) => {
+              img.onload = () => {
+                const aspectRatio = img.height / img.width;
+                const logoHeight = logoWidth * aspectRatio;
+                doc.addImage(logoUrl, "PNG", 20, 10, logoWidth, logoHeight);
+                resolve();
+              };
+              img.onerror = () => {
+                console.error('Error loading company logo');
+                resolve(); // Continue without logo
+              };
+              img.crossOrigin = "Anonymous";
+              img.src = logoUrl;
+            });
+          }
         } catch (error) {
-          console.error('Error loading company logo:', error);
+          console.error('Error adding company logo:', error);
         }
       }
 
@@ -280,26 +323,18 @@ export function PropertyAnalyzerPDF({
         yPos = (doc as any).lastAutoTable.finalY + 15;
 
         // Add map image if available
-        if (capturedMapImage) {
-          doc.setFontSize(12);
-          doc.text('Property Location', 20, yPos);
-          yPos += 10;
-
-          const mapWidth = 170;
-          const mapHeight = 100;
-
+        if (mapImageData || capturedMapImage) {
           try {
-            await new Promise<void>((resolve) => {
-              const img = new Image();
-              img.onload = () => {
-                doc.addImage(capturedMapImage, 'PNG', 20, yPos, mapWidth, mapHeight);
-                resolve();
-              };
-              img.src = capturedMapImage;
-            });
-            yPos += mapHeight + 20;
+            const imageToUse = mapImageData || capturedMapImage;
+            if (imageToUse) {
+              const mapWidth = 170;
+              const mapHeight = 100;
+              doc.addImage(imageToUse, 'PNG', 20, yPos, mapWidth, mapHeight);
+              yPos += mapHeight + 20;
+            }
           } catch (error) {
             console.error('Error adding map to PDF:', error);
+            // Continue without map
           }
         }
       }
@@ -551,6 +586,11 @@ export function PropertyAnalyzerPDF({
           <DialogTitle>Generate PDF Report</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
+          {/* Add hidden map container for capturing */}
+          <div ref={mapRef} id="map-container" style={{ display: 'none' }}>
+            {/* Map will be rendered here when needed */}
+          </div>
+
           {sectionGroups.map((group) => (
             <Card key={group.title}>
               <CardContent className="pt-6">
