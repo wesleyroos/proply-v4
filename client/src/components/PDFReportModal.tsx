@@ -1,3 +1,8 @@
+/**
+ * @deprecated This component is being phased out.
+ * Use PDFGenerator.tsx instead for PDF generation functionality.
+ * This file will be removed in future updates.
+ */
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import html2canvas from "html2canvas";

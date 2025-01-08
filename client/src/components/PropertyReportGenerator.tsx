@@ -1,3 +1,8 @@
+/**
+ * @deprecated This component is being phased out.
+ * Use PDFGenerator.tsx instead for PDF generation functionality.
+ * This file will be removed in future updates.
+ */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";

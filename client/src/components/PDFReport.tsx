@@ -1,3 +1,8 @@
+/**
+ * @deprecated This component is being phased out.
+ * Use PDFGenerator.tsx instead for PDF generation functionality.
+ * This file will be removed in future updates.
+ */
 import { useEffect, useRef } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
