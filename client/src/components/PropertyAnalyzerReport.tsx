@@ -1,4 +1,10 @@
 
+/**
+ * @deprecated This component is being phased out and should not be used in new implementations.
+ * Use PropertyAnalyzerPDF.tsx instead for PDF report generation.
+ * This file will be removed in a future update.
+ */
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
