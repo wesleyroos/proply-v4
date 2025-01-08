@@ -1,1 +1,1 @@
-// This file has been deprecated and consolidated into PDFGenerator.tsx
+// File deleted

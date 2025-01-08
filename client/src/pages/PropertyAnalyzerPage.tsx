@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
-import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save, FileText, InfoIcon } from "lucide-react";
+import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save, FileText } from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
@@ -36,7 +36,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
-import { PDFReportModal } from "@/components/PDFReportModal";
+import { PDFGenerator } from "@/components/PDFGenerator";
 
 interface YearlyMetrics {
   grossYield: number;
@@ -389,7 +389,7 @@ export default function PropertyAnalyzerPage() {
                             if (!analysisId) {
                               toast({
                                 variant: "destructive",
-                                title: "Save Required", 
+                                title: "Save Required",
                                 description: "Please save your analysis before exporting to PDF.",
                                 duration: 3000,
                               });
@@ -478,13 +478,13 @@ export default function PropertyAnalyzerPage() {
                       <>
                         <div className="rounded-lg overflow-hidden">
                           <div ref={mapRef}>
-                          <PropertyMap 
-                            address={analysisResult.address} 
-                            onMapLoad={() => {
-                              console.log('Map fully loaded and ready for capture');
-                            }} 
-                          />
-                        </div>
+                            <PropertyMap
+                              address={analysisResult.address}
+                              onMapLoad={() => {
+                                console.log('Map fully loaded and ready for capture');
+                              }}
+                            />
+                          </div>
                         </div>
 
                         {formData?.propertyPhoto && (
@@ -787,8 +787,7 @@ export default function PropertyAnalyzerPage() {
                             Floor Area
                             <AnalyzerIndicator />
                           </h3>
-                          <p className="mt-2 text-lg font-bold text-slate-800">
-                            {analysisResult.floorArea || "0"} m²
+                          <p className="mt-2 text-lg font-bold text-slate-800                        {analysisResult.floorArea || "0"} m²
                           </p>
                         </div>
                         <div>
@@ -979,12 +978,6 @@ export default function PropertyAnalyzerPage() {
 
             </div>
 
-            <PDFReportModal
-              open={showPDFReport}
-              onOpenChange={setShowPDFReport}
-              data={pdfData}
-              capturedMapImage={capturedMapImage}
-            />
           </div>
         )}
       </div>
