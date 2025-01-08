@@ -79,9 +79,13 @@ interface Section {
   content: (doc: jsPDF, yPos: number, data: PropertyData) => number;
 }
 
+export interface ReportSections {
+  [key: string]: string[];
+}
+
 export async function generatePropertyReport(
   data: PropertyData,
-  selectedSections: string[],
+  selectedSections: ReportSections,
   companyLogo?: string | null,
   mapImage?: string | null,
 ): Promise<jsPDF> {
@@ -89,7 +93,7 @@ export async function generatePropertyReport(
   let yPos = 20;
 
   // Add company logo if available
-  if (companyLogo && selectedSections.includes("companyLogo")) {
+  if (companyLogo && selectedSections["Company Branding"]?.includes("companyLogo")) {
     try {
       const logoWidth = 40;
       await new Promise<void>((resolve, reject) => {
@@ -137,7 +141,7 @@ export async function generatePropertyReport(
   // Define sections
   const sections: Section[] = [
     {
-      title: "propertyDetails",
+      title: "Property Details",
       content: (doc, yPos, data) => {
         doc.setFontSize(14);
         doc.text('Property Details', 20, yPos);
@@ -186,7 +190,7 @@ export async function generatePropertyReport(
       }
     },
     {
-      title: "dealStructure",
+      title: "Deal Structure",
       content: (doc, yPos, data) => {
         if (yPos > 220) {
           doc.addPage();
@@ -220,7 +224,7 @@ export async function generatePropertyReport(
       }
     },
     {
-      title: "operatingExpenses",
+      title: "Operating Expenses",
       content: (doc, yPos, data) => {
         if (yPos > 220) {
           doc.addPage();
@@ -252,7 +256,7 @@ export async function generatePropertyReport(
       }
     },
     {
-      title: "rentalPerformance",
+      title: "Rental Performance",
       content: (doc, yPos, data) => {
         if (yPos > 220) {
           doc.addPage();
@@ -435,7 +439,7 @@ export async function generatePropertyReport(
       }
     },
     {
-      title: "investmentMetrics",
+      title: "Investment Metrics",
       content: (doc, yPos, data) => {
         if (!data.investmentMetrics?.year1) return yPos;
 
@@ -474,7 +478,7 @@ export async function generatePropertyReport(
       }
     },
     {
-      title: "cashflowAnalysis",
+      title: "Cashflow Analysis",
       content: (doc, yPos, data) => {
         if (!data.netOperatingIncome) return yPos;
 
@@ -515,7 +519,7 @@ export async function generatePropertyReport(
 
   // Generate selected sections
   for (const section of sections) {
-    if (selectedSections.includes(section.title)) {
+    if (selectedSections[section.title]) {
       yPos = section.content(doc, yPos, data);
     }
   }
@@ -569,7 +573,7 @@ export async function generatePropertyReport(
   return doc;
 }
 
-// Function to capture map image
+// Helper function to capture map image
 export async function captureMap(mapElement: HTMLElement | null): Promise<string | null> {
   if (!mapElement) {
     console.log('Map element not found');
