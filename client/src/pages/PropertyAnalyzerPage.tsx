@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
-import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save, FileText } from "lucide-react";
+import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save, FileText, Info } from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
@@ -787,7 +787,8 @@ export default function PropertyAnalyzerPage() {
                             Floor Area
                             <AnalyzerIndicator />
                           </h3>
-                          <p className="mt-2 text-lg font-bold text-slate-800                        {analysisResult.floorArea || "0"} m²
+                          <p className="mt-2 text-lg font-bold text-slate-800">
+                            {analysisResult.floorArea || "0"} m²
                           </p>
                         </div>
                         <div>
@@ -796,70 +797,11 @@ export default function PropertyAnalyzerPage() {
                             <AnalyzerIndicator />
                           </h3>
                           <p className="mt-2 text-lg font-bold text-slate-800">
-                            R
-                            {(
+                            R{(
                               analysisResult.analysis.purchasePrice /
                               (analysisResult.floorArea || 1)
                             ).toLocaleString()}
                           </p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                            Rate per m²
-                            <AnalyzerIndicator />
-                          </h3>
-                          <p className="mt-2 text-lg font-bold text-slate-800">
-                            R{analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}
-                          </p>
-                        </div>
-
-                        <div>
-                          {(() => {
-                            const actualRate =
-                              analysisResult.analysis.purchasePrice /
-                              (analysisResult.floorArea || 1);
-                            const areaRate =
-                              analysisResult.ratePerSquareMeter || 0;
-                            const difference = areaRate - actualRate;
-                            const percentageDiff = (difference / areaRate) * 100;
-
-                            return (
-                              <div>
-                                <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                                  Rate/m² Difference
-                                  <AnalyzerIndicator />
-                                </h3>
-                                <p className="mt-2 text-lg font-bold text-slate-800 flex items-center">
-                                  <span
-                                    className={`${
-                                      difference > 0
-                                        ? "text-green-600"
-                                        : "text-red-600"
-                                    }`}
-                                  >
-                                    {difference > 0 ? "+" : ""}R{Math.abs(difference).toLocaleString()}
-                                    <span className="ml-1">
-                                      ({difference > 0 ? "+" : ""}{percentageDiff.toFixed(1)}%)
-                                    </span>
-                                  </span>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <InfoIcon className="h-4 w-4 ml-2 text-slate-400" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-[300px] text-sm">
-                                      This shows how the property's price per
-                                      square meter compares to the average rate in
-                                      the area. A lower rate than the area average might indicate
-                                      better value for money, while a higher rate suggests premium positioning.
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </p>
-                              </div>
-                            );
-                          })()}
                         </div>
                       </div>
                     </div>
@@ -980,6 +922,12 @@ export default function PropertyAnalyzerPage() {
 
           </div>
         )}
+        <PDFGenerator
+          open={showPDFReport}
+          onOpenChange={setShowPDFReport}
+          data={pdfData}
+          capturedMapImage={capturedMapImage}
+        />
       </div>
     </div>
   );
