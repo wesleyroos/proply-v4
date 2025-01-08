@@ -1,4 +1,3 @@
-```typescript
 import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,72 +7,7 @@ import { FileText, Upload } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import autoTable from 'jspdf-autotable';
-import { formatter } from "@/utils/formatting";
-import { SEASONALITY_FACTORS, OCCUPANCY_RATES, getSeasonalNightlyRate, getFeeAdjustedRate, calculateMonthlyRevenue } from '@/utils/rentalPerformance';
-
-// Define property data interface
-interface PropertyData {
-  propertyDetails: {
-    address: string;
-    bedrooms?: string;
-    bathrooms?: string;
-    floorArea: number;
-    parkingSpaces: number;
-    purchasePrice: number;
-    ratePerSquareMeter: number;
-    propertyPhoto?: string | null;
-    areaRatePerSquareMeter?: number;
-    mapImage?: string | null;
-  };
-  financialMetrics: {
-    depositAmount: number;
-    depositPercentage: number;
-    interestRate: number;
-    loanTerm: number;
-    monthlyBondRepayment: number;
-    bondRegistration: number;
-    transferCosts: number;
-  };
-  expenses: {
-    monthlyLevies: number;
-    monthlyRatesTaxes: number;
-    otherMonthlyExpenses: number;
-    maintenancePercent: number;
-    managementFee: number;
-  };
-  performance: {
-    shortTermNightlyRate: number;
-    annualOccupancy: number;
-    shortTermAnnualRevenue: number;
-    longTermAnnualRevenue: number;
-    shortTermGrossYield: number;
-    longTermGrossYield: number;
-  };
-  investmentMetrics?: {
-    year1: {
-      grossYield: number;
-      netYield: number;
-      returnOnEquity: number;
-      annualReturn: number;
-      capRate: number;
-      cashOnCashReturn: number;
-      roiWithoutAppreciation: number;
-      roiWithAppreciation: number;
-      irr: number;
-      netWorthChange: number;
-    };
-  };
-  netOperatingIncome?: {
-    [key: string]: { 
-      value: number;
-      annualCashflow: number;
-      cumulativeRentalIncome: number;
-      netWorthChange: number;
-    };
-  };
-}
+import { PropertyData, generatePropertyReport, ReportSections } from "@/utils/pdfGenerator";
 
 interface PDFGeneratorProps {
   open: boolean;
@@ -87,51 +21,37 @@ const defaultSectionGroups = [
   {
     title: "Property Details",
     sections: [
-      { id: "propertyAddress", label: "Property Address", checked: true },
-      { id: "propertySpecs", label: "Property Specifications", checked: true },
-      { id: "propertyPhoto", label: "Property Photo", checked: true },
-      { id: "propertyLocation", label: "Property Location Map", checked: true }
+      { id: "propertyDetails", label: "Property Details", checked: true },
     ]
   },
   {
     title: "Deal Structure",
     sections: [
-      { id: "depositDetails", label: "Deposit Information", checked: true },
-      { id: "loanDetails", label: "Loan Details", checked: true },
-      { id: "bondPayments", label: "Bond Payments", checked: true },
-      { id: "registrationCosts", label: "Registration & Transfer Costs", checked: true }
+      { id: "dealStructure", label: "Deal Structure", checked: true },
     ]
   },
   {
     title: "Operating Expenses",
     sections: [
-      { id: "monthlyExpenses", label: "Monthly Fixed Expenses", checked: true },
-      { id: "maintenanceCosts", label: "Maintenance Costs", checked: true },
-      { id: "managementFees", label: "Management Fees", checked: true }
+      { id: "operatingExpenses", label: "Operating Expenses", checked: true },
     ]
   },
   {
     title: "Rental Performance",
     sections: [
-      { id: "shortTermRental", label: "Short-Term Rental Analysis", checked: true },
-      { id: "longTermRental", label: "Long-Term Rental Analysis", checked: true },
-      { id: "occupancyRates", label: "Occupancy Rates", checked: true },
-      { id: "seasonalityAnalysis", label: "Seasonality Analysis", checked: true }
+      { id: "rentalPerformance", label: "Rental Performance", checked: true },
     ]
   },
   {
     title: "Investment Metrics",
     sections: [
-      { id: "yearOneMetrics", label: "Year 1 Performance", checked: true },
-      { id: "yearlyProjections", label: "5-Year Projections", checked: true },
-      { id: "longTermProjections", label: "10-20 Year Outlook", checked: true },
-      { id: "returnMetrics", label: "ROI & IRR Analysis", checked: true }
+      { id: "investmentMetrics", label: "Investment Metrics", checked: true },
     ]
   },
   {
-    title: "Company Branding",
+    title: "Cashflow Analysis",
     sections: [
-      { id: "companyLogo", label: "Include Company Logo", checked: true }
+      { id: "cashflowAnalysis", label: "Cashflow Analysis", checked: true },
     ]
   }
 ];
@@ -200,389 +120,36 @@ export function PDFGenerator({ open, onOpenChange, data, capturedMapImage }: PDF
     }
   };
 
-  // Main PDF generation function
+  // Generate PDF
   const generatePDF = async () => {
     if (generating) return;
 
     try {
       setGenerating(true);
-      const doc = new jsPDF();
-      let yPos = 20;
 
-      // Add company logo if available
-      if ((logoPreviewUrl || user?.companyLogo) && 
-          sectionGroups.find(g => g.title === "Company Branding")?.sections.find(s => s.id === "companyLogo")?.checked) {
-        try {
-          const logoUrl = logoPreviewUrl || user?.companyLogo;
-          if (logoUrl) {
-            const logoWidth = 40;
-            const img = new Image();
-            await new Promise<void>((resolve, reject) => {
-              img.onload = () => {
-                const aspectRatio = img.height / img.width;
-                const logoHeight = logoWidth * aspectRatio;
-                doc.addImage(logoUrl, "PNG", 20, 10, logoWidth, logoHeight);
-                resolve();
-              };
-              img.onerror = () => {
-                console.error('Error loading company logo');
-                resolve();
-              };
-              img.crossOrigin = "Anonymous";
-              img.src = logoUrl;
-            });
-          }
-        } catch (error) {
-          console.error('Error adding company logo:', error);
+      // Prepare selected sections
+      const selectedSections: ReportSections = {};
+      sectionGroups.forEach(group => {
+        selectedSections[group.title] = group.sections
+          .filter(section => section.checked)
+          .map(section => section.id);
+      });
+
+      // Prepare PDF data with map image
+      const pdfData: PropertyData = {
+        ...data,
+        propertyDetails: {
+          ...data.propertyDetails,
+          mapImage: capturedMapImage
         }
-      }
+      };
 
-      // Add Proply branding
-      try {
-        const proplyLogoWidth = 40;
-        await new Promise<void>((resolve) => {
-          const proplyLogo = new Image();
-          proplyLogo.onload = () => {
-            const aspectRatio = proplyLogo.height / proplyLogo.width;
-            const proplyLogoHeight = proplyLogoWidth * aspectRatio;
-            doc.addImage("/proply-logo-1.png", "PNG", 140, 10, proplyLogoWidth, proplyLogoHeight);
-            doc.setFontSize(8);
-            doc.setTextColor(100);
-            doc.text("Powered by Proply", 140, 35);
-            resolve();
-          };
-          proplyLogo.src = "/proply-logo-1.png";
-        });
-      } catch (error) {
-        console.error('Error loading Proply logo:', error);
-      }
+      const doc = await generatePropertyReport(
+        pdfData,
+        selectedSections,
+        logoPreviewUrl || user?.companyLogo
+      );
 
-      yPos = 50;
-
-      // Property Details Section
-      if (sectionGroups.find(g => g.title === "Property Details")?.sections.some(s => s.checked)) {
-        doc.setFontSize(14);
-        doc.text('Property Details', 20, yPos);
-        yPos += 10;
-
-        const actualRatePerSqM = Math.round(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea);
-        const areaRatePerSqM = data.propertyDetails.areaRatePerSquareMeter || 0;
-        const rateDifference = areaRatePerSqM - actualRatePerSqM;
-
-        const propertyData = [
-          ['Address', data.propertyDetails.address],
-          ['Bedrooms', data.propertyDetails.bedrooms || 'N/A'],
-          ['Bathrooms', data.propertyDetails.bathrooms || 'N/A'],
-          ['Floor Area', `${data.propertyDetails.floorArea}m²`],
-          ['Parking Spaces', data.propertyDetails.parkingSpaces.toString()],
-          ['Purchase Price', formatter(data.propertyDetails.purchasePrice)],
-          ['Rate per m²', formatter(actualRatePerSqM)],
-          ['Area Rate/m²', formatter(areaRatePerSqM)],
-          ['Rate/m² Difference', formatter(rateDifference)]
-        ];
-
-        autoTable(doc, {
-          startY: yPos,
-          head: [['Detail', 'Value']],
-          body: propertyData,
-          theme: 'striped',
-          styles: { fontSize: 10 },
-          headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
-        });
-
-        yPos = (doc as any).lastAutoTable.finalY + 15;
-
-        // Add map image if available
-        const mapImage = await captureMap();
-        if (mapImage || capturedMapImage) {
-          try {
-            const imageToUse = mapImage || capturedMapImage;
-            if (imageToUse) {
-              doc.setFontSize(12);
-              doc.text('Property Location', 20, yPos);
-              yPos += 10;
-
-              const mapWidth = 170;
-              const mapHeight = 100;
-              doc.addImage(imageToUse, 'PNG', 20, yPos, mapWidth, mapHeight);
-              yPos += mapHeight + 20;
-            }
-          } catch (error) {
-            console.error('Error adding map to PDF:', error);
-          }
-        }
-      }
-
-      // Deal Structure Section
-      if (sectionGroups.find(g => g.title === "Deal Structure")?.sections.some(s => s.checked)) {
-        if (yPos > 220) {
-          doc.addPage();
-          yPos = 20;
-        }
-
-        doc.setFontSize(14);
-        doc.text('Deal Structure', 20, yPos);
-        yPos += 10;
-
-        const dealStructureData = [
-          ['Deposit Amount', formatter(data.financialMetrics.depositAmount)],
-          ['Deposit Percentage', `${data.financialMetrics.depositPercentage}%`],
-          ['Interest Rate', `${data.financialMetrics.interestRate}%`],
-          ['Loan Term', `${data.financialMetrics.loanTerm} years`],
-          ['Monthly Bond Payment', formatter(data.financialMetrics.monthlyBondRepayment)],
-          ['Bond Registration', formatter(data.financialMetrics.bondRegistration)],
-          ['Transfer Costs', formatter(data.financialMetrics.transferCosts)]
-        ];
-
-        autoTable(doc, {
-          startY: yPos,
-          head: [['Detail', 'Value']],
-          body: dealStructureData,
-          theme: 'striped',
-          styles: { fontSize: 10 },
-          headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
-        });
-
-        yPos = (doc as any).lastAutoTable.finalY + 15;
-      }
-
-      // Operating Expenses Section
-      if (sectionGroups.find(g => g.title === "Operating Expenses")?.sections.some(s => s.checked)) {
-        if (yPos > 220) {
-          doc.addPage();
-          yPos = 20;
-        }
-
-        doc.setFontSize(14);
-        doc.text('Operating Expenses', 20, yPos);
-        yPos += 10;
-
-        const expensesData = [
-          ['Monthly Levies', formatter(data.expenses.monthlyLevies)],
-          ['Monthly Rates & Taxes', formatter(data.expenses.monthlyRatesTaxes)],
-          ['Other Monthly Expenses', formatter(data.expenses.otherMonthlyExpenses)],
-          ['Maintenance (%)', `${data.expenses.maintenancePercent}%`],
-          ['Management Fee (%)', `${data.expenses.managementFee}%`]
-        ];
-
-        autoTable(doc, {
-          startY: yPos,
-          head: [['Expense Type', 'Amount']],
-          body: expensesData,
-          theme: 'striped',
-          styles: { fontSize: 10 },
-          headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
-        });
-
-        yPos = (doc as any).lastAutoTable.finalY + 15;
-      }
-
-      // Rental Performance Section
-      if (sectionGroups.find(g => g.title === "Rental Performance")?.sections.some(s => s.checked)) {
-        if (yPos > 220) {
-          doc.addPage();
-          yPos = 20;
-        }
-
-        doc.setFontSize(14);
-        doc.text('Rental Performance', 20, yPos);
-        yPos += 10;
-
-        // Generate monthly performance data
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const monthlyData = months.map((month, index) => {
-          const baseRate = data.performance.shortTermNightlyRate;
-          const seasonalRate = getSeasonalNightlyRate(baseRate, index);
-          const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, data.expenses.managementFee > 0);
-          
-          return {
-            month,
-            seasonalRate,
-            feeAdjustedRate,
-            lowOccupancy: OCCUPANCY_RATES.low[index],
-            mediumOccupancy: OCCUPANCY_RATES.medium[index],
-            highOccupancy: OCCUPANCY_RATES.high[index],
-            lowRevenue: calculateMonthlyRevenue('low', index, baseRate, data.expenses.managementFee > 0),
-            mediumRevenue: calculateMonthlyRevenue('medium', index, baseRate, data.expenses.managementFee > 0),
-            highRevenue: calculateMonthlyRevenue('high', index, baseRate, data.expenses.managementFee > 0),
-          };
-        });
-
-        // Summary table
-        const summaryData = [
-          ['Short-Term Performance', ''],
-          ['Nightly Rate', formatter(data.performance.shortTermNightlyRate)],
-          ['Annual Occupancy', `${data.performance.annualOccupancy}%`],
-          ['Annual Revenue', formatter(data.performance.shortTermAnnualRevenue)],
-          ['Monthly Average', formatter(data.performance.shortTermAnnualRevenue / 12)],
-          ['Gross Yield', `${data.performance.shortTermGrossYield}%`],
-          ['', ''],
-          ['Long-Term Performance', ''],
-          ['Annual Revenue', formatter(data.performance.longTermAnnualRevenue)],
-          ['Monthly Revenue', formatter(data.performance.longTermAnnualRevenue / 12)],
-          ['Gross Yield', `${data.performance.longTermGrossYield}%`]
-        ];
-
-        autoTable(doc, {
-          startY: yPos,
-          body: summaryData,
-          theme: 'striped',
-          styles: { fontSize: 10 },
-          headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
-        });
-
-        yPos = (doc as any).lastAutoTable.finalY + 15;
-
-        // Monthly detail table
-        if (yPos > 220) {
-          doc.addPage();
-          yPos = 20;
-        }
-
-        doc.text('Monthly Performance Analysis', 20, yPos);
-        yPos += 10;
-
-        const monthlyTableData = monthlyData.map(m => [
-          m.month,
-          formatter(m.seasonalRate),
-          formatter(m.feeAdjustedRate),
-          `${m.lowOccupancy}%`,
-          formatter(m.lowRevenue),
-          `${m.mediumOccupancy}%`,
-          formatter(m.mediumRevenue),
-          `${m.highOccupancy}%`,
-          formatter(m.highRevenue)
-        ]);
-
-        autoTable(doc, {
-          startY: yPos,
-          head: [['Month', 'Rate', 'Adj Rate', 'Low %', 'Low Rev', 'Med %', 'Med Rev', 'High %', 'High Rev']],
-          body: monthlyTableData,
-          theme: 'striped',
-          styles: { fontSize: 8 },
-          headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] },
-          columnStyles: {
-            0: { cellWidth: 15 },
-            4: { fillColor: [254, 242, 242] },
-            6: { fillColor: [255, 251, 235] },
-            8: { fillColor: [240, 253, 244] }
-          }
-        });
-
-        yPos = (doc as any).lastAutoTable.finalY + 15;
-      }
-
-      // Investment Metrics Section
-      if (sectionGroups.find(g => g.title === "Investment Metrics")?.sections.some(s => s.checked) && 
-          data.investmentMetrics?.year1) {
-        if (yPos > 220) {
-          doc.addPage();
-          yPos = 20;
-        }
-
-        doc.setFontSize(14);
-        doc.text('Investment Metrics (Year 1)', 20, yPos);
-        yPos += 10;
-
-        const metrics = data.investmentMetrics.year1;
-        const investmentData = [
-          ['Gross Yield', `${metrics.grossYield.toFixed(1)}%`],
-          ['Net Yield', `${metrics.netYield.toFixed(1)}%`],
-          ['Return on Equity', `${metrics.returnOnEquity.toFixed(1)}%`],
-          ['Annual Return', `${metrics.annualReturn.toFixed(1)}%`],
-          ['Cap Rate', `${metrics.capRate.toFixed(1)}%`],
-          ['Cash on Cash Return', `${metrics.cashOnCashReturn.toFixed(1)}%`],
-          ['ROI (Without Appreciation)', `${metrics.roiWithoutAppreciation.toFixed(1)}%`],
-          ['ROI (With Appreciation)', `${metrics.roiWithAppreciation.toFixed(1)}%`],
-          ['IRR', `${metrics.irr.toFixed(1)}%`]
-        ];
-
-        autoTable(doc, {
-          startY: yPos,
-          head: [['Metric', 'Value']],
-          body: investmentData,
-          theme: 'striped',
-          styles: { fontSize: 10 },
-          headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
-        });
-
-        yPos = (doc as any).lastAutoTable.finalY + 15;
-
-        // Show projections if available
-        if (data.netOperatingIncome) {
-          if (yPos > 220) {
-            doc.addPage();
-            yPos = 20;
-          }
-
-          doc.text('Projected Returns', 20, yPos);
-          yPos += 10;
-
-          const years = [1, 2, 3, 4, 5, 10, 20];
-          const projectionData = years.map(year => {
-            const yearKey = `year${year}`;
-            const yearData = data.netOperatingIncome![yearKey];
-            return [
-              `Year ${year}`,
-              formatter(yearData.annualCashflow),
-              formatter(yearData.cumulativeRentalIncome),
-              formatter(yearData.netWorthChange)
-            ];
-          });
-
-          autoTable(doc, {
-            startY: yPos,
-            head: [['Period', 'Annual Cashflow', 'Cumulative Income', 'Net Worth Change']],
-            body: projectionData,
-            theme: 'striped',
-            styles: { fontSize: 10 },
-            headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55] }
-          });
-
-          yPos = (doc as any).lastAutoTable.finalY + 15;
-        }
-      }
-
-      // Add page numbers and disclaimer
-      const pageCount = doc.getNumberOfPages();
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-
-        // Add disclaimer on last page
-        if (i === pageCount) {
-          const disclaimerY = doc.internal.pageSize.height - 80;
-          doc.setFontSize(6);
-          doc.setTextColor(100);
-
-          const disclaimerText = [
-            "DISCLAIMER: The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, we cannot guarantee its absolute accuracy or completeness.",
-            "",
-            "This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice. Property investment carries inherent risks, and market conditions can change rapidly.",
-            "",
-            "© 2025 Proply Tech (Pty) Ltd. All rights reserved."
-          ];
-
-          let currentY = disclaimerY;
-          for (const text of disclaimerText) {
-            if (text === "") {
-              currentY += 3;
-              continue;
-            }
-            const lines = doc.splitTextToSize(text, 170);
-            for (const line of lines) {
-              doc.text(line, 20, currentY);
-              currentY += 3;
-            }
-          }
-        }
-
-        // Add page info
-        doc.setFontSize(10);
-        doc.text(`Generated on ${new Date().toLocaleDateString()}`, 20, doc.internal.pageSize.height - 20);
-        doc.text(`Page ${i} of ${pageCount}`, 170, doc.internal.pageSize.height - 20);
-      }
-
-      // Save the PDF
       const filename = `${data.propertyDetails.address.split(',')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}_analysis.pdf`;
       doc.save(filename);
 
@@ -621,7 +188,7 @@ export function PDFGenerator({ open, onOpenChange, data, capturedMapImage }: PDF
             <Card key={group.title}>
               <CardContent className="pt-6">
                 <h3 className="text-lg font-semibold mb-4">{group.title}</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-4">
                   {group.sections.map((section) => (
                     <div key={section.id} className="flex items-center space-x-2">
                       <Checkbox
@@ -705,4 +272,3 @@ export function PDFGenerator({ open, onOpenChange, data, capturedMapImage }: PDF
     </Dialog>
   );
 }
-```
