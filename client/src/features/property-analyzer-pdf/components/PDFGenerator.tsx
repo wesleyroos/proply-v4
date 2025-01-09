@@ -210,7 +210,12 @@ export function PDFGenerator({
                       onCheckedChange={() => updateSelection(`${sectionId}.${itemId}`, !(typeof selections[sectionId as keyof ReportSelections] === 'object' ? (selections[sectionId as keyof ReportSelections] as any)[itemId] : selections[sectionId as keyof ReportSelections]))}
                     />
                     <Label className="text-sm" htmlFor={`${sectionId}-${itemId}`}>
-                      {itemId === 'shortTerm' ? 'Short Term Rental' : itemId === 'longTerm' ? 'Long Term Rental' : itemId.charAt(0).toUpperCase() + itemId.slice(1).replace(/([A-Z])/g, ' $1')}
+                      {itemId === 'shortTerm' ? 'Short Term Rental' : 
+                       itemId === 'longTerm' ? 'Long Term Rental' :
+                       itemId === 'currentPropertyRatePerM2' ? 'Current Property Rate/m²' :
+                       itemId === 'areaRatePerM2' ? 'Area Rate/m²' :
+                       itemId === 'rateM2Difference' ? 'Rate/m² Difference' :
+                       itemId.charAt(0).toUpperCase() + itemId.slice(1).replace(/([A-Z])/g, ' $1')}
                     </Label>
                   </div>
                 ))}
