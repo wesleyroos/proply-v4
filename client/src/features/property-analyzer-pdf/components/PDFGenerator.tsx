@@ -20,23 +20,26 @@ const defaultSelections: ReportSelections = {
   propertyDetails: {
     address: true,
     propertyPhoto: true,
+    mapImage: true,
     bedrooms: true,
     bathrooms: true,
     floorArea: true,
     parkingSpaces: true,
-    currentPropertyRatePerM2: true,
-    areaRatePerM2: true, 
-    rateM2Difference: true,
+    purchasePrice: true,
+    propertyRatePerSquareMeter: true,
+    areaRatePerSquareMeter: true,
+    rateDifference: true,
     propertyDescription: true
   },
   financialMetrics: {
-    purchasePrice: true,
     depositAmount: true,
+    depositPercentage: true,
     interestRate: true,
     loanTerm: true,
     monthlyBondRepayment: true,
     bondRegistration: true,
-    transferCosts: true
+    transferCosts: true,
+    totalCapitalRequired: true
   },
   operatingExpenses: {
     monthlyLevies: true,
@@ -46,8 +49,13 @@ const defaultSelections: ReportSelections = {
     managementFee: true
   },
   rentalPerformance: {
-    shortTerm: true,
-    longTerm: true
+    shortTermNightlyRate: true,
+    annualOccupancy: true,
+    shortTermAnnualRevenue: true,
+    longTermAnnualRevenue: true,
+    shortTermGrossYield: true,
+    longTermGrossYield: true,
+    platformFees: true
   },
   investmentMetrics: {
     grossYield: true,
@@ -56,11 +64,21 @@ const defaultSelections: ReportSelections = {
     annualReturn: true,
     capRate: true,
     cashOnCashReturn: true,
+    roiWithoutAppreciation: true,
+    roiWithAppreciation: true,
     irr: true,
     netWorthChange: true
   },
   cashflowAnalysis: {
-    include: true
+    annualCashflow: true,
+    cumulativeRentalIncome: true,
+    netWorthChange: true,
+    revenueProjections: true
+  },
+  rateComparisons: {
+    propertyRatePerSquareMeter: true,
+    areaAverageRate: true,
+    rateDifference: true
   }
 };
 
