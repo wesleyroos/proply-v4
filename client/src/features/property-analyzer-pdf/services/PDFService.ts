@@ -94,6 +94,22 @@ async function addPropertyDetails(
     y += 10;
   }
 
+  if (selections.propertyDetails.propertyRatePerSquareMeter) {
+    const comparison = [
+      ['Current Property Rate/m²', formatCurrency(data.propertyDetails.ratePerSquareMeter)],
+      ['Area Average Rate/m²', formatCurrency(data.propertyDetails.areaRatePerSquareMeter)],
+      ['Rate Difference/m²', formatCurrency(data.propertyDetails.rateDifference)]
+    ];
+    
+    autoTable(pdf, {
+      startY: y,
+      head: [['Metric', 'Value']],
+      body: comparison,
+      margin: { left: 20 }
+    });
+    y += 30;
+  }
+
   if (selections.propertyDetails.propertyPhoto && data.propertyDetails.propertyPhoto) {
     try {
       const img = new Image();
@@ -230,7 +246,7 @@ async function addRentalPerformance(
   y += 10;
 
   const performance = [];
-  if (selections.rentalPerformance.shortTerm && data.performance.shortTermNightlyRate !== undefined) {
+  if (selections.rentalPerformance.shortTermNightlyRate && data.performance.shortTermNightlyRate !== undefined) {
     performance.push(['Short Term Nightly Rate', formatCurrency(data.performance.shortTermNightlyRate)]);
     performance.push(['Annual Occupancy', `${data.performance.annualOccupancy}%`]);
     performance.push(['Short Term Annual Revenue', formatCurrency(data.performance.shortTermAnnualRevenue)]);
