@@ -835,7 +835,7 @@ export default function PropertyAnalyzerPage() {
                             <AnalyzerIndicator />
                           </h3>
                           <p className="mt-2 text-lg font-bold text-slate-800">
-                            R{(Number(formData?.cmaRatePerSqm || 0) - (analysisResult.ratePerSquareMeter || 0)).toLocaleString()}
+                            R{analysisResult.rateDifference.toLocaleString()}
                           </p>
                         </div>
                       </div>
