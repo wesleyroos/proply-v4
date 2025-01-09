@@ -393,7 +393,6 @@ export default function PropertyAnalyzerPage() {
 
                         setAnalysisId(responseData.id);
                         toast({
-                          variant: "success",
                           title: "Success",
                           description: `Property analysis for ${dataToSave.address} has been saved!`,
                           duration: 5000,
