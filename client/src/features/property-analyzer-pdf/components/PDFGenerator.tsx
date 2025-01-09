@@ -60,11 +60,7 @@ const defaultSelections: ReportSelections = {
     netWorthChange: true
   },
   cashflowAnalysis: {
-    year1: true,
-    year2: true,
-    year5: true,
-    year10: true,
-    year20: true
+    include: true
   }
 };
 
