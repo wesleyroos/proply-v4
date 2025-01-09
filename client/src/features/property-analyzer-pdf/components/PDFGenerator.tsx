@@ -56,8 +56,6 @@ const defaultSelections: ReportSelections = {
     annualReturn: true,
     capRate: true,
     cashOnCashReturn: true,
-    roiWithoutAppreciation: true,
-    roiWithAppreciation: true,
     irr: true,
     netWorthChange: true
   },
@@ -83,7 +81,6 @@ export function PDFGenerator({
 }: PDFGeneratorProps) {
   const [selections, setSelections] = useState<ReportSelections>(defaultSelections);
   const [progress, setProgress] = useState(0);
-  const [tempLogo, setTempLogo] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleSelectAll = (selected: boolean) => {
@@ -112,21 +109,11 @@ export function PDFGenerator({
     });
   };
 
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTempLogo(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleGeneratePDF = async () => {
     setProgress(0);
     try {
       await onGeneratePDF(selections);
+      setProgress(100);
       toast({
         title: "Success",
         description: "PDF report generated successfully",
@@ -137,8 +124,6 @@ export function PDFGenerator({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to generate PDF report",
       });
-    } finally {
-      setProgress(100);
     }
   };
 
@@ -173,7 +158,7 @@ export function PDFGenerator({
                     <div key={itemId} className="flex items-center space-x-2">
                       <Checkbox
                         id={`${sectionId}-${itemId}`}
-                        checked={selections[sectionId as keyof ReportSelections][itemId as keyof typeof sectionItems]}
+                        checked={selections[sectionId as keyof ReportSelections]?.[itemId as keyof typeof sectionItems] ?? false}
                         onCheckedChange={() => toggleSection(sectionId, itemId)}
                       />
                       <Label htmlFor={`${sectionId}-${itemId}`}>
@@ -227,44 +212,33 @@ export function PDFGenerator({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <h3 className="text-lg font-semibold mb-4">Company Branding</h3>
-            <div className="space-y-4">
-              {(companyLogo || tempLogo) && (
-                <div className="p-4 bg-muted rounded-lg">
-                  <img
-                    src={tempLogo || companyLogo}
-                    alt="Company Logo"
-                    className="h-12 object-contain mb-4"
-                  />
-                  <Button variant="outline" onClick={() => document.getElementById('logo-upload')?.click()}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Change Logo
-                  </Button>
-                </div>
-              )}
-              {!companyLogo && !tempLogo && (
-                <div className="p-4 bg-muted rounded-lg">
-                  <Button variant="outline" onClick={() => document.getElementById('logo-upload')?.click()}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Logo
-                  </Button>
-                </div>
-              )}
-              <input
-                type="file"
-                id="logo-upload"
-                className="hidden"
-                accept="image/*"
-                onChange={handleLogoUpload}
-              />
-              <p className="text-sm text-muted-foreground">
-                The logo will be used in the PDF report. You can also set a default logo in your account settings.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        {selections.includeBranding && (
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4">Company Branding</h3>
+              <div className="space-y-4">
+                {companyLogo ? (
+                  <div className="p-4 bg-muted rounded-lg">
+                    <img
+                      src={companyLogo}
+                      alt="Company Logo"
+                      className="h-12 object-contain mb-4"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Your company logo will be included in the PDF report.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      No company logo found. You can set your company logo in the account settings.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <Button
