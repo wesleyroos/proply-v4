@@ -168,7 +168,7 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
           <Card className="p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">Operating Expenses</h2>
             <div className="grid grid-cols-2 gap-4">
-              {selections.operatingExpenses.monthlyLevies && (
+              {selections.operatingExpenses?.monthlyLevies && data.operatingExpenses?.monthlyLevies && (
                 <div>
                   <h3 className="font-medium">Monthly Levies</h3>
                   <p>R {data.operatingExpenses.monthlyLevies.toLocaleString()}</p>
