@@ -297,7 +297,7 @@ export default function PropertyAnalyzerPage() {
   const handleGeneratePDF = async (selections: ReportSelections) => {
     setIsGeneratingPDF(true);
     try {
-      await generatePDF(pdfData, selections, user?.settings?.companyLogo || '');
+      await generatePDF(pdfData, selections, user?.settings?.companyLogo);
       toast({
         title: "Success",
         description: "PDF report generated successfully!",
@@ -392,6 +392,7 @@ export default function PropertyAnalyzerPage() {
 
                         setAnalysisId(responseData.id);
                         toast({
+                          variant: "success",
                           title: "Success",
                           description: `Property analysis for ${dataToSave.address} has been saved!`,
                           duration: 5000,
@@ -782,8 +783,7 @@ export default function PropertyAnalyzerPage() {
                             </p>
                             <p className="text-base text-slate-600">
                               R {Math.round((analysisResult.analysis.longTermAnnualRevenue || 0) / 12).toLocaleString()} /month
-                            </p>
-                          </div>
+                            </p>                          </div>
                           <p className="textsm flex items-center gap-2">
                             <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
                               {analysisResult.longTermGrossYield?.toFixed(2) || "0"}% Gross Yield
@@ -954,7 +954,7 @@ export default function PropertyAnalyzerPage() {
               </DialogHeader>
               <PDFGenerator
                 data={pdfData}
-                companyLogo={user?.settings?.companyLogo || undefined}
+                companyLogo={user?.settings?.companyLogo}
                 onGeneratePDF={handleGeneratePDF}
                 onPreview={(selections) => handlePreview(selections)}
                 isGenerating={isGeneratingPDF}
@@ -966,7 +966,7 @@ export default function PropertyAnalyzerPage() {
           <PDFPreview
             data={pdfData}
             selections={currentSelections}
-            companyLogo={user?.settings?.companyLogo || undefined}
+            companyLogo={user?.settings?.companyLogo}
             onClose={() => setShowPreview(false)}
           />
         )}

@@ -177,9 +177,9 @@ export function PDFGenerator({
                         onCheckedChange={() => toggleSection(sectionId, itemId)}
                       />
                       <Label htmlFor={`${sectionId}-${itemId}`}>
-                        {itemId === 'shortTerm' ? 'Short Term Rental' : 
-                         itemId === 'longTerm' ? 'Long Term Rental' : 
-                         itemId.charAt(0).toUpperCase() + itemId.slice(1).replace(/([A-Z])/g, ' $1')}
+                        {itemId === 'shortTerm' ? 'Short Term Rental' :
+                          itemId === 'longTerm' ? 'Long Term Rental' :
+                            itemId.charAt(0).toUpperCase() + itemId.slice(1).replace(/([A-Z])/g, ' $1')}
                       </Label>
                     </div>
                   ))}
@@ -197,7 +197,7 @@ export function PDFGenerator({
                 <Checkbox
                   id="includeWatermark"
                   checked={selections.includeWatermark}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     setSelections(prev => ({ ...prev, includeWatermark: !!checked }))
                   }
                 />
@@ -207,7 +207,7 @@ export function PDFGenerator({
                 <Checkbox
                   id="includeMap"
                   checked={selections.includeMap}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     setSelections(prev => ({ ...prev, includeMap: !!checked }))
                   }
                 />
@@ -217,7 +217,7 @@ export function PDFGenerator({
                 <Checkbox
                   id="includeBranding"
                   checked={selections.includeBranding}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     setSelections(prev => ({ ...prev, includeBranding: !!checked }))
                   }
                 />
