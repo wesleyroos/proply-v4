@@ -213,16 +213,23 @@ async function addFinancialMetrics(
     ['Monthly Bond Payment', formatCurrency(data.financialMetrics.monthlyBondRepayment)]
   ];
 
-  // Associated Costs
-  const associatedCosts = [
-    ['Bond Registration', formatCurrency(data.financialMetrics.bondRegistration)],
-    ['Transfer Costs', formatCurrency(data.financialMetrics.transferCosts)],
-    ['Total Capital Required', formatCurrency(data.financialMetrics.depositAmount + 
-      data.financialMetrics.bondRegistration + data.financialMetrics.transferCosts)]
-  ];
+  const metrics = [];
+  
   if (selections.financialMetrics.depositAmount && data.financialMetrics.depositAmount !== undefined) {
     metrics.push(['Deposit Amount', formatCurrency(data.financialMetrics.depositAmount)]);
     metrics.push(['Deposit Percentage', `${data.financialMetrics.depositPercentage}%`]);
+  }
+
+  // Associated Costs
+  if (selections.financialMetrics.bondRegistration) {
+    metrics.push(['Bond Registration', formatCurrency(data.financialMetrics.bondRegistration)]);
+  }
+  if (selections.financialMetrics.transferCosts) {
+    metrics.push(['Transfer Costs', formatCurrency(data.financialMetrics.transferCosts)]);
+  }
+  if (selections.financialMetrics.totalCapitalRequired) {
+    metrics.push(['Total Capital Required', formatCurrency(data.financialMetrics.depositAmount + 
+      data.financialMetrics.bondRegistration + data.financialMetrics.transferCosts)]);
   }
   if (selections.financialMetrics.interestRate && data.financialMetrics.interestRate !== undefined) {
     metrics.push(['Interest Rate', `${data.financialMetrics.interestRate}%`]);
