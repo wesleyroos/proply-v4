@@ -1,3 +1,5 @@
+// This file is deprecated. Using new implementation from features/property-analyzer-pdf
+
 import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";

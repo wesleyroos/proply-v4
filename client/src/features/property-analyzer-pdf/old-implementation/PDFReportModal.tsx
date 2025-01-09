@@ -1,4 +1,6 @@
-import React, { useRef } from 'react';
+// This file is deprecated. Using new implementation from features/property-analyzer-pdf
+
+import React from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { PDFReport } from './PDFReport';
 import { PropertyData, ReportSelections } from '../types/propertyReport';

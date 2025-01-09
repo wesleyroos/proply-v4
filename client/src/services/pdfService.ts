@@ -1,3 +1,5 @@
+// This file is deprecated. Using new implementation from features/property-analyzer-pdf
+
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { PropertyData, ReportSelections } from '../types/propertyReport';
