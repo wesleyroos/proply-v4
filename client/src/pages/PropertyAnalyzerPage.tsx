@@ -36,7 +36,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PDFGenerator } from "@/features/property-analyzer-pdf/components/PDFGenerator";
+import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
 
 interface YearlyMetrics {
   grossYield: number;
@@ -135,6 +137,10 @@ export default function PropertyAnalyzerPage() {
   const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
+  const [showPDFGenerator, setShowPDFGenerator] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const companyLogo = '/your-company-logo.png'; // Replace with your actual logo path
+
 
   // Map capture is now handled in PDFReportModal
 
@@ -288,6 +294,29 @@ export default function PropertyAnalyzerPage() {
     return data;
   };
 
+  const handleGeneratePDF = async (selections: any) => {
+    setIsGeneratingPDF(true);
+    try {
+      await generatePDF(pdfData, selections, companyLogo);
+      toast({
+        title: "Success",
+        description: "PDF report generated successfully!",
+        duration: 3000,
+      });
+      setShowPDFGenerator(false);
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate PDF report",
+        duration: 5000,
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   return (
     <div className="px-4 py-6">
       <div className="flex items-center mb-8">
@@ -383,7 +412,7 @@ export default function PropertyAnalyzerPage() {
                     <TooltipTrigger asChild>
                       <div>
                         <Button
-                          onClick={async () => {
+                          onClick={() => {
                             if (!analysisResult) return;
 
                             if (!analysisId) {
@@ -440,7 +469,7 @@ export default function PropertyAnalyzerPage() {
                               netOperatingIncome: analysisResult.netOperatingIncome,
                               revenueProjections: analysisResult.analysis.revenueProjections,
                             });
-                            setShowPDFReport(true);
+                            setShowPDFGenerator(true); // Changed to showPDFGenerator
                           }}
                           disabled={!analysisResult || !analysisId}
                           className="bg-blue-600 hover:bg-blue-700"
@@ -749,7 +778,7 @@ export default function PropertyAnalyzerPage() {
                                 "0"}
                               <span className="w-2 h-2 rounded-full bg-red-500" title="Data from analyzer engine" />
                             </p>
-                            <p className="text-base text-slate-600">
+                            <p className="text-base text-slate600">
                               R
                               {Math.round(
                                 (analysisResult.analysis
@@ -922,12 +951,20 @@ export default function PropertyAnalyzerPage() {
 
           </div>
         )}
-        <PDFGenerator
-          open={showPDFReport}
-          onOpenChange={setShowPDFReport}
-          data={pdfData}
-          capturedMapImage={capturedMapImage}
-        />
+        <Dialog open={showPDFGenerator} onOpenChange={setShowPDFGenerator}>
+          <DialogContent className="max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle>Generate Property Analysis Report</DialogTitle>
+            </DialogHeader>
+            <PDFGenerator
+              data={pdfData}
+              companyLogo={companyLogo}
+              onGeneratePDF={handleGeneratePDF}
+              onPreview={() => {/* Implement preview logic */}}
+              isGenerating={isGeneratingPDF}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
