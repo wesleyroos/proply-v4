@@ -175,7 +175,7 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
                 </div>
               )}
 
-              {selections.operatingExpenses.monthlyRatesTaxes && (
+              {selections.operatingExpenses?.monthlyRatesTaxes && data.operatingExpenses?.monthlyRatesTaxes && (
                 <div>
                   <h3 className="font-medium">Monthly Rates & Taxes</h3>
                   <p>R {data.operatingExpenses.monthlyRatesTaxes.toLocaleString()}</p>
