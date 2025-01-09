@@ -29,7 +29,7 @@ import CashflowChart from "@/components/CashflowChart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PDFGenerator } from "@/features/property-analyzer-pdf/components/PDFGenerator";
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
-import { PDFPreview } from "@/features/property-analyzer-pdf/components/PDFPreview";
+//Removed import: import { PDFPreview } from "@/features/property-analyzer-pdf/components/PDFPreview";
 import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
 
 interface YearlyMetrics {
@@ -129,10 +129,10 @@ export default function PropertyAnalyzerPage() {
   const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
-  const [currentSelections, setCurrentSelections] = useState<ReportSelections | null>(null);
+  //Removed: const [currentSelections, setCurrentSelections] = useState<ReportSelections | null>(null);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+  //Removed: const [showPreview, setShowPreview] = useState(false);
   const companyLogo = '/your-company-logo.png';
 
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
@@ -307,10 +307,7 @@ export default function PropertyAnalyzerPage() {
     }
   };
 
-  const handlePreview = (selections: ReportSelections) => {
-    setCurrentSelections(selections);
-    setShowPreview(true);
-  };
+  //Removed handlePreview function
 
   const handleSaveAnalysis = async () => {
     try {
@@ -949,19 +946,12 @@ export default function PropertyAnalyzerPage() {
               data={pdfData}
               companyLogo={user?.companyLogo || ''}
               onGeneratePDF={handleGeneratePDF}
-              onPreview={(selections) => handlePreview(selections)}
+              //Removed onPreview prop
               isGenerating={isGeneratingPDF}
             />
           </DialogContent>
         </Dialog>
-        {showPreview && pdfData && currentSelections && (
-          <PDFPreview
-            data={pdfData}
-            selections={currentSelections}
-            companyLogo={user?.settings?.companyLogo || ''}
-            onClose={() => setShowPreview(false)}
-          />
-        )}
+        {/*Removed showPreview conditional rendering block*/}
       </div>
     </div>
   );

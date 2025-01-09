@@ -13,7 +13,6 @@ interface PDFGeneratorProps {
   data: PropertyData;
   companyLogo?: string;
   onGeneratePDF: (selections: ReportSelections) => Promise<void>;
-  onPreview: (selections: ReportSelections) => void;
   isGenerating: boolean;
 }
 
