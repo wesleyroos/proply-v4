@@ -32,9 +32,7 @@ export default function PropertyMap({ address, onMapLoad, mapClassName }: Proper
           gestureHandling: 'cooperative'
         });
 
-        if (onMapLoad) {
-          onMapLoad();
-        }
+        
 
         geocoder.geocode({ address }, (results, status) => {
           if (status === "OK" && results?.[0]) {

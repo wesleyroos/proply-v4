@@ -510,9 +510,6 @@ export default function PropertyAnalyzerPage() {
                           <div ref={mapRef}>
                             <PropertyMap
                               address={analysisResult.address}
-                              onMapLoad={() => {
-                                console.log('Map fully loaded and ready for capture');
-                              }}
                             />
                           </div>
                         </div>
