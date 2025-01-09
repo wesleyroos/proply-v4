@@ -1,1 +1,2 @@
-// This file is deprecated. Using new implementation from features/property-analyzer-pdf
+// This file is deprecated and moved to features/property-analyzer-pdf/services/PDFService.ts
+// Please use the new implementation instead.

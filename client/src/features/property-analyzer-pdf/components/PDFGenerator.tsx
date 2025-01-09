@@ -5,71 +5,71 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { FileText, Upload, Check, Loader2 } from "lucide-react";
+import { FileText, Upload, Check, Eye, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PropertyData, ReportSelections } from '../types/propertyReport';
 
 interface PDFGeneratorProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   data: PropertyData;
   companyLogo?: string;
   onGeneratePDF: (selections: ReportSelections) => Promise<void>;
+  onPreview: () => void;
+  isGenerating: boolean;
 }
 
 const defaultSelections: ReportSelections = {
   propertyDetails: {
-    address: false,
-    propertyPhoto: false,
-    map: false,
-    bedrooms: false,
-    bathrooms: false,
-    floorArea: false,
-    parkingSpaces: false,
-    ratePerSquareMeter: false,
-    propertyDescription: false
+    address: true,
+    propertyPhoto: true,
+    map: true,
+    bedrooms: true,
+    bathrooms: true,
+    floorArea: true,
+    parkingSpaces: true,
+    ratePerSquareMeter: true,
+    propertyDescription: true
   },
   financialMetrics: {
-    purchasePrice: false,
-    depositAmount: false,
-    interestRate: false,
-    loanTerm: false,
-    monthlyBondRepayment: false,
-    bondRegistration: false,
-    transferCosts: false
+    purchasePrice: true,
+    depositAmount: true,
+    interestRate: true,
+    loanTerm: true,
+    monthlyBondRepayment: true,
+    bondRegistration: true,
+    transferCosts: true
   },
   operatingExpenses: {
-    monthlyLevies: false,
-    monthlyRatesTaxes: false,
-    otherMonthlyExpenses: false,
-    maintenancePercent: false,
-    managementFee: false
+    monthlyLevies: true,
+    monthlyRatesTaxes: true,
+    otherMonthlyExpenses: true,
+    maintenancePercent: true,
+    managementFee: true
   },
   rentalPerformance: {
-    shortTerm: false,
-    longTerm: false
+    shortTerm: true,
+    longTerm: true
   },
   investmentMetrics: {
-    grossYield: false,
-    netYield: false,
-    returnOnEquity: false,
-    annualReturn: false,
-    capRate: false,
-    cashOnCashReturn: false,
-    irr: false,
-    netWorthChange: false
+    grossYield: true,
+    netYield: true,
+    returnOnEquity: true,
+    annualReturn: true,
+    capRate: true,
+    cashOnCashReturn: true,
+    irr: true,
+    netWorthChange: true
   },
   cashflowAnalysis: {
-    year1: false,
-    year2: false,
-    year3: false,
-    year4: false,
-    year5: false,
-    year10: false,
-    year20: false
+    year1: true,
+    year2: true,
+    year3: true,
+    year4: true,
+    year5: true,
+    year10: true,
+    year20: true
   },
   dataVisualizations: {
-    charts: false
+    charts: true
   },
   includeWatermark: true,
   includeMap: true
@@ -132,7 +132,8 @@ const sectionConfig = [
       { id: 'returnOnEquity', label: 'Return on Equity' },
       { id: 'capRate', label: 'Cap Rate' },
       { id: 'cashOnCashReturn', label: 'Cash on Cash Return' },
-      { id: 'irr', label: 'IRR' }
+      { id: 'irr', label: 'IRR' },
+      { id: 'netWorthChange', label: 'Net Worth Change' }
     ]
   },
   {
@@ -150,17 +151,16 @@ const sectionConfig = [
 ];
 
 export function PDFGenerator({
-  open,
-  onOpenChange,
   data,
   companyLogo,
-  onGeneratePDF
+  onGeneratePDF,
+  onPreview,
+  isGenerating
 }: PDFGeneratorProps) {
-  const { toast } = useToast();
   const [selections, setSelections] = useState<ReportSelections>(defaultSelections);
-  const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const { toast } = useToast();
 
   const handleSelectAll = (selected: boolean) => {
     const newSelections = { ...defaultSelections };
@@ -196,7 +196,6 @@ export function PDFGenerator({
   };
 
   const handleGeneratePDF = async () => {
-    setGenerating(true);
     setProgress(0);
     try {
       await onGeneratePDF(selections);
@@ -204,7 +203,6 @@ export function PDFGenerator({
         title: "Success",
         description: "PDF report generated successfully",
       });
-      onOpenChange(false);
     } catch (error) {
       toast({
         variant: "destructive",
@@ -212,115 +210,109 @@ export function PDFGenerator({
         description: error instanceof Error ? error.message : "Failed to generate PDF report",
       });
     } finally {
-      setGenerating(false);
       setProgress(100);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px]">
-        <DialogHeader>
-          <DialogTitle>Generate Property Analysis Report</DialogTitle>
-        </DialogHeader>
-
-        <div className="py-4 space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-x-2">
-              <Button variant="outline" onClick={() => handleSelectAll(true)}>
-                <Check className="w-4 h-4 mr-2" />
-                Select All
-              </Button>
-              <Button variant="outline" onClick={() => handleSelectAll(false)}>
-                Deselect All
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-            {sectionConfig.map((section) => (
-              <Card key={section.id}>
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4">{section.title}</h3>
-                  <div className="grid gap-4">
-                    {section.items.map((item) => (
-                      <div key={item.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`${section.id}-${item.id}`}
-                          checked={
-                            (selections[section.id as keyof ReportSelections] as any)?.[item.id] || false
-                          }
-                          onCheckedChange={() => toggleSection(section.id, item.id)}
-                        />
-                        <Label htmlFor={`${section.id}-${item.id}`}>
-                          {item.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-semibold mb-4">Company Branding</h3>
-                <div className="space-y-4">
-                  <div className="p-4 bg-muted rounded-lg">
-                    {companyLogo ? (
-                      <div className="space-y-4">
-                        <img
-                          src={companyLogo}
-                          alt="Company Logo"
-                          className="h-12 object-contain"
-                        />
-                        <Button variant="outline" onClick={() => document.getElementById('logo-update')?.click()}>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Update Logo
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button variant="outline" onClick={() => document.getElementById('logo-upload')?.click()}>
-                        <Upload className="w-4 h-4 mr-2" />
-                        Upload Logo
-                      </Button>
-                    )}
-                    <input
-                      type="file"
-                      id={companyLogo ? 'logo-update' : 'logo-upload'}
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Button
-            className="w-full"
-            onClick={handleGeneratePDF}
-            disabled={generating}
-          >
-            {generating ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Generating PDF...
-              </>
-            ) : (
-              <>
-                <FileText className="w-4 h-4 mr-2" />
-                Generate PDF Report
-              </>
-            )}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="space-x-2">
+          <Button variant="outline" onClick={() => handleSelectAll(true)}>
+            <Check className="w-4 h-4 mr-2" />
+            Select All
           </Button>
-
-          {generating && (
-            <Progress value={progress} className="w-full" />
-          )}
+          <Button variant="outline" onClick={() => handleSelectAll(false)}>
+            Deselect All
+          </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+        <Button variant="outline" onClick={onPreview}>
+          <Eye className="w-4 h-4 mr-2" />
+          Preview
+        </Button>
+      </div>
+
+      <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+        {sectionConfig.map((section) => (
+          <Card key={section.id}>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4">{section.title}</h3>
+              <div className="grid gap-4">
+                {section.items.map((item) => (
+                  <div key={item.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`${section.id}-${item.id}`}
+                      checked={
+                        (selections[section.id as keyof ReportSelections] as any)?.[item.id] || false
+                      }
+                      onCheckedChange={() => toggleSection(section.id, item.id)}
+                    />
+                    <Label htmlFor={`${section.id}-${item.id}`}>
+                      {item.label}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4">Company Branding</h3>
+              <div className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  {companyLogo ? (
+                    <div className="space-y-4">
+                      <img
+                        src={companyLogo}
+                        alt="Company Logo"
+                        className="h-12 object-contain"
+                      />
+                      <Button variant="outline" onClick={() => document.getElementById('logo-update')?.click()}>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Update Logo
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button variant="outline" onClick={() => document.getElementById('logo-upload')?.click()}>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload Logo
+                    </Button>
+                  )}
+                  <input
+                    type="file"
+                    id={companyLogo ? 'logo-update' : 'logo-upload'}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+      </div>
+
+      <Button
+        className="w-full"
+        onClick={handleGeneratePDF}
+        disabled={isGenerating}
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Generating PDF...
+          </>
+        ) : (
+          <>
+            <FileText className="w-4 h-4 mr-2" />
+            Generate PDF Report
+          </>
+        )}
+      </Button>
+
+      {isGenerating && (
+        <Progress value={progress} className="w-full" />
+      )}
+    </div>
   );
 }
