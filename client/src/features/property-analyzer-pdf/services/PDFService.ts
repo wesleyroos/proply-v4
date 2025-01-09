@@ -83,23 +83,56 @@ async function addPropertyDetails(
 ): Promise<number> {
   let y = startY;
 
+  // Property Overview Section
   pdf.setFontSize(16);
-  pdf.text('Property Details', 20, y);
+  pdf.text('Property Overview', 20, y);
   y += 10;
-
   pdf.setFontSize(12);
 
-  if (selections.propertyDetails.address && data.propertyDetails.address) {
-    pdf.text(`Address: ${data.propertyDetails.address}`, 20, y);
-    y += 10;
+  // Location and Basic Info
+  const basicInfo = [];
+  if (selections.propertyDetails.address) {
+    basicInfo.push(['Address', data.propertyDetails.address]);
+  }
+  if (selections.propertyDetails.bedrooms) {
+    basicInfo.push(['Bedrooms', data.propertyDetails.bedrooms]);
+  }
+  if (selections.propertyDetails.bathrooms) {
+    basicInfo.push(['Bathrooms', data.propertyDetails.bathrooms]);
+  }
+  if (selections.propertyDetails.floorArea) {
+    basicInfo.push(['Floor Area', `${data.propertyDetails.floorArea}m²`]);
+  }
+  if (selections.propertyDetails.parkingSpaces) {
+    basicInfo.push(['Parking Spaces', data.propertyDetails.parkingSpaces]);
   }
 
+  if (basicInfo.length > 0) {
+    autoTable(pdf, {
+      startY: y,
+      head: [['Feature', 'Details']],
+      body: basicInfo,
+      margin: { left: 20 },
+      theme: 'plain'
+    });
+    y += basicInfo.length * 8 + 15;
+  }
+
+  // Property Valuation
+  y += 5;
+  pdf.setFontSize(14);
+  pdf.text('Property Valuation', 20, y);
+  y += 8;
+
+  const valuationData = [];
+  valuationData.push(['Purchase Price', formatCurrency(data.propertyDetails.purchasePrice)]);
   if (selections.propertyDetails.propertyRatePerSquareMeter) {
-    const comparison = [
-      ['Current Property Rate/m²', formatCurrency(data.propertyDetails.ratePerSquareMeter)],
+    valuationData.push(
+      ['Property Rate/m²', formatCurrency(data.propertyDetails.ratePerSquareMeter)],
       ['Area Average Rate/m²', formatCurrency(data.propertyDetails.areaRatePerSquareMeter)],
-      ['Rate Difference/m²', formatCurrency(data.propertyDetails.rateDifference)]
-    ];
+      ['Market Position', formatCurrency(data.propertyDetails.rateDifference) + ' vs market average']
+    );
+  }
     
     autoTable(pdf, {
       startY: y,
@@ -162,14 +195,31 @@ async function addFinancialMetrics(
 ): Promise<number> {
   let y = startY;
 
+  // Investment Structure
   pdf.setFontSize(16);
-  pdf.text('Financial Metrics', 20, y);
+  pdf.text('Investment Structure', 20, y);
   y += 10;
 
-  const metrics = [];
-  if (selections.financialMetrics.purchasePrice && data.propertyDetails.purchasePrice !== undefined) {
-    metrics.push(['Purchase Price', formatCurrency(data.propertyDetails.purchasePrice)]);
-  }
+  const investmentStructure = [
+    ['Total Investment Required', formatCurrency(data.propertyDetails.purchasePrice)],
+    ['Required Deposit', `${formatCurrency(data.financialMetrics.depositAmount)} (${data.financialMetrics.depositPercentage}%)`],
+    ['Bond Amount', formatCurrency(data.propertyDetails.purchasePrice - data.financialMetrics.depositAmount)]
+  ];
+
+  // Financing Terms
+  const financingTerms = [
+    ['Interest Rate', `${data.financialMetrics.interestRate}%`],
+    ['Loan Term', `${data.financialMetrics.loanTerm} years`],
+    ['Monthly Bond Payment', formatCurrency(data.financialMetrics.monthlyBondRepayment)]
+  ];
+
+  // Associated Costs
+  const associatedCosts = [
+    ['Bond Registration', formatCurrency(data.financialMetrics.bondRegistration)],
+    ['Transfer Costs', formatCurrency(data.financialMetrics.transferCosts)],
+    ['Total Capital Required', formatCurrency(data.financialMetrics.depositAmount + 
+      data.financialMetrics.bondRegistration + data.financialMetrics.transferCosts)]
+  ];
   if (selections.financialMetrics.depositAmount && data.financialMetrics.depositAmount !== undefined) {
     metrics.push(['Deposit Amount', formatCurrency(data.financialMetrics.depositAmount)]);
     metrics.push(['Deposit Percentage', `${data.financialMetrics.depositPercentage}%`]);
