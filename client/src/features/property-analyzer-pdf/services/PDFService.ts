@@ -89,7 +89,7 @@ async function addPropertyDetails(
 
   pdf.setFontSize(12);
 
-  if (selections.propertyDetails.address) {
+  if (selections.propertyDetails.address && data.propertyDetails.address) {
     pdf.text(`Address: ${data.propertyDetails.address}`, 20, y);
     y += 10;
   }
@@ -109,19 +109,19 @@ async function addPropertyDetails(
   }
 
   const details = [];
-  if (selections.propertyDetails.bedrooms) {
+  if (selections.propertyDetails.bedrooms && data.propertyDetails.bedrooms !== undefined) {
     details.push(['Bedrooms', data.propertyDetails.bedrooms.toString()]);
   }
-  if (selections.propertyDetails.bathrooms) {
+  if (selections.propertyDetails.bathrooms && data.propertyDetails.bathrooms !== undefined) {
     details.push(['Bathrooms', data.propertyDetails.bathrooms.toString()]);
   }
-  if (selections.propertyDetails.floorArea) {
+  if (selections.propertyDetails.floorArea && data.propertyDetails.floorArea !== undefined) {
     details.push(['Floor Area', `${data.propertyDetails.floorArea}m²`]);
   }
-  if (selections.propertyDetails.parkingSpaces) {
+  if (selections.propertyDetails.parkingSpaces && data.propertyDetails.parkingSpaces !== undefined) {
     details.push(['Parking Spaces', data.propertyDetails.parkingSpaces.toString()]);
   }
-  if (selections.propertyDetails.ratePerSquareMeter) {
+  if (selections.propertyDetails.ratePerSquareMeter && data.propertyDetails.ratePerSquareMeter !== undefined) {
     details.push(['Rate per m²', formatCurrency(data.propertyDetails.ratePerSquareMeter)]);
   }
 
@@ -151,17 +151,17 @@ async function addFinancialMetrics(
   y += 10;
 
   const metrics = [];
-  if (selections.financialMetrics.purchasePrice) {
+  if (selections.financialMetrics.purchasePrice && data.propertyDetails.purchasePrice !== undefined) {
     metrics.push(['Purchase Price', formatCurrency(data.propertyDetails.purchasePrice)]);
   }
-  if (selections.financialMetrics.depositAmount) {
+  if (selections.financialMetrics.depositAmount && data.financialMetrics.depositAmount !== undefined) {
     metrics.push(['Deposit Amount', formatCurrency(data.financialMetrics.depositAmount)]);
     metrics.push(['Deposit Percentage', `${data.financialMetrics.depositPercentage}%`]);
   }
-  if (selections.financialMetrics.interestRate) {
+  if (selections.financialMetrics.interestRate && data.financialMetrics.interestRate !== undefined) {
     metrics.push(['Interest Rate', `${data.financialMetrics.interestRate}%`]);
   }
-  if (selections.financialMetrics.monthlyBondRepayment) {
+  if (selections.financialMetrics.monthlyBondRepayment && data.financialMetrics.monthlyBondRepayment !== undefined) {
     metrics.push(['Monthly Bond Repayment', formatCurrency(data.financialMetrics.monthlyBondRepayment)]);
   }
 
@@ -191,16 +191,16 @@ async function addOperatingExpenses(
   y += 10;
 
   const expenses = [];
-  if (selections.operatingExpenses.monthlyLevies) {
+  if (selections.operatingExpenses.monthlyLevies && data.operatingExpenses.monthlyLevies !== undefined) {
     expenses.push(['Monthly Levies', formatCurrency(data.operatingExpenses.monthlyLevies)]);
   }
-  if (selections.operatingExpenses.monthlyRatesTaxes) {
+  if (selections.operatingExpenses.monthlyRatesTaxes && data.operatingExpenses.monthlyRatesTaxes !== undefined) {
     expenses.push(['Monthly Rates & Taxes', formatCurrency(data.operatingExpenses.monthlyRatesTaxes)]);
   }
-  if (selections.operatingExpenses.otherMonthlyExpenses) {
+  if (selections.operatingExpenses.otherMonthlyExpenses && data.operatingExpenses.otherMonthlyExpenses !== undefined) {
     expenses.push(['Other Monthly Expenses', formatCurrency(data.operatingExpenses.otherMonthlyExpenses)]);
   }
-  if (selections.operatingExpenses.maintenancePercent) {
+  if (selections.operatingExpenses.maintenancePercent && data.operatingExpenses.maintenancePercent !== undefined) {
     expenses.push(['Maintenance', `${data.operatingExpenses.maintenancePercent}% of rental income`]);
   }
 
@@ -230,14 +230,14 @@ async function addRentalPerformance(
   y += 10;
 
   const performance = [];
-  if (selections.rentalPerformance.shortTerm) {
+  if (selections.rentalPerformance.shortTerm && data.performance.shortTermNightlyRate !== undefined) {
     performance.push(['Short Term Nightly Rate', formatCurrency(data.performance.shortTermNightlyRate)]);
     performance.push(['Annual Occupancy', `${data.performance.annualOccupancy}%`]);
     performance.push(['Short Term Annual Revenue', formatCurrency(data.performance.shortTermAnnualRevenue)]);
     performance.push(['Short Term Gross Yield', `${data.performance.shortTermGrossYield.toFixed(2)}%`]);
   }
 
-  if (selections.rentalPerformance.longTerm) {
+  if (selections.rentalPerformance.longTerm && data.performance.longTermAnnualRevenue !== undefined) {
     performance.push(['Long Term Monthly Revenue', formatCurrency(data.performance.longTermAnnualRevenue / 12)]);
     performance.push(['Long Term Annual Revenue', formatCurrency(data.performance.longTermAnnualRevenue)]);
     performance.push(['Long Term Gross Yield', `${data.performance.longTermGrossYield.toFixed(2)}%`]);
@@ -271,22 +271,22 @@ async function addInvestmentMetrics(
   const metrics = [];
   const shortTermMetrics = data.investmentMetrics.shortTerm[0];
 
-  if (selections.investmentMetrics.grossYield) {
+  if (selections.investmentMetrics.grossYield && shortTermMetrics.grossYield !== undefined) {
     metrics.push(['Gross Yield', `${shortTermMetrics.grossYield.toFixed(2)}%`]);
   }
-  if (selections.investmentMetrics.netYield) {
+  if (selections.investmentMetrics.netYield && shortTermMetrics.netYield !== undefined) {
     metrics.push(['Net Yield', `${shortTermMetrics.netYield.toFixed(2)}%`]);
   }
-  if (selections.investmentMetrics.returnOnEquity) {
+  if (selections.investmentMetrics.returnOnEquity && shortTermMetrics.returnOnEquity !== undefined) {
     metrics.push(['Return on Equity', `${shortTermMetrics.returnOnEquity.toFixed(2)}%`]);
   }
-  if (selections.investmentMetrics.capRate) {
+  if (selections.investmentMetrics.capRate && shortTermMetrics.capRate !== undefined) {
     metrics.push(['Cap Rate', `${shortTermMetrics.capRate.toFixed(2)}%`]);
   }
-  if (selections.investmentMetrics.cashOnCashReturn) {
+  if (selections.investmentMetrics.cashOnCashReturn && shortTermMetrics.cashOnCashReturn !== undefined) {
     metrics.push(['Cash on Cash Return', `${shortTermMetrics.cashOnCashReturn.toFixed(2)}%`]);
   }
-  if (selections.investmentMetrics.irr) {
+  if (selections.investmentMetrics.irr && shortTermMetrics.irr !== undefined) {
     metrics.push(['IRR', `${shortTermMetrics.irr.toFixed(2)}%`]);
   }
 
