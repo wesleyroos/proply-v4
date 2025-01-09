@@ -236,7 +236,16 @@ export function PDFGenerator({
 
       <Button
         className="w-full"
-        onClick={handleGeneratePDF}
+        onClick={async () => {
+          setProgress(0);
+          const interval = setInterval(() => {
+            setProgress(prev => Math.min(prev + 10, 90));
+          }, 500);
+          
+          await handleGeneratePDF();
+          clearInterval(interval);
+          setProgress(100);
+        }}
         disabled={isGenerating}
       >
         {isGenerating ? (
@@ -252,9 +261,7 @@ export function PDFGenerator({
         )}
       </Button>
 
-      {isGenerating && (
-        <Progress value={progress} className="w-full" />
-      )}
+      <Progress value={progress} className="w-full mt-4" />
     </div>
   );
 }

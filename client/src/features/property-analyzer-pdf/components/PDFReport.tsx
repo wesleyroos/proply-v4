@@ -90,8 +90,20 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
 
                 {selections.propertyDetails.ratePerSquareMeter && (
                   <div>
-                    <h3 className="font-medium">Rate per m²</h3>
+                    <h3 className="font-medium">Property Rate per m²</h3>
                     <p>R {data.propertyDetails.ratePerSquareMeter.toLocaleString()}</p>
+                  </div>
+                )}
+                {selections.propertyDetails.areaRate && (
+                  <div>
+                    <h3 className="font-medium">Area Rate per m²</h3>
+                    <p>R {data.propertyDetails.areaRate.toLocaleString()}</p>
+                  </div>
+                )}
+                {selections.propertyDetails.rateDifference && (
+                  <div>
+                    <h3 className="font-medium">Rate Difference</h3>
+                    <p>R {data.propertyDetails.rateDifference.toLocaleString()}</p>
                   </div>
                 )}
               </div>
@@ -105,6 +117,7 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
             </div>
           </Card>
         )}
+
 
         {/* Financial Metrics Section */}
         {selections.financialMetrics && (
