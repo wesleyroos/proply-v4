@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
 import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save, FileText, Info } from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
