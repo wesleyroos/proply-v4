@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { FileText, Eye, Loader2, Upload } from "lucide-react";
+import { FileText, Eye, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PropertyData, ReportSelections } from '../types/propertyReport';
 
@@ -56,8 +56,6 @@ const defaultSelections: ReportSelections = {
     annualReturn: true,
     capRate: true,
     cashOnCashReturn: true,
-    roiWithoutAppreciation: true,
-    roiWithAppreciation: true,
     irr: true,
     netWorthChange: true
   },
@@ -70,8 +68,7 @@ const defaultSelections: ReportSelections = {
     year20: true
   },
   includeWatermark: true,
-  includeMap: true,
-  includeBranding: true
+  includeMap: true
 };
 
 export function PDFGenerator({
@@ -83,7 +80,6 @@ export function PDFGenerator({
 }: PDFGeneratorProps) {
   const [selections, setSelections] = useState<ReportSelections>(defaultSelections);
   const [progress, setProgress] = useState(0);
-  const [tempLogo, setTempLogo] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleSelectAll = (selected: boolean) => {
@@ -110,17 +106,6 @@ export function PDFGenerator({
       }
       return newSelections;
     });
-  };
-
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTempLogo(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleGeneratePDF = async () => {
@@ -161,7 +146,7 @@ export function PDFGenerator({
 
       <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
         {Object.entries(defaultSelections).map(([sectionId, sectionItems]) => {
-          if (sectionId === 'includeWatermark' || sectionId === 'includeMap' || sectionId === 'includeBranding') return null;
+          if (sectionId === 'includeWatermark' || sectionId === 'includeMap') return null;
           return (
             <Card key={sectionId}>
               <CardContent className="pt-6">
@@ -177,9 +162,9 @@ export function PDFGenerator({
                         onCheckedChange={() => toggleSection(sectionId, itemId)}
                       />
                       <Label htmlFor={`${sectionId}-${itemId}`}>
-                        {itemId === 'shortTerm' ? 'Short Term Rental' :
-                          itemId === 'longTerm' ? 'Long Term Rental' :
-                            itemId.charAt(0).toUpperCase() + itemId.slice(1).replace(/([A-Z])/g, ' $1')}
+                        {itemId === 'shortTerm' ? 'Short Term Rental' : 
+                         itemId === 'longTerm' ? 'Long Term Rental' : 
+                         itemId.charAt(0).toUpperCase() + itemId.slice(1).replace(/([A-Z])/g, ' $1')}
                       </Label>
                     </div>
                   ))}
@@ -191,13 +176,13 @@ export function PDFGenerator({
 
         <Card>
           <CardContent className="pt-6">
-            <h3 className="text-lg font-semibold mb-4">Report Options</h3>
+            <h3 className="text-lg font-semibold mb-4">Additional Options</h3>
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="includeWatermark"
                   checked={selections.includeWatermark}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={(checked) => 
                     setSelections(prev => ({ ...prev, includeWatermark: !!checked }))
                   }
                 />
@@ -207,61 +192,12 @@ export function PDFGenerator({
                 <Checkbox
                   id="includeMap"
                   checked={selections.includeMap}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={(checked) => 
                     setSelections(prev => ({ ...prev, includeMap: !!checked }))
                   }
                 />
                 <Label htmlFor="includeMap">Include Property Map</Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="includeBranding"
-                  checked={selections.includeBranding}
-                  onCheckedChange={(checked) =>
-                    setSelections(prev => ({ ...prev, includeBranding: !!checked }))
-                  }
-                />
-                <Label htmlFor="includeBranding">Include Company Branding</Label>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <h3 className="text-lg font-semibold mb-4">Company Branding</h3>
-            <div className="space-y-4">
-              {(companyLogo || tempLogo) && (
-                <div className="p-4 bg-muted rounded-lg">
-                  <img
-                    src={tempLogo || companyLogo}
-                    alt="Company Logo"
-                    className="h-12 object-contain mb-4"
-                  />
-                  <Button variant="outline" onClick={() => document.getElementById('logo-upload')?.click()}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Change Logo
-                  </Button>
-                </div>
-              )}
-              {!companyLogo && !tempLogo && (
-                <div className="p-4 bg-muted rounded-lg">
-                  <Button variant="outline" onClick={() => document.getElementById('logo-upload')?.click()}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Logo
-                  </Button>
-                </div>
-              )}
-              <input
-                type="file"
-                id="logo-upload"
-                className="hidden"
-                accept="image/*"
-                onChange={handleLogoUpload}
-              />
-              <p className="text-sm text-muted-foreground">
-                The logo will be used in the PDF report. You can also set a default logo in your account settings.
-              </p>
             </div>
           </CardContent>
         </Card>

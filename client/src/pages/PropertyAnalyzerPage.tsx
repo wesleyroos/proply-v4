@@ -143,6 +143,7 @@ export default function PropertyAnalyzerPage() {
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const companyLogo = '/your-company-logo.png';
 
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
@@ -297,7 +298,7 @@ export default function PropertyAnalyzerPage() {
   const handleGeneratePDF = async (selections: ReportSelections) => {
     setIsGeneratingPDF(true);
     try {
-      await generatePDF(pdfData, selections, user?.settings?.companyLogo);
+      await generatePDF(pdfData, selections, user?.settings?.companyLogo || '');
       toast({
         title: "Success",
         description: "PDF report generated successfully!",
@@ -783,8 +784,9 @@ export default function PropertyAnalyzerPage() {
                             </p>
                             <p className="text-base text-slate-600">
                               R {Math.round((analysisResult.analysis.longTermAnnualRevenue || 0) / 12).toLocaleString()} /month
-                            </p>                          </div>
-                          <p className="textsm flex items-center gap-2">
+                            </p>
+                          </div>
+                          <p className="text-sm flex items-center gap-2">
                             <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
                               {analysisResult.longTermGrossYield?.toFixed(2) || "0"}% Gross Yield
                               <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
@@ -946,27 +948,25 @@ export default function PropertyAnalyzerPage() {
 
           </div>
         )}
-        {showPDFGenerator && pdfData && (
-          <Dialog open={showPDFGenerator} onOpenChange={setShowPDFGenerator}>
-            <DialogContent className="max-w-4xl">
-              <DialogHeader>
-                <DialogTitle>Generate PDF Report</DialogTitle>
-              </DialogHeader>
-              <PDFGenerator
-                data={pdfData}
-                companyLogo={user?.settings?.companyLogo}
-                onGeneratePDF={handleGeneratePDF}
-                onPreview={(selections) => handlePreview(selections)}
-                isGenerating={isGeneratingPDF}
-              />
-            </DialogContent>
-          </Dialog>
-        )}
+        <Dialog open={showPDFGenerator} onOpenChange={setShowPDFGenerator}>
+          <DialogContent className="max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle>Generate Property Analysis Report</DialogTitle>
+            </DialogHeader>
+            <PDFGenerator
+              data={pdfData}
+              companyLogo={user?.settings?.companyLogo || ''}
+              onGeneratePDF={handleGeneratePDF}
+              onPreview={(selections) => handlePreview(selections)}
+              isGenerating={isGeneratingPDF}
+            />
+          </DialogContent>
+        </Dialog>
         {showPreview && pdfData && currentSelections && (
           <PDFPreview
             data={pdfData}
             selections={currentSelections}
-            companyLogo={user?.settings?.companyLogo}
+            companyLogo={user?.settings?.companyLogo || ''}
             onClose={() => setShowPreview(false)}
           />
         )}

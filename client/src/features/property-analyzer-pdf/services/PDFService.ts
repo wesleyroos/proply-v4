@@ -5,10 +5,6 @@ import { PropertyData, ReportSelections } from '../types/propertyReport';
 import { optimizeCanvas } from '../utils/optimization';
 import { formatCurrency, formatPercentage } from '../utils/formatting';
 
-// Constants for Proply branding
-const PROPLY_LOGO_URL = '/Proply Logo 1.png';
-const POWERED_BY_TEXT = 'Powered by Proply';
-
 export async function generatePDF(
   data: PropertyData,
   selections: ReportSelections,
@@ -24,23 +20,8 @@ export async function generatePDF(
 
     let yPosition = 20;
 
-    // Add Proply branding in top right corner
-    const proplyLogo = new Image();
-    proplyLogo.src = PROPLY_LOGO_URL;
-    await new Promise((resolve) => {
-      proplyLogo.onload = resolve;
-    });
-    const logoWidth = 40;
-    const logoHeight = 20;
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    pdf.addImage(PROPLY_LOGO_URL, 'PNG', pageWidth - logoWidth - 20, 10, logoWidth, logoHeight);
-    pdf.setFontSize(10);
-    pdf.setTextColor(100);
-    const poweredByWidth = pdf.getTextWidth(POWERED_BY_TEXT);
-    pdf.text(POWERED_BY_TEXT, pageWidth - (poweredByWidth + 20), logoHeight + 15);
-
-    // Add company branding if selected
-    if (selections.includeBranding && companyLogo) {
+    // Add header with logo if available
+    if (companyLogo) {
       const img = new Image();
       img.src = companyLogo;
       await new Promise((resolve) => {
@@ -52,7 +33,6 @@ export async function generatePDF(
 
     // Title
     pdf.setFontSize(20);
-    pdf.setTextColor(0);
     pdf.text('Property Analysis Report', 20, yPosition);
     yPosition += 15;
 
@@ -85,16 +65,6 @@ export async function generatePDF(
     addPageNumbers(pdf);
     if (selections.includeWatermark) {
       addWatermark(pdf, "Property Analysis Report");
-    }
-
-    // Add Proply branding to all pages
-    const totalPages = pdf.getNumberOfPages();
-    for (let i = 2; i <= totalPages; i++) {
-      pdf.setPage(i);
-      pdf.addImage(PROPLY_LOGO_URL, 'PNG', pageWidth - logoWidth - 20, 10, logoWidth, logoHeight);
-      pdf.setFontSize(10);
-      pdf.setTextColor(100);
-      pdf.text(POWERED_BY_TEXT, pageWidth - (poweredByWidth + 20), logoHeight + 15);
     }
 
     // Save the PDF
