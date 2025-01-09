@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast-context";
+import { useToast } from "@/hooks/use-toast";
 
 export function ToastDemo() {
   const { toast } = useToast();

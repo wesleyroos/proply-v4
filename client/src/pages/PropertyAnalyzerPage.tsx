@@ -228,6 +228,10 @@ export default function PropertyAnalyzerPage() {
         loanTerm: requestBody.loanTerm
       });
 
+      toast({
+        description: "Analysis completed successfully",
+      });
+
       setTimeout(() => {
         if (resultsRef.current) {
           const yOffset = -100;
@@ -242,6 +246,11 @@ export default function PropertyAnalyzerPage() {
 
     } catch (error) {
       console.error("Analysis failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to analyze property data",
+      });
       setAnalysisError(
         error instanceof Error
           ? error.message
@@ -323,6 +332,51 @@ export default function PropertyAnalyzerPage() {
     setShowPreview(true);
   };
 
+  const handleSaveAnalysis = async () => {
+    try {
+      const dataToSave = prepareAnalysisDataForSave();
+      if (!dataToSave) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: 'Missing required data. Please ensure all fields are filled correctly.',
+          duration: 5000,
+        });
+        return;
+      }
+
+      const response = await fetch('/api/property-analyzer/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSave),
+        credentials: 'include'
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.error || 'Failed to save analysis');
+      }
+
+      setAnalysisId(responseData.id);
+      toast({
+        description: `Property analysis for ${dataToSave.address} has been saved!`,
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error('Save error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to save analysis',
+        duration: 7000,
+      });
+    }
+  };
+
+
   return (
     <div className="px-4 py-6">
       <div className="flex items-center mb-8">
@@ -363,50 +417,7 @@ export default function PropertyAnalyzerPage() {
                 </div>
                 <div className="flex items-center space-x-3">
                   <Button
-                    onClick={async () => {
-                      try {
-                        const dataToSave = prepareAnalysisDataForSave();
-                        if (!dataToSave) {
-                          toast({
-                            variant: "destructive",
-                            title: "Error Saving Analysis",
-                            description: 'Missing required data. Please ensure all fields are filled correctly.',
-                            duration: 5000,
-                          });
-                          return;
-                        }
-
-                        const response = await fetch('/api/property-analyzer/save', {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                          body: JSON.stringify(dataToSave),
-                          credentials: 'include'
-                        });
-
-                        const responseData = await response.json();
-
-                        if (!response.ok) {
-                          throw new Error(responseData.error || 'Failed to save analysis');
-                        }
-
-                        setAnalysisId(responseData.id);
-                        toast({
-                          title: "Success",
-                          description: `Property analysis for ${dataToSave.address} has been saved!`,
-                          duration: 5000,
-                        });
-                      } catch (error) {
-                        console.error('Save error:', error);
-                        toast({
-                          variant: "destructive",
-                          title: "Error",
-                          description: error instanceof Error ? error.message : 'Failed to save analysis',
-                          duration: 7000,
-                        });
-                      }
-                    }}
+                    onClick={handleSaveAnalysis}
                     className="bg-green-600 hover:bg-green-700"
                   >
                     <Save className="w-4 h-4 mr-2" />
@@ -773,7 +784,7 @@ export default function PropertyAnalyzerPage() {
                       </div>
                       <div className="p-4 rounded-lg bg-purple-50/50">
                         <h3 className="text-sm font-bold text-purple-600 mb-3">
-                          Long-Term Rental (Year 1)
+                          LongTerm Rental (Year 1)
                         </h3>
                         <div className="space-y-2">
                           <div>
