@@ -79,11 +79,44 @@ export function PDFGenerator({
   const [progress, setProgress] = useState(0);
   const { toast } = useToast();
 
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Handle logo upload logic here if needed
-      console.log("Logo file selected:", file);
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Data = reader.result as string;
+        try {
+          const response = await fetch('/api/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ companyLogo: base64Data }),
+            credentials: 'include'
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to save logo');
+          }
+
+          const updatedUser = await response.json();
+          toast({
+            title: "Success",
+            description: "Company logo updated successfully",
+            duration: 3000,
+          });
+          
+          if (onLogoUpdate) {
+            onLogoUpdate(base64Data);
+          }
+        } catch (error) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to update company logo",
+            duration: 5000,
+          });
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
