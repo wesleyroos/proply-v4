@@ -835,11 +835,11 @@ export default function PropertyAnalyzerPage() {
                             <AnalyzerIndicator />
                           </h3>
                           <div className="flex items-center gap-2">
-                            <p className={`mt-2 text-lg font-bold ${analysisResult.rateDifference > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                            <p className={`mt-2 text-lg font-bold ${analysisResult.rateDifference < 0 ? 'text-green-600' : 'text-red-600'}`}>
                               R{Math.abs(analysisResult.rateDifference).toLocaleString()}
                             </p>
-                            <span className={`text-sm font-medium ${analysisResult.rateDifference > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                              ({analysisResult.rateDifference > 0 ? 'more' : 'less'} than avg.)
+                            <span className={`text-sm font-medium ${analysisResult.rateDifference < 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              ({analysisResult.rateDifference < 0 ? 'less' : 'more'} than avg.)
                             </span>
                           </div>
                         </div>
