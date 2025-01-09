@@ -67,8 +67,8 @@ const defaultSelections: ReportSelections = {
     year10: true,
     year20: true
   },
-  includeWatermark: true,
-  includeMap: true
+  includeWatermark: false,
+  includeMap: false
 };
 
 export function PDFGenerator({

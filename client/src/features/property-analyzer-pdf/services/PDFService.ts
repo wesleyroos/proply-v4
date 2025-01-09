@@ -318,7 +318,7 @@ async function addCashflowAnalysis(
   const cashflow = [];
   const { netOperatingIncome } = data;
 
-  if (selections.cashflowAnalysis.year1) {
+  if (netOperatingIncome && selections.cashflowAnalysis.year1 && netOperatingIncome.year1) {
     cashflow.push(['Year 1', formatCurrency(netOperatingIncome.year1.annualCashflow)]);
   }
   if (selections.cashflowAnalysis.year2) {
