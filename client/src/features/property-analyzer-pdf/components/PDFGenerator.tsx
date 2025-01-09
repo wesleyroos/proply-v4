@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { FileText, Eye, Loader2 } from "lucide-react";
+import { FileText, Upload, Check, Eye, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PropertyData, ReportSelections } from '../types/propertyReport';
 
@@ -132,6 +132,7 @@ export function PDFGenerator({
       <div className="flex items-center justify-between mb-4">
         <div className="space-x-2">
           <Button variant="outline" onClick={() => handleSelectAll(true)}>
+            <Check className="w-4 h-4 mr-2" />
             Select All
           </Button>
           <Button variant="outline" onClick={() => handleSelectAll(false)}>
@@ -145,58 +146,57 @@ export function PDFGenerator({
       </div>
 
       <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-        {Object.entries(defaultSelections).map(([sectionId, sectionItems]) => {
-          if (sectionId === 'includeWatermark' || sectionId === 'includeMap') return null;
-          return (
-            <Card key={sectionId}>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-semibold mb-4">
-                  {sectionId.charAt(0).toUpperCase() + sectionId.slice(1).replace(/([A-Z])/g, ' $1')}
-                </h3>
-                <div className="grid gap-4">
-                  {Object.entries(sectionItems).map(([itemId, _]) => (
-                    <div key={itemId} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`${sectionId}-${itemId}`}
-                        checked={selections[sectionId as keyof ReportSelections][itemId as keyof typeof sectionItems]}
-                        onCheckedChange={() => toggleSection(sectionId, itemId)}
-                      />
-                      <Label htmlFor={`${sectionId}-${itemId}`}>
-                        {itemId === 'shortTerm' ? 'Short Term Rental' : 
-                         itemId === 'longTerm' ? 'Long Term Rental' : 
-                         itemId.charAt(0).toUpperCase() + itemId.slice(1).replace(/([A-Z])/g, ' $1')}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-
+        {Object.entries(defaultSelections).map(([sectionId, sectionItems]) => (
+          <Card key={sectionId}>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4">{sectionId.charAt(0).toUpperCase() + sectionId.slice(1).replace(/([A-Z])/g, ' $1')}</h3>
+              <div className="grid gap-4">
+                {Object.entries(sectionItems).map(([itemId, _]) => (
+                  <div key={itemId} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`${sectionId}-${itemId}`}
+                      checked={selections[sectionId as keyof ReportSelections][itemId as keyof typeof sectionItems]}
+                      onCheckedChange={() => toggleSection(sectionId, itemId)}
+                    />
+                    <Label htmlFor={`${sectionId}-${itemId}`}>
+                      {itemId === 'shortTerm' ? 'Short Term Rental' : itemId === 'longTerm' ? 'Long Term Rental' : itemId.charAt(0).toUpperCase() + itemId.slice(1).replace(/([A-Z])/g, ' $1')}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
         <Card>
           <CardContent className="pt-6">
-            <h3 className="text-lg font-semibold mb-4">Additional Options</h3>
+            <h3 className="text-lg font-semibold mb-4">Company Branding</h3>
             <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="includeWatermark"
-                  checked={selections.includeWatermark}
-                  onCheckedChange={(checked) => 
-                    setSelections(prev => ({ ...prev, includeWatermark: !!checked }))
-                  }
+              <div className="p-4 bg-muted rounded-lg">
+                {companyLogo ? (
+                  <div className="space-y-4">
+                    <img
+                      src={companyLogo}
+                      alt="Company Logo"
+                      className="h-12 object-contain"
+                    />
+                    <Button variant="outline" onClick={() => document.getElementById('logo-update')?.click()}>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Update Logo
+                    </Button>
+                  </div>
+                ) : (
+                  <Button variant="outline" onClick={() => document.getElementById('logo-upload')?.click()}>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Logo
+                  </Button>
+                )}
+                <input
+                  type="file"
+                  id={companyLogo ? 'logo-update' : 'logo-upload'}
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
                 />
-                <Label htmlFor="includeWatermark">Include Watermark</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="includeMap"
-                  checked={selections.includeMap}
-                  onCheckedChange={(checked) => 
-                    setSelections(prev => ({ ...prev, includeMap: !!checked }))
-                  }
-                />
-                <Label htmlFor="includeMap">Include Property Map</Label>
               </div>
             </div>
           </CardContent>
