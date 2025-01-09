@@ -39,6 +39,8 @@ import CashflowChart from "@/components/CashflowChart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PDFGenerator } from "@/features/property-analyzer-pdf/components/PDFGenerator";
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
+import { PDFPreview } from "@/features/property-analyzer-pdf/components/PDFPreview"; // Import PDFPreview component
+
 
 interface YearlyMetrics {
   grossYield: number;
@@ -139,6 +141,7 @@ export default function PropertyAnalyzerPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [showPreview, setShowPreview] = useState(false); // Added state for preview
   const companyLogo = '/your-company-logo.png'; // Replace with your actual logo path
 
 
@@ -297,7 +300,7 @@ export default function PropertyAnalyzerPage() {
   const handleGeneratePDF = async (selections: any) => {
     setIsGeneratingPDF(true);
     try {
-      await generatePDF(pdfData, selections, companyLogo);
+      await generatePDF(pdfData, selections, user?.settings?.companyLogo || ''); // Use company logo from user settings
       toast({
         title: "Success",
         description: "PDF report generated successfully!",
@@ -315,6 +318,10 @@ export default function PropertyAnalyzerPage() {
     } finally {
       setIsGeneratingPDF(false);
     }
+  };
+
+  const handlePreview = () => {
+    setShowPreview(true);
   };
 
   return (
@@ -469,7 +476,7 @@ export default function PropertyAnalyzerPage() {
                               netOperatingIncome: analysisResult.netOperatingIncome,
                               revenueProjections: analysisResult.analysis.revenueProjections,
                             });
-                            setShowPDFGenerator(true); // Changed to showPDFGenerator
+                            setShowPDFGenerator(true);
                           }}
                           disabled={!analysisResult || !analysisId}
                           className="bg-blue-600 hover:bg-blue-700"
@@ -773,25 +780,16 @@ export default function PropertyAnalyzerPage() {
                         <div className="space-y-2">
                           <div>
                             <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                              R
-                              {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() ||
-                                "0"}
+                              R {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() || "0"}
                               <span className="w-2 h-2 rounded-full bg-red-500" title="Data from analyzer engine" />
                             </p>
-                            <p className="text-base text-slate600">
-                              R
-                              {Math.round(
-                                (analysisResult.analysis
-                                  .longTermAnnualRevenue || 0) / 12,
-                              ).toLocaleString()}
-                              /month
+                            <p className="text-base text-slate-600">
+                              R {Math.round((analysisResult.analysis.longTermAnnualRevenue || 0) / 12).toLocaleString()} /month
                             </p>
                           </div>
-                          <p className="textsm flex items-center gap-2">
+                          <p className="text-sm flex items-center gap-2">
                             <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
-                              {analysisResult.longTermGrossYield?.toFixed(2) ||
-                                "0"}
-                              % Gross Yield
+                              {analysisResult.longTermGrossYield?.toFixed(2) || "0"}% Gross Yield
                               <span className="w-2 h-2 rounded-full bg-red-500" title="Calculated by analysis engine" />
                             </span>
                           </p>
@@ -958,13 +956,21 @@ export default function PropertyAnalyzerPage() {
             </DialogHeader>
             <PDFGenerator
               data={pdfData}
-              companyLogo={companyLogo}
+              companyLogo={user?.settings?.companyLogo || ''}
               onGeneratePDF={handleGeneratePDF}
-              onPreview={() => {/* Implement preview logic */}}
+              onPreview={handlePreview}
               isGenerating={isGeneratingPDF}
             />
           </DialogContent>
         </Dialog>
+        {showPreview && pdfData && (
+          <PDFPreview
+            data={pdfData}
+            selections={selections}
+            companyLogo={user?.settings?.companyLogo || ''}
+            onClose={() => setShowPreview(false)}
+          />
+        )}
       </div>
     </div>
   );
