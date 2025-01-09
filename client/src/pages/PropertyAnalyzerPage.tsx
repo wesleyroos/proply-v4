@@ -231,11 +231,6 @@ export default function PropertyAnalyzerPage() {
 
     } catch (error) {
       console.error("Analysis failed:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to analyze property data",
-      });
       setAnalysisError(
         error instanceof Error
           ? error.message
