@@ -543,7 +543,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
   
   return {
     ...result,
-    ratePerSquareMeter: currentPropertyRatePerSqm,
+    currentPropertyRatePerSqm,
     rateDifference: data.ratePerSquareMeter - currentPropertyRatePerSqm
   };
 }
