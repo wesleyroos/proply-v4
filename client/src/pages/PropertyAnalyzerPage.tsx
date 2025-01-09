@@ -36,7 +36,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
-import { PDFGenerator } from "@/components/PDFGenerator";
+import { PDFGenerator } from "@/features/property-analyzer-pdf/components/PDFGenerator";
 
 interface YearlyMetrics {
   grossYield: number;

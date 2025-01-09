@@ -17,6 +17,64 @@ interface PDFGeneratorProps {
   onGeneratePDF: (selections: ReportSelections) => Promise<void>;
 }
 
+const defaultSelections: ReportSelections = {
+  propertyDetails: {
+    address: false,
+    propertyPhoto: false,
+    map: false,
+    bedrooms: false,
+    bathrooms: false,
+    floorArea: false,
+    parkingSpaces: false,
+    ratePerSquareMeter: false,
+    propertyDescription: false
+  },
+  financialMetrics: {
+    purchasePrice: false,
+    depositAmount: false,
+    interestRate: false,
+    loanTerm: false,
+    monthlyBondRepayment: false,
+    bondRegistration: false,
+    transferCosts: false
+  },
+  operatingExpenses: {
+    monthlyLevies: false,
+    monthlyRatesTaxes: false,
+    otherMonthlyExpenses: false,
+    maintenancePercent: false,
+    managementFee: false
+  },
+  rentalPerformance: {
+    shortTerm: false,
+    longTerm: false
+  },
+  investmentMetrics: {
+    grossYield: false,
+    netYield: false,
+    returnOnEquity: false,
+    annualReturn: false,
+    capRate: false,
+    cashOnCashReturn: false,
+    irr: false,
+    netWorthChange: false
+  },
+  cashflowAnalysis: {
+    year1: false,
+    year2: false,
+    year3: false,
+    year4: false,
+    year5: false,
+    year10: false,
+    year20: false
+  },
+  dataVisualizations: {
+    charts: false
+  },
+  includeWatermark: true,
+  includeMap: true
+};
+
 const sectionConfig = [
   {
     id: 'propertyDetails',
@@ -41,7 +99,9 @@ const sectionConfig = [
       { id: 'depositAmount', label: 'Deposit Amount' },
       { id: 'interestRate', label: 'Interest Rate' },
       { id: 'loanTerm', label: 'Loan Term' },
-      { id: 'monthlyBondRepayment', label: 'Monthly Bond Payment' }
+      { id: 'monthlyBondRepayment', label: 'Monthly Bond Payment' },
+      { id: 'bondRegistration', label: 'Bond Registration' },
+      { id: 'transferCosts', label: 'Transfer Costs' }
     ]
   },
   {
@@ -56,21 +116,35 @@ const sectionConfig = [
     ]
   },
   {
-    id: 'performanceMetrics',
-    title: 'Performance Metrics',
+    id: 'rentalPerformance',
+    title: 'Rental Performance',
     items: [
       { id: 'shortTerm', label: 'Short Term Rental Analysis' },
-      { id: 'longTerm', label: 'Long Term Rental Analysis' },
-      { id: 'investmentMetrics', label: 'Investment Metrics' },
-      { id: 'cashflow', label: 'Cashflow Analysis' }
+      { id: 'longTerm', label: 'Long Term Rental Analysis' }
     ]
   },
   {
-    id: 'visualizations',
-    title: 'Visualizations',
+    id: 'investmentMetrics',
+    title: 'Investment Metrics',
     items: [
-      { id: 'charts', label: 'Charts and Graphs' },
-      { id: 'comparisons', label: 'Performance Comparisons' }
+      { id: 'grossYield', label: 'Gross Yield' },
+      { id: 'netYield', label: 'Net Yield' },
+      { id: 'returnOnEquity', label: 'Return on Equity' },
+      { id: 'capRate', label: 'Cap Rate' },
+      { id: 'cashOnCashReturn', label: 'Cash on Cash Return' },
+      { id: 'irr', label: 'IRR' }
+    ]
+  },
+  {
+    id: 'cashflowAnalysis',
+    title: 'Cashflow Analysis',
+    items: [
+      { id: 'year1', label: 'Year 1' },
+      { id: 'year2', label: 'Year 2' },
+      { id: 'year3', label: 'Year 3' },
+      { id: 'year5', label: 'Year 5' },
+      { id: 'year10', label: 'Year 10' },
+      { id: 'year20', label: 'Year 20' }
     ]
   }
 ];
@@ -83,32 +157,35 @@ export function PDFGenerator({
   onGeneratePDF
 }: PDFGeneratorProps) {
   const { toast } = useToast();
-  const [selections, setSelections] = useState<ReportSelections>({});
+  const [selections, setSelections] = useState<ReportSelections>(defaultSelections);
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [logoFile, setLogoFile] = useState<File | null>(null);
 
   const handleSelectAll = (selected: boolean) => {
-    const newSelections: ReportSelections = {};
-    sectionConfig.forEach(section => {
-      section.items.forEach(item => {
-        if (!newSelections[section.id as keyof ReportSelections]) {
-          newSelections[section.id as keyof ReportSelections] = {};
+    const newSelections = { ...defaultSelections };
+    Object.keys(newSelections).forEach(sectionKey => {
+      if (typeof newSelections[sectionKey as keyof ReportSelections] === 'object') {
+        const section = newSelections[sectionKey as keyof ReportSelections];
+        if (section && typeof section === 'object') {
+          Object.keys(section).forEach(itemKey => {
+            (section as any)[itemKey] = selected;
+          });
         }
-        (newSelections[section.id as keyof ReportSelections] as any)[item.id] = selected;
-      });
+      }
     });
     setSelections(newSelections);
   };
 
   const toggleSection = (sectionId: string, itemId: string) => {
-    setSelections(prev => ({
-      ...prev,
-      [sectionId]: {
-        ...(prev[sectionId as keyof ReportSelections] || {}),
-        [itemId]: !(prev[sectionId as keyof ReportSelections] as any)?.[itemId]
+    setSelections(prev => {
+      const newSelections = { ...prev };
+      const section = newSelections[sectionId as keyof ReportSelections];
+      if (section && typeof section === 'object') {
+        (section as any)[itemId] = !(section as any)[itemId];
       }
-    }));
+      return newSelections;
+    });
   };
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,11 +199,7 @@ export function PDFGenerator({
     setGenerating(true);
     setProgress(0);
     try {
-      await onGeneratePDF({
-        ...selections,
-        includeWatermark: true,
-        includeMap: true
-      });
+      await onGeneratePDF(selections);
       toast({
         title: "Success",
         description: "PDF report generated successfully",

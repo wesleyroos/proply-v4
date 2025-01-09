@@ -48,6 +48,17 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
                 </div>
               )}
 
+              {selections.propertyDetails.map && data.propertyDetails.mapImage && (
+                <div>
+                  <h3 className="font-medium mb-2">Location Map</h3>
+                  <img 
+                    src={data.propertyDetails.mapImage} 
+                    alt="Property Location" 
+                    className="w-full max-h-64 object-cover rounded-lg"
+                  />
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 {selections.propertyDetails.bedrooms && (
                   <div>
@@ -76,7 +87,21 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
                     <p>{data.propertyDetails.parkingSpaces}</p>
                   </div>
                 )}
+
+                {selections.propertyDetails.ratePerSquareMeter && (
+                  <div>
+                    <h3 className="font-medium">Rate per m²</h3>
+                    <p>R {data.propertyDetails.ratePerSquareMeter.toLocaleString()}</p>
+                  </div>
+                )}
               </div>
+
+              {selections.propertyDetails.propertyDescription && data.propertyDetails.propertyDescription && (
+                <div>
+                  <h3 className="font-medium">Property Description</h3>
+                  <p className="text-sm text-gray-600">{data.propertyDetails.propertyDescription}</p>
+                </div>
+              )}
             </div>
           </Card>
         )}
@@ -89,7 +114,7 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
               {selections.financialMetrics.purchasePrice && (
                 <div>
                   <h3 className="font-medium">Purchase Price</h3>
-                  <p>R {data.financialMetrics.purchasePrice.toLocaleString()}</p>
+                  <p>R {data.propertyDetails.purchasePrice.toLocaleString()}</p>
                 </div>
               )}
 
@@ -111,6 +136,27 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
                 <div>
                   <h3 className="font-medium">Loan Term</h3>
                   <p>{data.financialMetrics.loanTerm} years</p>
+                </div>
+              )}
+
+              {selections.financialMetrics.monthlyBondRepayment && (
+                <div>
+                  <h3 className="font-medium">Monthly Bond Repayment</h3>
+                  <p>R {data.financialMetrics.monthlyBondRepayment.toLocaleString()}</p>
+                </div>
+              )}
+
+              {selections.financialMetrics.bondRegistration && (
+                <div>
+                  <h3 className="font-medium">Bond Registration</h3>
+                  <p>R {data.financialMetrics.bondRegistration.toLocaleString()}</p>
+                </div>
+              )}
+
+              {selections.financialMetrics.transferCosts && (
+                <div>
+                  <h3 className="font-medium">Transfer Costs</h3>
+                  <p>R {data.financialMetrics.transferCosts.toLocaleString()}</p>
                 </div>
               )}
             </div>
@@ -136,6 +182,13 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
                 </div>
               )}
 
+              {selections.operatingExpenses.otherMonthlyExpenses && (
+                <div>
+                  <h3 className="font-medium">Other Monthly Expenses</h3>
+                  <p>R {data.operatingExpenses.otherMonthlyExpenses.toLocaleString()}</p>
+                </div>
+              )}
+
               {selections.operatingExpenses.maintenancePercent && (
                 <div>
                   <h3 className="font-medium">Maintenance</h3>
@@ -155,7 +208,7 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
 
         {/* Performance Metrics Section */}
         {selections.rentalPerformance && (
-          <Card className="p-6">
+          <Card className="p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">Performance Metrics</h2>
             <div className="space-y-6">
               {selections.rentalPerformance.shortTerm && (
@@ -187,6 +240,10 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
                   <h3 className="font-medium mb-2">Long Term Rental Analysis</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
+                      <p className="text-sm text-muted-foreground">Monthly Rental</p>
+                      <p>R {(data.performance.longTermAnnualRevenue / 12).toLocaleString()}</p>
+                    </div>
+                    <div>
                       <p className="text-sm text-muted-foreground">Annual Revenue</p>
                       <p>R {data.performance.longTermAnnualRevenue.toLocaleString()}</p>
                     </div>
@@ -197,6 +254,110 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
                   </div>
                 </div>
               )}
+            </div>
+          </Card>
+        )}
+
+        {/* Investment Metrics Section */}
+        {selections.investmentMetrics && (
+          <Card className="p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-4">Investment Metrics</h2>
+            <div className="grid grid-cols-2 gap-4">
+              {selections.investmentMetrics.grossYield && (
+                <div>
+                  <h3 className="font-medium">Gross Yield</h3>
+                  <p>{data.investmentMetrics.shortTerm[0].grossYield.toFixed(2)}%</p>
+                </div>
+              )}
+
+              {selections.investmentMetrics.netYield && (
+                <div>
+                  <h3 className="font-medium">Net Yield</h3>
+                  <p>{data.investmentMetrics.shortTerm[0].netYield.toFixed(2)}%</p>
+                </div>
+              )}
+
+              {selections.investmentMetrics.returnOnEquity && (
+                <div>
+                  <h3 className="font-medium">Return on Equity</h3>
+                  <p>{data.investmentMetrics.shortTerm[0].returnOnEquity.toFixed(2)}%</p>
+                </div>
+              )}
+
+              {selections.investmentMetrics.capRate && (
+                <div>
+                  <h3 className="font-medium">Cap Rate</h3>
+                  <p>{data.investmentMetrics.shortTerm[0].capRate.toFixed(2)}%</p>
+                </div>
+              )}
+
+              {selections.investmentMetrics.cashOnCashReturn && (
+                <div>
+                  <h3 className="font-medium">Cash on Cash Return</h3>
+                  <p>{data.investmentMetrics.shortTerm[0].cashOnCashReturn.toFixed(2)}%</p>
+                </div>
+              )}
+
+              {selections.investmentMetrics.irr && (
+                <div>
+                  <h3 className="font-medium">IRR</h3>
+                  <p>{data.investmentMetrics.shortTerm[0].irr.toFixed(2)}%</p>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
+
+        {/* Cashflow Analysis Section */}
+        {selections.cashflowAnalysis && (
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Cashflow Analysis</h2>
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                {selections.cashflowAnalysis.year1 && (
+                  <div>
+                    <h3 className="font-medium">Year 1</h3>
+                    <p>R {data.netOperatingIncome.year1.annualCashflow.toLocaleString()}</p>
+                  </div>
+                )}
+
+                {selections.cashflowAnalysis.year2 && (
+                  <div>
+                    <h3 className="font-medium">Year 2</h3>
+                    <p>R {data.netOperatingIncome.year2.annualCashflow.toLocaleString()}</p>
+                  </div>
+                )}
+
+                {selections.cashflowAnalysis.year3 && (
+                  <div>
+                    <h3 className="font-medium">Year 3</h3>
+                    <p>R {data.netOperatingIncome.year3.annualCashflow.toLocaleString()}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                {selections.cashflowAnalysis.year5 && (
+                  <div>
+                    <h3 className="font-medium">Year 5</h3>
+                    <p>R {data.netOperatingIncome.year5.annualCashflow.toLocaleString()}</p>
+                  </div>
+                )}
+
+                {selections.cashflowAnalysis.year10 && (
+                  <div>
+                    <h3 className="font-medium">Year 10</h3>
+                    <p>R {data.netOperatingIncome.year10.annualCashflow.toLocaleString()}</p>
+                  </div>
+                )}
+
+                {selections.cashflowAnalysis.year20 && (
+                  <div>
+                    <h3 className="font-medium">Year 20</h3>
+                    <p>R {data.netOperatingIncome.year20.annualCashflow.toLocaleString()}</p>
+                  </div>
+                )}
+              </div>
             </div>
           </Card>
         )}

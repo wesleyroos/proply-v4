@@ -112,6 +112,13 @@ export interface ReportSelections {
     bondRegistration?: boolean;
     transferCosts?: boolean;
   };
+  operatingExpenses?: {
+    monthlyLevies?: boolean;
+    monthlyRatesTaxes?: boolean;
+    otherMonthlyExpenses?: boolean;
+    maintenancePercent?: boolean;
+    managementFee?: boolean;
+  };
   rentalPerformance?: {
     shortTerm?: boolean;
     longTerm?: boolean;
