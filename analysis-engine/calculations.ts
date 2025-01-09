@@ -538,5 +538,12 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     }
   };
 
-  return result;
+  // Calculate current property rate per square meter
+  const currentPropertyRatePerSqm = data.purchasePrice / data.floorArea;
+  
+  return {
+    ...result,
+    ratePerSquareMeter: currentPropertyRatePerSqm,
+    rateDifference: data.ratePerSquareMeter - currentPropertyRatePerSqm
+  };
 }
