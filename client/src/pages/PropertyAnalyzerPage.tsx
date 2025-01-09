@@ -432,6 +432,8 @@ export default function PropertyAnalyzerPage() {
                                 parkingSpaces: Number(formData?.parkingSpaces) || 0,
                                 purchasePrice: analysisResult.analysis.purchasePrice,
                                 ratePerSquareMeter: Number(formData?.cmaRatePerSqm) || 0,
+                                areaRate: Number(analysisResult.ratePerSquareMeter) || 0,
+                                rateDifference: Number(formData?.cmaRatePerSqm || 0) - (Number(analysisResult.ratePerSquareMeter) || 0),
                                 propertyPhoto: formData?.propertyPhoto || null,
                               },
                               financialMetrics: {

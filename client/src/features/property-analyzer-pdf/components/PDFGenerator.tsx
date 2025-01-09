@@ -239,8 +239,8 @@ export function PDFGenerator({
         onClick={async () => {
           setProgress(0);
           const interval = setInterval(() => {
-            setProgress(prev => Math.min(prev + 10, 90));
-          }, 500);
+            setProgress(prev => Math.min(prev + 5, 90));
+          }, 300);
           
           await handleGeneratePDF();
           clearInterval(interval);
