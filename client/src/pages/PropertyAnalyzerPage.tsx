@@ -947,7 +947,7 @@ export default function PropertyAnalyzerPage() {
             </DialogHeader>
             <PDFGenerator
               data={pdfData}
-              companyLogo={user?.settings?.companyLogo || ''}
+              companyLogo={user?.companyLogo || ''}
               onGeneratePDF={handleGeneratePDF}
               onPreview={(selections) => handlePreview(selections)}
               isGenerating={isGeneratingPDF}
