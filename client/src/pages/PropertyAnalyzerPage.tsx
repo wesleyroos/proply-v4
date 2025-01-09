@@ -834,9 +834,14 @@ export default function PropertyAnalyzerPage() {
                             Rate/m² Difference
                             <AnalyzerIndicator />
                           </h3>
-                          <p className="mt-2 text-lg font-bold text-slate-800">
-                            R{analysisResult.rateDifference.toLocaleString()}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className={`mt-2 text-lg font-bold ${analysisResult.rateDifference > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                              R{Math.abs(analysisResult.rateDifference).toLocaleString()}
+                            </p>
+                            <span className={`text-sm font-medium ${analysisResult.rateDifference > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                              ({analysisResult.rateDifference > 0 ? 'more' : 'less'} than avg.)
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
