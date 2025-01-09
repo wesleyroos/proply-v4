@@ -311,31 +311,20 @@ async function addCashflowAnalysis(
 ): Promise<number> {
   let y = startY;
 
+  if (!selections.cashflowAnalysis) {
+    return y;
+  }
+
   pdf.setFontSize(16);
   pdf.text('Cashflow Analysis', 20, y);
   y += 10;
 
-  const cashflow = [];
-  const { netOperatingIncome } = data;
-
-  if (netOperatingIncome && selections.cashflowAnalysis.year1 && netOperatingIncome.year1) {
-    cashflow.push(['Year 1', formatCurrency(netOperatingIncome.year1.annualCashflow)]);
-  }
-  if (selections.cashflowAnalysis.year2) {
-    cashflow.push(['Year 2', formatCurrency(netOperatingIncome.year2.annualCashflow)]);
-  }
-  if (selections.cashflowAnalysis.year3) {
-    cashflow.push(['Year 3', formatCurrency(netOperatingIncome.year3.annualCashflow)]);
-  }
-  if (selections.cashflowAnalysis.year5) {
-    cashflow.push(['Year 5', formatCurrency(netOperatingIncome.year5.annualCashflow)]);
-  }
-  if (selections.cashflowAnalysis.year10) {
-    cashflow.push(['Year 10', formatCurrency(netOperatingIncome.year10.annualCashflow)]);
-  }
-  if (selections.cashflowAnalysis.year20) {
-    cashflow.push(['Year 20', formatCurrency(netOperatingIncome.year20.annualCashflow)]);
-  }
+  const years = [1, 2, 3, 5, 10, 20];
+  const cashflow = years.map(year => {
+    const yearKey = `year${year}` as keyof typeof data.netOperatingIncome;
+    const value = data.netOperatingIncome?.[yearKey]?.annualCashflow ?? 0;
+    return [`Year ${year}`, formatCurrency(value)];
+  });
 
   if (cashflow.length > 0) {
     autoTable(pdf, {

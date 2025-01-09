@@ -133,15 +133,7 @@ export interface ReportSelections {
     irr?: boolean;
     netWorthChange?: boolean;
   };
-  cashflowAnalysis?: {
-    year1?: boolean;
-    year2?: boolean;
-    year3?: boolean;
-    year4?: boolean;
-    year5?: boolean;
-    year10?: boolean;
-    year20?: boolean;
-  };
+  cashflowAnalysis: boolean;
   dataVisualizations?: {
     charts?: boolean;
   };
