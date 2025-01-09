@@ -820,6 +820,24 @@ export default function PropertyAnalyzerPage() {
                             ).toLocaleString()}
                           </p>
                         </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                            Area Rate/m²
+                            <AnalyzerIndicator />
+                          </h3>
+                          <p className="mt-2 text-lg font-bold text-slate-800">
+                            R{analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                            Rate/m² Difference
+                            <AnalyzerIndicator />
+                          </h3>
+                          <p className="mt-2 text-lg font-bold text-slate-800">
+                            R{(Number(formData?.cmaRatePerSqm || 0) - (analysisResult.ratePerSquareMeter || 0)).toLocaleString()}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
