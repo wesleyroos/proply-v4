@@ -82,6 +82,14 @@ export function PDFGenerator({
   const [progress, setProgress] = useState(0);
   const { toast } = useToast();
 
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Handle logo upload logic here if needed
+      console.log("Logo file selected:", file);
+    }
+  };
+
   const handleSelectAll = (selected: boolean) => {
     const newSelections = { ...defaultSelections };
     Object.keys(newSelections).forEach(sectionKey => {
