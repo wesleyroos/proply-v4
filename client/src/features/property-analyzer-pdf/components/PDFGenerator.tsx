@@ -24,9 +24,9 @@ const defaultSelections: ReportSelections = {
     bathrooms: true,
     floorArea: true,
     parkingSpaces: true,
-    propertyRatePerSquareMeter: true,
-    areaRatePerSquareMeter: true,
-    rateDifference: true,
+    currentPropertyRatePerM2: true,
+    areaRatePerM2: true, 
+    rateM2Difference: true,
     propertyDescription: true
   },
   financialMetrics: {
