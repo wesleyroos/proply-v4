@@ -183,7 +183,7 @@ export function PDFGenerator({
           <Card key={sectionId}>
             <CardContent className="pt-6">
               <h3 className="text-lg font-semibold mb-4">{sectionId.charAt(0).toUpperCase() + sectionId.slice(1).replace(/([A-Z])/g, ' $1')}</h3>
-              <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 {Object.entries(sectionItems).map(([itemId, _]) => (
                   <div key={itemId} className="flex items-center space-x-2">
                     <Checkbox
@@ -191,7 +191,7 @@ export function PDFGenerator({
                       checked={selections[sectionId as keyof ReportSelections][itemId as keyof typeof sectionItems]}
                       onCheckedChange={() => toggleSection(sectionId, itemId)}
                     />
-                    <Label htmlFor={`${sectionId}-${itemId}`}>
+                    <Label className="text-sm" htmlFor={`${sectionId}-${itemId}`}>
                       {itemId === 'shortTerm' ? 'Short Term Rental' : itemId === 'longTerm' ? 'Long Term Rental' : itemId.charAt(0).toUpperCase() + itemId.slice(1).replace(/([A-Z])/g, ' $1')}
                     </Label>
                   </div>
