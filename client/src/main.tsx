@@ -1,3 +1,4 @@
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -9,11 +10,11 @@ import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ToastProvider>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <ToastProvider>
         <App />
         <Toaster />
-      </QueryClientProvider>
-    </ToastProvider>
+      </ToastProvider>
+    </QueryClientProvider>
   </StrictMode>,
 );
