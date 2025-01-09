@@ -100,7 +100,8 @@ export interface ReportSelections {
     bathrooms?: boolean;
     floorArea?: boolean;
     parkingSpaces?: boolean;
-    ratePerSquareMeter?: boolean;
+    propertyRatePerSquareMeter?: boolean;
+    areaRatePerSquareMeter?: boolean;
     rateDifference?: boolean;
     propertyDescription?: boolean;
   };

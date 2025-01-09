@@ -24,7 +24,8 @@ const defaultSelections: ReportSelections = {
     bathrooms: true,
     floorArea: true,
     parkingSpaces: true,
-    ratePerSquareMeter: true,
+    propertyRatePerSquareMeter: true,
+    areaRatePerSquareMeter: true,
     rateDifference: true,
     propertyDescription: true
   },
@@ -58,7 +59,13 @@ const defaultSelections: ReportSelections = {
     irr: true,
     netWorthChange: true
   },
-  cashflowAnalysis: true
+  cashflowAnalysis: {
+    year1: true,
+    year2: true,
+    year5: true,
+    year10: true,
+    year20: true
+  }
 };
 
 export function PDFGenerator({
@@ -162,6 +169,19 @@ export function PDFGenerator({
     }
   };
 
+  const updateSelection = (path: string, checked: boolean) => {
+    setSelections(prev => {
+      const newSelections = { ...prev };
+      const parts = path.split('.');
+      let current = newSelections;
+      for (let i = 0; i < parts.length - 1; i++) {
+        current = current[parts[i] as keyof ReportSelections] as any;
+      }
+      current[parts[parts.length - 1]] = checked;
+      return newSelections;
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
@@ -187,7 +207,7 @@ export function PDFGenerator({
                     <Checkbox
                       id={`${sectionId}-${itemId}`}
                       checked={typeof selections[sectionId as keyof ReportSelections] === 'object' ? (selections[sectionId as keyof ReportSelections] as any)[itemId] : selections[sectionId as keyof ReportSelections]}
-                      onCheckedChange={() => toggleSection(sectionId, itemId)}
+                      onCheckedChange={() => updateSelection(`${sectionId}.${itemId}`, !(typeof selections[sectionId as keyof ReportSelections] === 'object' ? (selections[sectionId as keyof ReportSelections] as any)[itemId] : selections[sectionId as keyof ReportSelections]))}
                     />
                     <Label className="text-sm" htmlFor={`${sectionId}-${itemId}`}>
                       {itemId === 'shortTerm' ? 'Short Term Rental' : itemId === 'longTerm' ? 'Long Term Rental' : itemId.charAt(0).toUpperCase() + itemId.slice(1).replace(/([A-Z])/g, ' $1')}
@@ -241,7 +261,7 @@ export function PDFGenerator({
           const interval = setInterval(() => {
             setProgress(prev => Math.min(prev + 5, 90));
           }, 300);
-          
+
           await handleGeneratePDF();
           clearInterval(interval);
           setProgress(100);
