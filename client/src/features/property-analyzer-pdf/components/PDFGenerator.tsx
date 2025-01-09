@@ -21,7 +21,6 @@ const defaultSelections: ReportSelections = {
   propertyDetails: {
     address: true,
     propertyPhoto: true,
-    map: true,
     bedrooms: true,
     bathrooms: true,
     floorArea: true,
@@ -66,9 +65,7 @@ const defaultSelections: ReportSelections = {
     year5: true,
     year10: true,
     year20: true
-  },
-  includeWatermark: false,
-  includeMap: false
+  }
 };
 
 export function PDFGenerator({
