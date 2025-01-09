@@ -265,13 +265,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       if (props.onAnalysisComplete) {
         await props.onAnalysisComplete(analysisData);
       }
-
-      toast({
-        variant: "success",
-        title: "Analysis Saved",
-        description: `Property analysis for ${data.address} has been successfully saved.`,
-        duration: 5000,
-      });
     } catch (error) {
       console.error('Analysis error:', error);
       toast({
