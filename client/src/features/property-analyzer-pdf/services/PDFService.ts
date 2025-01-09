@@ -137,11 +137,11 @@ async function addPropertyDetails(
     autoTable(pdf, {
       startY: y,
       head: [['Metric', 'Value']],
-      body: comparison,
+      body: valuationData,
       margin: { left: 20 }
     });
     y += 30;
-  }
+  
 
   if (selections.propertyDetails.propertyPhoto && data.propertyDetails.propertyPhoto) {
     try {
