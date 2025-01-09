@@ -10,17 +10,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
 import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save, FileText, Info } from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
@@ -228,12 +217,10 @@ export default function PropertyAnalyzerPage() {
         loanTerm: requestBody.loanTerm
       });
 
-
       setTimeout(() => {
         if (resultsRef.current) {
           const yOffset = -100;
           const y = resultsRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
-
           window.scrollTo({
             top: y,
             behavior: 'smooth'
@@ -358,10 +345,15 @@ export default function PropertyAnalyzerPage() {
       }
 
       setAnalysisId(responseData.id);
-      toast({
-        description: `Property analysis for ${dataToSave.address} has been saved!`,
-        duration: 5000,
-      });
+      setTimeout(() => {
+        toast({
+          variant: "default",
+          title: "Success",
+          description: `Property analysis for ${dataToSave.address} has been saved!`,
+          duration: 5000,
+        });
+      }, 500);
+
     } catch (error) {
       console.error('Save error:', error);
       toast({
