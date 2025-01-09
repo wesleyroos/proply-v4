@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import html2canvas from "html2canvas";
-import { useToast } from "@/components/ui/toast-context";
+import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -39,8 +39,8 @@ import CashflowChart from "@/components/CashflowChart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PDFGenerator } from "@/features/property-analyzer-pdf/components/PDFGenerator";
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
-import { PDFPreview } from "@/features/property-analyzer-pdf/components/PDFPreview"; // Import PDFPreview component
-
+import { PDFPreview } from "@/features/property-analyzer-pdf/components/PDFPreview";
+import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
 
 interface YearlyMetrics {
   grossYield: number;
@@ -139,13 +139,11 @@ export default function PropertyAnalyzerPage() {
   const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
+  const [currentSelections, setCurrentSelections] = useState<ReportSelections | null>(null);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [showPreview, setShowPreview] = useState(false); // Added state for preview
-  const companyLogo = '/your-company-logo.png'; // Replace with your actual logo path
-
-
-  // Map capture is now handled in PDFReportModal
+  const [showPreview, setShowPreview] = useState(false);
+  const companyLogo = '/your-company-logo.png';
 
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
@@ -297,10 +295,10 @@ export default function PropertyAnalyzerPage() {
     return data;
   };
 
-  const handleGeneratePDF = async (selections: any) => {
+  const handleGeneratePDF = async (selections: ReportSelections) => {
     setIsGeneratingPDF(true);
     try {
-      await generatePDF(pdfData, selections, user?.settings?.companyLogo || ''); // Use company logo from user settings
+      await generatePDF(pdfData, selections, user?.settings?.companyLogo || '');
       toast({
         title: "Success",
         description: "PDF report generated successfully!",
@@ -320,7 +318,8 @@ export default function PropertyAnalyzerPage() {
     }
   };
 
-  const handlePreview = () => {
+  const handlePreview = (selections: ReportSelections) => {
+    setCurrentSelections(selections);
     setShowPreview(true);
   };
 
@@ -958,15 +957,15 @@ export default function PropertyAnalyzerPage() {
               data={pdfData}
               companyLogo={user?.settings?.companyLogo || ''}
               onGeneratePDF={handleGeneratePDF}
-              onPreview={handlePreview}
+              onPreview={(selections) => handlePreview(selections)}
               isGenerating={isGeneratingPDF}
             />
           </DialogContent>
         </Dialog>
-        {showPreview && pdfData && (
+        {showPreview && pdfData && currentSelections && (
           <PDFPreview
             data={pdfData}
-            selections={selections}
+            selections={currentSelections}
             companyLogo={user?.settings?.companyLogo || ''}
             onClose={() => setShowPreview(false)}
           />
