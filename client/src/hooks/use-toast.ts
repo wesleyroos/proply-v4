@@ -1,8 +1,5 @@
 import * as React from "react"
-import type {
-  ToastActionElement,
-  ToastProps,
-} from "@/components/ui/toast"
+import type { ToastActionElement, ToastProps } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 5000
@@ -14,6 +11,10 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement
 }
 
+type State = {
+  toasts: ToasterToast[]
+}
+
 const actionTypes = {
   ADD_TOAST: "ADD_TOAST",
   UPDATE_TOAST: "UPDATE_TOAST",
@@ -21,35 +22,31 @@ const actionTypes = {
   REMOVE_TOAST: "REMOVE_TOAST",
 } as const
 
-let count = 0
-
-function genId() {
-  count = (count + 1) % Number.MAX_SAFE_INTEGER
-  return count.toString()
-}
-
-type ActionType = typeof actionTypes
+type ActionType = typeof actionTypes[keyof typeof actionTypes]
 
 type Action =
   | {
-      type: ActionType["ADD_TOAST"]
+      type: "ADD_TOAST"
       toast: ToasterToast
     }
   | {
-      type: ActionType["UPDATE_TOAST"]
+      type: "UPDATE_TOAST"
       toast: Partial<ToasterToast>
     }
   | {
-      type: ActionType["DISMISS_TOAST"]
-      toastId?: ToasterToast["id"]
+      type: "DISMISS_TOAST"
+      toastId?: string
     }
   | {
-      type: ActionType["REMOVE_TOAST"]
-      toastId?: ToasterToast["id"]
+      type: "REMOVE_TOAST"
+      toastId?: string
     }
 
-interface State {
-  toasts: ToasterToast[]
+let count = 0
+
+function genId() {
+  count = (count + 1) % Number.MAX_VALUE
+  return count.toString()
 }
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
@@ -114,22 +111,16 @@ const reducer = (state: State, action: Action): State => {
   }
 }
 
-interface ToastContextValue {
+type ToastContextType = {
   toasts: ToasterToast[]
-  toast: (props: Omit<ToasterToast, "id">) => void
+  toast: (props: Omit<ToasterToast, "id">) => string
   dismiss: (toastId?: string) => void
 }
 
-const ToastContext = React.createContext<ToastContextValue | undefined>(undefined)
+const ToastContext = React.createContext<ToastContextType | undefined>(undefined)
 
-export function ToastProvider({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const [state, dispatch] = React.useReducer(reducer, {
-    toasts: [],
-  })
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = React.useReducer(reducer, { toasts: [] })
 
   React.useEffect(() => {
     state.toasts.forEach((toast) => {
@@ -139,29 +130,34 @@ export function ToastProvider({
     })
   }, [state.toasts])
 
-  const toast = React.useCallback((props: Omit<ToasterToast, "id">) => {
-    const id = genId()
+  const toast = React.useCallback(
+    (props: Omit<ToasterToast, "id">) => {
+      const id = genId()
 
-    dispatch({
-      type: "ADD_TOAST",
-      toast: {
-        ...props,
-        id,
-        open: true,
-        onOpenChange: (open: boolean) => {
-          if (!open) {
-            dispatch({ type: "DISMISS_TOAST", toastId: id })
-          }
+      dispatch({
+        type: "ADD_TOAST",
+        toast: {
+          ...props,
+          id,
+          open: true,
+          onOpenChange: (open: boolean) => {
+            if (!open) {
+              dispatch({ type: "DISMISS_TOAST", toastId: id })
+            }
+          },
         },
-      },
-    })
-  }, [])
+      })
+
+      return id
+    },
+    []
+  )
 
   const dismiss = React.useCallback((toastId?: string) => {
     dispatch({ type: "DISMISS_TOAST", toastId })
   }, [])
 
-  const value = React.useMemo(
+  const contextValue = React.useMemo(
     () => ({
       toasts: state.toasts,
       toast,
@@ -170,16 +166,18 @@ export function ToastProvider({
     [state.toasts, toast, dismiss]
   )
 
-  return <ToastContext.Provider value={value}>{children}</ToastContext.Provider>
+  return (
+    <ToastContext.Provider value={contextValue}>
+      {children}
+    </ToastContext.Provider>
+  )
 }
 
-export function useToast() {
+export function useToast(): ToastContextType {
   const context = React.useContext(ToastContext)
-
   if (!context) {
     throw new Error("useToast must be used within a ToastProvider")
   }
-
   return context
 }
 
