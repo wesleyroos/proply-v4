@@ -176,10 +176,6 @@ export function PDFGenerator({
             Deselect All
           </Button>
         </div>
-        <Button variant="outline" onClick={() => onPreview(selections)}>
-          <Eye className="w-4 h-4 mr-2" />
-          Preview
-        </Button>
       </div>
 
       <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
