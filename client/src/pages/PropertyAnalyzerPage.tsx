@@ -228,9 +228,6 @@ export default function PropertyAnalyzerPage() {
         loanTerm: requestBody.loanTerm
       });
 
-      toast({
-        description: "Analysis completed successfully",
-      });
 
       setTimeout(() => {
         if (resultsRef.current) {
@@ -792,7 +789,7 @@ export default function PropertyAnalyzerPage() {
                               R {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() || "0"}
                               <span className="w-2 h-2 rounded-full bg-red-500" title="Data from analyzer engine" />
                             </p>
-                            <p className="text-base text-slate-600">
+                            <p className="text-base text-slate600">
                               R {Math.round((analysisResult.analysis.longTermAnnualRevenue || 0) / 12).toLocaleString()} /month
                             </p>
                           </div>
