@@ -101,8 +101,10 @@ export interface ReportSelections {
     floorArea?: boolean;
     parkingSpaces?: boolean;
     ratePerSquareMeter?: boolean;
+    rateDifference?: boolean;
     propertyDescription?: boolean;
   };
+  cashflowAnalysis?: boolean;
   financialMetrics?: {
     purchasePrice?: boolean;
     depositAmount?: boolean;

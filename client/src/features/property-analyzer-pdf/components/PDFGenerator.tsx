@@ -25,6 +25,7 @@ const defaultSelections: ReportSelections = {
     floorArea: true,
     parkingSpaces: true,
     ratePerSquareMeter: true,
+    rateDifference: true,
     propertyDescription: true
   },
   financialMetrics: {
@@ -95,7 +96,7 @@ export function PDFGenerator({
             description: "Company logo updated successfully",
             duration: 3000,
           });
-          
+
           if (onLogoUpdate) {
             onLogoUpdate(base64Data);
           }
@@ -122,6 +123,8 @@ export function PDFGenerator({
             (section as any)[itemKey] = selected;
           });
         }
+      } else {
+        newSelections[sectionKey as keyof ReportSelections] = selected;
       }
     });
     setSelections(newSelections);
@@ -133,6 +136,8 @@ export function PDFGenerator({
       const section = newSelections[sectionId as keyof ReportSelections];
       if (section && typeof section === 'object') {
         (section as any)[itemId] = !(section as any)[itemId];
+      } else {
+        newSelections[sectionId as keyof ReportSelections] = !(newSelections[sectionId as keyof ReportSelections] as boolean);
       }
       return newSelections;
     });
@@ -181,7 +186,7 @@ export function PDFGenerator({
                   <div key={itemId} className="flex items-center space-x-2">
                     <Checkbox
                       id={`${sectionId}-${itemId}`}
-                      checked={selections[sectionId as keyof ReportSelections][itemId as keyof typeof sectionItems]}
+                      checked={typeof selections[sectionId as keyof ReportSelections] === 'object' ? (selections[sectionId as keyof ReportSelections] as any)[itemId] : selections[sectionId as keyof ReportSelections]}
                       onCheckedChange={() => toggleSection(sectionId, itemId)}
                     />
                     <Label className="text-sm" htmlFor={`${sectionId}-${itemId}`}>
