@@ -147,5 +147,4 @@ export interface ReportSelections {
   };
   includeWatermark?: boolean;
   includeMap?: boolean;
-  includeBranding?: boolean;
 }

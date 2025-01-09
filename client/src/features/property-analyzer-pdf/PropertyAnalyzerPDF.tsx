@@ -12,61 +12,7 @@ interface PropertyAnalyzerPDFProps {
 }
 
 export function PropertyAnalyzerPDF({ data, companyLogo, onClose }: PropertyAnalyzerPDFProps) {
-  const [selections, setSelections] = useState<ReportSelections>({
-    propertyDetails: {
-      address: true,
-      propertyPhoto: true,
-      map: true,
-      bedrooms: true,
-      bathrooms: true,
-      floorArea: true,
-      parkingSpaces: true,
-      ratePerSquareMeter: true,
-      propertyDescription: true
-    },
-    financialMetrics: {
-      purchasePrice: true,
-      depositAmount: true,
-      interestRate: true,
-      loanTerm: true,
-      monthlyBondRepayment: true,
-      bondRegistration: true,
-      transferCosts: true
-    },
-    operatingExpenses: {
-      monthlyLevies: true,
-      monthlyRatesTaxes: true,
-      otherMonthlyExpenses: true,
-      maintenancePercent: true,
-      managementFee: true
-    },
-    rentalPerformance: {
-      shortTerm: true,
-      longTerm: true
-    },
-    investmentMetrics: {
-      grossYield: true,
-      netYield: true,
-      returnOnEquity: true,
-      annualReturn: true,
-      capRate: true,
-      cashOnCashReturn: true,
-      irr: true,
-      netWorthChange: true
-    },
-    cashflowAnalysis: {
-      year1: true,
-      year2: true,
-      year3: true,
-      year5: true,
-      year10: true,
-      year20: true
-    },
-    includeWatermark: true,
-    includeMap: true,
-    includeBranding: true
-  });
-
+  const [selections, setSelections] = useState<ReportSelections>({});
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
