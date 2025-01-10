@@ -1,8 +1,6 @@
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
 import { PropertyData, ReportSelections } from '../types/propertyReport';
-import { optimizeCanvas } from '../utils/optimization';
 import { formatCurrency, formatPercentage } from '../utils/formatting';
 
 export async function generatePDF(
@@ -10,246 +8,159 @@ export async function generatePDF(
   selections: ReportSelections,
   companyLogo?: string
 ): Promise<void> {
-  try {
-    // Initialize PDF document
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  let yPosition = 20;
+
+  // Add company logo
+  if (companyLogo) {
+    const img = new Image();
+    img.src = companyLogo;
+    await new Promise((resolve) => {
+      img.onload = resolve;
     });
-
-    let yPosition = 20;
-
-    // Add header with logo if available
-    if (companyLogo) {
-      const img = new Image();
-      img.src = companyLogo;
-      await new Promise((resolve) => {
-        img.onload = resolve;
-      });
-      pdf.addImage(companyLogo, 'PNG', 20, yPosition, 40, 20);
-      yPosition += 30;
-    }
-
-    // Title
-    pdf.setFontSize(20);
-    pdf.text('Property Analysis Report', 20, yPosition);
-    yPosition += 15;
-
-    // Add content sections based on selections
-    if (selections.propertyDetails) {
-      yPosition = await addPropertyDetails(pdf, data, selections, yPosition);
-    }
-
-    if (selections.financialMetrics) {
-      yPosition = await addFinancialMetrics(pdf, data, selections, yPosition);
-    }
-
-    if (selections.operatingExpenses) {
-      yPosition = await addOperatingExpenses(pdf, data, selections, yPosition);
-    }
-
-    if (selections.rentalPerformance) {
-      yPosition = await addRentalPerformance(pdf, data, selections, yPosition);
-    }
-
-    if (selections.investmentMetrics) {
-      yPosition = await addInvestmentMetrics(pdf, data, selections, yPosition);
-    }
-
-    if (selections.cashflowAnalysis) {
-      yPosition = await addCashflowAnalysis(pdf, data, selections, yPosition);
-    }
-
-    // Add finishing touches
-    addPageNumbers(pdf);
-    if (selections.includeWatermark) {
-      addWatermark(pdf, "Property Analysis Report");
-    }
-
-    // Save the PDF
-    pdf.save(`${data.propertyDetails.address}_analysis.pdf`);
-  } catch (error) {
-    console.error('Error generating PDF:', error);
-    throw new Error('Failed to generate PDF report');
+    pdf.addImage(companyLogo, 'PNG', 20, yPosition, 40, 20);
+    yPosition += 30;
   }
-}
 
-async function addPropertyDetails(
-  pdf: jsPDF,
-  data: PropertyData,
-  selections: ReportSelections,
-  startY: number
-): Promise<number> {
-  let y = startY;
+  // Add title
+  pdf.setFontSize(20);
+  pdf.text('Property Analysis Report', 20, yPosition);
+  yPosition += 15;
 
-  // Property Overview Section
+  // Property Overview
   pdf.setFontSize(16);
-  pdf.text('Property Overview', 20, y);
-  y += 10;
-  pdf.setFontSize(12);
+  pdf.text('Property Overview', 20, yPosition);
+  yPosition += 10;
 
-  // Location and Basic Info
-  const basicInfo = [];
-  if (selections.propertyDetails.address) {
-    basicInfo.push(['Address', data.propertyDetails.address]);
-  }
-  if (selections.propertyDetails.bedrooms) {
-    basicInfo.push(['Bedrooms', data.propertyDetails.bedrooms]);
-  }
-  if (selections.propertyDetails.bathrooms) {
-    basicInfo.push(['Bathrooms', data.propertyDetails.bathrooms]);
-  }
-  if (selections.propertyDetails.floorArea) {
-    basicInfo.push(['Floor Area', `${data.propertyDetails.floorArea}m²`]);
-  }
-  if (selections.propertyDetails.parkingSpaces) {
-    basicInfo.push(['Parking Spaces', data.propertyDetails.parkingSpaces]);
-  }
-
-  if (basicInfo.length > 0) {
-    autoTable(pdf, {
-      startY: y,
-      head: [['Feature', 'Details']],
-      body: basicInfo,
-      margin: { left: 20 },
-      theme: 'plain'
-    });
-    y += basicInfo.length * 8 + 15;
-  }
-
-  // Property Valuation
-  y += 5;
-  pdf.setFontSize(14);
-  pdf.text('Property Valuation', 20, y);
-  y += 8;
-
-  const valuationData = [];
-  valuationData.push(['Purchase Price', formatCurrency(data.propertyDetails.purchasePrice)]);
-  if (selections.propertyDetails.propertyRatePerSquareMeter) {
-    valuationData.push(
-      ['Property Rate/m²', formatCurrency(data.propertyDetails.ratePerSquareMeter)],
-      ['Area Average Rate/m²', formatCurrency(data.propertyDetails.areaRatePerSquareMeter)],
-      ['Market Position', formatCurrency(data.propertyDetails.rateDifference) + ' vs market average']
-    );
-  }
-    
-    autoTable(pdf, {
-      startY: y,
-      head: [['Metric', 'Value']],
-      body: valuationData,
-      margin: { left: 20 }
-    });
-    y += 30;
-  
-
-  if (selections.propertyDetails.propertyPhoto && data.propertyDetails.propertyPhoto) {
-    try {
-      const img = new Image();
-      img.src = data.propertyDetails.propertyPhoto;
-      await new Promise((resolve) => {
-        img.onload = resolve;
-      });
-      pdf.addImage(data.propertyDetails.propertyPhoto, 'PNG', 20, y, 80, 60);
-      y += 70;
-    } catch (error) {
-      console.error('Error adding property photo:', error);
-    }
-  }
-
-  const details = [];
-  if (selections.propertyDetails.bedrooms && data.propertyDetails.bedrooms !== undefined) {
-    details.push(['Bedrooms', data.propertyDetails.bedrooms.toString()]);
-  }
-  if (selections.propertyDetails.bathrooms && data.propertyDetails.bathrooms !== undefined) {
-    details.push(['Bathrooms', data.propertyDetails.bathrooms.toString()]);
-  }
-  if (selections.propertyDetails.floorArea && data.propertyDetails.floorArea !== undefined) {
-    details.push(['Floor Area', `${data.propertyDetails.floorArea}m²`]);
-  }
-  if (selections.propertyDetails.parkingSpaces && data.propertyDetails.parkingSpaces !== undefined) {
-    details.push(['Parking Spaces', data.propertyDetails.parkingSpaces.toString()]);
-  }
-  if (selections.propertyDetails.ratePerSquareMeter && data.propertyDetails.ratePerSquareMeter !== undefined) {
-    details.push(['Rate per m²', formatCurrency(data.propertyDetails.ratePerSquareMeter)]);
-  }
-
-  if (details.length > 0) {
-    autoTable(pdf, {
-      startY: y,
-      head: [['Feature', 'Value']],
-      body: details,
-      margin: { left: 20 }
-    });
-    y += (details.length + 1) * 10 + 10;
-  }
-
-  return y;
-}
-
-async function addFinancialMetrics(
-  pdf: jsPDF,
-  data: PropertyData,
-  selections: ReportSelections,
-  startY: number
-): Promise<number> {
-  let y = startY;
-
-  // Investment Structure
-  pdf.setFontSize(16);
-  pdf.text('Investment Structure', 20, y);
-  y += 10;
-
-  const investmentStructure = [
-    ['Total Investment Required', formatCurrency(data.propertyDetails.purchasePrice)],
-    ['Required Deposit', `${formatCurrency(data.financialMetrics.depositAmount)} (${data.financialMetrics.depositPercentage}%)`],
-    ['Bond Amount', formatCurrency(data.propertyDetails.purchasePrice - data.financialMetrics.depositAmount)]
+  const propertyDetails = [
+    ['Address', data.propertyDetails.address],
+    ['Purchase Price', formatCurrency(data.propertyDetails.purchasePrice)],
+    ['Floor Area', `${data.propertyDetails.floorArea}m²`],
+    ['Bedrooms', data.propertyDetails.bedrooms.toString()],
+    ['Bathrooms', data.propertyDetails.bathrooms.toString()],
+    ['Parking Spaces', data.propertyDetails.parkingSpaces.toString()]
   ];
 
-  // Financing Terms
-  const financingTerms = [
+  autoTable(pdf, {
+    startY: yPosition,
+    head: [['Feature', 'Details']],
+    body: propertyDetails,
+    margin: { left: 20 }
+  });
+
+  yPosition = (pdf as any).lastAutoTable.finalY + 15;
+
+  // Financial Metrics
+  pdf.setFontSize(16);
+  pdf.text('Financial Overview', 20, yPosition);
+  yPosition += 10;
+
+  const financialMetrics = [
+    ['Deposit Amount', formatCurrency(data.financialMetrics.depositAmount)],
+    ['Deposit Percentage', `${data.financialMetrics.depositPercentage}%`],
     ['Interest Rate', `${data.financialMetrics.interestRate}%`],
-    ['Loan Term', `${data.financialMetrics.loanTerm} years`],
-    ['Monthly Bond Payment', formatCurrency(data.financialMetrics.monthlyBondRepayment)]
+    ['Monthly Bond Repayment', formatCurrency(data.financialMetrics.monthlyBondRepayment)],
+    ['Bond Registration', formatCurrency(data.financialMetrics.bondRegistration)],
+    ['Transfer Costs', formatCurrency(data.financialMetrics.transferCosts)]
   ];
 
-  const metrics = [];
-  
-  if (selections.financialMetrics.depositAmount && data.financialMetrics.depositAmount !== undefined) {
-    metrics.push(['Deposit Amount', formatCurrency(data.financialMetrics.depositAmount)]);
-    metrics.push(['Deposit Percentage', `${data.financialMetrics.depositPercentage}%`]);
+  autoTable(pdf, {
+    startY: yPosition,
+    head: [['Metric', 'Value']],
+    body: financialMetrics,
+    margin: { left: 20 }
+  });
+
+  yPosition = (pdf as any).lastAutoTable.finalY + 15;
+
+  // Rental Performance
+  pdf.setFontSize(16);
+  pdf.text('Rental Performance', 20, yPosition);
+  yPosition += 10;
+
+  const rentalPerformance = [
+    ['Short Term Nightly Rate', formatCurrency(data.performance.shortTermNightlyRate)],
+    ['Annual Occupancy', `${data.performance.annualOccupancy}%`],
+    ['Short Term Annual Revenue', formatCurrency(data.performance.shortTermAnnualRevenue)],
+    ['Long Term Annual Revenue', formatCurrency(data.performance.longTermAnnualRevenue)],
+    ['Short Term Gross Yield', `${formatPercentage(data.performance.shortTermGrossYield)}%`],
+    ['Long Term Gross Yield', `${formatPercentage(data.performance.longTermGrossYield)}%`]
+  ];
+
+  autoTable(pdf, {
+    startY: yPosition,
+    head: [['Metric', 'Value']],
+    body: rentalPerformance,
+    margin: { left: 20 }
+  });
+
+  yPosition = (pdf as any).lastAutoTable.finalY + 15;
+
+  // Investment Metrics (Year 1)
+  pdf.setFontSize(16);
+  pdf.text('Investment Metrics (Year 1)', 20, yPosition);
+  yPosition += 10;
+
+  const shortTermMetrics = data.investmentMetrics.shortTerm[0];
+  const investmentMetrics = [
+    ['Gross Yield', `${formatPercentage(shortTermMetrics.grossYield)}%`],
+    ['Net Yield', `${formatPercentage(shortTermMetrics.netYield)}%`],
+    ['Return on Equity', `${formatPercentage(shortTermMetrics.returnOnEquity)}%`],
+    ['Cap Rate', `${formatPercentage(shortTermMetrics.capRate)}%`],
+    ['IRR', `${formatPercentage(shortTermMetrics.irr)}%`],
+    ['Net Worth Change', formatCurrency(shortTermMetrics.netWorthChange)]
+  ];
+
+  autoTable(pdf, {
+    startY: yPosition,
+    head: [['Metric', 'Value']],
+    body: investmentMetrics,
+    margin: { left: 20 }
+  });
+
+  yPosition = (pdf as any).lastAutoTable.finalY + 15;
+
+  // Revenue Projections
+  pdf.setFontSize(16);
+  pdf.text('Revenue Projections', 20, yPosition);
+  yPosition += 10;
+
+  const projections = [
+    ['Year 1', formatCurrency(data.revenueProjections.shortTerm.year1), formatCurrency(data.revenueProjections.longTerm.year1)],
+    ['Year 5', formatCurrency(data.revenueProjections.shortTerm.year5), formatCurrency(data.revenueProjections.longTerm.year5)],
+    ['Year 10', formatCurrency(data.revenueProjections.shortTerm.year10), formatCurrency(data.revenueProjections.longTerm.year10)],
+    ['Year 20', formatCurrency(data.revenueProjections.shortTerm.year20), formatCurrency(data.revenueProjections.longTerm.year20)]
+  ];
+
+  autoTable(pdf, {
+    startY: yPosition,
+    head: [['Period', 'Short Term', 'Long Term']],
+    body: projections,
+    margin: { left: 20 }
+  });
+
+  // Add page numbers
+  const pageCount = pdf.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    pdf.setPage(i);
+    pdf.setFontSize(10);
+    pdf.text(`Page ${i} of ${pageCount}`, pdf.internal.pageSize.getWidth() / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'center' });
   }
 
-  // Associated Costs
-  if (selections.financialMetrics.bondRegistration) {
-    metrics.push(['Bond Registration', formatCurrency(data.financialMetrics.bondRegistration)]);
-  }
-  if (selections.financialMetrics.transferCosts) {
-    metrics.push(['Transfer Costs', formatCurrency(data.financialMetrics.transferCosts)]);
-  }
-  if (selections.financialMetrics.totalCapitalRequired) {
-    metrics.push(['Total Capital Required', formatCurrency(data.financialMetrics.depositAmount + 
-      data.financialMetrics.bondRegistration + data.financialMetrics.transferCosts)]);
-  }
-  if (selections.financialMetrics.interestRate && data.financialMetrics.interestRate !== undefined) {
-    metrics.push(['Interest Rate', `${data.financialMetrics.interestRate}%`]);
-  }
-  if (selections.financialMetrics.monthlyBondRepayment && data.financialMetrics.monthlyBondRepayment !== undefined) {
-    metrics.push(['Monthly Bond Repayment', formatCurrency(data.financialMetrics.monthlyBondRepayment)]);
+  // Add finishing touches
+  if (selections.includeWatermark) {
+    addWatermark(pdf, "Property Analysis Report");
   }
 
-  if (metrics.length > 0) {
-    autoTable(pdf, {
-      startY: y,
-      head: [['Metric', 'Value']],
-      body: metrics,
-      margin: { left: 20 }
-    });
-    y += (metrics.length + 1) * 10 + 10;
-  }
-
-  return y;
+  // Save the PDF
+  pdf.save(`${data.propertyDetails.address}_analysis.pdf`);
 }
+
 
 async function addOperatingExpenses(
   pdf: jsPDF,
@@ -285,92 +196,6 @@ async function addOperatingExpenses(
       margin: { left: 20 }
     });
     y += (expenses.length + 1) * 10 + 10;
-  }
-
-  return y;
-}
-
-async function addRentalPerformance(
-  pdf: jsPDF,
-  data: PropertyData,
-  selections: ReportSelections,
-  startY: number
-): Promise<number> {
-  let y = startY;
-
-  pdf.setFontSize(16);
-  pdf.text('Rental Performance', 20, y);
-  y += 10;
-
-  const performance = [];
-  if (selections.rentalPerformance.shortTermNightlyRate && data.performance.shortTermNightlyRate !== undefined) {
-    performance.push(['Short Term Nightly Rate', formatCurrency(data.performance.shortTermNightlyRate)]);
-    performance.push(['Annual Occupancy', `${data.performance.annualOccupancy}%`]);
-    performance.push(['Short Term Annual Revenue', formatCurrency(data.performance.shortTermAnnualRevenue)]);
-    performance.push(['Short Term Gross Yield', `${data.performance.shortTermGrossYield.toFixed(2)}%`]);
-  }
-
-  if (selections.rentalPerformance.longTerm && data.performance.longTermAnnualRevenue !== undefined) {
-    performance.push(['Long Term Monthly Revenue', formatCurrency(data.performance.longTermAnnualRevenue / 12)]);
-    performance.push(['Long Term Annual Revenue', formatCurrency(data.performance.longTermAnnualRevenue)]);
-    performance.push(['Long Term Gross Yield', `${data.performance.longTermGrossYield.toFixed(2)}%`]);
-  }
-
-  if (performance.length > 0) {
-    autoTable(pdf, {
-      startY: y,
-      head: [['Metric', 'Value']],
-      body: performance,
-      margin: { left: 20 }
-    });
-    y += (performance.length + 1) * 10 + 10;
-  }
-
-  return y;
-}
-
-async function addInvestmentMetrics(
-  pdf: jsPDF,
-  data: PropertyData,
-  selections: ReportSelections,
-  startY: number
-): Promise<number> {
-  let y = startY;
-
-  pdf.setFontSize(16);
-  pdf.text('Investment Metrics', 20, y);
-  y += 10;
-
-  const metrics = [];
-  const shortTermMetrics = data.investmentMetrics.shortTerm[0];
-
-  if (selections.investmentMetrics.grossYield && shortTermMetrics.grossYield !== undefined) {
-    metrics.push(['Gross Yield', `${shortTermMetrics.grossYield.toFixed(2)}%`]);
-  }
-  if (selections.investmentMetrics.netYield && shortTermMetrics.netYield !== undefined) {
-    metrics.push(['Net Yield', `${shortTermMetrics.netYield.toFixed(2)}%`]);
-  }
-  if (selections.investmentMetrics.returnOnEquity && shortTermMetrics.returnOnEquity !== undefined) {
-    metrics.push(['Return on Equity', `${shortTermMetrics.returnOnEquity.toFixed(2)}%`]);
-  }
-  if (selections.investmentMetrics.capRate && shortTermMetrics.capRate !== undefined) {
-    metrics.push(['Cap Rate', `${shortTermMetrics.capRate.toFixed(2)}%`]);
-  }
-  if (selections.investmentMetrics.cashOnCashReturn && shortTermMetrics.cashOnCashReturn !== undefined) {
-    metrics.push(['Cash on Cash Return', `${shortTermMetrics.cashOnCashReturn.toFixed(2)}%`]);
-  }
-  if (selections.investmentMetrics.irr && shortTermMetrics.irr !== undefined) {
-    metrics.push(['IRR', `${shortTermMetrics.irr.toFixed(2)}%`]);
-  }
-
-  if (metrics.length > 0) {
-    autoTable(pdf, {
-      startY: y,
-      head: [['Metric', 'Value']],
-      body: metrics,
-      margin: { left: 20 }
-    });
-    y += (metrics.length + 1) * 10 + 10;
   }
 
   return y;
