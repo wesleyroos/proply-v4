@@ -1,3 +1,4 @@
+
 export interface PropertyDetails {
   address: string;
   propertyPhoto?: string;
@@ -8,6 +9,8 @@ export interface PropertyDetails {
   parkingSpaces: number;
   purchasePrice: number;
   ratePerSquareMeter: number;
+  areaRate: number;
+  rateDifference: number;
   propertyDescription?: string;
 }
 
@@ -19,6 +22,7 @@ export interface FinancialMetrics {
   monthlyBondRepayment: number;
   bondRegistration: number;
   transferCosts: number;
+  totalCapitalRequired: number;
 }
 
 export interface OperatingExpenses {
@@ -36,6 +40,8 @@ export interface RentalPerformance {
   longTermAnnualRevenue: number;
   shortTermGrossYield: number;
   longTermGrossYield: number;
+  platformFee: number;
+  feeAdjustedRate: number;
 }
 
 export interface YearlyMetrics {
@@ -105,15 +111,16 @@ export interface ReportSelections {
     rateDifference?: boolean;
     propertyDescription?: boolean;
   };
-  cashflowAnalysis?: boolean;
   financialMetrics?: {
     purchasePrice?: boolean;
     depositAmount?: boolean;
+    depositPercentage?: boolean;
     interestRate?: boolean;
     loanTerm?: boolean;
     monthlyBondRepayment?: boolean;
     bondRegistration?: boolean;
     transferCosts?: boolean;
+    totalCapitalRequired?: boolean;
   };
   operatingExpenses?: {
     monthlyLevies?: boolean;
@@ -125,6 +132,14 @@ export interface ReportSelections {
   rentalPerformance?: {
     shortTerm?: boolean;
     longTerm?: boolean;
+    platformFee?: boolean;
+    feeAdjustedRate?: boolean;
+    shortTermNightlyRate?: boolean;
+    annualOccupancy?: boolean;
+    shortTermAnnualRevenue?: boolean;
+    longTermAnnualRevenue?: boolean;
+    shortTermGrossYield?: boolean;
+    longTermGrossYield?: boolean;
   };
   investmentMetrics?: {
     grossYield?: boolean;
@@ -136,7 +151,21 @@ export interface ReportSelections {
     irr?: boolean;
     netWorthChange?: boolean;
   };
-  cashflowAnalysis: boolean;
+  cashflowAnalysis?: {
+    year1?: boolean;
+    year2?: boolean;
+    year3?: boolean;
+    year4?: boolean;
+    year5?: boolean;
+    year10?: boolean;
+    year20?: boolean;
+    cumulativeRentalIncome?: boolean;
+    netWorthChange?: boolean;
+  };
+  revenueProjections?: {
+    shortTerm?: boolean;
+    longTerm?: boolean;
+  };
   dataVisualizations?: {
     charts?: boolean;
   };
