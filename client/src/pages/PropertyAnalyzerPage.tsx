@@ -27,9 +27,8 @@ import {
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { PDFGenerator } from "@/features/property-analyzer-pdf/components/PDFGenerator";
+import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAnalyzerPDF";
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
-//Removed import: import { PDFPreview } from "@/features/property-analyzer-pdf/components/PDFPreview";
 import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
 
 interface YearlyMetrics {
@@ -129,10 +128,8 @@ export default function PropertyAnalyzerPage() {
   const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
-  //Removed: const [currentSelections, setCurrentSelections] = useState<ReportSelections | null>(null);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  //Removed: const [showPreview, setShowPreview] = useState(false);
   const companyLogo = '/your-company-logo.png';
 
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
@@ -306,8 +303,6 @@ export default function PropertyAnalyzerPage() {
       setIsGeneratingPDF(false);
     }
   };
-
-  //Removed handlePreview function
 
   const handleSaveAnalysis = async () => {
     try {
@@ -967,16 +962,13 @@ export default function PropertyAnalyzerPage() {
             <DialogHeader>
               <DialogTitle>Generate Property Analysis Report</DialogTitle>
             </DialogHeader>
-            <PDFGenerator
+            <PropertyAnalyzerPDF
               data={pdfData}
               companyLogo={user?.companyLogo || ''}
-              onGeneratePDF={handleGeneratePDF}
-              //Removed onPreview prop
-              isGenerating={isGeneratingPDF}
+              onClose={() => setShowPDFGenerator(false)}
             />
           </DialogContent>
         </Dialog>
-        {/*Removed showPreview conditional rendering block*/}
       </div>
     </div>
   );
