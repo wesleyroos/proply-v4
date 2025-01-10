@@ -16,16 +16,50 @@ export async function generatePDF(
 
   let yPosition = 20;
 
-  // Add company logo
+  // Add company logo if available
   if (companyLogo) {
-    const img = new Image();
-    img.src = companyLogo;
-    await new Promise((resolve) => {
-      img.onload = resolve;
-    });
-    pdf.addImage(companyLogo, 'PNG', 20, yPosition, 40, 20);
-    yPosition += 30;
+    try {
+      const logoWidth = 40;
+      await new Promise<void>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const aspectRatio = img.height / img.width;
+          const logoHeight = logoWidth * aspectRatio;
+          pdf.addImage(companyLogo, "PNG", 20, 10, logoWidth, logoHeight);
+          resolve();
+        };
+        img.onerror = () => {
+          console.error('Error loading company logo');
+          resolve();
+        };
+        img.crossOrigin = "Anonymous";
+        img.src = companyLogo;
+      });
+    } catch (error) {
+      console.error('Error adding company logo:', error);
+    }
   }
+
+  // Add Proply branding
+  try {
+    const proplyLogoWidth = 40;
+    await new Promise<void>((resolve) => {
+      const proplyLogo = new Image();
+      proplyLogo.onload = () => {
+        const aspectRatio = proplyLogo.height / proplyLogo.width;
+        const proplyLogoHeight = proplyLogoWidth * aspectRatio;
+        pdf.addImage("/proply-logo-1.png", "PNG", 140, 10, proplyLogoWidth, proplyLogoHeight);
+        pdf.setFontSize(8);
+        pdf.setTextColor(100);
+        pdf.text("Powered by Proply", 140, 35);
+        resolve();
+      };
+      proplyLogo.src = "/proply-logo-1.png";
+    });
+  } catch (error) {
+    console.error('Error loading Proply logo:', error);
+  }
+
 
   // Add title
   pdf.setFontSize(20);
@@ -50,7 +84,15 @@ export async function generatePDF(
     startY: yPosition,
     head: [['Feature', 'Details']],
     body: propertyDetails,
-    margin: { left: 20 }
+    margin: { left: 20 },
+    styles: {
+      rowHeight: 12,
+      fontSize: 10
+    },
+    headStyles: {
+      fillColor: [30, 144, 255], // Proply blue
+      textColor: 255
+    }
   });
 
   yPosition = (pdf as any).lastAutoTable.finalY + 15;
@@ -73,7 +115,15 @@ export async function generatePDF(
     startY: yPosition,
     head: [['Metric', 'Value']],
     body: financialMetrics,
-    margin: { left: 20 }
+    margin: { left: 20 },
+    styles: {
+      rowHeight: 12,
+      fontSize: 10
+    },
+    headStyles: {
+      fillColor: [30, 144, 255], // Proply blue
+      textColor: 255
+    }
   });
 
   yPosition = (pdf as any).lastAutoTable.finalY + 15;
@@ -96,7 +146,15 @@ export async function generatePDF(
     startY: yPosition,
     head: [['Metric', 'Value']],
     body: rentalPerformance,
-    margin: { left: 20 }
+    margin: { left: 20 },
+    styles: {
+      rowHeight: 12,
+      fontSize: 10
+    },
+    headStyles: {
+      fillColor: [30, 144, 255], // Proply blue
+      textColor: 255
+    }
   });
 
   yPosition = (pdf as any).lastAutoTable.finalY + 15;
@@ -120,7 +178,15 @@ export async function generatePDF(
     startY: yPosition,
     head: [['Metric', 'Value']],
     body: investmentMetrics,
-    margin: { left: 20 }
+    margin: { left: 20 },
+    styles: {
+      rowHeight: 12,
+      fontSize: 10
+    },
+    headStyles: {
+      fillColor: [30, 144, 255], // Proply blue
+      textColor: 255
+    }
   });
 
   yPosition = (pdf as any).lastAutoTable.finalY + 15;
@@ -141,7 +207,15 @@ export async function generatePDF(
     startY: yPosition,
     head: [['Period', 'Short Term', 'Long Term']],
     body: projections,
-    margin: { left: 20 }
+    margin: { left: 20 },
+    styles: {
+      rowHeight: 12,
+      fontSize: 10
+    },
+    headStyles: {
+      fillColor: [30, 144, 255], // Proply blue
+      textColor: 255
+    }
   });
 
   // Add page numbers
@@ -193,7 +267,15 @@ async function addOperatingExpenses(
       startY: y,
       head: [['Expense', 'Amount']],
       body: expenses,
-      margin: { left: 20 }
+      margin: { left: 20 },
+      styles: {
+        rowHeight: 12,
+        fontSize: 10
+      },
+      headStyles: {
+        fillColor: [30, 144, 255], // Proply blue
+        textColor: 255
+      }
     });
     y += (expenses.length + 1) * 10 + 10;
   }
@@ -229,7 +311,15 @@ async function addCashflowAnalysis(
       startY: y,
       head: [['Period', 'Annual Cashflow']],
       body: cashflow,
-      margin: { left: 20 }
+      margin: { left: 20 },
+      styles: {
+        rowHeight: 12,
+        fontSize: 10
+      },
+      headStyles: {
+        fillColor: [30, 144, 255], // Proply blue
+        textColor: 255
+      }
     });
     y += (cashflow.length + 1) * 10 + 10;
   }
