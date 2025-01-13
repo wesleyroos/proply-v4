@@ -264,7 +264,6 @@ export async function generatePDF(
       formatCurrency(monthlyShortTerm * 1.2),
       formatCurrency(monthlyLongTerm)
     ];
-      ];
   });
 
   // Add total row
