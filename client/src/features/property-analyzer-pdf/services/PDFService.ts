@@ -244,31 +244,16 @@ export async function generatePDF(
   };
 
   const monthlyPerformance = months.map((month, index) => {
-    const lowRev = calculateMonthlyRevenue('low', index, baseRate, true, platformFee);
-    const medRev = calculateMonthlyRevenue('medium', index, baseRate, true, platformFee);
-    const highRev = calculateMonthlyRevenue('high', index, baseRate, true, platformFee);
+    const isManaged = data.expenses.managementFee > 0;
+    const seasonalRate = getSeasonalNightlyRate(baseRate, index);
+    const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, isManaged);
+    const lowRev = calculateMonthlyRevenue('low', index, baseRate, isManaged);
+    const medRev = calculateMonthlyRevenue('medium', index, baseRate, isManaged);
+    const highRev = calculateMonthlyRevenue('high', index, baseRate, isManaged);
     const longTerm = data.performance.longTermAnnualRevenue / 12;
-    const lowOcc = occupancyRates.low[index];
-    const medOcc = occupancyRates.medium[index];
-    const highOcc = occupancyRates.high[index];
-
-    const seasonalRates = {
-      peak: 1.2,
-      shoulder: 1.1,
-      low: 0.9
-    };
-
-    let rateMultiplier = 1;
-    if ([11, 0, 1].includes(index)) {
-      rateMultiplier = seasonalRates.peak;
-    } else if ([2, 3, 9, 10].includes(index)) {
-      rateMultiplier = seasonalRates.shoulder;
-    } else {
-      rateMultiplier = seasonalRates.low;
-    }
-
-    const seasonalRate = baseRate * rateMultiplier;
-    const feeAdjustedRate = seasonalRate * (1 - platformFee / 100);
+    const lowOcc = OCCUPANCY_RATES.low[index];
+    const medOcc = OCCUPANCY_RATES.medium[index];
+    const highOcc = OCCUPANCY_RATES.high[index];
 
     return [
       month,
