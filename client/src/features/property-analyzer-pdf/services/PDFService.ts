@@ -493,18 +493,14 @@ export async function generatePDF(
     startY += 10;
 
     const years = [1, 2, 3, 4, 5, 10, 20];
-    const metrics = ['Annual Revenue', 'Net Operating Expenses', 'Net Operating Income', 'Annual Bond Payment', 'Annual Cashflow', 'Cumulative Cashflow'];
-    const tableData = metrics.map(metric => {
-      const yearData = years.map(year => {
-        const metricKey = metric.toLowerCase().replace(/ /g, '');
-        if (term === 'shortTerm') {
-          return formatCurrency(data.performance.shortTermAnnualRevenue * (1 + (0.08 * (year - 1))));
-        } else {
-          return formatCurrency(data.performance.longTermAnnualRevenue * (1 + (0.08 * (year - 1))));
-        }
-      });
-      return [metric, ...yearData];
-    });
+    const metrics = data.analysis.investmentMetrics[term];
+    const tableData = [
+      ['Annual Revenue', ...years.map((_, i) => formatCurrency(term === 'shortTerm' ? data.analysis.revenueProjections.shortTerm[`year${years[i]}`] : data.analysis.revenueProjections.longTerm[`year${years[i]}`]))],
+      ['Net Operating Income', ...metrics.map(m => formatCurrency(m.grossYield * data.purchasePrice / 100))],
+      ['Annual Bond Payment', ...Array(7).fill(formatCurrency(data.monthlyBondRepayment * 12))],
+      ['Annual Cashflow', ...metrics.map(m => formatCurrency(m.netWorthChange))],
+      ['Cumulative Cashflow', ...metrics.map((m, i) => formatCurrency(metrics.slice(0, i + 1).reduce((sum, curr) => sum + curr.netWorthChange, 0)))]
+    ];
 
     autoTable(pdf, {
       startY: startY,
