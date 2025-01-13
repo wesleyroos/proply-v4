@@ -479,11 +479,16 @@ export async function generatePDF(
     `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`
   ];
 
-  pdf.setFontSize(10);
-  let disclaimerY = pdf.internal.pageSize.getHeight() - 20 - (disclaimerText.length * 5);
+  pdf.setFontSize(8);
+  let disclaimerY = pdf.internal.pageSize.getHeight() - 20 - (disclaimerText.length * 4);
   disclaimerText.forEach(line => {
-    pdf.text(line, 20, disclaimerY);
-    disclaimerY += 5;
+    const maxWidth = pdf.internal.pageSize.getWidth() - 40; // 20px margin on each side
+    const lines = pdf.splitTextToSize(line, maxWidth);
+    lines.forEach(splitLine => {
+      pdf.text(splitLine, 20, disclaimerY);
+      disclaimerY += 4;
+    });
+    if (line === "") disclaimerY += 2; // Add smaller spacing for empty lines
   });
 
 
