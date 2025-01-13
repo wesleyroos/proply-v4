@@ -480,15 +480,17 @@ export async function generatePDF(
     addWatermark(pdf, "Property Analysis Report");
   }
 
-  // Add Cashflow Metrics Section
-  pdf.addPage();
+  // Start new sections on the same page with proper spacing
+  let metricsY = (pdf as any).lastAutoTable.finalY + 20;
+  
   pdf.setFontSize(16);
   pdf.setTextColor(0);
-  pdf.text('Cashflow Metrics', 20, 30);
-  let metricsY = 45;
+  pdf.text('Cashflow Metrics', 20, metricsY);
+  metricsY += 15;
 
   const addCashflowMetricsTable = (term: 'shortTerm' | 'longTerm', title: string, startY: number) => {
     pdf.setFontSize(14);
+    const tableStartY = startY + 10;
     pdf.text(title, 20, startY);
     startY += 10;
 
