@@ -299,8 +299,8 @@ export async function generatePDF(
   monthlyPerformance.push([
     'Average',
     formatCurrency(baseRate),
-    `${platformFee}%`,
-    formatCurrency(baseRate * (1 - platformFee / 100)),
+    `${data.expenses.managementFee > 0 ? '15' : '3'}%`,
+    formatCurrency(baseRate * (1 - (data.expenses.managementFee > 0 ? 0.15 : 0.03))),
     '45%',
     formatCurrency(monthlyPerformance[12][5].replace(/[^0-9.-]+/g, '') / 12),
     '65%',
