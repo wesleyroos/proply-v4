@@ -480,15 +480,26 @@ export async function generatePDF(
   ];
 
   pdf.setFontSize(8);
-  let disclaimerY = pdf.internal.pageSize.getHeight() - 20 - (disclaimerText.length * 4);
+  let totalHeight = 0;
+  const maxWidth = pdf.internal.pageSize.getWidth() - 40;
+  
+  // Calculate total height needed
   disclaimerText.forEach(line => {
-    const maxWidth = pdf.internal.pageSize.getWidth() - 40; // 20px margin on each side
+    const lines = pdf.splitTextToSize(line, maxWidth);
+    totalHeight += lines.length * 4 + (line === "" ? 2 : 0);
+  });
+
+  // Start position: 30px above footer
+  let disclaimerY = pdf.internal.pageSize.getHeight() - 30 - totalHeight;
+  
+  // Render text
+  disclaimerText.forEach(line => {
     const lines = pdf.splitTextToSize(line, maxWidth);
     lines.forEach(splitLine => {
       pdf.text(splitLine, 20, disclaimerY);
       disclaimerY += 4;
     });
-    if (line === "") disclaimerY += 2; // Add smaller spacing for empty lines
+    if (line === "") disclaimerY += 2;
   });
 
 
