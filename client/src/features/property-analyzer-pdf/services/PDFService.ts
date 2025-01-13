@@ -238,7 +238,7 @@ export async function generatePDF(
   const baseRate = data.performance.shortTermNightlyRate;
   const platformFee = data.expenses.managementFee || 0;
 
-  const monthlyPerformance = months.map((month, index) => {
+  let monthlyPerformance = months.map((month, index) => {
     const lowOcc = OCCUPANCY_RATES.low[index];
     const medOcc = OCCUPANCY_RATES.medium[index];
     const highOcc = OCCUPANCY_RATES.high[index];
