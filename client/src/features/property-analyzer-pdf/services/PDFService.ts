@@ -273,9 +273,9 @@ export async function generatePDF(
       `${lowOcc}%`,
       formatCurrency(lowRevenue),
       `${medOcc}%`, 
-      formatCurrency(monthlyShortTerm),
+      formatCurrency(medRevenue),
       `${highOcc}%`,
-      formatCurrency(monthlyShortTerm * 1.2),
+      formatCurrency(highRevenue),
       formatCurrency(monthlyLongTerm)
     ];
   });
