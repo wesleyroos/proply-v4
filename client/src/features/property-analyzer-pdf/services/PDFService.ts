@@ -282,7 +282,7 @@ export async function generatePDF(
   if (ctx) {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, lineChartCanvas.width, lineChartCanvas.height);
-    
+
     const datasets = [
       { data: monthlyPerformance.slice(0, 12).map(row => parseFloat(row[5].replace(/[^0-9.-]+/g, ''))), color: '#FF6B6B', label: 'Low Revenue' },
       { data: monthlyPerformance.slice(0, 12).map(row => parseFloat(row[7].replace(/[^0-9.-]+/g, ''))), color: '#4ECDC4', label: 'Medium Revenue' },
@@ -298,7 +298,7 @@ export async function generatePDF(
     ctx.strokeStyle = '#e5e7eb';
     ctx.fillStyle = '#4b5563';
     ctx.font = '10px Arial';
-    
+
     for (let i = 0; i <= steps; i++) {
       const y = 250 - (i * (200 / steps));
       ctx.beginPath();
@@ -465,6 +465,27 @@ export async function generatePDF(
   if (selections.includeWatermark) {
     addWatermark(pdf, "Property Analysis Report");
   }
+
+  const currentYear = new Date().getFullYear();
+  const disclaimerText = [
+    "DISCLAIMER: The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.",
+    "",
+    "This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice. Any decisions made based on this information are solely the responsibility of the user. Property investment carries inherent risks, and market conditions can change rapidly.",
+    "",
+    "Proply Tech (Pty) Ltd and its affiliates expressly disclaim any and all liability for any direct, indirect, incidental, or consequential damages arising from the use of this information. Actual results may vary significantly from the projections and estimates presented.",
+    "",
+    "By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.",
+    "",
+    `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`
+  ];
+
+  pdf.setFontSize(10);
+  let disclaimerY = pdf.internal.pageSize.getHeight() - 20 - (disclaimerText.length * 5);
+  disclaimerText.forEach(line => {
+    pdf.text(line, 20, disclaimerY);
+    disclaimerY += 5;
+  });
+
 
   // Save the PDF with forced download
   const pdfOutput = pdf.output('blob');
