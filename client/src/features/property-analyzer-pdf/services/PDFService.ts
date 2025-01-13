@@ -1,7 +1,39 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { PropertyData, ReportSelections } from '../types/propertyReport';
-import { formatCurrency, formatPercentage, calculateMonthlyRevenue } from '../utils/formatting'; // Import calculateMonthlyRevenue
+import { formatCurrency, formatPercentage } from '../utils/formatting';
+
+function calculateMonthlyRevenue(scenario: 'low' | 'medium' | 'high', monthIndex: number, baseRate: number, withPlatformFee: boolean, managementFee: number): number {
+  const occupancyRates = {
+    low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70],
+    medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85],
+    high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
+  };
+
+  const seasonalRates = {
+    peak: 1.2,
+    shoulder: 1.1,
+    low: 0.9
+  };
+
+  let rateMultiplier = 1;
+  if ([11, 0, 1].includes(monthIndex)) {
+    rateMultiplier = seasonalRates.peak;
+  } else if ([2, 3, 9, 10].includes(monthIndex)) {
+    rateMultiplier = seasonalRates.shoulder;
+  } else {
+    rateMultiplier = seasonalRates.low;
+  }
+
+  const adjustedRate = baseRate * rateMultiplier;
+  const platformFee = withPlatformFee ? 0.15 : 0.03;
+  const totalFeePercentage = (platformFee + (managementFee / 100));
+  const feeAdjustedRate = adjustedRate * (1 - totalFeePercentage);
+  const daysInMonth = 30;
+  const occupancyRate = occupancyRates[scenario][monthIndex] / 100;
+  
+  return Math.round(feeAdjustedRate * daysInMonth * occupancyRate);
+}
 
 export async function generatePDF(
   data: PropertyData,
