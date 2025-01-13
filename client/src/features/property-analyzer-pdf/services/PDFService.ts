@@ -481,18 +481,18 @@ export async function generatePDF(
   }
 
   // Calculate starting position for next section
-  let nextY = (pdf as any).lastAutoTable.finalY + 30;
+  let metricsY = (pdf as any).lastAutoTable.finalY + 30;
   
   // Check if we need to start a new page
-  if (nextY > pdf.internal.pageSize.height - 100) {
+  if (metricsY > pdf.internal.pageSize.height - 100) {
     pdf.addPage();
-    nextY = 20;
+    metricsY = 20;
   }
   
   pdf.setFontSize(16);
   pdf.setTextColor(0);
-  pdf.text('Cashflow Metrics', 20, nextY);
-  nextY += 15;
+  pdf.text('Cashflow Metrics', 20, metricsY);
+  metricsY += 15;
 
   const addCashflowMetricsTable = (term: 'shortTerm' | 'longTerm', title: string, startY: number) => {
     // Check if we need to start a new page before the table
