@@ -139,27 +139,57 @@ export async function generatePDF(
   pdf.text('Rental Performance', 20, yPosition);
   yPosition += 10;
 
-  const rentalPerformance = [
-    ['Short Term Nightly Rate', formatCurrency(data.performance.shortTermNightlyRate)],
+  // Short Term Performance
+  pdf.setFontSize(14);
+  pdf.text('Short Term Rental', 20, yPosition);
+  yPosition += 10;
+
+  const shortTermPerformance = [
+    ['Nightly Rate', formatCurrency(data.performance.shortTermNightlyRate)],
     ['Annual Occupancy', `${data.performance.annualOccupancy}%`],
-    ['Short Term Annual Revenue', formatCurrency(data.performance.shortTermAnnualRevenue)],
-    ['Long Term Annual Revenue', formatCurrency(data.performance.longTermAnnualRevenue)],
-    ['Long Term Monthly Revenue', formatCurrency(data.performance.longTermAnnualRevenue / 12)],
-    ['Short Term Gross Yield', `${formatPercentage(data.performance.shortTermGrossYield)}%`],
-    ['Long Term Gross Yield', `${formatPercentage(data.performance.longTermGrossYield)}%`]
+    ['Annual Revenue', formatCurrency(data.performance.shortTermAnnualRevenue)],
+    ['Gross Yield', `${formatPercentage(data.performance.shortTermGrossYield)}%`]
   ];
 
   autoTable(pdf, {
     startY: yPosition,
     head: [['Metric', 'Value']],
-    body: rentalPerformance,
+    body: shortTermPerformance,
     margin: { left: 20 },
     styles: {
       rowHeight: 8,
       fontSize: 9
     },
     headStyles: {
-      fillColor: [30, 144, 255], // Proply blue
+      fillColor: [30, 144, 255],
+      textColor: 255
+    }
+  });
+
+  yPosition = (pdf as any).lastAutoTable.finalY + 15;
+
+  // Long Term Performance
+  pdf.setFontSize(14);
+  pdf.text('Long Term Rental', 20, yPosition);
+  yPosition += 10;
+
+  const longTermPerformance = [
+    ['Monthly Revenue', formatCurrency(data.performance.longTermAnnualRevenue / 12)],
+    ['Annual Revenue', formatCurrency(data.performance.longTermAnnualRevenue)],
+    ['Gross Yield', `${formatPercentage(data.performance.longTermGrossYield)}%`]
+  ];
+
+  autoTable(pdf, {
+    startY: yPosition,
+    head: [['Metric', 'Value']],
+    body: longTermPerformance,
+    margin: { left: 20 },
+    styles: {
+      rowHeight: 8,
+      fontSize: 9
+    },
+    headStyles: {
+      fillColor: [30, 144, 255],
       textColor: 255
     }
   });
