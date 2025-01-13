@@ -69,6 +69,7 @@ export default function PropertiesPage() {
     field: 'address',
     direction: 'asc'
   });
+  const [isDeletingProperties, setIsDeletingProperties] = useState(false);
 
   const { data: properties, isLoading: isLoadingProperties } = useQuery<Property[]>({
     queryKey: ['/api/properties'],
@@ -83,11 +84,18 @@ export default function PropertiesPage() {
   const handleDelete = async () => {
     if (!propertyToDelete) return;
 
-    try {
-      const endpoint = activeTab === 'rent_compare'
-        ? `/api/properties/${propertyToDelete.id}`
-        : `/api/property-analyzer/properties/${propertyToDelete.id}`;
+    setIsDeletingProperties(true);
+    const endpoint = activeTab === 'rent_compare'
+      ? `/api/properties/${propertyToDelete.id}`
+      : `/api/property-analyzer/properties/${propertyToDelete.id}`;
 
+    // Optimistically update UI
+    queryClient.setQueryData<(Property | AnalyzerProperty)[]>(
+      [activeTab === 'rent_compare' ? '/api/properties' : '/api/property-analyzer/properties'],
+      (oldData) => oldData?.filter(p => p.id !== propertyToDelete.id) ?? []
+    );
+
+    try {
       const response = await fetch(endpoint, {
         method: 'DELETE',
         credentials: 'include'
@@ -97,48 +105,64 @@ export default function PropertiesPage() {
         throw new Error(await response.text());
       }
 
-      queryClient.invalidateQueries({
-        queryKey: activeTab === 'rent_compare'
-          ? ['/api/properties']
-          : ['/api/property-analyzer/properties']
-      });
-
       setPropertyToDelete(null);
       setDeleteError(null);
     } catch (error) {
+      console.error('Error deleting property:', error);
+      // Revert optimistic update on error
+      queryClient.invalidateQueries({
+        queryKey: [activeTab === 'rent_compare' ? '/api/properties' : '/api/property-analyzer/properties']
+      });
       setDeleteError(error instanceof Error ? error.message : 'Failed to delete property');
+    } finally {
+      setIsDeletingProperties(false);
     }
   };
 
   const handleDeleteSelected = async () => {
     if (!selectedProperties.length) return;
 
+    setIsDeletingProperties(true);
+    // Optimistically update UI by removing selected properties from the list
+    const endpoint = activeTab === 'rent_compare' ? '/api/properties' : '/api/property-analyzer/properties';
+    queryClient.setQueryData<(Property | AnalyzerProperty)[]>([endpoint], (oldData) => {
+      return oldData?.filter(p => !selectedProperties.includes(p.id)) ?? [];
+    });
+
     try {
-      for (const propertyId of selectedProperties) {
+      // Create an array of delete promises for parallel execution
+      const deletePromises = selectedProperties.map(propertyId => {
         const endpoint = activeTab === 'rent_compare'
           ? `/api/properties/${propertyId}`
           : `/api/property-analyzer/properties/${propertyId}`;
 
-        const response = await fetch(endpoint, {
+        return fetch(endpoint, {
           method: 'DELETE',
           credentials: 'include'
+        }).then(response => {
+          if (!response.ok) {
+            throw new Error(`Failed to delete property ${propertyId}`);
+          }
+          return propertyId;
         });
-
-        if (!response.ok) {
-          throw new Error(await response.text());
-        }
-      }
-
-      queryClient.invalidateQueries({
-        queryKey: activeTab === 'rent_compare'
-          ? ['/api/properties']
-          : ['/api/property-analyzer/properties']
       });
 
+      // Execute all delete operations in parallel
+      await Promise.all(deletePromises);
+
+      // Clear selection and errors after successful deletion
       setSelectedProperties([]);
       setDeleteError(null);
     } catch (error) {
+      console.error('Error deleting properties:', error);
+      // Revert optimistic update on error
+      queryClient.invalidateQueries({
+        queryKey: [endpoint]
+      });
       setDeleteError(error instanceof Error ? error.message : 'Failed to delete properties');
+    } finally {
+      setIsDeletingProperties(false);
+      setShowDeleteConfirmation(false);
     }
   };
 
@@ -532,17 +556,25 @@ export default function PropertiesPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
+            <AlertDialogCancel disabled={isDeletingProperties} onClick={() => {
               setShowDeleteConfirmation(false);
               setPropertyToDelete(null);
             }}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-red-500 hover:bg-red-600 disabled:bg-red-300"
               onClick={handleDeleteConfirmed}
+              disabled={isDeletingProperties}
             >
-              Delete
+              {isDeletingProperties ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                  Deleting...
+                </div>
+              ) : (
+                'Delete'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
