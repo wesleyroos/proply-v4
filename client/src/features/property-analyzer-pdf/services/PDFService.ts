@@ -144,6 +144,7 @@ export async function generatePDF(
     ['Annual Occupancy', `${data.performance.annualOccupancy}%`],
     ['Short Term Annual Revenue', formatCurrency(data.performance.shortTermAnnualRevenue)],
     ['Long Term Annual Revenue', formatCurrency(data.performance.longTermAnnualRevenue)],
+    ['Long Term Monthly Revenue', formatCurrency(data.performance.longTermAnnualRevenue / 12)],
     ['Short Term Gross Yield', `${formatPercentage(data.performance.shortTermGrossYield)}%`],
     ['Long Term Gross Yield', `${formatPercentage(data.performance.longTermGrossYield)}%`]
   ];
