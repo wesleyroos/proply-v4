@@ -498,8 +498,8 @@ export async function generatePDF(
     
     const tableData = [
       ['Annual Revenue', ...years.map(year => formatCurrency(revenueData[`year${year}`] || 0))],
-      ['Net Operating Income', ...metrics.map(m => formatCurrency(m.netYield * data.purchasePrice / 100))],
-      ['Annual Bond Payment', ...Array(7).fill(formatCurrency(data.monthlyBondRepayment * 12))],
+      ['Net Operating Income', ...years.map(year => formatCurrency(revenueData[`year${year}`] - (data.operatingExpenses[`year${year}`] || 0)))],
+      ['Annual Bond Payment', ...years.map(() => formatCurrency(data.monthlyBondRepayment * 12))],
       ['Annual Cashflow', ...metrics.map(m => formatCurrency(m.netWorthChange || 0))],
       ['Cumulative Cashflow', ...metrics.map((m, i) => 
         formatCurrency(metrics.slice(0, i + 1).reduce((sum, curr) => sum + (curr.netWorthChange || 0), 0))
