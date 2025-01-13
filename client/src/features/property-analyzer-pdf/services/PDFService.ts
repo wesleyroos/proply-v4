@@ -205,11 +205,20 @@ export async function generatePDF(
   const baseRate = data.performance.shortTermNightlyRate;
   const platformFee = data.expenses.managementFee || 0;
 
+  const occupancyRates = {
+    low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70],
+    medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85],
+    high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
+  };
+
   const monthlyPerformance = months.map((month, index) => {
     const lowRev = calculateMonthlyRevenue('low', index, baseRate, true, platformFee);
     const medRev = calculateMonthlyRevenue('medium', index, baseRate, true, platformFee);
     const highRev = calculateMonthlyRevenue('high', index, baseRate, true, platformFee);
     const longTerm = data.performance.longTermAnnualRevenue / 12;
+    const lowOcc = occupancyRates.low[index];
+    const medOcc = occupancyRates.medium[index];
+    const highOcc = occupancyRates.high[index];
 
     const seasonalRates = {
       peak: 1.2,
