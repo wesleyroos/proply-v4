@@ -78,9 +78,9 @@ export async function generatePDF(
     ['Address', data.propertyDetails.address],
     ['Purchase Price', formatCurrency(data.propertyDetails.purchasePrice)],
     ['Floor Area', `${data.propertyDetails.floorArea}m²`],
-    ['Current Property Rate/m²', formatCurrency(data.propertyDetails.ratePerSquareMeter)],
-    ['Area Rate/m²', formatCurrency(data.propertyDetails.areaRate)],
-    ['Rate/m² Difference', formatCurrency(data.propertyDetails.rateDifference)],
+    ['Current Property Rate/m²', formatCurrency(data.propertyDetails.purchasePrice / data.propertyDetails.floorArea)],
+    ['Area Rate/m²', formatCurrency(data.propertyDetails.ratePerSquareMeter)],
+    ['Rate/m² Difference', formatCurrency(data.propertyDetails.ratePerSquareMeter - (data.propertyDetails.purchasePrice / data.propertyDetails.floorArea))],
     ['Bedrooms', data.propertyDetails.bedrooms.toString()],
     ['Bathrooms', data.propertyDetails.bathrooms.toString()],
     ['Parking Spaces', data.propertyDetails.parkingSpaces.toString()]
