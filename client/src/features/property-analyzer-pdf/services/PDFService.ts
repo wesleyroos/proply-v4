@@ -346,17 +346,13 @@ export async function generatePDF(
   pdf.addImage(lineChartCanvas.toDataURL(), 'PNG', 20, yPosition, 170, 80);
   yPosition += 90;
 
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const baseRate = data.performance.shortTermNightlyRate;
-  const platformFee = data.expenses.managementFee || 0;
-
   const occupancyRates = {
     low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70],
     medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85],
     high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
   };
 
-  const monthlyPerformance = months.map((month, index) => {
+  monthlyPerformance = months.map((month, index) => {
     const lowOcc = OCCUPANCY_RATES.low[index];
     const medOcc = OCCUPANCY_RATES.medium[index];
     const highOcc = OCCUPANCY_RATES.high[index];
