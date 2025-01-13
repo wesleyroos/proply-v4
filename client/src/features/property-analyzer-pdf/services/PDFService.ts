@@ -458,14 +458,13 @@ export async function generatePDF(
   });
 
   // Add page numbers
-  // Add page numbers after all content is added
-  const totalPages = pdf.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
+  const pageCount = pdf.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
     pdf.setPage(i);
     pdf.setFontSize(8);
     pdf.setTextColor(100);
     pdf.text(
-      `Page ${i} of ${totalPages}`,
+      `Page ${i} of ${pageCount}`,
       pdf.internal.pageSize.getWidth() - 20,
       pdf.internal.pageSize.getHeight() - 10,
       { align: 'right' }
