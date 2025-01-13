@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { PropertyData, ReportSelections } from '../types/propertyReport';
-import { formatCurrency, formatPercentage } from '../utils/formatting';
+import { formatCurrency, formatPercentage, calculateMonthlyRevenue } from '../utils/formatting'; // Import calculateMonthlyRevenue
 
 export async function generatePDF(
   data: PropertyData,
@@ -92,7 +92,7 @@ export async function generatePDF(
     body: propertyDetails,
     margin: { left: 20 },
     styles: {
-      rowHeight: 8,
+      minCellHeight: 8, // Updated to minCellHeight
       fontSize: 9
     },
     headStyles: {
@@ -123,7 +123,7 @@ export async function generatePDF(
     body: financialMetrics,
     margin: { left: 20 },
     styles: {
-      rowHeight: 8,
+      minCellHeight: 8, // Updated to minCellHeight
       fontSize: 9
     },
     headStyles: {
@@ -157,7 +157,7 @@ export async function generatePDF(
     body: shortTermPerformance,
     margin: { left: 20 },
     styles: {
-      rowHeight: 8,
+      minCellHeight: 8, // Updated to minCellHeight
       fontSize: 9
     },
     headStyles: {
@@ -185,7 +185,7 @@ export async function generatePDF(
     body: longTermPerformance,
     margin: { left: 20 },
     styles: {
-      rowHeight: 8,
+      minCellHeight: 8, // Updated to minCellHeight
       fontSize: 9
     },
     headStyles: {
@@ -280,7 +280,7 @@ export async function generatePDF(
     body: monthlyPerformance,
     margin: { left: 20 },
     styles: {
-      rowHeight: 7,
+      minCellHeight: 7, // Updated to minCellHeight
       fontSize: 6,
       cellWidth: 'auto',
       cellPadding: 1
@@ -357,7 +357,7 @@ async function addOperatingExpenses(
       body: expenses,
       margin: { left: 20 },
       styles: {
-        rowHeight: 8,
+        minCellHeight: 8, // Updated to minCellHeight
         fontSize: 9
       },
       headStyles: {
@@ -401,7 +401,7 @@ async function addCashflowAnalysis(
       body: cashflow,
       margin: { left: 20 },
       styles: {
-        rowHeight: 8,
+        minCellHeight: 8, // Updated to minCellHeight
         fontSize: 9
       },
       headStyles: {
