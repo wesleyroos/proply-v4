@@ -495,11 +495,11 @@ export async function generatePDF(
     const years = [1, 2, 3, 4, 5, 10, 20];
     const metrics = data.investmentMetrics?.[term] || [];
     const revenueData = data.revenueProjections?.[term] || {};
-    
+
     const tableData = [
       ['Annual Revenue', ...years.map(year => formatCurrency(revenueData[`year${year}`] || 0))],
       ['Net Operating Income', ...years.map(year => formatCurrency(revenueData[`year${year}`] - (data.operatingExpenses[`year${year}`] || 0)))],
-      ['Annual Bond Payment', ...years.map(() => formatCurrency(data.monthlyBondRepayment * 12))],
+      ['Annual Bond Payment', ...years.map(() => formatCurrency(data.financialMetrics.monthlyBondRepayment * 12))],
       ['Annual Cashflow', ...metrics.map(m => formatCurrency(m.netWorthChange || 0))],
       ['Cumulative Cashflow', ...metrics.map((m, i) => 
         formatCurrency(metrics.slice(0, i + 1).reduce((sum, curr) => sum + (curr.netWorthChange || 0), 0))
