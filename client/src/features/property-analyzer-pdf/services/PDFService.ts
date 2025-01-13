@@ -458,13 +458,6 @@ export async function generatePDF(
     }
   });
 
-  // Add Cashflow Metrics Section
-  pdf.addPage();
-  pdf.setFontSize(16);
-  pdf.setTextColor(0);
-  pdf.text('Cashflow Metrics', 20, 20);
-  let metricsY = 35;
-
   // Add page numbers after all content has been added
   const totalPages = pdf.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
@@ -486,6 +479,13 @@ export async function generatePDF(
   if (selections.includeWatermark) {
     addWatermark(pdf, "Property Analysis Report");
   }
+
+  // Add Cashflow Metrics Section
+  pdf.addPage();
+  pdf.setFontSize(16);
+  pdf.setTextColor(0);
+  pdf.text('Cashflow Metrics', 20, 30);
+  let metricsY = 45;
 
   const addCashflowMetricsTable = (term: 'shortTerm' | 'longTerm', title: string, startY: number) => {
     pdf.setFontSize(14);
