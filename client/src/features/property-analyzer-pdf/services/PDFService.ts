@@ -311,8 +311,16 @@ export async function generatePDF(
     addWatermark(pdf, "Property Analysis Report");
   }
 
-  // Save the PDF
-  pdf.save(`${data.propertyDetails.address}_analysis.pdf`);
+  // Save the PDF with forced download
+  const pdfOutput = pdf.output('blob');
+  const url = URL.createObjectURL(pdfOutput);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${data.propertyDetails.address.replace(/[^a-zA-Z0-9]/g, '_')}_analysis.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 
