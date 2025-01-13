@@ -275,7 +275,7 @@ export async function generatePDF(
   const chartWidth = pdf.internal.pageSize.getWidth() - 40;
   const chartHeight = 80;
   const chartMargin = { top: 10, right: 10, bottom: 20, left: 40 };
-  
+
   // Calculate max value for Y axis scale
   const allRevenues = monthlyPerformance.slice(0, 12).flatMap(row => [
     parseFloat(row[5].replace(/[^0-9.-]+/g, '')), 
@@ -285,7 +285,7 @@ export async function generatePDF(
   ]);
   const maxRevenue = Math.max(...allRevenues);
   const yScale = (chartHeight - chartMargin.top - chartMargin.bottom) / maxRevenue;
-  
+
   // Draw axes
   pdf.setDrawColor(200);
   pdf.setLineWidth(0.1);
@@ -298,11 +298,11 @@ export async function generatePDF(
     pdf.setLineWidth(0.5);
     let started = false;
     const xStep = (chartWidth - chartMargin.left - chartMargin.right) / 11;
-    
+
     for (let i = 0; i < 12; i++) {
       const x = 20 + chartMargin.left + (i * xStep);
       const y = yPosition + chartHeight - chartMargin.bottom - (data[i] * yScale);
-      
+
       if (!started) {
         pdf.moveTo(x, y);
         started = true;
@@ -326,40 +326,6 @@ export async function generatePDF(
 
   yPosition += chartHeight + 10;
 
-  const lowOcc = OCCUPANCY_RATES.low[index];
-    const medOcc = OCCUPANCY_RATES.medium[index];
-    const highOcc = OCCUPANCY_RATES.high[index];
-    const monthlyLongTerm = data.performance.longTermAnnualRevenue / 12;
-
-    // Get seasonal nightly rate
-    const baseRate = data.performance.shortTermNightlyRate;
-    const seasonalRate = baseRate * SEASONALITY_FACTORS[index];
-
-    // Calculate platform fee amount (15% if managed, 3% if not)
-    const platformFeeRate = data.expenses.managementFee > 0 ? 0.15 : 0.03;
-    const platformFeeAmount = seasonalRate * platformFeeRate;
-    const feeAdjustedRate = seasonalRate * (1 - platformFeeRate);
-
-    // Calculate monthly revenue for each occupancy scenario
-    const daysInMonth = 30; // Using 30 days for consistency
-    const lowRevenue = feeAdjustedRate * daysInMonth * (lowOcc / 100);
-    const medRevenue = feeAdjustedRate * daysInMonth * (medOcc / 100);
-    const highRevenue = feeAdjustedRate * daysInMonth * (highOcc / 100);
-
-    return [
-      month,
-      formatCurrency(seasonalRate),
-      formatCurrency(platformFeeAmount),
-      formatCurrency(feeAdjustedRate),
-      `${lowOcc}%`,
-      formatCurrency(lowRevenue),
-      `${medOcc}%`, 
-      formatCurrency(medRevenue),
-      `${highOcc}%`,
-      formatCurrency(highRevenue),
-      formatCurrency(monthlyLongTerm)
-    ];
-  });
 
   // Add total row
   monthlyPerformance.push([
