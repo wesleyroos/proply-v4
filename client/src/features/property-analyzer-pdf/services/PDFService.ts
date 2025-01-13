@@ -264,17 +264,7 @@ export async function generatePDF(
       formatCurrency(monthlyShortTerm * 1.2),
       formatCurrency(monthlyLongTerm)
     ];
-      formatCurrency(seasonalRate),
-      `${platformFee}%`,
-      formatCurrency(feeAdjustedRate),
-      `${(lowOcc * 100).toFixed(0)}%`,
-      formatCurrency(lowRev),
-      `${(medOcc * 100).toFixed(0)}%`,
-      formatCurrency(medRev),
-      `${(highOcc * 100).toFixed(0)}%`,
-      formatCurrency(highRev),
-      formatCurrency(longTerm)
-    ];
+      ];
   });
 
   // Add total row
