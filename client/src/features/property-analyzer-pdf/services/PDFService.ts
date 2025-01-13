@@ -504,10 +504,6 @@ export async function generatePDF(
       ['Cumulative Cashflow', ...metrics.map((m, i) => 
         formatCurrency(metrics.slice(0, i + 1).reduce((sum, curr) => sum + (curr.netWorthChange || 0), 0))
       )]
-      ['Net Operating Income', ...metrics.map(m => formatCurrency(m.netYield * data.purchasePrice / 100))],
-      ['Annual Bond Payment', ...Array(7).fill(formatCurrency(data.monthlyBondRepayment * 12))],
-      ['Annual Cashflow', ...metrics.map(m => formatCurrency(m.netWorthChange))],
-      ['Cumulative Cashflow', ...metrics.map((m, i) => formatCurrency(metrics.slice(0, i + 1).reduce((sum, curr) => sum + curr.netWorthChange, 0)))]
     ];
 
     autoTable(pdf, {
