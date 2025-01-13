@@ -32,7 +32,7 @@ function calculateMonthlyRevenue(scenario: 'low' | 'medium' | 'high', monthIndex
   const feeAdjustedRate = adjustedRate * (1 - totalFeePercentage);
   const daysInMonth = 30;
   const occupancyRate = occupancyRates[scenario][monthIndex] / 100;
-  
+
   return Math.round(feeAdjustedRate * daysInMonth * occupancyRate);
 }
 
@@ -249,11 +249,11 @@ export async function generatePDF(
     const medOcc = OCCUPANCY_RATES.medium[index];
     const highOcc = OCCUPANCY_RATES.high[index];
     const monthlyLongTerm = data.performance.longTermAnnualRevenue / 12;
-    
+
     // Get seasonal nightly rate
     const baseRate = data.performance.shortTermNightlyRate;
     const seasonalRate = baseRate * SEASONALITY_FACTORS[index];
-    
+
     // Calculate platform fee amount (15% if managed, 3% if not)
     const platformFeeRate = data.expenses.managementFee > 0 ? 0.15 : 0.03;
     const platformFeeAmount = seasonalRate * platformFeeRate;
@@ -264,7 +264,7 @@ export async function generatePDF(
     const lowRevenue = feeAdjustedRate * daysInMonth * (lowOcc / 100);
     const medRevenue = feeAdjustedRate * daysInMonth * (medOcc / 100);
     const highRevenue = feeAdjustedRate * daysInMonth * (highOcc / 100);
-    
+
     return [
       month,
       formatCurrency(seasonalRate),
@@ -331,6 +331,17 @@ export async function generatePDF(
       7: { fillColor: [255, 251, 235] },
       9: { fillColor: [240, 253, 244] },
       10: { fillColor: [239, 246, 255] }
+    },
+    didParseCell: function(data) {
+      // Make total and average rows bold
+      if (data.row.index === monthlyPerformance.length - 2 ||
+          data.row.index === monthlyPerformance.length - 1) {
+        data.cell.styles.fontStyle = 'bold';
+        data.cell.styles.font = 'helvetica';
+        data.cell.styles.fontStyle = 'bold';
+        data.cell.styles.fillColor = [243, 244, 246];
+        data.cell.styles.textColor = [31, 41, 55];
+      }
     }
   });
 
