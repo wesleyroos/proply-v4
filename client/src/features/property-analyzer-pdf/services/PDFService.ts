@@ -245,19 +245,25 @@ export async function generatePDF(
   };
 
   const monthlyPerformance = months.map((month, index) => {
-    const isManaged = data.expenses.managementFee > 0;
-    const seasonalRate = getSeasonalNightlyRate(baseRate, index);
-    const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, isManaged);
-    const lowRev = calculateMonthlyRevenue('low', index, baseRate, isManaged);
-    const medRev = calculateMonthlyRevenue('medium', index, baseRate, isManaged);
-    const highRev = calculateMonthlyRevenue('high', index, baseRate, isManaged);
-    const longTerm = data.performance.longTermAnnualRevenue / 12;
     const lowOcc = OCCUPANCY_RATES.low[index];
     const medOcc = OCCUPANCY_RATES.medium[index];
     const highOcc = OCCUPANCY_RATES.high[index];
-
+    const monthlyShortTerm = data.performance.shortTermAnnualRevenue / 12;
+    const monthlyLongTerm = data.performance.longTermAnnualRevenue / 12;
+    
     return [
       month,
+      formatCurrency(data.performance.shortTermNightlyRate),
+      `${data.expenses.managementFee}%`,
+      formatCurrency(data.performance.shortTermNightlyRate * (1 - data.expenses.managementFee / 100)),
+      `${lowOcc}%`,
+      formatCurrency(monthlyShortTerm * 0.8),
+      `${medOcc}%`, 
+      formatCurrency(monthlyShortTerm),
+      `${highOcc}%`,
+      formatCurrency(monthlyShortTerm * 1.2),
+      formatCurrency(monthlyLongTerm)
+    ];
       formatCurrency(seasonalRate),
       `${platformFee}%`,
       formatCurrency(feeAdjustedRate),
