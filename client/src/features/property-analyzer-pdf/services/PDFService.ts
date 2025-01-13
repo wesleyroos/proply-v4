@@ -202,16 +202,71 @@ export async function generatePDF(
   yPosition += 10;
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const monthlyPerformance = [
-    ['Revenue Low', ...months.map(m => formatCurrency(data.monthlyRevenue?.low?.[months.indexOf(m)] || 0))],
-    ['Revenue Medium', ...months.map(m => formatCurrency(data.monthlyRevenue?.medium?.[months.indexOf(m)] || 0))],
-    ['Revenue High', ...months.map(m => formatCurrency(data.monthlyRevenue?.high?.[months.indexOf(m)] || 0))],
-    ['Long Term', ...Array(12).fill(formatCurrency(data.performance.longTermAnnualRevenue / 12))]
-  ];
+  const baseRate = data.performance.shortTermNightlyRate;
+  const platformFee = data.expenses.managementFee || 0;
+
+  const monthlyPerformance = months.map((month, index) => {
+    const seasonalRate = baseRate * (1 + (index >= 11 || index <= 1 ? 0.2 : index >= 5 && index <= 7 ? -0.1 : 0));
+    const feeAdjustedRate = seasonalRate * (1 - platformFee / 100);
+    const daysInMonth = new Date(2024, index + 1, 0).getDate();
+    
+    const lowOcc = 0.45;
+    const medOcc = 0.65;
+    const highOcc = 0.85;
+    
+    const lowRev = feeAdjustedRate * daysInMonth * lowOcc;
+    const medRev = feeAdjustedRate * daysInMonth * medOcc;
+    const highRev = feeAdjustedRate * daysInMonth * highOcc;
+    const longTerm = data.performance.longTermAnnualRevenue / 12;
+
+    return [
+      month,
+      formatCurrency(seasonalRate),
+      `${platformFee}%`,
+      formatCurrency(feeAdjustedRate),
+      `${(lowOcc * 100).toFixed(0)}%`,
+      formatCurrency(lowRev),
+      `${(medOcc * 100).toFixed(0)}%`,
+      formatCurrency(medRev),
+      `${(highOcc * 100).toFixed(0)}%`,
+      formatCurrency(highRev),
+      formatCurrency(longTerm)
+    ];
+  });
+
+  // Add total row
+  monthlyPerformance.push([
+    'Total',
+    '-',
+    '-',
+    '-',
+    '-',
+    formatCurrency(monthlyPerformance.reduce((sum, row) => sum + parseFloat(row[5].replace(/[^0-9.-]+/g, '')), 0)),
+    '-',
+    formatCurrency(monthlyPerformance.reduce((sum, row) => sum + parseFloat(row[7].replace(/[^0-9.-]+/g, '')), 0)),
+    '-',
+    formatCurrency(monthlyPerformance.reduce((sum, row) => sum + parseFloat(row[9].replace(/[^0-9.-]+/g, '')), 0)),
+    formatCurrency(data.performance.longTermAnnualRevenue)
+  ]);
+
+  // Add average row
+  monthlyPerformance.push([
+    'Average',
+    formatCurrency(baseRate),
+    `${platformFee}%`,
+    formatCurrency(baseRate * (1 - platformFee / 100)),
+    '45%',
+    formatCurrency(monthlyPerformance[12][5].replace(/[^0-9.-]+/g, '') / 12),
+    '65%',
+    formatCurrency(monthlyPerformance[12][7].replace(/[^0-9.-]+/g, '') / 12),
+    '85%',
+    formatCurrency(monthlyPerformance[12][9].replace(/[^0-9.-]+/g, '') / 12),
+    formatCurrency(data.performance.longTermAnnualRevenue / 12)
+  ]);
 
   autoTable(pdf, {
     startY: yPosition,
-    head: [['Revenue Type', ...months]],
+    head: [['Month', 'Nightly Rate', 'Platform Fee', 'Adj Rate', 'Low Occ', 'Low Rev', 'Med Occ', 'Med Rev', 'High Occ', 'High Rev', 'Long Term']],
     body: monthlyPerformance,
     margin: { left: 20 },
     styles: {
@@ -224,6 +279,12 @@ export async function generatePDF(
       fillColor: [30, 144, 255],
       textColor: 255,
       fontSize: 7
+    },
+    columnStyles: {
+      5: { fillColor: [254, 242, 242] },
+      7: { fillColor: [255, 251, 235] },
+      9: { fillColor: [240, 253, 244] },
+      10: { fillColor: [239, 246, 255] }
     }
   });
 
