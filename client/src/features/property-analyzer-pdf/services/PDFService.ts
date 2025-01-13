@@ -480,17 +480,28 @@ export async function generatePDF(
     addWatermark(pdf, "Property Analysis Report");
   }
 
-  // Start new sections on the same page with proper spacing
-  let metricsY = (pdf as any).lastAutoTable.finalY + 20;
+  // Calculate starting position for next section
+  let nextY = (pdf as any).lastAutoTable.finalY + 30;
+  
+  // Check if we need to start a new page
+  if (nextY > pdf.internal.pageSize.height - 100) {
+    pdf.addPage();
+    nextY = 20;
+  }
   
   pdf.setFontSize(16);
   pdf.setTextColor(0);
-  pdf.text('Cashflow Metrics', 20, metricsY);
-  metricsY += 15;
+  pdf.text('Cashflow Metrics', 20, nextY);
+  nextY += 15;
 
   const addCashflowMetricsTable = (term: 'shortTerm' | 'longTerm', title: string, startY: number) => {
+    // Check if we need to start a new page before the table
+    if (startY > pdf.internal.pageSize.height - 150) {
+      pdf.addPage();
+      startY = 20;
+    }
+    
     pdf.setFontSize(14);
-    const tableStartY = startY + 10;
     pdf.text(title, 20, startY);
     startY += 10;
 
