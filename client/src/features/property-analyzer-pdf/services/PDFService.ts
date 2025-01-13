@@ -347,45 +347,7 @@ export async function generatePDF(
   yPosition += 90;
 
 
-  // Add Cashflow Metrics Tables
-  const addCashflowMetricsTable = (term: 'shortTerm' | 'longTerm', title: string) => {
-    pdf.setFontSize(14);
-    pdf.text(title, 20, yPosition);
-    yPosition += 10;
-
-    const years = [1, 2, 3, 4, 5, 10, 20];
-    const metrics = ['Annual Revenue', 'Net Operating Expenses', 'Net Operating Income', 'Annual Bond Payment', 'Annual Cashflow', 'Cumulative Cashflow'];
-    const tableData = metrics.map(metric => {
-      const yearData = years.map(year => {
-        const metricKey = metric.toLowerCase().replace(/ /g, '');
-        if (term === 'shortTerm') {
-          return formatCurrency(data.performance.shortTermAnnualRevenue * (1 + (0.08 * (year - 1))));
-        } else {
-          return formatCurrency(data.performance.longTermAnnualRevenue * (1 + (0.08 * (year - 1))));
-        }
-      });
-      return [metric, ...yearData];
-    });
-
-    autoTable(pdf, {
-      startY: yPosition,
-      head: [['Metric', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5', 'Year 10', 'Year 20']],
-      body: tableData,
-      margin: { left: 20 },
-      styles: {
-        minCellHeight: 8,
-        fontSize: 9
-      },
-      headStyles: {
-        fillColor: [30, 144, 255],
-        textColor: 255
-      }
-    });
-    yPosition = (pdf as any).lastAutoTable.finalY + 15;
-  };
-
-  addCashflowMetricsTable('shortTerm', 'Short Term Cashflow Metrics');
-  addCashflowMetricsTable('longTerm', 'Long Term Cashflow Metrics');
+  // Add Monthly Performance Table
 
 
   const occupancyRates = {
@@ -507,6 +469,52 @@ export async function generatePDF(
   if (selections.includeWatermark) {
     addWatermark(pdf, "Property Analysis Report");
   }
+
+  // Add Cashflow Metrics Section
+  pdf.addPage();
+  pdf.setFontSize(16);
+  pdf.setTextColor(0);
+  pdf.text('Cashflow Metrics', 20, 30);
+  let metricsY = 45;
+
+  const addCashflowMetricsTable = (term: 'shortTerm' | 'longTerm', title: string, startY: number) => {
+    pdf.setFontSize(14);
+    pdf.text(title, 20, startY);
+    startY += 10;
+
+    const years = [1, 2, 3, 4, 5, 10, 20];
+    const metrics = ['Annual Revenue', 'Net Operating Expenses', 'Net Operating Income', 'Annual Bond Payment', 'Annual Cashflow', 'Cumulative Cashflow'];
+    const tableData = metrics.map(metric => {
+      const yearData = years.map(year => {
+        const metricKey = metric.toLowerCase().replace(/ /g, '');
+        if (term === 'shortTerm') {
+          return formatCurrency(data.performance.shortTermAnnualRevenue * (1 + (0.08 * (year - 1))));
+        } else {
+          return formatCurrency(data.performance.longTermAnnualRevenue * (1 + (0.08 * (year - 1))));
+        }
+      });
+      return [metric, ...yearData];
+    });
+
+    autoTable(pdf, {
+      startY: startY,
+      head: [['Metric', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5', 'Year 10', 'Year 20']],
+      body: tableData,
+      margin: { left: 20 },
+      styles: {
+        minCellHeight: 8,
+        fontSize: 9
+      },
+      headStyles: {
+        fillColor: [30, 144, 255],
+        textColor: 255
+      }
+    });
+    return (pdf as any).lastAutoTable.finalY + 15;
+  };
+
+  metricsY = addCashflowMetricsTable('shortTerm', 'Short Term Cashflow Metrics', metricsY);
+  metricsY = addCashflowMetricsTable('longTerm', 'Long Term Cashflow Metrics', metricsY);
 
   const currentYear = new Date().getFullYear();
   const disclaimerText = [
