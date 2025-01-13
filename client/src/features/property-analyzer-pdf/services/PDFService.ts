@@ -356,7 +356,15 @@ export async function generatePDF(
     const years = [1, 2, 3, 4, 5, 10, 20];
     const metrics = ['Annual Revenue', 'Net Operating Expenses', 'Net Operating Income', 'Annual Bond Payment', 'Annual Cashflow', 'Cumulative Cashflow'];
     const tableData = metrics.map(metric => {
-      return [metric, ...years.map(year => formatCurrency(data.cashflowMetrics[term][metric][`year${year}`] || 0))];
+      const yearData = years.map(year => {
+        const metricKey = metric.toLowerCase().replace(/ /g, '');
+        if (term === 'shortTerm') {
+          return formatCurrency(data.performance.shortTermAnnualRevenue * (1 + (0.08 * (year - 1))));
+        } else {
+          return formatCurrency(data.performance.longTermAnnualRevenue * (1 + (0.08 * (year - 1))));
+        }
+      });
+      return [metric, ...yearData];
     });
 
     autoTable(pdf, {
