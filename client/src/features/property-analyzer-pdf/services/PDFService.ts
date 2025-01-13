@@ -2,7 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { PropertyData, ReportSelections } from '../types/propertyReport';
 import { formatCurrency, formatPercentage } from '../utils/formatting';
-import { getSeasonalNightlyRate, getFeeAdjustedRate, calculateMonthlyRevenue, OCCUPANCY_RATES } from '@/utils/rentalPerformance';
+import { getSeasonalNightlyRate, getFeeAdjustedRate, calculateMonthlyRevenue, OCCUPANCY_RATES, SEASONALITY_FACTORS } from '@/utils/rentalPerformance';
 
 function calculateMonthlyRevenue(scenario: 'low' | 'medium' | 'high', monthIndex: number, baseRate: number, withPlatformFee: boolean, managementFee: number): number {
   const occupancyRates = {
