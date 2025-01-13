@@ -168,6 +168,7 @@ export async function generatePDF(
   yPosition = (pdf as any).lastAutoTable.finalY + 15;
 
   // Rental Performance
+  pdf.addPage(); // Add page break before Rental Performance section
   pdf.setFontSize(16);
   pdf.text('Rental Performance', 20, yPosition);
   yPosition += 10;
@@ -457,19 +458,22 @@ export async function generatePDF(
     }
   });
 
-  // Add page numbers
-  const pageCount = pdf.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
+  // Add page numbers after all content has been added
+  const totalPages = pdf.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
     pdf.setPage(i);
     pdf.setFontSize(8);
     pdf.setTextColor(100);
     pdf.text(
-      `Page ${i} of ${pageCount}`,
+      `Page ${i} of ${totalPages}`,
       pdf.internal.pageSize.getWidth() - 20,
       pdf.internal.pageSize.getHeight() - 10,
       { align: 'right' }
     );
   }
+
+  // Set back to first page
+  pdf.setPage(1);
 
   // Add finishing touches
   if (selections.includeWatermark) {
