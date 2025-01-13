@@ -62,7 +62,7 @@ export async function generatePDF(
   }
 
   yPosition = Math.max(yPosition, 60); // Ensure minimum spacing from top
-  
+
   // Add title
   pdf.setFontSize(20);
   pdf.setTextColor(0);
@@ -89,8 +89,8 @@ export async function generatePDF(
     body: propertyDetails,
     margin: { left: 20 },
     styles: {
-      rowHeight: 12,
-      fontSize: 10
+      rowHeight: 8,
+      fontSize: 9
     },
     headStyles: {
       fillColor: [30, 144, 255], // Proply blue
@@ -120,8 +120,8 @@ export async function generatePDF(
     body: financialMetrics,
     margin: { left: 20 },
     styles: {
-      rowHeight: 12,
-      fontSize: 10
+      rowHeight: 8,
+      fontSize: 9
     },
     headStyles: {
       fillColor: [30, 144, 255], // Proply blue
@@ -151,8 +151,8 @@ export async function generatePDF(
     body: rentalPerformance,
     margin: { left: 20 },
     styles: {
-      rowHeight: 12,
-      fontSize: 10
+      rowHeight: 8,
+      fontSize: 9
     },
     headStyles: {
       fillColor: [30, 144, 255], // Proply blue
@@ -183,8 +183,8 @@ export async function generatePDF(
     body: investmentMetrics,
     margin: { left: 20 },
     styles: {
-      rowHeight: 12,
-      fontSize: 10
+      rowHeight: 8,
+      fontSize: 9
     },
     headStyles: {
       fillColor: [30, 144, 255], // Proply blue
@@ -212,8 +212,8 @@ export async function generatePDF(
     body: projections,
     margin: { left: 20 },
     styles: {
-      rowHeight: 12,
-      fontSize: 10
+      rowHeight: 8,
+      fontSize: 9
     },
     headStyles: {
       fillColor: [30, 144, 255], // Proply blue
@@ -272,8 +272,8 @@ async function addOperatingExpenses(
       body: expenses,
       margin: { left: 20 },
       styles: {
-        rowHeight: 12,
-        fontSize: 10
+        rowHeight: 8,
+        fontSize: 9
       },
       headStyles: {
         fillColor: [30, 144, 255], // Proply blue
@@ -316,8 +316,8 @@ async function addCashflowAnalysis(
       body: cashflow,
       margin: { left: 20 },
       styles: {
-        rowHeight: 12,
-        fontSize: 10
+        rowHeight: 8,
+        fontSize: 9
       },
       headStyles: {
         fillColor: [30, 144, 255], // Proply blue
