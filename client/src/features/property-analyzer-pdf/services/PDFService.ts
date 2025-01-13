@@ -215,75 +215,15 @@ export async function generatePDF(
     body: monthlyPerformance,
     margin: { left: 20 },
     styles: {
-      rowHeight: 8,
-      fontSize: 8,
+      rowHeight: 7,
+      fontSize: 6,
       cellWidth: 'auto',
-      cellPadding: 2
+      cellPadding: 1
     },
     headStyles: {
       fillColor: [30, 144, 255],
-      textColor: 255
-    }
-  });
-
-  yPosition = (pdf as any).lastAutoTable.finalY + 15;
-
-  // Investment Metrics (Year 1)
-  pdf.setFontSize(16);
-  pdf.text('Investment Metrics (Year 1)', 20, yPosition);
-  yPosition += 10;
-
-  const shortTermMetrics = data.investmentMetrics.shortTerm[0];
-  const investmentMetrics = [
-    ['Gross Yield', `${formatPercentage(shortTermMetrics.grossYield)}%`],
-    ['Net Yield', `${formatPercentage(shortTermMetrics.netYield)}%`],
-    ['Return on Equity', `${formatPercentage(shortTermMetrics.returnOnEquity)}%`],
-    ['Cap Rate', `${formatPercentage(shortTermMetrics.capRate)}%`],
-    ['IRR', `${formatPercentage(shortTermMetrics.irr)}%`],
-    ['Net Worth Change', formatCurrency(shortTermMetrics.netWorthChange)]
-  ];
-
-  autoTable(pdf, {
-    startY: yPosition,
-    head: [['Metric', 'Value']],
-    body: investmentMetrics,
-    margin: { left: 20 },
-    styles: {
-      rowHeight: 8,
-      fontSize: 9
-    },
-    headStyles: {
-      fillColor: [30, 144, 255], // Proply blue
-      textColor: 255
-    }
-  });
-
-  yPosition = (pdf as any).lastAutoTable.finalY + 15;
-
-  // Revenue Projections
-  pdf.setFontSize(16);
-  pdf.text('Revenue Projections', 20, yPosition);
-  yPosition += 10;
-
-  const projections = [
-    ['Year 1', formatCurrency(data.revenueProjections.shortTerm.year1), formatCurrency(data.revenueProjections.longTerm.year1)],
-    ['Year 5', formatCurrency(data.revenueProjections.shortTerm.year5), formatCurrency(data.revenueProjections.longTerm.year5)],
-    ['Year 10', formatCurrency(data.revenueProjections.shortTerm.year10), formatCurrency(data.revenueProjections.longTerm.year10)],
-    ['Year 20', formatCurrency(data.revenueProjections.shortTerm.year20), formatCurrency(data.revenueProjections.longTerm.year20)]
-  ];
-
-  autoTable(pdf, {
-    startY: yPosition,
-    head: [['Period', 'Short Term', 'Long Term']],
-    body: projections,
-    margin: { left: 20 },
-    styles: {
-      rowHeight: 8,
-      fontSize: 9
-    },
-    headStyles: {
-      fillColor: [30, 144, 255], // Proply blue
-      textColor: 255
+      textColor: 255,
+      fontSize: 7
     }
   });
 
