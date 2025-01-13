@@ -234,48 +234,11 @@ export async function generatePDF(
   pdf.text('Monthly Revenue Performance', 20, yPosition);
   yPosition += 10;
 
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const monthlyPerformance = months.map((month, index) => {
-    const lowOcc = OCCUPANCY_RATES.low[index];
-    const medOcc = OCCUPANCY_RATES.medium[index];
-    const highOcc = OCCUPANCY_RATES.high[index];
-    const monthlyLongTerm = data.performance.longTermAnnualRevenue / 12;
-
-    // Get seasonal nightly rate
-    const baseRate = data.performance.shortTermNightlyRate;
-    const seasonalRate = baseRate * SEASONALITY_FACTORS[index];
-
-    // Calculate platform fee amount (15% if managed, 3% if not)
-    const platformFeeRate = data.expenses.managementFee > 0 ? 0.15 : 0.03;
-    const platformFeeAmount = seasonalRate * platformFeeRate;
-    const feeAdjustedRate = seasonalRate * (1 - platformFeeRate);
-
-    // Calculate monthly revenue for each occupancy scenario
-    const daysInMonth = 30; // Using 30 days for consistency
-    const lowRevenue = feeAdjustedRate * daysInMonth * (lowOcc / 100);
-    const medRevenue = feeAdjustedRate * daysInMonth * (medOcc / 100);
-    const highRevenue = feeAdjustedRate * daysInMonth * (highOcc / 100);
-
-    return [
-      month,
-      formatCurrency(seasonalRate),
-      formatCurrency(platformFeeAmount),
-      formatCurrency(feeAdjustedRate),
-      `${lowOcc}%`,
-      formatCurrency(lowRevenue),
-      `${medOcc}%`, 
-      formatCurrency(medRevenue),
-      `${highOcc}%`,
-      formatCurrency(highRevenue),
-      formatCurrency(monthlyLongTerm)
-    ];
-  });
-
   // Draw revenue line chart
   const chartWidth = pdf.internal.pageSize.getWidth() - 40;
   const chartHeight = 80;
   const chartMargin = { top: 10, right: 10, bottom: 20, left: 40 };
-
+  
   // Calculate max value for Y axis scale
   const allRevenues = monthlyPerformance.slice(0, 12).flatMap(row => [
     parseFloat(row[5].replace(/[^0-9.-]+/g, '')), 
@@ -285,7 +248,7 @@ export async function generatePDF(
   ]);
   const maxRevenue = Math.max(...allRevenues);
   const yScale = (chartHeight - chartMargin.top - chartMargin.bottom) / maxRevenue;
-
+  
   // Draw axes
   pdf.setDrawColor(200);
   pdf.setLineWidth(0.1);
@@ -298,11 +261,11 @@ export async function generatePDF(
     pdf.setLineWidth(0.5);
     let started = false;
     const xStep = (chartWidth - chartMargin.left - chartMargin.right) / 11;
-
+    
     for (let i = 0; i < 12; i++) {
       const x = 20 + chartMargin.left + (i * xStep);
       const y = yPosition + chartHeight - chartMargin.bottom - (data[i] * yScale);
-
+      
       if (!started) {
         pdf.moveTo(x, y);
         started = true;
@@ -326,7 +289,16 @@ export async function generatePDF(
 
   yPosition += chartHeight + 10;
 
-  // Monthly Performance Calculations
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const baseRate = data.performance.shortTermNightlyRate;
+  const platformFee = data.expenses.managementFee || 0;
+
+  const occupancyRates = {
+    low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70],
+    medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85],
+    high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
+  };
+
   const monthlyPerformance = months.map((month, index) => {
     const lowOcc = OCCUPANCY_RATES.low[index];
     const medOcc = OCCUPANCY_RATES.medium[index];
@@ -362,61 +334,6 @@ export async function generatePDF(
       formatCurrency(monthlyLongTerm)
     ];
   });
-
-  // Draw revenue line chart
-  const chartWidth = pdf.internal.pageSize.getWidth() - 40;
-  const chartHeight = 80;
-  const chartMargin = { top: 10, right: 10, bottom: 20, left: 40 };
-
-  // Calculate max value for Y axis scale
-  const allRevenues = monthlyPerformance.slice(0, 12).flatMap(row => [
-    parseFloat(row[5].replace(/[^0-9.-]+/g, '')),
-    parseFloat(row[7].replace(/[^0-9.-]+/g, '')),
-    parseFloat(row[9].replace(/[^0-9.-]+/g, '')),
-    parseFloat(row[10].replace(/[^0-9.-]+/g, ''))
-  ]);
-  const maxRevenue = Math.max(...allRevenues);
-  const yScale = (chartHeight - chartMargin.top - chartMargin.bottom) / maxRevenue;
-
-  // Draw axes
-  pdf.setDrawColor(200);
-  pdf.setLineWidth(0.1);
-  pdf.line(20 + chartMargin.left, yPosition, 20 + chartMargin.left, yPosition + chartHeight - chartMargin.bottom);
-  pdf.line(20 + chartMargin.left, yPosition + chartHeight - chartMargin.bottom, 20 + chartWidth, yPosition + chartHeight - chartMargin.bottom);
-
-  // Function to draw revenue lines
-  const drawLine = (data: number[], color: number[]) => {
-    pdf.setDrawColor(...color);
-    pdf.setLineWidth(0.5);
-    let started = false;
-    const xStep = (chartWidth - chartMargin.left - chartMargin.right) / 11;
-
-    for (let i = 0; i < 12; i++) {
-      const x = 20 + chartMargin.left + (i * xStep);
-      const y = yPosition + chartHeight - chartMargin.bottom - (data[i] * yScale);
-
-      if (!started) {
-        pdf.moveTo(x, y);
-        started = true;
-      } else {
-        pdf.lineTo(x, y);
-      }
-    }
-    pdf.stroke();
-  };
-
-  // Draw revenue lines
-  const getLowRevenues = monthlyPerformance.slice(0, 12).map(row => parseFloat(row[5].replace(/[^0-9.-]+/g, '')));
-  const getMedRevenues = monthlyPerformance.slice(0, 12).map(row => parseFloat(row[7].replace(/[^0-9.-]+/g, '')));
-  const getHighRevenues = monthlyPerformance.slice(0, 12).map(row => parseFloat(row[9].replace(/[^0-9.-]+/g, '')));
-  const getLongTermRevenues = monthlyPerformance.slice(0, 12).map(row => parseFloat(row[10].replace(/[^0-9.-]+/g, '')));
-
-  drawLine(getLowRevenues, [255, 107, 107]); // Red for low
-  drawLine(getMedRevenues, [78, 205, 196]); // Turquoise for medium
-  drawLine(getHighRevenues, [69, 183, 209]); // Blue for high
-  drawLine(getLongTermRevenues, [255, 230, 109]); // Yellow for long term
-
-  yPosition += chartHeight + 10;
 
   // Add total row
   monthlyPerformance.push([
