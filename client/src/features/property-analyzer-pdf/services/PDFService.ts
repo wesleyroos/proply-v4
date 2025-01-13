@@ -234,6 +234,61 @@ export async function generatePDF(
   pdf.text('Monthly Revenue Performance', 20, yPosition);
   yPosition += 10;
 
+  // Draw revenue line chart
+  const chartWidth = pdf.internal.pageSize.getWidth() - 40;
+  const chartHeight = 80;
+  const chartMargin = { top: 10, right: 10, bottom: 20, left: 40 };
+  
+  // Calculate max value for Y axis scale
+  const allRevenues = monthlyPerformance.slice(0, 12).flatMap(row => [
+    parseFloat(row[5].replace(/[^0-9.-]+/g, '')), 
+    parseFloat(row[7].replace(/[^0-9.-]+/g, '')),
+    parseFloat(row[9].replace(/[^0-9.-]+/g, '')),
+    parseFloat(row[10].replace(/[^0-9.-]+/g, ''))
+  ]);
+  const maxRevenue = Math.max(...allRevenues);
+  const yScale = (chartHeight - chartMargin.top - chartMargin.bottom) / maxRevenue;
+  
+  // Draw axes
+  pdf.setDrawColor(200);
+  pdf.setLineWidth(0.1);
+  pdf.line(20 + chartMargin.left, yPosition, 20 + chartMargin.left, yPosition + chartHeight - chartMargin.bottom); // Y axis
+  pdf.line(20 + chartMargin.left, yPosition + chartHeight - chartMargin.bottom, 20 + chartWidth, yPosition + chartHeight - chartMargin.bottom); // X axis
+
+  // Draw lines
+  const drawLine = (data: number[], color: number[]) => {
+    pdf.setDrawColor(...color);
+    pdf.setLineWidth(0.5);
+    let started = false;
+    const xStep = (chartWidth - chartMargin.left - chartMargin.right) / 11;
+    
+    for (let i = 0; i < 12; i++) {
+      const x = 20 + chartMargin.left + (i * xStep);
+      const y = yPosition + chartHeight - chartMargin.bottom - (data[i] * yScale);
+      
+      if (!started) {
+        pdf.moveTo(x, y);
+        started = true;
+      } else {
+        pdf.lineTo(x, y);
+      }
+    }
+    pdf.stroke();
+  };
+
+  // Draw revenue lines
+  const getLowRevenues = monthlyPerformance.slice(0, 12).map(row => parseFloat(row[5].replace(/[^0-9.-]+/g, '')));
+  const getMedRevenues = monthlyPerformance.slice(0, 12).map(row => parseFloat(row[7].replace(/[^0-9.-]+/g, '')));
+  const getHighRevenues = monthlyPerformance.slice(0, 12).map(row => parseFloat(row[9].replace(/[^0-9.-]+/g, '')));
+  const getLongTermRevenues = monthlyPerformance.slice(0, 12).map(row => parseFloat(row[10].replace(/[^0-9.-]+/g, '')));
+
+  drawLine(getLowRevenues, [255, 107, 107]); // Red for low
+  drawLine(getMedRevenues, [78, 205, 196]); // Turquoise for medium
+  drawLine(getHighRevenues, [69, 183, 209]); // Blue for high
+  drawLine(getLongTermRevenues, [255, 230, 109]); // Yellow for long term
+
+  yPosition += chartHeight + 10;
+
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const baseRate = data.performance.shortTermNightlyRate;
   const platformFee = data.expenses.managementFee || 0;
