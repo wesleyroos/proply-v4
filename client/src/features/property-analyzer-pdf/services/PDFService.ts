@@ -346,6 +346,40 @@ export async function generatePDF(
   pdf.addImage(lineChartCanvas.toDataURL(), 'PNG', 20, yPosition, 170, 80);
   yPosition += 90;
 
+
+  // Add Cashflow Metrics Tables
+  const addCashflowMetricsTable = (term: 'shortTerm' | 'longTerm', title: string) => {
+    pdf.setFontSize(14);
+    pdf.text(title, 20, yPosition);
+    yPosition += 10;
+
+    const years = [1, 2, 3, 4, 5, 10, 20];
+    const metrics = ['Annual Revenue', 'Net Operating Expenses', 'Net Operating Income', 'Annual Bond Payment', 'Annual Cashflow', 'Cumulative Cashflow'];
+    const tableData = metrics.map(metric => {
+      return [metric, ...years.map(year => formatCurrency(data.cashflowMetrics[term][metric][`year${year}`] || 0))];
+    });
+
+    autoTable(pdf, {
+      startY: yPosition,
+      head: [['Metric', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5', 'Year 10', 'Year 20']],
+      body: tableData,
+      margin: { left: 20 },
+      styles: {
+        minCellHeight: 8,
+        fontSize: 9
+      },
+      headStyles: {
+        fillColor: [30, 144, 255],
+        textColor: 255
+      }
+    });
+    yPosition = (pdf as any).lastAutoTable.finalY + 15;
+  };
+
+  addCashflowMetricsTable('shortTerm', 'Short Term Cashflow Metrics');
+  addCashflowMetricsTable('longTerm', 'Long Term Cashflow Metrics');
+
+
   const occupancyRates = {
     low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70],
     medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85],
@@ -483,7 +517,7 @@ export async function generatePDF(
   pdf.setTextColor(90, 90, 90); // Medium grey color
   let totalHeight = 0;
   const maxWidth = pdf.internal.pageSize.getWidth() - 40;
-  
+
   // Calculate total height needed
   disclaimerText.forEach(line => {
     const lines = pdf.splitTextToSize(line, maxWidth);
@@ -492,7 +526,7 @@ export async function generatePDF(
 
   // Start position: 30px above footer
   let disclaimerY = pdf.internal.pageSize.getHeight() - 30 - totalHeight;
-  
+
   // Render text
   disclaimerText.forEach(line => {
     const lines = pdf.splitTextToSize(line, maxWidth);
