@@ -493,10 +493,12 @@ export async function generatePDF(
     startY += 10;
 
     const years = [1, 2, 3, 4, 5, 10, 20];
-    const metrics = data.analysis?.investmentMetrics?.[term] || [];
+    const metrics = data.analysis.investmentMetrics[term];
+    const revenueData = data.analysis.revenueProjections[term];
+    
     const tableData = [
-      ['Annual Revenue', ...years.map((_, i) => formatCurrency(term === 'shortTerm' ? data.analysis?.revenueProjections?.shortTerm?.[`year${years[i]}`] || 0 : data.analysis?.revenueProjections?.longTerm?.[`year${years[i]}`] || 0))],
-      ['Net Operating Income', ...metrics.map(m => formatCurrency(m.grossYield * data.purchasePrice / 100))],
+      ['Annual Revenue', ...years.map(year => formatCurrency(revenueData[`year${year}`]))],
+      ['Net Operating Income', ...metrics.map(m => formatCurrency(m.netYield * data.purchasePrice / 100))],
       ['Annual Bond Payment', ...Array(7).fill(formatCurrency(data.monthlyBondRepayment * 12))],
       ['Annual Cashflow', ...metrics.map(m => formatCurrency(m.netWorthChange))],
       ['Cumulative Cashflow', ...metrics.map((m, i) => formatCurrency(metrics.slice(0, i + 1).reduce((sum, curr) => sum + curr.netWorthChange, 0)))]
