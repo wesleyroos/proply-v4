@@ -493,8 +493,8 @@ export async function generatePDF(
     startY += 10;
 
     const years = [1, 2, 3, 4, 5, 10, 20];
-    const metrics = data.analysis.investmentMetrics[term];
-    const revenueData = data.analysis.revenueProjections[term];
+    const metrics = data.analysis?.investmentMetrics?.[term] || [];
+    const revenueData = data.analysis?.revenueProjections?.[term] || {};
     
     const tableData = [
       ['Annual Revenue', ...years.map(year => formatCurrency(revenueData[`year${year}`]))],
