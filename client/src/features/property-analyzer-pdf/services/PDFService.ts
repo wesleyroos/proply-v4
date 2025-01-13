@@ -461,8 +461,14 @@ export async function generatePDF(
   const pageCount = pdf.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     pdf.setPage(i);
-    pdf.setFontSize(10);
-    pdf.text(`Page ${i} of ${pageCount}`, pdf.internal.pageSize.getWidth() / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'center' });
+    pdf.setFontSize(8);
+    pdf.setTextColor(100);
+    pdf.text(
+      `Page ${i} of ${pageCount}`,
+      pdf.internal.pageSize.getWidth() - 20,
+      pdf.internal.pageSize.getHeight() - 10,
+      { align: 'right' }
+    );
   }
 
   // Add finishing touches
