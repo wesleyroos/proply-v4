@@ -229,10 +229,82 @@ export async function generatePDF(
 
   yPosition = (pdf as any).lastAutoTable.finalY + 15;
 
-  // Monthly Performance Table
+  // Monthly Revenue Performance Graph
   pdf.setFontSize(14);
   pdf.text('Monthly Revenue Performance', 20, yPosition);
   yPosition += 10;
+
+  const lineChartCanvas = document.createElement('canvas');
+  lineChartCanvas.width = 750;
+  lineChartCanvas.height = 300;
+
+  const ctx = lineChartCanvas.getContext('2d');
+  if (ctx) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, lineChartCanvas.width, lineChartCanvas.height);
+    
+    const datasets = [
+      { data: monthlyPerformance.slice(0, 12).map(row => parseFloat(row[5].replace(/[^0-9.-]+/g, ''))), color: '#FF6B6B', label: 'Low Revenue' },
+      { data: monthlyPerformance.slice(0, 12).map(row => parseFloat(row[7].replace(/[^0-9.-]+/g, ''))), color: '#4ECDC4', label: 'Medium Revenue' },
+      { data: monthlyPerformance.slice(0, 12).map(row => parseFloat(row[9].replace(/[^0-9.-]+/g, ''))), color: '#45B7D1', label: 'High Revenue' },
+      { data: monthlyPerformance.slice(0, 12).map(row => parseFloat(row[10].replace(/[^0-9.-]+/g, ''))), color: '#FFE66D', label: 'Long Term' }
+    ];
+
+    const maxValue = Math.max(...datasets.flatMap(d => d.data));
+    const steps = 5;
+    const stepSize = maxValue / steps;
+
+    // Draw grid lines and labels
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.fillStyle = '#4b5563';
+    ctx.font = '10px Arial';
+    
+    for (let i = 0; i <= steps; i++) {
+      const y = 250 - (i * (200 / steps));
+      ctx.beginPath();
+      ctx.moveTo(50, y);
+      ctx.lineTo(700, y);
+      ctx.stroke();
+      ctx.fillText(formatCurrency(i * stepSize), 0, y + 5);
+    }
+
+    // Draw x-axis labels (months)
+    const months = monthlyPerformance.slice(0, 12).map(row => row[0]);
+    months.forEach((month, i) => {
+      const x = 50 + (i * (650 / 11));
+      ctx.fillText(month, x - 10, 270);
+    });
+
+    // Draw lines
+    datasets.forEach(({ data, color, label }) => {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      data.forEach((value, i) => {
+        const x = 50 + (i * (650 / 11));
+        const y = 250 - ((value / maxValue) * 200);
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
+
+      // Add legend
+      const legendY = 290 + (datasets.indexOf({ data, color, label }) * 15);
+      ctx.strokeStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(50 + (datasets.indexOf({ data, color, label }) * 150), legendY);
+      ctx.lineTo(80 + (datasets.indexOf({ data, color, label }) * 150), legendY);
+      ctx.stroke();
+      ctx.fillStyle = '#000000';
+      ctx.fillText(label, 85 + (datasets.indexOf({ data, color, label }) * 150), legendY + 5);
+    });
+  }
+
+  pdf.addImage(lineChartCanvas.toDataURL(), 'PNG', 20, yPosition, 170, 80);
+  yPosition += 90;
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const baseRate = data.performance.shortTermNightlyRate;
