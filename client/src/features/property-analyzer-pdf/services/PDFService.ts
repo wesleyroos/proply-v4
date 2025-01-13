@@ -326,9 +326,7 @@ export async function generatePDF(
 
   yPosition += chartHeight + 10;
 
-  const baseRate = data.performance.shortTermNightlyRate;
-  const platformFee = data.expenses.managementFee || 0;
-    const lowOcc = OCCUPANCY_RATES.low[index];
+  const lowOcc = OCCUPANCY_RATES.low[index];
     const medOcc = OCCUPANCY_RATES.medium[index];
     const highOcc = OCCUPANCY_RATES.high[index];
     const monthlyLongTerm = data.performance.longTermAnnualRevenue / 12;
