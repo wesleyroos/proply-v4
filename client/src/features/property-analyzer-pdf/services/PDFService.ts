@@ -480,13 +480,14 @@ export async function generatePDF(
   ];
 
   pdf.setFontSize(8);
+  pdf.setTextColor(90, 90, 90); // Medium grey color
   let totalHeight = 0;
   const maxWidth = pdf.internal.pageSize.getWidth() - 40;
   
   // Calculate total height needed
   disclaimerText.forEach(line => {
     const lines = pdf.splitTextToSize(line, maxWidth);
-    totalHeight += lines.length * 4 + (line === "" ? 2 : 0);
+    totalHeight += lines.length * 3 + (line === "" ? 1 : 0); // Reduced spacing
   });
 
   // Start position: 30px above footer
@@ -497,9 +498,9 @@ export async function generatePDF(
     const lines = pdf.splitTextToSize(line, maxWidth);
     lines.forEach(splitLine => {
       pdf.text(splitLine, 20, disclaimerY);
-      disclaimerY += 4;
+      disclaimerY += 3; // Reduced line spacing
     });
-    if (line === "") disclaimerY += 2;
+    if (line === "") disclaimerY += 1; // Reduced empty line spacing
   });
 
 
