@@ -14,7 +14,7 @@ export async function generatePDF(
     format: 'a4'
   });
 
-  let yPosition = 20;
+  let yPosition = 15;
 
   // Add company logo if available
   if (companyLogo) {
@@ -25,7 +25,8 @@ export async function generatePDF(
         img.onload = () => {
           const aspectRatio = img.height / img.width;
           const logoHeight = logoWidth * aspectRatio;
-          pdf.addImage(companyLogo, "PNG", 20, 10, logoWidth, logoHeight);
+          pdf.addImage(companyLogo, "PNG", 20, yPosition, logoWidth, logoHeight);
+          yPosition += logoHeight + 10;
           resolve();
         };
         img.onerror = () => {
@@ -48,10 +49,10 @@ export async function generatePDF(
       proplyLogo.onload = () => {
         const aspectRatio = proplyLogo.height / proplyLogo.width;
         const proplyLogoHeight = proplyLogoWidth * aspectRatio;
-        pdf.addImage("/proply-logo-1.png", "PNG", 140, 10, proplyLogoWidth, proplyLogoHeight);
+        pdf.addImage("/proply-logo-1.png", "PNG", pdf.internal.pageSize.getWidth() - proplyLogoWidth - 20, 15, proplyLogoWidth, proplyLogoHeight);
         pdf.setFontSize(8);
         pdf.setTextColor(100);
-        pdf.text("Powered by Proply", 140, 35);
+        pdf.text("Powered by Proply", pdf.internal.pageSize.getWidth() - proplyLogoWidth - 20, 15 + proplyLogoHeight + 5);
         resolve();
       };
       proplyLogo.src = "/proply-logo-1.png";
@@ -60,9 +61,11 @@ export async function generatePDF(
     console.error('Error loading Proply logo:', error);
   }
 
-
+  yPosition = Math.max(yPosition, 60); // Ensure minimum spacing from top
+  
   // Add title
   pdf.setFontSize(20);
+  pdf.setTextColor(0);
   pdf.text('Property Analysis Report', 20, yPosition);
   yPosition += 15;
 
