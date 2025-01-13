@@ -275,7 +275,7 @@ export default function PropertiesPage() {
           <Card>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
-                {selectedProperties.length > 0 && (
+                {selectedProperties.length > 0 ? (
                   <div className="p-4 border-b flex items-center justify-between bg-muted/50">
                     <div className="text-sm text-muted-foreground">
                       {selectedProperties.length} {selectedProperties.length === 1 ? 'property' : 'properties'} selected
@@ -289,6 +289,12 @@ export default function PropertiesPage() {
                       <Trash2 className="h-4 w-4" />
                       Delete Selected
                     </Button>
+                  </div>
+                ) : (
+                  <div className="p-4 border-b bg-muted/50">
+                    <div className="text-sm text-muted-foreground">
+                      {filteredAndSortedProperties.length} {filteredAndSortedProperties.length === 1 ? 'property' : 'properties'} in total
+                    </div>
                   </div>
                 )}
                 <table className="w-full text-sm">
