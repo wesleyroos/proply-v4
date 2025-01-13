@@ -1,3 +1,7 @@
+import { calculateMonthlyRevenue } from '@/utils/rentalPerformance';
+
+export { calculateMonthlyRevenue };
+
 export const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('en-ZA', {
     style: 'currency',
