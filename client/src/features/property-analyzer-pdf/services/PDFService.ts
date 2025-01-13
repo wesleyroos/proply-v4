@@ -196,6 +196,38 @@ export async function generatePDF(
 
   yPosition = (pdf as any).lastAutoTable.finalY + 15;
 
+  // Monthly Performance Table
+  pdf.setFontSize(14);
+  pdf.text('Monthly Revenue Performance', 20, yPosition);
+  yPosition += 10;
+
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthlyPerformance = [
+    ['Revenue Low', ...months.map(m => formatCurrency(data.monthlyRevenue?.low?.[months.indexOf(m)] || 0))],
+    ['Revenue Medium', ...months.map(m => formatCurrency(data.monthlyRevenue?.medium?.[months.indexOf(m)] || 0))],
+    ['Revenue High', ...months.map(m => formatCurrency(data.monthlyRevenue?.high?.[months.indexOf(m)] || 0))],
+    ['Long Term', ...Array(12).fill(formatCurrency(data.performance.longTermAnnualRevenue / 12))]
+  ];
+
+  autoTable(pdf, {
+    startY: yPosition,
+    head: [['Revenue Type', ...months]],
+    body: monthlyPerformance,
+    margin: { left: 20 },
+    styles: {
+      rowHeight: 8,
+      fontSize: 8,
+      cellWidth: 'auto',
+      cellPadding: 2
+    },
+    headStyles: {
+      fillColor: [30, 144, 255],
+      textColor: 255
+    }
+  });
+
+  yPosition = (pdf as any).lastAutoTable.finalY + 15;
+
   // Investment Metrics (Year 1)
   pdf.setFontSize(16);
   pdf.text('Investment Metrics (Year 1)', 20, yPosition);

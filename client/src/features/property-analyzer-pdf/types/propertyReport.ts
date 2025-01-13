@@ -1,4 +1,3 @@
-
 export interface PropertyDetails {
   address: string;
   propertyPhoto?: string;
@@ -66,6 +65,11 @@ export interface CashflowData {
 }
 
 export interface PropertyData {
+  monthlyRevenue?: {
+    low: number[];
+    medium: number[];
+    high: number[];
+  };
   propertyDetails: PropertyDetails;
   financialMetrics: FinancialMetrics;
   operatingExpenses: OperatingExpenses;
