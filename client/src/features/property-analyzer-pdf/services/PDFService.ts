@@ -446,14 +446,6 @@ export async function generatePDF(
     const medRevenue = feeAdjustedRate * daysInMonth * (medOcc / 100);
     const highRevenue = feeAdjustedRate * daysInMonth * (highOcc / 100);
 
-    // Use investment metrics data directly from analysis engine
-    const metrics = data.investmentMetrics.shortTerm[index] || {
-      netWorthChange: 0,
-      annualReturn: 0,
-      netYield: 0,
-      grossYield: 0
-    };
-
     return [
       month,
       formatCurrency(seasonalRate),
@@ -618,11 +610,11 @@ export async function generatePDF(
       baseRate * (1 - (data.expenses.managementFee > 0 ? 0.15 : 0.03)),
     ),
     "45%",
-    formatCurrency(monthlyPerformance[11][5].replace(/[^0-9.-]+/g, "") / 12),
+    formatCurrency(monthlyPerformance[12][5].replace(/[^0-9.-]+/g, "") / 12),
     "65%",
-    formatCurrency(monthlyPerformance[11][7].replace(/[^0-9.-]+/g, "") / 12),
+    formatCurrency(monthlyPerformance[12][7].replace(/[^0-9.-]+/g, "") / 12),
     "85%",
-    formatCurrency(monthlyPerformance[11][9].replace(/[^0-9.-]+/g, "") / 12),
+    formatCurrency(monthlyPerformance[12][9].replace(/[^0-9.-]+/g, "") / 12),
     formatCurrency(data.performance.longTermAnnualRevenue / 12),
   ]);
 
@@ -929,27 +921,37 @@ export async function generatePDF(
   pdf.text("Asset Growth & Equity", margin, yPosition);
   yPosition += 10;
 
-  const yearsArray = [1, 2, 3, 4, 5, 10, 20];
-  const assetMetrics = yearsArray.map((year, i) => {
-    const metrics = data.investmentMetrics.shortTerm[i];
-    const propertyValue = data.propertyDetails.purchasePrice * Math.pow(1 + data.financialMetrics.annualAppreciation / 100, year);
-    const loanBalance = data.financialMetrics.loanAmount * Math.pow(1 + data.financialMetrics.interestRate / 100, year);
-    const totalEquity = propertyValue - loanBalance;
-    const interestPaid = (data.financialMetrics.monthlyBondRepayment * 12 * year) - (data.financialMetrics.loanAmount - loanBalance);
-    const principalPaid = data.financialMetrics.loanAmount - loanBalance;
-    const interestToPrincipalRatio = (interestPaid / (interestPaid + principalPaid)) * 100;
-    
-    return [
-      formatCurrency(propertyValue),
-      formatCurrency(propertyValue - data.propertyDetails.purchasePrice),
-      formatCurrency(loanBalance),
-      formatCurrency(interestPaid),
-      `${interestToPrincipalRatio.toFixed(1)}%`,
-      formatCurrency(totalEquity),
-      formatCurrency(principalPaid)
-    ];
-  });
+// Update how we access the investment metrics
+const yearsArray = [1, 2, 3, 4, 5, 10, 20];
+const assetMetrics = yearsArray.map((year, i) => {
+  const metrics = data.investmentMetrics.shortTerm[i];
+  return [
+    formatCurrency(metrics.propertyValue || 0),
+    formatCurrency(metrics.appreciationGain || 0),
+    formatCurrency(metrics.loanBalance || 0),
+    formatCurrency(metrics.interestPaid || 0),
+    `${metrics.interestToPrincipalRatio || 0}%`,
+    formatCurrency(metrics.totalEquity || 0),
+    formatCurrency(metrics.principalPaid || 0)
+  ];
+});
 
+  // Use investment metrics data directly from analysis engine
+  const performanceData = data.investmentMetrics.shortTerm[index] || {
+    netWorthChange: 0,
+    annualReturn: 0,
+    netYield: 0,
+    grossYield: 0
+  };
+
+  return [
+    month,
+    formatCurrency(performanceData.netWorthChange || 0),
+    formatPercentage(performanceData.annualReturn || 0),
+    formatPercentage(performanceData.netYield || 0),
+    formatPercentage(performanceData.grossYield || 0)
+  ];
+});
 
   yPosition += (contentWidth * 400) / 750 + 20;
   checkPageBreak(200);
@@ -966,7 +968,7 @@ export async function generatePDF(
       ["Total Interest Paid", ...assetMetrics.map(m => m[3])],
       ["Interest-to-Principal Ratio", ...assetMetrics.map(m => m[4])],
       ["Total Equity", ...assetMetrics.map(m => m[5])],
-      ["Loan Repayment Equity", ...assetMetrics.map(m => m[6])]
+      ["Loan Repayment Equity",...assetMetrics.map(m => m[6])]
     ],
     margin: { left: margin },
     styles: {
@@ -991,7 +993,8 @@ export async function generatePDF(
     assetGrowthCanvas.height = chartHeight;
 
     await html2canvas(assetGrowthChart, {
-      canvas: assetGrowthCanvas,      scale: 2,
+      canvas: assetGrowthCanvas,
+      scale: 2,
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff'

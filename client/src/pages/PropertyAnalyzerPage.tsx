@@ -284,85 +284,6 @@ export default function PropertyAnalyzerPage() {
   const handleGeneratePDF = async (selections: ReportSelections) => {
     setIsGeneratingPDF(true);
     try {
-      const assetGrowthData = yearsArray.map((year, i) => {
-        const metrics = analysisResult.analysis.investmentMetrics.shortTerm[i];
-        const propertyValue = analysisResult.analysis.purchasePrice * Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, year);
-        const loanBalance = (analysisResult.analysis.purchasePrice - analysisResult.deposit) * Math.pow(1 + analysisResult.interestRate / 100, year);
-        const totalEquity = propertyValue - loanBalance;
-        const interestPaid = (analysisResult.monthlyBondRepayment * 12 * year) - ((analysisResult.analysis.purchasePrice - analysisResult.deposit) - loanBalance);
-        const principalPaid = (analysisResult.analysis.purchasePrice - analysisResult.deposit) - loanBalance;
-        const interestToPrincipalRatio = (interestPaid / (interestPaid + principalPaid)) * 100;
-        
-        return [
-          propertyValue,
-          propertyValue - analysisResult.analysis.purchasePrice,
-          loanBalance,
-          interestPaid,
-          interestToPrincipalRatio,
-          totalEquity,
-          principalPaid
-        ];
-      });
-      setPDFData({
-        assetGrowthMetrics: assetGrowthData,
-        propertyDetails: {
-          address: analysisResult.address,
-          bedrooms: formData?.bedrooms || "N/A",
-          bathrooms: formData?.bathrooms || "N/A",
-          floorArea: Number(formData?.floorArea) || 0,
-          parkingSpaces: Number(formData?.parkingSpaces) || 0,
-          purchasePrice: analysisResult.analysis.purchasePrice,
-          ratePerSquareMeter: Number(formData?.cmaRatePerSqm) || 0,
-          areaRate: Number(analysisResult.ratePerSquareMeter) || 0,
-          rateDifference: Number(formData?.cmaRatePerSqm || 0) - (Number(analysisResult.ratePerSquareMeter) || 0),
-          propertyPhoto: formData?.propertyPhoto || null,
-        },
-        financialMetrics: {
-          depositAmount: Number(analysisResult.deposit) || 0,
-          depositPercentage: Number(analysisResult.depositPercentage) || 0,
-          interestRate: Number(analysisResult.interestRate) || 0,
-          loanTerm: Number(analysisResult.loanTerm) || 0,
-          monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment) || 0,
-          // Add pre-calculated metrics from analysis engine
-          investmentMetrics: analysisResult.analysis.investmentMetrics,
-          netOperatingIncome: analysisResult.netOperatingIncome,
-          revenueProjections: analysisResult.analysis.revenueProjections,
-          bondRegistration: calculateBondRegistration(analysisResult.analysis.purchasePrice, !removeVat),
-          transferCosts: calculateTransferCosts(
-            analysisResult.analysis.purchasePrice,
-            !removeVat,
-            !removeTransferDuty
-          ),
-        },
-        expenses: {
-          monthlyLevies: Number(formData?.monthlyLevies) || 0,
-          monthlyRatesTaxes: Number(formData?.monthlyRatesTaxes) || 0,
-          otherMonthlyExpenses: Number(formData?.otherMonthlyExpenses) || 0,
-          maintenancePercent: Number(formData?.maintenancePercent) || 0,
-          managementFee: Number(analysisResult.managementFee) || 0,
-        },
-        performance: {
-          shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate) || 0,
-          annualOccupancy: Number(analysisResult.annualOccupancy) || 0,
-          shortTermAnnualRevenue: Number(analysisResult.analysis.shortTermAnnualRevenue) || 0,
-          longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue) || 0,
-          shortTermGrossYield: Number(analysisResult.shortTermGrossYield) || 0,
-          longTermGrossYield: Number(analysisResult.longTermGrossYield) || 0,
-          // Add detailed performance metrics
-          yearlyPerformance: analysisResult.analysis.netOperatingIncome
-        },
-        investmentMetrics: analysisResult.analysis.investmentMetrics,
-        operatingExpenses: analysisResult.analysis.operatingExpenses,
-        netOperatingIncome: analysisResult.netOperatingIncome,
-        revenueProjections: analysisResult.analysis.revenueProjections,
-
-        // Add complete analysis results
-        analysisResults: {
-          ...analysisResult.analysis,
-          operatingExpenses: analysisResult.analysis.operatingExpenses,
-          investmentMetrics: analysisResult.analysis.investmentMetrics
-        }
-      });
       await generatePDF(pdfData, selections, user?.settings?.companyLogo || '');
       toast({
         title: "Success",
@@ -1043,7 +964,6 @@ export default function PropertyAnalyzerPage() {
                 interestRate={analysisResult.interestRate || 0}
                 loanTerm={analysisResult.loanTerm || 20}
                 annualAppreciation={formData?.annualPropertyAppreciation || 5}
-                onCalculate={(metrics) => console.log('Asset growth metrics:', metrics)}
               />
 
             </div>
