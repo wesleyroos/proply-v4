@@ -22,7 +22,6 @@ const addPageFooters = async (
 
   try {
     // Load favicon
-    const faviconWidth = 8;
     const faviconHeight = 8;
     const faviconUrl = "/proply-logo-1.png";
 
@@ -36,7 +35,7 @@ const addPageFooters = async (
         "PNG",
         margin,
         pageHeight - margin - faviconHeight - footerPadding,
-        faviconWidth,
+        "auto",
         faviconHeight,
       );
 
