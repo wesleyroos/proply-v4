@@ -964,6 +964,7 @@ export default function PropertyAnalyzerPage() {
                 interestRate={analysisResult.interestRate || 0}
                 loanTerm={analysisResult.loanTerm || 20}
                 annualAppreciation={formData?.annualPropertyAppreciation || 5}
+                onCalculate={(metrics) => console.log('Asset growth metrics:', metrics)}
               />
 
             </div>
