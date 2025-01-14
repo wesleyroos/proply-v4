@@ -18,13 +18,13 @@ const addPageFooters = async (
   margin: number,
 ) => {
   const totalPages = pdf.getNumberOfPages();
-  const footerPadding = 10; // Padding from bottom of page
+  const footerPadding = 5; // Padding from bottom of page
 
   try {
     // Load favicon
-    const faviconWidth = 15;
-    const faviconHeight = 15;
-    const faviconUrl = "/proply-favicon.png";
+    const faviconWidth = 8; // Reduced from 15 to 8
+    const faviconHeight = ; // Reduced from 15 to 8
+    const faviconUrl = "/proply-logo-1.png";
 
     // Add footer to each page
     for (let i = 1; i <= totalPages; i++) {
@@ -810,19 +810,28 @@ export async function generatePDF(
     const metrics = data.investmentMetrics?.[term] || [];
 
     const tableData = [
-      ["Gross Yield", ...metrics.map(m => formatPercentage(m.grossYield))],
-      ["Net Yield", ...metrics.map(m => formatPercentage(m.netYield))],
-      ["ROE", ...metrics.map(m => formatPercentage(m.returnOnEquity))],
-      ["Annual Return", ...metrics.map(m => formatPercentage(m.annualReturn))],
-      ["Cap Rate", ...metrics.map(m => formatPercentage(m.capRate))],
-      ["Cash on Cash", ...metrics.map(m => formatPercentage(m.cashOnCashReturn))],
-      ["IRR", ...metrics.map(m => formatPercentage(m.irr))],
-      ["Net Worth Change", ...metrics.map(m => formatCurrency(m.netWorthChange))]
+      ["Gross Yield", ...metrics.map((m) => formatPercentage(m.grossYield))],
+      ["Net Yield", ...metrics.map((m) => formatPercentage(m.netYield))],
+      ["ROE", ...metrics.map((m) => formatPercentage(m.returnOnEquity))],
+      [
+        "Annual Return",
+        ...metrics.map((m) => formatPercentage(m.annualReturn)),
+      ],
+      ["Cap Rate", ...metrics.map((m) => formatPercentage(m.capRate))],
+      [
+        "Cash on Cash",
+        ...metrics.map((m) => formatPercentage(m.cashOnCashReturn)),
+      ],
+      ["IRR", ...metrics.map((m) => formatPercentage(m.irr))],
+      [
+        "Net Worth Change",
+        ...metrics.map((m) => formatCurrency(m.netWorthChange)),
+      ],
     ];
 
     autoTable(pdf, {
       startY: startY,
-      head: [["Metric", ...years.map(year => `Year ${year}`)]],
+      head: [["Metric", ...years.map((year) => `Year ${year}`)]],
       body: tableData,
       margin: { left: margin },
       styles: {
