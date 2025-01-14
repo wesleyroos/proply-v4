@@ -936,24 +936,22 @@ const assetMetrics = yearsArray.map((year, i) => {
   ];
 });
 
-  // Use the existing performance calculations since they're based on the pre-calculated values
-  const performanceData = data.performance.yearlyPerformance?.[`year${index + 1}`] || {
-    revenue: 0,
-    expenses: 0,
-    netIncome: 0,
-    occupancy: 0,
-    cashflow: 0
+  // Use investment metrics data directly from analysis engine
+  const performanceData = data.investmentMetrics.shortTerm[index] || {
+    netWorthChange: 0,
+    annualReturn: 0,
+    netYield: 0,
+    grossYield: 0
   };
 
   return [
-      month,
-      formatCurrency(performanceData.revenue),
-      formatCurrency(performanceData.expenses),
-      formatCurrency(performanceData.netIncome),
-      `${performanceData.occupancy}%`,
-      formatCurrency(performanceData.cashflow)
-    ];
-  });
+    month,
+    formatCurrency(performanceData.netWorthChange || 0),
+    formatPercentage(performanceData.annualReturn || 0),
+    formatPercentage(performanceData.netYield || 0),
+    formatPercentage(performanceData.grossYield || 0)
+  ];
+});
 
   yPosition += (contentWidth * 400) / 750 + 20;
   checkPageBreak(200);
