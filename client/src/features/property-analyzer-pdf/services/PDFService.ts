@@ -946,16 +946,18 @@ export async function generatePDF(
     const monthsPaid = year * 12;
     const loanAmount = data.financialMetrics.loanAmount;
     
-    // Calculate remaining loan balance
+    // Calculate loan balance and payments
     const remainingPayments = totalPayments - monthsPaid;
     const loanBalance = monthlyRate === 0 || monthsPaid >= totalPayments ? 0 : 
       (monthlyPayment * (1 - Math.pow(1 + monthlyRate, -remainingPayments))) / monthlyRate;
     
-    const totalPaid = monthsPaid * monthlyPayment;
+    // Calculate total amount paid so far
+    const totalPaid = monthlyPayment * Math.min(monthsPaid, totalPayments);
     const principalPaid = loanAmount - loanBalance;
-    const interestPaid = totalPaid > 0 ? totalPaid - principalPaid : 0;
-    const interestToPrincipalRatio = principalPaid > 0 ? (interestPaid / principalPaid * 100).toFixed(1) : 0;
+    const interestPaid = totalPaid - principalPaid;
+    const interestToPrincipalRatio = principalPaid > 0 ? (interestPaid / principalPaid * 100) : 0;
     const totalEquity = propertyValue - loanBalance;
+    const loanRepaymentEquity = principalPaid;
 
     return [
       formatCurrency(propertyValue),
