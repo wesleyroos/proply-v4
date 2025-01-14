@@ -895,20 +895,26 @@ export async function generatePDF(
   yPosition += 10;
 
   const cashflowCanvas = document.createElement("canvas");
-  const cashflowChart = document.getElementById("cashflow-chart");
+  const cashflowChart = document.querySelector('[data-testid="cashflow-chart"]');
   if (cashflowChart) {
     const chartWidth = 750;
     const chartHeight = 400;
     cashflowCanvas.width = chartWidth;
     cashflowCanvas.height = chartHeight;
 
-    await html2canvas(cashflowChart, {
-      canvas: cashflowCanvas,
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: '#ffffff'
-    });
+    try {
+      await html2canvas(cashflowChart, {
+        canvas: cashflowCanvas,
+        scale: 2,
+        useCORS: true,
+        logging: true,
+        backgroundColor: '#ffffff',
+        windowWidth: chartWidth,
+        windowHeight: chartHeight
+      });
+    } catch (error) {
+      console.error('Error capturing cashflow chart:', error);
+    }
 
     pdf.addImage(
       cashflowCanvas.toDataURL(),
@@ -930,10 +936,10 @@ export async function generatePDF(
 
   const yearsArray = [1, 2, 3, 4, 5, 10, 20];
   const assetMetrics = yearsArray.map(year => {
-    const propertyValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation / 100), year);
+    const propertyValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation || 5) / 100, year);
     const loanBalance = calculateLoanBalance(year * 12);
-    const startValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation / 100), year - 1);
-    const endValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation / 100), year);
+    const startValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation || 5) / 100, year - 1);
+    const endValue = propertyValue;
     const appreciationAmount = endValue - startValue;
     const monthlyPayment = data.financialMetrics.monthlyBondRepayment; //Simplified calculation
     const monthsPaid = year * 12;
