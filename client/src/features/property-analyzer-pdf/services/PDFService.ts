@@ -870,6 +870,82 @@ export async function generatePDF(
     yPosition,
   );
 
+  // Add Data Visualizations section
+  pdf.addPage();
+  yPosition = margin;
+
+  pdf.setFontSize(16);
+  pdf.setTextColor(0);
+  pdf.text("Data Visualizations", margin, yPosition);
+  yPosition += 15;
+
+  // Cashflow Projections Chart
+  pdf.setFontSize(14);
+  pdf.text("Cashflow Projections", margin, yPosition);
+  yPosition += 10;
+
+  const cashflowCanvas = document.createElement("canvas");
+  const cashflowChart = document.getElementById("cashflow-chart");
+  if (cashflowChart) {
+    const chartWidth = 750;
+    const chartHeight = 400;
+    cashflowCanvas.width = chartWidth;
+    cashflowCanvas.height = chartHeight;
+    
+    await html2canvas(cashflowChart, {
+      canvas: cashflowCanvas,
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff'
+    });
+    
+    pdf.addImage(
+      cashflowCanvas.toDataURL(),
+      "PNG",
+      margin,
+      yPosition,
+      contentWidth,
+      (contentWidth * chartHeight) / chartWidth
+    );
+  }
+  
+  yPosition += (contentWidth * 400) / 750 + 20;
+
+  // Asset Growth & Equity Chart
+  checkPageBreak(100);
+  pdf.setFontSize(14);
+  pdf.text("Asset Growth & Equity", margin, yPosition);
+  yPosition += 10;
+
+  const assetGrowthCanvas = document.createElement("canvas");
+  const assetGrowthChart = document.getElementById("asset-growth-chart");
+  if (assetGrowthChart) {
+    const chartWidth = 750;
+    const chartHeight = 400;
+    assetGrowthCanvas.width = chartWidth;
+    assetGrowthCanvas.height = chartHeight;
+    
+    await html2canvas(assetGrowthChart, {
+      canvas: assetGrowthCanvas,
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff'
+    });
+    
+    pdf.addImage(
+      assetGrowthCanvas.toDataURL(),
+      "PNG",
+      margin,
+      yPosition,
+      contentWidth,
+      (contentWidth * chartHeight) / chartWidth
+    );
+  }
+  
+  yPosition += (contentWidth * 400) / 750 + 20;
+
   // Get the current page count before adding disclaimer
   const totalPages = pdf.getNumberOfPages();
   const currentYear = new Date().getFullYear();
