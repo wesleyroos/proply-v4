@@ -437,6 +437,10 @@ export default function PropertyAnalyzerPage() {
                                 interestRate: Number(analysisResult.interestRate) || 0,
                                 loanTerm: Number(analysisResult.loanTerm) || 0,
                                 monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment) || 0,
+                                // Add pre-calculated metrics from analysis engine
+                                investmentMetrics: analysisResult.analysis.investmentMetrics,
+                                netOperatingIncome: analysisResult.netOperatingIncome,
+                                revenueProjections: analysisResult.analysis.revenueProjections,
                                 bondRegistration: calculateBondRegistration(analysisResult.analysis.purchasePrice, !removeVat),
                                 transferCosts: calculateTransferCosts(
                                   analysisResult.analysis.purchasePrice,
@@ -458,11 +462,20 @@ export default function PropertyAnalyzerPage() {
                                 longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue) || 0,
                                 shortTermGrossYield: Number(analysisResult.shortTermGrossYield) || 0,
                                 longTermGrossYield: Number(analysisResult.longTermGrossYield) || 0,
+                                // Add detailed performance metrics
+                                yearlyPerformance: analysisResult.analysis.netOperatingIncome
                               },
                               investmentMetrics: analysisResult.analysis.investmentMetrics,
                               operatingExpenses: analysisResult.analysis.operatingExpenses,
                               netOperatingIncome: analysisResult.netOperatingIncome,
                               revenueProjections: analysisResult.analysis.revenueProjections,
+
+                              // Add complete analysis results
+                              analysisResults: {
+                                ...analysisResult.analysis,
+                                operatingExpenses: analysisResult.analysis.operatingExpenses,
+                                investmentMetrics: analysisResult.analysis.investmentMetrics
+                              }
                             });
                             setShowPDFGenerator(true);
                           }}

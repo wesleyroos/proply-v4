@@ -1,0 +1,61 @@
+It looks like your PDFService.tsx file is largely complete, but I see some areas that might need improvement to ensure it correctly pulls values from the analysis engine instead of recalculating them. Below are the key areas to focus on:
+
+🔹 Issues & Fixes
+Ensure Data is Pulled from Analysis Engine (analysis-engine/calculations.ts)
+
+Currently, some calculations (e.g., loan balance, equity, cashflow projections) appear to be recalculated in this file.
+Fix:
+Ensure all data.performance, data.investmentMetrics, and data.revenueProjections are directly passed from PropertyAnalyzerPage.tsx, rather than recalculated here.
+Example: Instead of manually calculating monthly revenue, ensure it is pulled directly from data.performance.shortTermAnnualRevenue / 12.
+Avoid Redundant Recalculations in Monthly Revenue Table
+
+The monthly revenue performance is currently recalculating:
+tsx
+Copy code
+const seasonalRate = baseRate * SEASONALITY_FACTORS[index];
+const feeAdjustedRate = seasonalRate * (1 - platformFeeRate);
+Fix:
+Ensure seasonalRate and feeAdjustedRate are directly retrieved from analysis-engine/calculations.ts
+Example:
+tsx
+Copy code
+const seasonalRate = data.performance.monthlyRevenue[index].seasonalRate;
+const feeAdjustedRate = data.performance.monthlyRevenue[index].feeAdjustedRate;
+Investment Metrics for Different Years (Ensure Direct Mapping)
+
+Instead of recalculating each year's values (property value, loan balance, etc.), pull them directly from data.investmentMetrics.
+Fix:
+Ensure:
+tsx
+Copy code
+const metrics = data.investmentMetrics.shortTerm[i];
+Is used instead of recalculating from loanBalance formulas inside this file.
+Cashflow Projection Chart - Ensure Correct Data Source
+
+Instead of:
+tsx
+Copy code
+const performanceData = data.performance.yearlyPerformance?.[`year${index + 1}`] || {};
+Fix:
+Ensure performanceData is directly mapped from the investment analysis engine:
+tsx
+Copy code
+const performanceData = data.investmentMetrics.cashflowProjection[`year${index + 1}`];
+🚀 Final Optimized Flow
+✅ Ensure Correct Data Flow Across Components
+analysis-engine/calculations.ts → PropertyAnalyzerPage.tsx → PropertyAnalyzerPDF.tsx → PDFService.tsx
+Ensure analysis-engine/calculations.ts is the single source of truth for all calculations.
+✅ Key Fixes Implemented in PDFService.tsx
+Replace recalculations like:
+
+tsx
+Copy code
+const loanBalance = previousLoanBalance - principalPaid;
+with:
+
+tsx
+Copy code
+const loanBalance = data.investmentMetrics.loanBalance;
+✅ Next Steps
+Implement the fixes in PDFService.tsx, ensuring it only pulls from data and does not perform additional calculations.
+Check analysis-engine/calculations.ts to ensure all required values are exposed.

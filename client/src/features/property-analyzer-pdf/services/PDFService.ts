@@ -99,19 +99,6 @@ export async function generatePDF(
   const footerHeight = 20; // Reserved space for footer
   const disclaimerMargin = 40; // Space above footer for disclaimer
 
-  // Helper function to calculate loan balance at a given month
-  const calculateLoanBalance = (monthsPaid: number): number => {
-    const monthlyRate = (data.financialMetrics.interestRate / 100) / 12;
-    const totalPayments = data.financialMetrics.loanTerm * 12;
-    const monthlyPayment = data.financialMetrics.monthlyBondRepayment;
-    const loanAmount = data.financialMetrics.loanAmount;
-
-    if (monthlyRate === 0 || monthsPaid >= totalPayments) return 0;
-
-    const remainingPayments = totalPayments - monthsPaid;
-    return (monthlyPayment * (1 - Math.pow(1 + monthlyRate, -remainingPayments))) / monthlyRate;
-  };
-
   let yPosition = margin;
 
   // Helper function to check and add new page if needed
@@ -934,18 +921,37 @@ export async function generatePDF(
   pdf.text("Asset Growth & Equity", margin, yPosition);
   yPosition += 10;
 
-  const yearsArray = [1, 2, 3, 4, 5, 10, 20];
-  // Use the metrics directly from the analysis engine
-  const assetMetrics = yearsArray.map((year, i) => {
-    const metrics = data.investmentMetrics.shortTerm[i];
-    return [
-      formatCurrency(metrics.propertyValue),
-      formatCurrency(metrics.appreciationGain),
-      formatCurrency(metrics.loanBalance),
-      formatCurrency(metrics.interestPaid),
-      `${metrics.interestToPrincipalRatio}%`,
-      formatCurrency(metrics.totalEquity),
-      formatCurrency(metrics.principalPaid)
+// Update how we access the investment metrics
+const yearsArray = [1, 2, 3, 4, 5, 10, 20];
+const assetMetrics = yearsArray.map((year, i) => {
+  const metrics = data.investmentMetrics.shortTerm[i];
+  return [
+    formatCurrency(metrics.propertyValue || 0),
+    formatCurrency(metrics.appreciationGain || 0),
+    formatCurrency(metrics.loanBalance || 0),
+    formatCurrency(metrics.interestPaid || 0),
+    `${metrics.interestToPrincipalRatio || 0}%`,
+    formatCurrency(metrics.totalEquity || 0),
+    formatCurrency(metrics.principalPaid || 0)
+  ];
+});
+
+  // Use the existing performance calculations since they're based on the pre-calculated values
+  const performanceData = data.performance.yearlyPerformance?.[`year${index + 1}`] || {
+    revenue: 0,
+    expenses: 0,
+    netIncome: 0,
+    occupancy: 0,
+    cashflow: 0
+  };
+
+  return [
+      month,
+      formatCurrency(performanceData.revenue),
+      formatCurrency(performanceData.expenses),
+      formatCurrency(performanceData.netIncome),
+      `${performanceData.occupancy}%`,
+      formatCurrency(performanceData.cashflow)
     ];
   });
 
