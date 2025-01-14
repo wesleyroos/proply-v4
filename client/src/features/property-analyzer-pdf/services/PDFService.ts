@@ -30,14 +30,27 @@ const addPageFooters = async (
       pdf.setPage(i);
 
       // Add favicon to bottom left
-      pdf.addImage(
-        faviconUrl,
-        "PNG",
-        margin,
-        pageHeight - margin - faviconHeight - footerPadding,
-        "auto",
-        faviconHeight,
-      );
+      const logo = new Image();
+      logo.src = faviconUrl;
+      await new Promise((resolve, reject) => {
+        logo.onload = () => {
+          const aspectRatio = logo.width / logo.height;
+          const width = faviconHeight * aspectRatio;
+          pdf.addImage(
+            logo,
+            "PNG",
+            margin,
+            pageHeight - margin - faviconHeight - footerPadding,
+            width,
+            faviconHeight,
+          );
+          resolve(null);
+        };
+        logo.onerror = () => {
+          console.error('Error loading logo in footer');
+          resolve(null);
+        };
+      });
 
       // Add page numbers to bottom right
       pdf.setFontSize(8);
