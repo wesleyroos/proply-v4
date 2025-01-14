@@ -933,14 +933,21 @@ export async function generatePDF(
   const yearsArray = [1, 2, 3, 4, 5, 10, 20];
   const assetMetrics = yearsArray.map((year, i) => {
     const metrics = data.investmentMetrics.shortTerm[i];
+    const propertyValue = data.propertyDetails.purchasePrice * Math.pow(1 + data.financialMetrics.annualAppreciation / 100, year);
+    const loanBalance = data.financialMetrics.loanAmount * Math.pow(1 + data.financialMetrics.interestRate / 100, year);
+    const totalEquity = propertyValue - loanBalance;
+    const interestPaid = (data.financialMetrics.monthlyBondRepayment * 12 * year) - (data.financialMetrics.loanAmount - loanBalance);
+    const principalPaid = data.financialMetrics.loanAmount - loanBalance;
+    const interestToPrincipalRatio = (interestPaid / (interestPaid + principalPaid)) * 100;
+    
     return [
-      formatCurrency(metrics.propertyValue || 0),
-      formatCurrency(metrics.appreciationGain || 0),
-      formatCurrency(metrics.loanBalance || 0),
-      formatCurrency(metrics.interestPaid || 0),
-      `${metrics.interestToPrincipalRatio || 0}%`,
-      formatCurrency(metrics.totalEquity || 0),
-      formatCurrency(metrics.principalPaid || 0)
+      formatCurrency(propertyValue),
+      formatCurrency(propertyValue - data.propertyDetails.purchasePrice),
+      formatCurrency(loanBalance),
+      formatCurrency(interestPaid),
+      `${interestToPrincipalRatio.toFixed(1)}%`,
+      formatCurrency(totalEquity),
+      formatCurrency(principalPaid)
     ];
   });
 
