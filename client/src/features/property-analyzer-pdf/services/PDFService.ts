@@ -618,11 +618,11 @@ export async function generatePDF(
       baseRate * (1 - (data.expenses.managementFee > 0 ? 0.15 : 0.03)),
     ),
     "45%",
-    formatCurrency(monthlyPerformance[12][5].replace(/[^0-9.-]+/g, "") / 12),
+    formatCurrency(monthlyPerformance[11][5].replace(/[^0-9.-]+/g, "") / 12),
     "65%",
-    formatCurrency(monthlyPerformance[12][7].replace(/[^0-9.-]+/g, "") / 12),
+    formatCurrency(monthlyPerformance[11][7].replace(/[^0-9.-]+/g, "") / 12),
     "85%",
-    formatCurrency(monthlyPerformance[12][9].replace(/[^0-9.-]+/g, "") / 12),
+    formatCurrency(monthlyPerformance[11][9].replace(/[^0-9.-]+/g, "") / 12),
     formatCurrency(data.performance.longTermAnnualRevenue / 12),
   ]);
 
@@ -985,8 +985,7 @@ export async function generatePDF(
     assetGrowthCanvas.height = chartHeight;
 
     await html2canvas(assetGrowthChart, {
-      canvas: assetGrowthCanvas,
-      scale: 2,
+      canvas: assetGrowthCanvas,      scale: 2,
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff'
