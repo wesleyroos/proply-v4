@@ -791,7 +791,7 @@ export default function PropertyAnalyzerPage() {
                             </span>
                           </p>
                           <div className="pt-2 border-t border-blue-100">
-                            <div className<div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center">
                               <p className="text-sm text-slate-600">Nightly Rate:</p>
                               <p className="text-sm font-medium flex items-center gap-2">
                                 R{analysisResult.shortTermNightlyRate?.toLocaleString() ||
