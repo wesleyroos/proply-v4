@@ -10,6 +10,70 @@ import {
   SEASONALITY_FACTORS,
 } from "@/utils/rentalPerformance";
 
+// Footer handler function
+const addPageFooters = async (
+  pdf: jsPDF,
+  pageWidth: number,
+  pageHeight: number,
+  margin: number,
+) => {
+  const totalPages = pdf.getNumberOfPages();
+
+  try {
+    // Load favicon
+    const faviconWidth = 15;
+    const faviconHeight = 15;
+    const faviconResponse = await window.fs.readFile("/proply-favicon.png");
+    const faviconData =
+      "data:image/png;base64," +
+      btoa(
+        new Uint8Array(faviconResponse).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          "",
+        ),
+      );
+
+    // Add footer to each page
+    for (let i = 1; i <= totalPages; i++) {
+      pdf.setPage(i);
+
+      // Add favicon to bottom left
+      pdf.addImage(
+        faviconData,
+        "PNG",
+        margin,
+        pageHeight - margin - faviconHeight,
+        faviconWidth,
+        faviconHeight,
+      );
+
+      // Add page numbers to bottom right
+      pdf.setFontSize(8);
+      pdf.setTextColor(100);
+      pdf.text(
+        `Page ${i} of ${totalPages}`,
+        pageWidth - margin,
+        pageHeight - margin,
+        { align: "right" },
+      );
+    }
+  } catch (error) {
+    console.error("Error adding favicon to pages:", error);
+    // If favicon fails, still add page numbers
+    for (let i = 1; i <= totalPages; i++) {
+      pdf.setPage(i);
+      pdf.setFontSize(8);
+      pdf.setTextColor(100);
+      pdf.text(
+        `Page ${i} of ${totalPages}`,
+        pageWidth - margin,
+        pageHeight - margin,
+        { align: "right" },
+      );
+    }
+  }
+};
+
 export async function generatePDF(
   data: PropertyData,
   selections: ReportSelections,
@@ -26,6 +90,8 @@ export async function generatePDF(
   const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 20;
   const contentWidth = pageWidth - 2 * margin;
+  const footerHeight = 20; // Reserved space for footer
+  const disclaimerMargin = 40; // Space above footer for disclaimer
 
   let yPosition = margin;
 
@@ -115,6 +181,19 @@ export async function generatePDF(
   pdf.text("Property Overview", margin, yPosition);
   yPosition += 10;
 
+  // Add description
+  pdf.setFontSize(10);
+  pdf.setTextColor(90);
+  pdf.text(
+    "Key details about the property including location, size, and basic features.",
+    margin,
+    yPosition,
+  );
+  yPosition += 5;
+
+  // Reset text color for the rest of the content
+  pdf.setTextColor(0);
+
   const propertyDetails = [
     ["Address", data.propertyDetails.address],
     ["Purchase Price", formatCurrency(data.propertyDetails.purchasePrice)],
@@ -157,7 +236,7 @@ export async function generatePDF(
   yPosition = (pdf as any).lastAutoTable.finalY + 15;
 
   // Only create new page if there isn't enough space for the Financial Overview section
-  const requiredSpace = 150; // Approximate space needed for Financial Overview section
+  const requiredSpace = 80; // Reduced from 150 to 100mm
   if (yPosition + requiredSpace > pageHeight - margin) {
     pdf.addPage();
     yPosition = margin;
@@ -167,6 +246,19 @@ export async function generatePDF(
   pdf.setFontSize(16);
   pdf.text("Financial Overview", margin, yPosition);
   yPosition += 10;
+
+  // Add description
+  pdf.setFontSize(10);
+  pdf.setTextColor(90);
+  pdf.text(
+    "Summary of the financial requirements including deposit, costs, and monthly repayments.",
+    margin,
+    yPosition,
+  );
+  yPosition += 5;
+
+  // Reset text color
+  pdf.setTextColor(0);
 
   const financialMetrics = [
     ["Deposit Amount", formatCurrency(data.financialMetrics.depositAmount)],
@@ -208,7 +300,20 @@ export async function generatePDF(
   // Rental Performance Section
   pdf.setFontSize(16);
   pdf.text("Rental Performance", margin, yPosition);
+  yPosition += 10;
+
+  // Add description
+  pdf.setFontSize(10);
+  pdf.setTextColor(90);
+  pdf.text(
+    "Analysis of potential rental income for both short-term and long-term letting strategies.",
+    margin,
+    yPosition,
+  );
   yPosition += 15;
+
+  // Reset text color
+  pdf.setTextColor(0);
 
   // Short Term Performance
   pdf.setFontSize(14);
@@ -284,6 +389,19 @@ export async function generatePDF(
   pdf.setFontSize(14);
   pdf.text("Monthly Revenue Performance", margin, yPosition);
   yPosition += 10;
+
+  // Add description
+  pdf.setFontSize(10);
+  pdf.setTextColor(90);
+  pdf.text(
+    "Detailed breakdown of expected monthly revenue across different occupancy scenarios.",
+    margin,
+    yPosition,
+  );
+  yPosition += 5;
+
+  // Reset text color
+  pdf.setTextColor(0);
 
   const months = [
     "Jan",
@@ -554,7 +672,20 @@ export async function generatePDF(
   pdf.setFontSize(16);
   pdf.setTextColor(0);
   pdf.text("Cashflow Metrics", margin, yPosition);
+  yPosition += 10;
+
+  // Add description
+  pdf.setFontSize(10);
+  pdf.setTextColor(90);
+  pdf.text(
+    "Long and short financial projections showing expected returns and cash flows over time.",
+    margin,
+    yPosition,
+  );
   yPosition += 15;
+
+  // Reset text color
+  pdf.setTextColor(0);
 
   const addCashflowMetricsTable = (
     term: "shortTerm" | "longTerm",
@@ -651,22 +782,23 @@ export async function generatePDF(
     yPosition,
   );
 
-  // Add page numbers
+  // Get the current page count before adding disclaimer
   const totalPages = pdf.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
-    pdf.setPage(i);
-    pdf.setFontSize(8);
-    pdf.setTextColor(100);
-    pdf.text(
-      `Page ${i} of ${totalPages}`,
-      pageWidth - margin,
-      pageHeight - margin / 2,
-      { align: "right" },
-    );
-  }
-
-  // Add disclaimer on the last page
   const currentYear = new Date().getFullYear();
+
+  // Set to last page for disclaimer
+  pdf.setPage(totalPages);
+
+  // Calculate space needed for disclaimer
+  const currentY = (pdf as any).lastAutoTable.finalY;
+
+  // Position for disclaimer (anchored above the footer)
+  let disclaimerY = pageHeight - footerHeight - disclaimerMargin - 10; // Adjusted to move it up
+
+  // Define disclaimer text
+  pdf.setFontSize(8);
+  pdf.setTextColor(90);
+
   const disclaimerText = [
     "DISCLAIMER: The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.",
     "",
@@ -679,32 +811,31 @@ export async function generatePDF(
     `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
   ];
 
-  pdf.setPage(totalPages);
+  // Calculate total height needed for disclaimer
+  const lines = disclaimerText
+    .map((line) => pdf.splitTextToSize(line, contentWidth))
+    .flat();
+  const totalDisclaimerHeight =
+    lines.length * 3 + (disclaimerText.length - 1) * 2;
 
-  // Check if we need a new page for disclaimer
-  if ((pdf as any).lastAutoTable.finalY + 100 > pageHeight - margin) {
+  // If disclaimer doesn't fit, add a new page
+  if (currentY + totalDisclaimerHeight + footerHeight + margin > pageHeight) {
     pdf.addPage();
-    yPosition = margin;
-  } else {
-    yPosition = (pdf as any).lastAutoTable.finalY + 20;
+    disclaimerY = pageHeight - footerHeight - disclaimerMargin - 10; // Adjusted to move it up
   }
 
-  pdf.setFontSize(8);
-  pdf.setTextColor(90);
-
-  const maxWidth = pageWidth - 2 * margin;
+  // Add disclaimer text properly
   disclaimerText.forEach((line) => {
-    const lines = pdf.splitTextToSize(line, maxWidth);
-    lines.forEach((splitLine) => {
-      if (yPosition + 10 > pageHeight - margin) {
-        pdf.addPage();
-        yPosition = margin;
-      }
-      pdf.text(splitLine, margin, yPosition);
-      yPosition += 3;
+    const splitLines = pdf.splitTextToSize(line, contentWidth);
+    splitLines.forEach((splitLine) => {
+      pdf.text(splitLine, margin, disclaimerY);
+      disclaimerY += 3;
     });
-    yPosition += 2;
+    disclaimerY += 2;
   });
+
+  // Add footers to all pages (including favicon and page numbers)
+  await addPageFooters(pdf, pageWidth, pageHeight, margin);
 
   // Save the PDF
   const pdfOutput = pdf.output("blob");
