@@ -284,6 +284,68 @@ export default function PropertyAnalyzerPage() {
   const handleGeneratePDF = async (selections: ReportSelections) => {
     setIsGeneratingPDF(true);
     try {
+      const allMetrics = await someFunctionToCalculateAssetGrowth(analysisResult); // Assuming this function exists and calculates asset growth metrics.  REPLACE with your actual function.
+      const assetGrowthData = allMetrics || [];
+      setPDFData({
+        assetGrowthMetrics: assetGrowthData,
+        propertyDetails: {
+          address: analysisResult.address,
+          bedrooms: formData?.bedrooms || "N/A",
+          bathrooms: formData?.bathrooms || "N/A",
+          floorArea: Number(formData?.floorArea) || 0,
+          parkingSpaces: Number(formData?.parkingSpaces) || 0,
+          purchasePrice: analysisResult.analysis.purchasePrice,
+          ratePerSquareMeter: Number(formData?.cmaRatePerSqm) || 0,
+          areaRate: Number(analysisResult.ratePerSquareMeter) || 0,
+          rateDifference: Number(formData?.cmaRatePerSqm || 0) - (Number(analysisResult.ratePerSquareMeter) || 0),
+          propertyPhoto: formData?.propertyPhoto || null,
+        },
+        financialMetrics: {
+          depositAmount: Number(analysisResult.deposit) || 0,
+          depositPercentage: Number(analysisResult.depositPercentage) || 0,
+          interestRate: Number(analysisResult.interestRate) || 0,
+          loanTerm: Number(analysisResult.loanTerm) || 0,
+          monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment) || 0,
+          // Add pre-calculated metrics from analysis engine
+          investmentMetrics: analysisResult.analysis.investmentMetrics,
+          netOperatingIncome: analysisResult.netOperatingIncome,
+          revenueProjections: analysisResult.analysis.revenueProjections,
+          bondRegistration: calculateBondRegistration(analysisResult.analysis.purchasePrice, !removeVat),
+          transferCosts: calculateTransferCosts(
+            analysisResult.analysis.purchasePrice,
+            !removeVat,
+            !removeTransferDuty
+          ),
+        },
+        expenses: {
+          monthlyLevies: Number(formData?.monthlyLevies) || 0,
+          monthlyRatesTaxes: Number(formData?.monthlyRatesTaxes) || 0,
+          otherMonthlyExpenses: Number(formData?.otherMonthlyExpenses) || 0,
+          maintenancePercent: Number(formData?.maintenancePercent) || 0,
+          managementFee: Number(analysisResult.managementFee) || 0,
+        },
+        performance: {
+          shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate) || 0,
+          annualOccupancy: Number(analysisResult.annualOccupancy) || 0,
+          shortTermAnnualRevenue: Number(analysisResult.analysis.shortTermAnnualRevenue) || 0,
+          longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue) || 0,
+          shortTermGrossYield: Number(analysisResult.shortTermGrossYield) || 0,
+          longTermGrossYield: Number(analysisResult.longTermGrossYield) || 0,
+          // Add detailed performance metrics
+          yearlyPerformance: analysisResult.analysis.netOperatingIncome
+        },
+        investmentMetrics: analysisResult.analysis.investmentMetrics,
+        operatingExpenses: analysisResult.analysis.operatingExpenses,
+        netOperatingIncome: analysisResult.netOperatingIncome,
+        revenueProjections: analysisResult.analysis.revenueProjections,
+
+        // Add complete analysis results
+        analysisResults: {
+          ...analysisResult.analysis,
+          operatingExpenses: analysisResult.analysis.operatingExpenses,
+          investmentMetrics: analysisResult.analysis.investmentMetrics
+        }
+      });
       await generatePDF(pdfData, selections, user?.settings?.companyLogo || '');
       toast({
         title: "Success",
@@ -729,7 +791,7 @@ export default function PropertyAnalyzerPage() {
                             </span>
                           </p>
                           <div className="pt-2 border-t border-blue-100">
-                            <div className="flex justify-between items-center">
+                            <div className<div className="flex justify-between items-center">
                               <p className="text-sm text-slate-600">Nightly Rate:</p>
                               <p className="text-sm font-medium flex items-center gap-2">
                                 R{analysisResult.shortTermNightlyRate?.toLocaleString() ||

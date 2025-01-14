@@ -929,7 +929,17 @@ export async function generatePDF(
   pdf.text("Asset Growth & Equity", margin, yPosition);
   yPosition += 10;
 
-  // Update how we access the investment metrics
+  // Use the passed metrics array
+  const years = [1, 2, 3, 4, 5, 10, 20];
+  const assetMetrics = data.assetGrowthMetrics?.map((metrics, i) => ({
+    propertyValue: metrics[0],
+    annualAppreciation: metrics[1],
+    loanBalance: metrics[2],
+    interestPaid: metrics[3],
+    interestToPrincipalRatio: metrics[4],
+    totalEquity: metrics[5],
+    loanRepaymentEquity: metrics[6]
+  })) || [];
   const yearsArray = [1, 2, 3, 4, 5, 10, 20];
   const assetMetrics = yearsArray.map((year, i) => {
     const metrics = data.investmentMetrics.shortTerm[i];
