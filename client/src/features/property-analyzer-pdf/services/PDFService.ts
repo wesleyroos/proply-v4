@@ -935,38 +935,21 @@ export async function generatePDF(
   yPosition += 10;
 
   const yearsArray = [1, 2, 3, 4, 5, 10, 20];
-  const assetMetrics = yearsArray.map((year, index) => {
+  // Use the metrics from the analysis engine
+  const assetMetrics = yearsArray.map((year, i) => {
+    const yearKey = `year${year}`;
+    const metrics = data.investmentMetrics.shortTerm[i];
     const propertyValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation || 5) / 100, year);
     const previousYearValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation || 5) / 100, year - 1);
-    const appreciationAmount = propertyValue - previousYearValue;
     
-    const monthlyPayment = data.financialMetrics.monthlyBondRepayment;
-    const monthlyRate = (data.financialMetrics.interestRate / 100) / 12;
-    const totalPayments = data.financialMetrics.loanTerm * 12;
-    const monthsPaid = year * 12;
-    const loanAmount = data.financialMetrics.loanAmount;
-    
-    // Calculate loan balance and payments
-    const remainingPayments = totalPayments - monthsPaid;
-    const loanBalance = monthlyRate === 0 || monthsPaid >= totalPayments ? 0 : 
-      (monthlyPayment * (1 - Math.pow(1 + monthlyRate, -remainingPayments))) / monthlyRate;
-    
-    // Calculate total amount paid and interest
-    const totalPaid = monthlyPayment * Math.min(monthsPaid, totalPayments);
-    const principalPaid = Math.max(0, loanAmount - loanBalance);
-    const interestPaid = Math.max(0, totalPaid - principalPaid);
-    const interestToPrincipalRatio = principalPaid > 0 ? Math.round((interestPaid / principalPaid) * 100) : 0;
-    const totalEquity = propertyValue - loanBalance;
-    const loanRepaymentEquity = principalPaid;
-
     return [
       formatCurrency(propertyValue),
-      formatCurrency(appreciationAmount),
-      formatCurrency(loanBalance),
-      formatCurrency(interestPaid),
-      `${interestToPrincipalRatio}%`,
-      formatCurrency(totalEquity),
-      formatCurrency(principalPaid)
+      formatCurrency(propertyValue - previousYearValue),
+      formatCurrency(metrics.loanBalance || 0),
+      formatCurrency(metrics.interestPaid || 0),
+      `${metrics.interestToPrincipalRatio || 0}%`,
+      formatCurrency(metrics.totalEquity || 0),
+      formatCurrency(metrics.principalPaid || 0)
     ];
   });
 
