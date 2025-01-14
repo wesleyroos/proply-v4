@@ -284,8 +284,25 @@ export default function PropertyAnalyzerPage() {
   const handleGeneratePDF = async (selections: ReportSelections) => {
     setIsGeneratingPDF(true);
     try {
-      const allMetrics = await someFunctionToCalculateAssetGrowth(analysisResult); // Assuming this function exists and calculates asset growth metrics.  REPLACE with your actual function.
-      const assetGrowthData = allMetrics || [];
+      const assetGrowthData = yearsArray.map((year, i) => {
+        const metrics = analysisResult.analysis.investmentMetrics.shortTerm[i];
+        const propertyValue = analysisResult.analysis.purchasePrice * Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, year);
+        const loanBalance = (analysisResult.analysis.purchasePrice - analysisResult.deposit) * Math.pow(1 + analysisResult.interestRate / 100, year);
+        const totalEquity = propertyValue - loanBalance;
+        const interestPaid = (analysisResult.monthlyBondRepayment * 12 * year) - ((analysisResult.analysis.purchasePrice - analysisResult.deposit) - loanBalance);
+        const principalPaid = (analysisResult.analysis.purchasePrice - analysisResult.deposit) - loanBalance;
+        const interestToPrincipalRatio = (interestPaid / (interestPaid + principalPaid)) * 100;
+        
+        return [
+          propertyValue,
+          propertyValue - analysisResult.analysis.purchasePrice,
+          loanBalance,
+          interestPaid,
+          interestToPrincipalRatio,
+          totalEquity,
+          principalPaid
+        ];
+      });
       setPDFData({
         assetGrowthMetrics: assetGrowthData,
         propertyDetails: {
