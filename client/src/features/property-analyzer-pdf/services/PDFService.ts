@@ -941,12 +941,13 @@ export async function generatePDF(
     const startValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation || 5) / 100, year - 1);
     const endValue = propertyValue;
     const appreciationAmount = endValue - startValue;
-    const monthlyPayment = data.financialMetrics.monthlyBondRepayment; //Simplified calculation
+    const monthlyPayment = data.financialMetrics.monthlyBondRepayment;
     const monthsPaid = year * 12;
     const totalPaid = monthsPaid * monthlyPayment;
     const principalPaid = data.financialMetrics.loanAmount - loanBalance;
-    const interestPaid = totalPaid - principalPaid;
+    const interestPaid = totalPaid > 0 ? totalPaid - principalPaid : 0;
     const equityFromRepayment = data.financialMetrics.loanAmount - loanBalance;
+    const interestToPrincipalRatio = principalPaid > 0 ? (interestPaid / principalPaid * 100).toFixed(1) : 0;
     const totalEquity = propertyValue - loanBalance;
 
     return [
@@ -954,7 +955,7 @@ export async function generatePDF(
       formatCurrency(appreciationAmount),
       formatCurrency(loanBalance),
       formatCurrency(interestPaid),
-      `${((interestPaid / principalPaid) * 100).toFixed(1)}%`,
+      `${interestToPrincipalRatio}%`,
       formatCurrency(totalEquity),
       formatCurrency(equityFromRepayment)
     ];
