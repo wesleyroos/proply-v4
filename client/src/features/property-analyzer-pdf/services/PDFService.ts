@@ -896,7 +896,7 @@ export async function generatePDF(
   // If disclaimer doesn't fit, add a new page
   if (currentY + totalDisclaimerHeight + footerHeight + margin > pageHeight) {
     pdf.addPage();
-    disclaimerY = pageHeight - footerHeight - disclaimerMargin - 30; // Adjusted to move it up
+    disclaimerY = pageHeight - footerHeight - disclaimerMargin - 40; // Adjusted to move it up
   }
 
   // Add disclaimer text properly
