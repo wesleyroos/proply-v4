@@ -936,17 +936,35 @@ export async function generatePDF(
 
   const yearsArray = [1, 2, 3, 4, 5, 10, 20];
   const assetMetrics = yearsArray.map((year, index) => {
-    const yearMetrics = data.investmentMetrics.shortTerm[index];
-    const yearRevenue = data.revenueProjections.shortTerm[`year${year}`];
+    const propertyValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation || 5) / 100, year);
+    const previousYearValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation || 5) / 100, year - 1);
+    const appreciationAmount = propertyValue - previousYearValue;
     
+    const monthlyPayment = data.financialMetrics.monthlyBondRepayment;
+    const monthlyRate = (data.financialMetrics.interestRate / 100) / 12;
+    const totalPayments = data.financialMetrics.loanTerm * 12;
+    const monthsPaid = year * 12;
+    const loanAmount = data.financialMetrics.loanAmount;
+    
+    // Calculate remaining loan balance
+    const remainingPayments = totalPayments - monthsPaid;
+    const loanBalance = monthlyRate === 0 || monthsPaid >= totalPayments ? 0 : 
+      (monthlyPayment * (1 - Math.pow(1 + monthlyRate, -remainingPayments))) / monthlyRate;
+    
+    const totalPaid = monthsPaid * monthlyPayment;
+    const principalPaid = loanAmount - loanBalance;
+    const interestPaid = totalPaid > 0 ? totalPaid - principalPaid : 0;
+    const interestToPrincipalRatio = principalPaid > 0 ? (interestPaid / principalPaid * 100).toFixed(1) : 0;
+    const totalEquity = propertyValue - loanBalance;
+
     return [
-      formatCurrency(yearRevenue),
-      formatCurrency(yearMetrics.appreciationAmount || 0),
-      formatCurrency(yearMetrics.loanBalance || 0),
-      formatCurrency(yearMetrics.interestPaid || 0),
-      `${yearMetrics.interestToPrincipalRatio || 0}%`,
-      formatCurrency(yearMetrics.totalEquity || 0),
-      formatCurrency(yearMetrics.equityFromRepayment || 0)
+      formatCurrency(propertyValue),
+      formatCurrency(appreciationAmount),
+      formatCurrency(loanBalance),
+      formatCurrency(interestPaid),
+      `${interestToPrincipalRatio}%`,
+      formatCurrency(totalEquity),
+      formatCurrency(principalPaid)
     ];
   });
 
