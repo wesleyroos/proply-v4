@@ -817,21 +817,20 @@ export async function generatePDF(
     const years = [1, 2, 3, 4, 5, 10, 20];
     const metrics = data.investmentMetrics?.[term] || [];
 
-    const tableData = metrics.map((metric, index) => [
-      `Year ${years[index]}`,
-      `${formatPercentage(metric.grossYield)}%`,
-      `${formatPercentage(metric.netYield)}%`,
-      `${formatPercentage(metric.returnOnEquity)}%`,
-      `${formatPercentage(metric.annualReturn)}%`,
-      `${formatPercentage(metric.capRate)}%`,
-      `${formatPercentage(metric.cashOnCashReturn)}%`,
-      `${formatPercentage(metric.irr)}%`,
-      formatCurrency(metric.netWorthChange),
-    ]);
+    const tableData = [
+      ["Gross Yield", ...metrics.map(m => `${formatPercentage(m.grossYield)}%`)],
+      ["Net Yield", ...metrics.map(m => `${formatPercentage(m.netYield)}%`)],
+      ["ROE", ...metrics.map(m => `${formatPercentage(m.returnOnEquity)}%`)],
+      ["Annual Return", ...metrics.map(m => `${formatPercentage(m.annualReturn)}%`)],
+      ["Cap Rate", ...metrics.map(m => `${formatPercentage(m.capRate)}%`)],
+      ["Cash on Cash", ...metrics.map(m => `${formatPercentage(m.cashOnCashReturn)}%`)],
+      ["IRR", ...metrics.map(m => `${formatPercentage(m.irr)}%`)],
+      ["Net Worth Change", ...metrics.map(m => formatCurrency(m.netWorthChange))]
+    ];
 
     autoTable(pdf, {
       startY: startY,
-      head: [["Year", "Gross Yield", "Net Yield", "ROE", "Annual Return", "Cap Rate", "Cash on Cash", "IRR", "Net Worth Change"]],
+      head: [["Metric", ...years.map(year => `Year ${year}`)]],
       body: tableData,
       margin: { left: margin },
       styles: {
