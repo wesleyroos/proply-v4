@@ -951,7 +951,6 @@ const assetMetrics = yearsArray.map((year, i) => {
     formatPercentage(performanceData.netYield || 0),
     formatPercentage(performanceData.grossYield || 0)
   ];
-};
 
   yPosition += (contentWidth * 400) / 750 + 20;
   checkPageBreak(200);
