@@ -783,6 +783,81 @@ export async function generatePDF(
     yPosition,
   );
 
+  // Add Investment Metrics (on new page)
+  pdf.addPage();
+  yPosition = margin;
+
+  pdf.setFontSize(16);
+  pdf.setTextColor(0);
+  pdf.text("Investment Metrics", margin, yPosition);
+  yPosition += 10;
+
+  // Add description
+  pdf.setFontSize(10);
+  pdf.setTextColor(90);
+  pdf.text(
+    "Key performance indicators showing returns and yields over different time periods.",
+    margin,
+    yPosition,
+  );
+  yPosition += 15;
+
+  // Reset text color
+  pdf.setTextColor(0);
+
+  const addInvestmentMetricsTable = (
+    term: "shortTerm" | "longTerm",
+    title: string,
+    startY: number,
+  ) => {
+    pdf.setFontSize(14);
+    pdf.text(title, margin, startY);
+    startY += 10;
+
+    const years = [1, 2, 3, 4, 5, 10, 20];
+    const metrics = data.investmentMetrics?.[term] || [];
+
+    const tableData = metrics.map((metric, index) => [
+      `Year ${years[index]}`,
+      `${formatPercentage(metric.grossYield)}%`,
+      `${formatPercentage(metric.netYield)}%`,
+      `${formatPercentage(metric.returnOnEquity)}%`,
+      `${formatPercentage(metric.annualReturn)}%`,
+      `${formatPercentage(metric.capRate)}%`,
+      `${formatPercentage(metric.cashOnCashReturn)}%`,
+      `${formatPercentage(metric.irr)}%`,
+      formatCurrency(metric.netWorthChange),
+    ]);
+
+    autoTable(pdf, {
+      startY: startY,
+      head: [["Year", "Gross Yield", "Net Yield", "ROE", "Annual Return", "Cap Rate", "Cash on Cash", "IRR", "Net Worth Change"]],
+      body: tableData,
+      margin: { left: margin },
+      styles: {
+        minCellHeight: 6,
+        fontSize: 8,
+        cellPadding: 2,
+      },
+      headStyles: {
+        fillColor: [30, 144, 255],
+        textColor: 255,
+      },
+    });
+    return (pdf as any).lastAutoTable.finalY + 15;
+  };
+
+  yPosition = addInvestmentMetricsTable(
+    "shortTerm",
+    "Short Term Investment Metrics",
+    yPosition,
+  );
+  yPosition = addInvestmentMetricsTable(
+    "longTerm",
+    "Long Term Investment Metrics",
+    yPosition,
+  );
+
   // Get the current page count before adding disclaimer
   const totalPages = pdf.getNumberOfPages();
   const currentYear = new Date().getFullYear();
