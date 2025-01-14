@@ -15,6 +15,7 @@ interface AssetGrowthMetricsProps {
   interestRate: number;
   loanTerm: number;
   annualAppreciation: number;
+  onCalculate: (metrics: number[][]) => void; // Added callback function
 }
 
 export default function AssetGrowthMetrics({
@@ -24,6 +25,7 @@ export default function AssetGrowthMetrics({
   interestRate,
   loanTerm,
   annualAppreciation,
+  onCalculate, // Added callback prop
 }: AssetGrowthMetricsProps) {
   const years = [1, 2, 3, 4, 5, 10, 20];
   const monthlyRate = (interestRate > 0 ? interestRate : 0) / 100 / 12;
@@ -65,21 +67,34 @@ export default function AssetGrowthMetrics({
     }
   };
 
-  // Create data for the chart
-const chartData = years.map(year => {
-  const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
-  const loanBalance = calculateLoanBalance(year * 12);
-  const totalEquity = propertyValue - loanBalance;
+  // Create data for the chart and for the console log
+  const allMetrics = years.map(year => {
+    const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
+    const loanBalance = calculateLoanBalance(year * 12);
+    const totalEquity = propertyValue - loanBalance;
+    const monthsPaid = year * 12;
+    const monthlyPayment = calculateMonthlyPayment();
+    const totalPaid = monthsPaid * monthlyPayment;
+    const principalPaid = loanAmount - loanBalance;
+    const interestPaid = totalPaid - principalPaid;
+    const interestPayment = loanBalance * monthlyRate;
+    const principalPayment = monthlyPayment - interestPayment;
+    const ratio = principalPayment > 0 ? (interestPayment / principalPayment) * 100 : 0;
+    const equityFromRepayment = loanAmount - loanBalance;
 
-  return {
+    return [propertyValue, annualAppreciation, loanBalance, interestPaid, ratio, totalEquity, equityFromRepayment];
+  });
+
+  onCalculate(allMetrics); // Call the callback function
+
+  const chartData = years.map((year, index) => ({
     year: `Year ${year}`,
-    'Property Value': propertyValue,
-    'Loan Balance': loanBalance,
-    'Total Equity': totalEquity
-  };
-});
+    'Property Value': allMetrics[index][0],
+    'Loan Balance': allMetrics[index][2],
+    'Total Equity': allMetrics[index][5]
+  }));
 
-return (
+  return (
     <Card className="mt-6">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -121,17 +136,14 @@ return (
                     tooltip="The projected property value based on the annual appreciation rate."
                   />
                 </td>
-                {years.map(year => {
-                  const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
-                  return (
-                    <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        R{Math.round(propertyValue).toLocaleString()}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
-                    </td>
-                  );
-                })}
+                {years.map((year, index) => (
+                  <td key={year} className="text-right py-3 px-6">
+                    <div className="flex items-center justify-end gap-2">
+                      R{Math.round(allMetrics[index][0]).toLocaleString()}
+                      <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                    </div>
+                  </td>
+                ))}
               </tr>
 
               {/* Annual Appreciation */}
@@ -142,19 +154,14 @@ return (
                     tooltip="The amount of value added to the property each year based on the appreciation rate."
                   />
                 </td>
-                {years.map(year => {
-                  const startValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year - 1);
-                  const endValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
-                  const appreciationAmount = endValue - startValue;
-                  return (
-                    <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        R{Math.round(appreciationAmount).toLocaleString()}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
-                    </td>
-                  );
-                })}
+                {years.map((year, index) => (
+                  <td key={year} className="text-right py-3 px-6">
+                    <div className="flex items-center justify-end gap-2">
+                      R{Math.round(allMetrics[index][1]).toLocaleString()}
+                      <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                    </div>
+                  </td>
+                ))}
               </tr>
 
               {/* Loan Balance */}
@@ -165,18 +172,14 @@ return (
                     tooltip="The remaining loan balance at the end of each year based on the amortization schedule."
                   />
                 </td>
-                {years.map(year => {
-                  const monthsPaid = year * 12;
-                  const loanBalance = calculateLoanBalance(monthsPaid);
-                  return (
-                    <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        R{Math.round(loanBalance).toLocaleString()}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
-                    </td>
-                  );
-                })}
+                {years.map((year, index) => (
+                  <td key={year} className="text-right py-3 px-6">
+                    <div className="flex items-center justify-end gap-2">
+                      R{Math.round(allMetrics[index][2]).toLocaleString()}
+                      <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                    </div>
+                  </td>
+                ))}
               </tr>
 
               {/* Total Interest Paid */}
@@ -187,21 +190,14 @@ return (
                     tooltip="The cumulative amount of interest paid on the loan up to this point."
                   />
                 </td>
-                {years.map(year => {
-                  const monthsPaid = year * 12;
-                  const monthlyPayment = calculateMonthlyPayment();
-                  const totalPaid = monthsPaid * monthlyPayment;
-                  const principalPaid = loanAmount - calculateLoanBalance(monthsPaid);
-                  const interestPaid = totalPaid - principalPaid;
-                  return (
-                    <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        R{Math.round(Math.max(0, interestPaid)).toLocaleString()}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
-                    </td>
-                  );
-                })}
+                {years.map((year, index) => (
+                  <td key={year} className="text-right py-3 px-6">
+                    <div className="flex items-center justify-end gap-2">
+                      R{Math.round(Math.max(0, allMetrics[index][3])).toLocaleString()}
+                      <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                    </div>
+                  </td>
+                ))}
               </tr>
 
               {/* Interest-to-Principal Ratio */}
@@ -212,22 +208,14 @@ return (
                     tooltip="The percentage of your monthly payment that goes towards interest vs principal. A decreasing ratio indicates more of your payment going to principal over time."
                   />
                 </td>
-                {years.map(year => {
-                  const monthsPaid = year * 12;
-                  const monthlyPayment = calculateMonthlyPayment();
-                  const loanBalance = calculateLoanBalance(monthsPaid);
-                  const interestPayment = loanBalance * monthlyRate;
-                  const principalPayment = monthlyPayment - interestPayment;
-                  const ratio = principalPayment > 0 ? (interestPayment / principalPayment) * 100 : 0;
-                  return (
-                    <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        {ratio.toFixed(1)}%
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
-                    </td>
-                  );
-                })}
+                {years.map((year, index) => (
+                  <td key={year} className="text-right py-3 px-6">
+                    <div className="flex items-center justify-end gap-2">
+                      {allMetrics[index][4].toFixed(1)}%
+                      <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                    </div>
+                  </td>
+                ))}
               </tr>
 
               {/* Total Equity */}
@@ -238,19 +226,14 @@ return (
                     tooltip="The total equity in the property, including initial deposit, loan repayment, and appreciation."
                   />
                 </td>
-                {years.map(year => {
-                  const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
-                  const loanBalance = calculateLoanBalance(year * 12);
-                  const totalEquity = propertyValue - loanBalance;
-                  return (
-                    <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        R{Math.round(Math.max(0, totalEquity)).toLocaleString()}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
-                    </td>
-                  );
-                })}
+                {years.map((year, index) => (
+                  <td key={year} className="text-right py-3 px-6">
+                    <div className="flex items-center justify-end gap-2">
+                      R{Math.round(Math.max(0, allMetrics[index][5])).toLocaleString()}
+                      <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                    </div>
+                  </td>
+                ))}
               </tr>
 
               {/* Equity Build-up (from loan repayment) */}
@@ -261,19 +244,14 @@ return (
                     tooltip="The amount of equity built through loan repayment alone (excluding appreciation)."
                   />
                 </td>
-                {years.map(year => {
-                  const monthsPaid = year * 12;
-                  const loanBalance = calculateLoanBalance(monthsPaid);
-                  const equityFromRepayment = loanAmount - loanBalance;
-                  return (
-                    <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        R{Math.round(Math.max(0, equityFromRepayment)).toLocaleString()}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
-                    </td>
-                  );
-                })}
+                {years.map((year, index) => (
+                  <td key={year} className="text-right py-3 px-6">
+                    <div className="flex items-center justify-end gap-2">
+                      R{Math.round(Math.max(0, allMetrics[index][6])).toLocaleString()}
+                      <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
+                    </div>
+                  </td>
+                ))}
               </tr>
             </tbody>
           </table>
