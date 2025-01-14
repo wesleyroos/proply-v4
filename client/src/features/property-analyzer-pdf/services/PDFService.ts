@@ -874,13 +874,9 @@ export async function generatePDF(
   pdf.addPage();
   yPosition = margin;
 
+  // Cashflow Projections Chart
   pdf.setFontSize(16);
   pdf.setTextColor(0);
-  pdf.text("Data Visualizations", margin, yPosition);
-  yPosition += 15;
-
-  // Cashflow Projections Chart
-  pdf.setFontSize(14);
   pdf.text("Cashflow Projections", margin, yPosition);
   yPosition += 10;
 
@@ -914,9 +910,66 @@ export async function generatePDF(
 
   // Asset Growth & Equity Chart
   checkPageBreak(100);
-  pdf.setFontSize(14);
+  pdf.setFontSize(16);
   pdf.text("Asset Growth & Equity", margin, yPosition);
   yPosition += 10;
+
+  const years = [1, 2, 3, 4, 5, 10, 20];
+  const assetMetrics = years.map(year => {
+    const propertyValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation / 100), year);
+    const loanBalance = calculateLoanBalance(year * 12);
+    const startValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation / 100), year - 1);
+    const endValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation / 100), year);
+    const appreciationAmount = endValue - startValue;
+    const monthlyPayment = calculateMonthlyPayment();
+    const monthsPaid = year * 12;
+    const totalPaid = monthsPaid * monthlyPayment;
+    const principalPaid = data.financialMetrics.loanAmount - calculateLoanBalance(monthsPaid);
+    const interestPaid = totalPaid - principalPaid;
+    const equityFromRepayment = data.financialMetrics.loanAmount - loanBalance;
+    const totalEquity = propertyValue - loanBalance;
+
+    return [
+      formatCurrency(propertyValue),
+      formatCurrency(appreciationAmount),
+      formatCurrency(loanBalance),
+      formatCurrency(interestPaid),
+      `${((interestPaid / principalPaid) * 100).toFixed(1)}%`,
+      formatCurrency(totalEquity),
+      formatCurrency(equityFromRepayment)
+    ];
+  });
+
+  yPosition += (contentWidth * 400) / 750 + 20;
+  checkPageBreak(200);
+
+  autoTable(pdf, {
+    startY: yPosition,
+    head: [
+      ["Metric", ...years.map(year => `Year ${year}`)],
+    ],
+    body: [
+      ["Property Value", ...assetMetrics.map(m => m[0])],
+      ["Annual Appreciation", ...assetMetrics.map(m => m[1])],
+      ["Loan Balance", ...assetMetrics.map(m => m[2])],
+      ["Total Interest Paid", ...assetMetrics.map(m => m[3])],
+      ["Interest-to-Principal Ratio", ...assetMetrics.map(m => m[4])],
+      ["Total Equity", ...assetMetrics.map(m => m[5])],
+      ["Loan Repayment Equity", ...assetMetrics.map(m => m[6])]
+    ],
+    margin: { left: margin },
+    styles: {
+      minCellHeight: 6,
+      fontSize: 8,
+      cellPadding: 2,
+    },
+    headStyles: {
+      fillColor: [30, 144, 255],
+      textColor: 255,
+    },
+  });
+
+  yPosition = (pdf as any).lastAutoTable.finalY + 20;
 
   const assetGrowthCanvas = document.createElement("canvas");
   const assetGrowthChart = document.getElementById("asset-growth-chart");
