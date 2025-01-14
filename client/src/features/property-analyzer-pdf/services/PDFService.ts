@@ -22,7 +22,7 @@ const addPageFooters = async (
 
   try {
     // Load favicon
-    const faviconHeight = 8;
+    const faviconHeight = 6;
     const faviconUrl = "/proply-logo-1.png";
 
     // Add footer to each page
@@ -47,7 +47,7 @@ const addPageFooters = async (
           resolve(null);
         };
         logo.onerror = () => {
-          console.error('Error loading logo in footer');
+          console.error("Error loading logo in footer");
           resolve(null);
         };
       });
