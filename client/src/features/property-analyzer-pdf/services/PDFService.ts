@@ -952,12 +952,12 @@ export async function generatePDF(
     const loanBalance = monthlyRate === 0 || monthsPaid >= totalPayments ? 0 : 
       (monthlyPayment * (1 - Math.pow(1 + monthlyRate, -remainingPayments))) / monthlyRate;
     
-    // Calculate payments and equity
     const totalPaid = monthlyPayment * Math.min(monthsPaid, totalPayments);
     const principalPaid = Math.max(0, loanAmount - loanBalance);
-    const interestPaid = Math.max(0, totalPaid - principalPaid);
+    const interestPaid = totalPaid - principalPaid;
     const interestToPrincipalRatio = principalPaid > 0 ? Math.round((interestPaid / principalPaid) * 100) : 0;
     const totalEquity = propertyValue - loanBalance;
+    const loanRepaymentEquity = principalPaid;
 
     return [
       formatCurrency(propertyValue),
