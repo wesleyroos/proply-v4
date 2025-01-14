@@ -947,14 +947,6 @@ export async function generatePDF(
       formatCurrency(metrics.totalEquity || 0),
       formatCurrency(metrics.principalPaid || 0)
     ];
-      formatCurrency(propertyValue),
-      formatCurrency(propertyValue - previousYearValue),
-      formatCurrency(loanBalance),
-      formatCurrency(interestPaid),
-      `${interestToPrincipalRatio}%`,
-      formatCurrency(totalEquity),
-      formatCurrency(principalPaid)
-    ];
   });
 
   yPosition += (contentWidth * 400) / 750 + 20;
