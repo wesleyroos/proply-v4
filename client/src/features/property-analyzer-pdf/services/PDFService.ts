@@ -98,6 +98,19 @@ export async function generatePDF(
   const footerHeight = 20; // Reserved space for footer
   const disclaimerMargin = 40; // Space above footer for disclaimer
 
+  // Helper function to calculate loan balance at a given month
+  const calculateLoanBalance = (monthsPaid: number): number => {
+    const monthlyRate = (data.financialMetrics.interestRate / 100) / 12;
+    const totalPayments = data.financialMetrics.loanTerm * 12;
+    const monthlyPayment = data.financialMetrics.monthlyBondRepayment;
+    const loanAmount = data.financialMetrics.loanAmount;
+
+    if (monthlyRate === 0 || monthsPaid >= totalPayments) return 0;
+
+    const remainingPayments = totalPayments - monthsPaid;
+    return (monthlyPayment * (1 - Math.pow(1 + monthlyRate, -remainingPayments))) / monthlyRate;
+  };
+
   let yPosition = margin;
 
   // Helper function to check and add new page if needed
@@ -887,7 +900,7 @@ export async function generatePDF(
     const chartHeight = 400;
     cashflowCanvas.width = chartWidth;
     cashflowCanvas.height = chartHeight;
-    
+
     await html2canvas(cashflowChart, {
       canvas: cashflowCanvas,
       scale: 2,
@@ -895,7 +908,7 @@ export async function generatePDF(
       logging: false,
       backgroundColor: '#ffffff'
     });
-    
+
     pdf.addImage(
       cashflowCanvas.toDataURL(),
       "PNG",
@@ -905,7 +918,7 @@ export async function generatePDF(
       (contentWidth * chartHeight) / chartWidth
     );
   }
-  
+
   yPosition += (contentWidth * 400) / 750 + 20;
 
   // Asset Growth & Equity Chart
@@ -914,17 +927,17 @@ export async function generatePDF(
   pdf.text("Asset Growth & Equity", margin, yPosition);
   yPosition += 10;
 
-  const years = [1, 2, 3, 4, 5, 10, 20];
-  const assetMetrics = years.map(year => {
+  const yearsArray = [1, 2, 3, 4, 5, 10, 20];
+  const assetMetrics = yearsArray.map(year => {
     const propertyValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation / 100), year);
     const loanBalance = calculateLoanBalance(year * 12);
     const startValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation / 100), year - 1);
     const endValue = data.propertyDetails.purchasePrice * Math.pow(1 + (data.financialMetrics.annualAppreciation / 100), year);
     const appreciationAmount = endValue - startValue;
-    const monthlyPayment = calculateMonthlyPayment();
+    const monthlyPayment = data.financialMetrics.monthlyBondRepayment; //Simplified calculation
     const monthsPaid = year * 12;
     const totalPaid = monthsPaid * monthlyPayment;
-    const principalPaid = data.financialMetrics.loanAmount - calculateLoanBalance(monthsPaid);
+    const principalPaid = data.financialMetrics.loanAmount - loanBalance;
     const interestPaid = totalPaid - principalPaid;
     const equityFromRepayment = data.financialMetrics.loanAmount - loanBalance;
     const totalEquity = propertyValue - loanBalance;
@@ -946,7 +959,7 @@ export async function generatePDF(
   autoTable(pdf, {
     startY: yPosition,
     head: [
-      ["Metric", ...years.map(year => `Year ${year}`)],
+      ["Metric", ...yearsArray.map(year => `Year ${year}`)],
     ],
     body: [
       ["Property Value", ...assetMetrics.map(m => m[0])],
@@ -955,7 +968,7 @@ export async function generatePDF(
       ["Total Interest Paid", ...assetMetrics.map(m => m[3])],
       ["Interest-to-Principal Ratio", ...assetMetrics.map(m => m[4])],
       ["Total Equity", ...assetMetrics.map(m => m[5])],
-      ["Loan Repayment Equity", ...assetMetrics.map(m => m[6])]
+      ["Loan Repayment Equity",...assetMetrics.map(m => m[6])]
     ],
     margin: { left: margin },
     styles: {
@@ -978,7 +991,7 @@ export async function generatePDF(
     const chartHeight = 400;
     assetGrowthCanvas.width = chartWidth;
     assetGrowthCanvas.height = chartHeight;
-    
+
     await html2canvas(assetGrowthChart, {
       canvas: assetGrowthCanvas,
       scale: 2,
@@ -986,7 +999,7 @@ export async function generatePDF(
       logging: false,
       backgroundColor: '#ffffff'
     });
-    
+
     pdf.addImage(
       assetGrowthCanvas.toDataURL(),
       "PNG",
@@ -996,7 +1009,7 @@ export async function generatePDF(
       (contentWidth * chartHeight) / chartWidth
     );
   }
-  
+
   yPosition += (contentWidth * 400) / 750 + 20;
 
   // Get the current page count before adding disclaimer
