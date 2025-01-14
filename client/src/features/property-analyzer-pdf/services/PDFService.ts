@@ -446,6 +446,14 @@ export async function generatePDF(
     const medRevenue = feeAdjustedRate * daysInMonth * (medOcc / 100);
     const highRevenue = feeAdjustedRate * daysInMonth * (highOcc / 100);
 
+    // Use investment metrics data directly from analysis engine
+    const metrics = data.investmentMetrics.shortTerm[index] || {
+      netWorthChange: 0,
+      annualReturn: 0,
+      netYield: 0,
+      grossYield: 0
+    };
+
     return [
       month,
       formatCurrency(seasonalRate),
@@ -921,37 +929,21 @@ export async function generatePDF(
   pdf.text("Asset Growth & Equity", margin, yPosition);
   yPosition += 10;
 
-// Update how we access the investment metrics
-const yearsArray = [1, 2, 3, 4, 5, 10, 20];
-const assetMetrics = yearsArray.map((year, i) => {
-  const metrics = data.investmentMetrics.shortTerm[i];
-  return [
-    formatCurrency(metrics.propertyValue || 0),
-    formatCurrency(metrics.appreciationGain || 0),
-    formatCurrency(metrics.loanBalance || 0),
-    formatCurrency(metrics.interestPaid || 0),
-    `${metrics.interestToPrincipalRatio || 0}%`,
-    formatCurrency(metrics.totalEquity || 0),
-    formatCurrency(metrics.principalPaid || 0)
-  ];
-});
+  // Update how we access the investment metrics
+  const yearsArray = [1, 2, 3, 4, 5, 10, 20];
+  const assetMetrics = yearsArray.map((year, i) => {
+    const metrics = data.investmentMetrics.shortTerm[i];
+    return [
+      formatCurrency(metrics.propertyValue || 0),
+      formatCurrency(metrics.appreciationGain || 0),
+      formatCurrency(metrics.loanBalance || 0),
+      formatCurrency(metrics.interestPaid || 0),
+      `${metrics.interestToPrincipalRatio || 0}%`,
+      formatCurrency(metrics.totalEquity || 0),
+      formatCurrency(metrics.principalPaid || 0)
+    ];
+  });
 
-  // Use investment metrics data directly from analysis engine
-  const performanceData = data.investmentMetrics.shortTerm[index] || {
-    netWorthChange: 0,
-    annualReturn: 0,
-    netYield: 0,
-    grossYield: 0
-  };
-
-  return [
-    month,
-    formatCurrency(performanceData.netWorthChange || 0),
-    formatPercentage(performanceData.annualReturn || 0),
-    formatPercentage(performanceData.netYield || 0),
-    formatPercentage(performanceData.grossYield || 0)
-  ];
-});
 
   yPosition += (contentWidth * 400) / 750 + 20;
   checkPageBreak(200);
