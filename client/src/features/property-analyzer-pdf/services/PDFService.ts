@@ -24,15 +24,7 @@ const addPageFooters = async (
     // Load favicon
     const faviconWidth = 15;
     const faviconHeight = 15;
-    const faviconResponse = await window.fs.readFile("/proply-favicon.png");
-    const faviconData =
-      "data:image/png;base64," +
-      btoa(
-        new Uint8Array(faviconResponse).reduce(
-          (data, byte) => data + String.fromCharCode(byte),
-          "",
-        ),
-      );
+    const faviconUrl = "/proply-favicon.png";
 
     // Add footer to each page
     for (let i = 1; i <= totalPages; i++) {
@@ -40,7 +32,7 @@ const addPageFooters = async (
 
       // Add favicon to bottom left
       pdf.addImage(
-        faviconData,
+        faviconUrl,
         "PNG",
         margin,
         pageHeight - margin - faviconHeight - footerPadding,
