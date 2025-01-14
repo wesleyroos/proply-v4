@@ -818,13 +818,13 @@ export async function generatePDF(
     const metrics = data.investmentMetrics?.[term] || [];
 
     const tableData = [
-      ["Gross Yield", ...metrics.map(m => `${formatPercentage(m.grossYield)}%`)],
-      ["Net Yield", ...metrics.map(m => `${formatPercentage(m.netYield)}%`)],
-      ["ROE", ...metrics.map(m => `${formatPercentage(m.returnOnEquity)}%`)],
-      ["Annual Return", ...metrics.map(m => `${formatPercentage(m.annualReturn)}%`)],
-      ["Cap Rate", ...metrics.map(m => `${formatPercentage(m.capRate)}%`)],
-      ["Cash on Cash", ...metrics.map(m => `${formatPercentage(m.cashOnCashReturn)}%`)],
-      ["IRR", ...metrics.map(m => `${formatPercentage(m.irr)}%`)],
+      ["Gross Yield", ...metrics.map(m => formatPercentage(m.grossYield))],
+      ["Net Yield", ...metrics.map(m => formatPercentage(m.netYield))],
+      ["ROE", ...metrics.map(m => formatPercentage(m.returnOnEquity))],
+      ["Annual Return", ...metrics.map(m => formatPercentage(m.annualReturn))],
+      ["Cap Rate", ...metrics.map(m => formatPercentage(m.capRate))],
+      ["Cash on Cash", ...metrics.map(m => formatPercentage(m.cashOnCashReturn))],
+      ["IRR", ...metrics.map(m => formatPercentage(m.irr))],
       ["Net Worth Change", ...metrics.map(m => formatCurrency(m.netWorthChange))]
     ];
 
