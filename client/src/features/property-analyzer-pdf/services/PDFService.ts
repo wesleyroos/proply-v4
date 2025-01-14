@@ -18,6 +18,7 @@ const addPageFooters = async (
   margin: number,
 ) => {
   const totalPages = pdf.getNumberOfPages();
+  const footerPadding = 10; // Padding from bottom of page
 
   try {
     // Load favicon
@@ -42,7 +43,7 @@ const addPageFooters = async (
         faviconData,
         "PNG",
         margin,
-        pageHeight - margin - faviconHeight,
+        pageHeight - margin - faviconHeight - footerPadding,
         faviconWidth,
         faviconHeight,
       );
@@ -53,7 +54,7 @@ const addPageFooters = async (
       pdf.text(
         `Page ${i} of ${totalPages}`,
         pageWidth - margin,
-        pageHeight - margin,
+        pageHeight - margin - footerPadding,
         { align: "right" },
       );
     }
@@ -67,7 +68,7 @@ const addPageFooters = async (
       pdf.text(
         `Page ${i} of ${totalPages}`,
         pageWidth - margin,
-        pageHeight - margin,
+        pageHeight - margin - footerPadding,
         { align: "right" },
       );
     }
