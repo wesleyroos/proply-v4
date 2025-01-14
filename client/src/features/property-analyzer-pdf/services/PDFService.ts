@@ -960,13 +960,13 @@ export async function generatePDF(
       ["Metric", ...yearsArray.map(year => `Year ${year}`)],
     ],
     body: [
-      ["Property Value", ...data.assetGrowthMetrics.map(m => formatCurrency(m[0]))],
-      ["Annual Appreciation", ...data.assetGrowthMetrics.map(m => formatCurrency(m[1]))],
-      ["Loan Balance", ...data.assetGrowthMetrics.map(m => formatCurrency(m[2]))],
-      ["Total Interest Paid", ...data.assetGrowthMetrics.map(m => formatCurrency(m[3]))],
-      ["Interest-to-Principal Ratio", ...data.assetGrowthMetrics.map(m => `${m[4].toFixed(1)}%`)],
-      ["Total Equity", ...data.assetGrowthMetrics.map(m => formatCurrency(m[5]))],
-      ["Loan Repayment Equity", ...data.assetGrowthMetrics.map(m => formatCurrency(m[6]))]
+      ["Property Value", ...assetMetrics.map(m => m[0])],
+      ["Annual Appreciation", ...assetMetrics.map(m => m[1])],
+      ["Loan Balance", ...assetMetrics.map(m => m[2])],
+      ["Total Interest Paid", ...assetMetrics.map(m => m[3])],
+      ["Interest-to-Principal Ratio", ...assetMetrics.map(m => m[4])],
+      ["Total Equity", ...assetMetrics.map(m => m[5])],
+      ["Loan Repayment Equity", ...assetMetrics.map(m => m[6])]
     ],
     margin: { left: margin },
     styles: {
