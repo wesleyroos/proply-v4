@@ -46,16 +46,11 @@ export default function AssetGrowthMetrics({
   // Helper function to calculate loan balance for a given period
   const calculateLoanBalance = (monthsPaid: number): number => {
     if (loanAmount <= 0 || monthlyRate <= 0) return 0;
+    if (monthsPaid >= totalPayments) return 0;
 
+    const monthlyPayment = calculateMonthlyPayment();
     const remainingPayments = totalPayments - monthsPaid;
-    if (remainingPayments <= 0) return 0;
-
-    try {
-      return (loanAmount * (Math.pow(1 + monthlyRate, totalPayments) - Math.pow(1 + monthlyRate, monthsPaid))) 
-        / (Math.pow(1 + monthlyRate, totalPayments) - 1);
-    } catch (error) {
-      return 0;
-    }
+    return monthlyPayment * ((1 - Math.pow(1 + monthlyRate, -remainingPayments)) / monthlyRate);
   };
 
   // Helper function to calculate monthly payment
@@ -93,7 +88,7 @@ return (
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="h-[400px]">
+        <div className="h-[400px]" id="asset-growth-chart">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 70 }}>
               <CartesianGrid strokeDasharray="3 3" />
