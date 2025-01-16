@@ -18,12 +18,27 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
   if (!netOperatingIncome) return null;
   const years = [1, 2, 3, 4, 5, 10, 20];
 
-  const chartData = years.map(year => {
+  const chartData = years.map((year, index) => {
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
+    const shortTermAnnual = netOperatingIncome[yearKey].annualCashflow;
+    const longTermAnnual = netOperatingIncome[yearKey].value - (409641.24); // Annual bond payment
+
+    // Calculate cumulative for both terms
+    let shortTermCumulative = 0;
+    let longTermCumulative = 0;
+    for (let i = 0; i <= index; i++) {
+      const y = years[i];
+      const yKey = `year${y}` as keyof typeof netOperatingIncome;
+      shortTermCumulative += netOperatingIncome[yKey].annualCashflow;
+      longTermCumulative += (netOperatingIncome[yKey].value - 409641.24);
+    }
+
     return {
       year: `Year ${year}`,
-      'Annual Revenue': netOperatingIncome[yearKey].annualCashflow,
-      'Cumulative Revenue': netOperatingIncome[yearKey].cumulativeRentalIncome
+      'Short Term Annual': shortTermAnnual,
+      'Short Term Cumulative': shortTermCumulative,
+      'Long Term Annual': longTermAnnual,
+      'Long Term Cumulative': longTermCumulative
     };
   });
 
@@ -73,17 +88,30 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
           />
           <Legend />
           <Bar 
-            dataKey="Annual Revenue"
+            dataKey="Short Term Annual"
             fill="#8884d8"
+            radius={[4, 4, 0, 0]}
+            barSize={20}
+          />
+          <Bar 
+            dataKey="Long Term Annual"
+            fill="#82ca9d"
             radius={[4, 4, 0, 0]}
             barSize={20}
           />
           <Line
             type="monotone"
-            dataKey="Cumulative Revenue"
+            dataKey="Short Term Cumulative"
+            stroke="#8884d8"
+            strokeWidth={3}
+            dot={{ r: 4 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="Long Term Cumulative"
             stroke="#82ca9d"
-            strokeWidth={2}
-            dot={{ r: 3 }}
+            strokeWidth={3}
+            dot={{ r: 4 }}
           />
         </ComposedChart>
       </ResponsiveContainer>
