@@ -760,7 +760,7 @@ export async function generatePDF(
     const years = [1, 2, 3, 4, 5, 10, 20];
     const metrics = data.investmentMetrics?.[term] || [];
     const revenueData = data.revenueProjections?.[term] || {};
-    const netOperatingIncome = data.netOperatingIncome || {};
+    const netOperatingIncome = data.netOperatingIncome;
 
     const tableData = [
       [
@@ -775,8 +775,8 @@ export async function generatePDF(
       [
         "Net Operating Income",
         ...years.map((year) => {
-          const yearKey = `year${year}`;
-          return formatCurrency(netOperatingIncome[yearKey]?.value || 0);
+          const yearKey = `year${year}` as keyof typeof data.netOperatingIncome;
+          return formatCurrency(data.netOperatingIncome?.[yearKey]?.value || 0);
         }),
       ],
       [
@@ -788,9 +788,9 @@ export async function generatePDF(
       [
         "Annual Cashflow",
         ...years.map((year) => {
-          const yearKey = `year${year}`;
+          const yearKey = `year${year}` as keyof typeof data.netOperatingIncome;
           return formatCurrency(
-            netOperatingIncome[yearKey]?.annualCashflow || 0,
+            data.netOperatingIncome?.[yearKey]?.annualCashflow || 0,
           );
         }),
       ],
