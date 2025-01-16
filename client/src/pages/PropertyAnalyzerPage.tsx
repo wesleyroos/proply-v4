@@ -438,17 +438,29 @@ export default function PropertyAnalyzerPage() {
                                 loanTerm: Number(analysisResult.loanTerm) || 0,
                                 monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment) || 0,
                                 investmentMetrics: {
-                                  ...analysisResult.analysis.investmentMetrics,
-                                  shortTerm: Array.isArray(analysisResult.analysis.investmentMetrics?.shortTerm) 
-                                    ? analysisResult.analysis.investmentMetrics.shortTerm.map((metric, i) => ({
-                                        ...metric,
-                                        propertyValue: analysisResult.analysis.purchasePrice * Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, [1,2,3,4,5,10,20][i]),
-                                        appreciationGain: analysisResult.analysis.purchasePrice * (Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, [1,2,3,4,5,10,20][i]) - Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, [1,2,3,4,5,10,20][i]-1)),
-                                        loanBalance: (analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)) * (1 - ([1,2,3,4,5,10,20][i] * 12 / (analysisResult.loanTerm * 12))),
-                                        interestPaid: (analysisResult.monthlyBondRepayment || 0) * [1,2,3,4,5,10,20][i] * 12 - ((analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)) - ((analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)) * (1 - ([1,2,3,4,5,10,20][i] * 12 / (analysisResult.loanTerm * 12))))),
-                                        interestToPrincipalRatio: ((analysisResult.monthlyBondRepayment || 0) * [1,2,3,4,5,10,20][i] * 12) / ((analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)) * (1 - ([1,2,3,4,5,10,20][i] * 12 / (analysisResult.loanTerm * 12)))) * 100,
-                                        totalEquity: (analysisResult.analysis.purchasePrice * Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, [1,2,3,4,5,10,20][i])) - ((analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)) * (1 - ([1,2,3,4,5,10,20][i] * 12 / (analysisResult.loanTerm * 12)))),
-                                        principalPaid: (analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)) * ([1,2,3,4,5,10,20][i] * 12 / (analysisResult.loanTerm * 12))
+                                  shortTerm: [1,2,3,4,5,10,20].map((year, i) => {
+                                    const initialValue = analysisResult.analysis.purchasePrice;
+                                    const appreciation = formData?.annualPropertyAppreciation || 5;
+                                    const propertyValue = initialValue * Math.pow(1 + appreciation/100, year);
+                                    const appreciationGain = year === 1 
+                                      ? initialValue * (appreciation/100)
+                                      : propertyValue - (initialValue * Math.pow(1 + appreciation/100, year-1));
+                                    const loanBalance = (initialValue - (analysisResult.deposit || 0)) * (1 - (year * 12 / (analysisResult.loanTerm * 12)));
+                                    const principalPaid = (initialValue - (analysisResult.deposit || 0)) * (year * 12 / (analysisResult.loanTerm * 12));
+                                    const interestPaid = (analysisResult.monthlyBondRepayment || 0) * year * 12 - principalPaid;
+                                    const interestToPrincipalRatio = (interestPaid / principalPaid) * 100;
+                                    const totalEquity = propertyValue - loanBalance;
+
+                                    return {
+                                      propertyValue,
+                                      appreciationGain,
+                                      loanBalance,
+                                      interestPaid,
+                                      interestToPrincipalRatio,
+                                      totalEquity,
+                                      principalPaid
+                                    };
+                                  })
                                     }))
                                     : analysisResult.analysis.investmentMetrics.shortTerm,
                                   //Handle the case where shortTerm is not an array.  This assumes the structure of investmentMetrics needs to be consistent across all years.
