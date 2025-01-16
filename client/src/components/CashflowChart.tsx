@@ -11,9 +11,18 @@ interface CashflowChartProps {
     year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
     year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
   } | null;
+  longTermNetOperatingIncome?: {
+    year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year3: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year4: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year5: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year10: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+    year20: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
+  } | null;
 }
 
-export default function CashflowChart({ netOperatingIncome }: CashflowChartProps) {
+export default function CashflowChart({ netOperatingIncome, longTermNetOperatingIncome }: CashflowChartProps) {
   if (!netOperatingIncome) return null;
   const years = [1, 2, 3, 4, 5, 10, 20];
 
@@ -21,12 +30,13 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
     return {
       year: `Year ${year}`,
-      'Annual Cashflow': netOperatingIncome[yearKey].annualCashflow
+      'Short Term Annual': netOperatingIncome[yearKey].annualCashflow,
+      'Long Term Annual': longTermNetOperatingIncome?.[yearKey]?.annualCashflow || 0
     };
   });
 
   // Calculate min and max values for YAxis domain
-  const allValues = chartData.map(d => d['Annual Cashflow']);
+  const allValues = chartData.flatMap(d => [d['Short Term Annual'], d['Long Term Annual']]);
   const minValue = Math.min(...allValues);
   const maxValue = Math.max(...allValues);
   const domainPadding = (maxValue - minValue) * 0.1;
@@ -58,8 +68,14 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
           />
           <Legend />
           <Bar 
-            dataKey="Annual Cashflow"
+            dataKey="Short Term Annual"
             fill="#8884d8"
+            radius={[4, 4, 0, 0]}
+            barSize={20}
+          />
+          <Bar 
+            dataKey="Long Term Annual"
+            fill="#82ca9d"
             radius={[4, 4, 0, 0]}
             barSize={20}
           />
