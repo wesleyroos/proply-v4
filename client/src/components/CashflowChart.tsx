@@ -50,7 +50,7 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
   const domainPadding = (maxValue - minValue) * 0.1;
 
   return (
-    <div className="h-[400px] w-full" id="cashflow-chart">
+    <div className="h-[400px] w-full" id="cashflow-chart" data-testid="cashflow-chart">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
           data={chartData}

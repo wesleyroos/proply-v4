@@ -894,6 +894,43 @@ export async function generatePDF(
         canvas: cashflowCanvas,
         scale: 2,
         useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      pdf.addImage(
+        cashflowCanvas.toDataURL(),
+        "PNG",
+        margin,
+        yPosition,
+        contentWidth,
+        (contentWidth * chartHeight) / chartWidth
+      );
+      yPosition += (contentWidth * chartHeight) / chartWidth + 20;
+    } catch (error) {
+      console.error('Error capturing cashflow chart:', error);
+    }
+  }
+
+  // Cashflow Projections Chart
+  pdf.setFontSize(16);
+  pdf.setTextColor(0);
+  pdf.text("Cashflow Projections", margin, yPosition);
+  yPosition += 10;
+
+  const cashflowCanvas = document.createElement("canvas");
+  const cashflowChart = document.querySelector('[data-testid="cashflow-chart"]');
+  if (cashflowChart) {
+    const chartWidth = 750;
+    const chartHeight = 400;
+    cashflowCanvas.width = chartWidth;
+    cashflowCanvas.height = chartHeight;
+
+    try {
+      await html2canvas(cashflowChart, {
+        canvas: cashflowCanvas,
+        scale: 2,
+        useCORS: true,
         logging: true,
         backgroundColor: '#ffffff',
         windowWidth: chartWidth,
