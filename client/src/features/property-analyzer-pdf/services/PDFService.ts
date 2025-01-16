@@ -909,12 +909,13 @@ export async function generatePDF(
 
       // Data points (years 1-20)
       const years = [1, 2, 3, 4, 5, 10, 20];
-      const shortTermData = years.map(year => data.netOperatingIncome?.['year' + year]?.netWorthChange || 0);
-      const longTermData = years.map(year => data.netOperatingIncome?.['year' + year]?.netWorthChange || 0);
+      const shortTermData = years.map(year => data.investmentMetrics?.shortTerm?.[years.indexOf(year)]?.netWorthChange || 0);
+      const longTermData = years.map(year => data.investmentMetrics?.longTerm?.[years.indexOf(year)]?.netWorthChange || 0);
 
-      // Find max value for scaling
-      const maxValue = Math.max(...[...shortTermData, ...longTermData]);
-      const minValue = Math.min(...[...shortTermData, ...longTermData]);
+      // Find max value for scaling with some padding
+      const allValues = [...shortTermData, ...longTermData];
+      const maxValue = Math.max(...allValues) * 1.1;
+      const minValue = Math.min(...allValues) * 1.1;
 
       // Draw axes
       ctxCashflow.beginPath();
