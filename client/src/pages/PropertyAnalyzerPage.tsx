@@ -552,24 +552,17 @@ export default function PropertyAnalyzerPage() {
                             }
 
                             setPDFData({
+                              analysis: analysisResult.analysis,
                               propertyDetails: {
                                 address: analysisResult.address,
-                                bedrooms: formData?.bedrooms || "N/A",
+                                bedrooms: formData?.bedrooms || "N/A", 
                                 bathrooms: formData?.bathrooms || "N/A",
                                 floorArea: Number(formData?.floorArea) || 0,
-                                parkingSpaces:
-                                  Number(formData?.parkingSpaces) || 0,
-                                purchasePrice:
-                                  analysisResult.analysis.purchasePrice,
-                                ratePerSquareMeter:
-                                  Number(formData?.cmaRatePerSqm) || 0,
-                                areaRate:
-                                  Number(analysisResult.ratePerSquareMeter) ||
-                                  0,
-                                rateDifference:
-                                  Number(formData?.cmaRatePerSqm || 0) -
-                                  (Number(analysisResult.ratePerSquareMeter) ||
-                                    0),
+                                parkingSpaces: Number(formData?.parkingSpaces) || 0,
+                                purchasePrice: analysisResult.analysis.purchasePrice,
+                                ratePerSquareMeter: Number(formData?.cmaRatePerSqm) || 0,
+                                areaRate: Number(analysisResult.ratePerSquareMeter) || 0,
+                                rateDifference: Number(formData?.cmaRatePerSqm || 0) - (Number(analysisResult.ratePerSquareMeter) || 0),
                                 propertyPhoto: formData?.propertyPhoto || null,
                               },
                               financialMetrics: {
