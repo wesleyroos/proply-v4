@@ -1,4 +1,5 @@
-import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { formatter } from "@/utils/rentalPerformance";
 
 interface CashflowChartProps {
@@ -21,12 +22,13 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
     return {
       year: `Year ${year}`,
-      'Annual Cashflow': netOperatingIncome[yearKey].annualCashflow
+      'Annual Cashflow': netOperatingIncome[yearKey].annualCashflow,
+      'Cumulative Cashflow': netOperatingIncome[yearKey].cumulativeRentalIncome
     };
   });
 
   // Calculate min and max values for YAxis domain
-  const allValues = chartData.map(d => d['Annual Cashflow']);
+  const allValues = chartData.flatMap(d => [d['Annual Cashflow'], d['Cumulative Cashflow']]);
   const minValue = Math.min(...allValues);
   const maxValue = Math.max(...allValues);
   const domainPadding = (maxValue - minValue) * 0.1;
@@ -62,6 +64,13 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
             fill="#8884d8"
             radius={[4, 4, 0, 0]}
             barSize={20}
+          />
+          <Line
+            type="monotone"
+            dataKey="Cumulative Cashflow"
+            stroke="#82ca9d"
+            strokeWidth={2}
+            dot={{ r: 4 }}
           />
         </ComposedChart>
       </ResponsiveContainer>
