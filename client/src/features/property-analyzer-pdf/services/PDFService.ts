@@ -464,18 +464,18 @@ export async function generatePDF(
   const revenueChartCanvas = document.createElement("canvas");
   revenueChartCanvas.width = 750;
   revenueChartCanvas.height = 400;
-  
-  const ctx = revenueChartCanvas.getContext("2d");
-  if (ctx) {
+
+  const ctxRevenue = revenueChartCanvas.getContext("2d");
+  if (ctxRevenue) {
     // Set white background
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, revenueChartCanvas.width, revenueChartCanvas.height);
-    
+    ctxRevenue.fillStyle = "#ffffff";
+    ctxRevenue.fillRect(0, 0, revenueChartCanvas.width, revenueChartCanvas.height);
+
     // Chart dimensions
     const chartMargin = { top: 40, right: 40, bottom: 60, left: 60 };
     const chartWidth = revenueChartCanvas.width - chartMargin.left - chartMargin.right;
     const chartHeight = revenueChartCanvas.height - chartMargin.top - chartMargin.bottom;
-    
+
     // Get max value for scaling
     const values = monthlyPerformance.map(row => [
       parseFloat(row[5].replace(/[^0-9.-]+/g, "")), // Low
@@ -484,43 +484,43 @@ export async function generatePDF(
       parseFloat(row[10].replace(/[^0-9.-]+/g, "")), // Long term
     ]).flat();
     const maxValue = Math.max(...values);
-    
+
     // Draw axes
-    ctx.beginPath();
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 1;
+    ctxRevenue.beginPath();
+    ctxRevenue.strokeStyle = "#000000";
+    ctxRevenue.lineWidth = 1;
     // Y axis
-    ctx.moveTo(chartMargin.left, chartMargin.top);
-    ctx.lineTo(chartMargin.left, chartHeight + chartMargin.top);
+    ctxRevenue.moveTo(chartMargin.left, chartMargin.top);
+    ctxRevenue.lineTo(chartMargin.left, chartHeight + chartMargin.top);
     // X axis
-    ctx.moveTo(chartMargin.left, chartHeight + chartMargin.top);
-    ctx.lineTo(chartWidth + chartMargin.left, chartHeight + chartMargin.top);
-    ctx.stroke();
+    ctxRevenue.moveTo(chartMargin.left, chartHeight + chartMargin.top);
+    ctxRevenue.lineTo(chartWidth + chartMargin.left, chartHeight + chartMargin.top);
+    ctxRevenue.stroke();
 
     // Y axis labels and grid lines
     const ySteps = 5;
     const yStepSize = maxValue / ySteps;
-    ctx.textAlign = "right";
-    ctx.font = "10px Arial";
+    ctxRevenue.textAlign = "right";
+    ctxRevenue.font = "10px Arial";
     for (let i = 0; i <= ySteps; i++) {
       const y = chartHeight + chartMargin.top - (i * chartHeight / ySteps);
       // Grid line
-      ctx.beginPath();
-      ctx.strokeStyle = "#e5e7eb";
-      ctx.moveTo(chartMargin.left, y);
-      ctx.lineTo(chartWidth + chartMargin.left, y);
-      ctx.stroke();
+      ctxRevenue.beginPath();
+      ctxRevenue.strokeStyle = "#e5e7eb";
+      ctxRevenue.moveTo(chartMargin.left, y);
+      ctxRevenue.lineTo(chartWidth + chartMargin.left, y);
+      ctxRevenue.stroke();
       // Label
-      ctx.fillStyle = "#000000";
-      ctx.fillText(formatCurrency(i * yStepSize), chartMargin.left - 5, y + 4);
+      ctxRevenue.fillStyle = "#000000";
+      ctxRevenue.fillText(formatCurrency(i * yStepSize), chartMargin.left - 5, y + 4);
     }
 
     // X axis labels
-    ctx.textAlign = "center";
+    ctxRevenue.textAlign = "center";
     const xStep = chartWidth / (months.length - 1);
     months.forEach((month, i) => {
       const x = chartMargin.left + i * xStep;
-      ctx.fillText(month, x, chartHeight + chartMargin.top + 20);
+      ctxRevenue.fillText(month, x, chartHeight + chartMargin.top + 20);
     });
 
     // Draw data lines
@@ -532,36 +532,36 @@ export async function generatePDF(
     ];
 
     dataLines.forEach(({ values, color, label }, lineIndex) => {
-      ctx.beginPath();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
-      
+      ctxRevenue.beginPath();
+      ctxRevenue.strokeStyle = color;
+      ctxRevenue.lineWidth = 2;
+
       values.forEach((value, i) => {
         const x = chartMargin.left + i * xStep;
         const y = chartHeight + chartMargin.top - (value / maxValue * chartHeight);
         if (i === 0) {
-          ctx.moveTo(x, y);
+          ctxRevenue.moveTo(x, y);
         } else {
-          ctx.lineTo(x, y);
+          ctxRevenue.lineTo(x, y);
         }
       });
-      ctx.stroke();
+      ctxRevenue.stroke();
 
       // Add legend
       const legendX = chartMargin.left + 20 + (lineIndex * 150);
       const legendY = chartHeight + chartMargin.top + 40;
-      
+
       // Legend line
-      ctx.beginPath();
-      ctx.strokeStyle = color;
-      ctx.moveTo(legendX, legendY);
-      ctx.lineTo(legendX + 30, legendY);
-      ctx.stroke();
-      
+      ctxRevenue.beginPath();
+      ctxRevenue.strokeStyle = color;
+      ctxRevenue.moveTo(legendX, legendY);
+      ctxRevenue.lineTo(legendX + 30, legendY);
+      ctxRevenue.stroke();
+
       // Legend text
-      ctx.fillStyle = "#000000";
-      ctx.textAlign = "left";
-      ctx.fillText(label, legendX + 40, legendY + 4);
+      ctxRevenue.fillStyle = "#000000";
+      ctxRevenue.textAlign = "left";
+      ctxRevenue.fillText(label, legendX + 40, legendY + 4);
     });
   }
 
@@ -889,36 +889,125 @@ export async function generatePDF(
   pdf.text("Cashflow Projections", margin, yPosition);
   yPosition += 10;
 
+  // Create and render cashflow chart directly
   const cashflowCanvas = document.createElement("canvas");
-  const cashflowChart = document.querySelector('[data-testid="cashflow-chart"]');
-  if (cashflowChart) {
-    const chartWidth = 750;
-    const chartHeight = 400;
-    cashflowCanvas.width = chartWidth;
-    cashflowCanvas.height = chartHeight;
+  const chartWidth = 750;
+  const chartHeight = 400;
+  cashflowCanvas.width = chartWidth;
+  cashflowCanvas.height = chartHeight;
 
-    try {
-      await html2canvas(cashflowChart, {
-        canvas: cashflowCanvas,
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
+  const ctxCashflow = cashflowCanvas.getContext("2d");
+  if (ctxCashflow) {
+      // Set white background
+      ctxCashflow.fillStyle = "#ffffff";
+      ctxCashflow.fillRect(0, 0, chartWidth, chartHeight);
+
+      // Chart dimensions
+      const chartMargin = { top: 40, right: 40, bottom: 60, left: 80 };
+      const plotWidth = chartWidth - chartMargin.left - chartMargin.right;
+      const plotHeight = chartHeight - chartMargin.top - chartMargin.bottom;
+
+      // Data points (years 1-20)
+      const years = [1, 2, 3, 4, 5, 10, 20];
+      const shortTermData = years.map(year => data.netOperatingIncome?.['year' + year]?.netWorthChange || 0);
+      const longTermData = years.map(year => data.netOperatingIncome?.['year' + year]?.netWorthChange || 0);
+
+      // Find max value for scaling
+      const maxValue = Math.max(...[...shortTermData, ...longTermData]);
+      const minValue = Math.min(...[...shortTermData, ...longTermData]);
+
+      // Draw axes
+      ctxCashflow.beginPath();
+      ctxCashflow.strokeStyle = "#000000";
+      ctxCashflow.lineWidth = 1;
+
+      // Y axis
+      ctxCashflow.moveTo(chartMargin.left, chartMargin.top);
+      ctxCashflow.lineTo(chartMargin.left, chartHeight - chartMargin.bottom);
+
+      // X axis
+      ctxCashflow.moveTo(chartMargin.left, chartHeight - chartMargin.bottom);
+      ctxCashflow.lineTo(chartWidth - chartMargin.right, chartHeight - chartMargin.bottom);
+      ctxCashflow.stroke();
+
+      // Y axis labels and grid lines
+      const ySteps = 5;
+      const yStepSize = (maxValue - minValue) / ySteps;
+      ctxCashflow.textAlign = "right";
+      ctxCashflow.font = "10px Arial";
+
+      for (let i = 0; i <= ySteps; i++) {
+          const value = minValue + (i * yStepSize);
+          const y = chartHeight - chartMargin.bottom - (i * plotHeight / ySteps);
+
+          // Grid line
+          ctxCashflow.beginPath();
+          ctxCashflow.strokeStyle = "#e5e7eb";
+          ctxCashflow.moveTo(chartMargin.left, y);
+          ctxCashflow.lineTo(chartWidth - chartMargin.right, y);
+          ctxCashflow.stroke();
+
+          // Label
+          ctxCashflow.fillStyle = "#000000";
+          ctxCashflow.fillText(formatCurrency(value), chartMargin.left - 5, y + 4);
+      }
+
+      // X axis labels
+      ctxCashflow.textAlign = "center";
+      const xStep = plotWidth / (years.length - 1);
+      years.forEach((year, i) => {
+          const x = chartMargin.left + (i * xStep);
+          ctxCashflow.fillText(`Year ${year}`, x, chartHeight - chartMargin.bottom + 20);
       });
 
-      pdf.addImage(
-        cashflowCanvas.toDataURL(),
-        "PNG",
-        margin,
-        yPosition,
-        contentWidth,
-        (contentWidth * chartHeight) / chartWidth
-      );
-      yPosition += (contentWidth * chartHeight) / chartWidth + 20;
-    } catch (error) {
-      console.error('Error capturing cashflow chart:', error);
-    }
+      // Draw data lines
+      [
+          { data: shortTermData, color: "#4CAF50", label: "Short Term" },
+          { data: longTermData, color: "#2196F3", label: "Long Term" }
+      ].forEach(({ data, color, label }, index) => {
+          ctxCashflow.beginPath();
+          ctxCashflow.strokeStyle = color;
+          ctxCashflow.lineWidth = 2;
+
+          data.forEach((value, i) => {
+              const x = chartMargin.left + (i * xStep);
+              const y = chartHeight - chartMargin.bottom - 
+                       ((value - minValue) / (maxValue - minValue) * plotHeight);
+
+              if (i === 0) {
+                  ctxCashflow.moveTo(x, y);
+              } else {
+                  ctxCashflow.lineTo(x, y);
+              }
+          });
+          ctxCashflow.stroke();
+
+          // Add legend
+          const legendX = chartMargin.left + 20 + (index * 120);
+          const legendY = chartMargin.top - 15;
+
+          ctxCashflow.beginPath();
+          ctxCashflow.strokeStyle = color;
+          ctxCashflow.moveTo(legendX, legendY);
+          ctxCashflow.lineTo(legendX + 30, legendY);
+          ctxCashflow.stroke();
+
+          ctxCashflow.fillStyle = "#000000";
+          ctxCashflow.textAlign = "left";
+          ctxCashflow.fillText(label, legendX + 40, legendY + 4);
+      });
   }
+
+  // Add chart to PDF
+  pdf.addImage(
+      cashflowCanvas.toDataURL(),
+      "PNG",
+      margin,
+      yPosition,
+      contentWidth,
+      (contentWidth * chartHeight) / chartWidth
+  );
+  yPosition += (contentWidth * chartHeight) / chartWidth + 20;
 
   // Cashflow Projections Chart has already been handled above, removing duplicate code
 
@@ -930,54 +1019,54 @@ export async function generatePDF(
   pdf.text("Asset Growth & Equity", margin, yPosition);
   yPosition += 10;
 
-const yearsArray = [1, 2, 3, 4, 5, 10, 20];
-const calculateAssetMetrics = (year: number) => {
-  const initialValue = data.propertyDetails.purchasePrice;
-  const appreciation = data.financialMetrics.annualAppreciation || 5;
-  const loanAmount = initialValue - data.financialMetrics.depositAmount;
-  const monthlyRate = (data.financialMetrics.interestRate / 100) / 12;
-  const monthlyPayment = data.financialMetrics.monthlyBondRepayment;
-  const totalMonths = year * 12;
+  const yearsArray = [1, 2, 3, 4, 5, 10, 20];
+  const calculateAssetMetrics = (year: number) => {
+    const initialValue = data.propertyDetails.purchasePrice;
+    const appreciation = data.financialMetrics.annualAppreciation || 5;
+    const loanAmount = initialValue - data.financialMetrics.depositAmount;
+    const monthlyRate = (data.financialMetrics.interestRate / 100) / 12;
+    const monthlyPayment = data.financialMetrics.monthlyBondRepayment;
+    const totalMonths = year * 12;
 
-  // Calculate property value with appreciation
-  const propertyValue = initialValue * Math.pow(1 + appreciation/100, year);
-  
-  // Calculate annual appreciation gain
-  const appreciationGain = year === 1 
-    ? initialValue * (appreciation/100)
-    : propertyValue - (initialValue * Math.pow(1 + appreciation/100, year-1));
+    // Calculate property value with appreciation
+    const propertyValue = initialValue * Math.pow(1 + appreciation/100, year);
 
-  // Calculate remaining loan balance
-  let loanBalance = loanAmount;
-  let totalInterestPaid = 0;
-  let totalPrincipalPaid = 0;
+    // Calculate annual appreciation gain
+    const appreciationGain = year === 1 
+      ? initialValue * (appreciation/100)
+      : propertyValue - (initialValue * Math.pow(1 + appreciation/100, year-1));
 
-  for (let month = 1; month <= totalMonths; month++) {
-    const interestPayment = loanBalance * monthlyRate;
-    const principalPayment = monthlyPayment - interestPayment;
-    totalInterestPaid += interestPayment;
-    totalPrincipalPaid += principalPayment;
-    loanBalance -= principalPayment;
-  }
+    // Calculate remaining loan balance
+    let loanBalance = loanAmount;
+    let totalInterestPaid = 0;
+    let totalPrincipalPaid = 0;
 
-  // Calculate interest to principal ratio
-  const interestToPrincipalRatio = (totalInterestPaid / totalPrincipalPaid) * 100;
+    for (let month = 1; month <= totalMonths; month++) {
+      const interestPayment = loanBalance * monthlyRate;
+      const principalPayment = monthlyPayment - interestPayment;
+      totalInterestPaid += interestPayment;
+      totalPrincipalPaid += principalPayment;
+      loanBalance -= principalPayment;
+    }
 
-  // Calculate total equity
-  const totalEquity = propertyValue - Math.max(0, loanBalance);
+    // Calculate interest to principal ratio
+    const interestToPrincipalRatio = (totalInterestPaid / totalPrincipalPaid) * 100;
 
-  return [
-    formatCurrency(propertyValue),
-    formatCurrency(appreciationGain),
-    formatCurrency(Math.max(0, loanBalance)),
-    formatCurrency(totalInterestPaid),
-    `${interestToPrincipalRatio.toFixed(1)}%`,
-    formatCurrency(totalEquity),
-    formatCurrency(totalPrincipalPaid)
-  ];
-};
+    // Calculate total equity
+    const totalEquity = propertyValue - Math.max(0, loanBalance);
 
-const assetMetrics = yearsArray.map(year => calculateAssetMetrics(year));
+    return [
+      formatCurrency(propertyValue),
+      formatCurrency(appreciationGain),
+      formatCurrency(Math.max(0, loanBalance)),
+      formatCurrency(totalInterestPaid),
+      `${interestToPrincipalRatio.toFixed(1)}%`,
+      formatCurrency(totalEquity),
+      formatCurrency(totalPrincipalPaid)
+    ];
+  };
+
+  const assetMetrics = yearsArray.map(year => calculateAssetMetrics(year));
 
   monthlyPerformance = months.map((month, index) => {
     // Use investment metrics data directly from analysis engine
