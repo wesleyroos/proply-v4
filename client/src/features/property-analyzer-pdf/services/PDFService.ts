@@ -724,7 +724,11 @@ export async function generatePDF(
     const tableData = [
       [
         "Annual Revenue",
-        ...years.map((year) => formatCurrency(revenueData?.[`year${year}`] || 0)),
+        ...years.map((year) => {
+          const yearKey = `year${year}`;
+          const revenue = revenueData && yearKey in revenueData ? revenueData[yearKey] : 0;
+          return formatCurrency(revenue);
+        }),
       ],
       [
         "Net Operating Income",
