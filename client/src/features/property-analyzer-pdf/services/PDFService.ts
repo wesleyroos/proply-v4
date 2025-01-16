@@ -924,11 +924,24 @@ export async function generatePDF(
 
       // Data points (years 1-20)
       const years = [1, 2, 3, 4, 5, 10, 20];
-      const shortTermData = years.map(year => data.investmentMetrics?.shortTerm?.[years.indexOf(year)]?.netWorthChange || 0);
-      const longTermData = years.map(year => data.investmentMetrics?.longTerm?.[years.indexOf(year)]?.netWorthChange || 0);
+      
+      // Get annual and cumulative cashflow data
+      const shortTermAnnual = years.map(year => data.netOperatingIncome[`year${year}`]?.annualCashflow || 0);
+      const longTermAnnual = years.map(year => data.netOperatingIncome[`year${year}`]?.annualCashflow || 0);
 
-      // Find max value for scaling with some padding
-      const allValues = [...shortTermData, ...longTermData];
+      // Calculate cumulative values
+      const shortTermCumulative = shortTermAnnual.reduce((acc, curr, i) => {
+        acc[i] = (acc[i-1] || 0) + curr;
+        return acc;
+      }, []);
+      
+      const longTermCumulative = longTermAnnual.reduce((acc, curr, i) => {
+        acc[i] = (acc[i-1] || 0) + curr;
+        return acc;
+      }, []);
+
+      // Find max and min values for scaling
+      const allValues = [...shortTermCumulative, ...longTermCumulative, ...shortTermAnnual, ...longTermAnnual];
       const maxValue = Math.max(...allValues) * 1.1;
       const minValue = Math.min(...allValues) * 1.1;
 
@@ -998,10 +1011,21 @@ export async function generatePDF(
           ctxCashflow.fillRect(x, y, barWidth, barHeight);
       });
 
-      // Draw data lines
+      // Draw bars for annual cashflow
+      const barWidth = xStep * 0.3;
+      shortTermAnnual.forEach((value, i) => {
+          const x = chartMargin.left + (i * xStep) - barWidth/2;
+          const y = chartHeight - chartMargin.bottom - ((value - minValue) / (maxValue - minValue) * plotHeight);
+          const height = Math.abs((value - minValue) / (maxValue - minValue) * plotHeight);
+          
+          ctxCashflow.fillStyle = "#4CAF5080";
+          ctxCashflow.fillRect(x, y, barWidth, height);
+      });
+
+      // Draw cumulative lines
       [
-          { data: shortTermData, color: "#4CAF50", label: "Short Term" },
-          { data: longTermData, color: "#2196F3", label: "Long Term" }
+          { data: shortTermCumulative, color: "#4CAF50", label: "Short Term" },
+          { data: longTermCumulative, color: "#2196F3", label: "Long Term" }
       ].forEach(({ data, color, label }, index) => {
           ctxCashflow.beginPath();
           ctxCashflow.strokeStyle = color;
