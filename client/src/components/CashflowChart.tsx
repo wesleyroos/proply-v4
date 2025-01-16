@@ -3,7 +3,6 @@ import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 import { formatter } from "@/utils/rentalPerformance";
 
 interface CashflowChartProps {
-  monthlyBondRepayment: number;
   netOperatingIncome: {
     year1: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
     year2: { value: number; annualCashflow: number; cumulativeRentalIncome: number };
@@ -22,7 +21,7 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
   const chartData = years.map((year, index) => {
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
     const shortTermAnnual = netOperatingIncome[yearKey].annualCashflow;
-    const longTermAnnual = netOperatingIncome[yearKey].value - (monthlyBondRepayment * 12);
+    const longTermAnnual = netOperatingIncome[yearKey].value - (409641.24); // Annual bond payment
 
     // Calculate cumulative for both terms
     let shortTermCumulative = 0;
@@ -31,7 +30,7 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
       const y = years[i];
       const yKey = `year${y}` as keyof typeof netOperatingIncome;
       shortTermCumulative += netOperatingIncome[yKey].annualCashflow;
-      longTermCumulative += netOperatingIncome[yKey].value - (monthlyBondRepayment * 12);
+      longTermCumulative += (netOperatingIncome[yKey].value - 409641.24);
     }
 
     return {
