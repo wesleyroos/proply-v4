@@ -461,8 +461,6 @@ export default function PropertyAnalyzerPage() {
                                       principalPaid
                                     };
                                   })
-                                    };
-                                  })
                                 : analysisResult.analysis.investmentMetrics.shortTerm,
                                 },
                                 netOperatingIncome: analysisResult.netOperatingIncome,
