@@ -439,8 +439,8 @@ export default function PropertyAnalyzerPage() {
                                 monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment) || 0,
                                 investmentMetrics: {
                                   ...analysisResult.analysis.investmentMetrics,
-                                  shortTerm: Array.isArray(analysisResult.analysis.investmentMetrics.shortTerm) ?
-                                    analysisResult.analysis.investmentMetrics.shortTerm.map((metric, i) => ({
+                                  shortTerm: Array.isArray(analysisResult.analysis.investmentMetrics.shortTerm) 
+                                    ? analysisResult.analysis.investmentMetrics.shortTerm.map((metric, i) => ({
                                       ...metric,
                                       propertyValue: analysisResult.analysis.purchasePrice * Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, [1,2,3,4,5,10,20][i]),
                                       appreciationGain: analysisResult.analysis.purchasePrice * (Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, [1,2,3,4,5,10,20][i]) - Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, [1,2,3,4,5,10,20][i]-1)),
