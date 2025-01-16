@@ -1,3 +1,4 @@
+
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
@@ -22,7 +23,7 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
   const chartData = years.map((year, index) => {
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
     const annualCashflow = netOperatingIncome[yearKey].annualCashflow;
-
+    
     // Calculate cumulative by summing all annual cashflows up to this year
     let cumulativeCashflow = 0;
     for (let i = 0; i <= index; i++) {
