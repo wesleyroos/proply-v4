@@ -1016,14 +1016,21 @@ export async function generatePDF(
 
     // Get annual and cumulative cashflow data
     const shortTermAnnual = years.map(year => {
-      const yearKey = `year${year}` as keyof typeof data.financialMetrics.netOperatingIncome;
-      return data.financialMetrics.netOperatingIncome[yearKey]?.annualCashflow || 0;
+      const yearKey = `year${year}` as keyof typeof data.netOperatingIncome;
+      if (!data.netOperatingIncome || !data.netOperatingIncome[yearKey]) {
+        console.warn(`No data for ${yearKey} in shortTermAnnual`);
+        return 0;
+      }
+      return data.netOperatingIncome[yearKey]?.annualCashflow || 0;
     });
 
     const longTermAnnual = years.map(year => {
-      const yearKey = `year${year}` as keyof typeof data.financialMetrics.longTermNetOperatingIncome;
-      // Make sure we're accessing the correct path
-      return data.financialMetrics.longTermNetOperatingIncome?.[yearKey]?.annualCashflow || 0;
+      const yearKey = `year${year}` as keyof typeof data.longTermNetOperatingIncome;
+      if (!data.longTermNetOperatingIncome || !data.longTermNetOperatingIncome[yearKey]) {
+        console.warn(`No data for ${yearKey} in longTermAnnual`);
+        return 0;
+      }
+      return data.longTermNetOperatingIncome[yearKey]?.annualCashflow || 0;
     });
 
     // Calculate cumulative values
