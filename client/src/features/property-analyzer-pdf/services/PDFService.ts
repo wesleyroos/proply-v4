@@ -961,6 +961,18 @@ export async function generatePDF(
           ctxCashflow.fillText(`Year ${year}`, x, chartHeight - chartMargin.bottom + 20);
       });
 
+      // Draw bars for annual cashflow
+      const barWidth = xStep * 0.3; // 30% of xStep
+      shortTermData.forEach((value, i) => {
+          const x = chartMargin.left + (i * xStep) - barWidth/2;
+          const y = chartHeight - chartMargin.bottom - 
+                   ((value - minValue) / (maxValue - minValue) * plotHeight);
+          const barHeight = ((value - minValue) / (maxValue - minValue)) * plotHeight;
+          
+          ctxCashflow.fillStyle = "#4CAF5080"; // Green with transparency
+          ctxCashflow.fillRect(x, y, barWidth, barHeight);
+      });
+
       // Draw data lines
       [
           { data: shortTermData, color: "#4CAF50", label: "Short Term" },
