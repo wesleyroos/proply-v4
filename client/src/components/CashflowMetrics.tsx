@@ -464,7 +464,10 @@ export default function CashflowMetrics({
             <BarChart3 className="h-5 w-5 text-purple-500" />
             <h3 className="text-lg font-semibold">Cashflow Projections</h3>
           </div>
-          <CashflowChart netOperatingIncome={netOperatingIncome} />
+          <CashflowChart 
+            netOperatingIncome={netOperatingIncome}
+            monthlyBondRepayment={monthlyBondRepayment} 
+          />
         </div>
       </CardContent>
     </Card>
