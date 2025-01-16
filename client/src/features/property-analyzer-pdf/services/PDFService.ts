@@ -831,25 +831,41 @@ export async function generatePDF(
 
     const years = [1, 2, 3, 4, 5, 10, 20];
     const metrics = data.investmentMetrics?.[term] || [];
-
+    const years = [1, 2, 3, 4, 5, 10, 20];
+    
     const tableData = [
-      ["Gross Yield", ...metrics.map((m) => formatPercentage(m.grossYield))],
-      ["Net Yield", ...metrics.map((m) => formatPercentage(m.netYield))],
-      ["ROE", ...metrics.map((m) => formatPercentage(m.returnOnEquity))],
-      [
-        "Annual Return",
-        ...metrics.map((m) => formatPercentage(m.annualReturn)),
-      ],
-      ["Cap Rate", ...metrics.map((m) => formatPercentage(m.capRate))],
-      [
-        "Cash on Cash",
-        ...metrics.map((m) => formatPercentage(m.cashOnCashReturn)),
-      ],
-      ["IRR", ...metrics.map((m) => formatPercentage(m.irr))],
-      [
-        "Net Worth Change",
-        ...metrics.map((m) => formatCurrency(m.netWorthChange)),
-      ],
+      ["Gross Yield", ...years.map(year => {
+        const metric = metrics[year - 1] || {};
+        return formatPercentage(metric.grossYield || 0);
+      })],
+      ["Net Yield", ...years.map(year => {
+        const metric = metrics[year - 1] || {};
+        return formatPercentage(metric.netYield || 0);
+      })],
+      ["ROE", ...years.map(year => {
+        const metric = metrics[year - 1] || {};
+        return formatPercentage(metric.returnOnEquity || 0);
+      })],
+      ["Annual Return", ...years.map(year => {
+        const metric = metrics[year - 1] || {};
+        return formatPercentage(metric.annualReturn || 0);
+      })],
+      ["Cap Rate", ...years.map(year => {
+        const metric = metrics[year - 1] || {};
+        return formatPercentage(metric.capRate || 0);
+      })],
+      ["Cash on Cash", ...years.map(year => {
+        const metric = metrics[year - 1] || {};
+        return formatPercentage(metric.cashOnCashReturn || 0);
+      })],
+      ["IRR", ...years.map(year => {
+        const metric = metrics[year - 1] || {};
+        return formatPercentage(metric.irr || 0);
+      })],
+      ["Net Worth Change", ...years.map(year => {
+        const metric = metrics[year - 1] || {};
+        return formatCurrency(metric.netWorthChange || 0);
+      })]
     ];
 
     autoTable(pdf, {
