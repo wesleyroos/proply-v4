@@ -1000,7 +1000,7 @@ export async function generatePDF(
       });
 
       // Draw bars for annual cashflow
-      const barWidth = xStep * 0.3; // 30% of xStep
+      const barWidth = xStep * 0.3;
       shortTermData.forEach((value, i) => {
           const x = chartMargin.left + (i * xStep) - barWidth/2;
           const y = chartHeight - chartMargin.bottom - 
@@ -1010,9 +1010,6 @@ export async function generatePDF(
           ctxCashflow.fillStyle = "#4CAF5080"; // Green with transparency
           ctxCashflow.fillRect(x, y, barWidth, barHeight);
       });
-
-      // Draw bars for annual cashflow
-      const barWidth = xStep * 0.3;
       shortTermAnnual.forEach((value, i) => {
           const x = chartMargin.left + (i * xStep) - barWidth/2;
           const y = chartHeight - chartMargin.bottom - ((value - minValue) / (maxValue - minValue) * plotHeight);
