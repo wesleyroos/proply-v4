@@ -912,43 +912,7 @@ export async function generatePDF(
     }
   }
 
-  // Cashflow Projections Chart
-  pdf.setFontSize(16);
-  pdf.setTextColor(0);
-  pdf.text("Cashflow Projections", margin, yPosition);
-  yPosition += 10;
-
-  const cashflowCanvas = document.createElement("canvas");
-  const cashflowChart = document.querySelector('[data-testid="cashflow-chart"]');
-  if (cashflowChart) {
-    const chartWidth = 750;
-    const chartHeight = 400;
-    cashflowCanvas.width = chartWidth;
-    cashflowCanvas.height = chartHeight;
-
-    try {
-      await html2canvas(cashflowChart, {
-        canvas: cashflowCanvas,
-        scale: 2,
-        useCORS: true,
-        logging: true,
-        backgroundColor: '#ffffff',
-        windowWidth: chartWidth,
-        windowHeight: chartHeight
-      });
-    } catch (error) {
-      console.error('Error capturing cashflow chart:', error);
-    }
-
-    pdf.addImage(
-      cashflowCanvas.toDataURL(),
-      "PNG",
-      margin,
-      yPosition,
-      contentWidth,
-      (contentWidth * chartHeight) / chartWidth
-    );
-  }
+  // Cashflow Projections Chart has already been handled above, removing duplicate code
 
   yPosition += (contentWidth * 400) / 750 + 20;
 
