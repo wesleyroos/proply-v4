@@ -1,3 +1,4 @@
+
 import {
   Tabs,
   TabsContent,
@@ -5,13 +6,14 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator, HelpCircle } from "lucide-react";
+import { Calculator, BarChart3, HelpCircle } from "lucide-react";
 import { formatter } from "@/utils/rentalPerformance";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import CashflowChart from "@/components/CashflowChart";
 
 interface CashflowMetricsProps {
   shortTermNightly: number;
@@ -262,7 +264,7 @@ export default function CashflowMetrics({
             </div>
           </TabsContent>
 
-          {/* Long-Term Tab Content - Similar structure but with long-term calculations */}
+          {/* Long-Term Tab Content */}
           <TabsContent value="long-term" className="mt-4">
             <div className="rounded-lg border">
               <table className="w-full">
@@ -456,6 +458,14 @@ export default function CashflowMetrics({
             </div>
           </TabsContent>
         </Tabs>
+
+        <div className="mt-8">
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart3 className="h-5 w-5 text-purple-500" />
+            <h3 className="text-lg font-semibold">Cashflow Projections</h3>
+          </div>
+          <CashflowChart netOperatingIncome={netOperatingIncome} />
+        </div>
       </CardContent>
     </Card>
   );

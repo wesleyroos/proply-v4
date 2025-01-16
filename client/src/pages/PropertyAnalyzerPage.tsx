@@ -964,19 +964,7 @@ export default function PropertyAnalyzerPage() {
                 </CardContent>
               </Card>
 
-              <Card className="mt-6">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-purple-500" />
-                    Cashflow Projections
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CashflowChart
-                    netOperatingIncome={analysisResult.analysis.netOperatingIncome}
-                  />
-                </CardContent>
-              </Card>
+              
 
               <AssetGrowthMetrics
                 purchasePrice={analysisResult.analysis.purchasePrice}
