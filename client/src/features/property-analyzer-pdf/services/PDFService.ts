@@ -889,6 +889,21 @@ export async function generatePDF(
   pdf.text("Cashflow Projections", margin, yPosition);
   yPosition += 10;
 
+  // Add description
+  pdf.setFontSize(10);
+  pdf.setTextColor(90);
+  pdf.text(
+    "This chart illustrates your property's financial trajectory over time. The green bars represent the annual cashflow, showing direct yearly performance. The blue line tracks cumulative cashflow, demonstrating how your total returns compound over the investment period. The horizontal reference line at 0 helps visualize positive versus negative cashflow periods.",
+    margin,
+    yPosition,
+    { maxWidth: contentWidth }
+  );
+  yPosition += 25;
+
+  // Reset text color and size
+  pdf.setTextColor(0);
+  pdf.setFontSize(12);
+
   // Create and render cashflow chart directly
   const cashflowCanvas = document.createElement("canvas");
   const chartWidth = 750;
@@ -916,6 +931,16 @@ export async function generatePDF(
       const allValues = [...shortTermData, ...longTermData];
       const maxValue = Math.max(...allValues) * 1.1;
       const minValue = Math.min(...allValues) * 1.1;
+
+      // Draw zero reference line
+      const zeroY = chartHeight - chartMargin.bottom - ((0 - minValue) / (maxValue - minValue) * plotHeight);
+      ctxCashflow.beginPath();
+      ctxCashflow.strokeStyle = "#666666";
+      ctxCashflow.setLineDash([5, 5]);
+      ctxCashflow.moveTo(chartMargin.left, zeroY);
+      ctxCashflow.lineTo(chartWidth - chartMargin.right, zeroY);
+      ctxCashflow.stroke();
+      ctxCashflow.setLineDash([]);
 
       // Draw axes
       ctxCashflow.beginPath();
