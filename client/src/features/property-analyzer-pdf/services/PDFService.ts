@@ -948,16 +948,13 @@ export async function generatePDF(
 
       // Get annual and cumulative cashflow data
       const shortTermAnnual = years.map(year => {
-        const yearKey = `year${year}`;
-        return data.netOperatingIncome && yearKey in data.netOperatingIncome 
-          ? data.netOperatingIncome[yearKey].annualCashflow 
-          : 0;
+        const yearKey = `year${year}` as keyof typeof data.investmentMetrics.shortTerm;
+        return data.investmentMetrics.shortTerm[year - 1]?.netWorthChange || 0;
       });
+      
       const longTermAnnual = years.map(year => {
-        const yearKey = `year${year}`;
-        return data.netOperatingIncome && yearKey in data.netOperatingIncome 
-          ? data.netOperatingIncome[yearKey].annualCashflow 
-          : 0;
+        const yearKey = `year${year}` as keyof typeof data.investmentMetrics.longTerm;
+        return data.investmentMetrics.longTerm[year - 1]?.netWorthChange || 0;
       });
 
       // Calculate cumulative values
