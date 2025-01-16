@@ -22,7 +22,8 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
     return {
       year: `Year ${year}`,
-      'Annual Cashflow': netOperatingIncome[yearKey].annualCashflow
+      'Annual Revenue': netOperatingIncome[yearKey].annualCashflow,
+      'Cumulative Revenue': netOperatingIncome[yearKey].cumulativeRentalIncome
     };
   });
 
@@ -72,10 +73,17 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
           />
           <Legend />
           <Bar 
-            dataKey="Annual Cashflow"
+            dataKey="Annual Revenue"
             fill="#8884d8"
             radius={[4, 4, 0, 0]}
             barSize={20}
+          />
+          <Line
+            type="monotone"
+            dataKey="Cumulative Revenue"
+            stroke="#82ca9d"
+            strokeWidth={2}
+            dot={{ r: 3 }}
           />
         </ComposedChart>
       </ResponsiveContainer>
