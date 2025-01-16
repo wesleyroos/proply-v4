@@ -461,78 +461,84 @@ export async function generatePDF(
     ];
   });
 
-  const lineChartCanvas = document.createElement("canvas");
-  lineChartCanvas.width = 750;
-  lineChartCanvas.height = 300;
-
-  const ctx = lineChartCanvas.getContext("2d");
+  const revenueChartCanvas = document.createElement("canvas");
+  revenueChartCanvas.width = 750;
+  revenueChartCanvas.height = 400;
+  
+  const ctx = revenueChartCanvas.getContext("2d");
   if (ctx) {
+    // Set white background
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, lineChartCanvas.width, lineChartCanvas.height);
+    ctx.fillRect(0, 0, revenueChartCanvas.width, revenueChartCanvas.height);
+    
+    // Chart dimensions
+    const chartMargin = { top: 40, right: 40, bottom: 60, left: 60 };
+    const chartWidth = revenueChartCanvas.width - chartMargin.left - chartMargin.right;
+    const chartHeight = revenueChartCanvas.height - chartMargin.top - chartMargin.bottom;
+    
+    // Get max value for scaling
+    const values = monthlyPerformance.map(row => [
+      parseFloat(row[5].replace(/[^0-9.-]+/g, "")), // Low
+      parseFloat(row[7].replace(/[^0-9.-]+/g, "")), // Medium
+      parseFloat(row[9].replace(/[^0-9.-]+/g, "")), // High
+      parseFloat(row[10].replace(/[^0-9.-]+/g, "")), // Long term
+    ]).flat();
+    const maxValue = Math.max(...values);
+    
+    // Draw axes
+    ctx.beginPath();
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 1;
+    // Y axis
+    ctx.moveTo(chartMargin.left, chartMargin.top);
+    ctx.lineTo(chartMargin.left, chartHeight + chartMargin.top);
+    // X axis
+    ctx.moveTo(chartMargin.left, chartHeight + chartMargin.top);
+    ctx.lineTo(chartWidth + chartMargin.left, chartHeight + chartMargin.top);
+    ctx.stroke();
 
-    const datasets = [
-      {
-        data: monthlyPerformance.map((row) =>
-          parseFloat(row[5].replace(/[^0-9.-]+/g, "")),
-        ),
-        color: "#FF6B6B",
-        label: "Low Revenue",
-      },
-      {
-        data: monthlyPerformance.map((row) =>
-          parseFloat(row[7].replace(/[^0-9.-]+/g, "")),
-        ),
-        color: "#4ECDC4",
-        label: "Medium Revenue",
-      },
-      {
-        data: monthlyPerformance.map((row) =>
-          parseFloat(row[9].replace(/[^0-9.-]+/g, "")),
-        ),
-        color: "#45B7D1",
-        label: "High Revenue",
-      },
-      {
-        data: monthlyPerformance.map((row) =>
-          parseFloat(row[10].replace(/[^0-9.-]+/g, "")),
-        ),
-        color: "#FFE66D",
-        label: "Long Term",
-      },
-    ];
-
-    const maxValue = Math.max(...datasets.flatMap((d) => d.data));
-    const steps = 5;
-    const stepSize = maxValue / steps;
-
-    // Draw grid lines and labels
-    ctx.strokeStyle = "#e5e7eb";
-    ctx.fillStyle = "#4b5563";
+    // Y axis labels and grid lines
+    const ySteps = 5;
+    const yStepSize = maxValue / ySteps;
+    ctx.textAlign = "right";
     ctx.font = "10px Arial";
-
-    for (let i = 0; i <= steps; i++) {
-      const y = 250 - i * (200 / steps);
+    for (let i = 0; i <= ySteps; i++) {
+      const y = chartHeight + chartMargin.top - (i * chartHeight / ySteps);
+      // Grid line
       ctx.beginPath();
-      ctx.moveTo(50, y);
-      ctx.lineTo(700, y);
+      ctx.strokeStyle = "#e5e7eb";
+      ctx.moveTo(chartMargin.left, y);
+      ctx.lineTo(chartWidth + chartMargin.left, y);
       ctx.stroke();
-      ctx.fillText(formatCurrency(i * stepSize), 0, y + 5);
+      // Label
+      ctx.fillStyle = "#000000";
+      ctx.fillText(formatCurrency(i * yStepSize), chartMargin.left - 5, y + 4);
     }
 
-    // Draw x-axis labels (months)
+    // X axis labels
+    ctx.textAlign = "center";
+    const xStep = chartWidth / (months.length - 1);
     months.forEach((month, i) => {
-      const x = 50 + i * (650 / 11);
-      ctx.fillText(month, x - 10, 270);
+      const x = chartMargin.left + i * xStep;
+      ctx.fillText(month, x, chartHeight + chartMargin.top + 20);
     });
 
-    // Draw lines
-    datasets.forEach(({ data, color, label }) => {
+    // Draw data lines
+    const dataLines = [
+      { values: monthlyPerformance.map(row => parseFloat(row[5].replace(/[^0-9.-]+/g, ""))), color: "#FF6B6B", label: "Low Revenue" },
+      { values: monthlyPerformance.map(row => parseFloat(row[7].replace(/[^0-9.-]+/g, ""))), color: "#4ECDC4", label: "Medium Revenue" },
+      { values: monthlyPerformance.map(row => parseFloat(row[9].replace(/[^0-9.-]+/g, ""))), color: "#45B7D1", label: "High Revenue" },
+      { values: monthlyPerformance.map(row => parseFloat(row[10].replace(/[^0-9.-]+/g, ""))), color: "#FFE66D", label: "Long Term" }
+    ];
+
+    dataLines.forEach(({ values, color, label }, lineIndex) => {
+      ctx.beginPath();
       ctx.strokeStyle = color;
       ctx.lineWidth = 2;
-      ctx.beginPath();
-      data.forEach((value, i) => {
-        const x = 50 + i * (650 / 11);
-        const y = 250 - (value / maxValue) * 200;
+      
+      values.forEach((value, i) => {
+        const x = chartMargin.left + i * xStep;
+        const y = chartHeight + chartMargin.top - (value / maxValue * chartHeight);
         if (i === 0) {
           ctx.moveTo(x, y);
         } else {
@@ -542,31 +548,33 @@ export async function generatePDF(
       ctx.stroke();
 
       // Add legend
-      const legendY = 290 + datasets.indexOf({ data, color, label }) * 15;
-      ctx.strokeStyle = color;
+      const legendX = chartMargin.left + 20 + (lineIndex * 150);
+      const legendY = chartHeight + chartMargin.top + 40;
+      
+      // Legend line
       ctx.beginPath();
-      ctx.moveTo(50 + datasets.indexOf({ data, color, label }) * 150, legendY);
-      ctx.lineTo(80 + datasets.indexOf({ data, color, label }) * 150, legendY);
+      ctx.strokeStyle = color;
+      ctx.moveTo(legendX, legendY);
+      ctx.lineTo(legendX + 30, legendY);
       ctx.stroke();
+      
+      // Legend text
       ctx.fillStyle = "#000000";
-      ctx.fillText(
-        label,
-        85 + datasets.indexOf({ data, color, label }) * 150,
-        legendY + 5,
-      );
+      ctx.textAlign = "left";
+      ctx.fillText(label, legendX + 40, legendY + 4);
     });
   }
 
-  // Add the chart to PDF
+  // Add chart to PDF
   pdf.addImage(
-    lineChartCanvas.toDataURL(),
+    revenueChartCanvas.toDataURL(),
     "PNG",
     margin,
     yPosition,
     contentWidth,
-    80,
+    100
   );
-  yPosition += 90;
+  yPosition += 120;
 
   checkPageBreak();
 
