@@ -831,8 +831,7 @@ export async function generatePDF(
 
     const years = [1, 2, 3, 4, 5, 10, 20];
     const metrics = data.investmentMetrics?.[term] || [];
-    const years = [1, 2, 3, 4, 5, 10, 20];
-    
+
     const tableData = [
       ["Gross Yield", ...years.map(year => {
         const metric = metrics[year - 1] || {};
@@ -942,7 +941,7 @@ export async function generatePDF(
 
       // Data points (years 1-20)
       const years = [1, 2, 3, 4, 5, 10, 20];
-      
+
       // Get annual and cumulative cashflow data
       const shortTermAnnual = years.map(year => data.netOperatingIncome[`year${year}`]?.annualCashflow || 0);
       const longTermAnnual = years.map(year => data.netOperatingIncome[`year${year}`]?.annualCashflow || 0);
@@ -952,7 +951,7 @@ export async function generatePDF(
         acc[i] = (acc[i-1] || 0) + curr;
         return acc;
       }, []);
-      
+
       const longTermCumulative = longTermAnnual.reduce((acc, curr, i) => {
         acc[i] = (acc[i-1] || 0) + curr;
         return acc;
@@ -1019,22 +1018,14 @@ export async function generatePDF(
 
       // Draw bars for annual cashflow
       const barWidth = xStep * 0.3;
-      shortTermData.forEach((value, i) => {
+      shortTermAnnual.forEach((value, i) => {
           const x = chartMargin.left + (i * xStep) - barWidth/2;
           const y = chartHeight - chartMargin.bottom - 
                    ((value - minValue) / (maxValue - minValue) * plotHeight);
           const barHeight = ((value - minValue) / (maxValue - minValue)) * plotHeight;
-          
+
           ctxCashflow.fillStyle = "#4CAF5080"; // Green with transparency
           ctxCashflow.fillRect(x, y, barWidth, barHeight);
-      });
-      shortTermAnnual.forEach((value, i) => {
-          const x = chartMargin.left + (i * xStep) - barWidth/2;
-          const y = chartHeight - chartMargin.bottom - ((value - minValue) / (maxValue - minValue) * plotHeight);
-          const height = Math.abs((value - minValue) / (maxValue - minValue) * plotHeight);
-          
-          ctxCashflow.fillStyle = "#4CAF5080";
-          ctxCashflow.fillRect(x, y, barWidth, height);
       });
 
       // Draw cumulative lines
