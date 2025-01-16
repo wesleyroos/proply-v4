@@ -723,14 +723,14 @@ export async function generatePDF(
     const tableData = [
       [
         "Annual Revenue",
-        ...years.map((year) => formatCurrency(revenueData[`year${year}`] || 0)),
+        ...years.map((year) => formatCurrency(revenueData?.[`year${year}`] || 0)),
       ],
       [
         "Net Operating Income",
         ...years.map((year) =>
           formatCurrency(
-            revenueData[`year${year}`] -
-              (data.operatingExpenses[`year${year}`] || 0),
+            (revenueData?.[`year${year}`] || 0) -
+              (data.operatingExpenses?.[`year${year}`] || 0),
           ),
         ),
       ],
