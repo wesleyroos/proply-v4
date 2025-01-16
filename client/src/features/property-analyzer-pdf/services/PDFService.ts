@@ -921,20 +921,54 @@ export async function generatePDF(
   pdf.text("Asset Growth & Equity", margin, yPosition);
   yPosition += 10;
 
-// Update how we access the investment metrics
 const yearsArray = [1, 2, 3, 4, 5, 10, 20];
-const assetMetrics = yearsArray.map((year, i) => {
-  const metrics = data.investmentMetrics.shortTerm[i];
+const calculateAssetMetrics = (year: number) => {
+  const initialValue = data.propertyDetails.purchasePrice;
+  const appreciation = data.financialMetrics.annualAppreciation || 5;
+  const loanAmount = initialValue - data.financialMetrics.depositAmount;
+  const monthlyRate = (data.financialMetrics.interestRate / 100) / 12;
+  const monthlyPayment = data.financialMetrics.monthlyBondRepayment;
+  const totalMonths = year * 12;
+
+  // Calculate property value with appreciation
+  const propertyValue = initialValue * Math.pow(1 + appreciation/100, year);
+  
+  // Calculate annual appreciation gain
+  const appreciationGain = year === 1 
+    ? initialValue * (appreciation/100)
+    : propertyValue - (initialValue * Math.pow(1 + appreciation/100, year-1));
+
+  // Calculate remaining loan balance
+  let loanBalance = loanAmount;
+  let totalInterestPaid = 0;
+  let totalPrincipalPaid = 0;
+
+  for (let month = 1; month <= totalMonths; month++) {
+    const interestPayment = loanBalance * monthlyRate;
+    const principalPayment = monthlyPayment - interestPayment;
+    totalInterestPaid += interestPayment;
+    totalPrincipalPaid += principalPayment;
+    loanBalance -= principalPayment;
+  }
+
+  // Calculate interest to principal ratio
+  const interestToPrincipalRatio = (totalInterestPaid / totalPrincipalPaid) * 100;
+
+  // Calculate total equity
+  const totalEquity = propertyValue - Math.max(0, loanBalance);
+
   return [
-    formatCurrency(metrics.propertyValue || 0),
-    formatCurrency(metrics.appreciationGain || 0),
-    formatCurrency(metrics.loanBalance || 0),
-    formatCurrency(metrics.interestPaid || 0),
-    `${metrics.interestToPrincipalRatio || 0}%`,
-    formatCurrency(metrics.totalEquity || 0),
-    formatCurrency(metrics.principalPaid || 0)
+    formatCurrency(propertyValue),
+    formatCurrency(appreciationGain),
+    formatCurrency(Math.max(0, loanBalance)),
+    formatCurrency(totalInterestPaid),
+    `${interestToPrincipalRatio.toFixed(1)}%`,
+    formatCurrency(totalEquity),
+    formatCurrency(totalPrincipalPaid)
   ];
-});
+};
+
+const assetMetrics = yearsArray.map(year => calculateAssetMetrics(year));
 
   monthlyPerformance = months.map((month, index) => {
     // Use investment metrics data directly from analysis engine
