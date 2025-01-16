@@ -1,5 +1,5 @@
 
-import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
 import { formatter } from "@/utils/rentalPerformance";
@@ -19,6 +19,8 @@ interface CashflowChartProps {
 export default function CashflowChart({ netOperatingIncome }: CashflowChartProps) {
   if (!netOperatingIncome) return null;
   const years = [1, 2, 3, 4, 5, 10, 20];
+
+  const description = "This chart illustrates the property's financial performance over time. The bars represent the annual cashflow for each period, showing whether the property is generating positive or negative returns yearly. The green line tracks the cumulative cashflow, demonstrating the total accumulated cashflow over the investment period - this factors in both profits and losses to show the overall financial trajectory.";
 
   const chartData = years.map((year, index) => {
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
@@ -50,7 +52,9 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
   const domainPadding = (maxValue - minValue) * 0.1;
 
   return (
-    <div className="h-[400px] w-full" id="cashflow-chart" data-testid="cashflow-chart">
+    <div className="space-y-4">
+      <p className="text-sm text-slate-600">{description}</p>
+      <div className="h-[400px] w-full" id="cashflow-chart" data-testid="cashflow-chart">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
           data={chartData}
@@ -75,6 +79,7 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
             }}
           />
           <Legend />
+          <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
           <Bar 
             dataKey="Annual Cashflow"
             fill="#8884d8"
