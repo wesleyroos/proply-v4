@@ -460,7 +460,7 @@ export default function PropertyAnalyzerPage() {
                                       totalEquity,
                                       principalPaid
                                     };
-                                  }) : analysisResult.analysis.investmentMetrics.shortTerm,
+                                  }),
                                 },
                                 netOperatingIncome: analysisResult.netOperatingIncome,
                                 revenueProjections: analysisResult.analysis.revenueProjections,
