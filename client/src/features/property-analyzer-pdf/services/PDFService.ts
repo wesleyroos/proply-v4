@@ -1015,7 +1015,7 @@ export async function generatePDF(
     const years = [1, 2, 3, 4, 5, 10, 20];
 
     // Get annual and cumulative cashflow data
-    const shortTermAnnual = years.map(year => {
+    const shortTermAnnual = years.map((year) => {
       const yearKey = `year${year}` as keyof typeof data.netOperatingIncome;
       if (!data.netOperatingIncome || !data.netOperatingIncome[yearKey]) {
         console.warn(`No data for ${yearKey} in shortTermAnnual`);
@@ -1024,9 +1024,13 @@ export async function generatePDF(
       return data.netOperatingIncome[yearKey]?.annualCashflow || 0;
     });
 
-    const longTermAnnual = years.map(year => {
-      const yearKey = `year${year}` as keyof typeof data.longTermNetOperatingIncome;
-      if (!data.longTermNetOperatingIncome || !data.longTermNetOperatingIncome[yearKey]) {
+    const longTermAnnual = years.map((year) => {
+      const yearKey =
+        `year${year}` as keyof typeof data.longTermNetOperatingIncome;
+      if (
+        !data.longTermNetOperatingIncome ||
+        !data.longTermNetOperatingIncome[yearKey]
+      ) {
         console.warn(`No data for ${yearKey} in longTermAnnual`);
         return 0;
       }
@@ -1295,32 +1299,6 @@ export async function generatePDF(
 
   yPosition = (pdf as any).lastAutoTable.finalY + 20;
 
-  const assetGrowthCanvas = document.createElement("canvas");
-  const assetGrowthChart = document.getElementById("asset-growth-chart");
-  if (assetGrowthChart) {
-    const chartWidth = 750;
-    const chartHeight = 400;
-    assetGrowthCanvas.width = chartWidth;
-    assetGrowthCanvas.height = chartHeight;
-
-    await html2canvas(assetGrowthChart, {
-      canvas: assetGrowthCanvas,
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#ffffff",
-    });
-
-    pdf.addImage(
-      assetGrowthCanvas.toDataURL(),
-      "PNG",
-      margin,
-      yPosition,
-      contentWidth,
-      (contentWidth * chartHeight) / chartWidth,
-    );
-  }
-
   yPosition += (contentWidth * 400) / 750 + 20;
 
   // Get the current page count before adding disclaimer
@@ -1334,7 +1312,7 @@ export async function generatePDF(
   const currentY = (pdf as any).lastAutoTable.finalY;
 
   // Position for disclaimer (anchored above the footer)
-  let disclaimerY = pageHeight - footerHeight - disclaimerMargin - 10; // Adjusted to move it up
+  let disclaimerY = pageHeight - footerHeight - disclaimerMargin - 40; // Adjusted to move it up
 
   // Define disclaimer text
   pdf.setFontSize(8);
