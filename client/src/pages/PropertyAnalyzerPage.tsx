@@ -461,9 +461,9 @@ export default function PropertyAnalyzerPage() {
                                       principalPaid
                                     };
                                   })
-                                    }))
-                                    : analysisResult.analysis.investmentMetrics.shortTerm,
-                                  //Handle the case where shortTerm is not an array.  This assumes the structure of investmentMetrics needs to be consistent across all years.
+                                    };
+                                  })
+                                : analysisResult.analysis.investmentMetrics.shortTerm,
                                 },
                                 netOperatingIncome: analysisResult.netOperatingIncome,
                                 revenueProjections: analysisResult.analysis.revenueProjections,
