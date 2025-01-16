@@ -742,11 +742,27 @@ export async function generatePDF(
   // Reset text color
   pdf.setTextColor(0);
 
+  // addCashflowMetricsTable function
+
   const addCashflowMetricsTable = (
     term: "shortTerm" | "longTerm",
     title: string,
     startY: number,
   ) => {
+    // Add detailed debug logging
+    console.log(`Detailed Data for ${term} Cashflow Table:`, {
+      fullData: data,
+      analysis: data.analysis,
+      operatingIncome: data.analysis?.netOperatingIncome,
+      longTermOperatingIncome: data.analysis?.longTermNetOperatingIncome,
+      revenueProjections: data.analysis?.revenueProjections,
+      term: term,
+      path:
+        term === "shortTerm"
+          ? "data.analysis.netOperatingIncome"
+          : "data.analysis.longTermNetOperatingIncome",
+    });
+
     // Check if we need to start a new page before the table
     if (startY > pdf.internal.pageSize.height - 150) {
       pdf.addPage();
@@ -758,25 +774,44 @@ export async function generatePDF(
     startY += 10;
 
     const years = [1, 2, 3, 4, 5, 10, 20];
-    const metrics = data.investmentMetrics?.[term] || [];
-    const revenueData = data.revenueProjections?.[term] || {};
-    const netOperatingIncome = data.netOperatingIncome || {};
+
+    // Get the correct operating income data based on term
+    const operatingIncome =
+      term === "shortTerm"
+        ? data.analysis.netOperatingIncome
+        : data.analysis.longTermNetOperatingIncome;
+
+    // Add debug log after getting operating income
+    console.log(`${term} Operating Income Data:`, {
+      operatingIncome,
+      path:
+        term === "shortTerm"
+          ? "data.analysis.netOperatingIncome"
+          : "data.analysis.longTermNetOperatingIncome",
+    });
+
+    const revenueData = data.analysis.revenueProjections?.[term];
+
+    // Add debug log after getting revenue data
+    console.log(`${term} Revenue Data:`, {
+      revenueData,
+      fullRevenueProjections: data.analysis.revenueProjections,
+      path: `data.analysis.revenueProjections.${term}`,
+    });
 
     const tableData = [
       [
         "Annual Revenue",
         ...years.map((year) => {
-          const yearKey = `year${year}`;
-          const revenue =
-            revenueData && yearKey in revenueData ? revenueData[yearKey] : 0;
-          return formatCurrency(revenue);
+          const yearKey = `year${year}` as keyof typeof revenueData;
+          return formatCurrency(revenueData?.[yearKey] || 0);
         }),
       ],
       [
         "Net Operating Income",
         ...years.map((year) => {
-          const yearKey = `year${year}`;
-          return formatCurrency(netOperatingIncome[yearKey]?.value || 0);
+          const yearKey = `year${year}` as keyof typeof operatingIncome;
+          return formatCurrency(operatingIncome?.[yearKey]?.value || 0);
         }),
       ],
       [
@@ -788,38 +823,29 @@ export async function generatePDF(
       [
         "Annual Cashflow",
         ...years.map((year) => {
-          const yearKey = `year${year}`;
+          const yearKey = `year${year}` as keyof typeof operatingIncome;
           return formatCurrency(
-            netOperatingIncome[yearKey]?.annualCashflow || 0,
+            operatingIncome?.[yearKey]?.annualCashflow || 0,
           );
         }),
       ],
       [
         "Cumulative Cashflow",
-        ...metrics.map((m, i) =>
-          formatCurrency(
-            metrics
-              .slice(0, i + 1)
-              .reduce((sum, curr) => sum + (curr.netWorthChange || 0), 0),
-          ),
-        ),
+        ...years.map((_, index) => {
+          let cumulative = 0;
+          for (let i = 0; i <= index; i++) {
+            const y = years[i];
+            const yearKey = `year${y}` as keyof typeof operatingIncome;
+            cumulative += operatingIncome?.[yearKey]?.annualCashflow || 0;
+          }
+          return formatCurrency(cumulative);
+        }),
       ],
     ];
 
     autoTable(pdf, {
       startY: startY,
-      head: [
-        [
-          "Metric",
-          "Year 1",
-          "Year 2",
-          "Year 3",
-          "Year 4",
-          "Year 5",
-          "Year 10",
-          "Year 20",
-        ],
-      ],
+      head: [["Metric", ...years.map((year) => `Year ${year}`)]],
       body: tableData,
       margin: { left: margin },
       styles: {
@@ -832,6 +858,7 @@ export async function generatePDF(
         textColor: 255,
       },
     });
+
     return (pdf as any).lastAutoTable.finalY + 15;
   };
 
@@ -1299,6 +1326,32 @@ export async function generatePDF(
 
   yPosition = (pdf as any).lastAutoTable.finalY + 20;
 
+  const assetGrowthCanvas = document.createElement("canvas");
+  const assetGrowthChart = document.getElementById("asset-growth-chart");
+  if (assetGrowthChart) {
+    const chartWidth = 750;
+    const chartHeight = 400;
+    assetGrowthCanvas.width = chartWidth;
+    assetGrowthCanvas.height = chartHeight;
+
+    await html2canvas(assetGrowthChart, {
+      canvas: assetGrowthCanvas,
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: "#ffffff",
+    });
+
+    pdf.addImage(
+      assetGrowthCanvas.toDataURL(),
+      "PNG",
+      margin,
+      yPosition,
+      contentWidth,
+      (contentWidth * chartHeight) / chartWidth,
+    );
+  }
+
   yPosition += (contentWidth * 400) / 750 + 20;
 
   // Get the current page count before adding disclaimer
@@ -1312,7 +1365,7 @@ export async function generatePDF(
   const currentY = (pdf as any).lastAutoTable.finalY;
 
   // Position for disclaimer (anchored above the footer)
-  let disclaimerY = pageHeight - footerHeight - disclaimerMargin - 40; // Adjusted to move it up
+  let disclaimerY = pageHeight - footerHeight - disclaimerMargin - 10; // Adjusted to move it up
 
   // Define disclaimer text
   pdf.setFontSize(8);

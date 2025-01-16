@@ -214,6 +214,17 @@ export default function PropertyAnalyzerPage() {
   const { toast } = useToast();
   const [analysisId, setAnalysisId] = useState<string | null>(null);
   const [showPDFReport, setShowPDFReport] = useState(false);
+
+  console.log("Preparing PDF Data:", {
+    fullAnalysisResult: analysisResult,
+    pdfDataStructure: {
+      analysisNetOperatingIncome: analysisResult?.analysis?.netOperatingIncome,
+      analysisLongTermNetOperatingIncome: analysisResult?.analysis?.longTermNetOperatingIncome,
+      netOperatingIncome: analysisResult?.netOperatingIncome,
+      revenueProjections: analysisResult?.analysis?.revenueProjections,
+    }
+  });
+  
   const [pdfData, setPDFData] = useState<any>(null);
   const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -531,6 +542,12 @@ export default function PropertyAnalyzerPage() {
                                   "Please save your analysis before exporting to PDF.",
                                 duration: 3000,
                               });
+                              return;
+                            }
+
+                            // Add the new check right here
+                            if (!analysisResult || !analysisResult.analysis) {
+                              console.error("Cannot generate PDF: analysisResult or analysis data is missing");
                               return;
                             }
 
