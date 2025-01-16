@@ -21,11 +21,17 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
   const chartData = years.map((year, index) => {
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
     const shortTermAnnual = netOperatingIncome[yearKey].annualCashflow;
-    const longTermAnnual = netOperatingIncome[yearKey].value - (netOperatingIncome[yearKey].value - netOperatingIncome[yearKey].annualCashflow);
-    
-    // Get cumulative values directly
-    const shortTermCumulative = netOperatingIncome[yearKey].cumulativeRentalIncome;
-    const longTermCumulative = netOperatingIncome[yearKey].cumulativeRentalIncome;
+    const longTermAnnual = netOperatingIncome[yearKey].value - (409641.24); // Annual bond payment
+
+    // Calculate cumulative for both terms
+    let shortTermCumulative = 0;
+    let longTermCumulative = 0;
+    for (let i = 0; i <= index; i++) {
+      const y = years[i];
+      const yKey = `year${y}` as keyof typeof netOperatingIncome;
+      shortTermCumulative += netOperatingIncome[yKey].annualCashflow;
+      longTermCumulative += (netOperatingIncome[yKey].value - 409641.24);
+    }
 
     return {
       year: `Year ${year}`,
