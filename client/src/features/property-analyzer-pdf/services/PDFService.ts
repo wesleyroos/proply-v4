@@ -936,21 +936,23 @@ const assetMetrics = yearsArray.map((year, i) => {
   ];
 });
 
-  // Use investment metrics data directly from analysis engine
-  const performanceData = data.investmentMetrics.shortTerm[index] || {
-    netWorthChange: 0,
-    annualReturn: 0,
-    netYield: 0,
-    grossYield: 0
-  };
+  monthlyPerformance = months.map((month, index) => {
+    // Use investment metrics data directly from analysis engine
+    const performanceData = data.investmentMetrics.shortTerm[index] || {
+      netWorthChange: 0,
+      annualReturn: 0,
+      netYield: 0,
+      grossYield: 0
+    };
 
-  return [
-    month,
-    formatCurrency(performanceData.netWorthChange || 0),
-    formatPercentage(performanceData.annualReturn || 0),
-    formatPercentage(performanceData.netYield || 0),
-    formatPercentage(performanceData.grossYield || 0)
-  ];
+    return [
+      month,
+      formatCurrency(performanceData.netWorthChange || 0),
+      formatPercentage(performanceData.annualReturn || 0),
+      formatPercentage(performanceData.netYield || 0),
+      formatPercentage(performanceData.grossYield || 0)
+    ];
+  });
 
   yPosition += (contentWidth * 400) / 750 + 20;
   checkPageBreak(200);
