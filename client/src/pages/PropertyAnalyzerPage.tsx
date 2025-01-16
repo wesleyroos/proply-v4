@@ -439,11 +439,13 @@ export default function PropertyAnalyzerPage() {
                                 monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment) || 0,
                                 investmentMetrics: {
                                   ...analysisResult.analysis.investmentMetrics,
-                                  shortTerm: Array.isArray(analysisResult.analysis.investmentMetrics.shortTerm) 
+                                  shortTerm: Array.isArray(analysisResult.analysis.investmentMetrics?.shortTerm) 
                                     ? analysisResult.analysis.investmentMetrics.shortTerm.map((metric, i) => ({
-                                      ...metric,
-                                      propertyValue: analysisResult.analysis.purchasePrice * Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, [1,2,3,4,5,10,20][i]),
-                                      appreciationGain: analysisResult.analysis.purchasePrice * (Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, [1,2,3,4,5,10,20][i]) - Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, [1,2,3,4,5,10,20][i]-1)),
+                                        ...metric,
+                                        propertyValue: analysisResult.analysis.purchasePrice * Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, [1,2,3,4,5,10,20][i]),
+                                        appreciationGain: analysisResult.analysis.purchasePrice * (Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, [1,2,3,4,5,10,20][i]) - Math.pow(1 + (formData?.annualPropertyAppreciation || 5) / 100, [1,2,3,4,5,10,20][i]-1))
+                                      }))
+                                    : [],
                                       loanBalance: (analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)) * (1 - ([1,2,3,4,5,10,20][i] * 12 / (analysisResult.loanTerm * 12))),
                                       interestPaid: (analysisResult.monthlyBondRepayment || 0) * [1,2,3,4,5,10,20][i] * 12 - ((analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)) - ((analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)) * (1 - ([1,2,3,4,5,10,20][i] * 12 / (analysisResult.loanTerm * 12))))),
                                       interestToPrincipalRatio: ((analysisResult.monthlyBondRepayment || 0) * [1,2,3,4,5,10,20][i] * 12) / ((analysisResult.analysis.purchasePrice - (analysisResult.deposit || 0)) * (1 - ([1,2,3,4,5,10,20][i] * 12 / (analysisResult.loanTerm * 12)))) * 100,
