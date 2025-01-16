@@ -1,0 +1,104 @@
+The error you encountered, TypeError: Cannot read properties of undefined (reading 'year1'), is caused by an attempt to access netOperatingIncome[yearKey]?.value when netOperatingIncome or the specific key yearKey does not exist in the provided data object.
+
+Here's how to systematically resolve the issue:
+
+1. Verify Data Structure
+Ensure netOperatingIncome is present in the PropertyData object and contains the expected structure. Specifically:
+
+netOperatingIncome should be an object.
+Each key (year1, year2, etc.) should exist and have a valid value.
+Add logging before accessing yearKey:
+
+javascript
+Copy
+Edit
+console.log("netOperatingIncome:", data.netOperatingIncome);
+console.log("Accessing key:", yearKey);
+console.log("Value at key:", data.netOperatingIncome?.[yearKey]?.value);
+2. Handle Undefined Data Gracefully
+If netOperatingIncome is missing or incomplete:
+
+Provide fallback values to prevent crashes.
+Modify the code to check for missing data before attempting to access it:
+javascript
+Copy
+Edit
+const netOperatingIncome = data.netOperatingIncome || {};
+const value = netOperatingIncome[yearKey]?.value || 0;
+3. Validate Input Data in PDF Generation
+Before generating the PDF, validate the required data:
+
+javascript
+Copy
+Edit
+if (!data.netOperatingIncome) {
+  console.error("Error: netOperatingIncome is undefined");
+  return;
+}
+
+const requiredKeys = ["year1", "year2", "year3", "year4", "year5", "year10", "year20"];
+for (const key of requiredKeys) {
+  if (!(key in data.netOperatingIncome)) {
+    console.error(`Missing data for ${key}`);
+    return;
+  }
+}
+4. Modify addCashflowMetricsTable Helper
+Inspect the function:
+
+typescript
+Copy
+Edit
+const tableData = [
+  [
+    "Net Operating Income",
+    ...years.map((year) => {
+      const yearKey = `year${year}`;
+      return formatCurrency(netOperatingIncome[yearKey]?.value || 0);
+    }),
+  ],
+];
+Wrap it in a safe fallback:
+
+typescript
+Copy
+Edit
+const tableData = [
+  [
+    "Net Operating Income",
+    ...years.map((year) => {
+      const yearKey = `year${year}`;
+      const incomeData = netOperatingIncome[yearKey];
+      if (!incomeData) {
+        console.warn(`No data for ${yearKey}`);
+        return formatCurrency(0);
+      }
+      return formatCurrency(incomeData.value || 0);
+    }),
+  ],
+];
+5. Verify the Calling Context
+Look at the handleGeneratePDF or wherever generatePDF is invoked:
+
+Ensure data.netOperatingIncome is passed properly.
+Log the full data object before invoking generatePDF:
+typescript
+Copy
+Edit
+console.log("Property Data passed to PDF:", data);
+6. Test Edge Cases
+Test with data where:
+netOperatingIncome is completely missing.
+Specific years (year5, year10, etc.) are missing.
+Verify if errors are logged correctly.
+7. Add a Fallback in the Main Code
+Ensure default values for incomplete or missing data:
+
+typescript
+Copy
+Edit
+const netOperatingIncome = data.netOperatingIncome || {};
+const revenueProjections = data.revenueProjections?.shortTerm || {};
+const metrics = data.investmentMetrics?.shortTerm || [];
+Summary
+By adding logging and fallback handling, you can prevent the error and debug missing data. This approach ensures the PDF generation works even if some data is missing.
