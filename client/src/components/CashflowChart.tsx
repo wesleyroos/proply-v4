@@ -1,5 +1,4 @@
-
-import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { formatter } from "@/utils/rentalPerformance";
 
 interface CashflowChartProps {
@@ -18,47 +17,18 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
   if (!netOperatingIncome) return null;
   const years = [1, 2, 3, 4, 5, 10, 20];
 
-  const chartData = years.map((year, index) => {
+  const chartData = years.map((year) => {
     const yearKey = `year${year}` as keyof typeof netOperatingIncome;
-    const shortTermAnnual = netOperatingIncome[yearKey].annualCashflow;
-    const longTermAnnual = netOperatingIncome[yearKey].value - (409641.24); // Annual bond payment
-
-    // Calculate cumulative for both terms
-    let shortTermCumulative = 0;
-    let longTermCumulative = 0;
-    for (let i = 0; i <= index; i++) {
-      const y = years[i];
-      const yKey = `year${y}` as keyof typeof netOperatingIncome;
-      shortTermCumulative += netOperatingIncome[yKey].annualCashflow;
-      longTermCumulative += (netOperatingIncome[yKey].value - 409641.24);
-    }
-
     return {
       year: `Year ${year}`,
-      'Short Term Annual': shortTermAnnual,
-      'Short Term Cumulative': shortTermCumulative,
-      'Long Term Annual': longTermAnnual,
-      'Long Term Cumulative': longTermCumulative
+      'Annual Cashflow': netOperatingIncome[yearKey].annualCashflow
     };
   });
 
   // Calculate min and max values for YAxis domain
-  const minValue = Math.min(
-    ...chartData.map(d => Math.min(
-      d['Short Term Annual'],
-      d['Short Term Cumulative'],
-      d['Long Term Annual'],
-      d['Long Term Cumulative']
-    ))
-  );
-  const maxValue = Math.max(
-    ...chartData.map(d => Math.max(
-      d['Short Term Annual'],
-      d['Short Term Cumulative'],
-      d['Long Term Annual'],
-      d['Long Term Cumulative']
-    ))
-  );
+  const allValues = chartData.map(d => d['Annual Cashflow']);
+  const minValue = Math.min(...allValues);
+  const maxValue = Math.max(...allValues);
   const domainPadding = (maxValue - minValue) * 0.1;
 
   return (
@@ -88,30 +58,10 @@ export default function CashflowChart({ netOperatingIncome }: CashflowChartProps
           />
           <Legend />
           <Bar 
-            dataKey="Short Term Annual"
+            dataKey="Annual Cashflow"
             fill="#8884d8"
             radius={[4, 4, 0, 0]}
             barSize={20}
-          />
-          <Bar 
-            dataKey="Long Term Annual"
-            fill="#82ca9d"
-            radius={[4, 4, 0, 0]}
-            barSize={20}
-          />
-          <Line
-            type="monotone"
-            dataKey="Short Term Cumulative"
-            stroke="#8884d8"
-            strokeWidth={3}
-            dot={{ r: 4 }}
-          />
-          <Line
-            type="monotone"
-            dataKey="Long Term Cumulative"
-            stroke="#82ca9d"
-            strokeWidth={3}
-            dot={{ r: 4 }}
           />
         </ComposedChart>
       </ResponsiveContainer>
