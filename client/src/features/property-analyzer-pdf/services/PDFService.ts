@@ -719,6 +719,7 @@ export async function generatePDF(
     const years = [1, 2, 3, 4, 5, 10, 20];
     const metrics = data.investmentMetrics?.[term] || [];
     const revenueData = data.revenueProjections?.[term] || {};
+    const netOperatingIncome = data.netOperatingIncome || {};
 
     const tableData = [
       [
@@ -727,12 +728,10 @@ export async function generatePDF(
       ],
       [
         "Net Operating Income",
-        ...years.map((year) =>
-          formatCurrency(
-            (revenueData?.[`year${year}`] || 0) -
-              (data.operatingExpenses?.[`year${year}`] || 0),
-          ),
-        ),
+        ...years.map((year) => {
+          const yearKey = `year${year}`;
+          return formatCurrency(netOperatingIncome[yearKey]?.value || 0);
+        }),
       ],
       [
         "Annual Bond Payment",
@@ -742,7 +741,10 @@ export async function generatePDF(
       ],
       [
         "Annual Cashflow",
-        ...metrics.map((m) => formatCurrency(m.netWorthChange || 0)),
+        ...years.map((year) => {
+          const yearKey = `year${year}`;
+          return formatCurrency(netOperatingIncome[yearKey]?.annualCashflow || 0);
+        }),
       ],
       [
         "Cumulative Cashflow",
