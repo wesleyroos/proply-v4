@@ -1482,14 +1482,19 @@ export async function generatePDF(
       } else {
         ctx.lineTo(x, y);
       }
+    });
+    ctx.stroke();
 
-      // Draw dots
+    // Draw dots separately after the line
+    chartData.forEach((data, i) => {
+      const x = chartMargin.left + i * (plotWidth / (years.length - 1));
+      const y = getYCoordinate(data.totalEquity);
+
       ctx.beginPath();
       ctx.fillStyle = "#ff7300";
       ctx.arc(x, y, 4, 0, 2 * Math.PI);
       ctx.fill();
     });
-    ctx.stroke();
 
     // Add legend
     const legendY = chartMargin.top - 15;
