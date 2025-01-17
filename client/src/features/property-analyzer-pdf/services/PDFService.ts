@@ -1295,10 +1295,8 @@ export async function generatePDF(
 
   // Create and render asset growth chart
   const assetGrowthCanvas = document.createElement("canvas");
-  const chartWidth = 750;
-  const chartHeight = 400;
-  assetGrowthCanvas.width = chartWidth;
-  assetGrowthCanvas.height = chartHeight;
+  assetGrowthCanvas.width = 750;
+  assetGrowthCanvas.height = 400;
 
   const ctx = assetGrowthCanvas.getContext("2d");
   if (ctx) {
