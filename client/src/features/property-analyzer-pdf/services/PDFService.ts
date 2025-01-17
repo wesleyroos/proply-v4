@@ -1660,13 +1660,18 @@ export async function generatePDF(
   const totalPages = pdf.getNumberOfPages();
   const currentYear = new Date().getFullYear();
 
-  // Move to last page for disclaimer
-  pdf.setPage(totalPages);
+  // Add new page for disclaimer
+  pdf.addPage();
   
-  // Position for disclaimer at bottom of last page
-  let disclaimerY = pageHeight - footerHeight - 80;
+  // Add disclaimer heading
+  pdf.setFontSize(16);
+  pdf.setTextColor(0);
+  pdf.text("Important Disclaimers & Legal Notices", margin, margin);
 
-  // Define disclaimer text
+  // Position for disclaimer text at bottom of page
+  let disclaimerY = pageHeight - footerHeight - 140;
+
+  // Set disclaimer text style
   pdf.setFontSize(8);
   pdf.setTextColor(90);
 
