@@ -1668,8 +1668,8 @@ export async function generatePDF(
   pdf.setTextColor(0);
   pdf.text("Important Disclaimers & Legal Notices", margin, margin);
 
-  // Position for disclaimer text at bottom of page
-  let disclaimerY = pageHeight - footerHeight - 140;
+  // Position for disclaimer text below heading
+  let disclaimerY = margin + 30;
 
   // Set disclaimer text style
   pdf.setFontSize(8);
