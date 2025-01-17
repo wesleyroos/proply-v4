@@ -1009,7 +1009,7 @@ export async function generatePDF(
   pdf.setFontSize(10);
   pdf.setTextColor(90);
   pdf.text(
-    "This chart illustrates the property's financial trajectory over time. The bars represent the annual cashflow for both long and short-term, showing direct yearly performance. The lines tracks cumulative cashflow for both long and short-term cashflow, demonstrating how your total returns compound over the investment period.",
+    "This chart illustrates the property's financial trajectory over time. The bars represent the annual cashflow for both long and short-term, showing direct yearly performance. The lines tracks cumulative cashflow for both long and short-term cashflow, demonstrating how the total returns compound over the investment period.",
     margin,
     yPosition,
     { maxWidth: contentWidth },
@@ -1297,7 +1297,7 @@ export async function generatePDF(
   pdf.setFontSize(10);
   pdf.setTextColor(90);
   pdf.text(
-    "This section analyzes the growth of your property's value over time, taking into account appreciation and loan repayment.",
+    "This section analyzes the growth of the property's value over time, taking into account appreciation and loan repayment.",
     margin,
     yPosition,
     { maxWidth: contentWidth },
