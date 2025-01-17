@@ -62,6 +62,15 @@ const addPageFooters = async (
         pageHeight - margin - footerPadding,
         { align: "right" },
       );
+
+      // Add centered copyright text
+      const currentYear = new Date().getFullYear();
+      pdf.text(
+        `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
+        pageWidth / 2,
+        pageHeight - margin - footerPadding,
+        { align: "center" },
+      );
     }
   } catch (error) {
     console.error("Error adding favicon to pages:", error);
