@@ -1660,8 +1660,11 @@ export async function generatePDF(
   const totalPages = pdf.getNumberOfPages();
   const currentYear = new Date().getFullYear();
 
-  // Position for disclaimer (anchored above the footer)
-  let disclaimerY = pageHeight - footerHeight - disclaimerMargin - 10;
+  // Move to last page for disclaimer
+  pdf.setPage(totalPages);
+  
+  // Position for disclaimer at bottom of last page
+  let disclaimerY = pageHeight - footerHeight - 80;
 
   // Define disclaimer text
   pdf.setFontSize(8);
@@ -1679,18 +1682,10 @@ export async function generatePDF(
     `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
   ];
 
-  // Calculate total height needed for disclaimer
+  // Calculate line breaks for disclaimer text
   const lines = disclaimerText
     .map((line) => pdf.splitTextToSize(line, contentWidth))
     .flat();
-  const totalDisclaimerHeight =
-    lines.length * 3 + (disclaimerText.length - 1) * 2;
-
-  // If disclaimer doesn't fit, add a new page
-  if (yPosition + totalDisclaimerHeight + footerHeight + margin > pageHeight) {
-    pdf.addPage();
-    disclaimerY = margin;
-  }
 
   // Add disclaimer text properly
   disclaimerText.forEach((line) => {
