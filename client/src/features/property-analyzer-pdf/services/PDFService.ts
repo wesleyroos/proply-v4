@@ -1283,23 +1283,27 @@ export async function generatePDF(
 
   yPosition += (contentWidth * chartHeight) / chartWidth + 20;
 
-  // Asset Growth & Equity Chart
-  checkPageBreak(100);
+  // Add Data Visualizations section
+  pdf.addPage();
+  yPosition = margin;
+
+  // Cashflow Projections Chart
   pdf.setFontSize(16);
+  pdf.setTextColor(0);
   pdf.text("Asset Growth & Equity", margin, yPosition);
   yPosition += 10;
 
   // Create and render asset growth chart
-  const assetGrowthCanvas = document.createElement('canvas');
+  const assetGrowthCanvas = document.createElement("canvas");
   const chartWidth = 750;
   const chartHeight = 400;
   assetGrowthCanvas.width = chartWidth;
   assetGrowthCanvas.height = chartHeight;
 
-  const ctx = assetGrowthCanvas.getContext('2d');
+  const ctx = assetGrowthCanvas.getContext("2d");
   if (ctx) {
     // Set white background
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, chartWidth, chartHeight);
 
     // Chart dimensions
@@ -1308,16 +1312,17 @@ export async function generatePDF(
     const plotHeight = chartHeight - chartMargin.top - chartMargin.bottom;
 
     const years = [1, 2, 3, 4, 5, 10, 20];
-    const monthlyRate = (data.financialMetrics.interestRate) / 100 / 12;
+    const monthlyRate = data.financialMetrics.interestRate / 100 / 12;
     const totalPayments = data.financialMetrics.loanTerm * 12;
-    const loanAmount = data.propertyDetails.purchasePrice - data.financialMetrics.depositAmount;
+    const loanAmount =
+      data.propertyDetails.purchasePrice - data.financialMetrics.depositAmount;
     const appreciation = data.financialMetrics.annualAppreciation || 5;
 
     // Calculate monthly payment
     const calculateMonthlyPayment = () => {
       if (loanAmount <= 0 || monthlyRate <= 0) return 0;
-      return (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) 
-        / (Math.pow(1 + monthlyRate, totalPayments) - 1);
+      return (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) /
+        (Math.pow(1 + monthlyRate, totalPayments) - 1);
     };
 
     // Calculate loan balance for a given period
@@ -1327,12 +1332,15 @@ export async function generatePDF(
 
       const monthlyPayment = calculateMonthlyPayment();
       const remainingPayments = totalPayments - monthsPaid;
-      return monthlyPayment * ((1 - Math.pow(1 + monthlyRate, -remainingPayments)) / monthlyRate);
+      return monthlyPayment *
+        ((1 - Math.pow(1 + monthlyRate, -remainingPayments)) / monthlyRate);
     };
 
     // Prepare chart data
-    const chartData = years.map(year => {
-      const propertyValue = data.propertyDetails.purchasePrice * Math.pow(1 + (appreciation / 100), year);
+    const chartData = years.map((year) => {
+      const propertyValue =
+        data.propertyDetails.purchasePrice *
+        Math.pow(1 + appreciation / 100, year);
       const loanBalance = calculateLoanBalance(year * 12);
       const totalEquity = propertyValue - loanBalance;
 
@@ -1340,12 +1348,16 @@ export async function generatePDF(
         year: `Year ${year}`,
         propertyValue,
         loanBalance,
-        totalEquity
+        totalEquity,
       };
     });
 
     // Find max value for scaling
-    const allValues = chartData.flatMap(d => [d.propertyValue, d.loanBalance, d.totalEquity]);
+    const allValues = chartData.flatMap((d) => [
+      d.propertyValue,
+      d.loanBalance,
+      d.totalEquity,
+    ]);
     const maxValue = Math.max(...allValues);
 
     // Helper function to convert value to Y coordinate
@@ -1361,29 +1373,36 @@ export async function generatePDF(
 
       // Grid line
       ctx.beginPath();
-      ctx.strokeStyle = '#e5e7eb';
+      ctx.strokeStyle = "#e5e7eb";
       ctx.moveTo(chartMargin.left, y);
       ctx.lineTo(chartWidth - chartMargin.right, y);
       ctx.stroke();
 
       // Y-axis label
-      ctx.fillStyle = '#64748b';
-      ctx.textAlign = 'right';
-      ctx.font = '10px Arial';
+      ctx.fillStyle = "#64748b";
+      ctx.textAlign = "right";
+      ctx.font = "10px Arial";
       // Format as R X.XM
-      ctx.fillText(`R${(value / 1000000).toFixed(1)}M`, chartMargin.left - 10, y + 4);
+      ctx.fillText(
+        `R${(value / 1000000).toFixed(1)}M`,
+        chartMargin.left - 10,
+        y + 4,
+      );
     }
 
     // Draw X-axis labels
     chartData.forEach((data, i) => {
-      const x = chartMargin.left + (i * (plotWidth / (years.length - 1)));
-      ctx.fillStyle = '#64748b';
-      ctx.textAlign = 'center';
+      const x = chartMargin.left + i * (plotWidth / (years.length - 1));
+      ctx.fillStyle = "#64748b";
+      ctx.textAlign = "center";
       ctx.fillText(data.year, x, chartHeight - chartMargin.bottom + 20);
     });
 
     // Function to draw area
-    const drawArea = (dataKey: 'propertyValue' | 'loanBalance', color: string) => {
+    const drawArea = (
+      dataKey: "propertyValue" | "loanBalance",
+      color: string,
+    ) => {
       ctx.beginPath();
       ctx.moveTo(chartMargin.left, getYCoordinate(0));
 
@@ -1394,14 +1413,17 @@ export async function generatePDF(
 
       // Draw lines through all points
       chartData.forEach((data, i) => {
-        const x = chartMargin.left + (i * (plotWidth / (years.length - 1)));
+        const x = chartMargin.left + i * (plotWidth / (years.length - 1));
         const y = getYCoordinate(data[dataKey]);
         ctx.lineTo(x, y);
       });
 
       // Complete the area
       const lastX = chartMargin.left + plotWidth;
-      ctx.lineTo(lastX, getYCoordinate(chartData[chartData.length - 1][dataKey]));
+      ctx.lineTo(
+        lastX,
+        getYCoordinate(chartData[chartData.length - 1][dataKey]),
+      );
       ctx.lineTo(lastX, getYCoordinate(0));
       ctx.lineTo(chartMargin.left, getYCoordinate(0));
 
@@ -1414,7 +1436,7 @@ export async function generatePDF(
       // Draw the line on top
       ctx.beginPath();
       chartData.forEach((data, i) => {
-        const x = chartMargin.left + (i * (plotWidth / (years.length - 1)));
+        const x = chartMargin.left + i * (plotWidth / (years.length - 1));
         const y = getYCoordinate(data[dataKey]);
         if (i === 0) {
           ctx.moveTo(x, y);
@@ -1427,18 +1449,18 @@ export async function generatePDF(
     };
 
     // Draw Property Value area (purple)
-    drawArea('propertyValue', '#8884d8');
+    drawArea("propertyValue", "#8884d8");
 
     // Draw Loan Balance area (green)
-    drawArea('loanBalance', '#82ca9d');
+    drawArea("loanBalance", "#82ca9d");
 
     // Draw Total Equity line (orange)
     ctx.beginPath();
-    ctx.strokeStyle = '#ff7300';
+    ctx.strokeStyle = "#ff7300";
     ctx.lineWidth = 2;
 
     chartData.forEach((data, i) => {
-      const x = chartMargin.left + (i * (plotWidth / (years.length - 1)));
+      const x = chartMargin.left + i * (plotWidth / (years.length - 1));
       const y = getYCoordinate(data.totalEquity);
 
       if (i === 0) {
@@ -1449,7 +1471,7 @@ export async function generatePDF(
 
       // Draw dots
       ctx.beginPath();
-      ctx.fillStyle = '#ff7300';
+      ctx.fillStyle = "#ff7300";
       ctx.arc(x, y, 4, 0, 2 * Math.PI);
       ctx.fill();
     });
@@ -1458,15 +1480,15 @@ export async function generatePDF(
     // Add legend
     const legendY = chartMargin.top - 15;
     const legendItems = [
-      { label: 'Property Value', color: '#8884d8', type: 'area' },
-      { label: 'Loan Balance', color: '#82ca9d', type: 'area' },
-      { label: 'Total Equity', color: '#ff7300', type: 'line' }
+      { label: "Property Value", color: "#8884d8", type: "area" },
+      { label: "Loan Balance", color: "#82ca9d", type: "area" },
+      { label: "Total Equity", color: "#ff7300", type: "line" },
     ];
 
     legendItems.forEach((item, i) => {
-      const x = chartMargin.left + (i * 160);
+      const x = chartMargin.left + i * 160;
 
-      if (item.type === 'area') {
+      if (item.type === "area") {
         // Draw area sample
         ctx.fillStyle = item.color;
         ctx.globalAlpha = 0.3;
@@ -1496,9 +1518,9 @@ export async function generatePDF(
       }
 
       // Add legend text
-      ctx.fillStyle = '#374151';
-      ctx.textAlign = 'left';
-      ctx.font = '10px Arial';
+      ctx.fillStyle = "#374151";
+      ctx.textAlign = "left";
+      ctx.font = "10px Arial";
       ctx.fillText(item.label, x + 25, legendY + 4);
     });
   }
@@ -1506,15 +1528,15 @@ export async function generatePDF(
   // Add chart to PDF
   pdf.addImage(
     assetGrowthCanvas.toDataURL(),
-    'PNG',
+    "PNG",
     margin,
     yPosition,
     contentWidth,
-    (contentWidth * chartHeight) / chartWidth
+    (contentWidth * chartHeight) / chartWidth,
   );
 
   yPosition += (contentWidth * chartHeight) / chartWidth + 20;
-  
+
   const yearsArray = [1, 2, 3, 4, 5, 10, 20];
   const calculateAssetMetrics = (year: number) => {
     const initialValue = data.propertyDetails.purchasePrice;
@@ -1525,7 +1547,8 @@ export async function generatePDF(
     const totalMonths = year * 12;
 
     // Calculate property value with appreciation
-    const propertyValue = initialValue * Math.pow(1 + appreciation / 100, year);
+    const propertyValue =
+      initialValue * Math.pow(1 + appreciation / 100, year);
 
     // Calculate annual appreciation gain
     const appreciationGain =
@@ -1616,18 +1639,11 @@ export async function generatePDF(
 
   yPosition += (contentWidth * 400) / 750 + 20;
 
-  // Get the current page count before adding disclaimer
   const totalPages = pdf.getNumberOfPages();
   const currentYear = new Date().getFullYear();
 
-  // Set to last page for disclaimer
-  pdf.setPage(totalPages);
-
-  // Calculate space needed for disclaimer
-  const currentY = (pdf as any).lastAutoTable.finalY;
-
   // Position for disclaimer (anchored above the footer)
-  let disclaimerY = pageHeight - footerHeight - disclaimerMargin - 10; // Adjusted to move it up
+  let disclaimerY = pageHeight - footerHeight - disclaimerMargin - 10;
 
   // Define disclaimer text
   pdf.setFontSize(8);
@@ -1653,9 +1669,9 @@ export async function generatePDF(
     lines.length * 3 + (disclaimerText.length - 1) * 2;
 
   // If disclaimer doesn't fit, add a new page
-  if (currentY + totalDisclaimerHeight + footerHeight + margin > pageHeight) {
+  if (yPosition + totalDisclaimerHeight + footerHeight + margin > pageHeight) {
     pdf.addPage();
-    disclaimerY = pageHeight - footerHeight - disclaimerMargin - 40; // Adjusted to move it up
+    disclaimerY = margin;
   }
 
   // Add disclaimer text properly
