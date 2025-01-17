@@ -1662,14 +1662,14 @@ export async function generatePDF(
 
   // Add new page for disclaimer
   pdf.addPage();
-  
+
   // Add disclaimer heading
   pdf.setFontSize(16);
   pdf.setTextColor(0);
   pdf.text("Important Disclaimers & Legal Notices", margin, margin);
 
   // Position for disclaimer text below heading
-  let disclaimerY = margin + 30;
+  let disclaimerY = margin + 10;
 
   // Set disclaimer text style
   pdf.setFontSize(8);
