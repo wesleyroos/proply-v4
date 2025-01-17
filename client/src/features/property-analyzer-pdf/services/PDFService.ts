@@ -997,7 +997,7 @@ export async function generatePDF(
 
   // Add Data Visualizations section
   pdf.addPage();
-  yPosition= margin;
+  yPosition = margin;
 
   // Cashflow Projections Chart
   pdf.setFontSize(16);
@@ -1009,7 +1009,7 @@ export async function generatePDF(
   pdf.setFontSize(10);
   pdf.setTextColor(90);
   pdf.text(
-    "This chart illustrates your property's financial trajectory over time. The green bars represent the annual cashflow, showing direct yearly performance. The blue line tracks cumulative cashflow, demonstrating how your total returns compound over the investment period. The horizontal reference line at 0 helps visualize positive versus negative cashflow periods.",
+    "This chart illustrates the property's financial trajectory over time. The bars represent the annual cashflow for both long and short-term, showing direct yearly performance. The lines tracks cumulative cashflow for both long and short-term cashflow, demonstrating how your total returns compound over the investment period.",
     margin,
     yPosition,
     { maxWidth: contentWidth },
@@ -1331,8 +1331,10 @@ export async function generatePDF(
     // Calculate monthly payment
     const calculateMonthlyPayment = () => {
       if (loanAmount <= 0 || monthlyRate <= 0) return 0;
-      return (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) /
-        (Math.pow(1 + monthlyRate, totalPayments) - 1);
+      return (
+        (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) /
+        (Math.pow(1 + monthlyRate, totalPayments) - 1)
+      );
     };
 
     // Calculate loan balance for a given period
@@ -1342,8 +1344,10 @@ export async function generatePDF(
 
       const monthlyPayment = calculateMonthlyPayment();
       const remainingPayments = totalPayments - monthsPaid;
-      return monthlyPayment *
-        ((1 - Math.pow(1 + monthlyRate, -remainingPayments)) / monthlyRate);
+      return (
+        monthlyPayment *
+        ((1 - Math.pow(1 + monthlyRate, -remainingPayments)) / monthlyRate)
+      );
     };
 
     // Prepare chart data
@@ -1557,8 +1561,7 @@ export async function generatePDF(
     const totalMonths = year * 12;
 
     // Calculate property value with appreciation
-    const propertyValue =
-      initialValue * Math.pow(1 + appreciation / 100, year);
+    const propertyValue = initialValue * Math.pow(1 + appreciation / 100, year);
 
     // Calculate annual appreciation gain
     const appreciationGain =
