@@ -1549,8 +1549,9 @@ export async function generatePDF(
     (contentWidth * chartHeight) / chartWidth,
   );
 
-  yPosition += (contentWidth * chartHeight) / chartWidth + 20;
+  yPosition += (contentWidth * chartHeight) / chartWidth;
 
+  // Add table immediately after chart
   const yearsArray = [1, 2, 3, 4, 5, 10, 20];
   const calculateAssetMetrics = (year: number) => {
     const initialValue = data.propertyDetails.purchasePrice;
@@ -1621,8 +1622,7 @@ export async function generatePDF(
     ];
   });
 
-  yPosition += (contentWidth * 400) / 750 + 20;
-  checkPageBreak(200);
+  yPosition += 10;
 
   autoTable(pdf, {
     startY: yPosition,
