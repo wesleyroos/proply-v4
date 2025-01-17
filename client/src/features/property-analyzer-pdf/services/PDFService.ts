@@ -1020,7 +1020,7 @@ export async function generatePDF(
   pdf.setTextColor(0);
   pdf.setFontSize(12);
 
-  // Create and render cashflow chart directly
+  /// Create and render cashflow chart directly
   const cashflowCanvas = document.createElement("canvas");
   const chartWidth = 750;
   const chartHeight = 400;
@@ -1038,94 +1038,65 @@ export async function generatePDF(
     const plotWidth = chartWidth - chartMargin.left - chartMargin.right;
     const plotHeight = chartHeight - chartMargin.top - chartMargin.bottom;
 
-    // Data points (years 1-20)
+    // Years array
     const years = [1, 2, 3, 4, 5, 10, 20];
 
-    // Get annual and cumulative cashflow data
-    const shortTermAnnual = years.map((year) => {
-      const yearKey = `year${year}` as keyof typeof data.netOperatingIncome;
-      if (!data.netOperatingIncome || !data.netOperatingIncome[yearKey]) {
-        console.warn(`No data for ${yearKey} in shortTermAnnual`);
-        return 0;
-      }
-      return data.netOperatingIncome[yearKey]?.annualCashflow || 0;
-    });
-
-    const longTermAnnual = years.map((year) => {
-      const yearKey =
-        `year${year}` as keyof typeof data.longTermNetOperatingIncome;
-      if (
-        !data.longTermNetOperatingIncome ||
-        !data.longTermNetOperatingIncome[yearKey]
-      ) {
-        console.warn(`No data for ${yearKey} in longTermAnnual`);
-        return 0;
-      }
-      return data.longTermNetOperatingIncome[yearKey]?.annualCashflow || 0;
-    });
-
-    // Calculate cumulative values
+    // Prepare chart data structure similar to Recharts component
     let shortTermCumulativeTotal = 0;
-    const shortTermCumulative = shortTermAnnual.map((value) => {
-      shortTermCumulativeTotal += value;
-      return shortTermCumulativeTotal;
-    });
-
     let longTermCumulativeTotal = 0;
-    const longTermCumulative = longTermAnnual.map((value) => {
-      longTermCumulativeTotal += value;
-      return longTermCumulativeTotal;
+
+    const chartData = years.map((year) => {
+      const yearKey =
+        `year${year}` as keyof typeof data.analysis.netOperatingIncome;
+
+      // Short-term calculations
+      const shortTermAnnual =
+        data.analysis.netOperatingIncome[yearKey].annualCashflow;
+      shortTermCumulativeTotal += shortTermAnnual;
+
+      // Long-term calculations
+      const longTermAnnual =
+        data.analysis.longTermNetOperatingIncome[yearKey].annualCashflow;
+      longTermCumulativeTotal += longTermAnnual;
+
+      return {
+        year: `Year ${year}`,
+        shortTermAnnual,
+        shortTermCumulative: shortTermCumulativeTotal,
+        longTermAnnual,
+        longTermCumulative: longTermCumulativeTotal,
+      };
     });
 
-    // Find max and min values for scaling
-    const allValues = [
-      ...shortTermCumulative,
-      ...longTermCumulative,
-      ...shortTermAnnual,
-      ...longTermAnnual,
-    ];
-    const maxValue = Math.max(...allValues) * 1.1;
-    const minValue = Math.min(...allValues) * 1.1;
+    // Calculate min and max values for Y axis scaling
+    const allValues = chartData.flatMap((d) => [
+      d.shortTermAnnual,
+      d.shortTermCumulative,
+      d.longTermAnnual,
+      d.longTermCumulative,
+    ]);
+    const minValue = Math.min(...allValues);
+    const maxValue = Math.max(...allValues);
+    const roundedMin = Math.floor(minValue / 100000) * 100000;
+    const roundedMax = Math.ceil(maxValue / 100000) * 100000;
+    const valueRange = roundedMax - roundedMin;
 
-    // Draw zero reference line
-    const zeroY =
-      chartHeight -
-      chartMargin.bottom -
-      ((0 - minValue) / (maxValue - minValue)) * plotHeight;
-    ctxCashflow.beginPath();
-    ctxCashflow.strokeStyle = "#666666";
-    ctxCashflow.setLineDash([5, 5]);
-    ctxCashflow.moveTo(chartMargin.left, zeroY);
-    ctxCashflow.lineTo(chartWidth - chartMargin.right, zeroY);
-    ctxCashflow.stroke();
-    ctxCashflow.setLineDash([]);
+    // Helper function to convert value to Y coordinate
+    const getYCoordinate = (value: number) => {
+      return (
+        chartMargin.top +
+        plotHeight -
+        ((value - roundedMin) / valueRange) * plotHeight
+      );
+    };
 
-    // Draw axes
-    ctxCashflow.beginPath();
-    ctxCashflow.strokeStyle = "#000000";
-    ctxCashflow.lineWidth = 1;
+    // Draw grid lines and Y-axis labels
+    const numberOfTicks = 10;
+    const tickInterval = valueRange / (numberOfTicks - 1);
 
-    // Y axis
-    ctxCashflow.moveTo(chartMargin.left, chartMargin.top);
-    ctxCashflow.lineTo(chartMargin.left, chartHeight - chartMargin.bottom);
-
-    // X axis
-    ctxCashflow.moveTo(chartMargin.left, chartHeight - chartMargin.bottom);
-    ctxCashflow.lineTo(
-      chartWidth - chartMargin.right,
-      chartHeight - chartMargin.bottom,
-    );
-    ctxCashflow.stroke();
-
-    // Y axis labels and grid lines
-    const ySteps = 5;
-    const yStepSize = (maxValue - minValue) / ySteps;
-    ctxCashflow.textAlign = "right";
-    ctxCashflow.font = "10px Arial";
-
-    for (let i = 0; i <= ySteps; i++) {
-      const value = minValue + i * yStepSize;
-      const y = chartHeight - chartMargin.bottom - (i * plotHeight) / ySteps;
+    for (let i = 0; i <= numberOfTicks - 1; i++) {
+      const value = roundedMin + tickInterval * i;
+      const y = getYCoordinate(value);
 
       // Grid line
       ctxCashflow.beginPath();
@@ -1134,75 +1105,169 @@ export async function generatePDF(
       ctxCashflow.lineTo(chartWidth - chartMargin.right, y);
       ctxCashflow.stroke();
 
-      // Label
-      ctxCashflow.fillStyle = "#000000";
-      ctxCashflow.fillText(formatCurrency(value), chartMargin.left - 5, y + 4);
+      // Y-axis label
+      ctxCashflow.fillStyle = "#64748b";
+      ctxCashflow.textAlign = "right";
+      ctxCashflow.font = "10px Arial";
+      ctxCashflow.fillText(formatCurrency(value), chartMargin.left - 10, y + 4);
     }
 
-    // X axis labels
-    ctxCashflow.textAlign = "center";
-    const xStep = plotWidth / (years.length - 1);
-    years.forEach((year, i) => {
-      const x = chartMargin.left + i * xStep;
-      ctxCashflow.fillText(
-        `Year ${year}`,
-        x,
-        chartHeight - chartMargin.bottom + 20,
+    // Draw X-axis labels
+    chartData.forEach((data, i) => {
+      const x = chartMargin.left + i * (plotWidth / (years.length - 1));
+      ctxCashflow.fillStyle = "#64748b";
+      ctxCashflow.textAlign = "center";
+      ctxCashflow.fillText(data.year, x, chartHeight - chartMargin.bottom + 20);
+    });
+
+    // Draw zero line
+    const zeroY = getYCoordinate(0);
+    ctxCashflow.beginPath();
+    ctxCashflow.strokeStyle = "#94a3b8";
+    ctxCashflow.setLineDash([5, 5]);
+    ctxCashflow.moveTo(chartMargin.left, zeroY);
+    ctxCashflow.lineTo(chartWidth - chartMargin.right, zeroY);
+    ctxCashflow.stroke();
+    ctxCashflow.setLineDash([]);
+
+    // Calculate bar dimensions
+    const barWidth = plotWidth / (years.length * 4); // Divide space for both sets of bars
+    const barSpacing = barWidth / 2;
+
+    // Draw bars and lines
+    chartData.forEach((data, i) => {
+      const x = chartMargin.left + i * (plotWidth / (years.length - 1));
+
+      // Short-term annual bar (purple)
+      const shortTermY = getYCoordinate(data.shortTermAnnual);
+      const shortTermHeight = Math.abs(zeroY - shortTermY);
+      ctxCashflow.fillStyle = "rgba(136, 132, 216, 0.6)"; // #8884d8 with transparency
+      ctxCashflow.fillRect(
+        x - barWidth - barSpacing,
+        data.shortTermAnnual >= 0 ? shortTermY : zeroY,
+        barWidth,
+        shortTermHeight,
       );
+
+      // Long-term annual bar (green)
+      const longTermY = getYCoordinate(data.longTermAnnual);
+      const longTermHeight = Math.abs(zeroY - longTermY);
+      ctxCashflow.fillStyle = "rgba(130, 202, 157, 0.6)"; // #82ca9d with transparency
+      ctxCashflow.fillRect(
+        x + barSpacing,
+        data.longTermAnnual >= 0 ? longTermY : zeroY,
+        barWidth,
+        longTermHeight,
+      );
+
+      // Draw cumulative lines
+      if (i > 0) {
+        const prevX =
+          chartMargin.left + (i - 1) * (plotWidth / (years.length - 1));
+        const prevData = chartData[i - 1];
+
+        // Short-term cumulative line (purple)
+        ctxCashflow.beginPath();
+        ctxCashflow.strokeStyle = "#8884d8";
+        ctxCashflow.lineWidth = 2;
+        ctxCashflow.moveTo(prevX, getYCoordinate(prevData.shortTermCumulative));
+        ctxCashflow.lineTo(x, getYCoordinate(data.shortTermCumulative));
+        ctxCashflow.stroke();
+
+        // Short-term dots
+        ctxCashflow.beginPath();
+        ctxCashflow.fillStyle = "#8884d8";
+        ctxCashflow.arc(
+          x,
+          getYCoordinate(data.shortTermCumulative),
+          4,
+          0,
+          2 * Math.PI,
+        );
+        ctxCashflow.fill();
+
+        // Long-term cumulative line (green)
+        ctxCashflow.beginPath();
+        ctxCashflow.strokeStyle = "#82ca9d";
+        ctxCashflow.lineWidth = 2;
+        ctxCashflow.moveTo(prevX, getYCoordinate(prevData.longTermCumulative));
+        ctxCashflow.lineTo(x, getYCoordinate(data.longTermCumulative));
+        ctxCashflow.stroke();
+
+        // Long-term dots
+        ctxCashflow.beginPath();
+        ctxCashflow.fillStyle = "#82ca9d";
+        ctxCashflow.arc(
+          x,
+          getYCoordinate(data.longTermCumulative),
+          4,
+          0,
+          2 * Math.PI,
+        );
+        ctxCashflow.fill();
+      } else {
+        // First point dots
+        ctxCashflow.beginPath();
+        ctxCashflow.fillStyle = "#8884d8";
+        ctxCashflow.arc(
+          x,
+          getYCoordinate(data.shortTermCumulative),
+          4,
+          0,
+          2 * Math.PI,
+        );
+        ctxCashflow.fill();
+
+        ctxCashflow.beginPath();
+        ctxCashflow.fillStyle = "#82ca9d";
+        ctxCashflow.arc(
+          x,
+          getYCoordinate(data.longTermCumulative),
+          4,
+          0,
+          2 * Math.PI,
+        );
+        ctxCashflow.fill();
+      }
     });
 
-    // Draw bars for annual cashflow
-    const barWidth = xStep * 0.3;
-    shortTermAnnual.forEach((value, i) => {
-      const x = chartMargin.left + i * xStep - barWidth / 2;
-      const y =
-        chartHeight -
-        chartMargin.bottom -
-        ((value - minValue) / (maxValue - minValue)) * plotHeight;
-      const barHeight =
-        ((value - minValue) / (maxValue - minValue)) * plotHeight;
+    // Add legend
+    const legendY = chartMargin.top - 15;
+    const legendItems = [
+      { label: "Short-Term Annual", color: "#8884d8", type: "bar" },
+      { label: "Long-Term Annual", color: "#82ca9d", type: "bar" },
+      { label: "Short-Term Cumulative", color: "#8884d8", type: "line" },
+      { label: "Long-Term Cumulative", color: "#82ca9d", type: "line" },
+    ];
 
-      ctxCashflow.fillStyle = "#4CAF5080"; // Green with transparency
-      ctxCashflow.fillRect(x, y, barWidth, barHeight);
-    });
+    legendItems.forEach((item, i) => {
+      const x = chartMargin.left + i * 160;
 
-    // Draw cumulative lines
-    [
-      { data: shortTermCumulative, color: "#4CAF50", label: "Short Term" },
-      { data: longTermCumulative, color: "#2196F3", label: "Long Term" },
-    ].forEach(({ data, color, label }, index) => {
-      ctxCashflow.beginPath();
-      ctxCashflow.strokeStyle = color;
-      ctxCashflow.lineWidth = 2;
+      if (item.type === "bar") {
+        // Draw bar sample
+        ctxCashflow.fillStyle = item.color + "99";
+        ctxCashflow.fillRect(x, legendY - 5, 20, 10);
+      } else {
+        // Draw line sample
+        ctxCashflow.beginPath();
+        ctxCashflow.strokeStyle = item.color;
+        ctxCashflow.lineWidth = 2;
+        ctxCashflow.moveTo(x, legendY);
+        ctxCashflow.lineTo(x + 20, legendY);
+        ctxCashflow.stroke();
 
-      data.forEach((value, i) => {
-        const x = chartMargin.left + i * xStep;
-        const y =
-          chartHeight -
-          chartMargin.bottom -
-          ((value - minValue) / (maxValue - minValue)) * plotHeight;
+        // Draw dot
+        ctxCashflow.beginPath();
+        ctxCashflow.fillStyle = item.color;
+        ctxCashflow.arc(x + 10, legendY, 3, 0, 2 * Math.PI);
+        ctxCashflow.fill();
+      }
 
-        if (i === 0) {
-          ctxCashflow.moveTo(x, y);
-        } else {
-          ctxCashflow.lineTo(x, y);
-        }
-      });
-      ctxCashflow.stroke();
-
-      // Add legend
-      const legendX = chartMargin.left + 20 + index * 120;
-      const legendY = chartMargin.top - 15;
-
-      ctxCashflow.beginPath();
-      ctxCashflow.strokeStyle = color;
-      ctxCashflow.moveTo(legendX, legendY);
-      ctxCashflow.lineTo(legendX + 30, legendY);
-      ctxCashflow.stroke();
-
-      ctxCashflow.fillStyle = "#000000";
+      // Add legend text
+      ctxCashflow.fillStyle = "#374151";
       ctxCashflow.textAlign = "left";
-      ctxCashflow.fillText(label, legendX + 40, legendY + 4);
+      ctxCashflow.font = "10px Arial";
+      ctxCashflow.fillText(item.label, x + 25, legendY + 4);
     });
   }
 
@@ -1215,11 +1280,8 @@ export async function generatePDF(
     contentWidth,
     (contentWidth * chartHeight) / chartWidth,
   );
+
   yPosition += (contentWidth * chartHeight) / chartWidth + 20;
-
-  // Cashflow Projections Chart has already been handled above, removing duplicate code
-
-  yPosition += (contentWidth * 400) / 750 + 20;
 
   // Asset Growth & Equity Chart
   checkPageBreak(100);
@@ -1227,6 +1289,232 @@ export async function generatePDF(
   pdf.text("Asset Growth & Equity", margin, yPosition);
   yPosition += 10;
 
+  // Create and render asset growth chart
+  const assetGrowthCanvas = document.createElement('canvas');
+  const chartWidth = 750;
+  const chartHeight = 400;
+  assetGrowthCanvas.width = chartWidth;
+  assetGrowthCanvas.height = chartHeight;
+
+  const ctx = assetGrowthCanvas.getContext('2d');
+  if (ctx) {
+    // Set white background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, chartWidth, chartHeight);
+
+    // Chart dimensions
+    const chartMargin = { top: 40, right: 40, bottom: 60, left: 80 };
+    const plotWidth = chartWidth - chartMargin.left - chartMargin.right;
+    const plotHeight = chartHeight - chartMargin.top - chartMargin.bottom;
+
+    const years = [1, 2, 3, 4, 5, 10, 20];
+    const monthlyRate = (data.financialMetrics.interestRate) / 100 / 12;
+    const totalPayments = data.financialMetrics.loanTerm * 12;
+    const loanAmount = data.propertyDetails.purchasePrice - data.financialMetrics.depositAmount;
+    const appreciation = data.financialMetrics.annualAppreciation || 5;
+
+    // Calculate monthly payment
+    const calculateMonthlyPayment = () => {
+      if (loanAmount <= 0 || monthlyRate <= 0) return 0;
+      return (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) 
+        / (Math.pow(1 + monthlyRate, totalPayments) - 1);
+    };
+
+    // Calculate loan balance for a given period
+    const calculateLoanBalance = (monthsPaid: number): number => {
+      if (loanAmount <= 0 || monthlyRate <= 0) return 0;
+      if (monthsPaid >= totalPayments) return 0;
+
+      const monthlyPayment = calculateMonthlyPayment();
+      const remainingPayments = totalPayments - monthsPaid;
+      return monthlyPayment * ((1 - Math.pow(1 + monthlyRate, -remainingPayments)) / monthlyRate);
+    };
+
+    // Prepare chart data
+    const chartData = years.map(year => {
+      const propertyValue = data.propertyDetails.purchasePrice * Math.pow(1 + (appreciation / 100), year);
+      const loanBalance = calculateLoanBalance(year * 12);
+      const totalEquity = propertyValue - loanBalance;
+
+      return {
+        year: `Year ${year}`,
+        propertyValue,
+        loanBalance,
+        totalEquity
+      };
+    });
+
+    // Find max value for scaling
+    const allValues = chartData.flatMap(d => [d.propertyValue, d.loanBalance, d.totalEquity]);
+    const maxValue = Math.max(...allValues);
+
+    // Helper function to convert value to Y coordinate
+    const getYCoordinate = (value: number) => {
+      return chartMargin.top + plotHeight - (value / maxValue) * plotHeight;
+    };
+
+    // Draw grid lines and Y-axis labels
+    const ySteps = 6;
+    for (let i = 0; i <= ySteps; i++) {
+      const value = (maxValue / ySteps) * i;
+      const y = getYCoordinate(value);
+
+      // Grid line
+      ctx.beginPath();
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.moveTo(chartMargin.left, y);
+      ctx.lineTo(chartWidth - chartMargin.right, y);
+      ctx.stroke();
+
+      // Y-axis label
+      ctx.fillStyle = '#64748b';
+      ctx.textAlign = 'right';
+      ctx.font = '10px Arial';
+      // Format as R X.XM
+      ctx.fillText(`R${(value / 1000000).toFixed(1)}M`, chartMargin.left - 10, y + 4);
+    }
+
+    // Draw X-axis labels
+    chartData.forEach((data, i) => {
+      const x = chartMargin.left + (i * (plotWidth / (years.length - 1)));
+      ctx.fillStyle = '#64748b';
+      ctx.textAlign = 'center';
+      ctx.fillText(data.year, x, chartHeight - chartMargin.bottom + 20);
+    });
+
+    // Function to draw area
+    const drawArea = (dataKey: 'propertyValue' | 'loanBalance', color: string) => {
+      ctx.beginPath();
+      ctx.moveTo(chartMargin.left, getYCoordinate(0));
+
+      // Draw line to first point
+      const firstX = chartMargin.left;
+      const firstY = getYCoordinate(chartData[0][dataKey]);
+      ctx.lineTo(firstX, firstY);
+
+      // Draw lines through all points
+      chartData.forEach((data, i) => {
+        const x = chartMargin.left + (i * (plotWidth / (years.length - 1)));
+        const y = getYCoordinate(data[dataKey]);
+        ctx.lineTo(x, y);
+      });
+
+      // Complete the area
+      const lastX = chartMargin.left + plotWidth;
+      ctx.lineTo(lastX, getYCoordinate(chartData[chartData.length - 1][dataKey]));
+      ctx.lineTo(lastX, getYCoordinate(0));
+      ctx.lineTo(chartMargin.left, getYCoordinate(0));
+
+      // Fill area with semi-transparent color
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.3;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Draw the line on top
+      ctx.beginPath();
+      chartData.forEach((data, i) => {
+        const x = chartMargin.left + (i * (plotWidth / (years.length - 1)));
+        const y = getYCoordinate(data[dataKey]);
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.strokeStyle = color;
+      ctx.stroke();
+    };
+
+    // Draw Property Value area (purple)
+    drawArea('propertyValue', '#8884d8');
+
+    // Draw Loan Balance area (green)
+    drawArea('loanBalance', '#82ca9d');
+
+    // Draw Total Equity line (orange)
+    ctx.beginPath();
+    ctx.strokeStyle = '#ff7300';
+    ctx.lineWidth = 2;
+
+    chartData.forEach((data, i) => {
+      const x = chartMargin.left + (i * (plotWidth / (years.length - 1)));
+      const y = getYCoordinate(data.totalEquity);
+
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+
+      // Draw dots
+      ctx.beginPath();
+      ctx.fillStyle = '#ff7300';
+      ctx.arc(x, y, 4, 0, 2 * Math.PI);
+      ctx.fill();
+    });
+    ctx.stroke();
+
+    // Add legend
+    const legendY = chartMargin.top - 15;
+    const legendItems = [
+      { label: 'Property Value', color: '#8884d8', type: 'area' },
+      { label: 'Loan Balance', color: '#82ca9d', type: 'area' },
+      { label: 'Total Equity', color: '#ff7300', type: 'line' }
+    ];
+
+    legendItems.forEach((item, i) => {
+      const x = chartMargin.left + (i * 160);
+
+      if (item.type === 'area') {
+        // Draw area sample
+        ctx.fillStyle = item.color;
+        ctx.globalAlpha = 0.3;
+        ctx.fillRect(x, legendY - 5, 20, 10);
+        ctx.globalAlpha = 1;
+
+        // Draw line on top
+        ctx.beginPath();
+        ctx.strokeStyle = item.color;
+        ctx.moveTo(x, legendY);
+        ctx.lineTo(x + 20, legendY);
+        ctx.stroke();
+      } else {
+        // Draw line sample
+        ctx.beginPath();
+        ctx.strokeStyle = item.color;
+        ctx.lineWidth = 2;
+        ctx.moveTo(x, legendY);
+        ctx.lineTo(x + 20, legendY);
+        ctx.stroke();
+
+        // Draw dot
+        ctx.beginPath();
+        ctx.fillStyle = item.color;
+        ctx.arc(x + 10, legendY, 3, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      // Add legend text
+      ctx.fillStyle = '#374151';
+      ctx.textAlign = 'left';
+      ctx.font = '10px Arial';
+      ctx.fillText(item.label, x + 25, legendY + 4);
+    });
+  }
+
+  // Add chart to PDF
+  pdf.addImage(
+    assetGrowthCanvas.toDataURL(),
+    'PNG',
+    margin,
+    yPosition,
+    contentWidth,
+    (contentWidth * chartHeight) / chartWidth
+  );
+
+  yPosition += (contentWidth * chartHeight) / chartWidth + 20;
+  
   const yearsArray = [1, 2, 3, 4, 5, 10, 20];
   const calculateAssetMetrics = (year: number) => {
     const initialValue = data.propertyDetails.purchasePrice;
@@ -1325,32 +1613,6 @@ export async function generatePDF(
   });
 
   yPosition = (pdf as any).lastAutoTable.finalY + 20;
-
-  const assetGrowthCanvas = document.createElement("canvas");
-  const assetGrowthChart = document.getElementById("asset-growth-chart");
-  if (assetGrowthChart) {
-    const chartWidth = 750;
-    const chartHeight = 400;
-    assetGrowthCanvas.width = chartWidth;
-    assetGrowthCanvas.height = chartHeight;
-
-    await html2canvas(assetGrowthChart, {
-      canvas: assetGrowthCanvas,
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#ffffff",
-    });
-
-    pdf.addImage(
-      assetGrowthCanvas.toDataURL(),
-      "PNG",
-      margin,
-      yPosition,
-      contentWidth,
-      (contentWidth * chartHeight) / chartWidth,
-    );
-  }
 
   yPosition += (contentWidth * 400) / 750 + 20;
 
