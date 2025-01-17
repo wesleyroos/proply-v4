@@ -997,7 +997,7 @@ export async function generatePDF(
 
   // Add Data Visualizations section
   pdf.addPage();
-  yPosition = margin;
+  yPosition= margin;
 
   // Cashflow Projections Chart
   pdf.setFontSize(16);
@@ -1292,6 +1292,18 @@ export async function generatePDF(
   pdf.setTextColor(0);
   pdf.text("Asset Growth & Equity", margin, yPosition);
   yPosition += 10;
+
+  // Add explainer text
+  pdf.setFontSize(10);
+  pdf.setTextColor(90);
+  pdf.text(
+    "This section analyzes the growth of your property's value over time, taking into account appreciation and loan repayment.",
+    margin,
+    yPosition,
+    { maxWidth: contentWidth },
+  );
+  yPosition += 15;
+  pdf.setTextColor(0);
 
   // Create and render asset growth chart
   const assetGrowthCanvas = document.createElement("canvas");
