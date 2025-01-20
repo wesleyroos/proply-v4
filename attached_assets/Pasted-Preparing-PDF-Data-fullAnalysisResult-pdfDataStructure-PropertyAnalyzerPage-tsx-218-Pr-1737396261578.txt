@@ -1,0 +1,111 @@
+Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPage.tsx:537 Raw Analysis Result: {managementFee: 20, fullAnalysisResult: {…}}
+PropertyAnalyzerPage.tsx:675 PDF Data being passed: null
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
+chunk-ETOWXUKY.js?v=45f7e124:336 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ chunk-ETOWXUKY.js?v=45f7e124:336
+commitHookEffectListMount @ chunk-UPELNCPK.js?v=45f7e124:16915
+commitPassiveMountOnFiber @ chunk-UPELNCPK.js?v=45f7e124:18156
+commitPassiveMountEffects_complete @ chunk-UPELNCPK.js?v=45f7e124:18129
+commitPassiveMountEffects_begin @ chunk-UPELNCPK.js?v=45f7e124:18119
+commitPassiveMountEffects @ chunk-UPELNCPK.js?v=45f7e124:18109
+flushPassiveEffectsImpl @ chunk-UPELNCPK.js?v=45f7e124:19490
+flushPassiveEffects @ chunk-UPELNCPK.js?v=45f7e124:19447
+commitRootImpl @ chunk-UPELNCPK.js?v=45f7e124:19416
+commitRoot @ chunk-UPELNCPK.js?v=45f7e124:19277
+performSyncWorkOnRoot @ chunk-UPELNCPK.js?v=45f7e124:18895
+flushSyncCallbacks @ chunk-UPELNCPK.js?v=45f7e124:9119
+(anonymous) @ chunk-UPELNCPK.js?v=45f7e124:18627Understand this warningAI
+chunk-ETOWXUKY.js?v=45f7e124:336 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ chunk-ETOWXUKY.js?v=45f7e124:336
+commitHookEffectListMount @ chunk-UPELNCPK.js?v=45f7e124:16915
+invokePassiveEffectMountInDEV @ chunk-UPELNCPK.js?v=45f7e124:18324
+invokeEffectsInDev @ chunk-UPELNCPK.js?v=45f7e124:19701
+commitDoubleInvokeEffectsInDEV @ chunk-UPELNCPK.js?v=45f7e124:19686
+flushPassiveEffectsImpl @ chunk-UPELNCPK.js?v=45f7e124:19503
+flushPassiveEffects @ chunk-UPELNCPK.js?v=45f7e124:19447
+commitRootImpl @ chunk-UPELNCPK.js?v=45f7e124:19416
+commitRoot @ chunk-UPELNCPK.js?v=45f7e124:19277
+performSyncWorkOnRoot @ chunk-UPELNCPK.js?v=45f7e124:18895
+flushSyncCallbacks @ chunk-UPELNCPK.js?v=45f7e124:9119
+(anonymous) @ chunk-UPELNCPK.js?v=45f7e124:18627Understand this warningAI
+chunk-ETOWXUKY.js?v=45f7e124:336 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ chunk-ETOWXUKY.js?v=45f7e124:336
+commitHookEffectListMount @ chunk-UPELNCPK.js?v=45f7e124:16915
+commitPassiveMountOnFiber @ chunk-UPELNCPK.js?v=45f7e124:18156
+commitPassiveMountEffects_complete @ chunk-UPELNCPK.js?v=45f7e124:18129
+commitPassiveMountEffects_begin @ chunk-UPELNCPK.js?v=45f7e124:18119
+commitPassiveMountEffects @ chunk-UPELNCPK.js?v=45f7e124:18109
+flushPassiveEffectsImpl @ chunk-UPELNCPK.js?v=45f7e124:19490
+flushPassiveEffects @ chunk-UPELNCPK.js?v=45f7e124:19447
+commitRootImpl @ chunk-UPELNCPK.js?v=45f7e124:19416
+commitRoot @ chunk-UPELNCPK.js?v=45f7e124:19277
+performSyncWorkOnRoot @ chunk-UPELNCPK.js?v=45f7e124:18895
+flushSyncCallbacks @ chunk-UPELNCPK.js?v=45f7e124:9119
+(anonymous) @ chunk-UPELNCPK.js?v=45f7e124:18627Understand this warningAI
+chunk-ETOWXUKY.js?v=45f7e124:336 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ chunk-ETOWXUKY.js?v=45f7e124:336
+commitHookEffectListMount @ chunk-UPELNCPK.js?v=45f7e124:16915
+invokePassiveEffectMountInDEV @ chunk-UPELNCPK.js?v=45f7e124:18324
+invokeEffectsInDev @ chunk-UPELNCPK.js?v=45f7e124:19701
+commitDoubleInvokeEffectsInDEV @ chunk-UPELNCPK.js?v=45f7e124:19686
+flushPassiveEffectsImpl @ chunk-UPELNCPK.js?v=45f7e124:19503
+flushPassiveEffects @ chunk-UPELNCPK.js?v=45f7e124:19447
+commitRootImpl @ chunk-UPELNCPK.js?v=45f7e124:19416
+commitRoot @ chunk-UPELNCPK.js?v=45f7e124:19277
+performSyncWorkOnRoot @ chunk-UPELNCPK.js?v=45f7e124:18895
+flushSyncCallbacks @ chunk-UPELNCPK.js?v=45f7e124:9119
+(anonymous) @ chunk-UPELNCPK.js?v=45f7e124:18627Understand this warningAI
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
+PDFService.ts:824 Detailed Data for shortTerm Cashflow Table: {fullData: {…}, analysis: undefined, operatingIncome: undefined, longTermOperatingIncome: undefined, revenueProjections: undefined, …}
+PDFService.ts:850 Debug - Data Structure: {hasNetOperatingIncome: false, netOperatingIncome: undefined, revenueProjections: {…}}
+PropertyAnalyzerPDF.tsx:61 Error generating PDF: TypeError: Cannot read properties of undefined (reading 'revenueProjections')
+    at addCashflowMetricsTable (PDFService.ts:857:39)
+    at generatePDF (PDFService.ts:938:15)
+    at async handleGeneratePDF (PropertyAnalyzerPDF.tsx:53:7)
+    at async PDFGenerator.tsx:170:7
+handleGeneratePDF @ PropertyAnalyzerPDF.tsx:61
+await in handleGeneratePDF
+(anonymous) @ PDFGenerator.tsx:170
+callCallback2 @ chunk-UPELNCPK.js?v=45f7e124:3674
+invokeGuardedCallbackDev @ chunk-UPELNCPK.js?v=45f7e124:3699
+invokeGuardedCallback @ chunk-UPELNCPK.js?v=45f7e124:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-UPELNCPK.js?v=45f7e124:3736
+executeDispatch @ chunk-UPELNCPK.js?v=45f7e124:7014
+processDispatchQueueItemsInOrder @ chunk-UPELNCPK.js?v=45f7e124:7034
+processDispatchQueue @ chunk-UPELNCPK.js?v=45f7e124:7043
+dispatchEventsForPlugins @ chunk-UPELNCPK.js?v=45f7e124:7051
+(anonymous) @ chunk-UPELNCPK.js?v=45f7e124:7174
+batchedUpdates$1 @ chunk-UPELNCPK.js?v=45f7e124:18913
+batchedUpdates @ chunk-UPELNCPK.js?v=45f7e124:3579
+dispatchEventForPluginEventSystem @ chunk-UPELNCPK.js?v=45f7e124:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-UPELNCPK.js?v=45f7e124:5478
+dispatchEvent @ chunk-UPELNCPK.js?v=45f7e124:5472
+dispatchDiscreteEvent @ chunk-UPELNCPK.js?v=45f7e124:5449Understand this errorAI
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPage.tsx:218 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
+PropertyAnalyzerPDF.tsx:27 Validating PDF data: {propertyDetails: {…}, financialMetrics: {…}, expenses: {…}, rentalPerformance: {…}, investmentMetrics: {…}, …}
