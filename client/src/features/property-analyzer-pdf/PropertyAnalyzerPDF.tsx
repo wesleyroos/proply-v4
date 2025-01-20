@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { PDFGenerator } from "./PDFGenerator";
+import { PDFGenerator } from "./components/PDFGenerator";
 import { generatePDF } from "../services/PDFService";
 import { useToast } from "@/hooks/use-toast";
 import {
