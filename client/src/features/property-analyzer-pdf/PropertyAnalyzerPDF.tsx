@@ -3,7 +3,7 @@ import { PDFGenerator } from "./components/PDFGenerator";
 import { PDFPreview } from "./components/PDFPreview";
 import { PropertyData, ReportSelections } from "./types/propertyReport";
 import { generatePDF } from "./services/PDFService";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
