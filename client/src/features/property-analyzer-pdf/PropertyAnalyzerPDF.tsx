@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { ReportSectionManager } from './components/ReportSectionManager';
-import { PDFPreview } from './components/PDFPreview';
-import { PropertyData, ReportSelections } from './types/propertyReport';
-import { generatePDF } from './services/PDFService';
-import { useToast } from '@/components/ui/use-toast';
+import React, { useState } from "react";
+import { PDFGenerator } from "./components/PDFGenerator";
+import { PDFPreview } from "./components/PDFPreview";
+import { PropertyData, ReportSelections } from "./types/propertyReport";
+import { generatePDF } from "./services/PDFService";
+import { useToast } from '@/components/ui/toast';
 import {
   Dialog,
   DialogContent,
@@ -22,40 +22,31 @@ export function PropertyAnalyzerPDF({
   data,
   companyLogo,
   onClose,
-  isOpen
+  isOpen,
 }: PropertyAnalyzerPDFProps) {
-  // State management
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
 
-  // Handle PDF generation
   const handleGeneratePDF = async (selections: ReportSelections) => {
     setIsGenerating(true);
-
     try {
-      // Generate the PDF with selected sections
       await generatePDF(data, selections, companyLogo);
-
-      // Show success message
       toast({
         title: "Success",
         description: "PDF report generated successfully",
         duration: 3000,
       });
-
-      // Close the dialog
       onClose();
     } catch (error) {
-      // Handle any errors
       console.error("Error generating PDF:", error);
-
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error 
-          ? error.message 
-          : "Failed to generate PDF report",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to generate PDF report",
         duration: 5000,
       });
     } finally {
@@ -63,7 +54,6 @@ export function PropertyAnalyzerPDF({
     }
   };
 
-  // Handle preview toggle
   const handlePreview = () => {
     setShowPreview(true);
   };
@@ -76,15 +66,13 @@ export function PropertyAnalyzerPDF({
         </DialogHeader>
 
         <div className="flex flex-col space-y-4">
-          {/* Report Section Manager */}
-          <ReportSectionManager
+          <PDFGenerator
             onGeneratePDF={handleGeneratePDF}
             onPreview={handlePreview}
             isGenerating={isGenerating}
             companyLogo={companyLogo}
           />
 
-          {/* Preview Dialog */}
           {showPreview && (
             <Dialog open={showPreview} onOpenChange={setShowPreview}>
               <DialogContent className="max-w-4xl max-h-[90vh]">
