@@ -135,8 +135,12 @@ const addPageFooters = async (
           annualAppreciation: 5
         };
 
-        const expenses = data.expenses || {
-          managementFee: 0
+        const expenses = data.operatingExpenses || {
+          managementFee: data.propertyDetails?.managementFee || 0,
+          monthlyLevies: 0,
+          monthlyRatesTaxes: 0,
+          otherMonthlyExpenses: 0,
+          maintenancePercent: 0
         };
 
         const analysis = data.analysis || {
