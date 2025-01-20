@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -13,8 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ReportSelections } from '../types/propertyReport';
 
-// Template presets
+// Define template presets with TypeScript types
 const REPORT_TEMPLATES = {
   basic: {
     name: "Basic Report",
@@ -23,13 +24,11 @@ const REPORT_TEMPLATES = {
       propertyDetails: {
         address: true,
         propertyPhoto: true,
-        mapImage: true,
         bedrooms: true,
         bathrooms: true,
         floorArea: true,
         parkingSpaces: true,
         purchasePrice: true,
-        propertyDescription: true,
       },
       financialMetrics: {
         depositAmount: true,
@@ -42,20 +41,9 @@ const REPORT_TEMPLATES = {
         monthlyRatesTaxes: true,
       },
       rentalPerformance: {
+        shortTermNightlyRate: true,
         shortTermAnnualRevenue: true,
         longTermAnnualRevenue: true,
-        shortTermGrossYield: true,
-        longTermGrossYield: true,
-      },
-      investmentMetrics: {
-        grossYield: true,
-        netYield: true,
-        capRate: true,
-      },
-      rateComparisons: {
-        propertyRatePerSquareMeter: true,
-        areaAverageRate: true,
-        rateDifference: true,
       },
     },
   },
@@ -101,7 +89,7 @@ const REPORT_TEMPLATES = {
         longTermAnnualRevenue: true,
         shortTermGrossYield: true,
         longTermGrossYield: true,
-        platformFees: true,
+        platformFee: true,
       },
       investmentMetrics: {
         grossYield: true,
@@ -110,21 +98,17 @@ const REPORT_TEMPLATES = {
         annualReturn: true,
         capRate: true,
         cashOnCashReturn: true,
-        roiWithoutAppreciation: true,
-        roiWithAppreciation: true,
         irr: true,
         netWorthChange: true,
       },
       cashflowAnalysis: {
-        annualCashflow: true,
-        cumulativeRentalIncome: true,
-        netWorthChange: true,
-        revenueProjections: true,
-      },
-      rateComparisons: {
-        propertyRatePerSquareMeter: true,
-        areaAverageRate: true,
-        rateDifference: true,
+        year1: true,
+        year2: true,
+        year3: true,
+        year4: true,
+        year5: true,
+        year10: true,
+        year20: true,
       },
     },
   },
@@ -135,58 +119,61 @@ const REPORT_TEMPLATES = {
   },
 };
 
-export function PDFGenerator({
-  data,
-  companyLogo,
+interface Props {
+  onGeneratePDF: (selections: ReportSelections) => Promise<void>;
+  onPreview?: () => void;
+  isGenerating: boolean;
+  companyLogo?: string;
+}
+
+export function ReportSectionManager({
   onGeneratePDF,
+  onPreview,
   isGenerating,
-}) {
+  companyLogo,
+}: Props) {
   const [activeTemplate, setActiveTemplate] = useState("basic");
-  const [selections, setSelections] = useState(
-    REPORT_TEMPLATES.basic.selections,
+  const [selections, setSelections] = useState<ReportSelections>(
+    REPORT_TEMPLATES.basic.selections
   );
   const [progress, setProgress] = useState(0);
 
-  const handleTemplateChange = (template) => {
+  // Handle template changes with type checking
+  const handleTemplateChange = useCallback((template: string) => {
     setActiveTemplate(template);
-    setSelections(REPORT_TEMPLATES[template].selections);
-  };
+    setSelections(REPORT_TEMPLATES[template as keyof typeof REPORT_TEMPLATES].selections);
+  }, []);
 
-  const handleSectionToggle = (section, item) => {
+  // Handle individual section toggles
+  const handleSectionToggle = useCallback((section: string, item: string) => {
     setSelections((prev) => ({
       ...prev,
       [section]: {
         ...prev[section],
-        [item]: !prev[section][item],
+        [item]: !(prev[section]?.[item] ?? false),
       },
     }));
 
-    // If we modify selections, switch to custom template
     if (activeTemplate !== "custom") {
       setActiveTemplate("custom");
     }
-  };
+  }, [activeTemplate]);
 
-  const handleSelectAll = (selected) => {
-    const allSections = {};
-    Object.keys(REPORT_TEMPLATES.full.selections).forEach((section) => {
+  // Handle select/deselect all with proper typing
+  const handleSelectAll = useCallback((selected: boolean) => {
+    const allSections = {} as ReportSelections;
+    Object.entries(REPORT_TEMPLATES.full.selections).forEach(([section, items]) => {
       allSections[section] = {};
-      Object.keys(REPORT_TEMPLATES.full.selections[section]).forEach((item) => {
+      Object.keys(items).forEach((item) => {
         allSections[section][item] = selected;
       });
     });
     setSelections(allSections);
     setActiveTemplate("custom");
-  };
+  }, []);
 
-  const handleLogoUpload = async (event) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Handle logo upload logic
-    }
-  };
-
-  const handleGeneratePDF = async () => {
+  // Handle PDF generation with progress tracking
+  const handleGeneratePDF = useCallback(async () => {
     setProgress(0);
     try {
       const interval = setInterval(() => {
@@ -199,8 +186,9 @@ export function PDFGenerator({
       setProgress(100);
     } catch (error) {
       console.error("PDF Generation error:", error);
+      setProgress(0);
     }
-  };
+  }, [selections, onGeneratePDF]);
 
   return (
     <div className="space-y-6">
@@ -245,13 +233,13 @@ export function PDFGenerator({
       <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
         <Tabs defaultValue="propertyDetails" className="w-full">
           <TabsList className="w-full justify-start">
-            <TabsTrigger value="propertyDetails">Property Details</TabsTrigger>
-            <TabsTrigger value="financialMetrics">Financial</TabsTrigger>
-            <TabsTrigger value="operatingExpenses">Expenses</TabsTrigger>
-            <TabsTrigger value="rentalPerformance">Rental</TabsTrigger>
-            <TabsTrigger value="investmentMetrics">Investment</TabsTrigger>
-            <TabsTrigger value="cashflowAnalysis">Cashflow</TabsTrigger>
-            <TabsTrigger value="rateComparisons">Rates</TabsTrigger>
+            {Object.keys(REPORT_TEMPLATES.full.selections).map((section) => (
+              <TabsTrigger key={section} value={section}>
+                {section
+                  .replace(/([A-Z])/g, " $1")
+                  .replace(/^./, (str) => str.toUpperCase())}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           {Object.entries(REPORT_TEMPLATES.full.selections).map(
@@ -286,75 +274,41 @@ export function PDFGenerator({
                   </CardContent>
                 </Card>
               </TabsContent>
-            ),
+            )
           )}
         </Tabs>
-
-        <Card>
-          <CardContent className="pt-6">
-            <h3 className="text-lg font-semibold mb-4">Company Branding</h3>
-            <div className="space-y-4">
-              <div className="p-4 bg-muted rounded-lg">
-                {companyLogo ? (
-                  <div className="space-y-4">
-                    <img
-                      src={companyLogo}
-                      alt="Company Logo"
-                      className="h-12 object-contain"
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        document.getElementById("logo-update")?.click()
-                      }
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Update Logo
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      document.getElementById("logo-upload")?.click()
-                    }
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Logo
-                  </Button>
-                )}
-                <input
-                  type="file"
-                  id={companyLogo ? "logo-update" : "logo-upload"}
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-      <Button
-        className="w-full"
-        onClick={handleGeneratePDF}
-        disabled={isGenerating}
-      >
-        {isGenerating ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Generating PDF...
-          </>
-        ) : (
-          <>
-            <FileText className="w-4 h-4 mr-2" />
-            Generate PDF Report
-          </>
+      <div className="flex space-x-4">
+        <Button
+          className="flex-1"
+          onClick={handleGeneratePDF}
+          disabled={isGenerating}
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Generating PDF...
+            </>
+          ) : (
+            <>
+              <FileText className="w-4 h-4 mr-2" />
+              Generate PDF
+            </>
+          )}
+        </Button>
+        {onPreview && (
+          <Button
+            variant="outline"
+            onClick={onPreview}
+            disabled={isGenerating}
+          >
+            Preview
+          </Button>
         )}
-      </Button>
+      </div>
 
-      <Progress value={progress} className="w-full" />
+      {isGenerating && <Progress value={progress} className="w-full" />}
     </div>
   );
 }

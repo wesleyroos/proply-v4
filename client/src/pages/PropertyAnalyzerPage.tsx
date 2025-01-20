@@ -213,7 +213,6 @@ export default function PropertyAnalyzerPage() {
   const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
   const { toast } = useToast();
   const [analysisId, setAnalysisId] = useState<string | null>(null);
-  const [showPDFReport, setShowPDFReport] = useState(false);
 
   console.log("Preparing PDF Data:", {
     fullAnalysisResult: analysisResult,
@@ -230,7 +229,6 @@ export default function PropertyAnalyzerPage() {
   const resultsRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const companyLogo = "/your-company-logo.png";
 
   const calculateBondRegistration = (
@@ -531,181 +529,70 @@ export default function PropertyAnalyzerPage() {
                     <TooltipTrigger asChild>
                       <div>
                         <Button
-                          onClick={() => {
-                            if (!analysisResult) return;
+                            // Update the pdfData preparation in the Export PDF button click handler:
+                            onClick={() => {
+                              if (!analysisResult || !analysisId) return;
 
-                            if (!analysisId) {
-                              toast({
-                                variant: "destructive",
-                                title: "Save Required",
-                                description:
-                                  "Please save your analysis before exporting to PDF.",
-                                duration: 3000,
-                              });
-                              return;
-                            }
-
-                            // Add the new check right here
-                            if (!analysisResult || !analysisResult.analysis) {
-                              console.error("Cannot generate PDF: analysisResult or analysis data is missing");
-                              return;
-                            }
-
-                            setPDFData({
-                              analysis: analysisResult.analysis,
-                              propertyDetails: {
-                                address: analysisResult.address,
-                                bedrooms: formData?.bedrooms || "N/A", 
-                                bathrooms: formData?.bathrooms || "N/A",
-                                floorArea: Number(formData?.floorArea) || 0,
-                                parkingSpaces: Number(formData?.parkingSpaces) || 0,
-                                purchasePrice: analysisResult.analysis.purchasePrice,
-                                ratePerSquareMeter: Number(formData?.cmaRatePerSqm) || 0,
-                                areaRate: Number(analysisResult.ratePerSquareMeter) || 0,
-                                rateDifference: Number(formData?.cmaRatePerSqm || 0) - (Number(analysisResult.ratePerSquareMeter) || 0),
-                                propertyPhoto: formData?.propertyPhoto || null,
-                              },
-                              financialMetrics: {
-                                depositAmount:
-                                  Number(analysisResult.deposit) || 0,
-                                depositPercentage:
-                                  Number(analysisResult.depositPercentage) || 0,
-                                interestRate:
-                                  Number(analysisResult.interestRate) || 0,
-                                loanTerm: Number(analysisResult.loanTerm) || 0,
-                                monthlyBondRepayment:
-                                  Number(analysisResult.monthlyBondRepayment) ||
-                                  0,
-                                investmentMetrics: {
-                                  shortTerm: [1, 2, 3, 4, 5, 10, 20].map(
-                                    (year, i) => {
-                                      const initialValue =
-                                        analysisResult.analysis.purchasePrice;
-                                      const appreciation =
-                                        formData?.annualPropertyAppreciation ||
-                                        5;
-                                      const propertyValue =
-                                        initialValue *
-                                        Math.pow(1 + appreciation / 100, year);
-                                      const appreciationGain =
-                                        year === 1
-                                          ? initialValue * (appreciation / 100)
-                                          : propertyValue -
-                                            initialValue *
-                                              Math.pow(
-                                                1 + appreciation / 100,
-                                                year - 1,
-                                              );
-                                      const loanBalance =
-                                        (initialValue -
-                                          (analysisResult.deposit || 0)) *
-                                        (1 -
-                                          (year * 12) /
-                                            (analysisResult.loanTerm * 12));
-                                      const principalPaid =
-                                        (initialValue -
-                                          (analysisResult.deposit || 0)) *
-                                        ((year * 12) /
-                                          (analysisResult.loanTerm * 12));
-                                      const interestPaid =
-                                        (analysisResult.monthlyBondRepayment ||
-                                          0) *
-                                          year *
-                                          12 -
-                                        principalPaid;
-                                      const interestToPrincipalRatio =
-                                        (interestPaid / principalPaid) * 100;
-                                      const totalEquity =
-                                        propertyValue - loanBalance;
-
-                                      return {
-                                        propertyValue,
-                                        appreciationGain,
-                                        loanBalance,
-                                        interestPaid,
-                                        interestToPrincipalRatio,
-                                        totalEquity,
-                                        principalPaid,
-                                      };
-                                    },
-                                  ),
+                              setPDFData({
+                                propertyDetails: {
+                                  address: analysisResult.address,
+                                  propertyPhoto: formData?.propertyPhoto || null,
+                                  mapImage: capturedMapImage,
+                                  bedrooms: formData?.bedrooms,
+                                  bathrooms: formData?.bathrooms,
+                                  floorArea: Number(formData?.floorArea),
+                                  parkingSpaces: Number(formData?.parkingSpaces),
+                                  purchasePrice: analysisResult.analysis.purchasePrice,
+                                  propertyRatePerSquareMeter: Number(formData?.cmaRatePerSqm),
+                                  areaRate: Number(analysisResult.ratePerSquareMeter),
+                                  rateDifference: Number(formData?.cmaRatePerSqm || 0) - Number(analysisResult.ratePerSquareMeter || 0),
+                                  propertyDescription: analysisResult.propertyDescription
                                 },
-                                netOperatingIncome:
-                                  analysisResult.netOperatingIncome,
-                                longTermNetOperatingIncome:
-                                  analysisResult.analysis
-                                    .longTermNetOperatingIncome,
-                                revenueProjections:
-                                  analysisResult.analysis.revenueProjections,
-                                bondRegistration: calculateBondRegistration(
-                                  analysisResult.analysis.purchasePrice,
-                                  !removeVat,
-                                ),
-                                transferCosts: calculateTransferCosts(
-                                  analysisResult.analysis.purchasePrice,
-                                  !removeVat,
-                                  !removeTransferDuty,
-                                ),
-                              },
-                              expenses: {
-                                monthlyLevies:
-                                  Number(formData?.monthlyLevies) || 0,
-                                monthlyRatesTaxes:
-                                  Number(formData?.monthlyRatesTaxes) || 0,
-                                otherMonthlyExpenses:
-                                  Number(formData?.otherMonthlyExpenses) || 0,
-                                maintenancePercent:
-                                  Number(formData?.maintenancePercent) || 0,
-                                managementFee:
-                                  Number(analysisResult.managementFee) || 0,
-                              },
-                              performance: {
-                                shortTermNightlyRate:
-                                  Number(analysisResult.shortTermNightlyRate) ||
-                                  0,
-                                annualOccupancy:
-                                  Number(analysisResult.annualOccupancy) || 0,
-                                shortTermAnnualRevenue:
-                                  Number(
-                                    analysisResult.analysis
-                                      .shortTermAnnualRevenue,
-                                  ) || 0,
-                                longTermAnnualRevenue:
-                                  Number(
-                                    analysisResult.analysis
-                                      .longTermAnnualRevenue,
-                                  ) || 0,
-                                shortTermGrossYield:
-                                  Number(analysisResult.shortTermGrossYield) ||
-                                  0,
-                                longTermGrossYield:
-                                  Number(analysisResult.longTermGrossYield) ||
-                                  0,
-                                yearlyPerformance:
-                                  analysisResult.analysis.netOperatingIncome,
-                              },
-                              investmentMetrics:
-                                analysisResult.analysis.investmentMetrics,
-                              operatingExpenses:
-                                analysisResult.analysis.operatingExpenses,
-                              netOperatingIncome:
-                                analysisResult.netOperatingIncome,
-                              longTermNetOperatingIncome:
-                                analysisResult.analysis
-                                  .longTermNetOperatingIncome, // Add this line
-
-                              revenueProjections:
-                                analysisResult.analysis.revenueProjections,
-
-                              analysisResults: {
-                                ...analysisResult.analysis,
-                                operatingExpenses:
-                                  analysisResult.analysis.operatingExpenses,
-                                investmentMetrics:
-                                  analysisResult.analysis.investmentMetrics,
-                              },
-                            });
-                            setShowPDFGenerator(true);
+                                financialMetrics: {
+                                  depositAmount: Number(analysisResult.deposit),
+                                  depositPercentage: Number(analysisResult.depositPercentage),
+                                  interestRate: Number(analysisResult.interestRate),
+                                  loanTerm: Number(analysisResult.loanTerm),
+                                  monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment),
+                                  bondRegistration: calculateBondRegistration(
+                                    analysisResult.analysis.purchasePrice,
+                                    !removeVat
+                                  ),
+                                  transferCosts: calculateTransferCosts(
+                                    analysisResult.analysis.purchasePrice,
+                                    !removeVat,
+                                    !removeTransferDuty
+                                  ),
+                                  totalCapitalRequired: (
+                                    (analysisResult.deposit || 0) +
+                                    calculateBondRegistration(analysisResult.analysis.purchasePrice, !removeVat) +
+                                    calculateTransferCosts(analysisResult.analysis.purchasePrice, !removeVat, !removeTransferDuty)
+                                  )
+                                },
+                                operatingExpenses: {
+                                  monthlyLevies: Number(formData?.monthlyLevies),
+                                  monthlyRatesTaxes: Number(formData?.monthlyRatesTaxes),
+                                  otherMonthlyExpenses: Number(formData?.otherMonthlyExpenses),
+                                  maintenancePercent: Number(formData?.maintenancePercent),
+                                  managementFee: Number(analysisResult.managementFee)
+                                },
+                                rentalPerformance: {
+                                  shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate),
+                                  annualOccupancy: Number(analysisResult.annualOccupancy),
+                                  shortTermAnnualRevenue: Number(analysisResult.analysis.shortTermAnnualRevenue),
+                                  longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue),
+                                  shortTermGrossYield: Number(analysisResult.shortTermGrossYield),
+                                  longTermGrossYield: Number(analysisResult.longTermGrossYield),
+                                  platformFee: analysisResult.managementFee > 0 ? 15 : 3
+                                },
+                                investmentMetrics: {
+                                  shortTerm: analysisResult.analysis.investmentMetrics,
+                                  longTerm: analysisResult.analysis.investmentMetrics
+                                },
+                                netOperatingIncome: analysisResult.netOperatingIncome,
+                                revenueProjections: analysisResult.analysis.revenueProjections
+                              });
+                              setShowPDFGenerator(true);
                           }}
                           disabled={!analysisResult || !analysisId}
                           className="bg-blue-600 hover:bg-blue-700"
@@ -1305,15 +1192,18 @@ export default function PropertyAnalyzerPage() {
           </div>
         )}
         <Dialog open={showPDFGenerator} onOpenChange={setShowPDFGenerator}>
-          <DialogContent className="max-w-[800px]">
+          <DialogContent className="max-w-4xl max-h-[90vh]">
             <DialogHeader>
               <DialogTitle>Generate Property Analysis Report</DialogTitle>
             </DialogHeader>
-            <PropertyAnalyzerPDF
-              data={pdfData}
-              companyLogo={user?.companyLogo || ""}
-              onClose={() => setShowPDFGenerator(false)}
-            />
+            {pdfData && (  // Add this check
+              <PropertyAnalyzerPDF
+                data={pdfData}
+                companyLogo={user?.settings?.companyLogo || ""}
+                onClose={() => setShowPDFGenerator(false)}
+                isOpen={showPDFGenerator}  // Add this prop
+              />
+            )}
           </DialogContent>
         </Dialog>
       </div>
