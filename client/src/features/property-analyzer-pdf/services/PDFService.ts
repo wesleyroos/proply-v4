@@ -89,11 +89,61 @@ const addPageFooters = async (
   }
 };
 
-export async function generatePDF(
-  data: PropertyData,
-  selections: ReportSelections,
-  companyLogo?: string,
-): Promise<void> {
+    export async function generatePDF(
+      data: PropertyData,
+      selections: ReportSelections,
+      companyLogo?: string,
+    ): Promise<void> {
+      try {
+        // Add data validation with more specific error messages
+        if (!data) {
+          throw new Error('PDF Generation Error: No data provided');
+        }
+
+        if (!data.propertyDetails) {
+          throw new Error('PDF Generation Error: Property details missing');
+        }
+
+        // Create safe references with proper type assertions
+        const propertyDetails = data.propertyDetails as {
+          address: string;
+          purchasePrice: number;
+          floorArea: number;
+          ratePerSquareMeter: number;
+          bedrooms: number;
+          bathrooms: number;
+          parkingSpaces: number;
+        };
+
+        const performance = data.performance || {
+          shortTermNightlyRate: 0,
+          annualOccupancy: 0,
+          shortTermAnnualRevenue: 0,
+          longTermAnnualRevenue: 0,
+          shortTermGrossYield: 0,
+          longTermGrossYield: 0
+        };
+
+        const financialMetrics = data.financialMetrics || {
+          depositAmount: 0,
+          depositPercentage: 0,
+          interestRate: 0,
+          monthlyBondRepayment: 0,
+          bondRegistration: 0,
+          transferCosts: 0,
+          loanTerm: 20,
+          annualAppreciation: 5
+        };
+
+        const expenses = data.expenses || {
+          managementFee: 0
+        };
+
+        const analysis = data.analysis || {
+          netOperatingIncome: {},
+          longTermNetOperatingIncome: {},
+          revenueProjections: { shortTerm: {}, longTerm: {} }
+        };
   // Initialize PDF
   const pdf = new jsPDF({
     orientation: "portrait",
@@ -438,7 +488,9 @@ export async function generatePDF(
     "Nov",
     "Dec",
   ];
-  const baseRate = data.performance.shortTermNightlyRate;
+  const baseRate = data.performance?.shortTermNightlyRate || 
+    data.propertyDetails?.shortTermNightlyRate || 
+    0;  
   const platformFee = data.expenses.managementFee || 0;
 
   let monthlyPerformance = months.map((month, index) => {

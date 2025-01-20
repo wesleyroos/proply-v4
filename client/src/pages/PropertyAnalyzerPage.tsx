@@ -548,6 +548,15 @@ export default function PropertyAnalyzerPage() {
                                   rateDifference: Number(formData?.cmaRatePerSqm || 0) - Number(analysisResult.ratePerSquareMeter || 0),
                                   propertyDescription: analysisResult.propertyDescription
                                 },
+                                // Add this new performance object
+                                performance: {
+                                  shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate),
+                                  annualOccupancy: Number(analysisResult.annualOccupancy),
+                                  shortTermAnnualRevenue: Number(analysisResult.analysis.shortTermAnnualRevenue),
+                                  longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue),
+                                  shortTermGrossYield: Number(analysisResult.shortTermGrossYield),
+                                  longTermGrossYield: Number(analysisResult.longTermGrossYield)
+                                },
                                 financialMetrics: {
                                   depositAmount: Number(analysisResult.deposit),
                                   depositPercentage: Number(analysisResult.depositPercentage),
