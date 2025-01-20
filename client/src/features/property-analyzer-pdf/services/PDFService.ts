@@ -94,11 +94,17 @@ export async function generatePDF(
   selections: ReportSelections,
   companyLogo?: string,
 ): Promise<void> {
+  // Initialize PDF
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",
     format: "a4",
   });
+
+  // Helper to check if section/item is selected
+  const isSelected = (section: string, item: string) => {
+    return selections[section]?.[item] === true;
+  };
 
   // Constants for layout
   const pageWidth = pdf.internal.pageSize.getWidth();
@@ -210,9 +216,9 @@ export async function generatePDF(
   pdf.setTextColor(0);
 
   const propertyDetails = [
-    ["Address", data.propertyDetails.address],
-    ["Purchase Price", formatCurrency(data.propertyDetails.purchasePrice)],
-    ["Floor Area", `${data.propertyDetails.floorArea}m²`],
+    ...(isSelected('propertyDetails', 'address') ? [["Address", data.propertyDetails.address]] : []),
+    ...(isSelected('propertyDetails', 'purchasePrice') ? [["Purchase Price", formatCurrency(data.propertyDetails.purchasePrice)]] : []),
+    ...(isSelected('propertyDetails', 'floorArea') ? [["Floor Area", `${data.propertyDetails.floorArea}m²`]] : []),
     [
       "Current Property Rate/m²",
       formatCurrency(
@@ -276,9 +282,9 @@ export async function generatePDF(
   pdf.setTextColor(0);
 
   const financialMetrics = [
-    ["Deposit Amount", formatCurrency(data.financialMetrics.depositAmount)],
-    ["Deposit Percentage", `${data.financialMetrics.depositPercentage}%`],
-    ["Interest Rate", `${data.financialMetrics.interestRate}%`],
+    ...(isSelected('financialMetrics', 'depositAmount') ? [["Deposit Amount", formatCurrency(data.financialMetrics.depositAmount)]] : []),
+    ...(isSelected('financialMetrics', 'depositPercentage') ? [["Deposit Percentage", `${data.financialMetrics.depositPercentage}%`]] : []),
+    ...(isSelected('financialMetrics', 'interestRate') ? [["Interest Rate", `${data.financialMetrics.interestRate}%`]] : []),
     [
       "Monthly Bond Repayment",
       formatCurrency(data.financialMetrics.monthlyBondRepayment),
