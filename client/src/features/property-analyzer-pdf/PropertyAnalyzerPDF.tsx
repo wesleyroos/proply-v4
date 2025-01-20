@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { PDFGenerator } from "./components/PDFGenerator";
-import { PDFPreview } from "./components/PDFPreview";
 import { PropertyData, ReportSelections } from "./types/propertyReport";
 import { generatePDF } from "./services/PDFService";
 import { useToast } from "@/hooks/use-toast";
@@ -25,7 +24,6 @@ export function PropertyAnalyzerPDF({
   isOpen,
 }: PropertyAnalyzerPDFProps) {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
 
   const handleGeneratePDF = async (selections: ReportSelections) => {
@@ -54,10 +52,6 @@ export function PropertyAnalyzerPDF({
     }
   };
 
-  const handlePreview = () => {
-    setShowPreview(true);
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -68,25 +62,9 @@ export function PropertyAnalyzerPDF({
         <div className="flex flex-col space-y-4">
           <PDFGenerator
             onGeneratePDF={handleGeneratePDF}
-            onPreview={handlePreview}
             isGenerating={isGenerating}
             companyLogo={companyLogo}
           />
-
-          {showPreview && (
-            <Dialog open={showPreview} onOpenChange={setShowPreview}>
-              <DialogContent className="max-w-4xl max-h-[90vh]">
-                <DialogHeader>
-                  <DialogTitle>Report Preview</DialogTitle>
-                </DialogHeader>
-                <PDFPreview
-                  data={data}
-                  companyLogo={companyLogo}
-                  onClose={() => setShowPreview(false)}
-                />
-              </DialogContent>
-            </Dialog>
-          )}
         </div>
       </DialogContent>
     </Dialog>

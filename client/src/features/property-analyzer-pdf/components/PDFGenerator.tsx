@@ -114,14 +114,12 @@ const REPORT_TEMPLATES = {
 
 interface Props {
   onGeneratePDF: (selections: ReportSelections) => Promise<void>;
-  onPreview?: () => void;
   isGenerating: boolean;
   companyLogo?: string;
 }
 
 export function PDFGenerator({
   onGeneratePDF,
-  onPreview,
   isGenerating,
   companyLogo,
 }: Props) {
@@ -286,15 +284,6 @@ export function PDFGenerator({
             </>
           )}
         </Button>
-        {onPreview && (
-          <Button
-            variant="outline"
-            onClick={onPreview}
-            disabled={isGenerating}
-          >
-            Preview
-          </Button>
-        )}
       </div>
 
       {isGenerating && <Progress value={progress} className="w-full" />}
