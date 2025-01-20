@@ -29,7 +29,16 @@ export function PropertyAnalyzerPDF({
   const handleGeneratePDF = async (selections: ReportSelections) => {
     setIsGenerating(true);
     try {
-      await generatePDF(data, selections, companyLogo);
+      // Create a filtered version of the data based on selections
+      const filteredData: PropertyData = {
+        ...data,
+        operatingExpenses: selections.operatingExpenses?.managementFee 
+          ? data.operatingExpenses 
+          : { ...data.operatingExpenses, managementFee: 0 },
+        // Add other conditional fields based on selections
+      };
+
+      await generatePDF(filteredData, selections, companyLogo);
       toast({
         title: "Success",
         description: "PDF report generated successfully",
