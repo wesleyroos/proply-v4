@@ -564,6 +564,11 @@ export default function PropertyAnalyzerPage() {
                                 propertyDescription:
                                   analysisResult.propertyDescription,
                               },
+                              analysis: {
+                                netOperatingIncome: analysisResult.analysis.netOperatingIncome,
+                                longTermNetOperatingIncome: analysisResult.analysis.longTermNetOperatingIncome,
+                                revenueProjections: analysisResult.analysis.revenueProjections,
+                              },
                               // Add this new performance object
                               performance: {
                                 shortTermNightlyRate: Number(
