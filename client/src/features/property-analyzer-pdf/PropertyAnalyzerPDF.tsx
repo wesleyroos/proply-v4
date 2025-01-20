@@ -23,11 +23,27 @@ export function PropertyAnalyzerPDF({
   onClose,
   isOpen,
 }: PropertyAnalyzerPDFProps) {
-  // Add this console log
-  console.log("Data received in PropertyAnalyzerPDF:", {
-    expenses: data.expenses,
-    managementFee: data?.expenses?.managementFee,
+  // Validate all incoming data
+  console.log("Validating PDF data:", {
+    propertyDetails: data?.propertyDetails,
+    financialMetrics: data?.financialMetrics,
+    expenses: data?.expenses,
+    rentalPerformance: data?.rentalPerformance,
+    investmentMetrics: data?.investmentMetrics,
+    netOperatingIncome: data?.netOperatingIncome,
+    revenueProjections: data?.revenueProjections
   });
+
+  if (!data) {
+    console.error("PDF data is null or undefined");
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "Invalid PDF data structure",
+      duration: 5000,
+    });
+    return null;
+  }
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 

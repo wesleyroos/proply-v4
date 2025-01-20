@@ -621,19 +621,19 @@ export default function PropertyAnalyzerPage() {
                               },
                               expenses: {
                                 // Changed from operatingExpenses to expenses
-                                monthlyLevies: Number(formData?.monthlyLevies),
+                                monthlyLevies: Number(formData?.monthlyLevies) || 0,
                                 monthlyRatesTaxes: Number(
-                                  formData?.monthlyRatesTaxes,
-                                ),
+                                  formData?.monthlyRatesTaxes
+                                ) || 0,
                                 otherMonthlyExpenses: Number(
-                                  formData?.otherMonthlyExpenses,
-                                ),
+                                  formData?.otherMonthlyExpenses
+                                ) || 0,
                                 maintenancePercent: Number(
-                                  formData?.maintenancePercent,
-                                ),
+                                  formData?.maintenancePercent
+                                ) || 0,
                                 managementFee: Number(
-                                  analysisResult.managementFee,
-                                ),
+                                  analysisResult.managementFee
+                                ) || 0,
                               },
                               rentalPerformance: {
                                 shortTermNightlyRate: Number(
@@ -1184,7 +1184,7 @@ export default function PropertyAnalyzerPage() {
                 netOperatingIncome={analysisResult.analysis.netOperatingIncome}
                 longTermNetOperatingIncome={
                   analysisResult.analysis.longTermNetOperatingIncome
-                } // Add this line
+                }
               />
 
               <Card className="mt-6">
@@ -1284,7 +1284,7 @@ export default function PropertyAnalyzerPage() {
                 companyLogo={user?.settings?.companyLogo || ""}
                 onClose={() => {
                   setShowPDFGenerator(false);
-                  setIsDataReady(false); // Reset the ready state when closing
+                  setIsDataReady(false);
                 }}
                 isOpen={showPDFGenerator}
               />
