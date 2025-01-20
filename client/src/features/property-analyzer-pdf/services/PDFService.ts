@@ -854,7 +854,7 @@ const addPageFooters = async (
     });
 
     const operatingIncome = data.netOperatingIncome || {};
-    const revenueData = data.revenueProjections?.[term] || {};
+    const revenueData = data.analysis.revenueProjections?.[term] || {};
 
     // Add debug log after getting operating income
     console.log(`${term} Operating Income Data:`, {
@@ -864,8 +864,6 @@ const addPageFooters = async (
           ? "data.analysis.netOperatingIncome"
           : "data.analysis.longTermNetOperatingIncome",
     });
-
-    const revenueData = data.analysis.revenueProjections?.[term];
 
     // Add debug log after getting revenue data
     console.log(`${term} Revenue Data:`, {
