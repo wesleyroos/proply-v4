@@ -14,6 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ReportSelections } from '../types/propertyReport';
+import { useToast } from "@/components/ui/use-toast";
+import { useProAccess } from "@/hooks/useProAccess"; // Assuming this hook exists
 
 const REPORT_TEMPLATES = {
   basic: {
@@ -128,11 +130,22 @@ export function PDFGenerator({
     REPORT_TEMPLATES.basic.selections
   );
   const [progress, setProgress] = useState(0);
+  const { toast } = useToast();
+  const hasProAccess = useProAccess();
 
   const handleTemplateChange = useCallback((template: string) => {
+    if (template === 'full' && !hasProAccess) {
+      toast({
+        variant: "destructive",
+        title: "Pro Plan Required",
+        description: "Please upgrade to Pro to access the full analysis template"
+      });
+      // Open upgrade modal here -  Implementation of modal opening would go here.
+      return;
+    }
     setActiveTemplate(template);
     setSelections(REPORT_TEMPLATES[template as keyof typeof REPORT_TEMPLATES].selections);
-  }, []);
+  }, [hasProAccess, toast]);
 
   const handleSectionToggle = useCallback((section: string, item: string) => {
     setSelections((prev) => ({
@@ -187,8 +200,13 @@ export function PDFGenerator({
             </SelectTrigger>
             <SelectContent>
               {Object.entries(REPORT_TEMPLATES).map(([key, template]) => (
-                <SelectItem key={key} value={key}>
-                  {template.name}
+                <SelectItem key={key} value={key} disabled={key === 'full' && !hasProAccess}>
+                  <div className="flex items-center justify-between w-full">
+                    <span>{template.name}</span>
+                    {key === 'full' && !hasProAccess && (
+                      <span className="text-xs text-muted-foreground ml-2">Pro</span>
+                    )}
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>
