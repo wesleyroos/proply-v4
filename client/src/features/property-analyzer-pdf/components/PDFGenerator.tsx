@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,7 +16,6 @@ import {
 } from "@/components/ui/select";
 import { ReportSelections } from '../types/propertyReport';
 
-// Define template presets with TypeScript types
 const REPORT_TEMPLATES = {
   basic: {
     name: "Basic Report",
@@ -60,9 +60,6 @@ const REPORT_TEMPLATES = {
         floorArea: true,
         parkingSpaces: true,
         purchasePrice: true,
-        propertyRatePerSquareMeter: true,
-        areaRatePerSquareMeter: true,
-        rateDifference: true,
         propertyDescription: true,
       },
       financialMetrics: {
@@ -102,13 +99,10 @@ const REPORT_TEMPLATES = {
         netWorthChange: true,
       },
       cashflowAnalysis: {
-        year1: true,
-        year2: true,
-        year3: true,
-        year4: true,
-        year5: true,
-        year10: true,
-        year20: true,
+        annualCashflow: true,
+        cumulativeRentalIncome: true,
+        netWorthChange: true,
+        revenueProjections: true,
       },
     },
   },
@@ -126,7 +120,7 @@ interface Props {
   companyLogo?: string;
 }
 
-export function ReportSectionManager({
+export function PDFGenerator({
   onGeneratePDF,
   onPreview,
   isGenerating,
@@ -138,13 +132,11 @@ export function ReportSectionManager({
   );
   const [progress, setProgress] = useState(0);
 
-  // Handle template changes with type checking
   const handleTemplateChange = useCallback((template: string) => {
     setActiveTemplate(template);
     setSelections(REPORT_TEMPLATES[template as keyof typeof REPORT_TEMPLATES].selections);
   }, []);
 
-  // Handle individual section toggles
   const handleSectionToggle = useCallback((section: string, item: string) => {
     setSelections((prev) => ({
       ...prev,
@@ -159,7 +151,6 @@ export function ReportSectionManager({
     }
   }, [activeTemplate]);
 
-  // Handle select/deselect all with proper typing
   const handleSelectAll = useCallback((selected: boolean) => {
     const allSections = {} as ReportSelections;
     Object.entries(REPORT_TEMPLATES.full.selections).forEach(([section, items]) => {
@@ -172,7 +163,6 @@ export function ReportSectionManager({
     setActiveTemplate("custom");
   }, []);
 
-  // Handle PDF generation with progress tracking
   const handleGeneratePDF = useCallback(async () => {
     setProgress(0);
     try {
