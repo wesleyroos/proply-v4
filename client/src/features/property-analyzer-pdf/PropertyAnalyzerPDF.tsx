@@ -23,6 +23,11 @@ export function PropertyAnalyzerPDF({
   onClose,
   isOpen,
 }: PropertyAnalyzerPDFProps) {
+  // Add this console log
+  console.log("Data received in PropertyAnalyzerPDF:", {
+    expenses: data.expenses,
+    managementFee: data?.expenses?.managementFee,
+  });
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 

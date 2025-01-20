@@ -495,7 +495,7 @@ const addPageFooters = async (
   const baseRate = data.performance?.shortTermNightlyRate || 
     data.propertyDetails?.shortTermNightlyRate || 
     0;  
-  const platformFee = data.expenses.managementFee || 0;
+  const platformFee = data.expenses?.managementFee || 0;
 
   let monthlyPerformance = months.map((month, index) => {
     const lowOcc = OCCUPANCY_RATES.low[index];
@@ -847,10 +847,14 @@ const addPageFooters = async (
     const years = [1, 2, 3, 4, 5, 10, 20];
 
     // Get the correct operating income data based on term
-    const operatingIncome =
-      term === "shortTerm"
-        ? data.analysis.netOperatingIncome
-        : data.analysis.longTermNetOperatingIncome;
+    console.log('Debug - Data Structure:', {
+      hasNetOperatingIncome: !!data.netOperatingIncome,
+      netOperatingIncome: data.netOperatingIncome,
+      revenueProjections: data.revenueProjections
+    });
+
+    const operatingIncome = data.netOperatingIncome || {};
+    const revenueData = data.revenueProjections?.[term] || {};
 
     // Add debug log after getting operating income
     console.log(`${term} Operating Income Data:`, {

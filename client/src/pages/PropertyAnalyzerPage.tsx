@@ -203,6 +203,7 @@ interface AnalysisResult {
 }
 
 export default function PropertyAnalyzerPage() {
+  const [isDataReady, setIsDataReady] = useState(false);
   const { user } = useUser();
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
     null,
@@ -218,12 +219,13 @@ export default function PropertyAnalyzerPage() {
     fullAnalysisResult: analysisResult,
     pdfDataStructure: {
       analysisNetOperatingIncome: analysisResult?.analysis?.netOperatingIncome,
-      analysisLongTermNetOperatingIncome: analysisResult?.analysis?.longTermNetOperatingIncome,
+      analysisLongTermNetOperatingIncome:
+        analysisResult?.analysis?.longTermNetOperatingIncome,
       netOperatingIncome: analysisResult?.netOperatingIncome,
       revenueProjections: analysisResult?.analysis?.revenueProjections,
-    }
+    },
   });
-  
+
   const [pdfData, setPDFData] = useState<any>(null);
   const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -403,7 +405,6 @@ export default function PropertyAnalyzerPage() {
   };
 
   const handleGeneratePDF = async (selections: ReportSelections) => {
-    setIsGeneratingPDF(true);
     try {
       await generatePDF(pdfData, selections, user?.settings?.companyLogo || "");
       toast({
@@ -424,7 +425,6 @@ export default function PropertyAnalyzerPage() {
         duration: 5000,
       });
     } finally {
-      setIsGeneratingPDF(false);
     }
   };
 
@@ -529,79 +529,152 @@ export default function PropertyAnalyzerPage() {
                     <TooltipTrigger asChild>
                       <div>
                         <Button
-                            // Update the pdfData preparation in the Export PDF button click handler:
-                            onClick={() => {
-                              if (!analysisResult || !analysisId) return;
+                          // Update the pdfData preparation in the Export PDF button click handler:
+                          onClick={() => {
+                            if (!analysisResult || !analysisId) return;
 
-                              setPDFData({
-                                propertyDetails: {
-                                  address: analysisResult.address,
-                                  propertyPhoto: formData?.propertyPhoto || null,
-                                  mapImage: capturedMapImage,
-                                  bedrooms: formData?.bedrooms,
-                                  bathrooms: formData?.bathrooms,
-                                  floorArea: Number(formData?.floorArea),
-                                  parkingSpaces: Number(formData?.parkingSpaces),
-                                  purchasePrice: analysisResult.analysis.purchasePrice,
-                                  propertyRatePerSquareMeter: Number(formData?.cmaRatePerSqm),
-                                  areaRate: Number(analysisResult.ratePerSquareMeter),
-                                  rateDifference: Number(formData?.cmaRatePerSqm || 0) - Number(analysisResult.ratePerSquareMeter || 0),
-                                  propertyDescription: analysisResult.propertyDescription
-                                },
-                                // Add this new performance object
-                                performance: {
-                                  shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate),
-                                  annualOccupancy: Number(analysisResult.annualOccupancy),
-                                  shortTermAnnualRevenue: Number(analysisResult.analysis.shortTermAnnualRevenue),
-                                  longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue),
-                                  shortTermGrossYield: Number(analysisResult.shortTermGrossYield),
-                                  longTermGrossYield: Number(analysisResult.longTermGrossYield)
-                                },
-                                financialMetrics: {
-                                  depositAmount: Number(analysisResult.deposit),
-                                  depositPercentage: Number(analysisResult.depositPercentage),
-                                  interestRate: Number(analysisResult.interestRate),
-                                  loanTerm: Number(analysisResult.loanTerm),
-                                  monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment),
-                                  bondRegistration: calculateBondRegistration(
-                                    analysisResult.analysis.purchasePrice,
-                                    !removeVat
+                            // Add this console log right before setPDFData
+                            console.log("Raw Analysis Result:", {
+                              managementFee: analysisResult.managementFee,
+                              fullAnalysisResult: analysisResult,
+                            });
+
+                            setPDFData({
+                              propertyDetails: {
+                                address: analysisResult.address,
+                                propertyPhoto: formData?.propertyPhoto || null,
+                                mapImage: capturedMapImage,
+                                bedrooms: formData?.bedrooms,
+                                bathrooms: formData?.bathrooms,
+                                floorArea: Number(formData?.floorArea),
+                                parkingSpaces: Number(formData?.parkingSpaces),
+                                purchasePrice:
+                                  analysisResult.analysis.purchasePrice,
+                                propertyRatePerSquareMeter: Number(
+                                  formData?.cmaRatePerSqm,
+                                ),
+                                areaRate: Number(
+                                  analysisResult.ratePerSquareMeter,
+                                ),
+                                rateDifference:
+                                  Number(formData?.cmaRatePerSqm || 0) -
+                                  Number(
+                                    analysisResult.ratePerSquareMeter || 0,
                                   ),
-                                  transferCosts: calculateTransferCosts(
+                                propertyDescription:
+                                  analysisResult.propertyDescription,
+                              },
+                              // Add this new performance object
+                              performance: {
+                                shortTermNightlyRate: Number(
+                                  analysisResult.shortTermNightlyRate,
+                                ),
+                                annualOccupancy: Number(
+                                  analysisResult.annualOccupancy,
+                                ),
+                                shortTermAnnualRevenue: Number(
+                                  analysisResult.analysis
+                                    .shortTermAnnualRevenue,
+                                ),
+                                longTermAnnualRevenue: Number(
+                                  analysisResult.analysis.longTermAnnualRevenue,
+                                ),
+                                shortTermGrossYield: Number(
+                                  analysisResult.shortTermGrossYield,
+                                ),
+                                longTermGrossYield: Number(
+                                  analysisResult.longTermGrossYield,
+                                ),
+                              },
+                              financialMetrics: {
+                                depositAmount: Number(analysisResult.deposit),
+                                depositPercentage: Number(
+                                  analysisResult.depositPercentage,
+                                ),
+                                interestRate: Number(
+                                  analysisResult.interestRate,
+                                ),
+                                loanTerm: Number(analysisResult.loanTerm),
+                                monthlyBondRepayment: Number(
+                                  analysisResult.monthlyBondRepayment,
+                                ),
+                                bondRegistration: calculateBondRegistration(
+                                  analysisResult.analysis.purchasePrice,
+                                  !removeVat,
+                                ),
+                                transferCosts: calculateTransferCosts(
+                                  analysisResult.analysis.purchasePrice,
+                                  !removeVat,
+                                  !removeTransferDuty,
+                                ),
+                                totalCapitalRequired:
+                                  (analysisResult.deposit || 0) +
+                                  calculateBondRegistration(
                                     analysisResult.analysis.purchasePrice,
                                     !removeVat,
-                                    !removeTransferDuty
+                                  ) +
+                                  calculateTransferCosts(
+                                    analysisResult.analysis.purchasePrice,
+                                    !removeVat,
+                                    !removeTransferDuty,
                                   ),
-                                  totalCapitalRequired: (
-                                    (analysisResult.deposit || 0) +
-                                    calculateBondRegistration(analysisResult.analysis.purchasePrice, !removeVat) +
-                                    calculateTransferCosts(analysisResult.analysis.purchasePrice, !removeVat, !removeTransferDuty)
-                                  )
-                                },
-                                operatingExpenses: {
-                                  monthlyLevies: Number(formData?.monthlyLevies),
-                                  monthlyRatesTaxes: Number(formData?.monthlyRatesTaxes),
-                                  otherMonthlyExpenses: Number(formData?.otherMonthlyExpenses),
-                                  maintenancePercent: Number(formData?.maintenancePercent),
-                                  managementFee: Number(analysisResult.managementFee)
-                                },
-                                rentalPerformance: {
-                                  shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate),
-                                  annualOccupancy: Number(analysisResult.annualOccupancy),
-                                  shortTermAnnualRevenue: Number(analysisResult.analysis.shortTermAnnualRevenue),
-                                  longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue),
-                                  shortTermGrossYield: Number(analysisResult.shortTermGrossYield),
-                                  longTermGrossYield: Number(analysisResult.longTermGrossYield),
-                                  platformFee: analysisResult.managementFee > 0 ? 15 : 3
-                                },
-                                investmentMetrics: {
-                                  shortTerm: analysisResult.analysis.investmentMetrics,
-                                  longTerm: analysisResult.analysis.investmentMetrics
-                                },
-                                netOperatingIncome: analysisResult.netOperatingIncome,
-                                revenueProjections: analysisResult.analysis.revenueProjections
-                              });
-                              setShowPDFGenerator(true);
+                              },
+                              expenses: {
+                                // Changed from operatingExpenses to expenses
+                                monthlyLevies: Number(formData?.monthlyLevies),
+                                monthlyRatesTaxes: Number(
+                                  formData?.monthlyRatesTaxes,
+                                ),
+                                otherMonthlyExpenses: Number(
+                                  formData?.otherMonthlyExpenses,
+                                ),
+                                maintenancePercent: Number(
+                                  formData?.maintenancePercent,
+                                ),
+                                managementFee: Number(
+                                  analysisResult.managementFee,
+                                ),
+                              },
+                              rentalPerformance: {
+                                shortTermNightlyRate: Number(
+                                  analysisResult.shortTermNightlyRate,
+                                ),
+                                annualOccupancy: Number(
+                                  analysisResult.annualOccupancy,
+                                ),
+                                shortTermAnnualRevenue: Number(
+                                  analysisResult.analysis
+                                    .shortTermAnnualRevenue,
+                                ),
+                                longTermAnnualRevenue: Number(
+                                  analysisResult.analysis.longTermAnnualRevenue,
+                                ),
+                                shortTermGrossYield: Number(
+                                  analysisResult.shortTermGrossYield,
+                                ),
+                                longTermGrossYield: Number(
+                                  analysisResult.longTermGrossYield,
+                                ),
+                                platformFee:
+                                  analysisResult.managementFee > 0 ? 15 : 3,
+                              },
+                              investmentMetrics: {
+                                shortTerm:
+                                  analysisResult.analysis.investmentMetrics,
+                                longTerm:
+                                  analysisResult.analysis.investmentMetrics,
+                              },
+                              netOperatingIncome:
+                                analysisResult.netOperatingIncome,
+                              revenueProjections:
+                                analysisResult.analysis.revenueProjections,
+                            });
+                            setIsDataReady(true); // Add this after setPDFData
+
+                            // Add this console log after setPDFData
+                            console.log("PDF Data being passed:", pdfData);
+
+                            setShowPDFGenerator(true);
                           }}
                           disabled={!analysisResult || !analysisId}
                           className="bg-blue-600 hover:bg-blue-700"
@@ -1205,12 +1278,15 @@ export default function PropertyAnalyzerPage() {
             <DialogHeader>
               <DialogTitle>Generate Property Analysis Report</DialogTitle>
             </DialogHeader>
-            {pdfData && (  // Add this check
+            {isDataReady && pdfData && (
               <PropertyAnalyzerPDF
                 data={pdfData}
                 companyLogo={user?.settings?.companyLogo || ""}
-                onClose={() => setShowPDFGenerator(false)}
-                isOpen={showPDFGenerator}  // Add this prop
+                onClose={() => {
+                  setShowPDFGenerator(false);
+                  setIsDataReady(false); // Reset the ready state when closing
+                }}
+                isOpen={showPDFGenerator}
               />
             )}
           </DialogContent>
