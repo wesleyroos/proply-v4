@@ -29,16 +29,7 @@ export function PropertyAnalyzerPDF({
   const handleGeneratePDF = async (selections: ReportSelections) => {
     setIsGenerating(true);
     try {
-      // Create a filtered version of the data based on selections
-      const filteredData: PropertyData = {
-        ...data,
-        operatingExpenses: selections.operatingExpenses?.managementFee 
-          ? data.operatingExpenses 
-          : { ...data.operatingExpenses, managementFee: 0 },
-        // Add other conditional fields based on selections
-      };
-
-      await generatePDF(filteredData, selections, companyLogo);
+      await generatePDF(data, selections, companyLogo);
       toast({
         title: "Success",
         description: "PDF report generated successfully",
@@ -63,12 +54,22 @@ export function PropertyAnalyzerPDF({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-8">
         <DialogHeader>
-          <DialogTitle>Generate Property Report</DialogTitle>
+          <DialogTitle className="text-lg font-bold">
+            Generate Property Report
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col space-y-4">
+        <div className="space-y-8">
+          {/* Top Section (Dropdown or other content handled elsewhere) */}
+          <div className="flex items-start space-x-6">
+            <div className="flex-1">
+              {/* Dropdown for report templates is handled elsewhere */}
+            </div>
+          </div>
+
+          {/* PDF Generator Component */}
           <PDFGenerator
             onGeneratePDF={handleGeneratePDF}
             isGenerating={isGenerating}

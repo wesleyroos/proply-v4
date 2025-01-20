@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Upload, Check, Loader2 } from "lucide-react";
+import { FileText, Loader2, Check } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -180,25 +180,26 @@ export function PDFGenerator({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
-        <Select value={activeTemplate} onValueChange={handleTemplateChange}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Choose template" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(REPORT_TEMPLATES).map(([key, template]) => (
-              <SelectItem key={key} value={key}>
-                <div className="flex flex-col">
-                  <span>{template.name}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {template.description}
-                  </span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center space-x-4 w-full">
+          <Select value={activeTemplate} onValueChange={handleTemplateChange}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Choose template" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(REPORT_TEMPLATES).map(([key, template]) => (
+                <SelectItem key={key} value={key}>
+                  {template.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-muted-foreground text-sm flex-grow">
+            {REPORT_TEMPLATES[activeTemplate as keyof typeof REPORT_TEMPLATES]
+              .description}
+          </span>
+        </div>
 
-        <div className="space-x-2">
+        <div className="flex space-x-2">
           <Button
             variant="outline"
             onClick={() => handleSelectAll(true)}
