@@ -1,242 +1,295 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { FileText, Upload, Check, Eye, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { PropertyData, ReportSelections } from '../types/propertyReport';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FileText, Upload, Check, Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-interface PDFGeneratorProps {
-  data: PropertyData;
-  companyLogo?: string;
-  onGeneratePDF: (selections: ReportSelections) => Promise<void>;
-  isGenerating: boolean;
-}
-
-const defaultSelections: ReportSelections = {
-  propertyDetails: {
-    address: true,
-    propertyPhoto: true,
-    mapImage: true,
-    bedrooms: true,
-    bathrooms: true,
-    floorArea: true,
-    parkingSpaces: true,
-    purchasePrice: true,
-    propertyRatePerSquareMeter: true,
-    areaRatePerSquareMeter: true,
-    rateDifference: true,
-    propertyDescription: true
+// Template presets
+const REPORT_TEMPLATES = {
+  basic: {
+    name: "Basic Report",
+    description: "Essential property information and key metrics",
+    selections: {
+      propertyDetails: {
+        address: true,
+        propertyPhoto: true,
+        mapImage: true,
+        bedrooms: true,
+        bathrooms: true,
+        floorArea: true,
+        parkingSpaces: true,
+        purchasePrice: true,
+        propertyDescription: true,
+      },
+      financialMetrics: {
+        depositAmount: true,
+        depositPercentage: true,
+        monthlyBondRepayment: true,
+        totalCapitalRequired: true,
+      },
+      operatingExpenses: {
+        monthlyLevies: true,
+        monthlyRatesTaxes: true,
+      },
+      rentalPerformance: {
+        shortTermAnnualRevenue: true,
+        longTermAnnualRevenue: true,
+        shortTermGrossYield: true,
+        longTermGrossYield: true,
+      },
+      investmentMetrics: {
+        grossYield: true,
+        netYield: true,
+        capRate: true,
+      },
+      rateComparisons: {
+        propertyRatePerSquareMeter: true,
+        areaAverageRate: true,
+        rateDifference: true,
+      },
+    },
   },
-  financialMetrics: {
-    depositAmount: true,
-    depositPercentage: true,
-    interestRate: true,
-    loanTerm: true,
-    monthlyBondRepayment: true,
-    bondRegistration: true,
-    transferCosts: true,
-    totalCapitalRequired: true
+  full: {
+    name: "Full Analysis",
+    description: "Comprehensive property analysis with all metrics",
+    selections: {
+      propertyDetails: {
+        address: true,
+        propertyPhoto: true,
+        mapImage: true,
+        bedrooms: true,
+        bathrooms: true,
+        floorArea: true,
+        parkingSpaces: true,
+        purchasePrice: true,
+        propertyRatePerSquareMeter: true,
+        areaRatePerSquareMeter: true,
+        rateDifference: true,
+        propertyDescription: true,
+      },
+      financialMetrics: {
+        depositAmount: true,
+        depositPercentage: true,
+        interestRate: true,
+        loanTerm: true,
+        monthlyBondRepayment: true,
+        bondRegistration: true,
+        transferCosts: true,
+        totalCapitalRequired: true,
+      },
+      operatingExpenses: {
+        monthlyLevies: true,
+        monthlyRatesTaxes: true,
+        otherMonthlyExpenses: true,
+        maintenancePercent: true,
+        managementFee: true,
+      },
+      rentalPerformance: {
+        shortTermNightlyRate: true,
+        annualOccupancy: true,
+        shortTermAnnualRevenue: true,
+        longTermAnnualRevenue: true,
+        shortTermGrossYield: true,
+        longTermGrossYield: true,
+        platformFees: true,
+      },
+      investmentMetrics: {
+        grossYield: true,
+        netYield: true,
+        returnOnEquity: true,
+        annualReturn: true,
+        capRate: true,
+        cashOnCashReturn: true,
+        roiWithoutAppreciation: true,
+        roiWithAppreciation: true,
+        irr: true,
+        netWorthChange: true,
+      },
+      cashflowAnalysis: {
+        annualCashflow: true,
+        cumulativeRentalIncome: true,
+        netWorthChange: true,
+        revenueProjections: true,
+      },
+      rateComparisons: {
+        propertyRatePerSquareMeter: true,
+        areaAverageRate: true,
+        rateDifference: true,
+      },
+    },
   },
-  operatingExpenses: {
-    monthlyLevies: true,
-    monthlyRatesTaxes: true,
-    otherMonthlyExpenses: true,
-    maintenancePercent: true,
-    managementFee: true
+  custom: {
+    name: "Custom",
+    description: "Select specific sections to include",
+    selections: {},
   },
-  rentalPerformance: {
-    shortTermNightlyRate: true,
-    annualOccupancy: true,
-    shortTermAnnualRevenue: true,
-    longTermAnnualRevenue: true,
-    shortTermGrossYield: true,
-    longTermGrossYield: true,
-    platformFees: true
-  },
-  investmentMetrics: {
-    grossYield: true,
-    netYield: true,
-    returnOnEquity: true,
-    annualReturn: true,
-    capRate: true,
-    cashOnCashReturn: true,
-    roiWithoutAppreciation: true,
-    roiWithAppreciation: true,
-    irr: true,
-    netWorthChange: true
-  },
-  cashflowAnalysis: {
-    annualCashflow: true,
-    cumulativeRentalIncome: true,
-    netWorthChange: true,
-    revenueProjections: true
-  },
-  rateComparisons: {
-    propertyRatePerSquareMeter: true,
-    areaAverageRate: true,
-    rateDifference: true
-  }
 };
 
 export function PDFGenerator({
   data,
   companyLogo,
   onGeneratePDF,
-  onPreview,
-  isGenerating
-}: PDFGeneratorProps) {
-  const [selections, setSelections] = useState<ReportSelections>(defaultSelections);
+  isGenerating,
+}) {
+  const [activeTemplate, setActiveTemplate] = useState("basic");
+  const [selections, setSelections] = useState(
+    REPORT_TEMPLATES.basic.selections,
+  );
   const [progress, setProgress] = useState(0);
-  const { toast } = useToast();
 
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64Data = reader.result as string;
-        try {
-          const response = await fetch('/api/profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ companyLogo: base64Data }),
-            credentials: 'include'
-          });
+  const handleTemplateChange = (template) => {
+    setActiveTemplate(template);
+    setSelections(REPORT_TEMPLATES[template].selections);
+  };
 
-          if (!response.ok) {
-            throw new Error('Failed to save logo');
-          }
+  const handleSectionToggle = (section, item) => {
+    setSelections((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [item]: !prev[section][item],
+      },
+    }));
 
-          const updatedUser = await response.json();
-          toast({
-            title: "Success",
-            description: "Company logo updated successfully",
-            duration: 3000,
-          });
-
-          if (onLogoUpdate) {
-            onLogoUpdate(base64Data);
-          }
-        } catch (error) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to update company logo",
-            duration: 5000,
-          });
-        }
-      };
-      reader.readAsDataURL(file);
+    // If we modify selections, switch to custom template
+    if (activeTemplate !== "custom") {
+      setActiveTemplate("custom");
     }
   };
 
-  const handleSelectAll = (selected: boolean) => {
-    const newSelections = { ...defaultSelections };
-    Object.keys(newSelections).forEach(sectionKey => {
-      if (typeof newSelections[sectionKey as keyof ReportSelections] === 'object') {
-        const section = newSelections[sectionKey as keyof ReportSelections];
-        if (section && typeof section === 'object') {
-          Object.keys(section).forEach(itemKey => {
-            (section as any)[itemKey] = selected;
-          });
-        }
-      } else {
-        newSelections[sectionKey as keyof ReportSelections] = selected;
-      }
+  const handleSelectAll = (selected) => {
+    const allSections = {};
+    Object.keys(REPORT_TEMPLATES.full.selections).forEach((section) => {
+      allSections[section] = {};
+      Object.keys(REPORT_TEMPLATES.full.selections[section]).forEach((item) => {
+        allSections[section][item] = selected;
+      });
     });
-    setSelections(newSelections);
+    setSelections(allSections);
+    setActiveTemplate("custom");
   };
 
-  const toggleSection = (sectionId: string, itemId: string) => {
-    setSelections(prev => {
-      const newSelections = { ...prev };
-      const section = newSelections[sectionId as keyof ReportSelections];
-      if (section && typeof section === 'object') {
-        (section as any)[itemId] = !(section as any)[itemId];
-      } else {
-        newSelections[sectionId as keyof ReportSelections] = !(newSelections[sectionId as keyof ReportSelections] as boolean);
-      }
-      return newSelections;
-    });
+  const handleLogoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Handle logo upload logic
+    }
   };
 
   const handleGeneratePDF = async () => {
     setProgress(0);
     try {
-      await onGeneratePDF(selections);
-      toast({
-        title: "Success",
-        description: "PDF report generated successfully",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate PDF report",
-      });
-    } finally {
-      setProgress(100);
-    }
-  };
+      const interval = setInterval(() => {
+        setProgress((prev) => Math.min(prev + 5, 90));
+      }, 300);
 
-  const updateSelection = (path: string, checked: boolean) => {
-    setSelections(prev => {
-      const newSelections = { ...prev };
-      const parts = path.split('.');
-      let current = newSelections;
-      for (let i = 0; i < parts.length - 1; i++) {
-        current = current[parts[i] as keyof ReportSelections] as any;
-      }
-      current[parts[parts.length - 1]] = checked;
-      return newSelections;
-    });
+      await onGeneratePDF(selections);
+
+      clearInterval(interval);
+      setProgress(100);
+    } catch (error) {
+      console.error("PDF Generation error:", error);
+    }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
+        <Select value={activeTemplate} onValueChange={handleTemplateChange}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Choose template" />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(REPORT_TEMPLATES).map(([key, template]) => (
+              <SelectItem key={key} value={key}>
+                <div className="flex flex-col">
+                  <span>{template.name}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {template.description}
+                  </span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         <div className="space-x-2">
-          <Button variant="outline" onClick={() => handleSelectAll(true)}>
+          <Button
+            variant="outline"
+            onClick={() => handleSelectAll(true)}
+            className="text-sm"
+          >
             <Check className="w-4 h-4 mr-2" />
             Select All
           </Button>
-          <Button variant="outline" onClick={() => handleSelectAll(false)}>
+          <Button
+            variant="outline"
+            onClick={() => handleSelectAll(false)}
+            className="text-sm"
+          >
             Deselect All
           </Button>
         </div>
       </div>
 
       <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-        {Object.entries(defaultSelections).map(([sectionId, sectionItems]) => (
-          <Card key={sectionId}>
-            <CardContent className="pt-6">
-              <h3 className="text-lg font-semibold mb-4">{sectionId.charAt(0).toUpperCase() + sectionId.slice(1).replace(/([A-Z])/g, ' $1')}</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {Object.entries(sectionItems).map(([itemId, _]) => (
-                  <div key={itemId} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`${sectionId}-${itemId}`}
-                      checked={typeof selections[sectionId as keyof ReportSelections] === 'object' ? (selections[sectionId as keyof ReportSelections] as any)[itemId] : selections[sectionId as keyof ReportSelections]}
-                      onCheckedChange={() => updateSelection(`${sectionId}.${itemId}`, !(typeof selections[sectionId as keyof ReportSelections] === 'object' ? (selections[sectionId as keyof ReportSelections] as any)[itemId] : selections[sectionId as keyof ReportSelections]))}
-                    />
-                    <Label className="text-sm" htmlFor={`${sectionId}-${itemId}`}>
-                      {itemId === 'shortTerm' ? 'Short Term Rental' : 
-                       itemId === 'longTerm' ? 'Long Term Rental' :
-                       itemId === 'currentPropertyRatePerM2' ? 'Current Property Rate/m²' :
-                       itemId === 'areaRatePerM2' ? 'Area Rate/m²' :
-                       itemId === 'rateM2Difference' ? 'Rate/m² Difference' :
-                       itemId.charAt(0).toUpperCase() + itemId.slice(1).replace(/([A-Z])/g, ' $1')}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        <Tabs defaultValue="propertyDetails" className="w-full">
+          <TabsList className="w-full justify-start">
+            <TabsTrigger value="propertyDetails">Property Details</TabsTrigger>
+            <TabsTrigger value="financialMetrics">Financial</TabsTrigger>
+            <TabsTrigger value="operatingExpenses">Expenses</TabsTrigger>
+            <TabsTrigger value="rentalPerformance">Rental</TabsTrigger>
+            <TabsTrigger value="investmentMetrics">Investment</TabsTrigger>
+            <TabsTrigger value="cashflowAnalysis">Cashflow</TabsTrigger>
+            <TabsTrigger value="rateComparisons">Rates</TabsTrigger>
+          </TabsList>
+
+          {Object.entries(REPORT_TEMPLATES.full.selections).map(
+            ([sectionId, sectionItems]) => (
+              <TabsContent key={sectionId} value={sectionId}>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      {Object.keys(sectionItems).map((itemId) => (
+                        <div
+                          key={itemId}
+                          className="flex items-center space-x-2"
+                        >
+                          <Checkbox
+                            id={`${sectionId}-${itemId}`}
+                            checked={selections[sectionId]?.[itemId] ?? false}
+                            onCheckedChange={() =>
+                              handleSectionToggle(sectionId, itemId)
+                            }
+                          />
+                          <Label
+                            htmlFor={`${sectionId}-${itemId}`}
+                            className="text-sm cursor-pointer"
+                          >
+                            {itemId
+                              .replace(/([A-Z])/g, " $1")
+                              .replace(/^./, (str) => str.toUpperCase())}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            ),
+          )}
+        </Tabs>
+
         <Card>
           <CardContent className="pt-6">
             <h3 className="text-lg font-semibold mb-4">Company Branding</h3>
@@ -249,20 +302,30 @@ export function PDFGenerator({
                       alt="Company Logo"
                       className="h-12 object-contain"
                     />
-                    <Button variant="outline" onClick={() => document.getElementById('logo-update')?.click()}>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        document.getElementById("logo-update")?.click()
+                      }
+                    >
                       <Upload className="w-4 h-4 mr-2" />
                       Update Logo
                     </Button>
                   </div>
                 ) : (
-                  <Button variant="outline" onClick={() => document.getElementById('logo-upload')?.click()}>
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      document.getElementById("logo-upload")?.click()
+                    }
+                  >
                     <Upload className="w-4 h-4 mr-2" />
                     Upload Logo
                   </Button>
                 )}
                 <input
                   type="file"
-                  id={companyLogo ? 'logo-update' : 'logo-upload'}
+                  id={companyLogo ? "logo-update" : "logo-upload"}
                   className="hidden"
                   accept="image/*"
                   onChange={handleLogoUpload}
@@ -275,16 +338,7 @@ export function PDFGenerator({
 
       <Button
         className="w-full"
-        onClick={async () => {
-          setProgress(0);
-          const interval = setInterval(() => {
-            setProgress(prev => Math.min(prev + 5, 90));
-          }, 300);
-
-          await handleGeneratePDF();
-          clearInterval(interval);
-          setProgress(100);
-        }}
+        onClick={handleGeneratePDF}
         disabled={isGenerating}
       >
         {isGenerating ? (
@@ -300,7 +354,7 @@ export function PDFGenerator({
         )}
       </Button>
 
-      <Progress value={progress} className="w-full mt-4" />
+      <Progress value={progress} className="w-full" />
     </div>
   );
 }
