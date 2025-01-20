@@ -105,7 +105,7 @@ const addPageFooters = async (
         }
 
         // Create safe references with proper type assertions
-        const propertyDetails = data.propertyDetails as {
+        const details = data.propertyDetails as {
           address: string;
           purchasePrice: number;
           floorArea: number;
@@ -124,7 +124,7 @@ const addPageFooters = async (
           longTermGrossYield: 0
         };
 
-        const financialMetrics = data.financialMetrics || {
+        const metrics = data.financialMetrics || {
           depositAmount: 0,
           depositPercentage: 0,
           interestRate: 0,
@@ -1782,4 +1782,7 @@ const addPageFooters = async (
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+  } finally {
+    // Cleanup any remaining resources
+  }
 }
