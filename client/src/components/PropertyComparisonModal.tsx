@@ -105,13 +105,10 @@ export function PropertyComparisonModal({
               <Card>
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Performance Overview</h3>
-                  <div className="mb-4">
-                    <Legend />
-                  </div>
                   <div className="w-full h-[400px]">
-                    <ComposedChart
-                      width={1000}
-                      height={400}
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart
+                        height={400}
                       data={properties.map(p => ({
                         name: p.address.split(',')[0],
                         'Purchase Price': p.purchasePrice,
@@ -147,11 +144,11 @@ export function PropertyComparisonModal({
                         }}
                       />
                       <Legend />
-                      <Bar dataKey="Purchase Price" fill="#94a3b8" yAxisId="left" />
-                      <Bar dataKey="Short Term Revenue" fill="#22c55e" yAxisId="left" />
-                      <Bar dataKey="Long Term Revenue" fill="#3b82f6" yAxisId="left" />
-                      <Line type="monotone" dataKey="Short Term Yield" stroke="#f59e0b" yAxisId="right" />
-                      <Line type="monotone" dataKey="Long Term Yield" stroke="#8b5cf6" yAxisId="right" />
+                      <Bar dataKey="Purchase Price" fill="hsl(var(--primary))" yAxisId="left" />
+                      <Bar dataKey="Short Term Revenue" fill="hsl(var(--success))" yAxisId="left" />
+                      <Bar dataKey="Long Term Revenue" fill="hsl(var(--secondary))" yAxisId="left" />
+                      <Line type="monotone" dataKey="Short Term Yield" stroke="hsl(var(--warning))" yAxisId="right" />
+                      <Line type="monotone" dataKey="Long Term Yield" stroke="hsl(var(--info))" yAxisId="right" />
                     </ComposedChart>
                   </div>
                 </CardContent>
@@ -193,7 +190,9 @@ export function PropertyComparisonModal({
                                     key={property.id} 
                                     className={`py-3 px-4 text-sm font-medium ${
                                       getBestValue(properties, metric.key, metric.isHigherBetter) === property[metric.key as keyof typeof property]
-                                        ? 'bg-green-100 text-green-800'
+                                        ? metric.isHigherBetter 
+                                          ? 'bg-emerald-50 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200'
+                                          : 'bg-blue-50 text-blue-900 dark:bg-blue-950 dark:text-blue-200'
                                         : ''
                                     }`}
                                   >
