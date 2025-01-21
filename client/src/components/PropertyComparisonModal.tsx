@@ -216,24 +216,27 @@ export function PropertyComparisonModal({
                   doc.setFontSize(12);
                   doc.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, 60);
 
-                  // Properties Overview
-                  const overviewData = displayProperties.map(p => [
-                    p.address,
-                    formatter.format(p.purchasePrice),
-                    `${p.floorArea} m²`,
-                    p.shortTermGrossYield ? `${p.shortTermGrossYield}%` : '--',
-                    p.longTermGrossYield ? `${p.longTermGrossYield}%` : '--'
-                  ]);
+                  // Add performance chart at the top
+                  const chartElement = document.querySelector('.recharts-wrapper');
+                  if (chartElement) {
+                    const canvas = await html2canvas(chartElement);
+                    const chartImage = canvas.toDataURL('image/png');
+                    const imgWidth = pageWidth - (2 * margin);
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    
+                    doc.text("Performance Overview", margin, 80);
+                    doc.addImage(chartImage, 'PNG', margin, 90, imgWidth, imgHeight);
+                    
+                    // Update starting Y position for the following content
+                    const chartEndY = 90 + imgHeight + 20;
+                    
+                    // Add metrics tables by category
+                    Object.entries(categories).forEach(([category, { title }], index) => {
+                      const startY = index === 0 ? chartEndY : (doc as any).lastAutoTable.finalY + 20;
 
-                  autoTable(doc, {
-                    head: [["Address", "Price", "Size", "ST Yield", "LT Yield"]],
-                    body: overviewData,
-                    startY: 70,
-                    styles: { fontSize: 10 },
-                    headStyles: { fillColor: [27, 163, 255] }
-                  });
-
-                  // Add metrics tables by category
+                      if (startY > doc.internal.pageSize.height - 60) {
+                        doc.addPage();
+                      }
                   Object.entries(categories).forEach(([category, { title }], index) => {
                     const startY = (doc as any).lastAutoTable.finalY + 20;
 
@@ -261,19 +264,7 @@ export function PropertyComparisonModal({
                     });
                   });
 
-                  // Add performance chart
-                  const chartElement = document.querySelector('.recharts-wrapper');
-                  if (chartElement) {
-                    doc.addPage();
-                    doc.text("Performance Overview", margin, margin + 10);
-                    
-                    const canvas = await html2canvas(chartElement);
-                    const chartImage = canvas.toDataURL('image/png');
-                    const imgWidth = pageWidth - (2 * margin);
-                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                    
-                    doc.addImage(chartImage, 'PNG', margin, margin + 20, imgWidth, imgHeight);
-                  }
+                  
 
                   doc.save("property-comparison-report.pdf");
                 }}
