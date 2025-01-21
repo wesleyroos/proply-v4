@@ -229,7 +229,13 @@ export function PropertyComparisonModal({
                     
                     yPos = 80;
                     doc.addImage(chartImage, 'PNG', margin, yPos, imgWidth, imgHeight);
-                    yPos = yPos + imgHeight + 20; // Update yPos for next content
+                    yPos = yPos + imgHeight + 40; // Increased spacing after chart
+                  }
+
+                  // Check if we need a new page
+                  if (yPos > doc.internal.pageSize.height - 100) {
+                    doc.addPage();
+                    yPos = margin;
                   }
 
                   // Properties Overview
