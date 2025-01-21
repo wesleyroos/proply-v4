@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Card, CardContent } from "./ui/card";
 import { formatter } from "../utils/formatting";
 import { ScrollArea } from "./ui/scroll-area";
-import { Building2, TrendingUp, Sparkles } from "lucide-react";
 
 interface Property {
   id: number;
@@ -84,26 +83,16 @@ export function PropertyComparisonModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh]">
-        <DialogHeader className="border-b pb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <img src="/proply-logo-1.png" alt="Proply" className="h-8" />
-              <DialogTitle className="text-xl font-semibold">Property Comparison</DialogTitle>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {properties.length} properties selected
-            </div>
-          </div>
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold">Property Comparison</DialogTitle>
         </DialogHeader>
         <ScrollArea className="h-full max-h-[calc(90vh-120px)]">
           <div className="p-4">
             <div className="grid grid-cols-1 gap-6">
               {Object.entries(categories).map(([category, title]) => (
-                <Card key={category} className="shadow-md">
+                <Card key={category}>
                   <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">
-                      {title}
-                    </h3>
+                    <h3 className="text-lg font-semibold mb-4">{title}</h3>
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
@@ -135,36 +124,9 @@ export function PropertyComparisonModal({
                                 {properties.map((property) => (
                                   <td 
                                     key={property.id} 
-                                    className={`py-3 px-4 text-sm font-medium ${
-                                      metric.key.includes('Yield') || metric.key.includes('Revenue') 
-                                        ? 'text-primary font-semibold' 
-                                        : ''
-                                    }`}
+                                    className="py-3 px-4 text-sm font-medium"
                                   >
-                                    <div>
-                                      {(() => {
-                                        const value = property[metric.key as keyof typeof property];
-                                        let colorClass = '';
-                                        
-                                        if (metric.key.includes('Yield')) {
-                                          const yieldValue = parseFloat(value as string);
-                                          if (yieldValue >= 8) colorClass = 'text-emerald-600 font-semibold';
-                                          else if (yieldValue >= 6) colorClass = 'text-yellow-600 font-semibold';
-                                          else colorClass = 'text-red-600 font-semibold';
-                                        } else if (metric.key.includes('Revenue')) {
-                                          const revenue = parseFloat(value as string);
-                                          if (revenue >= 400000) colorClass = 'text-emerald-600 font-semibold';
-                                          else if (revenue >= 200000) colorClass = 'text-yellow-600 font-semibold';
-                                          else colorClass = 'text-red-600 font-semibold';
-                                        }
-                                        
-                                        return (
-                                          <span className={colorClass}>
-                                            {metric.format(value, property)}
-                                          </span>
-                                        );
-                                      })()}
-                                    </div>
+                                    {metric.format(property[metric.key as keyof typeof property], property)}
                                   </td>
                                 ))}
                               </tr>
