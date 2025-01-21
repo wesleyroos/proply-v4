@@ -88,7 +88,7 @@ export function PropertyComparisonModal({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <img src="/proply-logo-1.png" alt="Proply" className="h-8" />
-              <DialogTitle className="text-xl font-semibold text-primary">Property Comparison</DialogTitle>
+              <DialogTitle className="text-xl font-semibold">Property Comparison</DialogTitle>
             </div>
             <div className="text-sm text-muted-foreground">
               {properties.length} properties selected
@@ -99,14 +99,9 @@ export function PropertyComparisonModal({
           <div className="p-4">
             <div className="grid grid-cols-1 gap-6">
               {Object.entries(categories).map(([category, title]) => (
-                <Card key={category} className="border-primary/20 shadow-md">
+                <Card key={category} className="shadow-md">
                   <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      {category === 'basic' ? (
-                        <Building2 className="h-5 w-5 text-primary" />
-                      ) : (
-                        <TrendingUp className="h-5 w-5 text-primary" />
-                      )}
+                    <h3 className="text-lg font-semibold mb-4">
                       {title}
                     </h3>
                     <div className="overflow-x-auto">
@@ -146,11 +141,29 @@ export function PropertyComparisonModal({
                                         : ''
                                     }`}
                                   >
-                                    <div className="flex items-center gap-2">
-                                      {metric.format(property[metric.key as keyof typeof property], property)}
-                                      {metric.key.includes('Yield') && parseFloat(property[metric.key as keyof typeof property] as string) > 8 && (
-                                        <Sparkles className="h-4 w-4 text-yellow-500" />
-                                      )}
+                                    <div>
+                                      {(() => {
+                                        const value = property[metric.key as keyof typeof property];
+                                        let colorClass = '';
+                                        
+                                        if (metric.key.includes('Yield')) {
+                                          const yieldValue = parseFloat(value as string);
+                                          if (yieldValue >= 8) colorClass = 'text-emerald-600 font-semibold';
+                                          else if (yieldValue >= 6) colorClass = 'text-yellow-600 font-semibold';
+                                          else colorClass = 'text-red-600 font-semibold';
+                                        } else if (metric.key.includes('Revenue')) {
+                                          const revenue = parseFloat(value as string);
+                                          if (revenue >= 400000) colorClass = 'text-emerald-600 font-semibold';
+                                          else if (revenue >= 200000) colorClass = 'text-yellow-600 font-semibold';
+                                          else colorClass = 'text-red-600 font-semibold';
+                                        }
+                                        
+                                        return (
+                                          <span className={colorClass}>
+                                            {metric.format(value, property)}
+                                          </span>
+                                        );
+                                      })()}
                                     </div>
                                   </td>
                                 ))}
