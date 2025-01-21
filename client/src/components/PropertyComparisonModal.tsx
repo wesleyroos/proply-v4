@@ -218,10 +218,11 @@ export function PropertyComparisonModal({
                     y: number,
                     maxWidth: number,
                   ) => {
-                    // Use almost full page width
-                    const lines = doc.splitTextToSize(text, maxWidth - (margin * 0.5));
+                    // Only subtract minimal margins to get almost full width
+                    const lines = doc.splitTextToSize(text, maxWidth - 40); // Using fixed 40 units total margin (20 on each side)
                     doc.setFontSize(10);
                     doc.setTextColor(80, 80, 80);
+
                     lines.forEach((line: string) => {
                       doc.text(line, x, y);
                       y += 6;
@@ -272,7 +273,7 @@ export function PropertyComparisonModal({
                     sectionDescriptions.overview,
                     margin,
                     currentY,
-                    pageWidth,
+                    pageWidth, // Pass full page width
                   );
 
                   const chartElement =
