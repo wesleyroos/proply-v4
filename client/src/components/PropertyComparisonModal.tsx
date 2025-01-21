@@ -217,17 +217,19 @@ export function PropertyComparisonModal({
                   doc.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, 60);
 
                   // Add performance chart first
+                  let yPos = 70;
                   const chartElement = document.querySelector('.recharts-wrapper');
                   if (chartElement) {
-                    doc.text("Performance Overview", margin, 70);
+                    doc.text("Performance Overview", margin, yPos);
                     
                     const canvas = await html2canvas(chartElement);
                     const chartImage = canvas.toDataURL('image/png');
                     const imgWidth = pageWidth - (2 * margin);
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
                     
-                    doc.addImage(chartImage, 'PNG', margin, 80, imgWidth, imgHeight);
-                    yPos = 80 + imgHeight + 20; // Update yPos for next content
+                    yPos = 80;
+                    doc.addImage(chartImage, 'PNG', margin, yPos, imgWidth, imgHeight);
+                    yPos = yPos + imgHeight + 20; // Update yPos for next content
                   }
 
                   // Properties Overview
