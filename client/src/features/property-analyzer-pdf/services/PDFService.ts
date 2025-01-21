@@ -89,84 +89,6 @@ const addPageFooters = async (
   }
 };
 
-// Footer handler function
-const addPageFooters = async (
-  pdf: jsPDF,
-  pageWidth: number,
-  pageHeight: number,
-  margin: number,
-) => {
-  const totalPages = pdf.getNumberOfPages();
-  const footerPadding = 5; // Padding from bottom of page
-
-  try {
-    // Load favicon
-    const faviconHeight = 6;
-    const faviconUrl = "/proply-logo-1.png";
-
-    // Add footer to each page
-    for (let i = 1; i <= totalPages; i++) {
-      pdf.setPage(i);
-
-      // Add favicon to bottom left
-      const logo = new Image();
-      logo.src = faviconUrl;
-      await new Promise((resolve, reject) => {
-        logo.onload = () => {
-          const aspectRatio = logo.width / logo.height;
-          const width = faviconHeight * aspectRatio;
-          pdf.addImage(
-            logo,
-            "PNG",
-            margin,
-            pageHeight - margin - faviconHeight - footerPadding,
-            width,
-            faviconHeight,
-          );
-          resolve(null);
-        };
-        logo.onerror = () => {
-          console.error("Error loading logo in footer");
-          resolve(null);
-        };
-      });
-
-      // Add page numbers to bottom right
-      pdf.setFontSize(8);
-      pdf.setTextColor(100);
-      pdf.text(
-        `Page ${i} of ${totalPages}`,
-        pageWidth - margin,
-        pageHeight - margin - footerPadding,
-        { align: "right" },
-      );
-
-      // Add centered copyright text
-      const currentYear = new Date().getFullYear();
-      pdf.text(
-        `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
-        pageWidth / 2,
-        pageHeight - margin - footerPadding,
-        { align: "center" },
-      );
-    }
-  } catch (error) {
-    console.error("Error adding favicon to pages:", error);
-    // If favicon fails, still add page numbers
-    for (let i = 1; i <= totalPages; i++) {
-      pdf.setPage(i);
-      pdf.setFontSize(8);
-      pdf.setTextColor(100);
-      pdf.text(
-        `Page ${i} of ${totalPages}`,
-        pageWidth - margin,
-        pageHeight - margin - footerPadding,
-        { align: "right" },
-      );
-    }
-  }
-};
-
     export async function generatePDF(
       data: PropertyData,
       selections: ReportSelections,
@@ -1852,9 +1774,6 @@ const addPageFooters = async (
     });
     disclaimerY += 2;
   });
-
-  // Add footers to all pages (including favicon and page numbers)
-  await addPageFooters(pdf, pageWidth, pageHeight, margin);
 
   // Add footers to all pages (including favicon and page numbers)
   await addPageFooters(pdf, pageWidth, pageHeight, margin);
