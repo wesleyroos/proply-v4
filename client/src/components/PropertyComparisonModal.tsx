@@ -199,6 +199,36 @@ export function PropertyComparisonModal({
                   const margin = 20;
                   let currentY = margin;
 
+                  // Section descriptions
+                  const sectionDescriptions = {
+                    overview:
+                      "This section provides a visual representation of key metrics across all properties, allowing for quick performance comparison. The chart shows purchase prices, revenues, and yields side by side.",
+                    properties:
+                      "A summary table showing key metrics for each property, providing a quick overview of the main characteristics and performance indicators.",
+                    basic:
+                      "Detailed comparison of fundamental property characteristics including purchase price, size, and rate per square meter.",
+                    performance:
+                      "Analysis of revenue potential and returns, comparing both short-term and long-term rental scenarios across properties.",
+                  };
+
+                  // Helper function to add wrapped text
+                  const addWrappedText = (
+                    text: string,
+                    x: number,
+                    y: number,
+                    maxWidth: number,
+                  ) => {
+                    // Use more of the page width by subtracting less margin
+                    const lines = doc.splitTextToSize(text, maxWidth - margin); // Changed from (2 * margin)
+                    doc.setFontSize(10);
+                    doc.setTextColor(80, 80, 80);
+                    lines.forEach((line: string) => {
+                      doc.text(line, x, y);
+                      y += 6;
+                    });
+                    return y + 6;
+                  };
+
                   // Add Proply logo
                   const logo = new Image();
                   logo.src = "/proply-logo-auth.png";
@@ -222,6 +252,7 @@ export function PropertyComparisonModal({
 
                   // Add title and date
                   doc.setFontSize(20);
+                  doc.setTextColor(0, 0, 0); // Reset text color to black
                   doc.text("Property Comparison Report", margin, currentY);
                   currentY += 15;
 
@@ -233,10 +264,16 @@ export function PropertyComparisonModal({
                   );
                   currentY += 20;
 
-                  // Add performance chart
+                  // Performance Overview Section
                   doc.setFontSize(14);
                   doc.text("Performance Overview", margin, currentY);
                   currentY += 10;
+                  currentY = addWrappedText(
+                    sectionDescriptions.overview,
+                    margin,
+                    currentY,
+                    pageWidth,
+                  );
 
                   const chartElement =
                     document.querySelector(".recharts-wrapper");
@@ -257,29 +294,36 @@ export function PropertyComparisonModal({
                     currentY += imgHeight + 20;
                   }
 
-                  // Check if we need a new page for overview table
+                  // Check if we need a new page
                   if (currentY > pageHeight - 100) {
                     doc.addPage();
                     currentY = margin;
                   }
 
-                  // Properties Overview table
+                  // Properties Overview Section
+                  doc.setFontSize(14);
+                  doc.setTextColor(0, 0, 0);
+                  doc.text("Properties Overview", margin, currentY);
+                  currentY += 10;
+                  currentY = addWrappedText(
+                    sectionDescriptions.properties,
+                    margin,
+                    currentY,
+                    pageWidth,
+                  );
+
                   const overviewData = displayProperties.map((p) => [
                     p.address,
                     formatter.format(p.purchasePrice),
                     `${p.floorArea} m²`,
-                    formatter.format(p.purchasePrice / p.floorArea),
-                    `${p.bedrooms} bed, ${p.bathrooms} bath`,
+                    formatter.format(p.purchasePrice / p.floorArea), // Rate/m²
+                    `${p.beds || "-"} bed, ${p.baths || "-"} bath`, // Beds & Baths
                   ]);
-
-                  doc.setFontSize(14);
-                  doc.text("Properties Overview", margin, currentY);
-                  currentY += 10;
 
                   autoTable(doc, {
                     head: [
                       ["Address", "Price", "Size", "Rate/m²", "Beds & Baths"],
-                    ],
+                    ], // Updated headers
                     body: overviewData,
                     startY: currentY,
                     styles: { fontSize: 10 },
@@ -292,21 +336,30 @@ export function PropertyComparisonModal({
                     },
                   });
 
-                  // Get the last Y position after the table
                   currentY = (doc as any).lastAutoTable.finalY + 20;
 
                   // Add metrics tables by category
                   Object.entries(categories).forEach(
                     ([category, { title }]) => {
-                      // Check if we need a new page
                       if (currentY > pageHeight - 100) {
                         doc.addPage();
                         currentY = margin;
                       }
 
                       doc.setFontSize(14);
+                      doc.setTextColor(0, 0, 0);
                       doc.text(title, margin, currentY);
                       currentY += 10;
+
+                      // Add section description
+                      currentY = addWrappedText(
+                        sectionDescriptions[
+                          category as keyof typeof sectionDescriptions
+                        ],
+                        margin,
+                        currentY,
+                        pageWidth,
+                      );
 
                       const categoryMetrics = metrics.filter(
                         (m) => m.category === category,
@@ -373,7 +426,9 @@ export function PropertyComparisonModal({
                     </h3>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                    Visual comparison of property prices, rental revenues, and yields showing relative performance across selected properties.
+                    Visual comparison of property prices, rental revenues, and
+                    yields showing relative performance across selected
+                    properties.
                   </p>
 
                   {/* Legend above chart */}
@@ -523,9 +578,9 @@ export function PropertyComparisonModal({
                         </h3>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {category === 'basic' ? 
-                          'Key property details including price, size, and rate per square meter for easy comparison.' :
-                          'Financial metrics showing rental yields, revenues, and comparative performance indicators.'}
+                        {category === "basic"
+                          ? "Key property details including price, size, and rate per square meter for easy comparison."
+                          : "Financial metrics showing rental yields, revenues, and comparative performance indicators."}
                       </p>
                     </div>
                     <div className="overflow-x-auto">
