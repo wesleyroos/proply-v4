@@ -268,8 +268,8 @@ export function PropertyComparisonModal({
                     p.address,
                     formatter.format(p.purchasePrice),
                     `${p.floorArea} m²`,
-                    p.shortTermGrossYield ? `${p.shortTermGrossYield}%` : "--",
-                    p.longTermGrossYield ? `${p.longTermGrossYield}%` : "--",
+                    formatter.format(p.purchasePrice / p.floorArea),
+                    `${p.bedrooms} bed, ${p.bathrooms} bath`,
                   ]);
 
                   doc.setFontSize(14);
@@ -278,7 +278,7 @@ export function PropertyComparisonModal({
 
                   autoTable(doc, {
                     head: [
-                      ["Address", "Price", "Size", "ST Yield", "LT Yield"],
+                      ["Address", "Price", "Size", "Rate/m²", "Beds & Baths"],
                     ],
                     body: overviewData,
                     startY: currentY,
