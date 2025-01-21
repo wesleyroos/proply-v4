@@ -219,7 +219,7 @@ export function PropertyComparisonModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] bg-white dark:bg-gray-900 relative">
+      <DialogContent className="max-w-6xl max-h-[90vh] bg-white dark:bg-gray-900 relative top-[5vh]">
         {isLoading && <LoadingOverlay />}
         <AnimatePresence>
           <motion.div
