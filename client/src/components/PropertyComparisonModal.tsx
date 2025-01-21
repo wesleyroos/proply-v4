@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Card, CardContent } from "./ui/card";
 import { formatter } from "../utils/formatting";
 import { ScrollArea } from "./ui/scroll-area";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, ComposedChart } from 'recharts';
 
 interface Property {
   id: number;
@@ -89,6 +90,57 @@ export function PropertyComparisonModal({
         <ScrollArea className="h-full max-h-[calc(90vh-120px)]">
           <div className="p-4">
             <div className="grid grid-cols-1 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Performance Overview</h3>
+                  <div className="w-full h-[400px]">
+                    <ComposedChart
+                      width={800}
+                      height={400}
+                      data={properties.map(p => ({
+                        name: p.address.split(',')[0],
+                        'Purchase Price': p.purchasePrice,
+                        'Short Term Revenue': p.shortTermAnnualRevenue,
+                        'Long Term Revenue': p.longTermAnnualRevenue,
+                        'Short Term Yield': Number(p.shortTermGrossYield),
+                        'Long Term Yield': Number(p.longTermGrossYield)
+                      }))}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="name" 
+                        angle={-45}
+                        textAnchor="end"
+                        height={60}
+                      />
+                      <YAxis 
+                        yAxisId="left"
+                        tickFormatter={(value) => formatter.format(value)}
+                      />
+                      <YAxis 
+                        yAxisId="right" 
+                        orientation="right"
+                        tickFormatter={(value) => `${value}%`}
+                      />
+                      <Tooltip 
+                        formatter={(value, name) => {
+                          if (name.includes('Yield')) {
+                            return [`${value}%`, name];
+                          }
+                          return [formatter.format(value), name];
+                        }}
+                      />
+                      <Legend />
+                      <Bar dataKey="Purchase Price" fill="#8884d8" yAxisId="left" />
+                      <Bar dataKey="Short Term Revenue" fill="#82ca9d" yAxisId="left" />
+                      <Bar dataKey="Long Term Revenue" fill="#ffc658" yAxisId="left" />
+                      <Line type="monotone" dataKey="Short Term Yield" stroke="#ff7300" yAxisId="right" />
+                      <Line type="monotone" dataKey="Long Term Yield" stroke="#ff0000" yAxisId="right" />
+                    </ComposedChart>
+                  </div>
+                </CardContent>
+              </Card>
               {Object.entries(categories).map(([category, title]) => (
                 <Card key={category}>
                   <CardContent className="p-6">
