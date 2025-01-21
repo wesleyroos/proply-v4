@@ -311,6 +311,9 @@ export default function PropertiesPage() {
                       >
                         <BarChart3 className="h-4 w-4" />
                         Compare Properties
+                        <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                          PRO
+                        </span>
                       </Button>
                       <Button
                         variant="destructive"

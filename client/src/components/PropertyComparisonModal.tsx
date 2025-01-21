@@ -169,7 +169,7 @@ export function PropertyComparisonModal({
               Property Comparison
             </DialogTitle>
             <img
-              src="/client/public/proply-logo.png"
+              src="/proply-logo-auth.png"
               alt="Proply Logo"
               className="h-8 object-contain"
             />
