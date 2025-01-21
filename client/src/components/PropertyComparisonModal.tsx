@@ -31,48 +31,60 @@ export function PropertyComparisonModal({
     properties = properties.slice(0, 5);
   }
 
+  const getBestValue = (properties: Property[], key: string, isHigherBetter: boolean = true) => {
+    const values = properties.map(p => p[key as keyof Property]);
+    return isHigherBetter ? Math.max(...values as number[]) : Math.min(...values as number[]);
+  };
+
   const metrics = [
     { 
       label: "Purchase Price", 
       key: "purchasePrice", 
       format: (val: number) => formatter.format(val),
-      category: "basic"
+      category: "basic",
+      isHigherBetter: false
     },
     { 
       label: "Size (m²)", 
       key: "floorArea", 
       format: (val: number) => val.toString(),
-      category: "basic"
+      category: "basic",
+      isHigherBetter: true
     },
     { 
       label: "Rate/m²", 
       key: "purchasePrice", 
       format: (val: number, prop: any) => formatter.format(prop.floorArea ? val / prop.floorArea : 0),
-      category: "basic"
+      category: "basic",
+      isHigherBetter: false
     },
     { 
       label: "Short Term Yield", 
       key: "shortTermGrossYield", 
       format: (val: number | null) => val ? `${val}%` : '--',
-      category: "performance"
+      category: "performance",
+      isHigherBetter: true
     },
     { 
       label: "Long Term Yield", 
       key: "longTermGrossYield", 
       format: (val: number | null) => val ? `${val}%` : '--',
-      category: "performance"
+      category: "performance",
+      isHigherBetter: true
     },
     { 
       label: "Short Term Revenue", 
       key: "shortTermAnnualRevenue", 
       format: (val: number | null) => val ? formatter.format(val) : '--',
-      category: "performance"
+      category: "performance",
+      isHigherBetter: true
     },
     { 
       label: "Long Term Revenue", 
       key: "longTermAnnualRevenue", 
       format: (val: number | null) => val ? formatter.format(val) : '--',
-      category: "performance"
+      category: "performance",
+      isHigherBetter: true
     },
   ];
 
@@ -93,9 +105,12 @@ export function PropertyComparisonModal({
               <Card>
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Performance Overview</h3>
+                  <div className="mb-4">
+                    <Legend />
+                  </div>
                   <div className="w-full h-[400px]">
                     <ComposedChart
-                      width={800}
+                      width={1000}
                       height={400}
                       data={properties.map(p => ({
                         name: p.address.split(',')[0],
@@ -132,11 +147,11 @@ export function PropertyComparisonModal({
                         }}
                       />
                       <Legend />
-                      <Bar dataKey="Purchase Price" fill="#8884d8" yAxisId="left" />
-                      <Bar dataKey="Short Term Revenue" fill="#82ca9d" yAxisId="left" />
-                      <Bar dataKey="Long Term Revenue" fill="#ffc658" yAxisId="left" />
-                      <Line type="monotone" dataKey="Short Term Yield" stroke="#ff7300" yAxisId="right" />
-                      <Line type="monotone" dataKey="Long Term Yield" stroke="#ff0000" yAxisId="right" />
+                      <Bar dataKey="Purchase Price" fill="#94a3b8" yAxisId="left" />
+                      <Bar dataKey="Short Term Revenue" fill="#22c55e" yAxisId="left" />
+                      <Bar dataKey="Long Term Revenue" fill="#3b82f6" yAxisId="left" />
+                      <Line type="monotone" dataKey="Short Term Yield" stroke="#f59e0b" yAxisId="right" />
+                      <Line type="monotone" dataKey="Long Term Yield" stroke="#8b5cf6" yAxisId="right" />
                     </ComposedChart>
                   </div>
                 </CardContent>
@@ -176,7 +191,11 @@ export function PropertyComparisonModal({
                                 {properties.map((property) => (
                                   <td 
                                     key={property.id} 
-                                    className="py-3 px-4 text-sm font-medium"
+                                    className={`py-3 px-4 text-sm font-medium ${
+                                      getBestValue(properties, metric.key, metric.isHigherBetter) === property[metric.key as keyof typeof property]
+                                        ? 'bg-green-100 text-green-800'
+                                        : ''
+                                    }`}
                                   >
                                     {metric.format(property[metric.key as keyof typeof property], property)}
                                   </td>
