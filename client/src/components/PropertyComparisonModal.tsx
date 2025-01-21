@@ -97,7 +97,7 @@ export function PropertyComparisonModal({
                     <ResponsiveContainer width="100%" height={400}>
                       <ComposedChart
                           height={400}
-                          margin={{ top: 20, right: 30, left: 100, bottom: 60 }}
+                          margin={{ top: 20, right: 30, left: 120, bottom: 60 }}
                       data={properties.map(p => ({
                         name: p.address.split(',')[0],
                         'Purchase Price': p.purchasePrice,
