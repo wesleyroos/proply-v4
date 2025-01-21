@@ -126,11 +126,11 @@ export function PropertyComparisonModal({
   const categories = {
     basic: {
       title: "Basic Information",
-      icon: <Home className="h-5 w-5" />,
+      icon: <Home className="h-5 w-5 text-[#1BA3FF]" />,
     },
     performance: {
       title: "Performance Metrics",
-      icon: <PieChart className="h-5 w-5" />,
+      icon: <PieChart className="h-5 w-5 text-[#1BA3FF]" />,
     },
   };
 
@@ -169,7 +169,7 @@ export function PropertyComparisonModal({
               Property Comparison
             </DialogTitle>
             <img
-              src="/client/public/proply-logo-auth.png"
+              src="/client/public/proply-logo.png"
               alt="Proply Logo"
               className="h-8 object-contain"
             />
