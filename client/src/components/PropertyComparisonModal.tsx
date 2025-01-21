@@ -47,11 +47,11 @@ const formatter = new Intl.NumberFormat("en-ZA", {
 
 // Proply color palette
 const colors = {
-  primary: "1BA3FF", // Proply blue
-  success: "#059669",
-  warning: "#D97706",
-  info: "#2563EB",
-  accent: "#7C3AED",
+  primary: "#1BA3FF", // Proply blue
+  success: "#82ca9d", // Chart green
+  warning: "#ffc658", // Chart orange
+  info: "#8884d8", // Chart purple
+  accent: "#ff7300", // Chart accent
   background: "#F8FAFC",
   text: "#1E293B",
   border: "#E2E8F0",
@@ -181,7 +181,7 @@ export function PropertyComparisonModal({
               <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-6">
-                    <BarChart3 className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                    <BarChart3 className="h-5 w-5 text-[#1BA3FF]" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       Performance Overview
                     </h3>
