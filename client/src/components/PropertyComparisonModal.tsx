@@ -94,9 +94,9 @@ export function PropertyComparisonModal({
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Performance Overview</h3>
                   <div className="w-full h-[400px]">
-                    <ComposedChart
-                      width={800}
-                      height={400}
+                    <ResponsiveContainer width="100%" height={400}>
+                      <ComposedChart
+                        height={400}
                       data={properties.map(p => ({
                         name: p.address.split(',')[0],
                         'Purchase Price': p.purchasePrice,
@@ -138,6 +138,7 @@ export function PropertyComparisonModal({
                       <Line type="monotone" dataKey="Short Term Yield" stroke="#ff7300" yAxisId="right" />
                       <Line type="monotone" dataKey="Long Term Yield" stroke="#ff0000" yAxisId="right" />
                     </ComposedChart>
+                    </ResponsiveContainer>
                   </div>
                 </CardContent>
               </Card>
