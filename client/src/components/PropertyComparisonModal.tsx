@@ -216,6 +216,20 @@ export function PropertyComparisonModal({
                   doc.setFontSize(12);
                   doc.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, 60);
 
+                  // Add performance chart first
+                  const chartElement = document.querySelector('.recharts-wrapper');
+                  if (chartElement) {
+                    doc.text("Performance Overview", margin, 70);
+                    
+                    const canvas = await html2canvas(chartElement);
+                    const chartImage = canvas.toDataURL('image/png');
+                    const imgWidth = pageWidth - (2 * margin);
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    
+                    doc.addImage(chartImage, 'PNG', margin, 80, imgWidth, imgHeight);
+                    yPos = 80 + imgHeight + 20; // Update yPos for next content
+                  }
+
                   // Properties Overview
                   const overviewData = displayProperties.map(p => [
                     p.address,
@@ -260,20 +274,6 @@ export function PropertyComparisonModal({
                       headStyles: { fillColor: [27, 163, 255] }
                     });
                   });
-
-                  // Add performance chart
-                  const chartElement = document.querySelector('.recharts-wrapper');
-                  if (chartElement) {
-                    doc.addPage();
-                    doc.text("Performance Overview", margin, margin + 10);
-                    
-                    const canvas = await html2canvas(chartElement);
-                    const chartImage = canvas.toDataURL('image/png');
-                    const imgWidth = pageWidth - (2 * margin);
-                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                    
-                    doc.addImage(chartImage, 'PNG', margin, margin + 20, imgWidth, imgHeight);
-                  }
 
                   doc.save("property-comparison-report.pdf");
                 }}
