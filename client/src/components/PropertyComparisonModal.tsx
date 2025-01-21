@@ -399,6 +399,65 @@ export function PropertyComparisonModal({
                     },
                   );
 
+                  // Add footers to all pages
+                  const totalPages = doc.getNumberOfPages();
+                  const footerPadding = 5;
+                  const footerMargin = 20;
+
+                  try {
+                    // Load Proply logo for footer
+                    const logo = new Image();
+                    logo.src = "/proply-logo-1.png";
+                    
+                    await new Promise((resolve) => {
+                      logo.onload = () => {
+                        // Add footer elements to each page
+                        for (let i = 1; i <= totalPages; i++) {
+                          doc.setPage(i);
+                          
+                          // Add logo to bottom left
+                          const logoHeight = 6;
+                          const aspectRatio = logo.width / logo.height;
+                          const logoWidth = logoHeight * aspectRatio;
+                          doc.addImage(
+                            logo,
+                            "PNG",
+                            footerMargin,
+                            pageHeight - footerMargin - logoHeight - footerPadding,
+                            logoWidth,
+                            logoHeight
+                          );
+
+                          // Add page numbers to bottom right
+                          doc.setFontSize(8);
+                          doc.setTextColor(100);
+                          doc.text(
+                            `Page ${i} of ${totalPages}`,
+                            pageWidth - footerMargin,
+                            pageHeight - footerMargin - footerPadding,
+                            { align: "right" }
+                          );
+
+                          // Add copyright text to center
+                          const currentYear = new Date().getFullYear();
+                          doc.text(
+                            `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
+                            pageWidth / 2,
+                            pageHeight - footerMargin - footerPadding,
+                            { align: "center" }
+                          );
+                        }
+                        resolve(null);
+                      };
+                      logo.onerror = () => {
+                        console.error("Error loading logo in footer");
+                        resolve(null);
+                      };
+                    });
+                  } catch (error) {
+                    console.error("Error adding footer elements:", error);
+                  }
+
                   doc.save("property-comparison-report.pdf");
                 }}
                 variant="outline"
