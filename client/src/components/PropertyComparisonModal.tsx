@@ -195,7 +195,9 @@ export function PropertyComparisonModal({
                 onClick={async () => {
                   const doc = new jsPDF();
                   const pageWidth = doc.internal.pageSize.getWidth();
+                  const pageHeight = doc.internal.pageSize.getHeight();
                   const margin = 20;
+                  let currentY = margin;
 
                   // Add Proply logo
                   const logo = new Image();
@@ -205,83 +207,143 @@ export function PropertyComparisonModal({
                       const aspectRatio = logo.height / logo.width;
                       const logoWidth = 40;
                       const logoHeight = logoWidth * aspectRatio;
-                      doc.addImage(logo, "PNG", margin, margin, logoWidth, logoHeight);
+                      doc.addImage(
+                        logo,
+                        "PNG",
+                        margin,
+                        currentY,
+                        logoWidth,
+                        logoHeight,
+                      );
+                      currentY += logoHeight + 10;
                       resolve(null);
                     };
                   });
 
-                  // Add title
+                  // Add title and date
                   doc.setFontSize(20);
-                  doc.text("Property Comparison Report", margin, 50);
+                  doc.text("Property Comparison Report", margin, currentY);
+                  currentY += 15;
+
                   doc.setFontSize(12);
-                  doc.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, 60);
+                  doc.text(
+                    `Generated on: ${new Date().toLocaleDateString()}`,
+                    margin,
+                    currentY,
+                  );
+                  currentY += 20;
 
-                  // Add performance chart first
-                  let yPos = 70;
-                  const chartElement = document.querySelector('.recharts-wrapper');
+                  // Add performance chart
+                  doc.setFontSize(14);
+                  doc.text("Performance Overview", margin, currentY);
+                  currentY += 10;
+
+                  const chartElement =
+                    document.querySelector(".recharts-wrapper");
                   if (chartElement) {
-                    doc.text("Performance Overview", margin, yPos);
-                    
                     const canvas = await html2canvas(chartElement);
-                    const chartImage = canvas.toDataURL('image/png');
-                    const imgWidth = pageWidth - (2 * margin);
+                    const chartImage = canvas.toDataURL("image/png");
+                    const imgWidth = pageWidth - 2 * margin;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                    
-                    yPos = 80;
-                    doc.addImage(chartImage, 'PNG', margin, yPos, imgWidth, imgHeight);
-                    yPos = yPos + imgHeight + 40; // Increased spacing after chart
+
+                    doc.addImage(
+                      chartImage,
+                      "PNG",
+                      margin,
+                      currentY,
+                      imgWidth,
+                      imgHeight,
+                    );
+                    currentY += imgHeight + 20;
                   }
 
-                  // Check if we need a new page
-                  if (yPos > doc.internal.pageSize.height - 100) {
+                  // Check if we need a new page for overview table
+                  if (currentY > pageHeight - 100) {
                     doc.addPage();
-                    yPos = margin;
+                    currentY = margin;
                   }
 
-                  // Properties Overview
-                  const overviewData = displayProperties.map(p => [
+                  // Properties Overview table
+                  const overviewData = displayProperties.map((p) => [
                     p.address,
                     formatter.format(p.purchasePrice),
                     `${p.floorArea} m²`,
-                    p.shortTermGrossYield ? `${p.shortTermGrossYield}%` : '--',
-                    p.longTermGrossYield ? `${p.longTermGrossYield}%` : '--'
+                    p.shortTermGrossYield ? `${p.shortTermGrossYield}%` : "--",
+                    p.longTermGrossYield ? `${p.longTermGrossYield}%` : "--",
                   ]);
 
+                  doc.setFontSize(14);
+                  doc.text("Properties Overview", margin, currentY);
+                  currentY += 10;
+
                   autoTable(doc, {
-                    head: [["Address", "Price", "Size", "ST Yield", "LT Yield"]],
+                    head: [
+                      ["Address", "Price", "Size", "ST Yield", "LT Yield"],
+                    ],
                     body: overviewData,
-                    startY: 70,
+                    startY: currentY,
                     styles: { fontSize: 10 },
-                    headStyles: { fillColor: [27, 163, 255] }
+                    headStyles: { fillColor: [27, 163, 255] },
+                    margin: {
+                      top: margin,
+                      right: margin,
+                      bottom: margin,
+                      left: margin,
+                    },
                   });
+
+                  // Get the last Y position after the table
+                  currentY = (doc as any).lastAutoTable.finalY + 20;
 
                   // Add metrics tables by category
-                  Object.entries(categories).forEach(([category, { title }], index) => {
-                    const startY = (doc as any).lastAutoTable.finalY + 20;
+                  Object.entries(categories).forEach(
+                    ([category, { title }]) => {
+                      // Check if we need a new page
+                      if (currentY > pageHeight - 100) {
+                        doc.addPage();
+                        currentY = margin;
+                      }
 
-                    if (startY > doc.internal.pageSize.height - 60) {
-                      doc.addPage();
-                    }
+                      doc.setFontSize(14);
+                      doc.text(title, margin, currentY);
+                      currentY += 10;
 
-                    doc.setFontSize(14);
-                    doc.text(title, margin, startY);
+                      const categoryMetrics = metrics.filter(
+                        (m) => m.category === category,
+                      );
+                      const metricData = categoryMetrics.map((metric) => {
+                        return [
+                          metric.label,
+                          ...displayProperties.map((prop) =>
+                            metric.format(metric.getValue(prop)),
+                          ),
+                        ];
+                      });
 
-                    const categoryMetrics = metrics.filter(m => m.category === category);
-                    const metricData = categoryMetrics.map(metric => {
-                      return [
-                        metric.label,
-                        ...displayProperties.map(prop => metric.format(metric.getValue(prop)))
-                      ];
-                    });
+                      autoTable(doc, {
+                        head: [
+                          [
+                            "Metric",
+                            ...displayProperties.map(
+                              (p) => p.address.split(",")[0],
+                            ),
+                          ],
+                        ],
+                        body: metricData,
+                        startY: currentY,
+                        styles: { fontSize: 10 },
+                        headStyles: { fillColor: [27, 163, 255] },
+                        margin: {
+                          top: margin,
+                          right: margin,
+                          bottom: margin,
+                          left: margin,
+                        },
+                      });
 
-                    autoTable(doc, {
-                      head: [["Metric", ...displayProperties.map(p => p.address.split(',')[0])]],
-                      body: metricData,
-                      startY: startY + 10,
-                      styles: { fontSize: 10 },
-                      headStyles: { fillColor: [27, 163, 255] }
-                    });
-                  });
+                      currentY = (doc as any).lastAutoTable.finalY + 20;
+                    },
+                  );
 
                   doc.save("property-comparison-report.pdf");
                 }}
