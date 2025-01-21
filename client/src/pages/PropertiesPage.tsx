@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatter } from "../utils/formatting";
-import { Trash2, Calculator, ArrowUpDown, Eye, ChevronUp, ChevronDown } from "lucide-react";
+import { Trash2, Calculator, ArrowUpDown, Eye, ChevronUp, ChevronDown, BarChart3, Sparkles } from "lucide-react";
+import { useProAccess } from "@/hooks/use-pro-access";
+import { PropertyComparisonModal } from "@/components/PropertyComparisonModal";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -65,6 +67,9 @@ export default function PropertiesPage() {
   const [selectedProperty, setSelectedProperty] = useState<AnalyzerProperty | null>(null);
   const [selectedProperties, setSelectedProperties] = useState<number[]>([]);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [selectedPropertiesForComparison, setSelectedPropertiesForComparison] = useState<AnalyzerProperty[]>([]);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const hasProAccess = useProAccess();
   const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection }>({
     field: 'address',
     direction: 'asc'
@@ -280,15 +285,36 @@ export default function PropertiesPage() {
                     <div className="text-sm text-muted-foreground">
                       {selectedProperties.length} {selectedProperties.length === 1 ? 'property' : 'properties'} selected
                     </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setShowDeleteConfirmation(true)}
-                      className="flex items-center gap-2"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Delete Selected
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (hasProAccess) {
+                            const selectedProps = filteredAndSortedProperties.filter(p => 
+                              selectedProperties.includes(p.id)
+                            );
+                            setSelectedPropertiesForComparison(selectedProps);
+                          } else {
+                            setShowUpgradeModal(true);
+                          }
+                        }}
+                        className="flex items-center gap-2"
+                        disabled={selectedProperties.length < 2}
+                      >
+                        <BarChart3 className="h-4 w-4" />
+                        Compare Properties
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setShowDeleteConfirmation(true)}
+                        className="flex items-center gap-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete Selected
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="p-4 border-b bg-muted/50">
@@ -591,6 +617,31 @@ export default function PropertiesPage() {
         open={!!selectedProperty}
         onOpenChange={(open) => !open && setSelectedProperty(null)}
       />
+
+      <PropertyComparisonModal
+        properties={selectedPropertiesForComparison}
+        open={selectedPropertiesForComparison.length > 0}
+        onOpenChange={(open) => !open && setSelectedPropertiesForComparison([])}
+      />
+
+      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Upgrade to Pro
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-muted-foreground">
+            Property comparison is a pro feature. Upgrade your plan to access this and other premium features.
+          </p>
+          <DialogFooter>
+            <Link href="/pricing">
+              <Button>View Plans</Button>
+            </Link>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
