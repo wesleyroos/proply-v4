@@ -219,7 +219,7 @@ export function PropertyComparisonModal({
                     maxWidth: number,
                   ) => {
                     // Use full page width minus small padding
-                    const lines = doc.splitTextToSize(text, maxWidth - (margin * 0.5));
+                    const lines = doc.splitTextToSize(text, maxWidth - (margin * 5));
                     doc.setFontSize(10);
                     doc.setTextColor(80, 80, 80);
                     lines.forEach((line: string) => {
