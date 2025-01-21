@@ -94,11 +94,10 @@ export function PropertyComparisonModal({
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Performance Overview</h3>
                   <div className="w-full h-[400px]">
-                    <Legend layout="horizontal" align="center" />
                     <ResponsiveContainer width="100%" height={400}>
                       <ComposedChart
                           height={400}
-                          margin={{ top: 20, right: 30, left: 80, bottom: 60 }}
+                          margin={{ top: 20, right: 30, left: 100, bottom: 60 }}
                       data={properties.map(p => ({
                         name: p.address.split(',')[0],
                         'Purchase Price': p.purchasePrice,
@@ -138,6 +137,7 @@ export function PropertyComparisonModal({
                       <Bar dataKey="Long Term Revenue" fill="#ffc658" yAxisId="left" />
                       <Line type="monotone" dataKey="Short Term Yield" stroke="#ff7300" yAxisId="right" />
                       <Line type="monotone" dataKey="Long Term Yield" stroke="#ff0000" yAxisId="right" />
+                      <Legend wrapperStyle={{top: -10, left: 40}} layout="horizontal" align="center" />
                     </ComposedChart>
                     </ResponsiveContainer>
                   </div>
