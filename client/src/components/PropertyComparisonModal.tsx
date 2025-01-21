@@ -495,6 +495,4 @@ export function PropertyComparisonModal({
         </AnimatePresence>
       </DialogContent>
     </Dialog>
-  );
-}
   
