@@ -366,12 +366,15 @@ export function PropertyComparisonModal({
             <div className="grid grid-cols-1 gap-6">
               <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
                 <CardContent className="p-6">
-                  <div className="flex items-center gap-2 mb-6">
+                  <div className="flex items-center gap-2 mb-2">
                     <BarChart3 className="h-5 w-5 text-[#1BA3FF]" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       Performance Overview
                     </h3>
                   </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                    Visual comparison of property prices, rental revenues, and yields showing relative performance across selected properties.
+                  </p>
 
                   {/* Legend above chart */}
                   <div className="mb-4 flex justify-center">
@@ -510,13 +513,20 @@ export function PropertyComparisonModal({
                   className="border-gray-200 dark:border-gray-800 shadow-sm"
                 >
                   <CardContent className="p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="text-gray-700 dark:text-gray-300">
-                        {icon}
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="text-gray-700 dark:text-gray-300">
+                          {icon}
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {title}
+                        </h3>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {title}
-                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {category === 'basic' ? 
+                          'Key property details including price, size, and rate per square meter for easy comparison.' :
+                          'Financial metrics showing rental yields, revenues, and comparative performance indicators.'}
+                      </p>
                     </div>
                     <div className="overflow-x-auto">
                       <table className="w-full">
