@@ -5,6 +5,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import html2canvas from "html2canvas";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -185,11 +190,105 @@ export function PropertyComparisonModal({
             <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
               Property Comparison
             </DialogTitle>
-            <img
-              src="/proply-logo-auth.png"
-              alt="Proply Logo"
-              className="h-8 object-contain"
-            />
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={async () => {
+                  const doc = new jsPDF();
+                  const pageWidth = doc.internal.pageSize.getWidth();
+                  const margin = 20;
+
+                  // Add Proply logo
+                  const logo = new Image();
+                  logo.src = "/proply-logo-auth.png";
+                  await new Promise((resolve) => {
+                    logo.onload = () => {
+                      const aspectRatio = logo.height / logo.width;
+                      const logoWidth = 40;
+                      const logoHeight = logoWidth * aspectRatio;
+                      doc.addImage(logo, "PNG", margin, margin, logoWidth, logoHeight);
+                      resolve(null);
+                    };
+                  });
+
+                  // Add title
+                  doc.setFontSize(20);
+                  doc.text("Property Comparison Report", margin, 50);
+                  doc.setFontSize(12);
+                  doc.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, 60);
+
+                  // Properties Overview
+                  const overviewData = displayProperties.map(p => [
+                    p.address,
+                    formatter.format(p.purchasePrice),
+                    `${p.floorArea} m²`,
+                    p.shortTermGrossYield ? `${p.shortTermGrossYield}%` : '--',
+                    p.longTermGrossYield ? `${p.longTermGrossYield}%` : '--'
+                  ]);
+
+                  autoTable(doc, {
+                    head: [["Address", "Price", "Size", "ST Yield", "LT Yield"]],
+                    body: overviewData,
+                    startY: 70,
+                    styles: { fontSize: 10 },
+                    headStyles: { fillColor: [27, 163, 255] }
+                  });
+
+                  // Add metrics tables by category
+                  Object.entries(categories).forEach(([category, { title }], index) => {
+                    const startY = (doc as any).lastAutoTable.finalY + 20;
+
+                    if (startY > doc.internal.pageSize.height - 60) {
+                      doc.addPage();
+                    }
+
+                    doc.setFontSize(14);
+                    doc.text(title, margin, startY);
+
+                    const categoryMetrics = metrics.filter(m => m.category === category);
+                    const metricData = categoryMetrics.map(metric => {
+                      return [
+                        metric.label,
+                        ...displayProperties.map(prop => metric.format(metric.getValue(prop)))
+                      ];
+                    });
+
+                    autoTable(doc, {
+                      head: [["Metric", ...displayProperties.map(p => p.address.split(',')[0])]],
+                      body: metricData,
+                      startY: startY + 10,
+                      styles: { fontSize: 10 },
+                      headStyles: { fillColor: [27, 163, 255] }
+                    });
+                  });
+
+                  // Add performance chart
+                  const chartElement = document.querySelector('.recharts-wrapper');
+                  if (chartElement) {
+                    doc.addPage();
+                    doc.text("Performance Overview", margin, margin + 10);
+                    
+                    const canvas = await html2canvas(chartElement);
+                    const chartImage = canvas.toDataURL('image/png');
+                    const imgWidth = pageWidth - (2 * margin);
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    
+                    doc.addImage(chartImage, 'PNG', margin, margin + 20, imgWidth, imgHeight);
+                  }
+
+                  doc.save("property-comparison-report.pdf");
+                }}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Export Report
+              </Button>
+              <img
+                src="/proply-logo-auth.png"
+                alt="Proply Logo"
+                className="h-8 object-contain"
+              />
+            </div>
           </div>
         </DialogHeader>
         <ScrollArea className="h-full max-h-[calc(90vh-120px)]">
