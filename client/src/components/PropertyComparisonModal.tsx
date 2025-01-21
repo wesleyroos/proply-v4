@@ -213,11 +213,14 @@ export function PropertyComparisonModal({
     "Long Term Yield": Number(p.longTermGrossYield),
   }));
 
+  if (!properties || properties.length === 0) {
+    return null;
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh] bg-white dark:bg-gray-900 relative">
         {isLoading && <LoadingOverlay />}
-
         <AnimatePresence>
           <motion.div
             initial="hidden"
@@ -325,7 +328,9 @@ export function PropertyComparisonModal({
                               />
                               <YAxis
                                 yAxisId="left"
-                                tickFormatter={(value) => formatter.format(value)}
+                                tickFormatter={(value) =>
+                                  formatter.format(value)
+                                }
                                 tick={{ fill: colors.text }}
                               />
                               <YAxis
@@ -345,7 +350,8 @@ export function PropertyComparisonModal({
                                   backgroundColor: "rgba(255, 255, 255, 0.98)",
                                   borderRadius: "8px",
                                   border: `1px solid ${colors.border}`,
-                                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                                  boxShadow:
+                                    "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                                 }}
                               />
                               <Bar
@@ -385,109 +391,133 @@ export function PropertyComparisonModal({
                       </CardContent>
                     </Card>
                   </motion.div>
-
-                  {Object.entries(categories).map(([category, { title, icon }], index) => (
-                    <motion.div
-                      key={category}
-                      variants={cardVariants}
-                      initial="hidden"
-                      animate="visible"
-                      transition={{ delay: 0.2 + index * 0.1 }}
-                    >
-                      <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
-                        <CardContent className="p-6">
-                          <div className="flex items-center gap-2 mb-4">
-                            <div className="text-[#1BA3FF]">{icon}</div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                              {title}
-                            </h3>
-                          </div>
-                          <div className="overflow-x-auto">
-                            <table className="w-full">
-                              <thead>
-                                <tr className="border-b border-gray-200 dark:border-gray-800">
-                                  <th className="py-3 px-4 text-left font-medium min-w-[200px] text-gray-900 dark:text-white"
-                                    >
-                                      <div className="flex items-center gap-2">
-                                        {React.createElement(getPropertyTypeIcon(property.address), {
-                                          className: "h-4 w-4 text-[#1BA3FF]"
-                                        })}
-                                        <div className="truncate text-sm">
-                                          {property.address}
-                                        </div>
-                                      </div>
+                  {Object.entries(categories).map(
+                    ([category, { title, icon }], index) => (
+                      <motion.div
+                        key={category}
+                        variants={cardVariants}
+                        initial="hidden"
+                        animate="visible"
+                        transition={{ delay: 0.2 + index * 0.1 }}
+                      >
+                        <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-2 mb-4">
+                              <div className="text-[#1BA3FF]">{icon}</div>
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                {title}
+                              </h3>
+                            </div>
+                            <div className="overflow-x-auto">
+                              <table className="w-full">
+                                <thead>
+                                  <tr className="border-b border-gray-200 dark:border-gray-800">
+                                    <th className="py-3 px-4 text-left font-medium text-gray-500 dark:text-gray-400 w-[200px]">
+                                      Metric
                                     </th>
-                                  ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {metrics
-                                  .filter((metric) => metric.category === category)
-                                  .map((metric) => {
-                                    const values = displayProperties.map((prop) =>
-                                      metric.getValue(prop)
-                                    );
-                                    return (
-                                      <tr
-                                        key={metric.label}
-                                        className="border-b border-gray-200 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                                    {displayProperties.map((property) => (
+                                      <th
+                                        key={property.id}
+                                        className="py-3 px-4 text-left font-medium min-w-[200px] text-gray-900 dark:text-white"
                                       >
-                                        <td className="py-3 px-4 text-gray-500 dark:text-gray-400 text-sm">
-                                          <div className="flex items-center gap-2">
-                                            <span>{metric.label}</span>
-                                            <TooltipProvider>
-                                              <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                  <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-help" />
-                                                </TooltipTrigger>
-                                                <TooltipContent side="right" className="max-w-xs">
-                                                  <p className="text-sm">{metric.description}</p>
-                                                </TooltipContent>
-                                              </Tooltip>
-                                            </TooltipProvider>
+                                        <div className="flex items-center gap-2">
+                                          {React.createElement(
+                                            getPropertyTypeIcon(
+                                              property.address,
+                                            ),
+                                            {
+                                              className:
+                                                "h-4 w-4 text-[#1BA3FF]",
+                                            },
+                                          )}
+                                          <div className="truncate text-sm">
+                                            {property.address}
                                           </div>
-                                        </td>
-                                        {displayProperties.map((property) => {
-                                          const value = metric.getValue(property);
-                                          const isHighlighted = getBackgroundColor(
-                                            value,
-                                            values,
-                                            metric.higherIsBetter
-                                          );
+                                        </div>
+                                      </th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {metrics
+                                    .filter(
+                                      (metric) => metric.category === category,
+                                    )
+                                    .map((metric) => {
+                                      const values = displayProperties.map(
+                                        (prop) => metric.getValue(prop),
+                                      );
+                                      return (
+                                        <tr
+                                          key={metric.label}
+                                          className="border-b border-gray-200 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                                        >
+                                          <td className="py-3 px-4 text-gray-500 dark:text-gray-400 text-sm">
+                                            <div className="flex items-center gap-2">
+                                              <span>{metric.label}</span>
+                                              <TooltipProvider>
+                                                <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-help" />
+                                                  </TooltipTrigger>
+                                                  <TooltipContent
+                                                    side="right"
+                                                    className="max-w-xs"
+                                                  >
+                                                    <p className="text-sm">
+                                                      {metric.description}
+                                                    </p>
+                                                  </TooltipContent>
+                                                </Tooltip>
+                                              </TooltipProvider>
+                                            </div>
+                                          </td>
+                                          {displayProperties.map((property) => {
+                                            const value =
+                                              metric.getValue(property);
+                                            const isHighlighted =
+                                              getBackgroundColor(
+                                                value,
+                                                values,
+                                                metric.higherIsBetter,
+                                              );
 
-                                          return (
-                                            <motion.td
-                                              key={property.id}
-                                              initial={{ opacity: 0, y: 5 }}
-                                              animate={{ opacity: 1, y: 0 }}
-                                              transition={{ duration: 0.2 }}
-                                              className={`py-3 px-4 text-sm font-medium text-gray-900 dark:text-white transition-all ${
-                                                isHighlighted
-                                              }`}
-                                            >
-                                              <div className="flex items-center justify-between gap-2">
-                                                <span>{metric.format(value)}</span>
-                                                {isHighlighted && (
-                                                  <motion.div
-                                                    initial={{ scale: 0 }}
-                                                    animate={{ scale: 1 }}
-                                                    className="w-2 h-2 rounded-full bg-[#1BA3FF]"
-                                                  />
-                                                )}
-                                              </div>
-                                            </motion.td>
-                                          );
-                                        })}
-                                      </tr>
-                                    );
-                                  })}
-                              </tbody>
-                            </table>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))}
+                                            return (
+                                              <motion.td
+                                                key={property.id}
+                                                initial={{ opacity: 0, y: 5 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.2 }}
+                                                className={`py-3 px-4 text-sm font-medium text-gray-900 dark:text-white transition-all ${
+                                                  isHighlighted
+                                                }`}
+                                              >
+                                                <div className="flex items-center justify-between gap-2">
+                                                  <span>
+                                                    {metric.format(value)}
+                                                  </span>
+                                                  {isHighlighted && (
+                                                    <motion.div
+                                                      initial={{ scale: 0 }}
+                                                      animate={{ scale: 1 }}
+                                                      className="w-2 h-2 rounded-full bg-[#1BA3FF]"
+                                                    />
+                                                  )}
+                                                </div>
+                                              </motion.td>
+                                            );
+                                          })}
+                                        </tr>
+                                      );
+                                    })}
+                                </tbody>
+                              </table>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ),
+                  )}
                 </div>
               </div>
             </ScrollArea>
@@ -495,4 +525,5 @@ export function PropertyComparisonModal({
         </AnimatePresence>
       </DialogContent>
     </Dialog>
-  
+  );
+}
