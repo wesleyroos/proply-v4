@@ -261,13 +261,13 @@ export default function PropertiesPage() {
 
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as PropertyType)} className="mt-6">
         <TabsList className="mb-4">
-          <TabsTrigger value="rent_compare" className="flex items-center gap-2">
-            <ArrowUpDown className="h-4 w-4" />
-            Rent Compare
-          </TabsTrigger>
           <TabsTrigger value="property_analyzer" className="flex items-center gap-2">
             <Calculator className="h-4 w-4" />
             Property Analyzer
+          </TabsTrigger>
+          <TabsTrigger value="rent_compare" className="flex items-center gap-2">
+            <ArrowUpDown className="h-4 w-4" />
+            Rent Compare
           </TabsTrigger>
         </TabsList>
 
