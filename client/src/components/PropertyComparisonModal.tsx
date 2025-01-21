@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Card, CardContent } from "./ui/card";
 import { formatter } from "../utils/formatting";
@@ -77,29 +76,6 @@ export function PropertyComparisonModal({
               ))}
             </tbody>
           </table>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );}
-
-          <div className="text-muted-foreground">Long Term Yield</div>
-          {properties.map((property) => (
-            <div key={property.id}>{property.longTermGrossYield ?? '--'}%</div>
-          ))}
-
-          <div className="text-muted-foreground">Short Term Revenue</div>
-          {properties.map((property) => (
-            <div key={property.id}>
-              {formatter.format(property.shortTermAnnualRevenue || 0)}
-            </div>
-          ))}
-
-          <div className="text-muted-foreground">Long Term Revenue</div>
-          {properties.map((property) => (
-            <div key={property.id}>
-              {formatter.format(property.longTermAnnualRevenue || 0)}
-            </div>
-          ))}
         </div>
       </DialogContent>
     </Dialog>

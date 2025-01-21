@@ -67,7 +67,7 @@ type SortDirection = 'asc' | 'desc';
 export default function PropertiesPage() {
   const queryClient = useQueryClient();
   const { user } = useUser();
-  const [activeTab, setActiveTab] = useState<PropertyType>('rent_compare');
+  const [activeTab, setActiveTab] = useState<PropertyType>('property_analyzer');
   const [propertyToDelete, setPropertyToDelete] = useState<Property | AnalyzerProperty | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
