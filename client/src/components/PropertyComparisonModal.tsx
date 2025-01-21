@@ -218,8 +218,8 @@ export function PropertyComparisonModal({
                     y: number,
                     maxWidth: number,
                   ) => {
-                    // Only subtract minimal margins to get almost full width
-                    const lines = doc.splitTextToSize(text, maxWidth - 40); // Using fixed 40 units total margin (20 on each side)
+                    // Use nearly full page width with minimal margins
+                    const lines = doc.splitTextToSize(text, maxWidth - (margin * 1.5));
                     doc.setFontSize(10);
                     doc.setTextColor(80, 80, 80);
 
