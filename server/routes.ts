@@ -188,7 +188,8 @@ export function registerRoutes(app: Express): Server {
           accessCode: accessCodes.code,
           accessCodeUsedAt: accessCodes.usedAt,
           pricelabsApiCallsTotal: users.pricelabsApiCallsTotal,
-          pricelabsApiCallsMonth: users.pricelabsApiCallsMonth
+          pricelabsApiCallsMonth: users.pricelabsApiCallsMonth,
+          reportsGenerated: users.reportsGenerated // Add this line to include reports count
         })
         .from(users)
         .leftJoin(accessCodes, eq(users.accessCodeId, accessCodes.id));
@@ -784,7 +785,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Property analyzer save endpoint - This is replaced with a more streamlined version
+  // Property analyzer save endpoint
   app.post("/api/property-analyzer/save", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.id) {
       return res.status(401).send("Not authenticated");
@@ -794,17 +795,28 @@ export function registerRoutes(app: Express): Server {
       console.log('Saving property analysis for user:', req.user.id);
       console.log('Analysis data:', JSON.stringify(req.body, null, 2));
 
-      // Insert into database
-      const [savedAnalysis] = await db
-        .insert(propertyAnalyzerResults)
-        .values({
-          ...req.body,
-          userId: req.user.id,
-          createdAt: new Date()
-        })
-        .returning();
+      // Start a transaction to ensure both operations complete
+      await db.transaction(async (tx) => {
+        // Insert analysis result
+        const [savedAnalysis] = await tx
+          .insert(propertyAnalyzerResults)
+          .values({
+            ...req.body,
+            userId: req.user!.id,
+            createdAt: new Date()
+          })
+          .returning();
 
-      res.json(savedAnalysis);
+        // Increment the user's report count
+        await tx
+          .update(users)
+          .set({
+            reportsGenerated: sql`${users.reportsGenerated} + 1`
+          })
+          .where(eq(users.id, req.user!.id));
+
+        res.json(savedAnalysis);
+      });
     } catch (error) {
       console.error('Error saving property analysis:', error);
       res.status(500).json({

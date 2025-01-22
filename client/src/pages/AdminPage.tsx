@@ -38,7 +38,17 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import { useLocation } from "wouter";
-import { Ban, Trash2, Users, Building2, Crown, MoreHorizontal, ShieldAlert, Shield, Settings } from "lucide-react";
+import {
+  Ban,
+  Trash2,
+  Users,
+  Building2,
+  Crown,
+  MoreHorizontal,
+  ShieldAlert,
+  Shield,
+  Settings,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SelectUser } from "@db/schema";
 
@@ -88,17 +98,17 @@ export default function AdminPage() {
     mutationFn: async ({
       userId,
       action,
-      plan
+      plan,
     }: {
       userId: number;
-      action: 'suspend' | 'unsuspend' | 'change-plan';
-      plan?: 'free' | 'pro';
+      action: "suspend" | "unsuspend" | "change-plan";
+      plan?: "free" | "pro";
     }) => {
       const response = await fetch(`/api/admin/users/${userId}/${action}`, {
-        method: 'POST',
-        headers: plan ? { 'Content-Type': 'application/json' } : undefined,
+        method: "POST",
+        headers: plan ? { "Content-Type": "application/json" } : undefined,
         body: plan ? JSON.stringify({ plan }) : undefined,
-        credentials: 'include'
+        credentials: "include",
       });
       if (!response.ok) throw new Error(await response.text());
       return response.json();
@@ -113,7 +123,8 @@ export default function AdminPage() {
     onError: (error) => {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update user",
+        description:
+          error instanceof Error ? error.message : "Failed to update user",
         variant: "destructive",
       });
     },
@@ -122,8 +133,8 @@ export default function AdminPage() {
   const deleteMutation = useMutation({
     mutationFn: async (userId: number) => {
       const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'DELETE',
-        credentials: 'include'
+        method: "DELETE",
+        credentials: "include",
       });
       if (!response.ok) throw new Error(await response.text());
       return response.json();
@@ -138,7 +149,8 @@ export default function AdminPage() {
     onError: (error) => {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete user",
+        description:
+          error instanceof Error ? error.message : "Failed to delete user",
         variant: "destructive",
       });
     },
@@ -149,7 +161,9 @@ export default function AdminPage() {
       <div className="container py-6">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-destructive">You do not have access to this page.</p>
+            <p className="text-destructive">
+              You do not have access to this page.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -168,9 +182,13 @@ export default function AdminPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{statsLoading ? "..." : stats?.totalUsers}</div>
+            <div className="text-2xl font-bold">
+              {statsLoading ? "..." : stats?.totalUsers}
+            </div>
             <div className="text-xs text-muted-foreground">
-              {statsLoading ? "..." : `${stats?.proUsers} Pro • ${stats?.freeUsers} Free`}
+              {statsLoading
+                ? "..."
+                : `${stats?.proUsers} Pro • ${stats?.freeUsers} Free`}
             </div>
           </CardContent>
         </Card>
@@ -182,10 +200,14 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {statsLoading ? "..." : (stats?.corporateUsers ?? 0) + (stats?.individualUsers ?? 0)}
+              {statsLoading
+                ? "..."
+                : (stats?.corporateUsers ?? 0) + (stats?.individualUsers ?? 0)}
             </div>
             <div className="text-xs text-muted-foreground">
-              {statsLoading ? "..." : `${stats?.corporateUsers} Corporate • ${stats?.individualUsers} Individual`}
+              {statsLoading
+                ? "..."
+                : `${stats?.corporateUsers} Corporate • ${stats?.individualUsers} Individual`}
             </div>
           </CardContent>
         </Card>
@@ -196,13 +218,21 @@ export default function AdminPage() {
             <Crown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {statsLoading ? "..." : stats?.monthlyApiCalls}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {statsLoading
-                ? "..."
-                : `${stats?.monthlyApiCalls} calls this month • ${stats?.totalApiCalls} total calls`}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-2xl font-bold">
+                  {statsLoading ? "..." : stats?.monthlyApiCalls}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Calls this month
+                </div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold">
+                  {statsLoading ? "..." : stats?.totalApiCalls}
+                </div>
+                <div className="text-xs text-muted-foreground">Total calls</div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -242,22 +272,32 @@ export default function AdminPage() {
                       <TableCell>
                         {userData.firstName} {userData.lastName}
                       </TableCell>
-                      <TableCell className="capitalize">{userData.userType}</TableCell>
+                      <TableCell className="capitalize">
+                        {userData.userType}
+                      </TableCell>
                       <TableCell>{userData.company || "-"}</TableCell>
                       <TableCell>
-                        <span className={cn(
-                          "px-2 py-1 rounded-full text-xs font-medium",
-                          (userData.isAdmin || userData.subscriptionStatus === "pro")
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
-                        )}>
-                          {(userData.isAdmin || userData.subscriptionStatus === "pro") ? "Pro" : "Free"}
+                        <span
+                          className={cn(
+                            "px-2 py-1 rounded-full text-xs font-medium",
+                            userData.isAdmin ||
+                              userData.subscriptionStatus === "pro"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800",
+                          )}
+                        >
+                          {userData.isAdmin ||
+                          userData.subscriptionStatus === "pro"
+                            ? "Pro"
+                            : "Free"}
                         </span>
                       </TableCell>
                       <TableCell>{userData.accessCode || "-"}</TableCell>
                       <TableCell>
                         {userData.accessCodeUsedAt
-                          ? new Date(userData.accessCodeUsedAt).toLocaleDateString()
+                          ? new Date(
+                              userData.accessCodeUsedAt,
+                            ).toLocaleDateString()
                           : "-"}
                       </TableCell>
                       <TableCell>
@@ -268,21 +308,27 @@ export default function AdminPage() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        {userData.subscriptionStatus === "pro" && userData.subscriptionExpiryDate && (
-                          <span className="block text-xs">
-                            Subscription expires: {new Date(userData.subscriptionExpiryDate).toLocaleDateString()}
-                          </span>
-                        )}
+                        {userData.subscriptionStatus === "pro" &&
+                          userData.subscriptionExpiryDate && (
+                            <span className="block text-xs">
+                              Subscription expires:{" "}
+                              {new Date(
+                                userData.subscriptionExpiryDate,
+                              ).toLocaleDateString()}
+                            </span>
+                          )}
                         {userData.isAdmin && (
                           <span className="block text-xs text-blue-600 font-medium">
                             Full admin access
                           </span>
                         )}
-                        {!userData.isAdmin && userData.subscriptionStatus !== "pro" && !userData.accessCode && (
-                          <span className="block text-xs text-gray-500">
-                            Free plan
-                          </span>
-                        )}
+                        {!userData.isAdmin &&
+                          userData.subscriptionStatus !== "pro" &&
+                          !userData.accessCode && (
+                            <span className="block text-xs text-gray-500">
+                              Free plan
+                            </span>
+                          )}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
@@ -296,44 +342,71 @@ export default function AdminPage() {
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              onClick={() => userActionMutation.mutate({
-                                userId: userData.id,
-                                action: 'change-plan',
-                                plan: 'pro'
-                              })}
-                              disabled={userData.isAdmin || userData.id === user?.id || userData.subscriptionStatus === 'pro'}
+                              onClick={() =>
+                                userActionMutation.mutate({
+                                  userId: userData.id,
+                                  action: "change-plan",
+                                  plan: "pro",
+                                })
+                              }
+                              disabled={
+                                userData.isAdmin ||
+                                userData.id === user?.id ||
+                                userData.subscriptionStatus === "pro"
+                              }
                             >
                               <Shield className="h-4 w-4 mr-2" />
                               Upgrade to Pro
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => userActionMutation.mutate({
-                                userId: userData.id,
-                                action: 'change-plan',
-                                plan: 'free'
-                              })}
-                              disabled={userData.isAdmin || userData.id === user?.id || userData.subscriptionStatus === 'free'}
+                              onClick={() =>
+                                userActionMutation.mutate({
+                                  userId: userData.id,
+                                  action: "change-plan",
+                                  plan: "free",
+                                })
+                              }
+                              disabled={
+                                userData.isAdmin ||
+                                userData.id === user?.id ||
+                                userData.subscriptionStatus === "free"
+                              }
                             >
                               <Settings className="h-4 w-4 mr-2" />
                               Downgrade to Free
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              onClick={() => userActionMutation.mutate({
-                                userId: userData.id,
-                                action: userData.subscriptionStatus === 'suspended' ? 'unsuspend' : 'suspend'
-                              })}
-                              disabled={userData.isAdmin || userData.id === user?.id}
-                              className={userData.subscriptionStatus === 'suspended' ? 'text-green-600' : 'text-yellow-600'}
+                              onClick={() =>
+                                userActionMutation.mutate({
+                                  userId: userData.id,
+                                  action:
+                                    userData.subscriptionStatus === "suspended"
+                                      ? "unsuspend"
+                                      : "suspend",
+                                })
+                              }
+                              disabled={
+                                userData.isAdmin || userData.id === user?.id
+                              }
+                              className={
+                                userData.subscriptionStatus === "suspended"
+                                  ? "text-green-600"
+                                  : "text-yellow-600"
+                              }
                             >
                               <Ban className="h-4 w-4 mr-2" />
-                              {userData.subscriptionStatus === 'suspended' ? 'Unsuspend' : 'Suspend'}
+                              {userData.subscriptionStatus === "suspended"
+                                ? "Unsuspend"
+                                : "Suspend"}
                             </DropdownMenuItem>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <DropdownMenuItem
                                   onSelect={(e) => e.preventDefault()}
-                                  disabled={userData.isAdmin || userData.id === user?.id}
+                                  disabled={
+                                    userData.isAdmin || userData.id === user?.id
+                                  }
                                   className="text-destructive"
                                 >
                                   <Trash2 className="h-4 w-4 mr-2" />
@@ -342,16 +415,21 @@ export default function AdminPage() {
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                  <AlertDialogTitle>
+                                    Are you sure?
+                                  </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the user
-                                    account and all associated data.
+                                    This action cannot be undone. This will
+                                    permanently delete the user account and all
+                                    associated data.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() => deleteMutation.mutate(userData.id)}
+                                    onClick={() =>
+                                      deleteMutation.mutate(userData.id)
+                                    }
                                     className="bg-destructive hover:bg-destructive/90"
                                   >
                                     Delete
