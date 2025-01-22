@@ -386,6 +386,7 @@ export function registerRoutes(app: Express): Server {
 
       // Reset monthly counter if needed
       if (shouldResetMonthly) {
+        console.log('Resetting monthly API counter for user:', req.user!.id);
         await db
           .update(users)
           .set({
@@ -412,13 +413,21 @@ export function registerRoutes(app: Express): Server {
       success = true;
 
       // Increment API usage counters
+      console.log('Incrementing API counters for user:', req.user!.id);
       await db
         .update(users)
         .set({
           pricelabsApiCallsTotal: sql`${users.pricelabsApiCallsTotal} + 1`,
           pricelabsApiCallsMonth: sql`${users.pricelabsApiCallsMonth} + 1`
         })
-        .where(eq(users.id, req.user!.id));
+        .where(eq(users.id, req.user!.id))
+        .returning()
+        .then(([updated]) => {
+          console.log('Updated counters:', {
+            total: updated.pricelabsApiCallsTotal,
+            monthly: updated.pricelabsApiCallsMonth
+          });
+        });
 
       res.json(data);
     } catch (error) {
