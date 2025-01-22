@@ -921,6 +921,13 @@ export async function generatePDF(
           }),
         ],
         [
+          "Net Operating Expense",
+          ...years.map((year) => {
+            const yearKey = `year${year}` as keyof typeof operatingIncome;
+            return formatCurrency(revenueData?.[yearKey] - operatingIncome?.[yearKey]?.value || 0);
+          }),
+        ],
+        [
           "Annual Bond Payment",
           ...years.map(() =>
             formatCurrency(data.financialMetrics.monthlyBondRepayment * 12),
