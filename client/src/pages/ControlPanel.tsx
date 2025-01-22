@@ -32,7 +32,7 @@ export function ControlPanel() {
   ]);
 
   return (
-    <div className="container p-8 mx-auto">
+    <div className="p-6">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Control Panel</h1>
