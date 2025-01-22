@@ -188,8 +188,7 @@ export function registerRoutes(app: Express): Server {
           accessCode: accessCodes.code,
           accessCodeUsedAt: accessCodes.usedAt,
           pricelabsApiCallsTotal: users.pricelabsApiCallsTotal,
-          pricelabsApiCallsMonth: users.pricelabsApiCallsMonth,
-          reportsGenerated: users.reportsGenerated
+          pricelabsApiCallsMonth: users.pricelabsApiCallsMonth
         })
         .from(users)
         .leftJoin(accessCodes, eq(users.accessCodeId, accessCodes.id));
@@ -351,8 +350,7 @@ export function registerRoutes(app: Express): Server {
 
       res.json({
         ...userStats,
-        monthlyApiCalls: apiStats.monthlyApiCalls,
-        totalApiCalls: userStats.totalApiCalls // Ensure this is included in response
+        monthlyApiCalls: apiStats.monthlyApiCalls
       });
     } catch (error) {
       console.error('Error fetching admin stats:', error);
