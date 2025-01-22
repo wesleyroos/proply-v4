@@ -186,7 +186,9 @@ export function registerRoutes(app: Express): Server {
           subscriptionExpiryDate: users.subscriptionExpiryDate,
           isAdmin: users.isAdmin,
           accessCode: accessCodes.code,
-          accessCodeUsedAt: accessCodes.usedAt
+          accessCodeUsedAt: accessCodes.usedAt,
+          pricelabsApiCallsTotal: users.pricelabsApiCallsTotal,
+          pricelabsApiCallsMonth: users.pricelabsApiCallsMonth
         })
         .from(users)
         .leftJoin(accessCodes, eq(users.accessCodeId, accessCodes.id));
@@ -380,8 +382,8 @@ export function registerRoutes(app: Express): Server {
 
       const now = new Date();
       const lastReset = currentUser.pricelabsApiLastReset;
-      const shouldResetMonthly = !lastReset || 
-        lastReset.getMonth() !== now.getMonth() || 
+      const shouldResetMonthly = !lastReset ||
+        lastReset.getMonth() !== now.getMonth() ||
         lastReset.getFullYear() !== now.getFullYear();
 
       // Reset monthly counter if needed
@@ -417,8 +419,8 @@ export function registerRoutes(app: Express): Server {
       await db
         .update(users)
         .set({
-          pricelabsApiCallsTotal: sql`${users.pricelabsApiCallsTotal} + 1`,
-          pricelabsApiCallsMonth: sql`${users.pricelabsApiCallsMonth} + 1`
+          pricelabsApiCallsTotal: sql`COALESCE(${users.pricelabsApiCallsTotal}, 0) + 1`,
+          pricelabsApiCallsMonth: sql`COALESCE(${users.pricelabsApiCallsMonth}, 0) + 1`
         })
         .where(eq(users.id, req.user!.id))
         .returning()
@@ -928,8 +930,7 @@ export function registerRoutes(app: Express): Server {
       console.error('Error searching suburbs:', error);
       res.status(500).json({
         error: "Failed to search suburbs",
-        details: error instanceof Error ? error.message : undefined
-      });
+        details: error instanceof Error ? error.message : undefined      });
     }
   });
 
