@@ -58,6 +58,7 @@ interface AdminUser extends SelectUser {
   accessCodeUsedAt: string | null;
   pricelabsApiCallsTotal: number;
   pricelabsApiCallsMonth: number;
+  reportsGenerated: number; // Added reportsGenerated field
 }
 
 interface UserStats {
@@ -260,6 +261,7 @@ export default function AdminPage() {
                     <TableHead>Access Code</TableHead>
                     <TableHead>Redeemed At</TableHead>
                     <TableHead>API Usage</TableHead>
+                    <TableHead>Reports</TableHead>
                     <TableHead>Status Details</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -305,6 +307,11 @@ export default function AdminPage() {
                           {userData.pricelabsApiCallsMonth} calls this month
                           <br />
                           {userData.pricelabsApiCallsTotal} total calls
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-xs font-medium">
+                          {userData.reportsGenerated || 0} reports
                         </span>
                       </TableCell>
                       <TableCell>
