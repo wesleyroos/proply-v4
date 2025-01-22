@@ -216,6 +216,7 @@ export default function AdminPage() {
                   <TableHead>Plan</TableHead>
                   <TableHead>Access Code</TableHead>
                   <TableHead>Redeemed At</TableHead>
+                  <TableHead>API Usage</TableHead>
                   <TableHead>Status Details</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -249,6 +250,13 @@ export default function AdminPage() {
                         : "-"}
                     </TableCell>
                     <TableCell>
+                      <span className="text-xs">
+                        {userData.pricelabsApiCallsMonth} calls this month
+                        <br />
+                        {userData.pricelabsApiCallsTotal} total calls
+                      </span>
+                    </TableCell>
+                    <TableCell>
                       {userData.subscriptionStatus === "pro" && userData.subscriptionExpiryDate && (
                         <span className="block text-xs">
                           Subscription expires: {new Date(userData.subscriptionExpiryDate).toLocaleDateString()}
@@ -269,9 +277,6 @@ export default function AdminPage() {
                           Free plan
                         </span>
                       )}
-                      <span className="block text-xs mt-1">
-                        PriceLabs API: {userData.pricelabsApiCallsMonth} this month ({userData.pricelabsApiCallsTotal} total)
-                      </span>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
