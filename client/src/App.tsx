@@ -26,6 +26,7 @@ import ContactPage from "./pages/ContactPage";
 import SubscriptionPage from "./pages/SubscriptionPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import PaymentFailurePage from "./pages/PaymentFailurePage";
+import ControlPanel from "./pages/ControlPanel";
 import { useUser } from "./hooks/use-user";
 import { useToast } from "./hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -182,6 +183,7 @@ function App() {
             <Route path="/admin" component={() => <ProtectedRoute component={AdminPage} />} />
             <Route path="/access-codes" component={() => <ProtectedRoute component={AccessCodePage} />} />
             <Route path="/subscription" component={() => <ProtectedRoute component={SubscriptionPage} />} />
+            <Route path="/dashboard/control-panel" component={() => <ProtectedRoute component={ControlPanel} />} />
             <Route component={NotFound} />
           </Switch>
         </AnimatePresence>
