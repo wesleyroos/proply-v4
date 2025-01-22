@@ -35,7 +35,9 @@ export const users = pgTable("users", {
   // New columns for API tracking
   pricelabsApiCallsTotal: integer("pricelabs_api_calls_total").default(0),
   pricelabsApiCallsMonth: integer("pricelabs_api_calls_month").default(0),
-  pricelabsApiLastReset: timestamp("pricelabs_api_last_reset")
+  pricelabsApiLastReset: timestamp("pricelabs_api_last_reset"),
+  // New column for report tracking
+  reportsGenerated: integer("reports_generated").default(0)
 });
 
 export const properties = pgTable("properties", {
