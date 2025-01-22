@@ -550,7 +550,7 @@ export default function PropertyAnalyzerPage() {
                                 parkingSpaces: Number(formData?.parkingSpaces),
                                 purchasePrice:
                                   analysisResult.analysis.purchasePrice,
-                                propertyRatePerSquareMeter: Number(
+                                ratePerSquareMeter: Number(
                                   formData?.cmaRatePerSqm,
                                 ),
                                 areaRate: Number(
@@ -663,12 +663,7 @@ export default function PropertyAnalyzerPage() {
                                 platformFee:
                                   analysisResult.managementFee > 0 ? 15 : 3,
                               },
-                              investmentMetrics: {
-                                shortTerm:
-                                  analysisResult.analysis.investmentMetrics,
-                                longTerm:
-                                  analysisResult.analysis.investmentMetrics,
-                              },
+                              investmentMetrics: analysisResult.analysis.investmentMetrics,
                               netOperatingIncome:
                                 analysisResult.netOperatingIncome,
                               revenueProjections:

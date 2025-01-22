@@ -78,25 +78,28 @@ export interface PropertyData {
     shortTerm: YearlyMetrics[];
     longTerm: YearlyMetrics[];
   };
-  netOperatingIncome: CashflowData;
-  revenueProjections: {
-    shortTerm: {
-      year1: number;
-      year2: number;
-      year3: number;
-      year4: number;
-      year5: number;
-      year10: number;
-      year20: number;
-    };
-    longTerm: {
-      year1: number;
-      year2: number;
-      year3: number;
-      year4: number;
-      year5: number;
-      year10: number;
-      year20: number;
+  analysis: {
+    netOperatingIncome: CashflowData;
+    longTermNetOperatingIncome: CashflowData;
+    revenueProjections: {
+      shortTerm: {
+        year1: number;
+        year2: number;
+        year3: number;
+        year4: number;
+        year5: number;
+        year10: number;
+        year20: number;
+      };
+      longTerm: {
+        year1: number;
+        year2: number;
+        year3: number;
+        year4: number;
+        year5: number;
+        year10: number;
+        year20: number;
+      };
     };
   };
 }
