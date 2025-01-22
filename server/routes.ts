@@ -188,8 +188,7 @@ export function registerRoutes(app: Express): Server {
           accessCode: accessCodes.code,
           accessCodeUsedAt: accessCodes.usedAt,
           pricelabsApiCallsTotal: users.pricelabsApiCallsTotal,
-          pricelabsApiCallsMonth: users.pricelabsApiCallsMonth,
-          reportsGeneratedTotal: users.reportsGeneratedTotal,
+          pricelabsApiCallsMonth: users.pricelabsApiCallsMonth
         })
         .from(users)
         .leftJoin(accessCodes, eq(users.accessCodeId, accessCodes.id));
@@ -322,30 +321,36 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Get total API calls from users table
-      const totalApiCalls = await db
+      // Get basic user stats
+      const userStats = await db
         .select({
-          totalCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`
+          totalUsers: sql`count(*)`,
+          adminUsers: sql`sum(case when ${users.isAdmin} then 1 else 0 end)`,
+          proUsers: sql`sum(case when ${users.subscriptionStatus} = 'pro' then 1 else 0 end)`,
+          freeUsers: sql`sum(case when ${users.subscriptionStatus} = 'free' then 1 else 0 end)`,
+          corporateUsers: sql`sum(case when ${users.userType} = 'corporate' then 1 else 0 end)`,
+          individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`,
+          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`
         })
         .from(users)
-        .then(rows => rows[0].totalCalls || 0);
+        .then(rows => rows[0]);
 
       // Get API usage for current month
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      const monthlyApiCalls = await db
+      const apiStats = await db
         .select({
           monthlyApiCalls: sql`count(*)`
         })
         .from(apiUsage)
         .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
-        .then(rows => rows[0].monthlyApiCalls);
+        .then(rows => rows[0]);
 
       res.json({
-        totalApiCalls,
-        monthlyApiCalls
+        ...userStats,
+        monthlyApiCalls: apiStats.monthlyApiCalls
       });
     } catch (error) {
       console.error('Error fetching admin stats:', error);
@@ -789,28 +794,15 @@ export function registerRoutes(app: Express): Server {
       console.log('Saving property analysis for user:', req.user.id);
       console.log('Analysis data:', JSON.stringify(req.body, null, 2));
 
-      // Start a transaction to ensure both operations succeed or fail together
-      const [savedAnalysis] = await db.transaction(async (tx) => {
-        // Insert the analysis
-        const [analysis] = await tx
-          .insert(propertyAnalyzerResults)
-          .values({
-            ...req.body,
-            userId: req.user.id,
-            createdAt: new Date()
-          })
-          .returning();
-
-        // Increment the user's report count
-        await tx
-          .update(users)
-          .set({
-            reportsGeneratedTotal: sql`${users.reportsGeneratedTotal} + 1`
-          })
-          .where(eq(users.id, req.user.id));
-
-        return [analysis];
-      });
+      // Insert into database
+      const [savedAnalysis] = await db
+        .insert(propertyAnalyzerResults)
+        .values({
+          ...req.body,
+          userId: req.user.id,
+          createdAt: new Date()
+        })
+        .returning();
 
       res.json(savedAnalysis);
     } catch (error) {
