@@ -329,7 +329,8 @@ export function registerRoutes(app: Express): Server {
           proUsers: sql`sum(case when ${users.subscriptionStatus} = 'pro' then 1 else 0 end)`,
           freeUsers: sql`sum(case when ${users.subscriptionStatus} = 'free' then 1 else 0 end)`,
           corporateUsers: sql`sum(case when ${users.userType} = 'corporate' then 1 else 0 end)`,
-          individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`
+          individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`,
+          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`
         })
         .from(users)
         .then(rows => rows[0]);
