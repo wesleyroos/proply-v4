@@ -2,14 +2,15 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { 
-  properties, 
-  propertyAnalyzerResults, 
+import {
+  properties,
+  propertyAnalyzerResults,
   users,
   accessCodes,
   agencySettings,
   type SelectUser,
-  type InsertUser
+  type InsertUser,
+  apiUsage // Added apiUsage import
 } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -311,6 +312,49 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Add this new endpoint after the existing admin endpoints
+  app.get("/api/admin/stats", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    try {
+      // Get basic user stats
+      const userStats = await db
+        .select({
+          totalUsers: sql`count(*)`,
+          adminUsers: sql`sum(case when ${users.isAdmin} then 1 else 0 end)`,
+          proUsers: sql`sum(case when ${users.subscriptionStatus} = 'pro' then 1 else 0 end)`,
+          freeUsers: sql`sum(case when ${users.subscriptionStatus} = 'free' then 1 else 0 end)`,
+          corporateUsers: sql`sum(case when ${users.userType} = 'corporate' then 1 else 0 end)`,
+          individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`
+        })
+        .from(users)
+        .then(rows => rows[0]);
+
+      // Get API usage for current month
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const apiStats = await db
+        .select({
+          monthlyApiCalls: sql`count(*)`
+        })
+        .from(apiUsage)
+        .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
+        .then(rows => rows[0]);
+
+      res.json({
+        ...userStats,
+        monthlyApiCalls: apiStats.monthlyApiCalls
+      });
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+      res.status(500).json({ error: "Failed to fetch admin statistics" });
+    }
+  });
+
   // PriceLabs API proxy endpoint
   app.get("/api/revenue-data", async (req, res) => {
     if (!req.isAuthenticated()) {
@@ -322,6 +366,9 @@ export function registerRoutes(app: Express): Server {
     if (!address || !bedrooms) {
       return res.status(400).json({ error: "Address and bedrooms are required" });
     }
+
+    const startTime = Date.now();
+    let success = false;
 
     try {
       const response = await fetch(
@@ -338,10 +385,24 @@ export function registerRoutes(app: Express): Server {
       }
 
       const data = await response.json();
+      success = true;
       res.json(data);
     } catch (error) {
       console.error('Error fetching from PriceLabs:', error);
       res.status(500).json({ error: "Failed to fetch revenue data" });
+    } finally {
+      // Track API usage
+      try {
+        await db.insert(apiUsage).values({
+          userId: req.user!.id,
+          endpoint: '/api/revenue-data',
+          responseTime: Date.now() - startTime,
+          success,
+          timestamp: new Date()
+        });
+      } catch (error) {
+        console.error('Error logging API usage:', error);
+      }
     }
   });
 
@@ -476,7 +537,7 @@ export function registerRoutes(app: Express): Server {
       res.json(updatedUser);
     } catch (error) {
       console.error('Error updating profile:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: "Failed to update profile",
         details: error instanceof Error ? error.message : undefined
       });

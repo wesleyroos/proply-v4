@@ -30,7 +30,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import { useLocation } from "wouter";
-import { Ban, Trash2 } from "lucide-react";
+import { Ban, Trash2, Users, Building2, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SelectUser } from "@db/schema";
 
@@ -40,10 +40,20 @@ interface AdminUser extends SelectUser {
   accessCodeUsedAt: string | null;
 }
 
+interface UserStats {
+  totalUsers: number;
+  adminUsers: number;
+  proUsers: number;
+  freeUsers: number;
+  corporateUsers: number;
+  individualUsers: number;
+  monthlyApiCalls: number;
+}
+
 export default function AdminPage() {
   const { user } = useUser();
   const [, setLocation] = useLocation();
-  
+
   // Redirect if not admin
   if (!user?.isAdmin) {
     setLocation("/");
@@ -53,8 +63,13 @@ export default function AdminPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: users, isLoading } = useQuery<AdminUser[]>({
+  const { data: users, isLoading: usersLoading } = useQuery<AdminUser[]>({
     queryKey: ["/api/admin/users"],
+    enabled: !!user?.isAdmin,
+  });
+
+  const { data: stats, isLoading: statsLoading } = useQuery<UserStats>({
+    queryKey: ["/api/admin/stats"],
     enabled: !!user?.isAdmin,
   });
 
@@ -134,12 +149,58 @@ export default function AdminPage() {
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">User Management</h1>
 
+      {/* Statistics Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{statsLoading ? "..." : stats?.totalUsers}</div>
+            <div className="text-xs text-muted-foreground">
+              {statsLoading ? "..." : `${stats?.proUsers} Pro • ${stats?.freeUsers} Free`}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">User Types</CardTitle>
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {statsLoading ? "..." : stats?.corporateUsers + stats?.individualUsers}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {statsLoading ? "..." : `${stats?.corporateUsers} Corporate • ${stats?.individualUsers} Individual`}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">API Usage (This Month)</CardTitle>
+            <Crown className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {statsLoading ? "..." : stats?.monthlyApiCalls}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Total API calls this month
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle>All Users</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {usersLoading ? (
             <p className="text-muted-foreground">Loading users...</p>
           ) : (
             <Table>

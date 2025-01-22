@@ -114,12 +114,6 @@ export const suburbs = pgTable("suburbs", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Add schemas and types for the suburbs table
-export const insertSuburbSchema = createInsertSchema(suburbs);
-export const selectSuburbSchema = createSelectSchema(suburbs);
-export type InsertSuburb = typeof suburbs.$inferInsert;
-export type SelectSuburb = typeof suburbs.$inferSelect;
-
 export const reportTracking = pgTable("report_tracking", {
   id: serial("id").primaryKey(),
   listingId: integer("listing_id").notNull(), // Links to propdata_listings
@@ -131,6 +125,16 @@ export const reportTracking = pgTable("report_tracking", {
   generatedAt: timestamp("generated_at").defaultNow().notNull(),
   sentAt: timestamp("sent_at"),
   errorMessage: text("error_message"),
+});
+
+// Add this new table after the existing tables but before the relations
+export const apiUsage = pgTable("api_usage", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  endpoint: text("endpoint").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  responseTime: integer("response_time"), // in milliseconds
+  success: boolean("success").default(true).notNull(),
 });
 
 // Property analyzer schema with simplified validation
@@ -281,6 +285,14 @@ export const reportTrackingRelations = relations(reportTracking, ({ one }) => ({
 }));
 
 
+// Add this to the relations section
+export const apiUsageRelations = relations(apiUsage, ({ one }) => ({
+  user: one(users, {
+    fields: [apiUsage.userId],
+    references: [users.id],
+  }),
+}));
+
 // Schemas
 export const insertAccessCodeSchema = createInsertSchema(accessCodes);
 export const selectAccessCodeSchema = createSelectSchema(accessCodes);
@@ -296,6 +308,10 @@ export const insertAgencySettingsSchema = createInsertSchema(agencySettings);
 export const selectAgencySettingsSchema = createSelectSchema(agencySettings);
 export const insertReportTrackingSchema = createInsertSchema(reportTracking);
 export const selectReportTrackingSchema = createSelectSchema(reportTracking);
+
+// Add these to the exports section at the bottom of the file
+export const insertApiUsageSchema = createInsertSchema(apiUsage);
+export const selectApiUsageSchema = createSelectSchema(apiUsage);
 
 // Types
 export type InsertAccessCode = typeof accessCodes.$inferInsert;
@@ -315,3 +331,5 @@ export type SelectReportTracking = typeof reportTracking.$inferSelect;
 
 export type InsertPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferInsert;
 export type SelectPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferSelect;
+export type InsertApiUsage = typeof apiUsage.$inferInsert;
+export type SelectApiUsage = typeof apiUsage.$inferSelect;
