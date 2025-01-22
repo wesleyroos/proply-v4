@@ -14,6 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +38,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import { useLocation } from "wouter";
-import { Ban, Trash2, Users, Building2, Crown } from "lucide-react";
+import { Ban, Trash2, Users, Building2, Crown, MoreHorizontal, ShieldAlert, Shield, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SelectUser } from "@db/schema";
 
@@ -241,9 +249,7 @@ export default function AdminPage() {
                         {(userData.isAdmin || userData.subscriptionStatus === "pro") ? "Pro" : "Free"}
                       </span>
                     </TableCell>
-                    <TableCell>
-                      {userData.accessCode || "-"}
-                    </TableCell>
+                    <TableCell>{userData.accessCode || "-"}</TableCell>
                     <TableCell>
                       {userData.accessCodeUsedAt
                         ? new Date(userData.accessCodeUsedAt).toLocaleDateString()
@@ -262,11 +268,6 @@ export default function AdminPage() {
                           Subscription expires: {new Date(userData.subscriptionExpiryDate).toLocaleDateString()}
                         </span>
                       )}
-                      {userData.accessCode && (
-                        <span className="block text-xs">
-                          Access code: {userData.accessCode}
-                        </span>
-                      )}
                       {userData.isAdmin && (
                         <span className="block text-xs text-blue-600 font-medium">
                           Full admin access
@@ -279,73 +280,82 @@ export default function AdminPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Select
-                          defaultValue={userData.subscriptionStatus}
-                          onValueChange={(value) =>
-                            userActionMutation.mutate({
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => userActionMutation.mutate({
                               userId: userData.id,
                               action: 'change-plan',
-                              plan: value as 'free' | 'pro'
-                            })
-                          }
-                          disabled={userData.isAdmin || userData.id === user.id}
-                        >
-                          <SelectTrigger className="w-[100px]">
-                            <SelectValue placeholder="Select plan" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="free">Free Plan</SelectItem>
-                            <SelectItem value="pro">Pro Plan</SelectItem>
-                          </SelectContent>
-                        </Select>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => userActionMutation.mutate({
-                            userId: userData.id,
-                            action: userData.subscriptionStatus === 'suspended' ? 'unsuspend' : 'suspend'
-                          })}
-                          disabled={userData.isAdmin || userData.id === user.id}
-                          className={userData.subscriptionStatus === 'suspended' ? 'text-green-600 hover:text-green-600' : ''}
-                        >
-                          <Ban className="h-4 w-4 mr-1" />
-                          {userData.subscriptionStatus === 'suspended' ? 'Unsuspend' : 'Suspend'}
-                        </Button>
-
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={userData.isAdmin || userData.id === user.id}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Delete
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the user
-                                account and all associated data.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteMutation.mutate(userData.id)}
-                                className="bg-destructive hover:bg-destructive/90"
+                              plan: 'pro'
+                            })}
+                            disabled={userData.isAdmin || userData.id === user?.id || userData.subscriptionStatus === 'pro'}
+                          >
+                            <Shield className="h-4 w-4 mr-2" />
+                            Upgrade to Pro
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => userActionMutation.mutate({
+                              userId: userData.id,
+                              action: 'change-plan',
+                              plan: 'free'
+                            })}
+                            disabled={userData.isAdmin || userData.id === user?.id || userData.subscriptionStatus === 'free'}
+                          >
+                            <Settings className="h-4 w-4 mr-2" />
+                            Downgrade to Free
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => userActionMutation.mutate({
+                              userId: userData.id,
+                              action: userData.subscriptionStatus === 'suspended' ? 'unsuspend' : 'suspend'
+                            })}
+                            disabled={userData.isAdmin || userData.id === user?.id}
+                            className={userData.subscriptionStatus === 'suspended' ? 'text-green-600' : 'text-yellow-600'}
+                          >
+                            <Ban className="h-4 w-4 mr-2" />
+                            {userData.subscriptionStatus === 'suspended' ? 'Unsuspend' : 'Suspend'}
+                          </DropdownMenuItem>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                                disabled={userData.isAdmin || userData.id === user?.id}
+                                className="text-destructive"
                               >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete User
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete the user
+                                  account and all associated data.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteMutation.mutate(userData.id)}
+                                  className="bg-destructive hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
