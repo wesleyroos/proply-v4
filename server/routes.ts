@@ -10,7 +10,7 @@ import {
   agencySettings,
   type SelectUser,
   type InsertUser,
-  apiUsage // Added apiUsage import
+  apiUsage
 } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -371,6 +371,30 @@ export function registerRoutes(app: Express): Server {
     let success = false;
 
     try {
+      // Check if we need to reset monthly counter
+      const [currentUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
+
+      const now = new Date();
+      const lastReset = currentUser.pricelabsApiLastReset;
+      const shouldResetMonthly = !lastReset || 
+        lastReset.getMonth() !== now.getMonth() || 
+        lastReset.getFullYear() !== now.getFullYear();
+
+      // Reset monthly counter if needed
+      if (shouldResetMonthly) {
+        await db
+          .update(users)
+          .set({
+            pricelabsApiCallsMonth: 0,
+            pricelabsApiLastReset: now
+          })
+          .where(eq(users.id, req.user!.id));
+      }
+
       const response = await fetch(
         `https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(String(address))}&currency=ZAR&bedroom_category=${bedrooms}`,
         {
@@ -386,12 +410,22 @@ export function registerRoutes(app: Express): Server {
 
       const data = await response.json();
       success = true;
+
+      // Increment API usage counters
+      await db
+        .update(users)
+        .set({
+          pricelabsApiCallsTotal: sql`${users.pricelabsApiCallsTotal} + 1`,
+          pricelabsApiCallsMonth: sql`${users.pricelabsApiCallsMonth} + 1`
+        })
+        .where(eq(users.id, req.user!.id));
+
       res.json(data);
     } catch (error) {
       console.error('Error fetching from PriceLabs:', error);
       res.status(500).json({ error: "Failed to fetch revenue data" });
     } finally {
-      // Track API usage
+      // Track API usage in the general tracking table
       try {
         await db.insert(apiUsage).values({
           userId: req.user!.id,

@@ -32,6 +32,10 @@ export const users = pgTable("users", {
   isAdmin: boolean("is_admin").default(false).notNull(),
   accessCodeId: integer("access_code_id"),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  // New columns for API tracking
+  pricelabsApiCallsTotal: integer("pricelabs_api_calls_total").default(0),
+  pricelabsApiCallsMonth: integer("pricelabs_api_calls_month").default(0),
+  pricelabsApiLastReset: timestamp("pricelabs_api_last_reset")
 });
 
 export const properties = pgTable("properties", {

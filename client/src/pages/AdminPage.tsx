@@ -38,6 +38,8 @@ interface AdminUser extends SelectUser {
   isAdmin: boolean;
   accessCode: string | null;
   accessCodeUsedAt: string | null;
+  pricelabsApiCallsTotal: number;
+  pricelabsApiCallsMonth: number;
 }
 
 interface UserStats {
@@ -74,12 +76,12 @@ export default function AdminPage() {
   });
 
   const userActionMutation = useMutation({
-    mutationFn: async ({ 
-      userId, 
-      action, 
-      plan 
-    }: { 
-      userId: number; 
+    mutationFn: async ({
+      userId,
+      action,
+      plan
+    }: {
+      userId: number;
       action: 'suspend' | 'unsuspend' | 'change-plan';
       plan?: 'free' | 'pro';
     }) => {
@@ -242,8 +244,8 @@ export default function AdminPage() {
                       {userData.accessCode || "-"}
                     </TableCell>
                     <TableCell>
-                      {userData.accessCodeUsedAt 
-                        ? new Date(userData.accessCodeUsedAt).toLocaleDateString() 
+                      {userData.accessCodeUsedAt
+                        ? new Date(userData.accessCodeUsedAt).toLocaleDateString()
                         : "-"}
                     </TableCell>
                     <TableCell>
@@ -267,12 +269,15 @@ export default function AdminPage() {
                           Free plan
                         </span>
                       )}
+                      <span className="block text-xs mt-1">
+                        PriceLabs API: {userData.pricelabsApiCallsMonth} this month ({userData.pricelabsApiCallsTotal} total)
+                      </span>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Select
                           defaultValue={userData.subscriptionStatus}
-                          onValueChange={(value) => 
+                          onValueChange={(value) =>
                             userActionMutation.mutate({
                               userId: userData.id,
                               action: 'change-plan',
