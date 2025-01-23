@@ -1,0 +1,104 @@
+Pause a subscription
+Should a subscription be paused the remaining payments (cycles) will remain untouched. The end date of the subscription moves on by the number of paused frequency period(s). Effectively the customer gains a payment gap and the number of payments will still be the same as originally requested. A free month(s) could be provided by pausing (pause) a subscription and reducing the number of cycles by making an update to the subscription.
+
+Parameters
+token
+string | REQUIRED
+Path, the Unique ID on Payfast that represents the subscription.
+merchant-id
+integer, 8 char | REQUIRED
+Header, the Merchant ID as given by the Payfast system.
+version
+string | REQUIRED
+Header, the Payfast API version (i.e. v1).
+timestamp
+ISO-8601 date and time | REQUIRED
+Header, the current timestamp (YYYY-MM-DDTHH:MM:SS[+HH:MM]).
+signature
+string | REQUIRED
+Header, MD5 hash of the alphabetised submitted header and body variables, as well as the passphrase. Characters must be in lower case.
+cycles
+integer | OPTIONAL
+Body, number of cycles to pause the subscription for. Default is 1 if not given.
+PUT /subscriptions/:token/pause
+https://api.payfast.co.za/subscriptions/dc0521d3-55fe-269b-fa00-b647310d760f/pause 
+cURL Example
+curl -v -X PUT -H “merchant-id: 10000100” -H “version: v1” -H “timestamp=2016-04-01T12:00:01” -H “signature=840654b40a8b312e54650e1613696b44” https://api.payfast.co.za/subscriptions/dc0521d3-55fe-269b-fa00-b647310d760f/pause 
+response
+{
+"code":
+200,
+"status":
+"success",
+"data":
+{
+"response":
+true
+}
+}
+Unpause a subscription
+Unpause a subscription.
+
+Parameters
+token
+string | REQUIRED
+Path, the Unique ID on Payfast that represents the subscription.
+merchant-id
+integer, 8 char | REQUIRED
+Header, the Merchant ID as given by the Payfast system.
+version
+string | REQUIRED
+Header, the Payfast API version (i.e. v1).
+timestamp
+ISO-8601 date and time | REQUIRED
+Header, the current timestamp (YYYY-MM-DDTHH:MM:SS[+HH:MM]).
+signature
+string | REQUIRED
+Header, MD5 hash of the alphabetised submitted header and body variables, as well as the passphrase. Characters must be in lower case.
+PUT /subscriptions/:token/unpause
+https://api.payfast.co.za/subscriptions/dc0521d3-55fe-269b-fa00-b647310d760f/unpause 
+response
+{
+"code":
+200,
+"status":
+"success",
+"data":
+{
+"response":
+true
+}
+}
+Cancel a subscription
+This will cancel a subscription entirely.
+When a subscription is cancelled the customer will be notified of this via email.
+
+Parameters
+token
+string | REQUIRED
+Path, the Unique ID on Payfast that represents the subscription.
+merchant-id
+integer, 8 char | REQUIRED
+Header, the Merchant ID as given by the Payfast system.
+version
+string | REQUIRED
+Header, the Payfast API version (i.e. v1).
+timestamp
+ISO-8601 date and time | REQUIRED
+Header, the current timestamp (YYYY-MM-DDTHH:MM:SS[+HH:MM]).
+signature
+string | REQUIRED
+Header, MD5 hash of the alphabetised submitted header and body variables, as well as the passphrase. Characters must be in lower case.
+PUT /subscriptions/:token/cancel
+https://api.payfast.co.za/subscriptions/dc0521d3-55fe-269b-fa00-b647310d760f/cancel 
+response
+{
+"code":
+200,
+"status":
+"success",
+"data":
+{
+"response":
+true
+}

@@ -29,10 +29,13 @@ export const users = pgTable("users", {
   subscriptionExpiryDate: timestamp("subscription_expiry_date"),
   subscriptionStartDate: timestamp("subscription_start_date"),
   pendingDowngrade: boolean("pending_downgrade").default(false),
+  // New fields for PayFast integration
+  payfastToken: text("payfast_token"),
+  payfastSubscriptionStatus: text("payfast_subscription_status"),
+  subscriptionPausedUntil: timestamp("subscription_paused_until"),
   isAdmin: boolean("is_admin").default(false).notNull(),
   accessCodeId: integer("access_code_id"),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  // Add new column for tracking reports
   reportsGenerated: integer("reports_generated").default(0).notNull(),
   pricelabsApiCallsTotal: integer("pricelabs_api_calls_total").default(0),
   pricelabsApiCallsMonth: integer("pricelabs_api_calls_month").default(0),
@@ -140,6 +143,19 @@ export const apiUsage = pgTable("api_usage", {
   timestamp: timestamp("timestamp").defaultNow().notNull(),
   responseTime: integer("response_time"), // in milliseconds
   success: boolean("success").default(true).notNull(),
+});
+
+// Add new table for subscription history
+export const subscriptionHistory = pgTable("subscription_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  action: text("action").notNull(), // pause, resume, cancel
+  payfastToken: text("payfast_token").notNull(),
+  performedAt: timestamp("performed_at").defaultNow().notNull(),
+  pauseDuration: integer("pause_duration"), // in cycles, for pause actions
+  reason: text("reason"),
+  success: boolean("success").default(true).notNull(),
+  errorMessage: text("error_message"),
 });
 
 // Property analyzer schema with simplified validation
@@ -298,6 +314,14 @@ export const apiUsageRelations = relations(apiUsage, ({ one }) => ({
   }),
 }));
 
+// Add relations
+export const subscriptionHistoryRelations = relations(subscriptionHistory, ({ one }) => ({
+  user: one(users, {
+    fields: [subscriptionHistory.userId],
+    references: [users.id],
+  }),
+}));
+
 // Schemas
 export const insertAccessCodeSchema = createInsertSchema(accessCodes);
 export const selectAccessCodeSchema = createSelectSchema(accessCodes);
@@ -317,6 +341,8 @@ export const selectReportTrackingSchema = createSelectSchema(reportTracking);
 // Add these to the exports section at the bottom of the file
 export const insertApiUsageSchema = createInsertSchema(apiUsage);
 export const selectApiUsageSchema = createSelectSchema(apiUsage);
+export const insertSubscriptionHistorySchema = createInsertSchema(subscriptionHistory);
+export const selectSubscriptionHistorySchema = createSelectSchema(subscriptionHistory);
 
 // Types
 export type InsertAccessCode = typeof accessCodes.$inferInsert;
@@ -338,3 +364,5 @@ export type InsertPropertyAnalyzerResult = typeof propertyAnalyzerResults.$infer
 export type SelectPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferSelect;
 export type InsertApiUsage = typeof apiUsage.$inferInsert;
 export type SelectApiUsage = typeof apiUsage.$inferSelect;
+export type InsertSubscriptionHistory = typeof subscriptionHistory.$inferInsert;
+export type SelectSubscriptionHistory = typeof subscriptionHistory.$inferSelect;

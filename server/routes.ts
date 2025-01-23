@@ -11,6 +11,7 @@ import {
   type SelectUser,
   type InsertUser,
   apiUsage,
+  subscriptionHistory, // Added import for subscription history table
 } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -107,6 +108,229 @@ export function registerRoutes(app: Express): Server {
       console.error("Error updating subscription:", error);
       res.status(500).json({
         error: "Failed to update subscription",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
+  // Add these new endpoints after the existing subscription endpoints
+  app.post("/api/subscription/pause", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const { cycles = 1 } = req.body;
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
+
+      if (!user?.payfastToken) {
+        return res.status(400).json({ error: "No active subscription found" });
+      }
+
+      const merchantId = process.env.VITE_PAYFAST_MERCHANT_ID;
+      const version = "v1";
+      const timestamp = new Date().toISOString();
+      const signature = ""; // TODO: Implement signature generation
+
+      // Call PayFast API to pause subscription
+      const response = await fetch(
+        `https://api.payfast.co.za/subscriptions/${user.payfastToken}/pause`,
+        {
+          method: "PUT",
+          headers: {
+            "merchant-id": merchantId,
+            version,
+            timestamp,
+            signature,
+          },
+          body: JSON.stringify({ cycles }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`PayFast API error: ${response.statusText}`);
+      }
+
+      // Calculate pause end date
+      const pauseEndDate = new Date();
+      pauseEndDate.setMonth(pauseEndDate.getMonth() + cycles);
+
+      // Update user subscription status
+      await db.transaction(async (tx) => {
+        // Update user record
+        await tx
+          .update(users)
+          .set({
+            payfastSubscriptionStatus: "paused",
+            subscriptionPausedUntil: pauseEndDate,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, req.user!.id));
+
+        // Record subscription history
+        await tx.insert(subscriptionHistory).values({
+          userId: req.user!.id,
+          action: "pause",
+          payfastToken: user.payfastToken,
+          pauseDuration: cycles,
+          success: true,
+        });
+      });
+
+      res.json({
+        message: "Subscription paused successfully",
+        resumeDate: pauseEndDate,
+      });
+    } catch (error) {
+      console.error("Error pausing subscription:", error);
+      res.status(500).json({
+        error: "Failed to pause subscription",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
+  app.post("/api/subscription/resume", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
+
+      if (!user?.payfastToken) {
+        return res.status(400).json({ error: "No subscription found" });
+      }
+
+      const merchantId = process.env.VITE_PAYFAST_MERCHANT_ID;
+      const version = "v1";
+      const timestamp = new Date().toISOString();
+      const signature = ""; // TODO: Implement signature generation
+
+      // Call PayFast API to unpause subscription
+      const response = await fetch(
+        `https://api.payfast.co.za/subscriptions/${user.payfastToken}/unpause`,
+        {
+          method: "PUT",
+          headers: {
+            "merchant-id": merchantId,
+            version,
+            timestamp,
+            signature,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`PayFast API error: ${response.statusText}`);
+      }
+
+      // Update user subscription status
+      await db.transaction(async (tx) => {
+        // Update user record
+        await tx
+          .update(users)
+          .set({
+            payfastSubscriptionStatus: "active",
+            subscriptionPausedUntil: null,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, req.user!.id));
+
+        // Record subscription history
+        await tx.insert(subscriptionHistory).values({
+          userId: req.user!.id,
+          action: "resume",
+          payfastToken: user.payfastToken,
+          success: true,
+        });
+      });
+
+      res.json({ message: "Subscription resumed successfully" });
+    } catch (error) {
+      console.error("Error resuming subscription:", error);
+      res.status(500).json({
+        error: "Failed to resume subscription",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
+  // Update the existing cancel endpoint to use PayFast API
+  app.post("/api/subscription/cancel", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
+
+      if (!user?.payfastToken) {
+        return res.status(400).json({ error: "No active subscription found" });
+      }
+
+      const merchantId = process.env.VITE_PAYFAST_MERCHANT_ID;
+      const version = "v1";
+      const timestamp = new Date().toISOString();
+      const signature = ""; // TODO: Implement signature generation
+
+      // Call PayFast API to cancel subscription
+      const response = await fetch(
+        `https://api.payfast.co.za/subscriptions/${user.payfastToken}/cancel`,
+        {
+          method: "PUT",
+          headers: {
+            "merchant-id": merchantId,
+            version,
+            timestamp,
+            signature,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`PayFast API error: ${response.statusText}`);
+      }
+
+      // Update user subscription status
+      await db.transaction(async (tx) => {
+        // Update user record
+        await tx
+          .update(users)
+          .set({
+            subscriptionStatus: "free",
+            payfastSubscriptionStatus: "cancelled",
+            payfastToken: null,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, req.user!.id));
+
+        // Record subscription history
+        await tx.insert(subscriptionHistory).values({
+          userId: req.user!.id,
+          action: "cancel",
+          payfastToken: user.payfastToken,
+          success: true,
+        });
+      });
+
+      res.json({ message: "Subscription cancelled successfully" });
+    } catch (error) {
+      console.error("Error cancelling subscription:", error);
+      res.status(500).json({
+        error: "Failed to cancel subscription",
         details: error instanceof Error ? error.message : undefined,
       });
     }
@@ -1085,7 +1309,7 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
-  // Add this new endpoint after the existing admin endpoints
+  // Add this new endpoint after the existing signup analytics endpoint
   app.get("/api/analytics/signups", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
       return res.status(403).send("Not authorized");
