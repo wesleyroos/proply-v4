@@ -924,7 +924,6 @@ export function registerRoutes(app: Express): Server {
     if (!suburb) {
       return res.status(400).json({ error: "Suburb name is required" });
     }
-
     try {
       const analysis = await analyzeSuburb(suburb);
       res.json(analysis);    } catch (error) {
@@ -1070,17 +1069,30 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      const signupData = await db
-        .select({
-          date: sql`date_trunc('day', ${users.createdAt})::date`,
-          count: sql`count(*)::integer`
-        })
-        .from(users)
-        .where(sql`${users.createdAt} >= ${startDate}`)
-        .groupBy(sql`date_trunc('day', ${users.createdAt})`)
-        .orderBy(sql`date_trunc('day', ${users.createdAt})`);
+      // Generate a series of dates from start to now
+      const signupData = await db.execute(sql`
+        WITH RECURSIVE dates AS (
+          SELECT date_trunc('day', ${startDate}::timestamp)::date AS date
+          UNION ALL
+          SELECT (date + INTERVAL '1 day')::date
+          FROM dates
+          WHERE date < date_trunc('day', now())::date
+        ),
+        daily_signups AS (
+          SELECT date_trunc('day', updated_at)::date AS signup_date,
+                 count(*) AS count
+          FROM ${users}
+          WHERE updated_at >= ${startDate}
+          GROUP BY date_trunc('day', updated_at)::date
+        )
+        SELECT dates.date,
+               COALESCE(daily_signups.count, 0)::integer AS count
+        FROM dates
+        LEFT JOIN daily_signups ON dates.date = daily_signups.signup_date
+        ORDER BY dates.date
+      `);
 
-      res.json(signupData);
+      res.json(signupData.rows);
     } catch (error) {
       console.error('Error fetching signup analytics:', error);
       res.status(500).json({
@@ -1089,6 +1101,7 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
+
   // Add new endpoint after the existing signup analytics endpoint
   app.get("/api/analytics/reports", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
