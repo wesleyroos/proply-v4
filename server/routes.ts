@@ -1087,7 +1087,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Add new endpoint after the existing signup analytics endpoint
   app.get("/api/analytics/reports", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
       return res.status(403).send("Not authorized");
