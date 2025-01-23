@@ -20,135 +20,17 @@ import { analyzeSuburb } from "./services/openai";
 import { sql } from 'drizzle-orm';
 import { suburbs } from '@db/schema';
 
-// Add analytics endpoints right after setupAuth(app)
+
+// Extend Express.User to include our schema
+declare global {
+  namespace Express {
+    interface User extends SelectUser {}
+  }
+}
+
 export function registerRoutes(app: Express): Server {
+  // Setup authentication first
   setupAuth(app);
-
-  // Analytics endpoints
-  app.get("/api/analytics/api-usage", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user?.isAdmin) {
-      return res.status(403).send("Not authorized");
-    }
-
-    const { timeRange = '7d' } = req.query;
-    const startDate = new Date();
-
-    switch (timeRange) {
-      case '24h':
-        startDate.setHours(startDate.getHours() - 24);
-        break;
-      case '7d':
-        startDate.setDate(startDate.getDate() - 7);
-        break;
-      case '30d':
-        startDate.setDate(startDate.getDate() - 30);
-        break;
-      case '90d':
-        startDate.setDate(startDate.getDate() - 90);
-        break;
-      default:
-        startDate.setDate(startDate.getDate() - 7);
-    }
-
-    try {
-      // Get API usage data
-      const usage = await db
-        .select({
-          timestamp: apiUsage.timestamp,
-          count: sql<number>`count(*)::integer`,
-          responseTime: sql<number>`avg(${apiUsage.responseTime})::integer`
-        })
-        .from(apiUsage)
-        .where(sql`${apiUsage.timestamp} >= ${startDate}`)
-        .groupBy(apiUsage.timestamp)
-        .orderBy(apiUsage.timestamp);
-
-      // Get API performance data
-      const performance = await db
-        .select({
-          timestamp: apiUsage.timestamp,
-          responseTime: sql<number>`avg(${apiUsage.responseTime})::integer`
-        })
-        .from(apiUsage)
-        .where(sql`${apiUsage.timestamp} >= ${startDate}`)
-        .groupBy(apiUsage.timestamp)
-        .orderBy(apiUsage.timestamp);
-
-      res.json({
-        usage,
-        performance
-      });
-    } catch (error) {
-      console.error('Error fetching API usage analytics:', error);
-      res.status(500).json({ error: "Failed to fetch API usage analytics" });
-    }
-  });
-
-  app.get("/api/analytics/reports", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user?.isAdmin) {
-      return res.status(403).send("Not authorized");
-    }
-
-    const { timeRange = '7d' } = req.query;
-    const startDate = new Date();
-
-    switch (timeRange) {
-      case '24h':
-        startDate.setHours(startDate.getHours() - 24);
-        break;
-      case '7d':
-        startDate.setDate(startDate.getDate() - 7);
-        break;
-      case '30d':
-        startDate.setDate(startDate.getDate() - 30);
-        break;
-      case '90d':
-        startDate.setDate(startDate.getDate() - 90);
-        break;
-      default:
-        startDate.setDate(startDate.getDate() - 7);
-    }
-
-    try {
-      // Get user activity data with daily report generation
-      const userActivity = await db
-        .select({
-          timestamp: sql<string>`date_trunc('day', ${propertyAnalyzerResults.createdAt})::text`,
-          activeUsers: sql<number>`count(distinct ${propertyAnalyzerResults.userId})::integer`,
-          reportsGenerated: sql<number>`count(*)::integer`
-        })
-        .from(propertyAnalyzerResults)
-        .where(sql`${propertyAnalyzerResults.createdAt} >= ${startDate}`)
-        .groupBy(sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})`)
-        .orderBy(sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})`);
-
-      // Get report types and counts
-      const reports = await db
-        .select({
-          type: sql<string>`CASE 
-            WHEN ${propertyAnalyzerResults.title} LIKE '%Short Term%' THEN 'Short Term'
-            WHEN ${propertyAnalyzerResults.title} LIKE '%Long Term%' THEN 'Long Term'
-            ELSE 'Standard'
-          END`,
-          count: sql<number>`count(*)::integer`
-        })
-        .from(propertyAnalyzerResults)
-        .where(sql`${propertyAnalyzerResults.createdAt} >= ${startDate}`)
-        .groupBy(sql`CASE 
-          WHEN ${propertyAnalyzerResults.title} LIKE '%Short Term%' THEN 'Short Term'
-          WHEN ${propertyAnalyzerResults.title} LIKE '%Long Term%' THEN 'Long Term'
-          ELSE 'Standard'
-        END`);
-
-      res.json({
-        reports: reports || [],
-        userActivity: userActivity || []
-      });
-    } catch (error) {
-      console.error('Error fetching report analytics:', error);
-      res.status(500).json({ error: "Failed to fetch report analytics" });
-    }
-  });
 
   // Require authentication for all /api routes except login/register
   app.use('/api', (req, res, next) => {
@@ -925,7 +807,7 @@ export function registerRoutes(app: Express): Server {
 
   // Property analyzer save endpoint
   app.post("/api/property-analyzer/save", async (req, res) => {
-    if (!req.isAuthenticated() ||!req.user?.id) {
+    if (!req.isAuthenticated() || !req.user?.id) {
       return res.status(401).send("Not authenticated");
     }
 
