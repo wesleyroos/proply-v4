@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Table,
@@ -49,6 +50,8 @@ import {
   Shield,
   Settings,
   FileText,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SelectUser } from "@db/schema";
@@ -59,7 +62,7 @@ interface AdminUser extends SelectUser {
   accessCodeUsedAt: string | null;
   pricelabsApiCallsTotal: number;
   pricelabsApiCallsMonth: number;
-  reportsGenerated: number; // Added reportsGenerated field
+  reportsGenerated: number;
 }
 
 interface UserStats {
@@ -75,15 +78,18 @@ interface UserStats {
   monthlyReportsGenerated: number;
 }
 
+type SortConfig = {
+  key: keyof AdminUser | '';
+  direction: 'asc' | 'desc';
+};
+
 export default function AdminPage() {
   const { user } = useUser();
   const [, setLocation] = useLocation();
-
-  // Redirect if not admin
-  if (!user?.isAdmin) {
-    setLocation("/");
-    return null;
-  }
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: 'reportsGenerated',
+    direction: 'desc'
+  });
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -174,11 +180,43 @@ export default function AdminPage() {
     );
   }
 
+  const sortData = (data: AdminUser[]) => {
+    if (!sortConfig.key) return data;
+
+    return [...data].sort((a, b) => {
+      if (a[sortConfig.key] === b[sortConfig.key]) return 0;
+
+      if (sortConfig.direction === 'asc') {
+        return a[sortConfig.key] < b[sortConfig.key] ? -1 : 1;
+      } else {
+        return a[sortConfig.key] > b[sortConfig.key] ? -1 : 1;
+      }
+    });
+  };
+
+  const handleSort = (key: keyof AdminUser) => {
+    setSortConfig((current) => {
+      if (current.key === key) {
+        return {
+          key,
+          direction: current.direction === 'asc' ? 'desc' : 'asc'
+        };
+      }
+      return { key, direction: 'desc' };
+    });
+  };
+
+  const SortIndicator = ({ column }: { column: keyof AdminUser }) => {
+    if (sortConfig.key !== column) return null;
+    return sortConfig.direction === 'asc' ? 
+      <ChevronUp className="inline h-4 w-4 ml-1" /> : 
+      <ChevronDown className="inline h-4 w-4 ml-1" />;
+  };
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">User Management</h1>
 
-      {/* Statistics Section */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -267,7 +305,6 @@ export default function AdminPage() {
         </Card>
       </div>
 
-      {/* Table Section - Add horizontal scroll */}
       <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle>All Users</CardTitle>
@@ -280,22 +317,34 @@ export default function AdminPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Email</TableHead>
+                    <TableHead onClick={() => handleSort('id')} className="cursor-pointer">
+                      ID <SortIndicator column="id" />
+                    </TableHead>
+                    <TableHead onClick={() => handleSort('email')} className="cursor-pointer">
+                      Email <SortIndicator column="email" />
+                    </TableHead>
                     <TableHead>Name</TableHead>
-                    <TableHead>User Type</TableHead>
+                    <TableHead onClick={() => handleSort('userType')} className="cursor-pointer">
+                      User Type <SortIndicator column="userType" />
+                    </TableHead>
                     <TableHead>Company</TableHead>
-                    <TableHead>Plan</TableHead>
+                    <TableHead onClick={() => handleSort('subscriptionStatus')} className="cursor-pointer">
+                      Plan <SortIndicator column="subscriptionStatus" />
+                    </TableHead>
                     <TableHead>Access Code</TableHead>
                     <TableHead>Redeemed At</TableHead>
-                    <TableHead>API Usage</TableHead>
-                    <TableHead>Reports</TableHead>
+                    <TableHead onClick={() => handleSort('pricelabsApiCallsTotal')} className="cursor-pointer">
+                      API Usage <SortIndicator column="pricelabsApiCallsTotal" />
+                    </TableHead>
+                    <TableHead onClick={() => handleSort('reportsGenerated')} className="cursor-pointer">
+                      Reports <SortIndicator column="reportsGenerated" />
+                    </TableHead>
                     <TableHead>Status Details</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users?.map((userData) => (
+                  {sortData(users || []).map((userData) => (
                     <TableRow key={userData.id}>
                       <TableCell>{userData.id}</TableCell>
                       <TableCell>{userData.email}</TableCell>
