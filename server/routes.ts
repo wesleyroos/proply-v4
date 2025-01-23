@@ -928,7 +928,7 @@ export function registerRoutes(app: Express): Server {
     try {
       const analysis = await analyzeSuburb(suburb);
       res.json(analysis);    } catch (error) {
-      console.error('Error analyzing suburb:', error);
+            console.error('Error analyzing suburb:', error);
       res.status(500).json({
         error: "Failed to analyze suburb",
         details: error instanceof Error ? error.message : undefined
