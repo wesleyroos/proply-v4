@@ -110,15 +110,15 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Get report types and counts
+      // Get report types and counts - Fixed SQL syntax
       const reports = await db
         .select({
-          type: sql<string>`COALESCE(${propertyAnalyzerResults.reportType}, 'standard')`,
+          type: propertyAnalyzerResults.reportType,
           count: sql<number>`count(*)::integer`
         })
         .from(propertyAnalyzerResults)
         .where(sql`${propertyAnalyzerResults.createdAt} >= ${startDate}`)
-        .groupBy(sql`COALESCE(${propertyAnalyzerResults.reportType}, 'standard')`);
+        .groupBy(propertyAnalyzerResults.reportType);
 
       // Get user activity data
       const userActivity = await db
