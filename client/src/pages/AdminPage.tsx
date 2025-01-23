@@ -72,6 +72,7 @@ interface UserStats {
   monthlyApiCalls: number;
   totalApiCalls: number;
   totalReportsGenerated: number;
+  monthlyReportsGenerated: number;
 }
 
 export default function AdminPage() {
@@ -246,11 +247,21 @@ export default function AdminPage() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {statsLoading ? "..." : stats?.totalReportsGenerated || 0}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Total reports generated
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-2xl font-bold">
+                  {statsLoading ? "..." : stats?.monthlyReportsGenerated}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Reports this month
+                </div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold">
+                  {statsLoading ? "..." : stats?.totalReportsGenerated || 0}
+                </div>
+                <div className="text-xs text-muted-foreground">Total reports</div>
+              </div>
             </div>
           </CardContent>
         </Card>

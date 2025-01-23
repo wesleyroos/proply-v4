@@ -337,22 +337,28 @@ export function registerRoutes(app: Express): Server {
         .from(users)
         .then(rows => rows[0]);
 
-      // Get API usage for current month
+      // Get API usage and reports for current month
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      const apiStats = await db
+      const monthlyStats = await db
         .select({
-          monthlyApiCalls: sql`count(*)`
+          monthlyApiCalls: sql`count(*)`,
+          monthlyReportsGenerated: sql`sum(case when ${propertyAnalyzerResults.createdAt} >= ${startOfMonth} then 1 else 0 end)`
         })
         .from(apiUsage)
+        .leftJoin(
+          propertyAnalyzerResults,
+          sql`${propertyAnalyzerResults.createdAt} >= ${startOfMonth}`
+        )
         .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
         .then(rows => rows[0]);
 
       res.json({
         ...userStats,
-        monthlyApiCalls: apiStats.monthlyApiCalls
+        monthlyApiCalls: monthlyStats.monthlyApiCalls,
+        monthlyReportsGenerated: monthlyStats.monthlyReportsGenerated || 0
       });
     } catch (error) {
       console.error('Error fetching admin stats:', error);
