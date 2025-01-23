@@ -20,17 +20,127 @@ import { analyzeSuburb } from "./services/openai";
 import { sql } from 'drizzle-orm';
 import { suburbs } from '@db/schema';
 
-
-// Extend Express.User to include our schema
-declare global {
-  namespace Express {
-    interface User extends SelectUser {}
-  }
-}
-
+// Add analytics endpoints right after setupAuth(app)
 export function registerRoutes(app: Express): Server {
-  // Setup authentication first
   setupAuth(app);
+
+  // Analytics endpoints
+  app.get("/api/analytics/api-usage", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    const { timeRange = '7d' } = req.query;
+    const startDate = new Date();
+
+    switch (timeRange) {
+      case '24h':
+        startDate.setHours(startDate.getHours() - 24);
+        break;
+      case '7d':
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case '30d':
+        startDate.setDate(startDate.getDate() - 30);
+        break;
+      case '90d':
+        startDate.setDate(startDate.getDate() - 90);
+        break;
+      default:
+        startDate.setDate(startDate.getDate() - 7);
+    }
+
+    try {
+      // Get API usage data
+      const usage = await db
+        .select({
+          timestamp: apiUsage.timestamp,
+          count: sql<number>`count(*)::integer`,
+          responseTime: sql<number>`avg(${apiUsage.responseTime})::integer`
+        })
+        .from(apiUsage)
+        .where(sql`${apiUsage.timestamp} >= ${startDate}`)
+        .groupBy(apiUsage.timestamp)
+        .orderBy(apiUsage.timestamp);
+
+      // Get API performance data
+      const performance = await db
+        .select({
+          timestamp: apiUsage.timestamp,
+          responseTime: sql<number>`avg(${apiUsage.responseTime})::integer`
+        })
+        .from(apiUsage)
+        .where(sql`${apiUsage.timestamp} >= ${startDate}`)
+        .groupBy(apiUsage.timestamp)
+        .orderBy(apiUsage.timestamp);
+
+      res.json({
+        usage,
+        performance
+      });
+    } catch (error) {
+      console.error('Error fetching API usage analytics:', error);
+      res.status(500).json({ error: "Failed to fetch API usage analytics" });
+    }
+  });
+
+  app.get("/api/analytics/reports", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    const { timeRange = '7d' } = req.query;
+    const startDate = new Date();
+
+    switch (timeRange) {
+      case '24h':
+        startDate.setHours(startDate.getHours() - 24);
+        break;
+      case '7d':
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case '30d':
+        startDate.setDate(startDate.getDate() - 30);
+        break;
+      case '90d':
+        startDate.setDate(startDate.getDate() - 90);
+        break;
+      default:
+        startDate.setDate(startDate.getDate() - 7);
+    }
+
+    try {
+      // Get report types and counts
+      const reports = await db
+        .select({
+          type: sql<string>`COALESCE(${propertyAnalyzerResults.reportType}, 'standard')`,
+          count: sql<number>`count(*)::integer`
+        })
+        .from(propertyAnalyzerResults)
+        .where(sql`${propertyAnalyzerResults.createdAt} >= ${startDate}`)
+        .groupBy(sql`COALESCE(${propertyAnalyzerResults.reportType}, 'standard')`);
+
+      // Get user activity data
+      const userActivity = await db
+        .select({
+          timestamp: propertyAnalyzerResults.createdAt,
+          activeUsers: sql<number>`count(distinct ${propertyAnalyzerResults.userId})::integer`,
+          reportsGenerated: sql<number>`count(*)::integer`
+        })
+        .from(propertyAnalyzerResults)
+        .where(sql`${propertyAnalyzerResults.createdAt} >= ${startDate}`)
+        .groupBy(propertyAnalyzerResults.createdAt)
+        .orderBy(propertyAnalyzerResults.createdAt);
+
+      res.json({
+        reports,
+        userActivity
+      });
+    } catch (error) {
+      console.error('Error fetching report analytics:', error);
+      res.status(500).json({ error: "Failed to fetch report analytics" });
+    }
+  });
 
   // Require authentication for all /api routes except login/register
   app.use('/api', (req, res, next) => {
