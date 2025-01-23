@@ -10,16 +10,15 @@ import {
   agencySettings,
   type SelectUser,
   type InsertUser,
-  apiUsage
+  apiUsage,
 } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
 import { analyzeSuburb } from "./services/openai";
-import { sql } from 'drizzle-orm';
-import { suburbs } from '@db/schema';
-
+import { sql } from "drizzle-orm";
+import { suburbs } from "@db/schema";
 
 // Extend Express.User to include our schema
 declare global {
@@ -33,12 +32,16 @@ export function registerRoutes(app: Express): Server {
   setupAuth(app);
 
   // Require authentication for all /api routes except login/register
-  app.use('/api', (req, res, next) => {
-    if (req.path === '/login' || req.path === '/register' || req.path === '/user') {
+  app.use("/api", (req, res, next) => {
+    if (
+      req.path === "/login" ||
+      req.path === "/register" ||
+      req.path === "/user"
+    ) {
       return next();
     }
     if (!req.isAuthenticated()) {
-      return res.status(401).send('Not authenticated');
+      return res.status(401).send("Not authenticated");
     }
     next();
   });
@@ -56,10 +59,10 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      console.log('Processing subscription upgrade:', {
+      console.log("Processing subscription upgrade:", {
         userId,
         subscriptionStatus,
-        requestedBy: req.user?.id
+        requestedBy: req.user?.id,
       });
 
       // Verify the user exists
@@ -70,7 +73,7 @@ export function registerRoutes(app: Express): Server {
         .limit(1);
 
       if (!user) {
-        console.error('User not found:', userId);
+        console.error("User not found:", userId);
         return res.status(404).send("User not found");
       }
 
@@ -81,15 +84,15 @@ export function registerRoutes(app: Express): Server {
           subscriptionStatus,
           subscriptionStartDate: new Date(), // Track when they started their pro subscription
           pendingDowngrade: false, // Clear any pending downgrades
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(users.id, userId))
         .returning();
 
-      console.log('Subscription updated successfully:', {
+      console.log("Subscription updated successfully:", {
         userId: updatedUser.id,
         newStatus: updatedUser.subscriptionStatus,
-        startDate: updatedUser.subscriptionStartDate
+        startDate: updatedUser.subscriptionStartDate,
       });
 
       res.json({
@@ -97,14 +100,14 @@ export function registerRoutes(app: Express): Server {
         user: {
           id: updatedUser.id,
           subscriptionStatus: updatedUser.subscriptionStatus,
-          subscriptionStartDate: updatedUser.subscriptionStartDate
-        }
+          subscriptionStartDate: updatedUser.subscriptionStartDate,
+        },
       });
     } catch (error) {
-      console.error('Error updating subscription:', error);
+      console.error("Error updating subscription:", error);
       res.status(500).json({
         error: "Failed to update subscription",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -141,8 +144,10 @@ export function registerRoutes(app: Express): Server {
 
       // Generate a random 8-character code
       const code = Array.from({ length: 8 }, () =>
-        Math.random().toString(36).charAt(2)
-      ).join('').toUpperCase();
+        Math.random().toString(36).charAt(2),
+      )
+        .join("")
+        .toUpperCase();
 
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + parseInt(expiryDays));
@@ -161,7 +166,7 @@ export function registerRoutes(app: Express): Server {
 
       res.json(accessCode);
     } catch (error) {
-      console.error('Error generating access code:', error);
+      console.error("Error generating access code:", error);
       res.status(500).json({ error: "Failed to generate access code" });
     }
   });
@@ -194,73 +199,84 @@ export function registerRoutes(app: Express): Server {
             SELECT COUNT(*)::integer 
             FROM ${propertyAnalyzerResults} 
             WHERE ${propertyAnalyzerResults.userId} = ${users.id}
-          )`
+          )`,
         })
         .from(users)
         .leftJoin(accessCodes, eq(users.accessCodeId, accessCodes.id));
 
       res.json(allUsers);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
       res.status(500).json({ error: "Failed to fetch users" });
     }
   });
 
-  app.post("/api/admin/users/:id/:action(suspend|unsuspend|change-plan)", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user?.isAdmin) {
-      return res.status(403).send("Not authorized");
-    }
-
-    const userId = parseInt(req.params.id);
-
-    try {
-      const [targetUser] = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, userId))
-        .limit(1);
-
-      if (!targetUser) {
-        return res.status(404).send("User not found");
+  app.post(
+    "/api/admin/users/:id/:action(suspend|unsuspend|change-plan)",
+    async (req, res) => {
+      if (!req.isAuthenticated() || !req.user?.isAdmin) {
+        return res.status(403).send("Not authorized");
       }
 
-      if (targetUser.isAdmin) {
-        return res.status(400).send("Cannot suspend admin users");
-      }
+      const userId = parseInt(req.params.id);
 
-      if (targetUser.id === req.user.id) {
-        return res.status(400).send("Cannot suspend yourself");
-      }
+      try {
+        const [targetUser] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
 
-      const action = req.params.action as 'suspend' | 'unsuspend' | 'change-plan';
-
-      if (action === 'change-plan') {
-        const { plan } = req.body;
-        if (!plan || !['free', 'pro'].includes(plan)) {
-          return res.status(400).send("Invalid plan specified");
+        if (!targetUser) {
+          return res.status(404).send("User not found");
         }
 
-        await db
-          .update(users)
-          .set({
-            subscriptionStatus: plan,
-            subscriptionExpiryDate: plan === 'pro' ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : null
-          })
-          .where(eq(users.id, userId));
+        if (targetUser.isAdmin) {
+          return res.status(400).send("Cannot suspend admin users");
+        }
 
-        res.json({ message: `User plan updated to ${plan} successfully` });
-      } else {
-        await db
-          .update(users)
-          .set({ subscriptionStatus: action === 'suspend' ? 'suspended' : 'free' })
-          .where(eq(users.id, userId));
+        if (targetUser.id === req.user.id) {
+          return res.status(400).send("Cannot suspend yourself");
+        }
 
-        res.json({ message: `User ${action}ed successfully` });
+        const action = req.params.action as
+          | "suspend"
+          | "unsuspend"
+          | "change-plan";
+
+        if (action === "change-plan") {
+          const { plan } = req.body;
+          if (!plan || !["free", "pro"].includes(plan)) {
+            return res.status(400).send("Invalid plan specified");
+          }
+
+          await db
+            .update(users)
+            .set({
+              subscriptionStatus: plan,
+              subscriptionExpiryDate:
+                plan === "pro"
+                  ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+                  : null,
+            })
+            .where(eq(users.id, userId));
+
+          res.json({ message: `User plan updated to ${plan} successfully` });
+        } else {
+          await db
+            .update(users)
+            .set({
+              subscriptionStatus: action === "suspend" ? "suspended" : "free",
+            })
+            .where(eq(users.id, userId));
+
+          res.json({ message: `User ${action}ed successfully` });
+        }
+      } catch (error) {
+        res.status(500).json({ error: "Failed to suspend user" });
       }
-    } catch (error) {
-      res.status(500).json({ error: "Failed to suspend user" });
-    }
-  });
+    },
+  );
 
   app.delete("/api/admin/users/:id", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
@@ -296,27 +312,23 @@ export function registerRoutes(app: Express): Server {
           .where(eq(users.id, userId));
 
         // Then delete any associated access codes
-        await db
-          .delete(accessCodes)
-          .where(eq(accessCodes.usedBy, userId));
+        await db.delete(accessCodes).where(eq(accessCodes.usedBy, userId));
 
         // Delete any properties owned by the user
-        await db
-          .delete(properties)
-          .where(eq(properties.userId, userId));
+        await db.delete(properties).where(eq(properties.userId, userId));
 
         // Finally, delete the user
-        await db
-          .delete(users)
-          .where(eq(users.id, userId));
+        await db.delete(users).where(eq(users.id, userId));
 
         res.json({ message: "User deleted successfully" });
       } catch (error) {
-        console.error('Error deleting user:', error);
-        res.status(500).json({ error: "Failed to delete user and associated data" });
+        console.error("Error deleting user:", error);
+        res
+          .status(500)
+          .json({ error: "Failed to delete user and associated data" });
       }
     } catch (error) {
-      console.error('User deletion error:', error);
+      console.error("User deletion error:", error);
       res.status(500).json({ error: "Failed to delete user" });
     }
   });
@@ -337,10 +349,10 @@ export function registerRoutes(app: Express): Server {
           freeUsers: sql`sum(case when ${users.subscriptionStatus} = 'free' then 1 else 0 end)`,
           corporateUsers: sql`sum(case when ${users.userType} = 'corporate' then 1 else 0 end)`,
           individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`,
-          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`
+          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`,
         })
         .from(users)
-        .then(rows => rows[0]);
+        .then((rows) => rows[0]);
 
       // Get API usage for current month (keeping this as it was)
       const startOfMonth = new Date();
@@ -349,32 +361,32 @@ export function registerRoutes(app: Express): Server {
 
       const apiStats = await db
         .select({
-          monthlyApiCalls: sql`count(*)`
+          monthlyApiCalls: sql`count(*)`,
         })
         .from(apiUsage)
         .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
-        .then(rows => rows[0]);
+        .then((rows) => rows[0]);
 
       // Separate query for reports, now counting both total and monthly reports directly from propertyAnalyzerResults
       const reportStats = await db
         .select({
           monthlyReportsGenerated: sql`count(*) filter (where ${propertyAnalyzerResults.createdAt} >= ${startOfMonth})`,
-          totalReportsGenerated: sql`count(*)`
+          totalReportsGenerated: sql`count(*)`,
         })
         .from(propertyAnalyzerResults)
-        .then(rows => rows[0]);
+        .then((rows) => rows[0]);
 
       res.json({
         ...userStats,
         monthlyApiCalls: apiStats.monthlyApiCalls,
         monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
-        totalReportsGenerated: reportStats.totalReportsGenerated || 0
+        totalReportsGenerated: reportStats.totalReportsGenerated || 0,
       });
     } catch (error) {
-      console.error('Error fetching admin stats:', error);
+      console.error("Error fetching admin stats:", error);
       res.status(500).json({
         error: "Failed to fetch admin statistics",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -388,7 +400,9 @@ export function registerRoutes(app: Express): Server {
     const { address, bedrooms } = req.query;
 
     if (!address || !bedrooms) {
-      return res.status(400).json({ error: "Address and bedrooms are required" });
+      return res
+        .status(400)
+        .json({ error: "Address and bedrooms are required" });
     }
 
     const startTime = Date.now();
@@ -404,18 +418,19 @@ export function registerRoutes(app: Express): Server {
 
       const now = new Date();
       const lastReset = currentUser.pricelabsApiLastReset;
-      const shouldResetMonthly = !lastReset ||
+      const shouldResetMonthly =
+        !lastReset ||
         lastReset.getMonth() !== now.getMonth() ||
         lastReset.getFullYear() !== now.getFullYear();
 
       // Reset monthly counter if needed
       if (shouldResetMonthly) {
-        console.log('Resetting monthly API counter for user:', req.user!.id);
+        console.log("Resetting monthly API counter for user:", req.user!.id);
         await db
           .update(users)
           .set({
             pricelabsApiCallsMonth: 0,
-            pricelabsApiLastReset: now
+            pricelabsApiLastReset: now,
           })
           .where(eq(users.id, req.user!.id));
       }
@@ -424,9 +439,9 @@ export function registerRoutes(app: Express): Server {
         `https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(String(address))}&currency=ZAR&bedroom_category=${bedrooms}`,
         {
           headers: {
-            'X-API-Key': 'sNYmBNptl4gcLSlDl5GXuUtkGVVGIxiMcUjQI1MV'
-          }
-        }
+            "X-API-Key": "sNYmBNptl4gcLSlDl5GXuUtkGVVGIxiMcUjQI1MV",
+          },
+        },
       );
 
       if (!response.ok) {
@@ -437,38 +452,38 @@ export function registerRoutes(app: Express): Server {
       success = true;
 
       // Increment API usage counters
-      console.log('Incrementing API counters for user:', req.user!.id);
+      console.log("Incrementing API counters for user:", req.user!.id);
       await db
         .update(users)
         .set({
           pricelabsApiCallsTotal: sql`COALESCE(${users.pricelabsApiCallsTotal}, 0) + 1`,
-          pricelabsApiCallsMonth: sql`COALESCE(${users.pricelabsApiCallsMonth}, 0) + 1`
+          pricelabsApiCallsMonth: sql`COALESCE(${users.pricelabsApiCallsMonth}, 0) + 1`,
         })
         .where(eq(users.id, req.user!.id))
         .returning()
         .then(([updated]) => {
-          console.log('Updated counters:', {
+          console.log("Updated counters:", {
             total: updated.pricelabsApiCallsTotal,
-            monthly: updated.pricelabsApiCallsMonth
+            monthly: updated.pricelabsApiCallsMonth,
           });
         });
 
       res.json(data);
     } catch (error) {
-      console.error('Error fetching from PriceLabs:', error);
+      console.error("Error fetching from PriceLabs:", error);
       res.status(500).json({ error: "Failed to fetch revenue data" });
     } finally {
       // Track API usage in the general tracking table
       try {
         await db.insert(apiUsage).values({
           userId: req.user!.id,
-          endpoint: '/api/revenue-data',
+          endpoint: "/api/revenue-data",
           responseTime: Date.now() - startTime,
           success,
-          timestamp: new Date()
+          timestamp: new Date(),
         });
       } catch (error) {
-        console.error('Error logging API usage:', error);
+        console.error("Error logging API usage:", error);
       }
     }
   });
@@ -480,10 +495,13 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      const property = await db.insert(properties).values({
-        ...req.body,
-        userId: req.user!.id,
-      }).returning();
+      const property = await db
+        .insert(properties)
+        .values({
+          ...req.body,
+          userId: req.user!.id,
+        })
+        .returning();
       res.json(property[0]);
     } catch (error) {
       res.status(400).json({ error: "Invalid property data" });
@@ -497,7 +515,7 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      console.log('Fetching properties for user:', req.user.id);
+      console.log("Fetching properties for user:", req.user.id);
 
       const userProperties = await db
         .select()
@@ -507,14 +525,13 @@ export function registerRoutes(app: Express): Server {
 
       res.json(userProperties);
     } catch (error) {
-      console.error('Error fetching properties:', error);
+      console.error("Error fetching properties:", error);
       res.status(500).json({
         error: "Failed to fetch properties",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
-
 
   app.delete("/api/properties/:id", async (req, res) => {
     if (!req.isAuthenticated()) {
@@ -542,13 +559,11 @@ export function registerRoutes(app: Express): Server {
       }
 
       // Delete the property
-      await db
-        .delete(properties)
-        .where(eq(properties.id, propertyId));
+      await db.delete(properties).where(eq(properties.id, propertyId));
 
       res.json({ message: "Property deleted successfully" });
     } catch (error) {
-      console.error('Error deleting property:', error);
+      console.error("Error deleting property:", error);
       res.status(500).json({ error: "Failed to delete property" });
     }
   });
@@ -559,10 +574,13 @@ export function registerRoutes(app: Express): Server {
     const { user_id, subscription_status } = req.body;
 
     try {
-      await db.update(users)
+      await db
+        .update(users)
         .set({
           subscriptionStatus: subscription_status,
-          subscriptionExpiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          subscriptionExpiryDate: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000,
+          ),
         })
         .where(eq(users.id, user_id));
 
@@ -582,31 +600,32 @@ export function registerRoutes(app: Express): Server {
 
     try {
       // Validate the logo data if present
-      if (companyLogo && !companyLogo.startsWith('data:image')) {
+      if (companyLogo && !companyLogo.startsWith("data:image")) {
         return res.status(400).json({ error: "Invalid logo format" });
       }
 
-      const [updatedUser] = await db.update(users)
+      const [updatedUser] = await db
+        .update(users)
         .set({
           firstName,
           lastName,
           companyLogo,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(users.id, req.user!.id))
         .returning();
 
-      console.log('Profile updated successfully:', {
+      console.log("Profile updated successfully:", {
         userId: updatedUser.id,
-        hasLogo: !!updatedUser.companyLogo
+        hasLogo: !!updatedUser.companyLogo,
       });
 
       res.json(updatedUser);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
       res.status(500).json({
         error: "Failed to update profile",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -621,7 +640,8 @@ export function registerRoutes(app: Express): Server {
 
     try {
       // Verify current password
-      const [user] = await db.select()
+      const [user] = await db
+        .select()
         .from(users)
         .where(eq(users.id, req.user!.id))
         .limit(1);
@@ -633,7 +653,8 @@ export function registerRoutes(app: Express): Server {
 
       // Hash new password and update
       const hashedPassword = await crypto.hash(newPassword);
-      await db.update(users)
+      await db
+        .update(users)
         .set({ password: hashedPassword })
         .where(eq(users.id, req.user!.id));
 
@@ -655,45 +676,64 @@ export function registerRoutes(app: Express): Server {
 
       const propertyData = {
         purchasePrice: parseFloat(req.body.purchasePrice),
-        shortTermNightlyRate: req.body.shortTermNightlyRate ? parseFloat(req.body.shortTermNightlyRate) : null,
-        annualOccupancy: req.body.annualOccupancy ? parseFloat(req.body.annualOccupancy) : null,
-        longTermRental: req.body.longTermRental ? parseFloat(req.body.longTermRental) : null,
-        leaseCycleGap: req.body.leaseCycleGap ? parseInt(req.body.leaseCycleGap) : null,
+        shortTermNightlyRate: req.body.shortTermNightlyRate
+          ? parseFloat(req.body.shortTermNightlyRate)
+          : null,
+        annualOccupancy: req.body.annualOccupancy
+          ? parseFloat(req.body.annualOccupancy)
+          : null,
+        longTermRental: req.body.longTermRental
+          ? parseFloat(req.body.longTermRental)
+          : null,
+        leaseCycleGap: req.body.leaseCycleGap
+          ? parseInt(req.body.leaseCycleGap)
+          : null,
         propertyDescription: req.body.propertyDescription || null,
         address: req.body.address,
-        deposit: req.body.depositType === 'amount'
-          ? parseFloat(req.body.deposit)
-          : (parseFloat(req.body.purchasePrice) * parseFloat(req.body.depositPercentage)) / 100,
+        deposit:
+          req.body.depositType === "amount"
+            ? parseFloat(req.body.deposit)
+            : (parseFloat(req.body.purchasePrice) *
+                parseFloat(req.body.depositPercentage)) /
+              100,
         interestRate: parseFloat(req.body.interestRate),
         loanTerm: parseInt(req.body.loanTerm),
         floorArea: parseFloat(req.body.floorArea),
-        ratePerSquareMeter: parseFloat(req.body.ratePerSquareMeter || req.body.cmaRatePerSqm || 0),
+        ratePerSquareMeter: parseFloat(
+          req.body.ratePerSquareMeter || req.body.cmaRatePerSqm || 0,
+        ),
         incomeGrowthRate: parseFloat(req.body.annualIncomeGrowth || 8),
         expenseGrowthRate: parseFloat(req.body.annualExpenseGrowth || 6),
         monthlyLevies: parseFloat(req.body.monthlyLevies || 0),
         monthlyRatesTaxes: parseFloat(req.body.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: parseFloat(req.body.otherMonthlyExpenses || 0),
         maintenancePercent: parseFloat(req.body.maintenancePercent || 0),
-        managementFee: parseFloat(req.body.managementFee || 0)
+        managementFee: parseFloat(req.body.managementFee || 0),
       };
 
       console.log("\n=== Starting Property Analysis ===");
       console.log("Raw Input Data:", JSON.stringify(propertyData, null, 2));
 
       const analysisResult = calculateYields(propertyData);
-      console.log("Analysis complete. Result:", JSON.stringify(analysisResult, null, 2));
+      console.log(
+        "Analysis complete. Result:",
+        JSON.stringify(analysisResult, null, 2),
+      );
 
       res.json(analysisResult);
     } catch (error) {
       console.error("=== Analysis Error ===");
       console.error("Error details:", error);
 
-      const errorMessage = error instanceof Error ? error.message : "Failed to analyze property data";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to analyze property data";
       console.error("Sending error response:", { error: errorMessage });
 
       res.status(500).json({
         error: errorMessage,
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -720,12 +760,16 @@ export function registerRoutes(app: Express): Server {
       // Otherwise, use their subscription start date
       const currentDate = new Date();
       const subscriptionStartDate = user.subscriptionStartDate || currentDate;
-      const monthsSinceStart = (currentDate.getTime() - subscriptionStartDate.getTime()) / (30 * 24 * 60 * 60 * 1000);
+      const monthsSinceStart =
+        (currentDate.getTime() - subscriptionStartDate.getTime()) /
+        (30 * 24 * 60 * 60 * 1000);
       const completedMonths = Math.floor(monthsSinceStart);
 
       // Calculate the next billing cycle end date
       const nextBillingDate = new Date(subscriptionStartDate);
-      nextBillingDate.setMonth(nextBillingDate.getMonth() + completedMonths + 1);
+      nextBillingDate.setMonth(
+        nextBillingDate.getMonth() + completedMonths + 1,
+      );
 
       // Update user to indicate pending downgrade
       const [updatedUser] = await db
@@ -733,27 +777,27 @@ export function registerRoutes(app: Express): Server {
         .set({
           pendingDowngrade: true,
           subscriptionExpiryDate: nextBillingDate,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(users.id, req.user!.id))
         .returning();
 
-      console.log('Subscription downgrade scheduled:', {
+      console.log("Subscription downgrade scheduled:", {
         userId: updatedUser.id,
         currentStatus: updatedUser.subscriptionStatus,
         expiryDate: updatedUser.subscriptionExpiryDate,
-        pendingDowngrade: updatedUser.pendingDowngrade
+        pendingDowngrade: updatedUser.pendingDowngrade,
       });
 
       res.json({
         message: "Subscription downgrade scheduled",
-        expiryDate: nextBillingDate
+        expiryDate: nextBillingDate,
       });
     } catch (error) {
-      console.error('Error scheduling subscription downgrade:', error);
+      console.error("Error scheduling subscription downgrade:", error);
       res.status(500).json({
         error: "Failed to schedule subscription downgrade",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -781,26 +825,26 @@ export function registerRoutes(app: Express): Server {
         .set({
           pendingDowngrade: false,
           subscriptionExpiryDate: null,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(users.id, req.user!.id))
         .returning();
 
-      console.log('Subscription downgrade cancelled:', {
+      console.log("Subscription downgrade cancelled:", {
         userId: updatedUser.id,
         currentStatus: updatedUser.subscriptionStatus,
-        pendingDowngrade: updatedUser.pendingDowngrade
+        pendingDowngrade: updatedUser.pendingDowngrade,
       });
 
       res.json({
         message: "Subscription downgrade cancelled",
-        user: updatedUser
+        user: updatedUser,
       });
     } catch (error) {
-      console.error('Error cancelling subscription downgrade:', error);
+      console.error("Error cancelling subscription downgrade:", error);
       res.status(500).json({
         error: "Failed to cancel subscription downgrade",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -812,8 +856,8 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      console.log('Saving property analysis for user:', req.user.id);
-      console.log('Analysis data:', JSON.stringify(req.body, null, 2));
+      console.log("Saving property analysis for user:", req.user.id);
+      console.log("Analysis data:", JSON.stringify(req.body, null, 2));
 
       // Start a transaction to ensure both operations complete
       await db.transaction(async (tx) => {
@@ -823,7 +867,7 @@ export function registerRoutes(app: Express): Server {
           .values({
             ...req.body,
             userId: req.user!.id,
-            createdAt: new Date()
+            createdAt: new Date(),
           })
           .returning();
 
@@ -831,17 +875,17 @@ export function registerRoutes(app: Express): Server {
         await tx
           .update(users)
           .set({
-            reportsGenerated: sql`${users.reportsGenerated} + 1`
+            reportsGenerated: sql`${users.reportsGenerated} + 1`,
           })
           .where(eq(users.id, req.user!.id));
 
         res.json(savedAnalysis);
       });
     } catch (error) {
-      console.error('Error saving property analysis:', error);
+      console.error("Error saving property analysis:", error);
       res.status(500).json({
         error: "Failed to save property analysis",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -853,7 +897,7 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      console.log('Fetching property analyzer results for user:', req.user.id);
+      console.log("Fetching property analyzer results for user:", req.user.id);
 
       const results = await db
         .select()
@@ -863,10 +907,10 @@ export function registerRoutes(app: Express): Server {
 
       res.json(results);
     } catch (error) {
-      console.error('Error fetching property analyzer results:', error);
+      console.error("Error fetching property analyzer results:", error);
       res.status(500).json({
         error: "Failed to fetch property analyzer results",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -905,10 +949,10 @@ export function registerRoutes(app: Express): Server {
 
       res.json({ message: "Property deleted successfully" });
     } catch (error) {
-      console.error('Error deleting property:', error);
+      console.error("Error deleting property:", error);
       res.status(500).json({
         error: "Failed to delete property",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -927,11 +971,12 @@ export function registerRoutes(app: Express): Server {
 
     try {
       const analysis = await analyzeSuburb(suburb);
-      res.json(analysis);    } catch (error) {
-      console.error('Error analyzing suburb:', error);
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error analyzing suburb:", error);
       res.status(500).json({
         error: "Failed to analyze suburb",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -940,7 +985,7 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/suburbs/search", async (req, res) => {
     const { query } = req.query;
 
-    if (!query || typeof query !== 'string') {
+    if (!query || typeof query !== "string") {
       return res.status(400).json({ error: "Search query is required" });
     }
 
@@ -959,10 +1004,10 @@ export function registerRoutes(app: Express): Server {
 
       res.json(matchingSuburbs);
     } catch (error) {
-      console.error('Error searching suburbs:', error);
+      console.error("Error searching suburbs:", error);
       res.status(500).json({
         error: "Failed to search suburbs",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -983,10 +1028,10 @@ export function registerRoutes(app: Express): Server {
           freeUsers: sql`sum(case when ${users.subscriptionStatus} = 'free' then 1 else 0 end)`,
           corporateUsers: sql`sum(case when ${users.userType} = 'corporate' then 1 else 0 end)`,
           individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`,
-          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`
+          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`,
         })
         .from(users)
-        .then(rows => rows[0]);
+        .then((rows) => rows[0]);
 
       // Get API usage for current month
       const startOfMonth = new Date();
@@ -995,20 +1040,20 @@ export function registerRoutes(app: Express): Server {
 
       const apiStats = await db
         .select({
-          monthlyApiCalls: sql`count(*)`
+          monthlyApiCalls: sql`count(*)`,
         })
         .from(apiUsage)
         .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
-        .then(rows => rows[0]);
+        .then((rows) => rows[0]);
 
       // Get reports generated
       const reportStats = await db
         .select({
           monthlyReportsGenerated: sql`count(*) filter (where ${propertyAnalyzerResults.createdAt} >= ${startOfMonth})`,
-          totalReportsGenerated: sql`count(*)`
+          totalReportsGenerated: sql`count(*)`,
         })
         .from(propertyAnalyzerResults)
-        .then(rows => rows[0]);
+        .then((rows) => rows[0]);
 
       // Get daily analytics data for the last 30 days
       const thirtyDaysAgo = new Date();
@@ -1018,7 +1063,7 @@ export function registerRoutes(app: Express): Server {
         .select({
           date: sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})::date`,
           analyses: sql`count(*)::integer`,
-          properties: sql`count(distinct ${propertyAnalyzerResults.propertyId})::integer`
+          properties: sql`count(distinct ${propertyAnalyzerResults.propertyId})::integer`,
         })
         .from(propertyAnalyzerResults)
         .where(sql`${propertyAnalyzerResults.createdAt} >= ${thirtyDaysAgo}`)
@@ -1030,13 +1075,13 @@ export function registerRoutes(app: Express): Server {
         monthlyApiCalls: apiStats.monthlyApiCalls,
         monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
         totalReportsGenerated: reportStats.totalReportsGenerated || 0,
-        dailyAnalytics
+        dailyAnalytics,
       });
     } catch (error) {
-      console.error('Error fetching analytics:', error);
+      console.error("Error fetching analytics:", error);
       res.status(500).json({
         error: "Failed to fetch analytics",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -1050,22 +1095,20 @@ export function registerRoutes(app: Express): Server {
     const now = new Date();
     let startDate = new Date();
 
-    // Calculate start date based on period
     switch (period) {
-      case '7days':
+      case "7days":
         startDate.setDate(now.getDate() - 7);
         break;
-      case '30days':
+      case "30days":
         startDate.setDate(now.getDate() - 30);
         break;
-      case '90days':
+      case "90days":
         startDate.setDate(now.getDate() - 90);
         break;
-      case '1year':
+      case "1year":
         startDate.setFullYear(now.getFullYear() - 1);
         break;
       default:
-        // For 'all' or invalid periods, get all data
         startDate = new Date(0);
     }
 
@@ -1073,7 +1116,7 @@ export function registerRoutes(app: Express): Server {
       const signupData = await db
         .select({
           date: sql`date_trunc('day', ${users.createdAt})::date`,
-          count: sql`count(*)::integer`
+          count: sql`count(*)::integer`,
         })
         .from(users)
         .where(sql`${users.createdAt} >= ${startDate}`)
@@ -1082,10 +1125,10 @@ export function registerRoutes(app: Express): Server {
 
       res.json(signupData);
     } catch (error) {
-      console.error('Error fetching signup analytics:', error);
+      console.error("Error fetching signup analytics:", error);
       res.status(500).json({
         error: "Failed to fetch signup analytics",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -1101,16 +1144,16 @@ export function registerRoutes(app: Express): Server {
 
     // Calculate start date based on period
     switch (period) {
-      case '7days':
+      case "7days":
         startDate.setDate(now.getDate() - 7);
         break;
-      case '30days':
+      case "30days":
         startDate.setDate(now.getDate() - 30);
         break;
-      case '90days':
+      case "90days":
         startDate.setDate(now.getDate() - 90);
         break;
-      case '1year':
+      case "1year":
         startDate.setFullYear(now.getFullYear() - 1);
         break;
       default:
@@ -1122,7 +1165,7 @@ export function registerRoutes(app: Express): Server {
       const reportData = await db
         .select({
           date: sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})::date`,
-          count: sql`count(*)::integer`
+          count: sql`count(*)::integer`,
         })
         .from(propertyAnalyzerResults)
         .where(sql`${propertyAnalyzerResults.createdAt} >= ${startDate}`)
@@ -1131,10 +1174,10 @@ export function registerRoutes(app: Express): Server {
 
       res.json(reportData);
     } catch (error) {
-      console.error('Error fetching report analytics:', error);
+      console.error("Error fetching report analytics:", error);
       res.status(500).json({
         error: "Failed to fetch report analytics",
-        details: error instanceof Error ? error.message : undefined
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
