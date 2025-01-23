@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Loader2 } from "lucide-react";
@@ -21,10 +23,31 @@ interface AnalyticsData {
   }[];
 }
 
+interface SignupData {
+  date: string;
+  count: number;
+}
+
+const timePeriods = [
+  { value: "all", label: "All Time" },
+  { value: "1year", label: "1 Year" },
+  { value: "90days", label: "90 Days" },
+  { value: "30days", label: "30 Days" },
+  { value: "7days", label: "7 Days" },
+];
+
 export default function AnalyticsPage() {
-  const { data: analytics, isLoading } = useQuery<AnalyticsData>({
+  const [selectedPeriod, setSelectedPeriod] = useState("30days");
+
+  const { data: analytics, isLoading: analyticsLoading } = useQuery<AnalyticsData>({
     queryKey: ['/api/analytics'],
   });
+
+  const { data: signupData, isLoading: signupLoading } = useQuery<SignupData[]>({
+    queryKey: ['/api/analytics/signups', { period: selectedPeriod }],
+  });
+
+  const isLoading = analyticsLoading || signupLoading;
 
   if (isLoading) {
     return (
@@ -137,6 +160,59 @@ export default function AnalyticsPage() {
           </div>
         </CardContent>
       </Card>
+
+
+      {/* Signup Chart */}
+      <div className="mt-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-[#262626]">User Signups</h1>
+          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select period" />
+            </SelectTrigger>
+            <SelectContent>
+              {timePeriods.map(period => (
+                <SelectItem key={period.value} value={period.value}>
+                  {period.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Signup Trend</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[400px] mt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={signupData}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                  />
+                  <YAxis />
+                  <Tooltip
+                    labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                    formatter={(value) => [value, "Signups"]}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke="#1BA3FF"
+                    name="Signups"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

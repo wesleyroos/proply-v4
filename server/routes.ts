@@ -1040,6 +1040,55 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
+  // Add this new endpoint after the existing admin endpoints
+  app.get("/api/analytics/signups", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    const { period } = req.query;
+    const now = new Date();
+    let startDate = new Date();
+
+    // Calculate start date based on period
+    switch (period) {
+      case '7days':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case '30days':
+        startDate.setDate(now.getDate() - 30);
+        break;
+      case '90days':
+        startDate.setDate(now.getDate() - 90);
+        break;
+      case '1year':
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+      default:
+        // For 'all' or invalid periods, get all data
+        startDate = new Date(0);
+    }
+
+    try {
+      const signupData = await db
+        .select({
+          date: sql`date_trunc('day', ${users.createdAt})::date`,
+          count: sql`count(*)::integer`
+        })
+        .from(users)
+        .where(sql`${users.createdAt} >= ${startDate}`)
+        .groupBy(sql`date_trunc('day', ${users.createdAt})`)
+        .orderBy(sql`date_trunc('day', ${users.createdAt})`);
+
+      res.json(signupData);
+    } catch (error) {
+      console.error('Error fetching signup analytics:', error);
+      res.status(500).json({
+        error: "Failed to fetch signup analytics",
+        details: error instanceof Error ? error.message : undefined
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
