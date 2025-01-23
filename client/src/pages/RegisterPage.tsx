@@ -42,7 +42,7 @@ export default function RegisterPage() {
   const [, setLocation] = useLocation();
   const [searchParams] = useState(new URLSearchParams(window.location.search));
   const [selectedPlan, setSelectedPlan] = useState(searchParams.get('plan') || 'free');
-  const toast = useToast();
+  const { toast } = useToast();
 
   const form = useForm<ProfileFormData>({
     defaultValues: {

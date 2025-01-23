@@ -21,7 +21,6 @@ export default function PaymentForm({ registrationData = null }) {
   }
 
   const onSubmit = (data: PaymentFormData) => {
-    // Get PayFast merchant credentials
     const merchantId = import.meta.env.VITE_PAYFAST_MERCHANT_ID;
     const merchantKey = import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
 
@@ -42,13 +41,13 @@ export default function PaymentForm({ registrationData = null }) {
       notify_url: `${window.location.origin}/api/payment-webhook`,
       name_first: data.name,
       email_address: data.email,
-      amount: "2000.00", // R2,000 as shown in pricing
+      amount: "2000.00",
       item_name: "Proply Pro Subscription",
-      subscription_type: "1", // Monthly subscription
-      billing_date: new Date().toISOString().split('T')[0], // Today
+      subscription_type: "1",
+      billing_date: new Date().toISOString().split('T')[0],
       recurring_amount: "2000.00",
-      frequency: "3", // Monthly
-      cycles: "0", // Unlimited cycles
+      frequency: "3",
+      cycles: "0",
       custom_str1: registrationData 
         ? JSON.stringify({
             ...registrationData,
@@ -60,7 +59,6 @@ export default function PaymentForm({ registrationData = null }) {
           }),
     };
 
-    // Create form and submit to PayFast
     const form = document.createElement("form");
     form.method = "POST";
     form.action = "https://www.payfast.co.za/eng/process";
