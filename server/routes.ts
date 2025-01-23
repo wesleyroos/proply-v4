@@ -1049,7 +1049,6 @@ export function registerRoutes(app: Express): Server {
     const { period } = req.query;
     const now = new Date();
     let startDate = new Date();
-
     // Calculate start date based on period
     switch (period) {
       case '7days':
@@ -1068,19 +1067,16 @@ export function registerRoutes(app: Express): Server {
         // For 'all' or invalid periods, get all data
         startDate = new Date(0);
     }
-
     try {
-      // Simple query to count users grouped by creation date
       const signupData = await db
         .select({
-          date: sql<string>`DATE(${users.createdAt})`,
-          count: sql<number>`COUNT(*)`
+          date: sql`DATE(${users.createdAt})::text`,
+          count: sql`COUNT(*)::integer`
         })
         .from(users)
         .where(sql`${users.createdAt} >= ${startDate}`)
         .groupBy(sql`DATE(${users.createdAt})`)
         .orderBy(sql`DATE(${users.createdAt})`);
-
       res.json(signupData);
     } catch (error) {
       console.error('Error fetching signup analytics:', error);
