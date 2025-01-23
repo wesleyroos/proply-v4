@@ -110,20 +110,10 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Get report types and counts - Fixed SQL syntax
-      const reports = await db
-        .select({
-          type: propertyAnalyzerResults.reportType,
-          count: sql<number>`count(*)::integer`
-        })
-        .from(propertyAnalyzerResults)
-        .where(sql`${propertyAnalyzerResults.createdAt} >= ${startDate}`)
-        .groupBy(propertyAnalyzerResults.reportType);
-
       // Get user activity data with daily report generation
       const userActivity = await db
         .select({
-          timestamp: sql<string>`date_trunc('day', ${propertyAnalyzerResults.createdAt})`,
+          timestamp: sql<string>`date_trunc('day', ${propertyAnalyzerResults.createdAt})::text`,
           activeUsers: sql<number>`count(distinct ${propertyAnalyzerResults.userId})::integer`,
           reportsGenerated: sql<number>`count(*)::integer`
         })
@@ -132,9 +122,27 @@ export function registerRoutes(app: Express): Server {
         .groupBy(sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})`)
         .orderBy(sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})`);
 
+      // Get report types and counts
+      const reports = await db
+        .select({
+          type: sql<string>`CASE 
+            WHEN ${propertyAnalyzerResults.title} LIKE '%Short Term%' THEN 'Short Term'
+            WHEN ${propertyAnalyzerResults.title} LIKE '%Long Term%' THEN 'Long Term'
+            ELSE 'Standard'
+          END`,
+          count: sql<number>`count(*)::integer`
+        })
+        .from(propertyAnalyzerResults)
+        .where(sql`${propertyAnalyzerResults.createdAt} >= ${startDate}`)
+        .groupBy(sql`CASE 
+          WHEN ${propertyAnalyzerResults.title} LIKE '%Short Term%' THEN 'Short Term'
+          WHEN ${propertyAnalyzerResults.title} LIKE '%Long Term%' THEN 'Long Term'
+          ELSE 'Standard'
+        END`);
+
       res.json({
-        reports,
-        userActivity
+        reports: reports || [],
+        userActivity: userActivity || []
       });
     } catch (error) {
       console.error('Error fetching report analytics:', error);
