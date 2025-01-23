@@ -68,10 +68,12 @@ export default function RegisterPage() {
     const merchantKey = import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
 
     if (!merchantId || !merchantKey) {
+      console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
       toast({
-        title: "Error",
-        description: "Payment configuration is missing. Please try again later.",
-        variant: "destructive"
+        variant: "destructive",
+        title: "Payment Setup Error",
+        description: "Unable to process payment at this time. Please try again later or contact support.",
+        duration: 5000,
       });
       return;
     }
@@ -104,22 +106,27 @@ export default function RegisterPage() {
       cycles: "0"
     };
 
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = "https://www.payfast.co.za/eng/process";
+    try {
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "https://www.payfast.co.za/eng/process";
 
-    Object.entries(paymentData).forEach(([key, value]) => {
-      if (value !== undefined) {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = value.toString();
-        form.appendChild(input);
-      }
-    });
+      Object.entries(paymentData).forEach(([key, value]) => {
+        if (value !== undefined) {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = value.toString();
+          form.appendChild(input);
+        }
+      });
 
-    document.body.appendChild(form);
-    form.submit();
+      document.body.appendChild(form);
+      form.submit();
+    } catch (error) {
+      console.error('Error submitting payment form:', error);
+      setError(error instanceof Error ? error.message : "Failed to initiate payment");
+    }
   };
 
   const handleRegister = async (data: ProfileFormData) => {

@@ -156,12 +156,24 @@ export default function SettingsPage() {
     const merchantKey = import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
 
     if (!merchantId || !merchantKey) {
-      console.error("Payment configuration is missing. Please try again later.");
+      console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
+      toast({
+        variant: "destructive",
+        title: "Payment Setup Error",
+        description: "Unable to process payment at this time. Please try again later or contact support.",
+        duration: 5000,
+      });
       return;
     }
 
     if (!user) {
-      console.error("Please log in to upgrade your account.");
+      console.error("User session not found");
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "Please log in to upgrade your account.",
+        duration: 5000,
+      });
       return;
     }
 
@@ -199,23 +211,33 @@ export default function SettingsPage() {
       cycles: "0"
     };
 
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = "https://www.payfast.co.za/eng/process";
+    try {
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "https://www.payfast.co.za/eng/process";
 
-    Object.entries(paymentData).forEach(([key, value]) => {
-      if (value !== undefined) {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = value.toString();
-        form.appendChild(input);
-      }
-    });
+      Object.entries(paymentData).forEach(([key, value]) => {
+        if (value !== undefined) {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = value.toString();
+          form.appendChild(input);
+        }
+      });
 
-    document.body.appendChild(form);
-    console.log('Submitting upgrade payment form to PayFast...');
-    form.submit();
+      document.body.appendChild(form);
+      console.log('Submitting upgrade payment form to PayFast...');
+      form.submit();
+    } catch (error) {
+      console.error('Error submitting payment form:', error);
+      toast({
+        variant: "destructive",
+        title: "Payment Error",
+        description: "Failed to initiate payment. Please try again.",
+        duration: 5000,
+      });
+    }
   };
 
   return (
