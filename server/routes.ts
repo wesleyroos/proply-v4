@@ -1070,15 +1070,16 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
+      // Simple query to count users grouped by date
       const signupData = await db
         .select({
-          date: sql`date_trunc('day', ${users.createdAt})::date`,
-          count: sql`count(*)::integer`
+          date: sql<string>`DATE(${users.registeredAt})`,
+          count: sql<number>`COUNT(*)`
         })
         .from(users)
-        .where(sql`${users.createdAt} >= ${startDate}`)
-        .groupBy(sql`date_trunc('day', ${users.createdAt})`)
-        .orderBy(sql`date_trunc('day', ${users.createdAt})`);
+        .where(sql`${users.registeredAt} >= ${startDate}`)
+        .groupBy(sql`DATE(${users.registeredAt})`)
+        .orderBy(sql`DATE(${users.registeredAt})`);
 
       res.json(signupData);
     } catch (error) {
@@ -1089,6 +1090,7 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
+
   // Add new endpoint after the existing signup analytics endpoint
   app.get("/api/analytics/reports", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
