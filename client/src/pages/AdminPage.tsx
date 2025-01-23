@@ -102,7 +102,7 @@ export default function AdminPage() {
     enabled: !!user?.isAdmin,
   });
 
-  const { data: stats, isLoading: statsLoading } = useQuery<UserStats>({
+  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery<UserStats>({
     queryKey: ["/api/admin/stats"],
     enabled: !!user?.isAdmin,
   });
@@ -333,14 +333,17 @@ export default function AdminPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => refetchUsers()}
+                onClick={() => {
+                  // Refetch both queries concurrently
+                  Promise.all([refetchUsers(), refetchStats()]);
+                }}
                 className={cn(
                   "transition-transform",
-                  usersLoading && "animate-spin"
+                  (usersLoading || statsLoading) && "animate-spin"
                 )}
               >
                 <RefreshCcw className="h-4 w-4" />
-                <span className="sr-only">Refresh users</span>
+                <span className="sr-only">Refresh data</span>
               </Button>
             </div>
           </div>
