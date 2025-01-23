@@ -29,9 +29,9 @@ export const users = pgTable("users", {
   subscriptionExpiryDate: timestamp("subscription_expiry_date"),
   subscriptionStartDate: timestamp("subscription_start_date"),
   pendingDowngrade: boolean("pending_downgrade").default(false),
-  // New fields for PayFast integration
+  // PayFast integration fields
   payfastToken: text("payfast_token"),
-  payfastSubscriptionStatus: text("payfast_subscription_status"),
+  payfastSubscriptionStatus: text("payfast_subscription_status").default("none"),
   subscriptionPausedUntil: timestamp("subscription_paused_until"),
   isAdmin: boolean("is_admin").default(false).notNull(),
   accessCodeId: integer("access_code_id"),
@@ -39,7 +39,7 @@ export const users = pgTable("users", {
   reportsGenerated: integer("reports_generated").default(0).notNull(),
   pricelabsApiCallsTotal: integer("pricelabs_api_calls_total").default(0),
   pricelabsApiCallsMonth: integer("pricelabs_api_calls_month").default(0),
-  pricelabsApiLastReset: timestamp("pricelabs_api_last_reset")
+  pricelabsApiLastReset: timestamp("pricelabs_api_last_reset"),
 });
 
 export const properties = pgTable("properties", {
