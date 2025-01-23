@@ -120,17 +120,17 @@ export function registerRoutes(app: Express): Server {
         .where(sql`${propertyAnalyzerResults.createdAt} >= ${startDate}`)
         .groupBy(propertyAnalyzerResults.reportType);
 
-      // Get user activity data
+      // Get user activity data with daily report generation
       const userActivity = await db
         .select({
-          timestamp: propertyAnalyzerResults.createdAt,
+          timestamp: sql<string>`date_trunc('day', ${propertyAnalyzerResults.createdAt})`,
           activeUsers: sql<number>`count(distinct ${propertyAnalyzerResults.userId})::integer`,
           reportsGenerated: sql<number>`count(*)::integer`
         })
         .from(propertyAnalyzerResults)
         .where(sql`${propertyAnalyzerResults.createdAt} >= ${startDate}`)
-        .groupBy(propertyAnalyzerResults.createdAt)
-        .orderBy(propertyAnalyzerResults.createdAt);
+        .groupBy(sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})`)
+        .orderBy(sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})`);
 
       res.json({
         reports,
@@ -917,7 +917,7 @@ export function registerRoutes(app: Express): Server {
 
   // Property analyzer save endpoint
   app.post("/api/property-analyzer/save", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user?.id) {
+    if (!req.isAuthenticated() ||!req.user?.id) {
       return res.status(401).send("Not authenticated");
     }
 
