@@ -173,6 +173,7 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
+      // Modified query to get reports count directly from propertyAnalyzerResults
       const allUsers = await db
         .select({
           id: users.id,
@@ -189,10 +190,15 @@ export function registerRoutes(app: Express): Server {
           accessCodeUsedAt: accessCodes.usedAt,
           pricelabsApiCallsTotal: users.pricelabsApiCallsTotal,
           pricelabsApiCallsMonth: users.pricelabsApiCallsMonth,
-          reportsGenerated: users.reportsGenerated
+          reportsGenerated: sql`(
+            SELECT COUNT(*)::integer 
+            FROM ${propertyAnalyzerResults} 
+            WHERE ${propertyAnalyzerResults.userId} = ${users.id}
+          )`
         })
         .from(users)
         .leftJoin(accessCodes, eq(users.accessCodeId, accessCodes.id));
+
       res.json(allUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
