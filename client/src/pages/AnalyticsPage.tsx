@@ -39,7 +39,16 @@ export default function AnalyticsPage() {
     }
   });
 
-  if (signupsLoading || reportsLoading) {
+  const { data: apiData, isLoading: apiLoading } = useQuery<ChartData[]>({
+    queryKey: ['/api/analytics/api-usage', selectedPeriod],
+    queryFn: async () => {
+      const response = await fetch(`/api/analytics/api-usage?period=${selectedPeriod}`);
+      if (!response.ok) throw new Error('Failed to fetch API usage data');
+      return response.json();
+    }
+  });
+
+  if (signupsLoading || reportsLoading || apiLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-border" />
@@ -65,7 +74,7 @@ export default function AnalyticsPage() {
         </Select>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-3 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Signup Trend</CardTitle>
@@ -125,6 +134,39 @@ export default function AnalyticsPage() {
                     dataKey="count"
                     stroke="#10B981"
                     name="Reports"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>API Usage</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[400px] mt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={apiData}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                  />
+                  <YAxis />
+                  <Tooltip
+                    labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                    formatter={(value) => [value, "API Calls"]}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke="#8B5CF6"
+                    name="API Calls"
                   />
                 </LineChart>
               </ResponsiveContainer>
