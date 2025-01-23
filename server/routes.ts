@@ -331,8 +331,7 @@ export function registerRoutes(app: Express): Server {
           freeUsers: sql`sum(case when ${users.subscriptionStatus} = 'free' then 1 else 0 end)`,
           corporateUsers: sql`sum(case when ${users.userType} = 'corporate' then 1 else 0 end)`,
           individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`,
-          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`,
-          totalReportsGenerated: sql`sum(COALESCE(${users.reportsGenerated}, 0))`
+          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`
         })
         .from(users)
         .then(rows => rows[0]);
@@ -350,19 +349,20 @@ export function registerRoutes(app: Express): Server {
         .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
         .then(rows => rows[0]);
 
-      // Separate query for monthly reports
+      // Separate query for reports, now counting both total and monthly reports directly from propertyAnalyzerResults
       const reportStats = await db
         .select({
-          monthlyReportsGenerated: sql`count(*)`
+          monthlyReportsGenerated: sql`count(*) filter (where ${propertyAnalyzerResults.createdAt} >= ${startOfMonth})`,
+          totalReportsGenerated: sql`count(*)`
         })
         .from(propertyAnalyzerResults)
-        .where(sql`${propertyAnalyzerResults.createdAt} >= ${startOfMonth}`)
         .then(rows => rows[0]);
 
       res.json({
         ...userStats,
         monthlyApiCalls: apiStats.monthlyApiCalls,
-        monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0
+        monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
+        totalReportsGenerated: reportStats.totalReportsGenerated || 0
       });
     } catch (error) {
       console.error('Error fetching admin stats:', error);
