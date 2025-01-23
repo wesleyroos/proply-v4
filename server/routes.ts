@@ -927,8 +927,7 @@ export function registerRoutes(app: Express): Server {
 
     try {
       const analysis = await analyzeSuburb(suburb);
-      res.json(analysis);
-    } catch (error) {
+      res.json(analysis);    } catch (error) {
       console.error('Error analyzing suburb:', error);
       res.status(500).json({
         error: "Failed to analyze suburb",
@@ -963,6 +962,80 @@ export function registerRoutes(app: Express): Server {
       console.error('Error searching suburbs:', error);
       res.status(500).json({
         error: "Failed to search suburbs",
+        details: error instanceof Error ? error.message : undefined
+      });
+    }
+  });
+
+  // Add this new endpoint after the existing admin endpoints
+  app.get("/api/analytics", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    try {
+      // Get basic user stats
+      const userStats = await db
+        .select({
+          totalUsers: sql`count(*)`,
+          adminUsers: sql`sum(case when ${users.isAdmin} then 1 else 0 end)`,
+          proUsers: sql`sum(case when ${users.subscriptionStatus} = 'pro' then 1 else 0 end)`,
+          freeUsers: sql`sum(case when ${users.subscriptionStatus} = 'free' then 1 else 0 end)`,
+          corporateUsers: sql`sum(case when ${users.userType} = 'corporate' then 1 else 0 end)`,
+          individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`,
+          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`
+        })
+        .from(users)
+        .then(rows => rows[0]);
+
+      // Get API usage for current month
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const apiStats = await db
+        .select({
+          monthlyApiCalls: sql`count(*)`
+        })
+        .from(apiUsage)
+        .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
+        .then(rows => rows[0]);
+
+      // Get reports generated
+      const reportStats = await db
+        .select({
+          monthlyReportsGenerated: sql`count(*) filter (where ${propertyAnalyzerResults.createdAt} >= ${startOfMonth})`,
+          totalReportsGenerated: sql`count(*)`
+        })
+        .from(propertyAnalyzerResults)
+        .then(rows => rows[0]);
+
+      // Get daily analytics data for the last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const dailyAnalytics = await db
+        .select({
+          date: sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})::date`,
+          analyses: sql`count(*)::integer`,
+          properties: sql`count(distinct ${propertyAnalyzerResults.propertyId})::integer`
+        })
+        .from(propertyAnalyzerResults)
+        .where(sql`${propertyAnalyzerResults.createdAt} >= ${thirtyDaysAgo}`)
+        .groupBy(sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})`)
+        .orderBy(sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})`);
+
+      res.json({
+        ...userStats,
+        monthlyApiCalls: apiStats.monthlyApiCalls,
+        monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
+        totalReportsGenerated: reportStats.totalReportsGenerated || 0,
+        dailyAnalytics
+      });
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+      res.status(500).json({
+        error: "Failed to fetch analytics",
         details: error instanceof Error ? error.message : undefined
       });
     }

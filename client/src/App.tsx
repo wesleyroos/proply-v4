@@ -32,6 +32,7 @@ import { useToast } from "./hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import Sidebar from "./components/Sidebar";
 import { ToastDemo } from "./components/ToastDemo";
+import AnalyticsPage from "./pages/AnalyticsPage";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -181,6 +182,7 @@ function App() {
             <Route path="/properties" component={() => <ProtectedRoute component={PropertiesPage} />} />
             <Route path="/settings" component={() => <ProtectedRoute component={SettingsPage} />} />
             <Route path="/admin" component={() => <ProtectedRoute component={AdminPage} />} />
+            <Route path="/analytics" component={() => <ProtectedRoute component={AnalyticsPage} />} />
             <Route path="/access-codes" component={() => <ProtectedRoute component={AccessCodePage} />} />
             <Route path="/subscription" component={() => <ProtectedRoute component={SubscriptionPage} />} />
             <Route path="/dashboard/control-panel" component={() => <ProtectedRoute component={ControlPanel} />} />
