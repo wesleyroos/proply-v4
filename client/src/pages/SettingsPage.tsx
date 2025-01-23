@@ -150,16 +150,10 @@ export default function SettingsPage() {
   };
 
   const initiateProUpgrade = () => {
-    const isDevelopment = import.meta.env.DEV;
     console.log('Initiating Pro upgrade payment flow');
 
-    const merchantId = isDevelopment
-      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
-      : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
-
-    const merchantKey = isDevelopment
-      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY
-      : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
+    const merchantId = import.meta.env.VITE_PAYFAST_MERCHANT_ID;
+    const merchantKey = import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
 
     if (!merchantId || !merchantKey) {
       console.error("Payment configuration is missing. Please try again later.");
@@ -207,9 +201,7 @@ export default function SettingsPage() {
 
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = isDevelopment
-      ? "https://sandbox.payfast.co.za/eng/process"
-      : "https://www.payfast.co.za/eng/process";
+    form.action = "https://www.payfast.co.za/eng/process";
 
     Object.entries(paymentData).forEach(([key, value]) => {
       if (value !== undefined) {
