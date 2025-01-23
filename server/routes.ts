@@ -189,7 +189,7 @@ export function registerRoutes(app: Express): Server {
           accessCodeUsedAt: accessCodes.usedAt,
           pricelabsApiCallsTotal: users.pricelabsApiCallsTotal,
           pricelabsApiCallsMonth: users.pricelabsApiCallsMonth,
-          reportsGenerated: users.reportsGenerated // Add this line to include reports count
+          reportsGenerated: users.reportsGenerated
         })
         .from(users)
         .leftJoin(accessCodes, eq(users.accessCodeId, accessCodes.id));
@@ -331,7 +331,8 @@ export function registerRoutes(app: Express): Server {
           freeUsers: sql`sum(case when ${users.subscriptionStatus} = 'free' then 1 else 0 end)`,
           corporateUsers: sql`sum(case when ${users.userType} = 'corporate' then 1 else 0 end)`,
           individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`,
-          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`
+          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`,
+          totalReportsGenerated: sql`sum(COALESCE(${users.reportsGenerated}, 0))`
         })
         .from(users)
         .then(rows => rows[0]);
@@ -943,7 +944,8 @@ export function registerRoutes(app: Express): Server {
       console.error('Error searching suburbs:', error);
       res.status(500).json({
         error: "Failed to search suburbs",
-        details: error instanceof Error ? error.message : undefined      });
+        details: error instanceof Error ? error.message : undefined
+      });
     }
   });
 
