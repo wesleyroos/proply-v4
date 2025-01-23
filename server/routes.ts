@@ -1070,16 +1070,16 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Simple query to count users grouped by date
+      // Simple query to count users grouped by creation date
       const signupData = await db
         .select({
-          date: sql<string>`DATE(${users.registeredAt})`,
+          date: sql<string>`DATE(${users.createdAt})`,
           count: sql<number>`COUNT(*)`
         })
         .from(users)
-        .where(sql`${users.registeredAt} >= ${startDate}`)
-        .groupBy(sql`DATE(${users.registeredAt})`)
-        .orderBy(sql`DATE(${users.registeredAt})`);
+        .where(sql`${users.createdAt} >= ${startDate}`)
+        .groupBy(sql`DATE(${users.createdAt})`)
+        .orderBy(sql`DATE(${users.createdAt})`);
 
       res.json(signupData);
     } catch (error) {
