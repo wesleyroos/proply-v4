@@ -32,7 +32,6 @@ import { useToast } from "./hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import Sidebar from "./components/Sidebar";
 import { ToastDemo } from "./components/ToastDemo";
-import AnalyticsPage from "./pages/AnalyticsPage";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -177,7 +176,6 @@ function App() {
             <Route path="/dashboard" component={() => <ProtectedRoute component={DashboardPage} />} />
             <Route path="/dashboard/property-analyzer" component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} />
             <Route path="/dashboard/market-intelligence" component={() => <ProtectedRoute component={MarketIntelligencePage} />} />
-            <Route path="/dashboard/analytics" component={() => <ProtectedRoute component={AnalyticsPage} />} />
             <Route path="/dashboard/rent-compare" component={() => <ProtectedRoute component={ComparisonPage} />} />
             <Route path="/dashboard/toast-demo" component={() => <ProtectedRoute component={ToastDemo} />} />
             <Route path="/properties" component={() => <ProtectedRoute component={PropertiesPage} />} />

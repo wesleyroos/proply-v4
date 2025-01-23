@@ -13,8 +13,7 @@ import {
   Ticket,
   Calculator,
   Brain,
-  ToggleLeft,
-  BarChart2
+  ToggleLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
@@ -60,18 +59,12 @@ export default function Sidebar() {
       icon: Library,
       href: "/properties",
     },
-    {
-      title: "Analytics",
-      icon: BarChart2,
-      href: "/dashboard/analytics",
-      adminOnly:true
-    }
   ];
 
   return (
     <aside
       className={cn(
-        "h-screen sticky top-0 bg-[#1E293B] transition-all duration-300 border-none",
+        "h-screen sticky top-0 bg-[#1E293B] transition-all duration-300 border-none", 
         expanded ? "w-64" : "w-16"
       )}
     >
@@ -143,17 +136,6 @@ export default function Sidebar() {
               >
                 <Users className="h-5 w-5 text-white" />
                 {expanded && <span className="text-white">User Management</span>}
-              </Link>
-              <Link
-                href="/dashboard/analytics"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                  "hover:bg-white/10 text-white/80",
-                  location === "/dashboard/analytics" ? "bg-white/20 text-white" : ""
-                )}
-              >
-                <BarChart2 className="h-5 w-5 text-white" />
-                {expanded && <span className="text-white">Analytics</span>}
               </Link>
               <Link
                 href="/dashboard/control-panel"
