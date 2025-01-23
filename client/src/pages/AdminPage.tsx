@@ -53,6 +53,7 @@ import {
   FileText,
   ChevronUp,
   ChevronDown,
+  RefreshCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SelectUser } from "@db/schema";
@@ -96,7 +97,7 @@ export default function AdminPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: users, isLoading: usersLoading } = useQuery<AdminUser[]>({
+  const { data: users, isLoading: usersLoading, refetch: refetchUsers } = useQuery<AdminUser[]>({
     queryKey: ["/api/admin/users"],
     enabled: !!user?.isAdmin,
   });
@@ -322,13 +323,25 @@ export default function AdminPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>All Users</CardTitle>
-            <div className="w-72">
+            <div className="flex items-center gap-2">
               <Input
                 placeholder="Search users..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="max-w-sm"
               />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => refetchUsers()}
+                className={cn(
+                  "transition-transform",
+                  usersLoading && "animate-spin"
+                )}
+              >
+                <RefreshCcw className="h-4 w-4" />
+                <span className="sr-only">Refresh users</span>
+              </Button>
             </div>
           </div>
         </CardHeader>
