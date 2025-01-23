@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -86,6 +87,7 @@ type SortConfig = {
 export default function AdminPage() {
   const { user } = useUser();
   const [, setLocation] = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: 'reportsGenerated',
     direction: 'desc'
@@ -180,10 +182,21 @@ export default function AdminPage() {
     );
   }
 
-  const sortData = (data: AdminUser[]) => {
-    if (!sortConfig.key) return data;
+  const filterAndSortData = (data: AdminUser[]) => {
+    let filteredData = data;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filteredData = data.filter(user =>
+        user.email?.toLowerCase().includes(query) ||
+        `${user.firstName} ${user.lastName}`.toLowerCase().includes(query) ||
+        user.company?.toLowerCase().includes(query) ||
+        user.userType?.toLowerCase().includes(query)
+      );
+    }
 
-    return [...data].sort((a, b) => {
+    if (!sortConfig.key) return filteredData;
+
+    return [...filteredData].sort((a, b) => {
       if (a[sortConfig.key] === b[sortConfig.key]) return 0;
 
       if (sortConfig.direction === 'asc') {
@@ -208,8 +221,8 @@ export default function AdminPage() {
 
   const SortIndicator = ({ column }: { column: keyof AdminUser }) => {
     if (sortConfig.key !== column) return null;
-    return sortConfig.direction === 'asc' ? 
-      <ChevronUp className="inline h-4 w-4 ml-1" /> : 
+    return sortConfig.direction === 'asc' ?
+      <ChevronUp className="inline h-4 w-4 ml-1" /> :
       <ChevronDown className="inline h-4 w-4 ml-1" />;
   };
 
@@ -307,7 +320,17 @@ export default function AdminPage() {
 
       <Card className="overflow-hidden">
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>All Users</CardTitle>
+            <div className="w-72">
+              <Input
+                placeholder="Search users..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="max-w-sm"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -344,7 +367,7 @@ export default function AdminPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortData(users || []).map((userData) => (
+                  {filterAndSortData(users || []).map((userData) => (
                     <TableRow key={userData.id}>
                       <TableCell>{userData.id}</TableCell>
                       <TableCell>{userData.email}</TableCell>
@@ -360,7 +383,7 @@ export default function AdminPage() {
                           className={cn(
                             "px-2 py-1 rounded-full text-xs font-medium",
                             userData.isAdmin ||
-                              userData.subscriptionStatus === "pro"
+                            userData.subscriptionStatus === "pro"
                               ? "bg-green-100 text-green-800"
                               : "bg-gray-100 text-gray-800",
                           )}
