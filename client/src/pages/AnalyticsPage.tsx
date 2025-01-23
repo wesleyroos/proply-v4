@@ -80,7 +80,7 @@ export default function AnalyticsPage() {
             <CardTitle>Signup Trend</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[400px] mt-4">
+            <div className="h-[300px] mt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={signupData}
@@ -113,7 +113,7 @@ export default function AnalyticsPage() {
             <CardTitle>Reports Generated</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[400px] mt-4">
+            <div className="h-[300px] mt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={reportData}
@@ -146,7 +146,7 @@ export default function AnalyticsPage() {
             <CardTitle>API Usage</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[400px] mt-4">
+            <div className="h-[300px] mt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={apiData}
