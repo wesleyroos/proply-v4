@@ -1089,6 +1089,55 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
+  // Add new endpoint after the existing signup analytics endpoint
+  app.get("/api/analytics/reports", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    const { period } = req.query;
+    const now = new Date();
+    let startDate = new Date();
+
+    // Calculate start date based on period
+    switch (period) {
+      case '7days':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case '30days':
+        startDate.setDate(now.getDate() - 30);
+        break;
+      case '90days':
+        startDate.setDate(now.getDate() - 90);
+        break;
+      case '1year':
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+      default:
+        // For 'all' or invalid periods, get all data
+        startDate = new Date(0);
+    }
+
+    try {
+      const reportData = await db
+        .select({
+          date: sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})::date`,
+          count: sql`count(*)::integer`
+        })
+        .from(propertyAnalyzerResults)
+        .where(sql`${propertyAnalyzerResults.createdAt} >= ${startDate}`)
+        .groupBy(sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})`)
+        .orderBy(sql`date_trunc('day', ${propertyAnalyzerResults.createdAt})`);
+
+      res.json(reportData);
+    } catch (error) {
+      console.error('Error fetching report analytics:', error);
+      res.status(500).json({
+        error: "Failed to fetch report analytics",
+        details: error instanceof Error ? error.message : undefined
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
