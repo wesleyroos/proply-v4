@@ -337,32 +337,39 @@ export function registerRoutes(app: Express): Server {
         .from(users)
         .then(rows => rows[0]);
 
-      // Get API usage and reports for current month
+      // Get API usage for current month (keeping this as it was)
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      const monthlyStats = await db
+      const apiStats = await db
         .select({
-          monthlyApiCalls: sql`count(*)`,
-          monthlyReportsGenerated: sql`sum(case when ${propertyAnalyzerResults.createdAt} >= ${startOfMonth} then 1 else 0 end)`
+          monthlyApiCalls: sql`count(*)`
         })
         .from(apiUsage)
-        .leftJoin(
-          propertyAnalyzerResults,
-          sql`${propertyAnalyzerResults.createdAt} >= ${startOfMonth}`
-        )
         .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
+        .then(rows => rows[0]);
+
+      // Separate query for monthly reports
+      const reportStats = await db
+        .select({
+          monthlyReportsGenerated: sql`count(*)`
+        })
+        .from(propertyAnalyzerResults)
+        .where(sql`${propertyAnalyzerResults.createdAt} >= ${startOfMonth}`)
         .then(rows => rows[0]);
 
       res.json({
         ...userStats,
-        monthlyApiCalls: monthlyStats.monthlyApiCalls,
-        monthlyReportsGenerated: monthlyStats.monthlyReportsGenerated || 0
+        monthlyApiCalls: apiStats.monthlyApiCalls,
+        monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0
       });
     } catch (error) {
       console.error('Error fetching admin stats:', error);
-      res.status(500).json({ error: "Failed to fetch admin statistics" });
+      res.status(500).json({
+        error: "Failed to fetch admin statistics",
+        details: error instanceof Error ? error.message : undefined
+      });
     }
   });
 
