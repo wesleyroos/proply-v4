@@ -371,22 +371,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
           )}
         </div>
       )}
-      {user?.pendingDowngrade && (
-        <div className="space-y-4">
-          <Alert variant="warning">
-            <div>
-              <AlertTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                Subscription Change Scheduled
-              </AlertTitle>
-              <AlertDescription className="mt-2 flex items-center gap-2">
-                <CalendarDays className="h-4 w-4" />
-                Your account will downgrade to Free on {user.subscriptionNextBillingDate ? new Date(user.subscriptionNextBillingDate).toLocaleDateString() : 'next billing date'}
-              </AlertDescription>
-            </div>
-          </Alert>
-        </div>
-      )}
+      
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Subscription Management</h3>
@@ -778,6 +763,22 @@ export default function SettingsPage() {
                   <CardDescription>Manage your subscription and billing preferences</CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {user?.pendingDowngrade && (
+                    <div className="mb-6">
+                      <Alert variant="warning">
+                        <div>
+                          <AlertTitle className="flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4" />
+                            Subscription Change Scheduled
+                          </AlertTitle>
+                          <AlertDescription className="mt-2 flex items-center gap-2">
+                            <CalendarDays className="h-4 w-4" />
+                            Your account will downgrade to Free on {user.subscriptionNextBillingDate ? new Date(user.subscriptionNextBillingDate).toLocaleDateString() : 'next billing date'}
+                          </AlertDescription>
+                        </div>
+                      </Alert>
+                    </div>
+                  )}
                   <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
                 </CardContent>
               </Card>
