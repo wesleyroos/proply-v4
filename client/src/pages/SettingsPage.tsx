@@ -63,15 +63,16 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
   };
 
   // Determine subscription dates display
-  const subscriptionDates = user?.accessCodeId 
-    ? {
-        nextBilling: 'N/A (Access code granted subscription)',
-        activationDate: formatDate(user?.subscriptionStartDate),
-      }
-    : {
-        nextBilling: user?.subscriptionNextBillingDate ? formatDate(user?.subscriptionNextBillingDate) : 'Not available',
-        activationDate: user?.subscriptionStartDate ? formatDate(user?.subscriptionStartDate) : 'Not available',
-      };
+  const subscriptionDates = {
+    nextBilling: user?.subscriptionNextBillingDate ? formatDate(user?.subscriptionNextBillingDate) : 'Not available',
+    activationDate: user?.subscriptionStartDate ? formatDate(user?.subscriptionStartDate) : 'Not available'
+  };
+
+  console.log('User subscription dates:', {
+    startDate: user?.subscriptionStartDate,
+    nextBilling: user?.subscriptionNextBillingDate,
+    formatted: subscriptionDates
+  });
 
   const planFeatures = {
     free: [
