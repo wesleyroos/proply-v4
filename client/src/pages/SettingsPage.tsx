@@ -48,9 +48,21 @@ interface BillingDetailsProps {
 function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const nextBillingDate = user?.subscriptionNextBillingDate 
-    ? new Date(user.subscriptionNextBillingDate).toLocaleDateString()
-    : `N/A (${user?.accessCodeId ? 'Access code granted subscription' : 'No active billing cycle'})`;
+
+  const formatDate = (date: string | null | undefined) => {
+    return date ? new Date(date).toLocaleDateString() : 'Not available';
+  };
+
+  // Determine subscription dates display
+  const subscriptionDates = user?.accessCodeId 
+    ? {
+        nextBilling: 'N/A (Access code granted subscription)',
+        activationDate: formatDate(user?.subscriptionStartDate),
+      }
+    : {
+        nextBilling: formatDate(user?.subscriptionNextBillingDate),
+        activationDate: formatDate(user?.subscriptionStartDate),
+      };
 
   const planFeatures = {
     free: [
@@ -82,8 +94,12 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
           {user?.subscriptionStatus === 'pro' && (
             <>
               <div>
+                <label className="text-sm font-medium">Plan Activation Date</label>
+                <p className="text-muted-foreground">{subscriptionDates.activationDate}</p>
+              </div>
+              <div>
                 <label className="text-sm font-medium">Next Billing Date</label>
-                <p className="text-muted-foreground">{nextBillingDate}</p>
+                <p className="text-muted-foreground">{subscriptionDates.nextBilling}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Monthly Cost</label>
