@@ -121,8 +121,9 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).send("User not found");
       }
 
-      // Calculate next billing date (30 days from now)
-      const nextBillingDate = new Date();
+      // Calculate start date and next billing date
+      const startDate = new Date();
+      const nextBillingDate = new Date(startDate);
       nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
       // Update user's subscription status and billing dates
@@ -130,7 +131,7 @@ export function registerRoutes(app: Express): Server {
         .update(users)
         .set({
           subscriptionStatus,
-          subscriptionStartDate: new Date(),
+          subscriptionStartDate: startDate,
           subscriptionNextBillingDate: nextBillingDate,
           pendingDowngrade: false,
           updatedAt: new Date(),
@@ -142,6 +143,7 @@ export function registerRoutes(app: Express): Server {
         userId: updatedUser.id,
         newStatus: updatedUser.subscriptionStatus,
         startDate: updatedUser.subscriptionStartDate,
+        nextBillingDate: updatedUser.subscriptionNextBillingDate
       });
 
       res.json({
@@ -150,6 +152,7 @@ export function registerRoutes(app: Express): Server {
           id: updatedUser.id,
           subscriptionStatus: updatedUser.subscriptionStatus,
           subscriptionStartDate: updatedUser.subscriptionStartDate,
+          subscriptionNextBillingDate: updatedUser.subscriptionNextBillingDate
         },
       });
     } catch (error) {
