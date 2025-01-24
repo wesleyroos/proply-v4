@@ -765,18 +765,18 @@ export default function SettingsPage() {
                 <CardContent>
                   {user?.pendingDowngrade && (
                     <div className="mb-6">
-                      <Alert variant="warning">
+                      <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-md">
                         <div>
-                          <AlertTitle className="flex items-center gap-2">
-                            <AlertTriangle className="h-4 w-4" />
+                          <div className="flex items-center gap-2 text-orange-800 font-medium">
+                            <AlertTriangle className="h-4 w-4 text-orange-400" />
                             Subscription Change Scheduled
-                          </AlertTitle>
-                          <AlertDescription className="mt-2 flex items-center gap-2">
-                            <CalendarDays className="h-4 w-4" />
+                          </div>
+                          <div className="mt-2 flex items-center gap-2 text-orange-700">
+                            <CalendarDays className="h-4 w-4 text-orange-400" />
                             Your account will downgrade to Free on {user.subscriptionNextBillingDate ? new Date(user.subscriptionNextBillingDate).toLocaleDateString() : 'next billing date'}
-                          </AlertDescription>
+                          </div>
                         </div>
-                      </Alert>
+                      </div>
                     </div>
                   )}
                   <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
