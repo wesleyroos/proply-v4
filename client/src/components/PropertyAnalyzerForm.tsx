@@ -4,14 +4,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog";
 
 // Hooks
 import { useProAccess } from "@/hooks/use-pro-access";
@@ -52,7 +44,6 @@ interface PropertyAnalyzerFormProps {
   onAnalysisComplete?: (data: PropertyAnalyzerFormValues) => Promise<void>;
 }
 
-// Rest of the types remain unchanged...
 
 const formSchema = z.object({
   // Step 1: Property Details
@@ -151,12 +142,6 @@ const STEPS = [
   "Miscellaneous",
 ];
 
-interface RevenueData {
-  adr: number;
-  occupancy: number;
-  percentile: number;
-}
-
 export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -210,7 +195,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   }
 
   // Render upgrade modal if limit reached
-  if (showUpgradeModal) {
+  if (reachedLimit) {
     return (
       <Dialog open={true} onOpenChange={() => {}}>
         <DialogContent className="sm:max-w-md">
@@ -241,6 +226,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   }
 
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
+    // If user has reached limit, prevent submission
+    if (reachedLimit) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // Clean and prepare the analysis data
@@ -1064,10 +1055,11 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               min="0"
                               {...field}
                               onChange={(e) =>
-                                                               field.onChange(e.target.valueAsNumber)
+                                field.onChange(e.target.valueAsNumber)
                               }
                             />
-                          </FormControl>                          <FormMessage />
+                          </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -1125,7 +1117,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           </Button>
                           <p className="text-xs text-muted-foreground">
                             Get accurate rates from Airbnb listings in your area
-                          </p>                        </div>
+                          </p>
+                        </div>
                       </FormControl>
                     </FormItem>
                   </div>
