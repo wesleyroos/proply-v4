@@ -244,7 +244,9 @@ export default function PropertyAnalyzerPage() {
               Enter property details to generate analysis
             </p>
           </div>
-        </div>
+    </div>
+  );
+
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
     null,
   );
