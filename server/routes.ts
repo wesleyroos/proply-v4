@@ -78,13 +78,18 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).send("User not found");
       }
 
-      // Update user's subscription status and start tracking the subscription start date
+      // Calculate next billing date (30 days from now)
+      const nextBillingDate = new Date();
+      nextBillingDate.setDate(nextBillingDate.getDate() + 30);
+
+      // Update user's subscription status and billing dates
       const [updatedUser] = await db
         .update(users)
         .set({
           subscriptionStatus,
-          subscriptionStartDate: new Date(), // Track when they started their pro subscription
-          pendingDowngrade: false, // Clear any pending downgrades
+          subscriptionStartDate: new Date(),
+          subscriptionNextBillingDate: nextBillingDate,
+          pendingDowngrade: false,
           updatedAt: new Date(),
         })
         .where(eq(users.id, userId))
@@ -798,13 +803,15 @@ export function registerRoutes(app: Express): Server {
     const { user_id, subscription_status } = req.body;
 
     try {
+      const nextBillingDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      
       await db
         .update(users)
         .set({
           subscriptionStatus: subscription_status,
-          subscriptionExpiryDate: new Date(
-            Date.now() + 30 * 24 * 60 * 60 * 1000,
-          ),
+          subscriptionExpiryDate: nextBillingDate,
+          subscriptionNextBillingDate: nextBillingDate,
+          subscriptionStartDate: subscription_status === 'pro' ? new Date() : null,
         })
         .where(eq(users.id, user_id));
 
