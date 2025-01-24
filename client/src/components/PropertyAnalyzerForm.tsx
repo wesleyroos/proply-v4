@@ -288,15 +288,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         body: JSON.stringify(analysisData),
       });
 
-      // Invalidate user query to refresh usage count
-      queryClient.invalidateQueries({ queryKey: ['user'] });
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        const errorData = await response.json();
+        throw new Error(errorData.error || response.statusText);
       }
 
-      const result = await response.json();
-      setAnalysisResult(result);
+      const data = await response.json();
+      console.log("Analysis response:", data);
+
+      // Invalidate user query to refresh usage count - Moved here for correct timing
+      await queryClient.invalidateQueries({ queryKey: ['user'] });
 
       if (props.onAnalysisComplete) {
         await props.onAnalysisComplete(analysisData);
@@ -1060,7 +1062,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               min="0"
                               {...field}
                               onChange={(e) =>
-                                field.onChange(e.target.valueAsNumber)
+                                field.onChange(                                field.onChange(e.target.valueAsNumber)
                               }
                             />
                           </FormControl>
