@@ -215,19 +215,22 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     }
   }, [showUsageWarning, toast]);
 
-  if (reachedLimit) {
-    return (
-      <Card className="p-6">
-        <div className="text-center space-y-4">
-          <h2 className="text-2xl font-bold">Free Plan Limit Reached</h2>
-          <p className="text-muted-foreground">You've used all 3 free property analyses. Upgrade to Pro for unlimited access.</p>
-          <Link to="/pricing">
-            <Button>Upgrade to Pro</Button>
-          </Link>
-        </div>
-      </Card>
-    );
-  }
+  const handleSubmit = async (data: PropertyAnalyzerFormValues) => {
+    if (reachedLimit) {
+      toast({
+        variant: "destructive",
+        title: "Free Plan Limit Reached",
+        description: "You've used all 3 free property analyses. Upgrade to Pro for unlimited access.",
+        duration: 7000,
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      // ... rest of submit logic remains the same ...
+    }
+  };
 
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
@@ -1302,13 +1305,18 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 <>
                   <Button
                     type="submit"
-                    disabled={isSubmitting}
-                    className="min-w-[100px]"
+                    disabled={isSubmitting || reachedLimit}
+                    className="min-w-[100px] relative group"
                   >
                     {isSubmitting && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    Analyze
+                    {reachedLimit ? 'Upgrade to Analyze' : 'Analyze'}
+                    {reachedLimit && (
+                      <span className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        Free plan limit reached
+                      </span>
+                    )}
                   </Button>
                 </>
               )}
