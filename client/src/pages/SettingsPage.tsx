@@ -323,8 +323,8 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
       )}
       {user?.pendingDowngrade && user?.subscriptionExpiryDate && (
         <>
-          <Alert variant="warning">
-            <div>
+          <div className="space-y-4">
+            <Alert variant="warning">
               <AlertTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
                 Subscription Change Scheduled
@@ -333,43 +333,43 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
                 <CalendarDays className="h-4 w-4" />
                 Your account will downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
               </AlertDescription>
-            </div>
-          </Alert>
-          <Button
-            variant="outline"
-            className="w-full mt-4"
-            onClick={async () => {
-                try {
-                  const response = await fetch('/api/subscription/cancel-downgrade', {
-                    method: 'POST',
-                    credentials: 'include'
-                  });
+              <Button
+                variant="outline"
+                className="w-full mt-4"
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/subscription/cancel-downgrade', {
+                      method: 'POST',
+                      credentials: 'include'
+                    });
 
-                  if (!response.ok) {
-                    throw new Error(await response.text());
+                    if (!response.ok) {
+                      throw new Error(await response.text());
+                    }
+
+                    queryClient.invalidateQueries({ queryKey: ['user'] });
+
+                    toast({
+                      title: "Success",
+                      description: "Your Pro subscription will continue without interruption.",
+                      duration: 5000,
+                    });
+
+                  } catch (error) {
+                    console.error('Error cancelling downgrade:', error);
+                    toast({
+                      variant: "destructive",
+                      title: "Error",
+                      description: error instanceof Error ? error.message : "Failed to cancel plan downgrade",
+                      duration: 5000,
+                    });
                   }
-
-                  queryClient.invalidateQueries({ queryKey: ['user'] });
-
-                  toast({
-                    title: "Success",
-                    description: "Your Pro subscription will continue without interruption.",
-                    duration: 5000,
-                  });
-
-                } catch (error) {
-                  console.error('Error cancelling downgrade:', error);
-                  toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: error instanceof Error ? error.message : "Failed to cancel plan downgrade",
-                    duration: 5000,
-                  });
-                }
-              }}
-            >
-              Cancel Downgrade
-            </Button>
+                }}
+              >
+                Cancel Downgrade
+              </Button>
+            </Alert>
+          </div>
         </>
       )}
 
