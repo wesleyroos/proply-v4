@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Sparkles, CheckCircle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 
 // Hooks
@@ -30,7 +30,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
@@ -1072,7 +1071,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           <FormLabel>Annual Occupancy (%)</FormLabel>
                           <FormControl>
                             <Input
-                              <Input
                               type="number"
                               min="0"
                               max="100"
@@ -1331,65 +1329,106 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
       {/* Upgrade Modal */}
       <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader className="text-center">
-            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <Sparkles className="h-6 w-6 text-primary" />
-            </div>
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <DialogTitle className="text-2xl">Upgrade to</DialogTitle>
-              <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">PRO</span>
-            </div>
-            <DialogDescription className="text-center">
-              Get unlimited access to all Proply features and tools
-            </DialogDescription>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upgrade to Pro</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-3">
-              <h4 className="font-semibold text-center">Pro Features Include:</h4>
+            <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+              <div className="p-3 bg-blue-100 rounded-full">
+                <svg
+                  className="w-6 h-6 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-semibold text-blue-900">
+                  Accurate Revenue Data
+                </h4>
+                <p className="text-sm text-blue-700">
+                  Get real-time nightly rates and occupancy data from actual
+                  Airbnb listings in your area
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="font-medium">With Pro, you get:</h4>
               <ul className="space-y-2">
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Unlimited property analyses</span>
+                <li className="flex items-center gap-2 text-sm">
+                  <svg
+                    className="w-4 h-4 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Accurate nightly rates based on local market data
                 </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Advanced market insights</span>
+                <li className="flex items-center gap-2 text-sm">
+                  <svg
+                    className="w-4 h-4 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Real occupancy rates from similar properties
                 </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Comparative market analysis</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Detailed investment metrics</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Priority support</span>
+                <li className="flex items-center gap-2 text-sm">
+                  <svg
+                    className="w-4 h-4 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Seasonal pricing trends and recommendations
                 </li>
               </ul>
             </div>
-            <div className="bg-primary/5 p-6 rounded-lg text-center">
-              <div className="text-3xl font-bold text-primary">R2000/month</div>
-              <p className="text-muted-foreground mt-1">Cancel anytime</p>
-            </div>
-          </div>
-          <DialogFooter className="flex flex-col gap-2">
-            <form action="https://sandbox.payfast.co.za/eng/process" method="POST">
-              <input type="hidden" name="merchant_id" value="10000100" />
-              <input type="hidden" name="merchant_key" value="46f0cd694581a" />
-              <input type="hidden" name="return_url" value="https://proply.app/payment-success" />
-              <input type="hidden" name="cancel_url" value="https://proply.app/payment-failure" />
-              <input type="hidden" name="notify_url" value="https://proply.app/api/payment-webhook" />
-              <input type="hidden" name="amount" value="2000.00" />
-              <input type="hidden" name="item_name" value="Proply Pro Subscription" />
-              <Button type="submit" className="w-full">Continue to Payment</Button>
-            </form>
-            <Button variant="outline" onClick={() => setShowUpgradeModal(false)} className="w-full">
+
+            <Button
+              onClick={() => setShowUpgradeModal(false)}
+              className="w-full"
+            >
+              Upgrade Now
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowUpgradeModal(false)}
+              className="w-full"
+            >
               Continue with Manual Entry
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
