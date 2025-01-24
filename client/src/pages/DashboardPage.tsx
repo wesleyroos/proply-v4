@@ -123,26 +123,47 @@ export default function DashboardPage() {
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Upgrade to Pro</DialogTitle>
-                  <DialogDescription>
+                <DialogHeader className="text-center">
+                  <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Sparkles className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <DialogTitle className="text-2xl">Upgrade to</DialogTitle>
+                    <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">PRO</span>
+                  </div>
+                  <DialogDescription className="text-center">
                     Get unlimited access to all Proply features and tools
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">Pro Features Include:</h4>
-                    <ul className="list-disc list-inside space-y-1">
-                      <li>Unlimited property analyses</li>
-                      <li>Advanced market insights</li>
-                      <li>Comparative market analysis</li>
-                      <li>Detailed investment metrics</li>
-                      <li>Priority support</li>
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-center">Pro Features Include:</h4>
+                    <ul className="space-y-2">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-primary" />
+                        <span>Unlimited property analyses</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-primary" />
+                        <span>Advanced market insights</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-primary" />
+                        <span>Comparative market analysis</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-primary" />
+                        <span>Detailed investment metrics</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-primary" />
+                        <span>Priority support</span>
+                      </li>
                     </ul>
                   </div>
-                  <div className="bg-muted p-4 rounded-lg">
-                    <div className="text-2xl font-bold">R2000/month</div>
-                    <p className="text-muted-foreground">Cancel anytime</p>
+                  <div className="bg-primary/5 p-6 rounded-lg text-center">
+                    <div className="text-3xl font-bold text-primary">R2000/month</div>
+                    <p className="text-muted-foreground mt-1">Cancel anytime</p>
                   </div>
                 </div>
                 <DialogFooter>
