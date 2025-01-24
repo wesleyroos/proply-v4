@@ -815,7 +815,11 @@ export function registerRoutes(app: Express): Server {
       }
 
       const now = new Date();
-      const nextBillingDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      // If this is a first-time subscription, set start date to now
+      const startDate = user.subscriptionStartDate || now;
+      // Always calculate next billing from the start date
+      const nextBillingDate = new Date(startDate);
+      nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
       
       const [updatedUser] = await db
         .update(users)
@@ -823,7 +827,7 @@ export function registerRoutes(app: Express): Server {
           subscriptionStatus: subscription_status,
           subscriptionExpiryDate: nextBillingDate,
           subscriptionNextBillingDate: nextBillingDate,
-          subscriptionStartDate: now,
+          subscriptionStartDate: startDate,
           pendingDowngrade: false,
           updatedAt: now,
         })
