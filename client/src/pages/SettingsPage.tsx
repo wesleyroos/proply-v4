@@ -262,6 +262,44 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+
+              {user?.pendingDowngrade && (
+                <Button
+                  variant="outline"
+                  className="w-full mt-4"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/subscription/cancel-downgrade', {
+                        method: 'POST',
+                        credentials: 'include'
+                      });
+
+                      if (!response.ok) {
+                        throw new Error(await response.text());
+                      }
+
+                      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+                      toast({
+                        title: "Success",
+                        description: "Your Pro subscription will continue without interruption.",
+                        duration: 5000,
+                      });
+
+                    } catch (error) {
+                      console.error('Error cancelling downgrade:', error);
+                      toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: error instanceof Error ? error.message : "Failed to cancel plan downgrade",
+                        duration: 5000,
+                      });
+                    }
+                  }}
+                >
+                  Cancel Downgrade
+                </Button>
+              )}
             </>
           ) : (
             <AlertDialog>
@@ -335,41 +373,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
                   Your account will downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
                 </AlertDescription>
               </div>
-              <Button
-                variant="outline"
-                className="w-full mt-4"
-                onClick={async () => {
-                  try {
-                    const response = await fetch('/api/subscription/cancel-downgrade', {
-                      method: 'POST',
-                      credentials: 'include'
-                    });
-
-                    if (!response.ok) {
-                      throw new Error(await response.text());
-                    }
-
-                    queryClient.invalidateQueries({ queryKey: ['user'] });
-
-                    toast({
-                      title: "Success",
-                      description: "Your Pro subscription will continue without interruption.",
-                      duration: 5000,
-                    });
-
-                  } catch (error) {
-                    console.error('Error cancelling downgrade:', error);
-                    toast({
-                      variant: "destructive",
-                      title: "Error",
-                      description: error instanceof Error ? error.message : "Failed to cancel plan downgrade",
-                      duration: 5000,
-                    });
-                  }
-                }}
-              >
-                Cancel Downgrade
-              </Button>
+              {/*This button is removed.  The new button is above*/}
             </Alert>
           </div>
         </>
