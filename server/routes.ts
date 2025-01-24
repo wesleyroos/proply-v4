@@ -803,7 +803,8 @@ export function registerRoutes(app: Express): Server {
     const { user_id, subscription_status } = req.body;
 
     try {
-      const nextBillingDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      const now = new Date();
+      const nextBillingDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
       
       await db
         .update(users)
@@ -811,12 +812,15 @@ export function registerRoutes(app: Express): Server {
           subscriptionStatus: subscription_status,
           subscriptionExpiryDate: nextBillingDate,
           subscriptionNextBillingDate: nextBillingDate,
-          subscriptionStartDate: subscription_status === 'pro' ? new Date() : null,
+          subscriptionStartDate: now,
+          updatedAt: now,
         })
-        .where(eq(users.id, user_id));
+        .where(eq(users.id, user_id))
+        .returning();
 
       res.json({ success: true });
     } catch (error) {
+      console.error("Payment webhook error:", error);
       res.status(500).json({ error: "Failed to update subscription" });
     }
   });
