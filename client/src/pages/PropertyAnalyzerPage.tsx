@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import html2canvas from "html2canvas";
+import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
