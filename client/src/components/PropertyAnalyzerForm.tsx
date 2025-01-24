@@ -228,7 +228,18 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     
     setIsSubmitting(true);
     try {
-      // ... rest of submit logic remains the same ...
+      // Submit form data
+      await onSubmit(data);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to submit form",
+        duration: 7000,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
