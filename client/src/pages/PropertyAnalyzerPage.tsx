@@ -49,7 +49,6 @@ import {
 import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAnalyzerPDF";
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
 import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
-import Link from 'next/link';
 
 interface YearlyMetrics {
   grossYield: number;
@@ -229,7 +228,7 @@ export default function PropertyAnalyzerPage() {
                 You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
               </p>
               <div className="pt-4">
-                <Link href="/pricing">
+                <Link to="/pricing">
                   <Button className="w-full bg-blue-600 hover:bg-blue-700">
                     Upgrade to Pro
                   </Button>
