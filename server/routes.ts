@@ -1012,20 +1012,21 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user!.id))
         .limit(1);
 
-      if (user.subscriptionStatus === 'free' && user.propertyAnalyzerUsage >= 3) {
+      if (user.subscriptionStatus === 'free' && (user.propertyAnalyzerUsage || 0) >= 3) {
         return res.status(403).json({
           error: "Free plan limit reached",
           details: "Please upgrade to Pro for unlimited property analyses"
         });
       }
 
-      // Increment usage counter
+      // Increment usage counter first to ensure accurate counting
       await db
         .update(users)
         .set({
-          propertyAnalyzerUsage: sql`${users.propertyAnalyzerUsage} + 1`
+          propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`
         })
         .where(eq(users.id, req.user!.id));
+
       console.log("\n=== Starting Property Analysis ===");
       console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
 
