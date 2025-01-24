@@ -28,6 +28,7 @@ export const users = pgTable("users", {
   subscriptionStatus: text("subscription_status").default("free").notNull(),
   subscriptionExpiryDate: timestamp("subscription_expiry_date"),
   subscriptionStartDate: timestamp("subscription_start_date"),
+  subscriptionNextBillingDate: timestamp("subscription_next_billing_date"),
   pendingDowngrade: boolean("pending_downgrade").default(false),
   // PayFast integration fields
   payfastToken: text("payfast_token"),
