@@ -103,7 +103,11 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
             <label className="text-sm font-medium">Plan</label>
             <p className="text-muted-foreground capitalize">
               {user?.subscriptionStatus || 'Free'}
-              {user?.pendingDowngrade && user?.subscriptionExpiryDate && ` (Downgrade Scheduled - ${new Date(user.subscriptionExpiryDate).toLocaleDateString()})`}
+              {user?.pendingDowngrade && user?.subscriptionExpiryDate && (
+                <span className="text-yellow-600 ml-2">
+                  (Downgrading {new Date(user.subscriptionExpiryDate).toLocaleDateString()})
+                </span>
+              )}
             </p>
           </div>
           {user?.subscriptionStatus === 'pro' && (
