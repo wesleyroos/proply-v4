@@ -169,6 +169,29 @@ export function useUser() {
     },
   });
 
+  const cancelDowngradeMutation = useMutation({
+    mutationFn: async () => {
+      const result = await handleRequest('/api/subscription/cancel-downgrade', 'POST');
+      if (!result.ok) {
+        toast({
+          title: "Failed to cancel downgrade",
+          description: result.message,
+          variant: "destructive"
+        });
+        throw new Error(result.message);
+      }
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      toast({
+        title: "Success",
+        description: "Downgrade cancelled successfully",
+        duration: 3000
+      });
+    },
+  });
+
   return {
     user,
     isLoading,
@@ -176,5 +199,6 @@ export function useUser() {
     login: loginMutation.mutateAsync,
     logout: logoutMutation.mutateAsync,
     register: registerMutation.mutateAsync,
+    cancelDowngrade: cancelDowngradeMutation.mutateAsync,
   };
 }
