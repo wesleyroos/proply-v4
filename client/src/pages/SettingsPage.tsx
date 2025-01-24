@@ -101,10 +101,49 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
         <div className="grid gap-4">
           <div>
             <label className="text-sm font-medium">Plan</label>
-            <p className="text-muted-foreground capitalize">
-              {user?.subscriptionStatus || 'Free'}
-              {user?.pendingDowngrade && ' (Downgrade Scheduled)'}
-            </p>
+            <div className="flex justify-between items-center">
+              <p className="text-muted-foreground capitalize">
+                {user?.subscriptionStatus || 'Free'}
+                {user?.pendingDowngrade && ' (Downgrade Scheduled)'}
+              </p>
+              {user?.pendingDowngrade && user?.subscriptionExpiryDate && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/subscription/cancel-downgrade', {
+                        method: 'POST',
+                        credentials: 'include'
+                      });
+
+                      if (!response.ok) {
+                        throw new Error(await response.text());
+                      }
+
+                      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+                      toast({
+                        title: "Success",
+                        description: "Your Pro subscription will continue without interruption.",
+                        duration: 5000,
+                      });
+
+                    } catch (error) {
+                      console.error('Error cancelling downgrade:', error);
+                      toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: error instanceof Error ? error.message : "Failed to cancel plan downgrade",
+                        duration: 5000,
+                      });
+                    }
+                  }}
+                >
+                  Cancel Downgrade
+                </Button>
+              )}
+            </div>
           </div>
           {user?.subscriptionStatus === 'pro' && (
             <>
