@@ -322,8 +322,8 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
         </div>
       )}
       {user?.pendingDowngrade && user?.subscriptionExpiryDate && (
-        <Alert variant="warning">
-          <div className="flex justify-between items-start">
+        <>
+          <Alert variant="warning">
             <div>
               <AlertTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
@@ -334,10 +334,11 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
                 Your account will downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
               </AlertDescription>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={async () => {
+          </Alert>
+          <Button
+            variant="outline"
+            className="w-full mt-4"
+            onClick={async () => {
                 try {
                   const response = await fetch('/api/subscription/cancel-downgrade', {
                     method: 'POST',
