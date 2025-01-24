@@ -336,7 +336,7 @@ export function registerRoutes(app: Express): Server {
       // Set pending downgrade flag instead of immediate downgrade
       // Calculate next billing date as expiry date
       const nextBillingDate = user.subscriptionNextBillingDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      
+
       const [updatedUser] = await db
         .update(users)
         .set({
@@ -976,7 +976,7 @@ export function registerRoutes(app: Express): Server {
 
     try {
       // Verify current password
-      const [user] = await db
+      const [user] =await db
         .select()
         .from(users)
         .where(eq(users.id, req.user!.id))
