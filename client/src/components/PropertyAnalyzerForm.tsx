@@ -16,6 +16,7 @@ import {
 // Hooks
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/hooks/use-user";
 
 // UI Components
 import { Button } from "@/components/ui/button";
