@@ -64,13 +64,12 @@ export function useUser() {
   const { data: user, error, isLoading } = useQuery<SelectUser | null, Error>({
     queryKey: ['user'],
     queryFn: fetchUser,
-    staleTime: Infinity, // Keep the data fresh unless explicitly invalidated
-    cacheTime: Infinity,
-    retry: false,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    refetchInterval: false
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 1000 * 60 * 60, // Cache for 1 hour
+    retry: 1,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true
   });
 
   const loginMutation = useMutation({
@@ -90,7 +89,7 @@ export function useUser() {
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
@@ -99,6 +98,8 @@ export function useUser() {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['user'], data);
+      // Invalidate the query to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: ['user'] });
     },
     onError: (error: Error) => {
       toast({
@@ -106,7 +107,6 @@ export function useUser() {
         description: error.message,
         variant: "destructive",
       });
-      // Clear user data on error
       queryClient.setQueryData(['user'], null);
     }
   });
@@ -125,7 +125,6 @@ export function useUser() {
       return result;
     },
     onSuccess: () => {
-      // Clear all queries from the cache on logout
       queryClient.clear();
     },
   });
@@ -141,14 +140,13 @@ export function useUser() {
         });
 
         const data = await response.json();
-        
+
         if (!response.ok) {
           throw new Error(data.message || "Registration failed");
         }
 
         return data;
       } catch (error: any) {
-        // Prevent runtime error overlay by handling the error here
         const message = error?.message || "An unexpected error occurred";
         toast({
           title: "Registration Error",

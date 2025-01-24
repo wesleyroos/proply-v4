@@ -861,9 +861,9 @@ export function registerRoutes(app: Express): Server {
       const now = new Date();
       // If this is a first-time subscription, set start date to now
       const startDate = user.subscriptionStartDate || now;
-      // Always calculate next billing from the start date
+      // Calculate next billing date (30 days from start date)
       const nextBillingDate = new Date(startDate);
-      nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
+      nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
       const [updatedUser] = await db
         .update(users)
@@ -1387,6 +1387,7 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
+
   // Add this new endpoint after the existing signup analytics endpoint
   app.get("/api/analytics/signups", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
@@ -1434,6 +1435,7 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
+
   // Add new endpoint after the existing signup analytics endpoint
   app.get("/api/analytics/reports", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
