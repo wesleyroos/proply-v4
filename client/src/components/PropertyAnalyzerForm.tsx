@@ -3,7 +3,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Sparkles } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Hooks
 import { useProAccess } from "@/hooks/use-pro-access";
@@ -161,6 +161,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const { hasAccess: hasProAccess, isLoading: isProAccessLoading } = useProAccess();
   const { user, isLoading: isUserLoading } = useUser();
   const { toast } = useToast();
+  const queryClient = useQueryClient(); // Added useQueryClient hook
 
   // Check if user has reached their limit
   const reachedLimit = !isUserLoading && !isProAccessLoading && !hasProAccess && (user?.propertyAnalyzerUsage ?? 0) >= 3;
@@ -286,6 +287,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         },
         body: JSON.stringify(analysisData),
       });
+
+      // Invalidate user query to refresh usage count
+      queryClient.invalidateQueries({ queryKey: ['user'] });
 
       if (!response.ok) {
         throw new Error(await response.text());
@@ -1068,7 +1072,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       control={form.control}
                       name="occupancyRate"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem<FormItem>
                           <FormLabel>Annual Occupancy (%)</FormLabel>
                           <FormControl>
                             <Input
