@@ -146,11 +146,52 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Link href="/subscription">
-                    <Button type="submit" className="w-full">
-                      Continue to Payment
-                    </Button>
-                  </Link>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const form = document.createElement("form");
+                      form.method = "POST";
+                      form.action = "https://sandbox.payfast.co.za/eng/process";
+                      
+                      const paymentData = {
+                        merchant_id: "10000100",
+                        merchant_key: "46f0cd694581a",
+                        return_url: `${window.location.origin}/settings?payment=success`,
+                        cancel_url: `${window.location.origin}/settings?payment=cancelled`,
+                        notify_url: `${window.location.origin}/api/payment-webhook`,
+                        name_first: user?.firstName || "",
+                        email_address: user?.email || "",
+                        amount: "2000.00",
+                        item_name: "Proply Pro Subscription",
+                        subscription_type: "1",
+                        billing_date: new Date().toISOString().split('T')[0],
+                        recurring_amount: "2000.00",
+                        frequency: "3",
+                        cycles: "0",
+                        custom_str1: JSON.stringify({
+                          userId: user?.id,
+                          subscriptionStatus: 'pro'
+                        })
+                      };
+
+                      Object.entries(paymentData).forEach(([key, value]) => {
+                        if (value !== undefined) {
+                          const input = document.createElement("input");
+                          input.type = "hidden";
+                          input.name = key;
+                          input.value = value.toString();
+                          form.appendChild(input);
+                        }
+                      });
+
+                      document.body.appendChild(form);
+                      form.submit();
+                    }}
+                  >
+                    Subscribe Now (Test Mode)
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
