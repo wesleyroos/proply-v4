@@ -210,10 +210,30 @@ export default function PropertyAnalyzerPage() {
   const hasProAccess = useProAccess();
 
   useEffect(() => {
-    if (user && !hasProAccess && user.propertyAnalyzerUsage >= 3) {
-      setShowLimitModal(true);
-    }
+    const checkUsageLimit = () => {
+      if (user && !hasProAccess && (user.propertyAnalyzerUsage ?? 0) >= 3) {
+        setShowLimitModal(true);
+        return true;
+      }
+      return false;
+    };
+    
+    checkUsageLimit();
   }, [user, hasProAccess]);
+
+  // Prevent analysis if limit reached
+  const handleAnalysisComplete = async (formData: any) => {
+    if (user && !hasProAccess && (user.propertyAnalyzerUsage ?? 0) >= 3) {
+      setShowLimitModal(true);
+      return;
+    }
+    
+    try {
+      await props.onAnalysisComplete(formData);
+    } catch (error) {
+      console.error("Analysis error:", error);
+    }
+  };
 
   if (showLimitModal) {
     return (

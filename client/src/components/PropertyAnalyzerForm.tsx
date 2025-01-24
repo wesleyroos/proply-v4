@@ -226,8 +226,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   }
 
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
-    // If user has reached limit, prevent submission
-    if (reachedLimit) {
+    // Check usage limit before submission
+    if (!hasProAccess && (user?.propertyAnalyzerUsage ?? 0) >= 3) {
       setShowUpgradeModal(true);
       return;
     }
@@ -1071,8 +1071,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           <FormLabel>Annual Occupancy (%)</FormLabel>
                           <FormControl>
                             <Input
-                              type="number"
-                              min="0"
+                              type="number"                              min="0"
                               max="100"
                               {...field}
                               onChange={(e) =>
