@@ -325,14 +325,16 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
         <>
           <div className="space-y-4">
             <Alert variant="warning">
-              <AlertTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                Subscription Change Scheduled
-              </AlertTitle>
-              <AlertDescription className="mt-2 flex items-center gap-2">
-                <CalendarDays className="h-4 w-4" />
-                Your account will downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
-              </AlertDescription>
+              <div>
+                <AlertTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  Subscription Change Scheduled
+                </AlertTitle>
+                <AlertDescription className="mt-2 flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4" />
+                  Your account will downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
+                </AlertDescription>
+              </div>
               <Button
                 variant="outline"
                 className="w-full mt-4"
