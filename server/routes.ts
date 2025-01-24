@@ -800,6 +800,7 @@ export function registerRoutes(app: Express): Server {
   // Payment webhook for PayFast
   app.post("/api/payment-webhook", async (req, res) => {
     // Validate PayFast signature and update subscription
+    console.log("Received webhook payload:", req.body);
     const { user_id, subscription_status } = req.body;
 
     try {
