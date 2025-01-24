@@ -328,53 +328,32 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user!.id))
         .limit(1);
 
-      if (!user?.payfastToken) {
-        return res.status(400).json({ error: "No active subscription found" });
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
       }
 
-      const merchantId = process.env.VITE_PAYFAST_MERCHANT_ID;
-      const version = "v1";
-      const timestamp = new Date().toISOString();
-      const signature = ""; // TODO: Implement signature generation
-
-      // Call PayFast API to cancel subscription
-      const response = await fetch(
-        `https://api.payfast.co.za/subscriptions/${user.payfastToken}/cancel`,
-        {
-          method: "PUT",
-          headers: {
-            "merchant-id": merchantId,
-            version,
-            timestamp,
-            signature,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`PayFast API error: ${response.statusText}`);
-      }
-
-      // Update user subscription status
+      // Update user subscription status to free
       await db.transaction(async (tx) => {
         // Update user record
         await tx
           .update(users)
           .set({
             subscriptionStatus: "free",
-            payfastSubscriptionStatus: "cancelled",
+            payfastSubscriptionStatus: user.payfastToken ? "cancelled" : null,
             payfastToken: null,
             updatedAt: new Date(),
           })
           .where(eq(users.id, req.user!.id));
 
-        // Record subscription history
-        await tx.insert(subscriptionHistory).values({
-          userId: req.user!.id,
-          action: "cancel",
-          payfastToken: user.payfastToken,
-          success: true,
-        });
+        // Record subscription history if there's a PayFast token
+        if (user.payfastToken) {
+          await tx.insert(subscriptionHistory).values({
+            userId: req.user!.id,
+            action: "cancel",
+            payfastToken: user.payfastToken,
+            success: true,
+          });
+        }
       });
 
       res.json({ message: "Subscription cancelled successfully" });
