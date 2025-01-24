@@ -20,7 +20,6 @@ export const users = pgTable("users", {
   username: text("username").unique().notNull(),
   password: text("password").notNull(),
   email: text("email").unique().notNull(),
-  propertyAnalyzerUsage: integer("property_analyzer_usage").default(0).notNull(),
   userType: text("user_type").notNull(),
   company: text("company"),
   firstName: text("first_name"),
