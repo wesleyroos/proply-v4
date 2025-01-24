@@ -286,7 +286,7 @@ export function setupAuth(app: Express) {
   app.get("/api/user", (req, res) => {
     if (req.isAuthenticated()) {
       const user = req.user;
-      return res.json({
+      const userData = {
         id: user.id,
         email: user.email,
         firstName: user.firstName,
@@ -298,9 +298,14 @@ export function setupAuth(app: Express) {
         subscriptionExpiryDate: user.subscriptionExpiryDate,
         isAdmin: user.isAdmin,
         pendingDowngrade: user.pendingDowngrade,
-        subscriptionStartDate: user.subscriptionStartDate ? new Date(user.subscriptionStartDate).toISOString() : null,
-        subscriptionNextBillingDate: user.subscriptionNextBillingDate ? new Date(user.subscriptionNextBillingDate).toISOString() : null
+        subscriptionStartDate: user.subscriptionStartDate,
+        subscriptionNextBillingDate: user.subscriptionNextBillingDate
+      };
+      console.log('Sending user data with subscription dates:', {
+        startDate: userData.subscriptionStartDate,
+        nextBilling: userData.subscriptionNextBillingDate
       });
+      return res.json(userData);
     }
     res.status(401).send("Not logged in");
   });
