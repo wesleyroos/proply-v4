@@ -198,7 +198,35 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     "90": RevenueData;
   } | null>(null);
   const hasProAccess = useProAccess();
+  const { user } = useUser();
   const { toast } = useToast();
+  
+  const showUsageWarning = !hasProAccess && user?.propertyAnalyzerUsage === 2;
+  const reachedLimit = !hasProAccess && user?.propertyAnalyzerUsage >= 3;
+
+  useEffect(() => {
+    if (showUsageWarning) {
+      toast({
+        title: "Usage Limit Warning",
+        description: "You have 1 free analysis remaining. Upgrade to Pro for unlimited analyses.",
+        duration: 5000,
+      });
+    }
+  }, [showUsageWarning, toast]);
+
+  if (reachedLimit) {
+    return (
+      <Card className="p-6">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold">Free Plan Limit Reached</h2>
+          <p className="text-muted-foreground">You've used all 3 free property analyses. Upgrade to Pro for unlimited access.</p>
+          <Link to="/pricing">
+            <Button>Upgrade to Pro</Button>
+          </Link>
+        </div>
+      </Card>
+    );
+  }
 
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
