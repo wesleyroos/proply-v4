@@ -205,6 +205,23 @@ interface AnalysisResult {
 export default function PropertyAnalyzerPage() {
   const [isDataReady, setIsDataReady] = useState(false);
   const { user } = useUser();
+  const hasProAccess = useProAccess();
+
+  if (user && !hasProAccess && user.propertyAnalyzerUsage >= 3) {
+    return (
+      <div className="px-4 py-6">
+        <Card className="p-6">
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl font-bold">Free Plan Limit Reached</h2>
+            <p className="text-muted-foreground">You've used all 3 free property analyses. Upgrade to Pro for unlimited access.</p>
+            <Link to="/pricing">
+              <Button className="bg-blue-600 hover:bg-blue-700">Upgrade to Pro</Button>
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
+  }
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
     null,
   );
