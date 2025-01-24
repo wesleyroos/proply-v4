@@ -803,20 +803,39 @@ export function registerRoutes(app: Express): Server {
     const { user_id, subscription_status } = req.body;
 
     try {
+      // Verify the user exists first
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, user_id))
+        .limit(1);
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
       const now = new Date();
       const nextBillingDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
       
-      await db
+      const [updatedUser] = await db
         .update(users)
         .set({
           subscriptionStatus: subscription_status,
           subscriptionExpiryDate: nextBillingDate,
           subscriptionNextBillingDate: nextBillingDate,
           subscriptionStartDate: now,
+          pendingDowngrade: false,
           updatedAt: now,
         })
         .where(eq(users.id, user_id))
         .returning();
+
+      console.log("Subscription dates updated:", {
+        userId: updatedUser.id,
+        startDate: updatedUser.subscriptionStartDate,
+        nextBilling: updatedUser.subscriptionNextBillingDate,
+        status: updatedUser.subscriptionStatus
+      });
 
       res.json({ success: true });
     } catch (error) {
