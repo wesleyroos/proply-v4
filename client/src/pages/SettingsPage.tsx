@@ -370,7 +370,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
             >
               Cancel Downgrade
             </Button>
-        </Alert>
+        </>
       )}
 
       <div className="space-y-4">
