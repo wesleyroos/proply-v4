@@ -63,9 +63,12 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
   };
 
   // Determine subscription dates display
-  const subscriptionDates = {
-    nextBilling: user?.subscriptionNextBillingDate ? formatDate(user?.subscriptionNextBillingDate) : 'Not available',
-    activationDate: user?.subscriptionStartDate ? formatDate(user?.subscriptionStartDate) : 'Not available'
+  const subscriptionDates = user ? {
+    nextBilling: user.subscriptionNextBillingDate ? formatDate(user.subscriptionNextBillingDate) : 'Not available',
+    activationDate: user.subscriptionStartDate ? formatDate(user.subscriptionStartDate) : 'Not available'
+  } : {
+    nextBilling: 'Not available',
+    activationDate: 'Not available'
   };
 
   console.log('User subscription dates:', {
