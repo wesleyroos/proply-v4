@@ -190,7 +190,7 @@ export default function DashboardPage() {
                       form.submit();
                     }}
                   >
-                    Subscribe Now (Test Mode)
+                    Continue to Payment
                   </Button>
                 </DialogFooter>
               </DialogContent>
