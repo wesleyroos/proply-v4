@@ -50,7 +50,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
   const { toast } = useToast();
   const nextBillingDate = user?.subscriptionNextBillingDate 
     ? new Date(user.subscriptionNextBillingDate).toLocaleDateString()
-    : 'N/A';
+    : `N/A (${user?.accessCodeId ? 'Access code granted subscription' : 'No active billing cycle'})`;
 
   const planFeatures = {
     free: [
