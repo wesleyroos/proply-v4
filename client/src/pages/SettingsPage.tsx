@@ -49,6 +49,19 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Show downgrade alert at the top if applicable
+  if (user?.pendingDowngrade && user?.subscriptionExpiryDate) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
+          <div className="flex items-center">
+            <AlertTriangle className="h-5 w-5 text-red-400 mr-2" />
+            <p className="text-sm font-medium text-red-800">
+              Your account will downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+
   const formatDate = (date: string | Date | null | undefined) => {
     if (!date) return 'Not available';
     try {
