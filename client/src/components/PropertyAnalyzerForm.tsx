@@ -1072,7 +1072,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       control={form.control}
                       name="occupancyRate"
                       render={({ field }) => (
-                        <FormItem<FormItem>
+                        <FormItem>
                           <FormLabel>Annual Occupancy (%)</FormLabel>
                           <FormControl>
                             <Input
