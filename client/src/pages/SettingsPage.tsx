@@ -96,6 +96,16 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
 
   return (
     <div className="space-y-6">
+      {user?.pendingDowngrade && user?.subscriptionExpiryDate && (
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
+          <div className="flex items-center">
+            <AlertTriangle className="h-5 w-5 text-red-400 mr-2" />
+            <p className="text-sm font-medium text-red-800">
+              Your account will downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+      )}
       <div className="bg-card p-6 rounded-lg border">
         <h3 className="font-semibold mb-4">Current Plan Details</h3>
         <div className="grid gap-4">
@@ -105,14 +115,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
               {user?.subscriptionStatus || 'Free'}
             </p>
           </div>
-          {user?.pendingDowngrade && user?.subscriptionExpiryDate && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-              <p className="text-sm text-yellow-800 flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                Downgrade scheduled for {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
-              </p>
-            </div>
-          )}
+          
           {user?.subscriptionStatus === 'pro' && (
             <>
               <div>
