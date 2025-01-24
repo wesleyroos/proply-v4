@@ -17,6 +17,7 @@ import {
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
+import { Link } from "wouter";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
@@ -201,9 +203,42 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const hasProAccess = useProAccess();
   const { user } = useUser();
   const { toast } = useToast();
-  
-  const showUsageWarning = !hasProAccess && user?.propertyAnalyzerUsage === 2;
-  const reachedLimit = !hasProAccess && user?.propertyAnalyzerUsage >= 3;
+
+  const reachedLimit = !hasProAccess && (user?.propertyAnalyzerUsage ?? 0) >= 3;
+
+  // If user has reached their limit, show the upgrade modal and disable the form
+  if (reachedLimit) {
+    return (
+      <Dialog open={true}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Free Plan Limit Reached</DialogTitle>
+            <DialogDescription className="space-y-4">
+              <p>
+                You've used all 3 free property analyses. Upgrade to Pro for unlimited access to:
+              </p>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Unlimited property analyses</li>
+                <li>Advanced market insights</li>
+                <li>Comparative market analysis</li>
+                <li>Detailed investment metrics</li>
+              </ul>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center mt-6">
+            <Link href="/pricing">
+              <Button size="lg" className="w-full sm:w-auto">
+                Upgrade to Pro
+              </Button>
+            </Link>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Show warning when approaching limit (2 analyses used)
+  const showUsageWarning = !hasProAccess && (user?.propertyAnalyzerUsage ?? 0) === 2;
 
   useEffect(() => {
     if (showUsageWarning) {
@@ -214,20 +249,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       });
     }
   }, [showUsageWarning, toast]);
-
-  if (reachedLimit) {
-    return (
-      <Card className="p-6">
-        <div className="text-center space-y-4">
-          <h2 className="text-2xl font-bold">Free Plan Limit Reached</h2>
-          <p className="text-muted-foreground">You've used all 3 free property analyses. Upgrade to Pro for unlimited access.</p>
-          <Link to="/pricing">
-            <Button>Upgrade to Pro</Button>
-          </Link>
-        </div>
-      </Card>
-    );
-  }
 
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
