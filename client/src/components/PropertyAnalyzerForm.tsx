@@ -52,37 +52,8 @@ interface PropertyAnalyzerFormProps {
   onAnalysisComplete?: (data: PropertyAnalyzerFormValues) => Promise<void>;
 }
 
-interface PropertyAnalyzerFormData {
-  address: string;
-  propertyUrl: string;
-  purchasePrice: number;
-  floorArea: number;
-  bedrooms: number;
-  bathrooms: number;
-  parkingSpaces: number;
-  depositType: "percentage" | "amount";
-  depositAmount: number;
-  depositPercentage: number;
-  interestRate: number;
-  loanTerm: number;
-  monthlyLevies: number;
-  monthlyRatesTaxes: number;
-  otherMonthlyExpenses: number;
-  maintenancePercentage: number;
-  managementFee: number;
-  airbnbNightlyRate: number;
-  occupancyRate: number;
-  longTermRental: number;
-  leaseCycleGap: number;
-  annualIncomeGrowth: number;
-  annualExpenseGrowth: number;
-  annualPropertyAppreciation: number;
-  cmaRatePerSqm: number;
-  comments: string;
-  propertyPhoto?: File | null;
-}
+// Rest of the types remain unchanged...
 
-// Form schema
 const formSchema = z.object({
   // Step 1: Property Details
   address: z.string().min(1, "Address is required"),
@@ -200,16 +171,48 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     "75": RevenueData;
     "90": RevenueData;
   } | null>(null);
-  const hasProAccess = useProAccess();
-  const { user } = useUser();
+
+  const { hasAccess: hasProAccess, isLoading: isProAccessLoading } = useProAccess();
+  const { user, isLoading: isUserLoading } = useUser();
   const { toast } = useToast();
 
-  const reachedLimit = !hasProAccess && (user?.propertyAnalyzerUsage ?? 0) >= 3;
+  // Check if user has reached their limit
+  const reachedLimit = !isUserLoading && !isProAccessLoading && !hasProAccess && (user?.propertyAnalyzerUsage ?? 0) >= 3;
 
-  // If user has reached their limit, show the upgrade modal and disable the form
-  if (reachedLimit) {
+  // Show warning when approaching limit (2 analyses used)
+  const showUsageWarning = !hasProAccess && (user?.propertyAnalyzerUsage ?? 0) === 2;
+
+  // Show upgrade modal if limit is reached
+  useEffect(() => {
+    if (reachedLimit) {
+      setShowUpgradeModal(true);
+    }
+  }, [reachedLimit]);
+
+  // Show warning toast when close to limit
+  useEffect(() => {
+    if (showUsageWarning) {
+      toast({
+        title: "Usage Limit Warning",
+        description: "You have 1 free analysis remaining. Upgrade to Pro for unlimited analyses.",
+        duration: 5000,
+      });
+    }
+  }, [showUsageWarning, toast]);
+
+  // If still loading user data, show loading state
+  if (isUserLoading || isProAccessLoading) {
     return (
-      <Dialog open={true}>
+      <div className="flex justify-center items-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Render upgrade modal if limit reached
+  if (showUpgradeModal) {
+    return (
+      <Dialog open={true} onOpenChange={() => {}}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Free Plan Limit Reached</DialogTitle>
@@ -236,19 +239,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       </Dialog>
     );
   }
-
-  // Show warning when approaching limit (2 analyses used)
-  const showUsageWarning = !hasProAccess && (user?.propertyAnalyzerUsage ?? 0) === 2;
-
-  useEffect(() => {
-    if (showUsageWarning) {
-      toast({
-        title: "Usage Limit Warning",
-        description: "You have 1 free analysis remaining. Upgrade to Pro for unlimited analyses.",
-        duration: 5000,
-      });
-    }
-  }, [showUsageWarning, toast]);
 
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
@@ -533,7 +523,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         index < currentStep || isStepComplete
                           ? "bg-[#3B82F6]"
                           : "bg-gray-300"
-                      }`}
+                        }`}
                       style={{ left: "4rem" }}
                     />
                   )}
@@ -573,7 +563,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             : isStepComplete
                               ? "bg-white text-green-500 ring-green-500"
                               : "bg-white text-gray-500 ring-gray-300"
-                        }`}
+                          }`}
                       >
                         {index + 1}
                       </span>
@@ -1074,7 +1064,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               min="0"
                               {...field}
                               onChange={(e) =>
-                                field.onChange(e.target.valueAsNumber)
+                                                               field.onChange(e.target.valueAsNumber)
                               }
                             />
                           </FormControl>                          <FormMessage />
