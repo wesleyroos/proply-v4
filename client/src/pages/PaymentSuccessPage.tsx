@@ -53,7 +53,9 @@ export default function PaymentSuccessPage() {
             },
             body: JSON.stringify({
               userId: compressed.uid,
-              subscriptionStatus: 'pro'
+              subscriptionStatus: 'pro',
+              subscriptionStartDate: new Date().toISOString(),
+              subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
             }),
             credentials: 'include'
           });
@@ -76,7 +78,7 @@ export default function PaymentSuccessPage() {
           return;
         }
 
-        // Handle new user registration
+        // Handle new user registration with subscription
         if (!compressed.e || !compressed.p) {
           throw new Error('Invalid registration data format');
         }
@@ -88,7 +90,9 @@ export default function PaymentSuccessPage() {
           firstName: compressed.f,
           lastName: compressed.l,
           userType: compressed.t || 'individual',
-          subscriptionStatus: 'pro' // Always pro since payment was successful
+          subscriptionStatus: 'pro', // Always pro since payment was successful
+          subscriptionStartDate: new Date().toISOString(),
+          subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
         };
 
         console.log('Registering new user with data:', {
@@ -102,8 +106,9 @@ export default function PaymentSuccessPage() {
 
         // Login the user
         await login({
-          email: compressed.e,
+          username: compressed.e,
           password: compressed.p,
+          email: compressed.e,
           userType: compressed.t || 'individual'
         });
 
