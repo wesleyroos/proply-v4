@@ -332,35 +332,76 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ error: "User not found" });
       }
 
-      // Update user subscription status to free
-      await db.transaction(async (tx) => {
-        // Update user record
-        await tx
-          .update(users)
-          .set({
-            subscriptionStatus: "free",
-            payfastSubscriptionStatus: user.payfastToken ? "cancelled" : null,
-            payfastToken: null,
-            updatedAt: new Date(),
-          })
-          .where(eq(users.id, req.user!.id));
+      // Set pending downgrade flag instead of immediate downgrade
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          pendingDowngrade: true,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning();
 
-        // Record subscription history if there's a PayFast token
-        if (user.payfastToken) {
-          await tx.insert(subscriptionHistory).values({
-            userId: req.user!.id,
-            action: "cancel",
-            payfastToken: user.payfastToken,
-            success: true,
-          });
-        }
+      console.log("Scheduled downgrade for user:", {
+        userId: updatedUser.id,
+        currentPlan: updatedUser.subscriptionStatus,
+        nextBillingDate: updatedUser.subscriptionNextBillingDate,
+        pendingDowngrade: updatedUser.pendingDowngrade
       });
 
-      res.json({ message: "Subscription cancelled successfully" });
+      res.json({ 
+        message: "Subscription downgrade scheduled",
+        nextBillingDate: updatedUser.subscriptionNextBillingDate
+      });
     } catch (error) {
-      console.error("Error cancelling subscription:", error);
+      console.error("Error scheduling subscription downgrade:", error);
       res.status(500).json({
-        error: "Failed to cancel subscription",
+        error: "Failed to schedule subscription downgrade",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
+  // Add new endpoint to cancel pending downgrade
+  app.post("/api/subscription/cancel-downgrade", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      if (!user.pendingDowngrade) {
+        return res.status(400).json({ error: "No pending downgrade to cancel" });
+      }
+
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          pendingDowngrade: false,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning();
+
+      console.log("Cancelled pending downgrade for user:", {
+        userId: updatedUser.id,
+        currentPlan: updatedUser.subscriptionStatus
+      });
+
+      res.json({ message: "Pending downgrade cancelled successfully" });
+    } catch (error) {
+      console.error("Error cancelling pending downgrade:", error);
+      res.status(500).json({
+        error: "Failed to cancel pending downgrade",
         details: error instanceof Error ? error.message : undefined,
       });
     }
@@ -822,9 +863,8 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Payment webhook for PayFast
+  // Update the payment webhook to handle pending downgrades
   app.post("/api/payment-webhook", async (req, res) => {
-    // Validate PayFast signature and update subscription
     console.log("Received webhook payload:", req.body);
     const { user_id, subscription_status } = req.body;
 
@@ -847,14 +887,20 @@ export function registerRoutes(app: Express): Server {
       const nextBillingDate = new Date(startDate);
       nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
+      // If there's a pending downgrade and we've reached the next billing date,
+      // downgrade the subscription to free
+      const shouldDowngrade = user.pendingDowngrade && 
+        user.subscriptionNextBillingDate && 
+        now >= user.subscriptionNextBillingDate;
+
       const [updatedUser] = await db
         .update(users)
         .set({
-          subscriptionStatus: subscription_status,
-          subscriptionExpiryDate: nextBillingDate,
-          subscriptionNextBillingDate: nextBillingDate,
-          subscriptionStartDate: startDate,
-          pendingDowngrade: false,
+          subscriptionStatus: shouldDowngrade ? "free" : subscription_status,
+          subscriptionExpiryDate: shouldDowngrade ? now : nextBillingDate,
+          subscriptionNextBillingDate: shouldDowngrade ? null : nextBillingDate,
+          subscriptionStartDate: shouldDowngrade ? null : startDate,
+          pendingDowngrade: shouldDowngrade ? false : user.pendingDowngrade,
           updatedAt: now,
         })
         .where(eq(users.id, user_id))
@@ -864,7 +910,8 @@ export function registerRoutes(app: Express): Server {
         userId: updatedUser.id,
         startDate: updatedUser.subscriptionStartDate,
         nextBilling: updatedUser.subscriptionNextBillingDate,
-        status: updatedUser.subscriptionStatus
+        status: updatedUser.subscriptionStatus,
+        wasDowngraded: shouldDowngrade
       });
 
       res.json({ success: true });
@@ -938,8 +985,7 @@ export function registerRoutes(app: Express): Server {
       // Hash new password and update
       const hashedPassword = await crypto.hash(newPassword);
       await db
-        .update(users)
-        .set({ password: hashedPassword })
+        .update(users)        .set({ password: hashedPassword })
         .where(eq(users.id, req.user!.id));
 
       res.json({ message: "Password updated successfully" });
