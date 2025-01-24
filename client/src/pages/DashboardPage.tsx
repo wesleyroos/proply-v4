@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { formatter } from "../utils/formatting";
-import { Building2, Calculator, Home, ChartBar, ArrowRight, Sparkles } from "lucide-react";
+import { Building2, Calculator, Home, ChartBar, ArrowRight, Sparkles, CheckCircle } from "lucide-react";
 import DashboardMap from "@/components/DashboardMap";
 
 interface CompareProperty {
