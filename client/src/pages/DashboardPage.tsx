@@ -141,7 +141,7 @@ export default function DashboardPage() {
                     </ul>
                   </div>
                   <div className="bg-muted p-4 rounded-lg">
-                    <div className="text-2xl font-bold">R499/month</div>
+                    <div className="text-2xl font-bold">R2000/month</div>
                     <p className="text-muted-foreground">Cancel anytime</p>
                   </div>
                 </div>
