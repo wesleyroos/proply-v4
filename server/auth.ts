@@ -297,7 +297,9 @@ export function setupAuth(app: Express) {
         subscriptionStatus: user.subscriptionStatus,
         subscriptionExpiryDate: user.subscriptionExpiryDate,
         isAdmin: user.isAdmin,
-        pendingDowngrade: user.pendingDowngrade
+        pendingDowngrade: user.pendingDowngrade,
+        subscriptionStartDate: user.subscriptionStartDate ? new Date(user.subscriptionStartDate).toISOString() : null,
+        subscriptionNextBillingDate: user.subscriptionNextBillingDate ? new Date(user.subscriptionNextBillingDate).toISOString() : null
       });
     }
     res.status(401).send("Not logged in");
