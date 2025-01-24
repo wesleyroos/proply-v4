@@ -1062,7 +1062,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               min="0"
                               {...field}
                               onChange={(e) =>
-                                field.onChange(                                field.onChange(e.target.valueAsNumber)
+                                field.onChange(e.target.valueAsNumber)
                               }
                             />
                           </FormControl>
