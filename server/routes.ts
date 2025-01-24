@@ -171,36 +171,18 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      const { cycles = 1 } = req.body;
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.id, req.user!.id))
         .limit(1);
 
-      if (!user?.payfastToken) {
+      if (!user || user.subscriptionStatus !== 'pro') {
         return res.status(400).json({ error: "No active subscription found" });
       }
 
-      const merchantId = process.env.VITE_PAYFAST_MERCHANT_ID;
-      const version = "v1";
-      const timestamp = new Date().toISOString();
-      const signature = ""; // TODO: Implement signature generation
-
-      // Call PayFast API to pause subscription
-      const response = await fetch(
-        `https://api.payfast.co.za/subscriptions/${user.payfastToken}/pause`,
-        {
-          method: "PUT",
-          headers: {
-            "merchant-id": merchantId,
-            version,
-            timestamp,
-            signature,
-          },
-          body: JSON.stringify({ cycles }),
-        }
-      );
+      const pauseEndDate = new Date();
+      pauseEndDate.setMonth(pauseEndDate.getMonth() + 1); // Pause for 1 month
 
       if (!response.ok) {
         throw new Error(`PayFast API error: ${response.statusText}`);
@@ -211,25 +193,22 @@ export function registerRoutes(app: Express): Server {
       pauseEndDate.setMonth(pauseEndDate.getMonth() + cycles);
 
       // Update user subscription status
-      await db.transaction(async (tx) => {
-        // Update user record
-        await tx
-          .update(users)
-          .set({
-            payfastSubscriptionStatus: "paused",
-            subscriptionPausedUntil: pauseEndDate,
-            updatedAt: new Date(),
-          })
-          .where(eq(users.id, req.user!.id));
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          subscriptionStatus: "paused",
+          subscriptionPausedUntil: pauseEndDate,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning();
 
-        // Record subscription history
-        await tx.insert(subscriptionHistory).values({
-          userId: req.user!.id,
-          action: "pause",
-          payfastToken: user.payfastToken,
-          pauseDuration: cycles,
-          success: true,
-        });
+      // Record subscription history
+      await db.insert(subscriptionHistory).values({
+        userId: req.user!.id,
+        action: "pause",
+        pauseDuration: 1,
+        success: true,
       });
 
       res.json({
