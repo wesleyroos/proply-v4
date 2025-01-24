@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Loader2, Check } from "lucide-react";
+import { FileText, Loader2, Check, Sparkles } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ReportSelections } from '../types/propertyReport';
+import { useProAccess } from "@/hooks/use-pro-access";
 
 const REPORT_TEMPLATES = {
   basic: {
@@ -128,6 +129,7 @@ export function PDFGenerator({
     REPORT_TEMPLATES.basic.selections
   );
   const [progress, setProgress] = useState(0);
+  const hasProAccess = useProAccess();
 
   const handleTemplateChange = useCallback((template: string) => {
     setActiveTemplate(template);
@@ -186,11 +188,30 @@ export function PDFGenerator({
               <SelectValue placeholder="Choose template" />
             </SelectTrigger>
             <SelectContent>
-              {Object.entries(REPORT_TEMPLATES).map(([key, template]) => (
-                <SelectItem key={key} value={key}>
-                  {template.name}
-                </SelectItem>
-              ))}
+              <SelectItem value="basic">Basic Analysis</SelectItem>
+              {hasProAccess ? (
+                <>
+                  <SelectItem value="full">Full Analysis</SelectItem>
+                  <SelectItem value="custom">Custom Analysis</SelectItem>
+                </>
+              ) : (
+                <>
+                  <SelectItem value="full" disabled className="opacity-50">
+                    <div className="flex items-center gap-2">
+                      Full Analysis
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      <span className="text-xs text-primary">Pro</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="custom" disabled className="opacity-50">
+                    <div className="flex items-center gap-2">
+                      Custom Analysis
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      <span className="text-xs text-primary">Pro</span>
+                    </div>
+                  </SelectItem>
+                </>
+              )}
             </SelectContent>
           </Select>
           <span className="text-muted-foreground text-sm flex-grow">
