@@ -113,12 +113,47 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-bold text-gray-900">Welcome{user?.firstName ? `, ${user.firstName}` : ''}!</h1>
 
         {!hasProAccess && (
-          <Button size="sm" asChild className="bg-primary hover:opacity-90">
-            <Link href="/pricing">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Upgrade to Pro
-            </Link>
-          </Button>
+          <>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="sm" className="bg-primary hover:opacity-90">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Upgrade to Pro
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Upgrade to Pro</DialogTitle>
+                  <DialogDescription>
+                    Get unlimited access to all Proply features and tools
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">Pro Features Include:</h4>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li>Unlimited property analyses</li>
+                      <li>Advanced market insights</li>
+                      <li>Comparative market analysis</li>
+                      <li>Detailed investment metrics</li>
+                      <li>Priority support</li>
+                    </ul>
+                  </div>
+                  <div className="bg-muted p-4 rounded-lg">
+                    <div className="text-2xl font-bold">R499/month</div>
+                    <p className="text-muted-foreground">Cancel anytime</p>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Link href="/subscription">
+                    <Button type="submit" className="w-full">
+                      Continue to Payment
+                    </Button>
+                  </Link>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
         )}
       </div>
 
