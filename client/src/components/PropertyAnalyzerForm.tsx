@@ -1329,106 +1329,45 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
       {/* Upgrade Modal */}
       <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Upgrade to Pro</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
-              <div className="p-3 bg-blue-100 rounded-full">
-                <svg
-                  className="w-6 h-6 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-semibold text-blue-900">
-                  Accurate Revenue Data
-                </h4>
-                <p className="text-sm text-blue-700">
-                  Get real-time nightly rates and occupancy data from actual
-                  Airbnb listings in your area
-                </p>
-              </div>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader className="text-center">
+            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Sparkles className="h-6 w-6 text-primary" />
             </div>
-
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <DialogTitle className="text-2xl">Upgrade to</DialogTitle>
+              <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">PRO</span>
+            </div>
+            <DialogDescription className="text-center">
+              Get unlimited access to all Proply features and tools
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
             <div className="space-y-2">
-              <h4 className="font-medium">With Pro, you get:</h4>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2 text-sm">
-                  <svg
-                    className="w-4 h-4 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Accurate nightly rates based on local market data
-                </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <svg
-                    className="w-4 h-4 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Real occupancy rates from similar properties
-                </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <svg
-                    className="w-4 h-4 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Seasonal pricing trends and recommendations
-                </li>
+              <h4 className="font-semibold">Pro Features Include:</h4>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Accurate nightly rates based on local market data</li>
+                <li>Real occupancy rates from similar properties</li>
+                <li>Seasonal pricing trends and recommendations</li>
+                <li>Unlimited property analyses</li>
+                <li>Priority support</li>
               </ul>
             </div>
-
-            <Button
-              onClick={() => setShowUpgradeModal(false)}
-              className="w-full"
-            >
-              Upgrade Now
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowUpgradeModal(false)}
-              className="w-full"
-            >
-              Continue with Manual Entry
-            </Button>
+            <div className="bg-muted p-4 rounded-lg">
+              <div className="text-2xl font-bold">R2000/month</div>
+              <p className="text-muted-foreground">Cancel anytime</p>
+            </div>
           </div>
+          <DialogFooter>
+            <Button 
+              className="w-full" 
+              onClick={() => {
+                window.location.href = "https://www.payfast.co.za/eng/process?cmd=_paynow&receiver=MERCHANT_ID&item_name=Proply+Pro+Subscription&amount=2000.00&subscription=1&cycles=0";
+              }}
+            >
+              Continue to Payment
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
