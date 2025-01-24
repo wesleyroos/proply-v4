@@ -1363,7 +1363,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
             <Button 
               className="w-full" 
               onClick={() => {
-                window.location.href = "https://www.payfast.co.za/eng/process?cmd=_paynow&receiver=MERCHANT_ID&item_name=Proply+Pro+Subscription&amount=2000.00&subscription=1&cycles=0";
+                window.location.href = "https://sandbox.payfast.co.za/eng/process?cmd=_paynow&merchant_id=10000100&merchant_key=46f0cd694581a&amount=2000.00&item_name=Proply+Pro+Subscription&subscription_type=1&billing_date=2024-01-08&recurring_amount=2000.00&frequency=3&cycles=0";
               }}
             >
               Continue to Payment
