@@ -205,10 +205,9 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
                   <Button
                     variant="outline"
                     className="w-full text-destructive hover:text-destructive"
-                    onClick={user?.pendingDowngrade ? () => window.location.href = '#billing' : undefined}
-                    disabled={false}
+                    disabled={user?.pendingDowngrade}
                   >
-                    {user?.pendingDowngrade ? 'Downgrade scheduled. Cancel downgrade?' : 'Downgrade to Free'}
+                    {user?.pendingDowngrade ? 'Downgrade Scheduled' : 'Downgrade to Free'}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
