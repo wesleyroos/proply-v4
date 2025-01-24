@@ -47,6 +47,49 @@ export function registerRoutes(app: Express): Server {
     next();
   });
 
+  // Add to the /api/user route or create it if it doesn't exist (after the auth middleware setup)
+  app.get("/api/user", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [user] = await db
+        .select({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          subscriptionStatus: users.subscriptionStatus,
+          subscriptionStartDate: users.subscriptionStartDate,
+          subscriptionNextBillingDate: users.subscriptionNextBillingDate,
+          subscriptionExpiryDate: users.subscriptionExpiryDate,
+          isAdmin: users.isAdmin,
+          userType: users.userType,
+          companyLogo: users.companyLogo,
+          payfastSubscriptionStatus: users.payfastSubscriptionStatus,
+          subscriptionPausedUntil: users.subscriptionPausedUntil,
+          pendingDowngrade: users.pendingDowngrade,
+        })
+        .from(users)
+        .where(eq(users.id, req.user.id))
+        .limit(1);
+
+      console.log('Fetched user data:', {
+        id: user.id,
+        subscriptionStatus: user.subscriptionStatus,
+        startDate: user.subscriptionStartDate,
+        nextBilling: user.subscriptionNextBillingDate
+      });
+
+      res.json(user);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      res.status(500).json({ error: 'Failed to fetch user data' });
+    }
+  });
+
   // Subscription upgrade endpoint
   app.post("/api/subscription/upgrade", async (req, res) => {
     if (!req.isAuthenticated()) {
@@ -821,7 +864,7 @@ export function registerRoutes(app: Express): Server {
       // Always calculate next billing from the start date
       const nextBillingDate = new Date(startDate);
       nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
-      
+
       const [updatedUser] = await db
         .update(users)
         .set({

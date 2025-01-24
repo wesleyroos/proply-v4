@@ -64,17 +64,19 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
 
   // Determine subscription dates display
   const subscriptionDates = user ? {
-    nextBilling: user.subscriptionNextBillingDate ? formatDate(user.subscriptionNextBillingDate) : 'Not available',
-    activationDate: user.subscriptionStartDate ? formatDate(user.subscriptionStartDate) : 'Not available'
+    nextBilling: user.subscriptionNextBillingDate ? formatDate(new Date(user.subscriptionNextBillingDate)) : 'Not available',
+    activationDate: user.subscriptionStartDate ? formatDate(new Date(user.subscriptionStartDate)) : 'Not available'
   } : {
     nextBilling: 'Not available',
     activationDate: 'Not available'
   };
 
-  console.log('User subscription dates:', {
+  // For debugging
+  console.log('User subscription data:', {
     startDate: user?.subscriptionStartDate,
     nextBilling: user?.subscriptionNextBillingDate,
-    formatted: subscriptionDates
+    formatted: subscriptionDates,
+    rawUser: user
   });
 
   const planFeatures = {
@@ -390,7 +392,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
           </div>
         ) : (
           <div className="space-y-4">
-            
+
           </div>
         )}
       </div>
