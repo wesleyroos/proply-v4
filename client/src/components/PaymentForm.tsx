@@ -23,8 +23,9 @@ export default function PaymentForm({ registrationData = null }) {
   }
 
   const onSubmit = (data: PaymentFormData) => {
-    const merchantId = import.meta.env.VITE_PAYFAST_MERCHANT_ID;
-    const merchantKey = import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
+    // Use sandbox merchant credentials
+    const merchantId = "10000100";  // Sandbox merchant ID
+    const merchantKey = "46f0cd694581a";  // Sandbox merchant key
 
     if (!merchantId || !merchantKey) {
       console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
@@ -37,7 +38,7 @@ export default function PaymentForm({ registrationData = null }) {
       return;
     }
 
-    console.log('Initiating PayFast payment for:', { name: data.name, email: data.email });
+    console.log('Initiating PayFast sandbox payment for:', { name: data.name, email: data.email });
 
     const paymentData = {
       merchant_id: merchantId,
@@ -68,7 +69,8 @@ export default function PaymentForm({ registrationData = null }) {
     try {
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = "https://www.payfast.co.za/eng/process";
+      // Use sandbox URL
+      form.action = "https://sandbox.payfast.co.za/eng/process";
 
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value !== undefined) {
@@ -96,14 +98,12 @@ export default function PaymentForm({ registrationData = null }) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {(!import.meta.env.VITE_PAYFAST_MERCHANT_ID || !import.meta.env.VITE_PAYFAST_MERCHANT_KEY) && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              Payment system is currently unavailable. Please try again later.
-            </AlertDescription>
-          </Alert>
-        )}
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Test Mode: Using PayFast Sandbox Environment
+          </AlertDescription>
+        </Alert>
 
         <FormField
           control={form.control}
@@ -146,9 +146,8 @@ export default function PaymentForm({ registrationData = null }) {
         <Button 
           type="submit" 
           className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
-          disabled={!import.meta.env.VITE_PAYFAST_MERCHANT_ID || !import.meta.env.VITE_PAYFAST_MERCHANT_KEY}
         >
-          Subscribe Now
+          Subscribe Now (Test Mode)
         </Button>
       </form>
     </Form>

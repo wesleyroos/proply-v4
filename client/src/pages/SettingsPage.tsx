@@ -477,10 +477,11 @@ export default function SettingsPage() {
   };
 
   const initiateProUpgrade = () => {
-    console.log('Initiating Pro upgrade payment flow');
+    console.log('Initiating Pro upgrade payment flow (Sandbox Mode)');
 
-    const merchantId = import.meta.env.VITE_PAYFAST_MERCHANT_ID;
-    const merchantKey = import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
+    // Use sandbox merchant credentials
+    const merchantId = "10000100";  // Sandbox merchant ID
+    const merchantKey = "46f0cd694581a";  // Sandbox merchant key
 
     if (!merchantId || !merchantKey) {
       console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
@@ -541,7 +542,7 @@ export default function SettingsPage() {
     try {
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = "https://www.payfast.co.za/eng/process";
+      form.action = "https://sandbox.payfast.co.za/eng/process";
 
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value !== undefined) {
@@ -554,7 +555,7 @@ export default function SettingsPage() {
       });
 
       document.body.appendChild(form);
-      console.log('Submitting upgrade payment form to PayFast...');
+      console.log('Submitting upgrade payment form to PayFast sandbox...');
       form.submit();
     } catch (error) {
       console.error('Error submitting payment form:', error);
