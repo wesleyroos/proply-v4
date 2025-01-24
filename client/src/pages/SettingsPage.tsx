@@ -106,10 +106,10 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
             </p>
           </div>
           {user?.pendingDowngrade && user?.subscriptionExpiryDate && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
               <p className="text-sm text-yellow-800 flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
-                Scheduled to downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
+                Downgrade scheduled for {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
               </p>
             </div>
           )}
