@@ -50,7 +50,13 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
   const { toast } = useToast();
 
   const formatDate = (date: string | null | undefined) => {
-    return date ? new Date(date).toLocaleDateString() : 'Not available';
+    if (!date) return 'Not available';
+    try {
+      return new Date(date).toLocaleDateString();
+    } catch (e) {
+      console.error('Error formatting date:', e);
+      return 'Invalid date';
+    }
   };
 
   // Determine subscription dates display
@@ -220,23 +226,18 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
                         try {
                           const response = await fetch('/api/subscription/pause', {
                             method: 'POST',
-                            credentials: 'include',
-                            headers: {
-                              'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ cycles: 1 })
+                            credentials: 'include'
                           });
 
                           if (!response.ok) {
                             throw new Error(await response.text());
                           }
 
-                          const result = await response.json();
                           queryClient.invalidateQueries({ queryKey: ['user'] });
 
                           toast({
                             title: "Success",
-                            description: `Your subscription has been paused until ${new Date(result.resumeDate).toLocaleDateString()}`,
+                            description: "Your subscription has been paused",
                             duration: 5000,
                           });
 
@@ -313,6 +314,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
               </AlertDialog>
             )}
 
+            {/* Add Downgrade Button */}
             {user?.payfastSubscriptionStatus === "active" && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
