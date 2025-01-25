@@ -258,11 +258,6 @@ export default function PropertyAnalyzerPage() {
       </>
     );
   }
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<any>(null);
-  const [removeVat, setRemoveVat] = useState(false);
-  const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
-  const { toast } = useToast();
   const [analysisId, setAnalysisId] = useState<string | null>(null);
 
   console.log("Preparing PDF Data:", {
