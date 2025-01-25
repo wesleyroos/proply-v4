@@ -9,7 +9,7 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   res.header("Access-Control-Allow-Methods", "POST, OPTIONS");
-  
+
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -20,11 +20,11 @@ app.post("/analyze", (req, res) => {
   try {
     console.log("\n=== Starting Property Analysis ===");
     console.log("Raw request body:", JSON.stringify(req.body, null, 2));
-    
+
     // First validate that all required fields are present in the request
     const requiredFields = ['purchasePrice', 'deposit', 'interestRate', 'floorArea', 'ratePerSquareMeter'];
     const missingFields = requiredFields.filter(field => !(field in req.body));
-    
+
     if (missingFields.length > 0) {
       console.error("Missing required fields in request:", missingFields);
       return res.status(400).json({ 
@@ -44,18 +44,27 @@ app.post("/analyze", (req, res) => {
       propertyDescription: req.body.propertyDescription || null,
       deposit: Number(req.body.deposit),
       interestRate: Number(req.body.interestRate),
-      loanTerm: Number(req.body.loanTerm),
+      loanTerm: Number(req.body.loanTerm || 20),
       floorArea: Number(req.body.floorArea),
-      ratePerSquareMeter: Number(req.body.ratePerSquareMeter)
+      ratePerSquareMeter: Number(req.body.ratePerSquareMeter),
+      incomeGrowthRate: Number(req.body.annualIncomeGrowth || 8),
+      expenseGrowthRate: Number(req.body.annualExpenseGrowth || 6),
+      monthlyLevies: Number(req.body.monthlyLevies || 0),
+      monthlyRatesTaxes: Number(req.body.monthlyRatesTaxes || 0),
+      otherMonthlyExpenses: Number(req.body.otherMonthlyExpenses || 0),
+      maintenancePercent: Number(req.body.maintenancePercent || 0),
+      managementFee: Number(req.body.managementFee || 0),
+      propertyAppreciationRate: Number(req.body.annualPropertyAppreciation || 6),
+      address: req.body.address || "",
     };
 
     // Validate numeric fields
     console.log("Converted property data:", JSON.stringify(propertyData, null, 2));
-    
+
     const invalidFields = Object.entries(propertyData)
       .filter(([key, value]) => {
         if (typeof value === 'number') {
-          return isNaN(value) || value <= 0;
+          return isNaN(value) || value < 0;
         }
         return false;
       })
@@ -77,10 +86,10 @@ app.post("/analyze", (req, res) => {
   } catch (error) {
     console.error("=== Analysis Error ===");
     console.error("Error details:", error);
-    
+
     let errorMessage = "Failed to analyze property data";
     let errorDetails = {};
-    
+
     if (error instanceof Error) {
       errorMessage = error.message;
       errorDetails = {
@@ -88,13 +97,13 @@ app.post("/analyze", (req, res) => {
         stack: error.stack,
       };
     }
-    
+
     console.error("Sending error response:", { error: errorMessage, details: errorDetails });
     return res.status(500).json({ error: errorMessage, details: errorDetails });
   }
 });
 
-const PORT = Number(process.env.PORT) || 3001;
+const PORT = 5001; // Changed from 3001 to 5001 to avoid conflicts
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Analysis engine running on port ${PORT}`);
 });

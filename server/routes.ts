@@ -1038,7 +1038,7 @@ export function registerRoutes(app: Express): Server {
       }
 
       // Forward request to analysis engine
-      const response = await fetch('http://localhost:3001/analyze', {
+      const response = await fetch('http://0.0.0.0:5001/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
