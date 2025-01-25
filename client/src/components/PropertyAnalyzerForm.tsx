@@ -212,29 +212,29 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         parkingSpaces: Number(formData.parkingSpaces || 0),
 
         // Financing Details
-        depositType: data.depositType,
-        depositAmount: Number(data.depositAmount),
-        depositPercentage: Number(data.depositPercentage),
-        interestRate: Number(data.interestRate),
-        loanTerm: Number(data.loanTerm),
+        depositType: formData.depositType,
+        depositAmount: Number(formData.depositAmount),
+        depositPercentage: Number(formData.depositPercentage),
+        interestRate: Number(formData.interestRate),
+        loanTerm: Number(formData.loanTerm),
 
         // Operating Expenses
-        monthlyLevies: Number(data.monthlyLevies || 0),
-        monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
-        otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
-        maintenancePercent: Number(data.maintenancePercent || 0),
-        managementFee: Number(data.managementFee || 0),
+        monthlyLevies: Number(formData.monthlyLevies || 0),
+        monthlyRatesTaxes: Number(formData.monthlyRatesTaxes || 0),
+        otherMonthlyExpenses: Number(formData.otherMonthlyExpenses || 0),
+        maintenancePercent: Number(formData.maintenancePercent || 0),
+        managementFee: Number(formData.managementFee || 0),
 
         // Revenue Performance
-        airbnbNightlyRate: Number(data.airbnbNightlyRate || 0),
-        occupancyRate: Number(data.occupancyRate || 0),
-        longTermRental: Number(data.longTermRental || 0),
-        leaseCycleGap: Number(data.leaseCycleGap || 0),
+        airbnbNightlyRate: Number(formData.airbnbNightlyRate || 0),
+        occupancyRate: Number(formData.occupancyRate || 0),
+        longTermRental: Number(formData.longTermRental || 0),
+        leaseCycleGap: Number(formData.leaseCycleGap || 0),
 
         // Escalations
-        annualIncomeGrowth: Number(data.annualIncomeGrowth || 0),
-        annualExpenseGrowth: Number(data.annualExpenseGrowth || 0),
-        annualPropertyAppreciation: Number(data.annualPropertyAppreciation || 0),
+        annualIncomeGrowth: Number(formData.annualIncomeGrowth || 0),
+        annualExpenseGrowth: Number(formData.annualExpenseGrowth || 0),
+        annualPropertyAppreciation: Number(formData.annualPropertyAppreciation || 0),
 
         // Miscellaneous
         cmaRatePerSqm: Number(data.cmaRatePerSqm || 0),
