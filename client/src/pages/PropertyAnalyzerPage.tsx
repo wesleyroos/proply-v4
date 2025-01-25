@@ -46,10 +46,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAnalyzerPDF";
-import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
-import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
 
+// Keep the existing interfaces
 interface YearlyMetrics {
   grossYield: number;
   netYield: number;
@@ -214,20 +212,15 @@ export default function PropertyAnalyzerPage() {
   const [pdfData, setPDFData] = useState<any>(null);
   const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
+
   const { user } = useUser();
   const hasProAccess = useProAccess();
   const { toast } = useToast();
   const resultsRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Removed the showLimitModal logic here.
-  }, [user, hasProAccess]);
-
-  const calculateBondRegistration = (
-    purchasePrice: number,
-    includeVat: boolean = true,
-  ) => {
+  // Keep all the existing helper functions and handlers
+  const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
     if (!costs) return 0;
     return includeVat ? costs.total : costs.total - costs.vat;
@@ -468,6 +461,10 @@ export default function PropertyAnalyzerPage() {
       });
     }
   };
+
+  useEffect(() => {
+    // Removed the showLimitModal logic here.
+  }, [user, hasProAccess]);
 
   return (
     <div className="px-4 py-6">
