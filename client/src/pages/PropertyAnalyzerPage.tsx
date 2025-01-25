@@ -331,7 +331,7 @@ export default function PropertyAnalyzerPage() {
     return data;
   };
 
-  const handleGeneratePDF = async (selections: any) => { // Added any type for selections since it's not defined in original
+  const handleGeneratePDF = async (selections: any) => {
     try {
       await generatePDF(pdfData, selections, user?.settings?.companyLogo || "");
       toast({
@@ -861,7 +861,7 @@ export default function PropertyAnalyzerPage() {
                           longTermAnnualRevenue={Number(
                             analysisResult.analysis.longTermAnnualRevenue,
                           )}
-                          platformFee={analysisResult.managementFee > 0 ? 15 : 3}
+                                                    platformFee={analysisResult.managementFee > 0 ? 15 : 3}
                         />
                       </div>
 
@@ -873,6 +873,8 @@ export default function PropertyAnalyzerPage() {
                           otherMonthlyExpenses={Number(formData?.otherMonthlyExpenses)}
                           maintenancePercent={Number(formData?.maintenancePercent)}
                           managementFee={Number(analysisResult.managementFee)}
+                          revenueProjections={analysisResult.analysis.revenueProjections}
+                          netOperatingIncome={analysisResult.analysis.netOperatingIncome}
                         />
                       </div>
 
