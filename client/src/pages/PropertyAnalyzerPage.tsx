@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "wouter";
+import html2canvas from "html2canvas";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
-import { useUser } from "@/hooks/use-user";
 import {
   Card,
   CardContent,
@@ -11,8 +10,12 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  findCostFromTable,
+  bondCostsTable,
+  transferCostsTable,
+} from "@/lib/costTables";
 import {
   AlertCircle,
   BarChart3,
@@ -28,6 +31,8 @@ import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
 import RentalPerformance from "@/components/RentalPerformance";
 import AssetGrowthMetrics from "@/components/AssetGrowthMetrics";
+import { useUser } from "@/hooks/use-user";
+import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
 import {
   Tooltip,
@@ -35,11 +40,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAnalyzerPDF";
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
 import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
 
-// Move YearlyMetrics and AnalysisResult interfaces here
 interface YearlyMetrics {
   grossYield: number;
   netYield: number;
@@ -194,14 +204,7 @@ interface AnalysisResult {
 }
 
 export default function PropertyAnalyzerPage() {
-  // 1. All hooks are declared at the top level
-  const { user } = useUser();
-  const hasProAccess = useProAccess();
-  const { toast } = useToast();
-  const resultsRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
-
-  // 2. All state declarations are grouped together
+  // Move all hook declarations to the top
   const [isDataReady, setIsDataReady] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -213,16 +216,80 @@ export default function PropertyAnalyzerPage() {
   const [pdfData, setPDFData] = useState<any>(null);
   const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
+  const { user } = useUser();
+  const hasProAccess = useProAccess();
+  const { toast } = useToast();
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
 
-  // 3. Effects are grouped together
   useEffect(() => {
     if (user && !hasProAccess && user.propertyAnalyzerUsage >= 3) {
       setShowLimitModal(true);
     }
   }, [user, hasProAccess]);
 
-  // 4. Helper functions
-  const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
+  // Render modal if limit reached
+  const renderLimitModal = () => {
+    if (!showLimitModal) return null;
+    return (
+      <>
+        <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Free Plan Limit Reached</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-6">
+              <p className="text-muted-foreground">
+                You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
+              </p>
+              <div className="pt-4">
+                <Link to="/pricing">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                    Upgrade to Pro
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+        <div className="px-4 py-6 opacity-50 pointer-events-none">
+          <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+        </div>
+      </>
+    );
+  }
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null,
+  );
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<any>(null);
+  const [removeVat, setRemoveVat] = useState(false);
+  const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
+  const { toast } = useToast();
+  const [analysisId, setAnalysisId] = useState<string | null>(null);
+
+  console.log("Preparing PDF Data:", {
+    fullAnalysisResult: analysisResult,
+    pdfDataStructure: {
+      analysisNetOperatingIncome: analysisResult?.analysis?.netOperatingIncome,
+      analysisLongTermNetOperatingIncome:
+        analysisResult?.analysis?.longTermNetOperatingIncome,
+      netOperatingIncome: analysisResult?.netOperatingIncome,
+      revenueProjections: analysisResult?.analysis?.revenueProjections,
+    },
+  });
+
+  const [pdfData, setPDFData] = useState<any>(null);
+  const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [showPDFGenerator, setShowPDFGenerator] = useState(false);
+  const companyLogo = "/your-company-logo.png";
+
+  const calculateBondRegistration = (
+    purchasePrice: number,
+    includeVat: boolean = true,
+  ) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
     if (!costs) return 0;
     return includeVat ? costs.total : costs.total - costs.vat;
@@ -244,6 +311,7 @@ export default function PropertyAnalyzerPage() {
   const handleAnalysisComplete = async (formData: any) => {
     try {
       setAnalysisError(null);
+      console.log("Form data received:", formData);
       setFormData({
         ...formData,
         propertyPhoto: formData.propertyPhoto,
@@ -287,6 +355,8 @@ export default function PropertyAnalyzerPage() {
         propertyDescription: formData.comments || "",
       };
 
+      console.log("Data being sent to analyzer:", requestBody);
+
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: {
@@ -301,6 +371,8 @@ export default function PropertyAnalyzerPage() {
       }
 
       const data = await response.json();
+      console.log("Analysis response:", data);
+
       setAnalysisResult({
         ...data,
         shortTermNightlyRate: requestBody.shortTermNightlyRate,
@@ -309,14 +381,19 @@ export default function PropertyAnalyzerPage() {
         loanTerm: requestBody.loanTerm,
       });
 
-      if (resultsRef.current) {
-        const yOffset = -100;
-        const y =
-          resultsRef.current.getBoundingClientRect().top +
-          window.pageYOffset +
-          yOffset;
-        window.scrollTo({ top: y, behavior: "smooth" });
-      }
+      setTimeout(() => {
+        if (resultsRef.current) {
+          const yOffset = -100;
+          const y =
+            resultsRef.current.getBoundingClientRect().top +
+            window.pageYOffset +
+            yOffset;
+          window.scrollTo({
+            top: y,
+            behavior: "smooth",
+          });
+        }
+      }, 100);
     } catch (error) {
       console.error("Analysis failed:", error);
       setAnalysisError(
@@ -400,6 +477,7 @@ export default function PropertyAnalyzerPage() {
             : "Failed to generate PDF report",
         duration: 5000,
       });
+    } finally {
     }
   };
 
@@ -453,39 +531,8 @@ export default function PropertyAnalyzerPage() {
     }
   };
 
-  const findCostFromTable = (purchasePrice: number, table: any) => {
-    //Implementation for findCostFromTable
-  }
-
-  const bondCostsTable = [
-    //Implementation for bondCostsTable
-  ]
-
-  const transferCostsTable = [
-    //Implementation for transferCostsTable
-  ]
-
-  // 5. Render method
   return (
     <div className="px-4 py-6">
-      <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Free Plan Limit Reached</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-6">
-            <p className="text-muted-foreground">
-              You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
-            </p>
-            <div className="pt-4">
-              <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
-                <Link href="/pricing">Upgrade to Pro</Link>
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       <div className="flex items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Property Analysis</h1>
@@ -494,21 +541,14 @@ export default function PropertyAnalyzerPage() {
           </p>
           {!hasProAccess && user && (
             <p className="text-sm text-muted-foreground mt-2">
-              <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span>{" "}
-              free analyses used
+              <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span> free analyses used
             </p>
           )}
         </div>
       </div>
 
       <div className="space-y-6">
-        {showLimitModal ? (
-          <div className="opacity-50 pointer-events-none">
-            <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
-          </div>
-        ) : (
-          <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
-        )}
+        <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
 
         {analysisError && (
           <Card className="border-red-200 bg-red-50">
@@ -547,8 +587,15 @@ export default function PropertyAnalyzerPage() {
                     <TooltipTrigger asChild>
                       <div>
                         <Button
+                          // Update the pdfData preparation in the Export PDF button click handler:
                           onClick={() => {
                             if (!analysisResult || !analysisId) return;
+
+                            // Add this console log right before setPDFData
+                            console.log("Raw Analysis Result:", {
+                              managementFee: analysisResult.managementFee,
+                              fullAnalysisResult: analysisResult,
+                            });
 
                             setPDFData({
                               propertyDetails: {
@@ -580,6 +627,7 @@ export default function PropertyAnalyzerPage() {
                                 longTermNetOperatingIncome: analysisResult.analysis.longTermNetOperatingIncome,
                                 revenueProjections: analysisResult.analysis.revenueProjections,
                               },
+                              // Add this new performance object
                               performance: {
                                 shortTermNightlyRate: Number(
                                   analysisResult.shortTermNightlyRate,
@@ -635,6 +683,7 @@ export default function PropertyAnalyzerPage() {
                                   ),
                               },
                               expenses: {
+                                // Changed from operatingExpenses to expenses
                                 monthlyLevies: Number(formData?.monthlyLevies) || 0,
                                 monthlyRatesTaxes: Number(
                                   formData?.monthlyRatesTaxes
@@ -678,7 +727,11 @@ export default function PropertyAnalyzerPage() {
                               revenueProjections:
                                 analysisResult.analysis.revenueProjections,
                             });
-                            setIsDataReady(true);
+                            setIsDataReady(true); // Add this after setPDFData
+
+                            // Add this console log after setPDFData
+                            console.log("PDF Data being passed:", pdfData);
+
                             setShowPDFGenerator(true);
                           }}
                           disabled={!analysisResult || !analysisId}
@@ -932,7 +985,8 @@ export default function PropertyAnalyzerPage() {
                           <div>
                             <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                               <span>
-                                R                                {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
+                                R
+                                {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
                                   "0"}
                               </span>
                               <span
@@ -1147,7 +1201,9 @@ export default function PropertyAnalyzerPage() {
                   </CardContent>
                 </Card>
               </div>
+            </div>
 
+            <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
