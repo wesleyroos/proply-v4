@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "wouter";
-import html2canvas from "html2canvas";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/hooks/use-user";
 import {
   Card,
   CardContent,
@@ -13,7 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
-import { useUser } from "@/hooks/use-user";
 import {
   AlertCircle,
   BarChart3,
@@ -40,6 +39,7 @@ import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAn
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
 import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
 
+// Move YearlyMetrics and AnalysisResult interfaces here
 interface YearlyMetrics {
   grossYield: number;
   netYield: number;
@@ -194,12 +194,14 @@ interface AnalysisResult {
 }
 
 export default function PropertyAnalyzerPage() {
+  // 1. All hooks are declared at the top level
   const { user } = useUser();
   const hasProAccess = useProAccess();
   const { toast } = useToast();
   const resultsRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
+  // 2. All state declarations are grouped together
   const [isDataReady, setIsDataReady] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -212,12 +214,14 @@ export default function PropertyAnalyzerPage() {
   const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
 
+  // 3. Effects are grouped together
   useEffect(() => {
     if (user && !hasProAccess && user.propertyAnalyzerUsage >= 3) {
       setShowLimitModal(true);
     }
   }, [user, hasProAccess]);
 
+  // 4. Helper functions
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
     if (!costs) return 0;
@@ -240,7 +244,6 @@ export default function PropertyAnalyzerPage() {
   const handleAnalysisComplete = async (formData: any) => {
     try {
       setAnalysisError(null);
-      console.log("Form data received:", formData);
       setFormData({
         ...formData,
         propertyPhoto: formData.propertyPhoto,
@@ -284,8 +287,6 @@ export default function PropertyAnalyzerPage() {
         propertyDescription: formData.comments || "",
       };
 
-      console.log("Data being sent to analyzer:", requestBody);
-
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: {
@@ -300,8 +301,6 @@ export default function PropertyAnalyzerPage() {
       }
 
       const data = await response.json();
-      console.log("Analysis response:", data);
-
       setAnalysisResult({
         ...data,
         shortTermNightlyRate: requestBody.shortTermNightlyRate,
@@ -310,19 +309,14 @@ export default function PropertyAnalyzerPage() {
         loanTerm: requestBody.loanTerm,
       });
 
-      setTimeout(() => {
-        if (resultsRef.current) {
-          const yOffset = -100;
-          const y =
-            resultsRef.current.getBoundingClientRect().top +
-            window.pageYOffset +
-            yOffset;
-          window.scrollTo({
-            top: y,
-            behavior: "smooth",
-          });
-        }
-      }, 100);
+      if (resultsRef.current) {
+        const yOffset = -100;
+        const y =
+          resultsRef.current.getBoundingClientRect().top +
+          window.pageYOffset +
+          yOffset;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
     } catch (error) {
       console.error("Analysis failed:", error);
       setAnalysisError(
@@ -471,6 +465,7 @@ export default function PropertyAnalyzerPage() {
     //Implementation for transferCostsTable
   ]
 
+  // 5. Render method
   return (
     <div className="px-4 py-6">
       <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
@@ -554,11 +549,6 @@ export default function PropertyAnalyzerPage() {
                         <Button
                           onClick={() => {
                             if (!analysisResult || !analysisId) return;
-
-                            console.log("Raw Analysis Result:", {
-                              managementFee: analysisResult.managementFee,
-                              fullAnalysisResult: analysisResult,
-                            });
 
                             setPDFData({
                               propertyDetails: {
@@ -689,9 +679,6 @@ export default function PropertyAnalyzerPage() {
                                 analysisResult.analysis.revenueProjections,
                             });
                             setIsDataReady(true);
-
-                            console.log("PDF Data being passed:", pdfData);
-
                             setShowPDFGenerator(true);
                           }}
                           disabled={!analysisResult || !analysisId}
