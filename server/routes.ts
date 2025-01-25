@@ -1006,12 +1006,6 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Get user info
-      const [user] = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, req.user!.id))
-        .limit(1);
       console.log("\n=== Starting Property Analysis ===");
       console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
 
