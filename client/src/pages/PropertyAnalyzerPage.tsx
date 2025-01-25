@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "wouter";
 import html2canvas from "html2canvas";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
@@ -229,7 +228,7 @@ export default function PropertyAnalyzerPage() {
                 You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
               </p>
               <div className="pt-4">
-                <Link href="/pricing">
+                <Link to="/pricing">
                   <Button className="w-full bg-blue-600 hover:bg-blue-700">
                     Upgrade to Pro
                   </Button>
@@ -527,8 +526,7 @@ export default function PropertyAnalyzerPage() {
           </p>
           {!hasProAccess && user && (
             <p className="text-sm text-muted-foreground mt-2">
-              <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span>{" "}
-              free analyses used
+              <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span> free analyses used
             </p>
           )}
         </div>
@@ -574,9 +572,11 @@ export default function PropertyAnalyzerPage() {
                     <TooltipTrigger asChild>
                       <div>
                         <Button
+                          // Update the pdfData preparation in the Export PDF button click handler:
                           onClick={() => {
                             if (!analysisResult || !analysisId) return;
 
+                            // Add this console log right before setPDFData
                             console.log("Raw Analysis Result:", {
                               managementFee: analysisResult.managementFee,
                               fullAnalysisResult: analysisResult,
@@ -612,6 +612,7 @@ export default function PropertyAnalyzerPage() {
                                 longTermNetOperatingIncome: analysisResult.analysis.longTermNetOperatingIncome,
                                 revenueProjections: analysisResult.analysis.revenueProjections,
                               },
+                              // Add this new performance object
                               performance: {
                                 shortTermNightlyRate: Number(
                                   analysisResult.shortTermNightlyRate,
@@ -667,6 +668,7 @@ export default function PropertyAnalyzerPage() {
                                   ),
                               },
                               expenses: {
+                                // Changed from operatingExpenses to expenses
                                 monthlyLevies: Number(formData?.monthlyLevies) || 0,
                                 monthlyRatesTaxes: Number(
                                   formData?.monthlyRatesTaxes
@@ -710,8 +712,9 @@ export default function PropertyAnalyzerPage() {
                               revenueProjections:
                                 analysisResult.analysis.revenueProjections,
                             });
-                            setIsDataReady(true);
+                            setIsDataReady(true); // Add this after setPDFData
 
+                            // Add this console log after setPDFData
                             console.log("PDF Data being passed:", pdfData);
 
                             setShowPDFGenerator(true);
