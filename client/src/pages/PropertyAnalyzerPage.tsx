@@ -49,6 +49,7 @@ import {
 import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAnalyzerPDF";
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
 import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
+import { Link } from "wouter";
 
 interface YearlyMetrics {
   grossYield: number;
@@ -243,11 +244,9 @@ export default function PropertyAnalyzerPage() {
                 You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
               </p>
               <div className="pt-4">
-                <Link to="/pricing">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                    Upgrade to Pro
-                  </Button>
-                </Link>
+                <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
+                  <Link href="/pricing">Upgrade to Pro</Link>
+                </Button>
               </div>
             </div>
           </DialogContent>
@@ -257,16 +256,7 @@ export default function PropertyAnalyzerPage() {
         </div>
       </>
     );
-  }
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
-    null,
-  );
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<any>(null);
-  const [removeVat, setRemoveVat] = useState(false);
-  const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
-  const { toast } = useToast();
-  const [analysisId, setAnalysisId] = useState<string | null>(null);
+  };
 
   console.log("Preparing PDF Data:", {
     fullAnalysisResult: analysisResult,
@@ -279,11 +269,7 @@ export default function PropertyAnalyzerPage() {
     },
   });
 
-  const [pdfData, setPDFData] = useState<any>(null);
-  const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [showPDFGenerator, setShowPDFGenerator] = useState(false);
+
   const companyLogo = "/your-company-logo.png";
 
   const calculateBondRegistration = (
@@ -541,7 +527,8 @@ export default function PropertyAnalyzerPage() {
           </p>
           {!hasProAccess && user && (
             <p className="text-sm text-muted-foreground mt-2">
-              <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span> free analyses used
+              <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span>{" "}
+              free analyses used
             </p>
           )}
         </div>
@@ -587,11 +574,9 @@ export default function PropertyAnalyzerPage() {
                     <TooltipTrigger asChild>
                       <div>
                         <Button
-                          // Update the pdfData preparation in the Export PDF button click handler:
                           onClick={() => {
                             if (!analysisResult || !analysisId) return;
 
-                            // Add this console log right before setPDFData
                             console.log("Raw Analysis Result:", {
                               managementFee: analysisResult.managementFee,
                               fullAnalysisResult: analysisResult,
@@ -627,7 +612,6 @@ export default function PropertyAnalyzerPage() {
                                 longTermNetOperatingIncome: analysisResult.analysis.longTermNetOperatingIncome,
                                 revenueProjections: analysisResult.analysis.revenueProjections,
                               },
-                              // Add this new performance object
                               performance: {
                                 shortTermNightlyRate: Number(
                                   analysisResult.shortTermNightlyRate,
@@ -683,7 +667,6 @@ export default function PropertyAnalyzerPage() {
                                   ),
                               },
                               expenses: {
-                                // Changed from operatingExpenses to expenses
                                 monthlyLevies: Number(formData?.monthlyLevies) || 0,
                                 monthlyRatesTaxes: Number(
                                   formData?.monthlyRatesTaxes
@@ -727,9 +710,8 @@ export default function PropertyAnalyzerPage() {
                               revenueProjections:
                                 analysisResult.analysis.revenueProjections,
                             });
-                            setIsDataReady(true); // Add this after setPDFData
+                            setIsDataReady(true);
 
-                            // Add this console log after setPDFData
                             console.log("PDF Data being passed:", pdfData);
 
                             setShowPDFGenerator(true);
@@ -985,8 +967,7 @@ export default function PropertyAnalyzerPage() {
                           <div>
                             <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                               <span>
-                                R
-                                {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
+                                R                                {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
                                   "0"}
                               </span>
                               <span
