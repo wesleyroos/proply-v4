@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Hooks
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/hooks/use-user";
+import { Link } from "wouter";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -26,6 +29,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
@@ -40,37 +45,7 @@ interface PropertyAnalyzerFormProps {
   onAnalysisComplete?: (data: PropertyAnalyzerFormValues) => Promise<void>;
 }
 
-interface PropertyAnalyzerFormData {
-  address: string;
-  propertyUrl: string;
-  purchasePrice: number;
-  floorArea: number;
-  bedrooms: number;
-  bathrooms: number;
-  parkingSpaces: number;
-  depositType: "percentage" | "amount";
-  depositAmount: number;
-  depositPercentage: number;
-  interestRate: number;
-  loanTerm: number;
-  monthlyLevies: number;
-  monthlyRatesTaxes: number;
-  otherMonthlyExpenses: number;
-  maintenancePercentage: number;
-  managementFee: number;
-  airbnbNightlyRate: number;
-  occupancyRate: number;
-  longTermRental: number;
-  leaseCycleGap: number;
-  annualIncomeGrowth: number;
-  annualExpenseGrowth: number;
-  annualPropertyAppreciation: number;
-  cmaRatePerSqm: number;
-  comments: string;
-  propertyPhoto?: File | null;
-}
 
-// Form schema
 const formSchema = z.object({
   // Step 1: Property Details
   address: z.string().min(1, "Address is required"),
@@ -168,16 +143,11 @@ const STEPS = [
   "Miscellaneous",
 ];
 
-interface RevenueData {
-  adr: number;
-  occupancy: number;
-  percentile: number;
-}
-
 export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [showPercentileDialog, setShowPercentileDialog] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [demoClicks, setDemoClicks] = useState(0);
@@ -187,8 +157,232 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     "75": RevenueData;
     "90": RevenueData;
   } | null>(null);
-  const hasProAccess = useProAccess();
+
+  const { hasAccess: hasProAccess, isLoading: isProAccessLoading } = useProAccess();
+  const { user, isLoading: isUserLoading } = useUser();
   const { toast } = useToast();
+  const queryClient = useQueryClient(); // Added useQueryClient hook
+
+  // Check if user has reached their limit
+  const reachedLimit = !isUserLoading && !isProAccessLoading && !hasProAccess && (user?.propertyAnalyzerUsage ?? 0) >= 3;
+
+  // Show warning when approaching limit (2 analyses used)
+  const showUsageWarning = !hasProAccess && (user?.propertyAnalyzerUsage ?? 0) === 2;
+
+  // Show upgrade modal if limit is reached
+  useEffect(() => {
+    if (reachedLimit) {
+      setShowUpgradeModal(true);
+    }
+  }, [reachedLimit]);
+
+  // Show warning toast when close to limit
+  useEffect(() => {
+    if (showUsageWarning) {
+      toast({
+        title: "Usage Limit Warning",
+        description: "You have 1 free analysis remaining. Upgrade to Pro for unlimited analyses.",
+        duration: 5000,
+      });
+    }
+  }, [showUsageWarning, toast]);
+
+  // If still loading user data, show loading state
+  if (isUserLoading || isProAccessLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Render upgrade modal if limit reached
+  if (reachedLimit) {
+    return (
+      <Dialog open={true} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Free Plan Limit Reached</DialogTitle>
+            <DialogDescription className="space-y-4">
+              <p>
+                You've used all 3 free property analyses. Upgrade to Pro for unlimited access to:
+              </p>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Unlimited property analyses</li>
+                <li>Advanced market insights</li>
+                <li>Comparative market analysis</li>
+                <li>Detailed investment metrics</li>
+              </ul>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center mt-6">
+            <Link href="/pricing">
+              <Button size="lg" className="w-full sm:w-auto">
+                Upgrade to Pro
+              </Button>
+            </Link>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  const onSubmit = async (data: PropertyAnalyzerFormValues) => {
+    // If user has reached limit, prevent submission
+    if (reachedLimit) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Clean and prepare the analysis data
+      // Ensure all form fields are included and properly typed
+      const analysisData = {
+        // Property Details
+        address: data.address,
+        propertyUrl: data.propertyUrl,
+        purchasePrice: Number(data.purchasePrice),
+        floorArea: Number(data.floorArea),
+        bedrooms: Number(data.bedrooms),
+        bathrooms: Number(data.bathrooms),
+        parkingSpaces: Number(data.parkingSpaces || 0),
+
+        // Financing Details
+        depositType: data.depositType,
+        depositAmount: Number(data.depositAmount),
+        depositPercentage: Number(data.depositPercentage),
+        interestRate: Number(data.interestRate),
+        loanTerm: Number(data.loanTerm),
+
+        // Operating Expenses
+        monthlyLevies: Number(data.monthlyLevies || 0),
+        monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
+        otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
+        maintenancePercent: Number(data.maintenancePercent || 0),
+        managementFee: Number(data.managementFee || 0),
+
+        // Revenue Performance
+        airbnbNightlyRate: Number(data.airbnbNightlyRate || 0),
+        occupancyRate: Number(data.occupancyRate || 0),
+        longTermRental: Number(data.longTermRental || 0),
+        leaseCycleGap: Number(data.leaseCycleGap || 0),
+
+        // Escalations
+        annualIncomeGrowth: Number(data.annualIncomeGrowth || 0),
+        annualExpenseGrowth: Number(data.annualExpenseGrowth || 0),
+        annualPropertyAppreciation: Number(data.annualPropertyAppreciation || 0),
+
+        // Miscellaneous
+        cmaRatePerSqm: Number(data.cmaRatePerSqm || 0),
+        comments: data.comments || "",
+      };
+
+      console.log("Submitting complete analysis data:", analysisData);
+
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(analysisData),
+      });
+
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || response.statusText);
+      }
+
+      const data = await response.json();
+      console.log("Analysis response:", data);
+
+      // Invalidate user query to refresh usage count - Moved here for correct timing
+      await queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      if (props.onAnalysisComplete) {
+        await props.onAnalysisComplete(analysisData);
+      }
+    } catch (error) {
+      console.error('Analysis error:', error);
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "Failed to analyze property data.",
+        duration: 7000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const nextStep = () => {
+    const fields = getFieldsForStep(currentStep);
+    const isStepValid = fields.every(
+      (field) => !form.getFieldState(field).error,
+    );
+
+    if (isStepValid) {
+      setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+    } else {
+      // Trigger validation for the current step's fields
+      fields.forEach((field) => form.trigger(field));
+    }
+  };
+
+  const previousStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+  };
+
+  const getFieldsForStep = (
+    step: number,
+  ): (keyof PropertyAnalyzerFormValues)[] => {
+    switch (step) {
+      case 0:
+        return [
+          "address",
+          "propertyUrl",
+          "purchasePrice",
+          "floorArea",
+          "bedrooms",
+          "bathrooms",
+          "parkingSpaces",
+        ];
+      case 1:
+        return [
+          "depositType",
+          "depositAmount",
+          "depositPercentage",
+          "interestRate",
+          "loanTerm",
+        ];
+      case 2:
+        return [
+          "monthlyLevies",
+          "monthlyRatesTaxes",
+          "otherMonthlyExpenses",
+          "maintenancePercent",
+          "managementFee",
+        ];
+      case 3:
+        return [
+          "airbnbNightlyRate",
+          "occupancyRate",
+          "longTermRental",
+          "leaseCycleGap",
+        ];
+      case 4:
+        return [
+          "annualIncomeGrowth",
+          "annualExpenseGrowth",
+          "annualPropertyAppreciation",
+        ];
+      case 5:
+        return ["cmaRatePerSqm", "comments"];
+      default:
+        return [];
+    }
+  };
 
   const fetchRevenueData = async () => {
     setIsLoading(true);
@@ -277,7 +471,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       depositAmount: undefined,
       depositPercentage: undefined,
       interestRate: undefined,
-      loanTerm: undefined,
+      loanTerm: 20, // Default to 20 years
       monthlyLevies: undefined,
       monthlyRatesTaxes: undefined,
       otherMonthlyExpenses: undefined,
@@ -294,128 +488,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       comments: "",
     },
   });
-
-  const onSubmit = async (data: PropertyAnalyzerFormValues) => {
-    setIsSubmitting(true);
-    try {
-      // Clean and prepare the analysis data
-      const analysisData = {
-        address: data.address,
-        propertyUrl: data.propertyUrl,
-        purchasePrice: Number(data.purchasePrice),
-        floorArea: Number(data.floorArea),
-        bedrooms: Number(data.bedrooms),
-        bathrooms: Number(data.bathrooms),
-        parkingSpaces: Number(data.parkingSpaces),
-        depositType: data.depositType,
-        depositAmount: Number(data.depositAmount),
-        depositPercentage: Number(data.depositPercentage),
-        interestRate: Number(data.interestRate),
-        loanTerm: Number(data.loanTerm),
-        monthlyLevies: Number(data.monthlyLevies),
-        monthlyRatesTaxes: Number(data.monthlyRatesTaxes),
-        otherMonthlyExpenses: Number(data.otherMonthlyExpenses),
-        maintenancePercent: Number(data.maintenancePercent),
-        managementFee: Number(data.managementFee),
-        airbnbNightlyRate: data.airbnbNightlyRate ? Number(data.airbnbNightlyRate) : undefined,
-        occupancyRate: data.occupancyRate ? Number(data.occupancyRate) : undefined,
-        longTermRental: data.longTermRental ? Number(data.longTermRental) : undefined,
-        leaseCycleGap: data.leaseCycleGap ? Number(data.leaseCycleGap) : undefined,
-        annualIncomeGrowth: Number(data.annualIncomeGrowth),
-        annualExpenseGrowth: Number(data.annualExpenseGrowth),
-        annualPropertyAppreciation: Number(data.annualPropertyAppreciation),
-        cmaRatePerSqm: Number(data.cmaRatePerSqm),
-        comments: data.comments,
-      };
-
-      console.log('Submitting analysis data:', analysisData);
-
-      if (props.onAnalysisComplete) {
-        await props.onAnalysisComplete(analysisData);
-      }
-      toast({
-        title: "Success",
-        description: "Property analysis completed successfully.",
-      });
-    } catch (error) {
-      console.error('Analysis error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to analyze property data.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const nextStep = () => {
-    const fields = getFieldsForStep(currentStep);
-    const isStepValid = fields.every(
-      (field) => !form.getFieldState(field).error,
-    );
-
-    if (isStepValid) {
-      setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
-    } else {
-      // Trigger validation for the current step's fields
-      fields.forEach((field) => form.trigger(field));
-    }
-  };
-
-  const previousStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 0));
-  };
-
-  const getFieldsForStep = (
-    step: number,
-  ): (keyof PropertyAnalyzerFormValues)[] => {
-    switch (step) {
-      case 0:
-        return [
-          "address",
-          "propertyUrl",
-          "purchasePrice",
-          "floorArea",
-          "bedrooms",
-          "bathrooms",
-          "parkingSpaces",
-        ];
-      case 1:
-        return [
-          "depositType",
-          "depositAmount",
-          "depositPercentage",
-          "interestRate",
-          "loanTerm",
-        ];
-      case 2:
-        return [
-          "monthlyLevies",
-          "monthlyRatesTaxes",
-          "otherMonthlyExpenses",
-          "maintenancePercent",
-          "managementFee",
-        ];
-      case 3:
-        return [
-          "airbnbNightlyRate",
-          "occupancyRate",
-          "longTermRental",
-          "leaseCycleGap",
-        ];
-      case 4:
-        return [
-          "annualIncomeGrowth",
-          "annualExpenseGrowth",
-          "annualPropertyAppreciation",
-        ];
-      case 5:
-        return ["cmaRatePerSqm", "comments"];
-      default:
-        return [];
-    }
-  };
 
   return (
     <div className="space-y-8 max-w-[75%]">
@@ -449,7 +521,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         index < currentStep || isStepComplete
                           ? "bg-[#3B82F6]"
                           : "bg-gray-300"
-                      }`}
+                        }`}
                       style={{ left: "4rem" }}
                     />
                   )}
@@ -489,7 +561,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             : isStepComplete
                               ? "bg-white text-green-500 ring-green-500"
                               : "bg-white text-gray-500 ring-gray-300"
-                        }`}
+                          }`}
                       >
                         {index + 1}
                       </span>
@@ -844,10 +916,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <Input
                           type="number"
                           min="1"
+                          placeholder="Enter loan term in years"
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
+                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         />
                       </FormControl>
                       <FormMessage />
@@ -1227,7 +1298,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
           </Card>
 
           {/* Navigation */}
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-between mt-8">
             <Button
               type="button"
               variant="outline"
@@ -1237,124 +1308,111 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               Previous
             </Button>
 
-            {currentStep === STEPS.length - 1 ? (
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Submit
-              </Button>
-            ) : (
-              <Button type="button" onClick={nextStep}>
-                Next
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {currentStep === STEPS.length - 1 && (
+                <>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="min-w-[100px]"
+                  >
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Analyze
+                  </Button>
+                </>
+              )}
+
+              {currentStep < STEPS.length - 1 && (
+                <Button type="button" onClick={nextStep}>
+                  Next
+                </Button>
+              )}
+            </div>
           </div>
         </form>
       </Form>
 
       {/* Upgrade Modal */}
       <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Upgrade to Pro</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
-              <div className="p-3 bg-blue-100 rounded-full">
-                <svg
-                  className="w-6 h-6 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-semibold text-blue-900">
-                  Accurate Revenue Data
-                </h4>
-                <p className="text-sm text-blue-700">
-                  Get real-time nightly rates and occupancy data from actual
-                  Airbnb listings in your area
-                </p>
-              </div>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader className="text-center">
+            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Sparkles className="h-6 w-6 text-primary" />
             </div>
-
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <DialogTitle className="text-2xl">Upgrade to</DialogTitle>
+              <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">PRO</span>
+            </div>
+            <DialogDescription className="text-center">
+              Get unlimited access to all Proply features and tools
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
             <div className="space-y-2">
-              <h4 className="font-medium">With Pro, you get:</h4>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2 text-sm">
-                  <svg
-                    className="w-4 h-4 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Accurate nightly rates based on local market data
-                </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <svg
-                    className="w-4 h-4 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Real occupancy rates from similar properties
-                </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <svg
-                    className="w-4 h-4 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Seasonal pricing trends and recommendations
-                </li>
+              <h4 className="font-semibold">Pro Features Include:</h4>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Accurate nightly rates based on local market data</li>
+                <li>Real occupancy rates from similar properties</li>
+                <li>Seasonal pricing trends and recommendations</li>
+                <li>Unlimited property analyses</li>
+                <li>Priority support</li>
               </ul>
             </div>
-
-            <Button
-              onClick={() => setShowUpgradeModal(false)}
-              className="w-full"
-            >
-              Upgrade Now
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowUpgradeModal(false)}
-              className="w-full"
-            >
-              Continue with Manual Entry
-            </Button>
+            <div className="bg-muted p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-primary">R2000/month</div>
+              <p className="text-muted-foreground mt-1">Cancel anytime</p>
+            </div>
           </div>
+          <DialogFooter>
+            <Button 
+              type="submit" 
+              className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
+              onClick={(e) => {
+                e.preventDefault();
+                const form = document.createElement("form");
+                form.method = "POST";
+                form.action = "https://sandbox.payfast.co.za/eng/process";
+
+                const paymentData = {
+                  merchant_id: "10000100",
+                  merchant_key: "46f0cd694581a",
+                  return_url: `${window.location.origin}/settings?payment=success`,
+                  cancel_url: `${window.location.origin}/settings?payment=cancelled`,
+                  notify_url: `${window.location.origin}/api/payment-webhook`,
+                  name_first: user?.firstName || "",
+                  email_address: user?.email || "",
+                  amount: "2000.00",
+                  item_name: "Proply Pro Subscription",
+                  subscription_type: "1",
+                  billing_date: new Date().toISOString().split('T')[0],
+                  recurring_amount: "2000.00",
+                  frequency: "3",
+                  cycles: "0",
+                  custom_str1: JSON.stringify({
+                    userId: user?.id,
+                    subscriptionStatus: 'pro'
+                  })
+                };
+
+                Object.entries(paymentData).forEach(([key, value]) => {
+                  if (value !== undefined) {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = key;
+                    input.value = value.toString();
+                    form.appendChild(input);
+                  }
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+              }}
+            >
+              Continue to Payment
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1440,7 +1498,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 monthlyLevies: 2500,
                 monthlyRatesTaxes: 1800,
                 otherMonthlyExpenses: 2000,
-                maintenancePercentage: 10,
+                maintenancePercent: 10,
                 managementFee: 20,
                 airbnbNightlyRate: 2500,
                 occupancyRate: 65,
