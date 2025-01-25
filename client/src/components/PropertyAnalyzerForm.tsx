@@ -147,10 +147,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [showPercentileDialog, setShowPercentileDialog] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [demoClicks, setDemoClicks] = useState(0);
   const [revenueData, setRevenueData] = useState<{
     "25": RevenueData;
     "50": RevenueData;
@@ -161,22 +159,50 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const { hasAccess: hasProAccess, isLoading: isProAccessLoading } = useProAccess();
   const { user, isLoading: isUserLoading } = useUser();
   const { toast } = useToast();
-  const queryClient = useQueryClient(); // Added useQueryClient hook
+  const queryClient = useQueryClient();
 
-  // Check if user has reached their limit
+  const form = useForm<PropertyAnalyzerFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      address: "",
+      propertyUrl: "",
+      purchasePrice: undefined,
+      floorArea: undefined,
+      bedrooms: undefined,
+      bathrooms: undefined,
+      parkingSpaces: undefined,
+      depositType: "percentage",
+      depositAmount: undefined,
+      depositPercentage: undefined,
+      interestRate: undefined,
+      loanTerm: 20,
+      monthlyLevies: undefined,
+      monthlyRatesTaxes: undefined,
+      otherMonthlyExpenses: undefined,
+      maintenancePercent: undefined,
+      managementFee: undefined,
+      airbnbNightlyRate: undefined,
+      occupancyRate: undefined,
+      longTermRental: undefined,
+      leaseCycleGap: undefined,
+      annualIncomeGrowth: 6,
+      annualExpenseGrowth: 4,
+      annualPropertyAppreciation: 4,
+      cmaRatePerSqm: undefined,
+      comments: "",
+    },
+  });
+
   const reachedLimit = !isUserLoading && !isProAccessLoading && !hasProAccess && (user?.propertyAnalyzerUsage ?? 0) >= 3;
 
-  // Show warning when approaching limit (2 analyses used)
   const showUsageWarning = !hasProAccess && (user?.propertyAnalyzerUsage ?? 0) === 2;
 
-  // Show upgrade modal if limit is reached
   useEffect(() => {
     if (reachedLimit) {
       setShowUpgradeModal(true);
     }
   }, [reachedLimit]);
 
-  // Show warning toast when close to limit
   useEffect(() => {
     if (showUsageWarning) {
       toast({
@@ -187,7 +213,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     }
   }, [showUsageWarning, toast]);
 
-  // If still loading user data, show loading state
   if (isUserLoading || isProAccessLoading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
@@ -196,39 +221,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     );
   }
 
-  // Render upgrade modal if limit reached
-  if (reachedLimit) {
-    return (
-      <Dialog open={true} onOpenChange={() => {}}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Free Plan Limit Reached</DialogTitle>
-            <DialogDescription className="space-y-4">
-              <p>
-                You've used all 3 free property analyses. Upgrade to Pro for unlimited access to:
-              </p>
-              <ul className="list-disc list-inside space-y-2">
-                <li>Unlimited property analyses</li>
-                <li>Advanced market insights</li>
-                <li>Comparative market analysis</li>
-                <li>Detailed investment metrics</li>
-              </ul>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-center mt-6">
-            <Link href="/pricing">
-              <Button size="lg" className="w-full sm:w-auto">
-                Upgrade to Pro
-              </Button>
-            </Link>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
-    // If user has reached limit, prevent submission
     if (reachedLimit) {
       setShowUpgradeModal(true);
       return;
@@ -236,10 +229,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
     setIsSubmitting(true);
     try {
-      // Clean and prepare the analysis data
-      // Ensure all form fields are included and properly typed
       const analysisData = {
-        // Property Details
         address: data.address,
         propertyUrl: data.propertyUrl,
         purchasePrice: Number(data.purchasePrice),
@@ -247,33 +237,23 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         bedrooms: Number(data.bedrooms),
         bathrooms: Number(data.bathrooms),
         parkingSpaces: Number(data.parkingSpaces || 0),
-
-        // Financing Details
         depositType: data.depositType,
         depositAmount: Number(data.depositAmount),
         depositPercentage: Number(data.depositPercentage),
         interestRate: Number(data.interestRate),
         loanTerm: Number(data.loanTerm),
-
-        // Operating Expenses
         monthlyLevies: Number(data.monthlyLevies || 0),
         monthlyRatesTaxes: Number(data.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(data.otherMonthlyExpenses || 0),
         maintenancePercent: Number(data.maintenancePercent || 0),
         managementFee: Number(data.managementFee || 0),
-
-        // Revenue Performance
         airbnbNightlyRate: Number(data.airbnbNightlyRate || 0),
         occupancyRate: Number(data.occupancyRate || 0),
         longTermRental: Number(data.longTermRental || 0),
         leaseCycleGap: Number(data.leaseCycleGap || 0),
-
-        // Escalations
         annualIncomeGrowth: Number(data.annualIncomeGrowth || 0),
         annualExpenseGrowth: Number(data.annualExpenseGrowth || 0),
         annualPropertyAppreciation: Number(data.annualPropertyAppreciation || 0),
-
-        // Miscellaneous
         cmaRatePerSqm: Number(data.cmaRatePerSqm || 0),
         comments: data.comments || "",
       };
@@ -296,7 +276,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       const responseData = await response.json();
       console.log("Analysis response:", responseData);
 
-      // Invalidate user query to refresh usage count
       await queryClient.invalidateQueries({ queryKey: ['user'] });
 
       if (props.onAnalysisComplete) {
@@ -324,7 +303,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     if (isStepValid) {
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
     } else {
-      // Trigger validation for the current step's fields
       fields.forEach((field) => form.trigger(field));
     }
   };
@@ -456,41 +434,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     setShowPercentileDialog(false);
   };
 
-  const form = useForm<PropertyAnalyzerFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      address: "",
-      propertyUrl: "",
-      purchasePrice: undefined,
-      floorArea: undefined,
-      bedrooms: undefined,
-      bathrooms: undefined,
-      parkingSpaces: undefined,
-      depositType: "percentage",
-      depositAmount: undefined,
-      depositPercentage: undefined,
-      interestRate: undefined,
-      loanTerm: 20, // Default to 20 years
-      monthlyLevies: undefined,
-      monthlyRatesTaxes: undefined,
-      otherMonthlyExpenses: undefined,
-      maintenancePercent: undefined,
-      managementFee: undefined,
-      airbnbNightlyRate: undefined,
-      occupancyRate: undefined,
-      longTermRental: undefined,
-      leaseCycleGap: undefined,
-      annualIncomeGrowth: 6,
-      annualExpenseGrowth: 4,
-      annualPropertyAppreciation: 4,
-      cmaRatePerSqm: undefined,
-      comments: "",
-    },
-  });
-
   return (
     <div className="space-y-8 max-w-[75%]">
-      {/* Step indicator */}
       <div className="mb-12">
         <nav aria-label="Progress">
           <ol className="flex items-center justify-between w-full px-6">
@@ -499,7 +444,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               const isStepComplete = fields.every((field) => {
                 const value = form.getValues(field);
                 const hasError = form.getFieldState(field).error;
-                // Special handling for management fee where 0 is valid
                 if (field === "managementFee") {
                   return !hasError && (value === 0 || value > 0);
                 }
@@ -513,7 +457,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
               return (
                 <li key={step} className="relative flex flex-col items-center">
-                  {/* Connecting line */}
                   {index !== STEPS.length - 1 && (
                     <div
                       className={`absolute top-5 w-[calc(200%_-_2.5rem)] h-[2px] ${
@@ -526,7 +469,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   )}
 
                   <div className="relative flex flex-col items-center">
-                    {/* Checkmark for completed steps */}
                     {isStepComplete && (
                       <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20">
                         <div className="bg-white rounded-full p-1">
@@ -547,7 +489,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       </div>
                     )}
 
-                    {/* Step button */}
                     <button
                       type="button"
                       onClick={() => setCurrentStep(index)}
@@ -579,7 +520,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card className="p-6">
-            {/* Step 1: Property Details */}
             {currentStep === 0 && (
               <div className="space-y-4">
                 <FormField
@@ -763,7 +703,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               </div>
             )}
 
-            {/* Step 2: Financing Details */}
             {currentStep === 1 && (
               <div className="space-y-4">
                 <FormField
@@ -818,7 +757,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               onChange={(e) => {
                                 const amount = e.target.valueAsNumber;
                                 field.onChange(amount);
-                                // Calculate percentage based on amount
                                 const purchasePrice =
                                   form.getValues("purchasePrice");
                                 if (purchasePrice && amount) {
@@ -861,7 +799,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               onChange={(e) => {
                                 const percentage = e.target.valueAsNumber;
                                 field.onChange(percentage);
-                                // Calculate amount based on percentage
                                 const purchasePrice =
                                   form.getValues("purchasePrice");
                                 if (purchasePrice && percentage) {
@@ -927,7 +864,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               </div>
             )}
 
-            {/* Step 3: Operating Expenses */}
             {currentStep === 2 && (
               <div className="space-y-4">
                 <FormField
@@ -1044,7 +980,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               </div>
             )}
 
-            {/* Step 4: Revenue Performance */}
             {currentStep === 3 && (
               <div className="space-y-4">
                 <div className="p-4 bg-gray-50 rounded-lg border">
@@ -1176,7 +1111,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               </div>
             )}
 
-            {/* Step 5: Escalations */}
             {currentStep === 4 && (
               <div className="space-y-4">
                 <FormField
@@ -1250,7 +1184,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               </div>
             )}
 
-            {/* Step 6: Miscellaneous */}
             {currentStep === 5 && (
               <div className="space-y-4">
                 <FormField
@@ -1296,7 +1229,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
             )}
           </Card>
 
-          {/* Navigation */}
           <div className="flex justify-between mt-8">
             <Button
               type="button"
@@ -1333,7 +1265,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         </form>
       </Form>
 
-      {/* Upgrade Modal */}
       <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader className="text-center">
@@ -1415,7 +1346,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Percentile Selection Modal */}
       <Dialog
         open={showPercentileDialog}
         onOpenChange={setShowPercentileDialog}
@@ -1474,7 +1404,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Hidden demo data button */}
       <button
         type="button"
         onClick={() => {
