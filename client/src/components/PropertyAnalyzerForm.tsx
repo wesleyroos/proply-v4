@@ -196,7 +196,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     );
   }
 
-  const onSubmit = async (data: PropertyAnalyzerFormValues) => {
+  const onSubmit = async (formData: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
     try {
       // Clean and prepare the analysis data
