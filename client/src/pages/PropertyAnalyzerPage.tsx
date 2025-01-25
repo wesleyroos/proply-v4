@@ -204,9 +204,7 @@ interface AnalysisResult {
 }
 
 export default function PropertyAnalyzerPage() {
-  // Move all hook declarations to the top
   const [isDataReady, setIsDataReady] = useState(false);
-  const [showLimitModal, setShowLimitModal] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(null);
@@ -223,68 +221,8 @@ export default function PropertyAnalyzerPage() {
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (user && !hasProAccess && user.propertyAnalyzerUsage >= 3) {
-      setShowLimitModal(true);
-    }
+    // Removed the showLimitModal logic here.
   }, [user, hasProAccess]);
-
-  // Render modal if limit reached
-  const renderLimitModal = () => {
-    if (!showLimitModal) return null;
-    return (
-      <>
-        <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Free Plan Limit Reached</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-6">
-              <p className="text-muted-foreground">
-                You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
-              </p>
-              <div className="pt-4">
-                <Link to="/pricing">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                    Upgrade to Pro
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-        <div className="px-4 py-6 opacity-50 pointer-events-none">
-          <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
-        </div>
-      </>
-    );
-  }
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
-    null,
-  );
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<any>(null);
-  const [removeVat, setRemoveVat] = useState(false);
-  const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
-  const { toast } = useToast();
-  const [analysisId, setAnalysisId] = useState<string | null>(null);
-
-  console.log("Preparing PDF Data:", {
-    fullAnalysisResult: analysisResult,
-    pdfDataStructure: {
-      analysisNetOperatingIncome: analysisResult?.analysis?.netOperatingIncome,
-      analysisLongTermNetOperatingIncome:
-        analysisResult?.analysis?.longTermNetOperatingIncome,
-      netOperatingIncome: analysisResult?.netOperatingIncome,
-      revenueProjections: analysisResult?.analysis?.revenueProjections,
-    },
-  });
-
-  const [pdfData, setPDFData] = useState<any>(null);
-  const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [showPDFGenerator, setShowPDFGenerator] = useState(false);
-  const companyLogo = "/your-company-logo.png";
 
   const calculateBondRegistration = (
     purchasePrice: number,
@@ -541,7 +479,8 @@ export default function PropertyAnalyzerPage() {
           </p>
           {!hasProAccess && user && (
             <p className="text-sm text-muted-foreground mt-2">
-              <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span> free analyses used
+              <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span>{" "}
+              free analyses used
             </p>
           )}
         </div>
@@ -587,11 +526,9 @@ export default function PropertyAnalyzerPage() {
                     <TooltipTrigger asChild>
                       <div>
                         <Button
-                          // Update the pdfData preparation in the Export PDF button click handler:
                           onClick={() => {
                             if (!analysisResult || !analysisId) return;
 
-                            // Add this console log right before setPDFData
                             console.log("Raw Analysis Result:", {
                               managementFee: analysisResult.managementFee,
                               fullAnalysisResult: analysisResult,
@@ -627,7 +564,6 @@ export default function PropertyAnalyzerPage() {
                                 longTermNetOperatingIncome: analysisResult.analysis.longTermNetOperatingIncome,
                                 revenueProjections: analysisResult.analysis.revenueProjections,
                               },
-                              // Add this new performance object
                               performance: {
                                 shortTermNightlyRate: Number(
                                   analysisResult.shortTermNightlyRate,
@@ -683,7 +619,6 @@ export default function PropertyAnalyzerPage() {
                                   ),
                               },
                               expenses: {
-                                // Changed from operatingExpenses to expenses
                                 monthlyLevies: Number(formData?.monthlyLevies) || 0,
                                 monthlyRatesTaxes: Number(
                                   formData?.monthlyRatesTaxes
@@ -727,9 +662,8 @@ export default function PropertyAnalyzerPage() {
                               revenueProjections:
                                 analysisResult.analysis.revenueProjections,
                             });
-                            setIsDataReady(true); // Add this after setPDFData
+                            setIsDataReady(true);
 
-                            // Add this console log after setPDFData
                             console.log("PDF Data being passed:", pdfData);
 
                             setShowPDFGenerator(true);
@@ -1201,9 +1135,7 @@ export default function PropertyAnalyzerPage() {
                   </CardContent>
                 </Card>
               </div>
-            </div>
 
-            <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
