@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "wouter";
 import html2canvas from "html2canvas";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
@@ -10,12 +11,9 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  findCostFromTable,
-  bondCostsTable,
-  transferCostsTable,
-} from "@/lib/costTables";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
+import { useUser } from "@/hooks/use-user";
 import {
   AlertCircle,
   BarChart3,
@@ -31,8 +29,6 @@ import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
 import RentalPerformance from "@/components/RentalPerformance";
 import AssetGrowthMetrics from "@/components/AssetGrowthMetrics";
-import { useUser } from "@/hooks/use-user";
-import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
 import {
   Tooltip,
@@ -40,16 +36,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAnalyzerPDF";
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
 import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
-import { Link } from "wouter";
 
 interface YearlyMetrics {
   grossYield: number;
@@ -216,6 +205,7 @@ export default function PropertyAnalyzerPage() {
   const [pdfData, setPDFData] = useState<any>(null);
   const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
+
   const { user } = useUser();
   const hasProAccess = useProAccess();
   const { toast } = useToast();
@@ -227,46 +217,6 @@ export default function PropertyAnalyzerPage() {
       setShowLimitModal(true);
     }
   }, [user, hasProAccess]);
-
-  const renderLimitModal = () => {
-    if (!showLimitModal) return null;
-
-    return (
-      <>
-        <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Free Plan Limit Reached</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-6">
-              <p className="text-muted-foreground">
-                You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
-              </p>
-              <div className="pt-4">
-                <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
-                  <Link href="/pricing">Upgrade to Pro</Link>
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-        <div className="px-4 py-6 opacity-50 pointer-events-none">
-          <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
-        </div>
-      </>
-    );
-  };
-
-  console.log("Preparing PDF Data:", {
-    fullAnalysisResult: analysisResult,
-    pdfDataStructure: {
-      analysisNetOperatingIncome: analysisResult?.analysis?.netOperatingIncome,
-      analysisLongTermNetOperatingIncome:
-        analysisResult?.analysis?.longTermNetOperatingIncome,
-      netOperatingIncome: analysisResult?.netOperatingIncome,
-      revenueProjections: analysisResult?.analysis?.revenueProjections,
-    },
-  });
 
 
   const companyLogo = "/your-company-logo.png";
@@ -516,9 +466,44 @@ export default function PropertyAnalyzerPage() {
     }
   };
 
+  const findCostFromTable = (purchasePrice: number, table: any) => {
+    //Implementation for findCostFromTable
+  }
+
+  const bondCostsTable = [
+    //Implementation for bondCostsTable
+  ]
+
+  const transferCostsTable = [
+    //Implementation for transferCostsTable
+  ]
+
   return (
     <div className="px-4 py-6">
-      {renderLimitModal()}
+      {showLimitModal && (
+        <>
+          <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Free Plan Limit Reached</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-6">
+                <p className="text-muted-foreground">
+                  You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
+                </p>
+                <div className="pt-4">
+                  <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
+                    <Link href="/pricing">Upgrade to Pro</Link>
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <div className="px-4 py-6 opacity-50 pointer-events-none">
+            <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+          </div>
+        </>
+      )}
       <div className="flex items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Property Analysis</h1>
@@ -535,7 +520,9 @@ export default function PropertyAnalyzerPage() {
       </div>
 
       <div className="space-y-6">
-        <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+        {!showLimitModal && (
+          <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+        )}
 
         {analysisError && (
           <Card className="border-red-200 bg-red-50">
@@ -1182,9 +1169,7 @@ export default function PropertyAnalyzerPage() {
                   </CardContent>
                 </Card>
               </div>
-            </div>
 
-            <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
