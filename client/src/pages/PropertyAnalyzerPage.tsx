@@ -40,14 +40,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAnalyzerPDF";
-import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
+//import {
+//  Dialog,
+//  DialogContent,
+//  DialogHeader,
+//  DialogTitle,
+//} from "@/components/ui/dialog";
+//import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAnalyzerPDF";
+//import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
 import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
 
 interface YearlyMetrics {
@@ -204,69 +204,25 @@ interface AnalysisResult {
 }
 
 export default function PropertyAnalyzerPage() {
-  // Move all hook declarations to the top
   const [isDataReady, setIsDataReady] = useState(false);
-  const [showLimitModal, setShowLimitModal] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(null);
   const [removeVat, setRemoveVat] = useState(false);
   const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
   const [analysisId, setAnalysisId] = useState<string | null>(null);
-  const [pdfData, setPDFData] = useState<any>(null);
-  const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
-  const [showPDFGenerator, setShowPDFGenerator] = useState(false);
+  //const [pdfData, setPDFData] = useState<any>(null);
+  //const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
+  //const [showPDFGenerator, setShowPDFGenerator] = useState(false);
   const { user } = useUser();
-  const hasProAccess = useProAccess();
   const { toast } = useToast();
   const resultsRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (user && !hasProAccess && user.propertyAnalyzerUsage >= 3) {
-      setShowLimitModal(true);
-    }
-  }, [user, hasProAccess]);
+    // User limit modal functionality removed
+  }, []);
 
-  // Render modal if limit reached
-  const renderLimitModal = () => {
-    if (!showLimitModal) return null;
-    return (
-      <>
-        <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Free Plan Limit Reached</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-6">
-              <p className="text-muted-foreground">
-                You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
-              </p>
-              <div className="pt-4">
-                <Link to="/pricing">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                    Upgrade to Pro
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-        <div className="px-4 py-6 opacity-50 pointer-events-none">
-          <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
-        </div>
-      </>
-    );
-  }
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
-    null,
-  );
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<any>(null);
-  const [removeVat, setRemoveVat] = useState(false);
-  const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
-  const { toast } = useToast();
-  const [analysisId, setAnalysisId] = useState<string | null>(null);
 
   console.log("Preparing PDF Data:", {
     fullAnalysisResult: analysisResult,
@@ -278,13 +234,6 @@ export default function PropertyAnalyzerPage() {
       revenueProjections: analysisResult?.analysis?.revenueProjections,
     },
   });
-
-  const [pdfData, setPDFData] = useState<any>(null);
-  const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [showPDFGenerator, setShowPDFGenerator] = useState(false);
-  const companyLogo = "/your-company-logo.png";
 
   const calculateBondRegistration = (
     purchasePrice: number,
@@ -457,29 +406,29 @@ export default function PropertyAnalyzerPage() {
     return data;
   };
 
-  const handleGeneratePDF = async (selections: ReportSelections) => {
-    try {
-      await generatePDF(pdfData, selections, user?.settings?.companyLogo || "");
-      toast({
-        title: "Success",
-        description: "PDF report generated successfully!",
-        duration: 3000,
-      });
-      setShowPDFGenerator(false);
-    } catch (error) {
-      console.error("PDF generation error:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to generate PDF report",
-        duration: 5000,
-      });
-    } finally {
-    }
-  };
+  //const handleGeneratePDF = async (selections: ReportSelections) => {
+  //  try {
+  //    await generatePDF(pdfData, selections, user?.settings?.companyLogo || "");
+  //    toast({
+  //      title: "Success",
+  //      description: "PDF report generated successfully!",
+  //      duration: 3000,
+  //    });
+  //    setShowPDFGenerator(false);
+  //  } catch (error) {
+  //    console.error("PDF generation error:", error);
+  //    toast({
+  //      variant: "destructive",
+  //      title: "Error",
+  //      description:
+  //        error instanceof Error
+  //          ? error.message
+  //          : "Failed to generate PDF report",
+  //      duration: 5000,
+  //    });
+  //  } finally {
+  //  }
+  //};
 
   const handleSaveAnalysis = async () => {
     try {
@@ -539,11 +488,6 @@ export default function PropertyAnalyzerPage() {
           <p className="text-muted-foreground mt-1">
             Enter property details to generate analysis
           </p>
-          {!hasProAccess && user && (
-            <p className="text-sm text-muted-foreground mt-2">
-              <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span> free analyses used
-            </p>
-          )}
         </div>
       </div>
 
@@ -582,172 +526,6 @@ export default function PropertyAnalyzerPage() {
                     <Save className="w-4 h-4 mr-2" />
                     Save Analysis
                   </Button>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <Button
-                          // Update the pdfData preparation in the Export PDF button click handler:
-                          onClick={() => {
-                            if (!analysisResult || !analysisId) return;
-
-                            // Add this console log right before setPDFData
-                            console.log("Raw Analysis Result:", {
-                              managementFee: analysisResult.managementFee,
-                              fullAnalysisResult: analysisResult,
-                            });
-
-                            setPDFData({
-                              propertyDetails: {
-                                address: analysisResult.address,
-                                propertyPhoto: formData?.propertyPhoto || null,
-                                mapImage: capturedMapImage,
-                                bedrooms: formData?.bedrooms,
-                                bathrooms: formData?.bathrooms,
-                                floorArea: Number(formData?.floorArea),
-                                parkingSpaces: Number(formData?.parkingSpaces),
-                                purchasePrice:
-                                  analysisResult.analysis.purchasePrice,
-                                ratePerSquareMeter: Number(
-                                  formData?.cmaRatePerSqm,
-                                ),
-                                areaRate: Number(
-                                  analysisResult.ratePerSquareMeter,
-                                ),
-                                rateDifference:
-                                  Number(formData?.cmaRatePerSqm || 0) -
-                                  Number(
-                                    analysisResult.ratePerSquareMeter || 0,
-                                  ),
-                                propertyDescription:
-                                  analysisResult.propertyDescription,
-                              },
-                              analysis: {
-                                netOperatingIncome: analysisResult.analysis.netOperatingIncome,
-                                longTermNetOperatingIncome: analysisResult.analysis.longTermNetOperatingIncome,
-                                revenueProjections: analysisResult.analysis.revenueProjections,
-                              },
-                              // Add this new performance object
-                              performance: {
-                                shortTermNightlyRate: Number(
-                                  analysisResult.shortTermNightlyRate,
-                                ),
-                                annualOccupancy: Number(
-                                  analysisResult.annualOccupancy,
-                                ),
-                                shortTermAnnualRevenue: Number(
-                                  analysisResult.analysis
-                                    .shortTermAnnualRevenue,
-                                ),
-                                longTermAnnualRevenue: Number(
-                                  analysisResult.analysis.longTermAnnualRevenue,
-                                ),
-                                shortTermGrossYield: Number(
-                                  analysisResult.shortTermGrossYield,
-                                ),
-                                longTermGrossYield: Number(
-                                  analysisResult.longTermGrossYield,
-                                ),
-                              },
-                              financialMetrics: {
-                                depositAmount: Number(analysisResult.deposit),
-                                depositPercentage: Number(
-                                  analysisResult.depositPercentage,
-                                ),
-                                interestRate: Number(
-                                  analysisResult.interestRate,
-                                ),
-                                loanTerm: Number(analysisResult.loanTerm),
-                                monthlyBondRepayment: Number(
-                                  analysisResult.monthlyBondRepayment,
-                                ),
-                                bondRegistration: calculateBondRegistration(
-                                  analysisResult.analysis.purchasePrice,
-                                  !removeVat,
-                                ),
-                                transferCosts: calculateTransferCosts(
-                                  analysisResult.analysis.purchasePrice,
-                                  !removeVat,
-                                  !removeTransferDuty,
-                                ),
-                                totalCapitalRequired:
-                                  (analysisResult.deposit || 0) +
-                                  calculateBondRegistration(
-                                    analysisResult.analysis.purchasePrice,
-                                    !removeVat,
-                                  ) +
-                                  calculateTransferCosts(
-                                    analysisResult.analysis.purchasePrice,
-                                    !removeVat,
-                                    !removeTransferDuty,
-                                  ),
-                              },
-                              expenses: {
-                                // Changed from operatingExpenses to expenses
-                                monthlyLevies: Number(formData?.monthlyLevies) || 0,
-                                monthlyRatesTaxes: Number(
-                                  formData?.monthlyRatesTaxes
-                                ) || 0,
-                                otherMonthlyExpenses: Number(
-                                  formData?.otherMonthlyExpenses
-                                ) || 0,
-                                maintenancePercent: Number(
-                                  formData?.maintenancePercent
-                                ) || 0,
-                                managementFee: Number(
-                                  analysisResult.managementFee
-                                ) || 0,
-                              },
-                              rentalPerformance: {
-                                shortTermNightlyRate: Number(
-                                  analysisResult.shortTermNightlyRate,
-                                ),
-                                annualOccupancy: Number(
-                                  analysisResult.annualOccupancy,
-                                ),
-                                shortTermAnnualRevenue: Number(
-                                  analysisResult.analysis
-                                    .shortTermAnnualRevenue,
-                                ),
-                                longTermAnnualRevenue: Number(
-                                  analysisResult.analysis.longTermAnnualRevenue,
-                                ),
-                                shortTermGrossYield: Number(
-                                  analysisResult.shortTermGrossYield,
-                                ),
-                                longTermGrossYield: Number(
-                                  analysisResult.longTermGrossYield,
-                                ),
-                                platformFee:
-                                  analysisResult.managementFee > 0 ? 15 : 3,
-                              },
-                              investmentMetrics: analysisResult.analysis.investmentMetrics,
-                              netOperatingIncome:
-                                analysisResult.netOperatingIncome,
-                              revenueProjections:
-                                analysisResult.analysis.revenueProjections,
-                            });
-                            setIsDataReady(true); // Add this after setPDFData
-
-                            // Add this console log after setPDFData
-                            console.log("PDF Data being passed:", pdfData);
-
-                            setShowPDFGenerator(true);
-                          }}
-                          disabled={!analysisResult || !analysisId}
-                          className="bg-blue-600 hover:bg-blue-700"
-                        >
-                          <FileText className="w-4 h-4 mr-2" />
-                          Export PDF
-                        </Button>
-                      </div>
-                    </TooltipTrigger>
-                    {!analysisId && (
-                      <TooltipContent>
-                        <p>Please save the analysis first</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
                 </div>
               </div>
             </div>
@@ -1201,9 +979,7 @@ export default function PropertyAnalyzerPage() {
                   </CardContent>
                 </Card>
               </div>
-            </div>
 
-            <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -1331,24 +1107,6 @@ export default function PropertyAnalyzerPage() {
             </div>
           </div>
         )}
-        <Dialog open={showPDFGenerator} onOpenChange={setShowPDFGenerator}>
-          <DialogContent className="max-w-4xl max-h-[90vh]">
-            <DialogHeader>
-              <DialogTitle>Generate Property Analysis Report</DialogTitle>
-            </DialogHeader>
-            {isDataReady && pdfData && (
-              <PropertyAnalyzerPDF
-                data={pdfData}
-                companyLogo={user?.settings?.companyLogo || ""}
-                onClose={() => {
-                  setShowPDFGenerator(false);
-                  setIsDataReady(false);
-                }}
-                isOpen={showPDFGenerator}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );
