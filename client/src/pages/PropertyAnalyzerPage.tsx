@@ -488,11 +488,6 @@ export default function PropertyAnalyzerPage() {
           <p className="text-muted-foreground mt-1">
             Enter property details to generate analysis
           </p>
-          {!hasProAccess && user && (
-            <p className="text-sm text-muted-foreground mt-2">
-              <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span> free analyses used
-            </p>
-          )}
         </div>
       </div>
 
