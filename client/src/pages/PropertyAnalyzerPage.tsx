@@ -194,6 +194,12 @@ interface AnalysisResult {
 }
 
 export default function PropertyAnalyzerPage() {
+  const { user } = useUser();
+  const hasProAccess = useProAccess();
+  const { toast } = useToast();
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+
   const [isDataReady, setIsDataReady] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -206,25 +212,13 @@ export default function PropertyAnalyzerPage() {
   const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
 
-  const { user } = useUser();
-  const hasProAccess = useProAccess();
-  const { toast } = useToast();
-  const resultsRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (user && !hasProAccess && user.propertyAnalyzerUsage >= 3) {
       setShowLimitModal(true);
     }
   }, [user, hasProAccess]);
 
-
-  const companyLogo = "/your-company-logo.png";
-
-  const calculateBondRegistration = (
-    purchasePrice: number,
-    includeVat: boolean = true,
-  ) => {
+  const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
     if (!costs) return 0;
     return includeVat ? costs.total : costs.total - costs.vat;
@@ -412,7 +406,6 @@ export default function PropertyAnalyzerPage() {
             : "Failed to generate PDF report",
         duration: 5000,
       });
-    } finally {
     }
   };
 
@@ -480,30 +473,24 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <div className="px-4 py-6">
-      {showLimitModal && (
-        <>
-          <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Free Plan Limit Reached</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-6">
-                <p className="text-muted-foreground">
-                  You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
-                </p>
-                <div className="pt-4">
-                  <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
-                    <Link href="/pricing">Upgrade to Pro</Link>
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-          <div className="px-4 py-6 opacity-50 pointer-events-none">
-            <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+      <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Free Plan Limit Reached</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-6">
+            <p className="text-muted-foreground">
+              You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
+            </p>
+            <div className="pt-4">
+              <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
+                <Link href="/pricing">Upgrade to Pro</Link>
+              </Button>
+            </div>
           </div>
-        </>
-      )}
+        </DialogContent>
+      </Dialog>
+
       <div className="flex items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Property Analysis</h1>
@@ -520,7 +507,11 @@ export default function PropertyAnalyzerPage() {
       </div>
 
       <div className="space-y-6">
-        {!showLimitModal && (
+        {showLimitModal ? (
+          <div className="opacity-50 pointer-events-none">
+            <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+          </div>
+        ) : (
           <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
         )}
 
