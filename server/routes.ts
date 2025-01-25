@@ -1006,90 +1006,58 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Check subscription status and usage limit
+      // Get user details including admin status
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.id, req.user!.id))
         .limit(1);
 
-      if (user.subscriptionStatus === 'free' && user.propertyAnalyzerUsage >= 3) {
-        return res.status(403).json({
-          error: "Free plan limit reached",
-          details: "Please upgrade to Pro for unlimited property analyses"
-        });
+      if (!user) {
+        return res.status(404).send("User not found");
       }
 
-      // Increment usage counter
-      await db
-        .update(users)
-        .set({
-          propertyAnalyzerUsage: sql`${users.propertyAnalyzerUsage} + 1`
-        })
-        .where(eq(users.id, req.user!.id));
-      console.log("\n=== Starting Property Analysis ===");
-      console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
+      // Skip usage limit check for admin users
+      if (!user.isAdmin) {
+        // Check if user has reached free plan limit (3 analyses)
+        const hasProAccess = user.subscriptionStatus === 'pro';
+        if (!hasProAccess && (user.propertyAnalyzerUsage || 0) >= 3) {
+          return res.status(403).json({ error: "Free plan limit reached" });
+        }
+      }
 
-      const propertyData = {
-        purchasePrice: parseFloat(req.body.purchasePrice),
-        shortTermNightlyRate: req.body.shortTermNightlyRate
-          ? parseFloat(req.body.shortTermNightlyRate)
-          : null,
-        annualOccupancy: req.body.annualOccupancy
-          ? parseFloat(req.body.annualOccupancy)
-          : null,
-        longTermRental: req.body.longTermRental
-          ? parseFloat(req.body.longTermRental)
-          : null,
-        leaseCycleGap: req.body.leaseCycleGap
-          ? parseInt(req.body.leaseCycleGap)
-          : null,
-        propertyDescription: req.body.propertyDescription || null,
-        address: req.body.address,
-        deposit:
-          req.body.depositType === "amount"
-            ? parseFloat(req.body.deposit)
-            : (parseFloat(req.body.purchasePrice) *
-                parseFloat(req.body.depositPercentage)) /
-              100,
-        interestRate: parseFloat(req.body.interestRate),
-        loanTerm: parseInt(req.body.loanTerm),
-        floorArea: parseFloat(req.body.floorArea),
-        ratePerSquareMeter: parseFloat(
-          req.body.ratePerSquareMeter || req.body.cmaRatePerSqm || 0,
-        ),
-        incomeGrowthRate: parseFloat(req.body.annualIncomeGrowth || 8),
-        expenseGrowthRate: parseFloat(req.body.annualExpenseGrowth || 6),
-        monthlyLevies: parseFloat(req.body.monthlyLevies || 0),
-        monthlyRatesTaxes: parseFloat(req.body.monthlyRatesTaxes || 0),
-        otherMonthlyExpenses: parseFloat(req.body.otherMonthlyExpenses || 0),
-        maintenancePercent: parseFloat(req.body.maintenancePercent || 0),
-        managementFee: parseFloat(req.body.managementFee || 0),
-      };
+      // Increment usage counter for non-admin users
+      if (!user.isAdmin) {
+        await db
+          .update(users)
+          .set({
+            propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, req.user!.id));
+      }
 
-      console.log("\n=== Starting Property Analysis ===");
-      console.log("Raw Input Data:", JSON.stringify(propertyData, null, 2));
+      // Forward request to analysis engine
+      const response = await fetch('http://localhost:3001/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req.body),
+      });
 
-      const analysisResult = calculateYields(propertyData);
-      console.log(
-        "Analysis complete. Result:",
-        JSON.stringify(analysisResult, null, 2),
-      );
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to analyze property');
+      }
 
-      res.json(analysisResult);
+      const result = await response.json();
+      res.json(result);
+
     } catch (error) {
-      console.error("=== Analysis Error ===");
-      console.error("Error details:", error);
-
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to analyze property data";
-      console.error("Sending error response:", { error: errorMessage });
-
-      res.status(500).json({
-        error: errorMessage,
-        details: error instanceof Error ? error.message : undefined,
+      console.error('Analysis error:', error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Failed to analyze property'
       });
     }
   });
