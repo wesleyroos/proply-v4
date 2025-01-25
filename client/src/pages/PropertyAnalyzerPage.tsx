@@ -2,11 +2,30 @@ import { useState, useRef, useEffect } from "react";
 import html2canvas from "html2canvas";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
-import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save, FileText, Info } from "lucide-react";
+import {
+  findCostFromTable,
+  bondCostsTable,
+  transferCostsTable,
+} from "@/lib/costTables";
+import {
+  AlertCircle,
+  BarChart3,
+  TrendingUp,
+  Building2,
+  ArrowUpRight,
+  Save,
+  FileText,
+  Info,
+} from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
@@ -15,9 +34,21 @@ import AssetGrowthMetrics from "@/components/AssetGrowthMetrics";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAnalyzerPDF";
+import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
+import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
 
 interface YearlyMetrics {
   grossYield: number;
@@ -173,7 +204,9 @@ interface AnalysisResult {
 }
 
 export default function PropertyAnalyzerPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Move all hook declarations to the top
+  const [isDataReady, setIsDataReady] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(null);
@@ -183,14 +216,80 @@ export default function PropertyAnalyzerPage() {
   const [pdfData, setPDFData] = useState<any>(null);
   const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
-
   const { user } = useUser();
   const hasProAccess = useProAccess();
   const { toast } = useToast();
   const resultsRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
-  const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
+  useEffect(() => {
+    if (user && !hasProAccess && user.propertyAnalyzerUsage >= 3) {
+      setShowLimitModal(true);
+    }
+  }, [user, hasProAccess]);
+
+  // Render modal if limit reached
+  const renderLimitModal = () => {
+    if (!showLimitModal) return null;
+    return (
+      <>
+        <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Free Plan Limit Reached</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-6">
+              <p className="text-muted-foreground">
+                You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
+              </p>
+              <div className="pt-4">
+                <Link to="/pricing">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                    Upgrade to Pro
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+        <div className="px-4 py-6 opacity-50 pointer-events-none">
+          <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+        </div>
+      </>
+    );
+  }
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null,
+  );
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<any>(null);
+  const [removeVat, setRemoveVat] = useState(false);
+  const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
+  const { toast } = useToast();
+  const [analysisId, setAnalysisId] = useState<string | null>(null);
+
+  console.log("Preparing PDF Data:", {
+    fullAnalysisResult: analysisResult,
+    pdfDataStructure: {
+      analysisNetOperatingIncome: analysisResult?.analysis?.netOperatingIncome,
+      analysisLongTermNetOperatingIncome:
+        analysisResult?.analysis?.longTermNetOperatingIncome,
+      netOperatingIncome: analysisResult?.netOperatingIncome,
+      revenueProjections: analysisResult?.analysis?.revenueProjections,
+    },
+  });
+
+  const [pdfData, setPDFData] = useState<any>(null);
+  const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [showPDFGenerator, setShowPDFGenerator] = useState(false);
+  const companyLogo = "/your-company-logo.png";
+
+  const calculateBondRegistration = (
+    purchasePrice: number,
+    includeVat: boolean = true,
+  ) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
     if (!costs) return 0;
     return includeVat ? costs.total : costs.total - costs.vat;
@@ -212,11 +311,18 @@ export default function PropertyAnalyzerPage() {
   const handleAnalysisComplete = async (formData: any) => {
     try {
       setAnalysisError(null);
-      setFormData(formData);
+      console.log("Form data received:", formData);
+      setFormData({
+        ...formData,
+        propertyPhoto: formData.propertyPhoto,
+      });
 
-      const deposit = formData.depositType === "amount"
-        ? parseFloat(formData.depositAmount)
-        : (parseFloat(formData.purchasePrice) * parseFloat(formData.depositPercentage)) / 100;
+      const deposit =
+        formData.depositType === "amount"
+          ? parseFloat(formData.depositAmount)
+          : (parseFloat(formData.purchasePrice) *
+              parseFloat(formData.depositPercentage)) /
+            100;
 
       const requestBody = {
         address: formData.address,
@@ -242,10 +348,14 @@ export default function PropertyAnalyzerPage() {
         leaseCycleGap: parseInt(formData.leaseCycleGap || 0),
         annualIncomeGrowth: parseFloat(formData.annualIncomeGrowth || 0),
         annualExpenseGrowth: parseFloat(formData.annualExpenseGrowth || 0),
-        annualPropertyAppreciation: parseFloat(formData.annualPropertyAppreciation || 0),
+        annualPropertyAppreciation: parseFloat(
+          formData.annualPropertyAppreciation || 0,
+        ),
         ratePerSquareMeter: parseFloat(formData.cmaRatePerSqm || 0),
         propertyDescription: formData.comments || "",
       };
+
+      console.log("Data being sent to analyzer:", requestBody);
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -261,6 +371,8 @@ export default function PropertyAnalyzerPage() {
       }
 
       const data = await response.json();
+      console.log("Analysis response:", data);
+
       setAnalysisResult({
         ...data,
         shortTermNightlyRate: requestBody.shortTermNightlyRate,
@@ -272,13 +384,23 @@ export default function PropertyAnalyzerPage() {
       setTimeout(() => {
         if (resultsRef.current) {
           const yOffset = -100;
-          const y = resultsRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: y, behavior: "smooth" });
+          const y =
+            resultsRef.current.getBoundingClientRect().top +
+            window.pageYOffset +
+            yOffset;
+          window.scrollTo({
+            top: y,
+            behavior: "smooth",
+          });
         }
       }, 100);
     } catch (error) {
       console.error("Analysis failed:", error);
-      setAnalysisError(error instanceof Error ? error.message : "Failed to analyze property data");
+      setAnalysisError(
+        error instanceof Error
+          ? error.message
+          : "Failed to analyze property data",
+      );
       setAnalysisResult(null);
     }
   };
@@ -317,8 +439,12 @@ export default function PropertyAnalyzerPage() {
       managementFee: Number(formData.managementFee || 0),
       shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate || 0),
       annualOccupancy: Number(analysisResult.annualOccupancy || 0),
-      shortTermAnnualRevenue: Number(analysisResult.analysis.shortTermAnnualRevenue || 0),
-      longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue || 0),
+      shortTermAnnualRevenue: Number(
+        analysisResult.analysis.shortTermAnnualRevenue || 0,
+      ),
+      longTermAnnualRevenue: Number(
+        analysisResult.analysis.longTermAnnualRevenue || 0,
+      ),
       shortTermGrossYield: Number(analysisResult.shortTermGrossYield || 0),
       longTermGrossYield: Number(analysisResult.longTermGrossYield || 0),
       ratePerSquareMeter: Number(formData.cmaRatePerSqm || 0),
@@ -331,7 +457,7 @@ export default function PropertyAnalyzerPage() {
     return data;
   };
 
-  const handleGeneratePDF = async (selections: any) => {
+  const handleGeneratePDF = async (selections: ReportSelections) => {
     try {
       await generatePDF(pdfData, selections, user?.settings?.companyLogo || "");
       toast({
@@ -345,9 +471,13 @@ export default function PropertyAnalyzerPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate PDF report",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to generate PDF report",
         duration: 5000,
       });
+    } finally {
     }
   };
 
@@ -358,7 +488,8 @@ export default function PropertyAnalyzerPage() {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Missing required data. Please ensure all fields are filled correctly.",
+          description:
+            "Missing required data. Please ensure all fields are filled correctly.",
           duration: 5000,
         });
         return;
@@ -393,25 +524,24 @@ export default function PropertyAnalyzerPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save analysis",
+        description:
+          error instanceof Error ? error.message : "Failed to save analysis",
         duration: 7000,
       });
     }
   };
-
-  useEffect(() => {
-  }, [user, hasProAccess]);
 
   return (
     <div className="px-4 py-6">
       <div className="flex items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Property Analysis</h1>
-          <p className="text-muted-foreground mt-1">Enter property details to generate analysis</p>
+          <p className="text-muted-foreground mt-1">
+            Enter property details to generate analysis
+          </p>
           {!hasProAccess && user && (
             <p className="text-sm text-muted-foreground mt-2">
-              <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span>{" "}
-              free analyses used
+              <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span> free analyses used
             </p>
           )}
         </div>
@@ -440,10 +570,15 @@ export default function PropertyAnalyzerPage() {
                     <BarChart3 className="h-6 w-6" />
                     Analysis Results
                   </h2>
-                  <p className="text-muted-foreground">Based on your provided property details</p>
+                  <p className="text-muted-foreground">
+                    Based on your provided property details
+                  </p>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <Button onClick={handleSaveAnalysis} className="bg-green-600 hover:bg-green-700">
+                  <Button
+                    onClick={handleSaveAnalysis}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
                     <Save className="w-4 h-4 mr-2" />
                     Save Analysis
                   </Button>
@@ -452,8 +587,15 @@ export default function PropertyAnalyzerPage() {
                     <TooltipTrigger asChild>
                       <div>
                         <Button
+                          // Update the pdfData preparation in the Export PDF button click handler:
                           onClick={() => {
                             if (!analysisResult || !analysisId) return;
+
+                            // Add this console log right before setPDFData
+                            console.log("Raw Analysis Result:", {
+                              managementFee: analysisResult.managementFee,
+                              fullAnalysisResult: analysisResult,
+                            });
 
                             setPDFData({
                               propertyDetails: {
@@ -464,36 +606,61 @@ export default function PropertyAnalyzerPage() {
                                 bathrooms: formData?.bathrooms,
                                 floorArea: Number(formData?.floorArea),
                                 parkingSpaces: Number(formData?.parkingSpaces),
-                                purchasePrice: analysisResult.analysis.purchasePrice,
-                                ratePerSquareMeter: Number(formData?.cmaRatePerSqm),
-                                areaRate: Number(analysisResult.ratePerSquareMeter),
+                                purchasePrice:
+                                  analysisResult.analysis.purchasePrice,
+                                ratePerSquareMeter: Number(
+                                  formData?.cmaRatePerSqm,
+                                ),
+                                areaRate: Number(
+                                  analysisResult.ratePerSquareMeter,
+                                ),
                                 rateDifference:
                                   Number(formData?.cmaRatePerSqm || 0) -
-                                  Number(analysisResult.ratePerSquareMeter || 0),
-                                propertyDescription: analysisResult.propertyDescription,
+                                  Number(
+                                    analysisResult.ratePerSquareMeter || 0,
+                                  ),
+                                propertyDescription:
+                                  analysisResult.propertyDescription,
                               },
                               analysis: {
                                 netOperatingIncome: analysisResult.analysis.netOperatingIncome,
+                                longTermNetOperatingIncome: analysisResult.analysis.longTermNetOperatingIncome,
                                 revenueProjections: analysisResult.analysis.revenueProjections,
                               },
+                              // Add this new performance object
                               performance: {
-                                shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate),
-                                annualOccupancy: Number(analysisResult.annualOccupancy),
+                                shortTermNightlyRate: Number(
+                                  analysisResult.shortTermNightlyRate,
+                                ),
+                                annualOccupancy: Number(
+                                  analysisResult.annualOccupancy,
+                                ),
                                 shortTermAnnualRevenue: Number(
-                                  analysisResult.analysis.shortTermAnnualRevenue,
+                                  analysisResult.analysis
+                                    .shortTermAnnualRevenue,
                                 ),
                                 longTermAnnualRevenue: Number(
                                   analysisResult.analysis.longTermAnnualRevenue,
                                 ),
-                                shortTermGrossYield: Number(analysisResult.shortTermGrossYield),
-                                longTermGrossYield: Number(analysisResult.longTermGrossYield),
+                                shortTermGrossYield: Number(
+                                  analysisResult.shortTermGrossYield,
+                                ),
+                                longTermGrossYield: Number(
+                                  analysisResult.longTermGrossYield,
+                                ),
                               },
                               financialMetrics: {
                                 depositAmount: Number(analysisResult.deposit),
-                                depositPercentage: Number(analysisResult.depositPercentage),
-                                interestRate: Number(analysisResult.interestRate),
+                                depositPercentage: Number(
+                                  analysisResult.depositPercentage,
+                                ),
+                                interestRate: Number(
+                                  analysisResult.interestRate,
+                                ),
                                 loanTerm: Number(analysisResult.loanTerm),
-                                monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment),
+                                monthlyBondRepayment: Number(
+                                  analysisResult.monthlyBondRepayment,
+                                ),
                                 bondRegistration: calculateBondRegistration(
                                   analysisResult.analysis.purchasePrice,
                                   !removeVat,
@@ -516,17 +683,55 @@ export default function PropertyAnalyzerPage() {
                                   ),
                               },
                               expenses: {
+                                // Changed from operatingExpenses to expenses
                                 monthlyLevies: Number(formData?.monthlyLevies) || 0,
-                                monthlyRatesTaxes: Number(formData?.monthlyRatesTaxes) || 0,
-                                otherMonthlyExpenses: Number(formData?.otherMonthlyExpenses) || 0,
-                                maintenancePercent: Number(formData?.maintenancePercent) || 0,
-                                managementFee: Number(analysisResult.managementFee) || 0,
+                                monthlyRatesTaxes: Number(
+                                  formData?.monthlyRatesTaxes
+                                ) || 0,
+                                otherMonthlyExpenses: Number(
+                                  formData?.otherMonthlyExpenses
+                                ) || 0,
+                                maintenancePercent: Number(
+                                  formData?.maintenancePercent
+                                ) || 0,
+                                managementFee: Number(
+                                  analysisResult.managementFee
+                                ) || 0,
+                              },
+                              rentalPerformance: {
+                                shortTermNightlyRate: Number(
+                                  analysisResult.shortTermNightlyRate,
+                                ),
+                                annualOccupancy: Number(
+                                  analysisResult.annualOccupancy,
+                                ),
+                                shortTermAnnualRevenue: Number(
+                                  analysisResult.analysis
+                                    .shortTermAnnualRevenue,
+                                ),
+                                longTermAnnualRevenue: Number(
+                                  analysisResult.analysis.longTermAnnualRevenue,
+                                ),
+                                shortTermGrossYield: Number(
+                                  analysisResult.shortTermGrossYield,
+                                ),
+                                longTermGrossYield: Number(
+                                  analysisResult.longTermGrossYield,
+                                ),
+                                platformFee:
+                                  analysisResult.managementFee > 0 ? 15 : 3,
                               },
                               investmentMetrics: analysisResult.analysis.investmentMetrics,
-                              netOperatingIncome: analysisResult.netOperatingIncome,
-                              revenueProjections: analysisResult.analysis.revenueProjections,
+                              netOperatingIncome:
+                                analysisResult.netOperatingIncome,
+                              revenueProjections:
+                                analysisResult.analysis.revenueProjections,
                             });
-                            setIsSubmitting(true);
+                            setIsDataReady(true); // Add this after setPDFData
+
+                            // Add this console log after setPDFData
+                            console.log("PDF Data being passed:", pdfData);
+
                             setShowPDFGenerator(true);
                           }}
                           disabled={!analysisResult || !analysisId}
@@ -547,7 +752,7 @@ export default function PropertyAnalyzerPage() {
               </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="space-y-4">
                 <Card>
                   <CardHeader>
@@ -570,12 +775,16 @@ export default function PropertyAnalyzerPage() {
 
                         {formData?.propertyPhoto && (
                           <div className="mt-4">
-                            <h3 className="text-sm font-semibold text-slate-600">Property Photo</h3>
+                            <h3 className="text-sm font-semibold text-slate-600">
+                              Property Photo
+                            </h3>
                             <div className="rounded-lg overflow-hidden mt-2">
                               <img
                                 src={
                                   formData.propertyPhoto instanceof File
-                                    ? URL.createObjectURL(formData.propertyPhoto)
+                                    ? URL.createObjectURL(
+                                        formData.propertyPhoto,
+                                      )
                                     : typeof formData.propertyPhoto === "string"
                                       ? formData.propertyPhoto
                                       : null
@@ -605,9 +814,12 @@ export default function PropertyAnalyzerPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-600">Property Description</h3>
+                    <h3 className="text-sm font-semibold text-slate-600">
+                      Property Description
+                    </h3>
                     <p className="mt-2 text-slate-700">
-                      {analysisResult.propertyDescription || "No description available"}
+                      {analysisResult.propertyDescription ||
+                        "No description available"}
                     </p>
                   </div>
 
@@ -665,7 +877,8 @@ export default function PropertyAnalyzerPage() {
                       </h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         R
-                        {analysisResult.monthlyBondRepayment?.toLocaleString() || "0"}
+                        {analysisResult.monthlyBondRepayment?.toLocaleString() ||
+                          "0"}
                       </p>
                     </div>
                     <div>
@@ -701,204 +914,420 @@ export default function PropertyAnalyzerPage() {
                         <Checkbox
                           id="removeVat"
                           checked={removeVat}
-                          onCheckedChange={(checked) => setRemoveVat(checked as boolean)}
+                          onCheckedChange={(checked) =>
+                            setRemoveVat(checked as boolean)
+                          }
                         />
-                        <label htmlFor="removeVat" className="text-sm text-slate-600">
-                          VAT Registered (exclude VAT)
+                        <label
+                          htmlFor="removeVat"
+                          className="text-sm text-slate-600 cursor-pointer"
+                        >
+                          Remove VAT
                         </label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="removeTransferDuty"
                           checked={removeTransferDuty}
-                          onCheckedChange={(checked) => setRemoveTransferDuty(checked as boolean)}
+                          onCheckedChange={(checked) =>
+                            setRemoveTransferDuty(checked as boolean)
+                          }
                         />
-                        <label htmlFor="removeTransferDuty" className="text-sm text-slate-600">
-                          Developer Sale (no transfer duty)
+                        <label
+                          htmlFor="removeTransferDuty"
+                          className="text-sm text-slate-600 cursor-pointer"
+                        >
+                          Remove Transfer Duty
                         </label>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-indigo-500" />
-                    Investment Summary
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">Total Capital Required</h3>
-                      <p className="mt-2 text-2xl font-bold text-slate-800">
-                        R{" "}
-                        {(
-                          (analysisResult.deposit || 0) +
-                          calculateBondRegistration(
-                            analysisResult.analysis.purchasePrice,
-                            !removeVat,
-                          ) +
-                          calculateTransferCosts(
-                            analysisResult.analysis.purchasePrice,
-                            !removeVat,
-                            !removeTransferDuty,
-                          )
-                        ).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">Short-Term Gross Yield</h3>
-                      <p className="mt-2 text-xl font-bold text-slate-800 flex items-center gap-2">
-                        {analysisResult.shortTermGrossYield?.toFixed(1)}%
-                        {analysisResult.shortTermGrossYield &&
-                          analysisResult.shortTermGrossYield > 8 && (
-                            <ArrowUpRight className="h-4 w-4 text-emerald-500" />
-                          )}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">Long-Term Gross Yield</h3>
-                      <p className="mt-2 text-xl font-bold text-slate-800 flex items-center gap-2">
-                        {analysisResult.longTermGrossYield?.toFixed(1)}%
-                        {analysisResult.longTermGrossYield &&
-                          analysisResult.longTermGrossYield > 7 && (
-                            <ArrowUpRight className="h-4 w-4 text-emerald-500" />
-                          )}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">ST Annual Revenue</h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        R{" "}
-                        {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">LT Annual Revenue</h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        R{" "}
-                        {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() || "0"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">Rate per m²</h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        R{" "}
-                        {analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">CMA Rate</h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        R {formData?.cmaRatePerSqm?.toLocaleString() || "0"}
-                      </p>
-                    </div>
+                  <div className="pt-4 mt-4 border-t border-gray-200">
+                    <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                      Total Capital Required
+                      <AnalyzerIndicator />
+                    </h3>
+                    <p className="mt-2 text-2xl font-bold text-slate-800">
+                      R
+                      {(
+                        (analysisResult.deposit || 0) +
+                        calculateBondRegistration(
+                          analysisResult.analysis.purchasePrice,
+                          !removeVat,
+                        ) +
+                        calculateTransferCosts(
+                          analysisResult.analysis.purchasePrice,
+                          !removeVat,
+                          !removeTransferDuty,
+                        )
+                      ).toLocaleString()}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
-            </div>
 
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {analysisResult.netOperatingIncome && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <BarChart3 className="h-5 w-5 text-indigo-500" />
-                        Short-Term Strategy Cash Flow Projections
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <CashflowChart
-                        data={analysisResult.netOperatingIncome}
-                        yAxisLabel="Cash Flow (R)"
-                        showTooltip={true}
-                      />
-                      <div className="mt-4 flex justify-center">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center">
-                            <span className="w-3 h-3 inline-block mr-1 bg-chart-1 rounded-sm"></span>
-                            <span className="text-xs text-muted-foreground">Net Income</span>
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-emerald-500" />
+                      Revenue Performance
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 rounded-lg bg-blue-50/50">
+                        <h3 className="text-sm font-bold text-blue-600 mb-3">
+                          Short-Term Rental (Year 1)
+                        </h3>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                              <span>
+                                R
+                                {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
+                                  "0"}
+                              </span>
+                              <span
+                                className="w-2 h-2 rounded-full bg-red-500"
+                                title="Data from analyzer engine"
+                              />
+                            </p>
+                            <p className="text-base text-slate-600">
+                              R
+                              {Math.round(
+                                (analysisResult.analysis
+                                  .shortTermAnnualRevenue || 0) / 12,
+                              ).toLocaleString()}
+                              /month
+                            </p>
                           </div>
-                          <div className="flex items-center">
-                            <span className="w-3 h-3 inline-block mr-1 bg-chart-2 rounded-sm"></span>
-                            <span className="text-xs text-muted-foreground">Cumulative</span>
+                          <p className="text-sm flex items-center gap-2">
+                            <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
+                              {analysisResult.shortTermGrossYield?.toFixed(2) ||
+                                "0"}
+                              % Gross Yield
+                              <span
+                                className="w-2 h-2 rounded-full bg-red-500"
+                                title="Calculated by analysis engine"
+                              />
+                            </span>
+                          </p>
+                          <div className="pt-2 border-t border-blue-100">
+                            <div className="flex justify-between items-center">
+                              <p className="text-sm text-slate-600">
+                                Nightly Rate:
+                              </p>
+                              <p className="text-sm font-medium flex items-center gap-2">
+                                R
+                                {analysisResult.shortTermNightlyRate?.toLocaleString() ||
+                                  "0"}
+                                <span
+                                  className="w-2 h-2 rounded-full bg-red-500"
+                                  title="Calculated by analysis engine"
+                                />
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">
+                                Fee-adjusted Rate:
+                              </p>
+                              <p className="text-sm font-medium flex items-center gap-2">
+                                R
+                                {analysisResult.shortTermNightlyRate
+                                  ? Math.round(
+                                      analysisResult.shortTermNightlyRate *
+                                        (1 -
+                                          (analysisResult.managementFee > 0
+                                            ? 0.15
+                                            : 0.03)),
+                                    ).toLocaleString()
+                                  : "0"}
+                                <span
+                                  className="w-2 h-2 rounded-full bg-red-500"
+                                  title="Calculated by analysis engine"
+                                />
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">
+                                Platform Fee:
+                              </p>
+                              <p className="text-sm font-medium text-red-600 flex items-center gap-2">
+                                {analysisResult.managementFee > 0 ? "15" : "3"}%
+                                <span
+                                  className="w-2 h-2 rounded-full bg-red-500"
+                                  title="Calculated by analysis engine"
+                                />
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">
+                                Management Fee:
+                              </p>
+                              <p className="text-sm font-medium flex items-center gap-2">
+                                {analysisResult.managementFee}%
+                                <span
+                                  className="w-2 h-2 rounded-full bg-red-500"
+                                  title="Calculated by analysis engine"
+                                />
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">
+                                Occupancy:
+                              </p>
+                              <p className="text-sm font-medium flex items-center gap-2">
+                                {analysisResult.annualOccupancy || "0"}%
+                                <span
+                                  className="w-2 h-2 rounded-full bg-red-500"
+                                  title="Calculated by analysis engine"
+                                />
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
+                      <div className="p-4 rounded-lg bg-purple-50/50">
+                        <h3 className="text-sm font-bold text-purple-600 mb-3">
+                          LongTerm Rental (Year 1)
+                        </h3>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                              R{" "}
+                              {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() ||
+                                "0"}
+                              <span
+                                className="w-2 h-2 rounded-full bg-red-500"
+                                title="Data from analyzer engine"
+                              />
+                            </p>
+                            <p className="text-base text-slate600">
+                              R{" "}
+                              {Math.round(
+                                (analysisResult.analysis
+                                  .longTermAnnualRevenue || 0) / 12,
+                              ).toLocaleString()}{" "}
+                              /month
+                            </p>
+                          </div>
+                          <p className="text-sm flex items-center gap-2">
+                            <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
+                              {analysisResult.longTermGrossYield?.toFixed(2) ||
+                                "0"}
+                              % Gross Yield
+                              <span
+                                className="w-2 h-2 rounded-full bg-red-500"
+                                title="Calculated by analysis engine"
+                              />
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5 text-indigo-500" />
-                      Short-Term Performance Metrics
+                      <BarChart3 className="h-5 w-5 text-cyan-500" />
+                      Size and Rate/m²
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <RentalPerformance
-                          shortTermNightlyRate={Number(analysisResult.shortTermNightlyRate)}
-                          annualOccupancy={Number(analysisResult.annualOccupancy)}
-                          shortTermAnnualRevenue={Number(
-                            analysisResult.analysis.shortTermAnnualRevenue,
-                          )}
-                          longTermAnnualRevenue={Number(
-                            analysisResult.analysis.longTermAnnualRevenue,
-                          )}
-                                                    platformFee={analysisResult.managementFee > 0 ? 15 : 3}
-                        />
-                      </div>
-
-                      <div>
-                        <CashflowMetrics
-                          monthlyBondRepayment={Number(analysisResult.monthlyBondRepayment)}
-                          monthlyLevies={Number(formData?.monthlyLevies)}
-                          monthlyRatesTaxes={Number(formData?.monthlyRatesTaxes)}
-                          otherMonthlyExpenses={Number(formData?.otherMonthlyExpenses)}
-                          maintenancePercent={Number(formData?.maintenancePercent)}
-                          managementFee={Number(analysisResult.managementFee)}
-                          revenueProjections={analysisResult.analysis.revenueProjections}
-                          netOperatingIncome={analysisResult.analysis.netOperatingIncome}
-                        />
-                      </div>
-
-                      <div>
-                        <InvestmentMetrics
-                          revenueProjections={analysisResult.analysis.revenueProjections}
-                          operatingExpenses={analysisResult.analysis.operatingExpenses}
-                          netOperatingIncome={analysisResult.netOperatingIncome}
-                          purchasePrice={analysisResult.analysis.purchasePrice}
-                        />
-                      </div>
-
-                      <div>
-                        <AssetGrowthMetrics
-                          purchasePrice={analysisResult.analysis.purchasePrice}
-                          annualIncomeGrowth={formData?.annualIncomeGrowth}
-                          annualExpenseGrowth={formData?.annualExpenseGrowth}
-                          annualPropertyAppreciation={formData?.annualPropertyAppreciation}
-                        />
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                            Floor Area
+                            <AnalyzerIndicator />
+                          </h3>
+                          <p className="mt-2 text-lg font-bold text-slate-800">
+                            {analysisResult.floorArea || "0"} m²
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                            Current Property Rate/m²
+                            <AnalyzerIndicator />
+                          </h3>
+                          <p className="mt-2 text-lg font-bold text-slate-800">
+                            R
+                            {(
+                              analysisResult.analysis.purchasePrice /
+                              (analysisResult.floorArea || 1)
+                            ).toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                            Area Rate/m²
+                            <AnalyzerIndicator />
+                          </h3>
+                          <p className="mt-2 text-lg font-bold text-slate-800">
+                            R{formData?.cmaRatePerSqm?.toLocaleString() || "0"}
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                            Rate/m² Difference
+                            <AnalyzerIndicator />
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <p
+                              className={`mt-2 text-lg font-bold ${analysisResult.rateDifference > 0 ? "text-green-600" : "text-red-600"}`}
+                            >
+                              R
+                              {Math.abs(
+                                analysisResult.rateDifference,
+                              ).toLocaleString()}
+                            </p>
+                            <span
+                              className={`text-sm font-medium ${analysisResult.rateDifference > 0 ? "text-green-600" : "text-red-600"}`}
+                            >
+                              (
+                              {analysisResult.rateDifference > 0
+                                ? "less"
+                                : "more"}{" "}
+                              than avg.)
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
+            </div>
+
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-emerald-500" />
+                    Rental Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <RentalPerformance
+                    shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                    longTermMonthly={
+                      analysisResult.analysis.longTermAnnualRevenue
+                        ? analysisResult.analysis.longTermAnnualRevenue / 12
+                        : 0
+                    }
+                    managementFee={analysisResult.managementFee || 0}
+                  />
+                </CardContent>
+              </Card>
+
+              <CashflowMetrics
+                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                longTermMonthly={
+                  analysisResult.analysis.longTermAnnualRevenue
+                    ? analysisResult.analysis.longTermAnnualRevenue / 12
+                    : 0
+                }
+                monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
+                managementFee={analysisResult.managementFee}
+                revenueProjections={{
+                  shortTerm:
+                    analysisResult.analysis.revenueProjections?.shortTerm ||
+                    null,
+                }}
+                operatingExpenses={analysisResult.analysis.operatingExpenses}
+                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+                longTermNetOperatingIncome={
+                  analysisResult.analysis.longTermNetOperatingIncome
+                }
+              />
+
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-green-500" />
+                    Investment Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <InvestmentMetrics
+                    yearlyMetrics={analysisResult.analysis.investmentMetrics}
+                    metricDescriptions={{
+                      grossYield: {
+                        title: "Gross Yield",
+                        explanation:
+                          "Annual gross rental income as a percentage of the property's purchase price",
+                        calculationMethod:
+                          "(Annual Gross Rental Income / Property Purchase Price) × 100",
+                      },
+                      netYield: {
+                        title: "Net Yield",
+                        explanation:
+                          "Annual net rental income (after expenses) as a percentage of the property's purchase price",
+                        calculationMethod:
+                          "(Annual Net Operating Income / Property Purchase Price) × 100",
+                      },
+                      returnOnEquity: {
+                        title: "Return on Equity",
+                        explanation:
+                          "Annual return relative to the equity invested in the property",
+                        calculationMethod:
+                          "(Annual Net Operating Income / Total Equity Invested) × 100",
+                      },
+                      annualReturn: {
+                        title: "Annual Return",
+                        explanation:
+                          "Total return including rental income and property appreciation for the year",
+                        calculationMethod:
+                          "((Net Operating Income + Property Value Increase) / Initial Investment) × 100",
+                      },
+                      capRate: {
+                        title: "Cap Rate",
+                        explanation:
+                          "Net operating income as a percentage of property value, indicating potential return regardless of financing",
+                        calculationMethod:
+                          "(Net Operating Income / Current Property Value) × 100",
+                      },
+                      cashOnCashReturn: {
+                        title: "Cash on Cash Return",
+                        explanation:
+                          "Annual pre-tax cash flow relative to total cash invested",
+                        calculationMethod:
+                          "(Annual Pre-tax Cash Flow / Total Cash Invested) × 100",
+                      },
+                      irr: {
+                        title: "Internal Rate of Return (IRR)",
+                        explanation:
+                          "The discount rate that makes the net present value of all cash flows equal to zero",
+                        calculationMethod:
+                          "Complex calculation using all future cash flows and initial investment",
+                      },
+                      netWorthChange: {
+                        title: "Net Worth Change",
+                        explanation:
+                          "Total change in net worth including equity buildup, appreciation, and rental income",
+                        calculationMethod:
+                          "Property Value Increase + Loan Principal Paid + Cumulative Rental Income",
+                      },
+                    }}
+                  />
+                </CardContent>
+              </Card>
+
+              <AssetGrowthMetrics
+                purchasePrice={analysisResult.analysis.purchasePrice}
+                deposit={analysisResult.deposit || 0}
+                loanAmount={
+                  analysisResult.analysis.purchasePrice -
+                  (analysisResult.deposit || 0)
+                }
+                interestRate={analysisResult.interestRate || 0}
+                loanTerm={analysisResult.loanTerm || 20}
+                annualAppreciation={formData?.annualPropertyAppreciation || 5}
+              />
             </div>
           </div>
         )}
@@ -907,13 +1336,13 @@ export default function PropertyAnalyzerPage() {
             <DialogHeader>
               <DialogTitle>Generate Property Analysis Report</DialogTitle>
             </DialogHeader>
-            {isSubmitting && pdfData && (
+            {isDataReady && pdfData && (
               <PropertyAnalyzerPDF
                 data={pdfData}
                 companyLogo={user?.settings?.companyLogo || ""}
                 onClose={() => {
                   setShowPDFGenerator(false);
-                  setIsSubmitting(false);
+                  setIsDataReady(false);
                 }}
                 isOpen={showPDFGenerator}
               />
