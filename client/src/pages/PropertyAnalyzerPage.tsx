@@ -204,10 +204,23 @@ interface AnalysisResult {
 }
 
 export default function PropertyAnalyzerPage() {
+  // Move all hook declarations to the top
   const [isDataReady, setIsDataReady] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<any>(null);
+  const [removeVat, setRemoveVat] = useState(false);
+  const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
+  const [analysisId, setAnalysisId] = useState<string | null>(null);
+  const [pdfData, setPDFData] = useState<any>(null);
+  const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
+  const [showPDFGenerator, setShowPDFGenerator] = useState(false);
   const { user } = useUser();
   const hasProAccess = useProAccess();
+  const { toast } = useToast();
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user && !hasProAccess && user.propertyAnalyzerUsage >= 3) {
@@ -215,7 +228,9 @@ export default function PropertyAnalyzerPage() {
     }
   }, [user, hasProAccess]);
 
-  if (showLimitModal) {
+  // Render modal if limit reached
+  const renderLimitModal = () => {
+    if (!showLimitModal) return null;
     return (
       <>
         <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
