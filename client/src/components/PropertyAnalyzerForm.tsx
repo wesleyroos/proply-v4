@@ -237,8 +237,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         annualPropertyAppreciation: Number(formData.annualPropertyAppreciation || 0),
 
         // Miscellaneous
-        cmaRatePerSqm: Number(data.cmaRatePerSqm || 0),
-        comments: data.comments || "",
+        cmaRatePerSqm: Number(formData.cmaRatePerSqm || 0),
+        comments: formData.comments || "",
       };
 
       console.log("Submitting complete analysis data:", analysisData);
