@@ -288,16 +288,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         body: JSON.stringify(analysisData),
       });
 
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || response.statusText);
       }
 
-      const data = await response.json();
-      console.log("Analysis response:", data);
+      const responseData = await response.json();
+      console.log("Analysis response:", responseData);
 
-      // Invalidate user query to refresh usage count - Moved here for correct timing
+      // Invalidate user query to refresh usage count
       await queryClient.invalidateQueries({ queryKey: ['user'] });
 
       if (props.onAnalysisComplete) {
