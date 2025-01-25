@@ -196,42 +196,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     );
   }
 
-  // Render upgrade modal if limit reached
-  if (reachedLimit) {
-    return (
-      <Dialog open={true} onOpenChange={() => {}}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Free Plan Limit Reached</DialogTitle>
-            <DialogDescription className="space-y-4">
-              <p>
-                You've used all 3 free property analyses. Upgrade to Pro for unlimited access to:
-              </p>
-              <ul className="list-disc list-inside space-y-2">
-                <li>Unlimited property analyses</li>
-                <li>Advanced market insights</li>
-                <li>Comparative market analysis</li>
-                <li>Detailed investment metrics</li>
-              </ul>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-center mt-6">
-            <Link href="/pricing">
-              <Button size="lg" className="w-full sm:w-auto">
-                Upgrade to Pro
-              </Button>
-            </Link>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   const onSubmit = async (data: PropertyAnalyzerFormValues) => {
-    // If user has reached limit, prevent submission
-    if (reachedLimit) {
-      setShowUpgradeModal(true);
-      return;
     }
 
     setIsSubmitting(true);
