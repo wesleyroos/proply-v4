@@ -40,8 +40,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-
+// Keep the existing interfaces
 interface YearlyMetrics {
   grossYield: number;
   netYield: number;
@@ -213,6 +219,7 @@ export default function PropertyAnalyzerPage() {
   const resultsRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
+  // Keep all the existing helper functions and handlers
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
     if (!costs) return 0;
@@ -381,10 +388,15 @@ export default function PropertyAnalyzerPage() {
     return data;
   };
 
-  const handleGeneratePDF = async (selections: any) => {
+  const handleGeneratePDF = async (selections: ReportSelections) => {
     try {
-      //Implementation for PDF generation would go here.  This is omitted as it's not crucial to the core problem.
-      console.log("PDF Generation triggered");
+      await generatePDF(pdfData, selections, user?.settings?.companyLogo || "");
+      toast({
+        title: "Success",
+        description: "PDF report generated successfully!",
+        duration: 3000,
+      });
+      setShowPDFGenerator(false);
     } catch (error) {
       console.error("PDF generation error:", error);
       toast({
@@ -396,9 +408,9 @@ export default function PropertyAnalyzerPage() {
             : "Failed to generate PDF report",
         duration: 5000,
       });
+    } finally {
     }
   };
-
 
   const handleSaveAnalysis = async () => {
     try {
@@ -451,6 +463,7 @@ export default function PropertyAnalyzerPage() {
   };
 
   useEffect(() => {
+    // Removed the showLimitModal logic here.
   }, [user, hasProAccess]);
 
   return (
@@ -885,229 +898,386 @@ export default function PropertyAnalyzerPage() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-emerald-500" />
-                    Key Performance Metrics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Short-Term Gross Yield
-                      </h3>
-                      <p className="mt-2 text-2xl font-bold text-slate-800">
-                        {analysisResult.shortTermGrossYield?.toFixed(1) || "0"}%
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Long-Term Gross Yield
-                      </h3>
-                      <p className="mt-2 text-2xl font-bold text-slate-800">
-                        {analysisResult.longTermGrossYield?.toFixed(1) || "0"}%
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Short-Term Annual Revenue
-                      </h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        R
-                        {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Long-Term Annual Revenue
-                      </h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        R
-                        {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() || "0"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Initial Monthly ST Revenue
-                      </h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        R
-                        {(
-                          analysisResult.analysis.shortTermAnnualRevenue /
-                          12
-                        ).toLocaleString() || "0"}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Initial Monthly LT Revenue
-                      </h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        R
-                        {(
-                          analysisResult.analysis.longTermAnnualRevenue /
-                          12
-                        ).toLocaleString() || "0"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Short-Term Nightly Rate
-                      </h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        R
-                        {Number(analysisResult.shortTermNightlyRate).toLocaleString() || "0"}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Annual Occupancy
-                      </h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        {Number(analysisResult.annualOccupancy).toFixed(0) || "0"}%
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Property Tables */}
-            <div className="grid gap-6">
-              {/* Revenue Projections */}
-              {analysisResult.analysis.revenueProjections && (
+              <div className="space-y-4">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-indigo-500" />
-                      Revenue Projections
+                      <TrendingUp className="h-5 w-5 text-emerald-500" />
+                      Revenue Performance
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-6">
-                      {/* Short Term Monthly Revenue */}
-                      <div>
-                        <h3 className="text-sm font-semibold text-slate-600 mb-4">
-                          Short Term Monthly Revenue Growth
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 rounded-lg bg-blue-50/50">
+                        <h3 className="text-sm font-bold text-blue-600 mb-3">
+                          Short-Term Rental (Year 1)
                         </h3>
-                        <div className="h-[300px]">
-                          <CashflowChart
-                            shortTermRevenue={
-                              analysisResult.analysis.revenueProjections
-                                .shortTerm || {}
-                            }
-                            longTermRevenue={
-                              analysisResult.analysis.revenueProjections
-                                .longTerm || {}
-                            }
-                            operatingExpenses={
-                              analysisResult.analysis.operatingExpenses
-                            }
-                          />
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                              <span>
+                                R
+                                {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
+                                  "0"}
+                              </span>
+                              <span
+                                className="w-2 h-2 rounded-full bg-red-500"
+                                title="Data from analyzer engine"
+                              />
+                            </p>
+                            <p className="text-base text-slate-600">
+                              R
+                              {Math.round(
+                                (analysisResult.analysis
+                                  .shortTermAnnualRevenue || 0) / 12,
+                              ).toLocaleString()}
+                              /month
+                            </p>
+                          </div>
+                          <p className="text-sm flex items-center gap-2">
+                            <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
+                              {analysisResult.shortTermGrossYield?.toFixed(2) ||
+                                "0"}
+                              % Gross Yield
+                              <span
+                                className="w-2 h-2 rounded-full bg-red-500"
+                                title="Calculated by analysis engine"
+                              />
+                            </span>
+                          </p>
+                          <div className="pt-2 border-t border-blue-100">
+                            <div className="flex justify-between items-center">
+                              <p className="text-sm text-slate-600">
+                                Nightly Rate:
+                              </p>
+                              <p className="text-sm font-medium flex items-center gap-2">
+                                R
+                                {analysisResult.shortTermNightlyRate?.toLocaleString() ||
+                                  "0"}
+                                <span
+                                  className="w-2 h-2 rounded-full bg-red-500"
+                                  title="Calculated by analysis engine"
+                                />
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">
+                                Fee-adjusted Rate:
+                              </p>
+                              <p className="text-sm font-medium flex items-center gap-2">
+                                R
+                                {analysisResult.shortTermNightlyRate
+                                  ? Math.round(
+                                      analysisResult.shortTermNightlyRate *
+                                        (1 -
+                                          (analysisResult.managementFee > 0
+                                            ? 0.15
+                                            : 0.03)),
+                                    ).toLocaleString()
+                                  : "0"}
+                                <span
+                                  className="w-2 h-2 rounded-full bg-red-500"
+                                  title="Calculated by analysis engine"
+                                />
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">
+                                Platform Fee:
+                              </p>
+                              <p className="text-sm font-medium text-red-600 flex items-center gap-2">
+                                {analysisResult.managementFee > 0 ? "15" : "3"}%
+                                <span
+                                  className="w-2 h-2 rounded-full bg-red-500"
+                                  title="Calculated by analysis engine"
+                                />
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">
+                                Management Fee:
+                              </p>
+                              <p className="text-sm font-medium flex items-center gap-2">
+                                {analysisResult.managementFee}%
+                                <span
+                                  className="w-2 h-2 rounded-full bg-red-500"
+                                  title="Calculated by analysis engine"
+                                />
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">
+                                Occupancy:
+                              </p>
+                              <p className="text-sm font-medium flex items-center gap-2">
+                                {analysisResult.annualOccupancy || "0"}%
+                                <span
+                                  className="w-2 h-2 rounded-full bg-red-500"
+                                  title="Calculated by analysis engine"
+                                />
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-lg bg-purple-50/50">
+                        <h3 className="text-sm font-bold text-purple-600 mb-3">
+                          LongTerm Rental (Year 1)
+                        </h3>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                              R{" "}
+                              {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() ||
+                                "0"}
+                              <span
+                                className="w-2 h-2 rounded-full bg-red-500"
+                                title="Data from analyzer engine"
+                              />
+                            </p>
+                            <p className="text-base text-slate600">
+                              R{" "}
+                              {Math.round(
+                                (analysisResult.analysis
+                                  .longTermAnnualRevenue || 0) / 12,
+                              ).toLocaleString()}{" "}
+                              /month
+                            </p>
+                          </div>
+                          <p className="text-sm flex items-center gap-2">
+                            <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
+                              {analysisResult.longTermGrossYield?.toFixed(2) ||
+                                "0"}
+                              % Gross Yield
+                              <span
+                                className="w-2 h-2 rounded-full bg-red-500"
+                                title="Calculated by analysis engine"
+                              />
+                            </span>
+                          </p>
                         </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              )}
 
-              {/* Cashflow Metrics */}
-              {analysisResult.analysis.netOperatingIncome && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5 text-indigo-500" />
-                      Cashflow Analysis
+                      <BarChart3 className="h-5 w-5 text-cyan-500" />
+                      Size and Rate/m²
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CashflowMetrics
-                      netOperatingIncome={
-                        analysisResult.analysis.netOperatingIncome
-                      }
-                      purchasePrice={analysisResult.analysis.purchasePrice}
-                    />
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                            Floor Area
+                            <AnalyzerIndicator />
+                          </h3>
+                          <p className="mt-2 text-lg font-bold text-slate-800">
+                            {analysisResult.floorArea || "0"} m²
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                            Current Property Rate/m²
+                            <AnalyzerIndicator />
+                          </h3>
+                          <p className="mt-2 text-lg font-bold text-slate-800">
+                            R
+                            {(
+                              analysisResult.analysis.purchasePrice /
+                              (analysisResult.floorArea || 1)
+                            ).toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                            Area Rate/m²
+                            <AnalyzerIndicator />
+                          </h3>
+                          <p className="mt-2 text-lg font-bold text-slate-800">
+                            R{formData?.cmaRatePerSqm?.toLocaleString() || "0"}
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                            Rate/m² Difference
+                            <AnalyzerIndicator />
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <p
+                              className={`mt-2 text-lg font-bold ${analysisResult.rateDifference > 0 ? "text-green-600" : "text-red-600"}`}
+                            >
+                              R
+                              {Math.abs(
+                                analysisResult.rateDifference,
+                              ).toLocaleString()}
+                            </p>
+                            <span
+                              className={`text-sm font-medium ${analysisResult.rateDifference > 0 ? "text-green-600" : "text-red-600"}`}
+                            >
+                              (
+                              {analysisResult.rateDifference > 0
+                                ? "less"
+                                : "more"}{" "}
+                              than avg.)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
-              )}
+              </div>
 
-              {/* Investment Metrics */}
-              {analysisResult.analysis.investmentMetrics && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-indigo-500" />
-                      Investment Metrics
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <InvestmentMetrics
-                      metrics={analysisResult.analysis.investmentMetrics}
-                      purchasePrice={analysisResult.analysis.purchasePrice}
-                    />
-                  </CardContent>
-                </Card>
-              )}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-emerald-500" />
+                    Rental Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <RentalPerformance
+                    shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                    longTermMonthly={
+                      analysisResult.analysis.longTermAnnualRevenue
+                        ? analysisResult.analysis.longTermAnnualRevenue / 12
+                        : 0
+                    }
+                    managementFee={analysisResult.managementFee || 0}
+                  />
+                </CardContent>
+              </Card>
 
-              {/* Asset Growth */}
-              {analysisResult.netOperatingIncome && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-indigo-500" />
-                      Asset Growth
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <AssetGrowthMetrics
-                      purchasePrice={analysisResult.analysis.purchasePrice}
-                      netOperatingIncome={
-                        analysisResult.netOperatingIncome
-                      }
-                    />
-                  </CardContent>
-                </Card>
-              )}
+              <CashflowMetrics
+                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                longTermMonthly={
+                  analysisResult.analysis.longTermAnnualRevenue
+                    ? analysisResult.analysis.longTermAnnualRevenue / 12
+                    : 0
+                }
+                monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
+                managementFee={analysisResult.managementFee}
+                revenueProjections={{
+                  shortTerm:
+                    analysisResult.analysis.revenueProjections?.shortTerm ||
+                    null,
+                }}
+                operatingExpenses={analysisResult.analysis.operatingExpenses}
+                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+                longTermNetOperatingIncome={
+                  analysisResult.analysis.longTermNetOperatingIncome
+                }
+              />
 
-              {/* Rental Performance */}
-              {analysisResult.netOperatingIncome && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-indigo-500" />
-                      Rental Performance
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <RentalPerformance
-                      netOperatingIncome={analysisResult.netOperatingIncome}
-                      shortTermGrossYield={analysisResult.shortTermGrossYield}
-                      shortTermAnnualRevenue={
-                        analysisResult.analysis.shortTermAnnualRevenue
-                      }
-                      longTermGrossYield={analysisResult.longTermGrossYield}
-                      longTermAnnualRevenue={
-                        analysisResult.analysis.longTermAnnualRevenue
-                      }
-                      purchasePrice={analysisResult.analysis.purchasePrice}
-                    />
-                  </CardContent>
-                </Card>
-              )}
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-green-500" />
+                    Investment Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <InvestmentMetrics
+                    yearlyMetrics={analysisResult.analysis.investmentMetrics}
+                    metricDescriptions={{
+                      grossYield: {
+                        title: "Gross Yield",
+                        explanation:
+                          "Annual gross rental income as a percentage of the property's purchase price",
+                        calculationMethod:
+                          "(Annual Gross Rental Income / Property Purchase Price) × 100",
+                      },
+                      netYield: {
+                        title: "Net Yield",
+                        explanation:
+                          "Annual net rental income (after expenses) as a percentage of the property's purchase price",
+                        calculationMethod:
+                          "(Annual Net Operating Income / Property Purchase Price) × 100",
+                      },
+                      returnOnEquity: {
+                        title: "Return on Equity",
+                        explanation:
+                          "Annual return relative to the equity invested in the property",
+                        calculationMethod:
+                          "(Annual Net Operating Income / Total Equity Invested) × 100",
+                      },
+                      annualReturn: {
+                        title: "Annual Return",
+                        explanation:
+                          "Total return including rental income and property appreciation for the year",
+                        calculationMethod:
+                          "((Net Operating Income + Property Value Increase) / Initial Investment) × 100",
+                      },
+                      capRate: {
+                        title: "Cap Rate",
+                        explanation:
+                          "Net operating income as a percentage of property value, indicating potential return regardless of financing",
+                        calculationMethod:
+                          "(Net Operating Income / Current Property Value) × 100",
+                      },
+                      cashOnCashReturn: {
+                        title: "Cash on Cash Return",
+                        explanation:
+                          "Annual pre-tax cash flow relative to total cash invested",
+                        calculationMethod:
+                          "(Annual Pre-tax Cash Flow / Total Cash Invested) × 100",
+                      },
+                      irr: {
+                        title: "Internal Rate of Return (IRR)",
+                        explanation:
+                          "The discount rate that makes the net present value of all cash flows equal to zero",
+                        calculationMethod:
+                          "Complex calculation using all future cash flows and initial investment",
+                      },
+                      netWorthChange: {
+                        title: "Net Worth Change",
+                        explanation:
+                          "Total change in net worth including equity buildup, appreciation, and rental income",
+                        calculationMethod:
+                          "Property Value Increase + Loan Principal Paid + Cumulative Rental Income",
+                      },
+                    }}
+                  />
+                </CardContent>
+              </Card>
+
+              <AssetGrowthMetrics
+                purchasePrice={analysisResult.analysis.purchasePrice}
+                deposit={analysisResult.deposit || 0}
+                loanAmount={
+                  analysisResult.analysis.purchasePrice -
+                  (analysisResult.deposit || 0)
+                }
+                interestRate={analysisResult.interestRate || 0}
+                loanTerm={analysisResult.loanTerm || 20}
+                annualAppreciation={formData?.annualPropertyAppreciation || 5}
+              />
             </div>
           </div>
         )}
+        <Dialog open={showPDFGenerator} onOpenChange={setShowPDFGenerator}>
+          <DialogContent className="max-w-4xl max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>Generate Property Analysis Report</DialogTitle>
+            </DialogHeader>
+            {isDataReady && pdfData && (
+              <PropertyAnalyzerPDF
+                data={pdfData}
+                companyLogo={user?.settings?.companyLogo || ""}
+                onClose={() => {
+                  setShowPDFGenerator(false);
+                  setIsDataReady(false);
+                }}
+                isOpen={showPDFGenerator}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
