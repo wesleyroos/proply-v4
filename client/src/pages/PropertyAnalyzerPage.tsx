@@ -228,36 +228,32 @@ export default function PropertyAnalyzerPage() {
     }
   }, [user, hasProAccess]);
 
-  // Render modal if limit reached
-  const renderLimitModal = () => {
-    if (!showLimitModal) return null;
-    return (
-      <>
-        <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Free Plan Limit Reached</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-6">
-              <p className="text-muted-foreground">
-                You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
-              </p>
-              <div className="pt-4">
-                <Link to="/pricing">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                    Upgrade to Pro
-                  </Button>
-                </Link>
-              </div>
+  const limitModalContent = (
+    <>
+      <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Free Plan Limit Reached</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-6">
+            <p className="text-muted-foreground">
+              You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
+            </p>
+            <div className="pt-4">
+              <Link to="/pricing">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  Upgrade to Pro
+                </Button>
+              </Link>
             </div>
-          </DialogContent>
-        </Dialog>
-        <div className="px-4 py-6 opacity-50 pointer-events-none">
-          <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
-        </div>
-      </>
-    );
-  }
+          </div>
+        </DialogContent>
+      </Dialog>
+      <div className="px-4 py-6 opacity-50 pointer-events-none">
+        <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+      </div>
+    </>
+  );
 
   console.log("Preparing PDF Data:", {
     fullAnalysisResult: analysisResult,
@@ -519,6 +515,7 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <div className="px-4 py-6">
+      {showLimitModal ? limitModalContent : (
       <div className="flex items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Property Analysis</h1>
@@ -1336,6 +1333,7 @@ export default function PropertyAnalyzerPage() {
           </DialogContent>
         </Dialog>
       </div>
+    )}
     </div>
   );
 }
