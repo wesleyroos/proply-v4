@@ -205,44 +205,8 @@ interface AnalysisResult {
 
 export default function PropertyAnalyzerPage() {
   const [isDataReady, setIsDataReady] = useState(false);
-  const [showLimitModal, setShowLimitModal] = useState(false);
   const { user } = useUser();
   const hasProAccess = useProAccess();
-
-  useEffect(() => {
-    if (user && !hasProAccess && user.propertyAnalyzerUsage >= 3) {
-      setShowLimitModal(true);
-    }
-  }, [user, hasProAccess]);
-
-  if (showLimitModal) {
-    return (
-      <>
-        <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Free Plan Limit Reached</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-6">
-              <p className="text-muted-foreground">
-                You've used all 3 free property analyses. Upgrade to Pro for unlimited access and additional features.
-              </p>
-              <div className="pt-4">
-                <Link to="/pricing">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                    Upgrade to Pro
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-        <div className="px-4 py-6 opacity-50 pointer-events-none">
-          <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
-        </div>
-      </>
-    );
-  }
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
     null,
   );
