@@ -205,7 +205,6 @@ interface AnalysisResult {
 }
 
 export default function PropertyAnalyzerPage() {
-  // Move all hook declarations to the top
   const [isDataReady, setIsDataReady] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -229,9 +228,9 @@ export default function PropertyAnalyzerPage() {
     }
   }, [user, hasProAccess]);
 
-  // Render modal if limit reached
   const renderLimitModal = () => {
     if (!showLimitModal) return null;
+
     return (
       <>
         <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
@@ -519,6 +518,7 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <div className="px-4 py-6">
+      {renderLimitModal()}
       <div className="flex items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Property Analysis</h1>
