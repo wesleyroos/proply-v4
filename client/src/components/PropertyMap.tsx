@@ -10,6 +10,8 @@ interface PropertyMapProps {
 export default function PropertyMap({ address, onMapLoad, mapClassName }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [geocoder, setGeocoder] = useState<google.maps.Geocoder | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -20,10 +22,12 @@ export default function PropertyMap({ address, onMapLoad, mapClassName }: Proper
 
         if (!isMounted || !mapRef.current) return;
 
-        const geocoder = new google.maps.Geocoder();
+        const geocoderInstance = new google.maps.Geocoder();
+        setGeocoder(geocoderInstance);
+
         const defaultLocation = { lat: -33.918861, lng: 18.4233 };
 
-        const map = new google.maps.Map(mapRef.current, {
+        const mapInstance = new google.maps.Map(mapRef.current, {
           center: defaultLocation,
           zoom: 15,
           mapTypeControl: false,
@@ -32,16 +36,20 @@ export default function PropertyMap({ address, onMapLoad, mapClassName }: Proper
           gestureHandling: 'cooperative'
         });
 
-        
+        setMap(mapInstance);
 
-        geocoder.geocode({ address }, (results, status) => {
+        if (onMapLoad) {
+          onMapLoad();
+        }
+
+        geocoderInstance.geocode({ address }, (results, status) => {
           if (status === "OK" && results?.[0]) {
             const location = results[0].geometry.location;
-            map.setCenter(location);
-            map.setZoom(16);
+            mapInstance.setCenter(location);
+            mapInstance.setZoom(16);
 
             new google.maps.Marker({
-              map,
+              map: mapInstance,
               position: location,
               title: "Property Location"
             });
