@@ -515,10 +515,13 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <div className="px-4 py-6">
-      {showLimitModal ? limitModalContent : (
-      <div className="flex items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Property Analysis</h1>
+      {showLimitModal ? (
+        limitModalContent
+      ) : (
+        <>
+          <div className="flex items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold">Property Analysis</h1>
           <p className="text-muted-foreground mt-1">
             Enter property details to generate analysis
           </p>
@@ -1332,8 +1335,8 @@ export default function PropertyAnalyzerPage() {
             )}
           </DialogContent>
         </Dialog>
-      </div>
-    )}
+        </>
+      )}
     </div>
   );
 }
