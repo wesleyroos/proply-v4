@@ -2,30 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import html2canvas from "html2canvas";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  findCostFromTable,
-  bondCostsTable,
-  transferCostsTable,
-} from "@/lib/costTables";
-import {
-  AlertCircle,
-  BarChart3,
-  TrendingUp,
-  Building2,
-  ArrowUpRight,
-  Save,
-  FileText,
-  Info,
-} from "lucide-react";
+import { findCostFromTable, bondCostsTable, transferCostsTable } from "@/lib/costTables";
+import { AlertCircle, BarChart3, TrendingUp, Building2, ArrowUpRight, Save, FileText, Info } from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
@@ -34,20 +15,10 @@ import AssetGrowthMetrics from "@/components/AssetGrowthMetrics";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import CashflowChart from "@/components/CashflowChart";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-// Keep the existing interfaces
 interface YearlyMetrics {
   grossYield: number;
   netYield: number;
@@ -202,7 +173,7 @@ interface AnalysisResult {
 }
 
 export default function PropertyAnalyzerPage() {
-  const [isDataReady, setIsDataReady] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(null);
@@ -219,7 +190,6 @@ export default function PropertyAnalyzerPage() {
   const resultsRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
-  // Keep all the existing helper functions and handlers
   const calculateBondRegistration = (purchasePrice: number, includeVat: boolean = true) => {
     const costs = findCostFromTable(purchasePrice, bondCostsTable);
     if (!costs) return 0;
@@ -242,18 +212,11 @@ export default function PropertyAnalyzerPage() {
   const handleAnalysisComplete = async (formData: any) => {
     try {
       setAnalysisError(null);
-      console.log("Form data received:", formData);
-      setFormData({
-        ...formData,
-        propertyPhoto: formData.propertyPhoto,
-      });
+      setFormData(formData);
 
-      const deposit =
-        formData.depositType === "amount"
-          ? parseFloat(formData.depositAmount)
-          : (parseFloat(formData.purchasePrice) *
-              parseFloat(formData.depositPercentage)) /
-            100;
+      const deposit = formData.depositType === "amount"
+        ? parseFloat(formData.depositAmount)
+        : (parseFloat(formData.purchasePrice) * parseFloat(formData.depositPercentage)) / 100;
 
       const requestBody = {
         address: formData.address,
@@ -279,14 +242,10 @@ export default function PropertyAnalyzerPage() {
         leaseCycleGap: parseInt(formData.leaseCycleGap || 0),
         annualIncomeGrowth: parseFloat(formData.annualIncomeGrowth || 0),
         annualExpenseGrowth: parseFloat(formData.annualExpenseGrowth || 0),
-        annualPropertyAppreciation: parseFloat(
-          formData.annualPropertyAppreciation || 0,
-        ),
+        annualPropertyAppreciation: parseFloat(formData.annualPropertyAppreciation || 0),
         ratePerSquareMeter: parseFloat(formData.cmaRatePerSqm || 0),
         propertyDescription: formData.comments || "",
       };
-
-      console.log("Data being sent to analyzer:", requestBody);
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -302,8 +261,6 @@ export default function PropertyAnalyzerPage() {
       }
 
       const data = await response.json();
-      console.log("Analysis response:", data);
-
       setAnalysisResult({
         ...data,
         shortTermNightlyRate: requestBody.shortTermNightlyRate,
@@ -315,23 +272,13 @@ export default function PropertyAnalyzerPage() {
       setTimeout(() => {
         if (resultsRef.current) {
           const yOffset = -100;
-          const y =
-            resultsRef.current.getBoundingClientRect().top +
-            window.pageYOffset +
-            yOffset;
-          window.scrollTo({
-            top: y,
-            behavior: "smooth",
-          });
+          const y = resultsRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: y, behavior: "smooth" });
         }
       }, 100);
     } catch (error) {
       console.error("Analysis failed:", error);
-      setAnalysisError(
-        error instanceof Error
-          ? error.message
-          : "Failed to analyze property data",
-      );
+      setAnalysisError(error instanceof Error ? error.message : "Failed to analyze property data");
       setAnalysisResult(null);
     }
   };
@@ -370,12 +317,8 @@ export default function PropertyAnalyzerPage() {
       managementFee: Number(formData.managementFee || 0),
       shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate || 0),
       annualOccupancy: Number(analysisResult.annualOccupancy || 0),
-      shortTermAnnualRevenue: Number(
-        analysisResult.analysis.shortTermAnnualRevenue || 0,
-      ),
-      longTermAnnualRevenue: Number(
-        analysisResult.analysis.longTermAnnualRevenue || 0,
-      ),
+      shortTermAnnualRevenue: Number(analysisResult.analysis.shortTermAnnualRevenue || 0),
+      longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue || 0),
       shortTermGrossYield: Number(analysisResult.shortTermGrossYield || 0),
       longTermGrossYield: Number(analysisResult.longTermGrossYield || 0),
       ratePerSquareMeter: Number(formData.cmaRatePerSqm || 0),
@@ -388,7 +331,7 @@ export default function PropertyAnalyzerPage() {
     return data;
   };
 
-  const handleGeneratePDF = async (selections: ReportSelections) => {
+  const handleGeneratePDF = async (selections: any) => { // Added any type for selections since it's not defined in original
     try {
       await generatePDF(pdfData, selections, user?.settings?.companyLogo || "");
       toast({
@@ -402,13 +345,9 @@ export default function PropertyAnalyzerPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to generate PDF report",
+        description: error instanceof Error ? error.message : "Failed to generate PDF report",
         duration: 5000,
       });
-    } finally {
     }
   };
 
@@ -419,8 +358,7 @@ export default function PropertyAnalyzerPage() {
         toast({
           variant: "destructive",
           title: "Error",
-          description:
-            "Missing required data. Please ensure all fields are filled correctly.",
+          description: "Missing required data. Please ensure all fields are filled correctly.",
           duration: 5000,
         });
         return;
@@ -455,15 +393,13 @@ export default function PropertyAnalyzerPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to save analysis",
+        description: error instanceof Error ? error.message : "Failed to save analysis",
         duration: 7000,
       });
     }
   };
 
   useEffect(() => {
-    // Removed the showLimitModal logic here.
   }, [user, hasProAccess]);
 
   return (
@@ -471,9 +407,7 @@ export default function PropertyAnalyzerPage() {
       <div className="flex items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Property Analysis</h1>
-          <p className="text-muted-foreground mt-1">
-            Enter property details to generate analysis
-          </p>
+          <p className="text-muted-foreground mt-1">Enter property details to generate analysis</p>
           {!hasProAccess && user && (
             <p className="text-sm text-muted-foreground mt-2">
               <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span>{" "}
@@ -506,15 +440,10 @@ export default function PropertyAnalyzerPage() {
                     <BarChart3 className="h-6 w-6" />
                     Analysis Results
                   </h2>
-                  <p className="text-muted-foreground">
-                    Based on your provided property details
-                  </p>
+                  <p className="text-muted-foreground">Based on your provided property details</p>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <Button
-                    onClick={handleSaveAnalysis}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
+                  <Button onClick={handleSaveAnalysis} className="bg-green-600 hover:bg-green-700">
                     <Save className="w-4 h-4 mr-2" />
                     Save Analysis
                   </Button>
@@ -526,11 +455,6 @@ export default function PropertyAnalyzerPage() {
                           onClick={() => {
                             if (!analysisResult || !analysisId) return;
 
-                            console.log("Raw Analysis Result:", {
-                              managementFee: analysisResult.managementFee,
-                              fullAnalysisResult: analysisResult,
-                            });
-
                             setPDFData({
                               propertyDetails: {
                                 address: analysisResult.address,
@@ -540,59 +464,36 @@ export default function PropertyAnalyzerPage() {
                                 bathrooms: formData?.bathrooms,
                                 floorArea: Number(formData?.floorArea),
                                 parkingSpaces: Number(formData?.parkingSpaces),
-                                purchasePrice:
-                                  analysisResult.analysis.purchasePrice,
-                                ratePerSquareMeter: Number(
-                                  formData?.cmaRatePerSqm,
-                                ),
-                                areaRate: Number(
-                                  analysisResult.ratePerSquareMeter,
-                                ),
+                                purchasePrice: analysisResult.analysis.purchasePrice,
+                                ratePerSquareMeter: Number(formData?.cmaRatePerSqm),
+                                areaRate: Number(analysisResult.ratePerSquareMeter),
                                 rateDifference:
                                   Number(formData?.cmaRatePerSqm || 0) -
-                                  Number(
-                                    analysisResult.ratePerSquareMeter || 0,
-                                  ),
-                                propertyDescription:
-                                  analysisResult.propertyDescription,
+                                  Number(analysisResult.ratePerSquareMeter || 0),
+                                propertyDescription: analysisResult.propertyDescription,
                               },
                               analysis: {
                                 netOperatingIncome: analysisResult.analysis.netOperatingIncome,
                                 revenueProjections: analysisResult.analysis.revenueProjections,
                               },
                               performance: {
-                                shortTermNightlyRate: Number(
-                                  analysisResult.shortTermNightlyRate,
-                                ),
-                                annualOccupancy: Number(
-                                  analysisResult.annualOccupancy,
-                                ),
+                                shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate),
+                                annualOccupancy: Number(analysisResult.annualOccupancy),
                                 shortTermAnnualRevenue: Number(
-                                  analysisResult.analysis
-                                    .shortTermAnnualRevenue,
+                                  analysisResult.analysis.shortTermAnnualRevenue,
                                 ),
                                 longTermAnnualRevenue: Number(
                                   analysisResult.analysis.longTermAnnualRevenue,
                                 ),
-                                shortTermGrossYield: Number(
-                                  analysisResult.shortTermGrossYield,
-                                ),
-                                longTermGrossYield: Number(
-                                  analysisResult.longTermGrossYield,
-                                ),
+                                shortTermGrossYield: Number(analysisResult.shortTermGrossYield),
+                                longTermGrossYield: Number(analysisResult.longTermGrossYield),
                               },
                               financialMetrics: {
                                 depositAmount: Number(analysisResult.deposit),
-                                depositPercentage: Number(
-                                  analysisResult.depositPercentage,
-                                ),
-                                interestRate: Number(
-                                  analysisResult.interestRate,
-                                ),
+                                depositPercentage: Number(analysisResult.depositPercentage),
+                                interestRate: Number(analysisResult.interestRate),
                                 loanTerm: Number(analysisResult.loanTerm),
-                                monthlyBondRepayment: Number(
-                                  analysisResult.monthlyBondRepayment,
-                                ),
+                                monthlyBondRepayment: Number(analysisResult.monthlyBondRepayment),
                                 bondRegistration: calculateBondRegistration(
                                   analysisResult.analysis.purchasePrice,
                                   !removeVat,
@@ -616,29 +517,16 @@ export default function PropertyAnalyzerPage() {
                               },
                               expenses: {
                                 monthlyLevies: Number(formData?.monthlyLevies) || 0,
-                                monthlyRatesTaxes: Number(
-                                  formData?.monthlyRatesTaxes
-                                ) || 0,
-                                otherMonthlyExpenses: Number(
-                                  formData?.otherMonthlyExpenses
-                                ) || 0,
-                                maintenancePercent: Number(
-                                  formData?.maintenancePercent
-                                ) || 0,
-                                managementFee: Number(
-                                  analysisResult.managementFee
-                                ) || 0,
+                                monthlyRatesTaxes: Number(formData?.monthlyRatesTaxes) || 0,
+                                otherMonthlyExpenses: Number(formData?.otherMonthlyExpenses) || 0,
+                                maintenancePercent: Number(formData?.maintenancePercent) || 0,
+                                managementFee: Number(analysisResult.managementFee) || 0,
                               },
                               investmentMetrics: analysisResult.analysis.investmentMetrics,
-                              netOperatingIncome:
-                                analysisResult.netOperatingIncome,
-                              revenueProjections:
-                                analysisResult.analysis.revenueProjections,
+                              netOperatingIncome: analysisResult.netOperatingIncome,
+                              revenueProjections: analysisResult.analysis.revenueProjections,
                             });
-                            setIsDataReady(true);
-
-                            console.log("PDF Data being passed:", pdfData);
-
+                            setIsSubmitting(true);
                             setShowPDFGenerator(true);
                           }}
                           disabled={!analysisResult || !analysisId}
@@ -682,16 +570,12 @@ export default function PropertyAnalyzerPage() {
 
                         {formData?.propertyPhoto && (
                           <div className="mt-4">
-                            <h3 className="text-sm font-semibold text-slate-600">
-                              Property Photo
-                            </h3>
+                            <h3 className="text-sm font-semibold text-slate-600">Property Photo</h3>
                             <div className="rounded-lg overflow-hidden mt-2">
                               <img
                                 src={
                                   formData.propertyPhoto instanceof File
-                                    ? URL.createObjectURL(
-                                        formData.propertyPhoto,
-                                      )
+                                    ? URL.createObjectURL(formData.propertyPhoto)
                                     : typeof formData.propertyPhoto === "string"
                                       ? formData.propertyPhoto
                                       : null
@@ -721,12 +605,9 @@ export default function PropertyAnalyzerPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-600">
-                      Property Description
-                    </h3>
+                    <h3 className="text-sm font-semibold text-slate-600">Property Description</h3>
                     <p className="mt-2 text-slate-700">
-                      {analysisResult.propertyDescription ||
-                        "No description available"}
+                      {analysisResult.propertyDescription || "No description available"}
                     </p>
                   </div>
 
@@ -784,8 +665,7 @@ export default function PropertyAnalyzerPage() {
                       </h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         R
-                        {analysisResult.monthlyBondRepayment?.toLocaleString() ||
-                          "0"}
+                        {analysisResult.monthlyBondRepayment?.toLocaleString() || "0"}
                       </p>
                     </div>
                     <div>
@@ -821,14 +701,9 @@ export default function PropertyAnalyzerPage() {
                         <Checkbox
                           id="removeVat"
                           checked={removeVat}
-                          onCheckedChange={(checked) =>
-                            setRemoveVat(checked as boolean)
-                          }
+                          onCheckedChange={(checked) => setRemoveVat(checked as boolean)}
                         />
-                        <label
-                          htmlFor="removeVat"
-                          className="text-sm text-slate-600"
-                        >
+                        <label htmlFor="removeVat" className="text-sm text-slate-600">
                           VAT Registered (exclude VAT)
                         </label>
                       </div>
@@ -836,14 +711,9 @@ export default function PropertyAnalyzerPage() {
                         <Checkbox
                           id="removeTransferDuty"
                           checked={removeTransferDuty}
-                          onCheckedChange={(checked) =>
-                            setRemoveTransferDuty(checked as boolean)
-                          }
+                          onCheckedChange={(checked) => setRemoveTransferDuty(checked as boolean)}
                         />
-                        <label
-                          htmlFor="removeTransferDuty"
-                          className="text-sm text-slate-600"
-                        >
+                        <label htmlFor="removeTransferDuty" className="text-sm text-slate-600">
                           Developer Sale (no transfer duty)
                         </label>
                       </div>
@@ -862,9 +732,7 @@ export default function PropertyAnalyzerPage() {
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Total Capital Required
-                      </h3>
+                      <h3 className="text-sm font-semibold text-slate-600">Total Capital Required</h3>
                       <p className="mt-2 text-2xl font-bold text-slate-800">
                         R{" "}
                         {(
@@ -885,9 +753,7 @@ export default function PropertyAnalyzerPage() {
 
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Short-Term Gross Yield
-                      </h3>
+                      <h3 className="text-sm font-semibold text-slate-600">Short-Term Gross Yield</h3>
                       <p className="mt-2 text-xl font-bold text-slate-800 flex items-center gap-2">
                         {analysisResult.shortTermGrossYield?.toFixed(1)}%
                         {analysisResult.shortTermGrossYield &&
@@ -897,9 +763,7 @@ export default function PropertyAnalyzerPage() {
                       </p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Long-Term Gross Yield
-                      </h3>
+                      <h3 className="text-sm font-semibold text-slate-600">Long-Term Gross Yield</h3>
                       <p className="mt-2 text-xl font-bold text-slate-800 flex items-center gap-2">
                         {analysisResult.longTermGrossYield?.toFixed(1)}%
                         {analysisResult.longTermGrossYield &&
@@ -912,42 +776,31 @@ export default function PropertyAnalyzerPage() {
 
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        ST Annual Revenue
-                      </h3>
+                      <h3 className="text-sm font-semibold text-slate-600">ST Annual Revenue</h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         R{" "}
-                        {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
-                          "0"}
+                        {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() || "0"}
                       </p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        LT Annual Revenue
-                      </h3>
+                      <h3 className="text-sm font-semibold text-slate-600">LT Annual Revenue</h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         R{" "}
-                        {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() ||
-                          "0"}
+                        {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() || "0"}
                       </p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Rate per m²
-                      </h3>
+                      <h3 className="text-sm font-semibold text-slate-600">Rate per m²</h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         R{" "}
-                        {analysisResult.ratePerSquareMeter?.toLocaleString() ||
-                          "0"}
+                        {analysisResult.ratePerSquareMeter?.toLocaleString() || "0"}
                       </p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        CMA Rate
-                      </h3>
+                      <h3 className="text-sm font-semibold text-slate-600">CMA Rate</h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         R {formData?.cmaRatePerSqm?.toLocaleString() || "0"}
                       </p>
@@ -957,11 +810,10 @@ export default function PropertyAnalyzerPage() {
               </Card>
             </div>
 
-            {/* Charts and Metrics */}
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Chart components */}
-                {analysisResult.netOperatingIncome && (                  <Card>
+                {analysisResult.netOperatingIncome && (
+                  <Card>
                     <CardHeader>
                       <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
                         <BarChart3 className="h-5 w-5 text-indigo-500" />
@@ -978,15 +830,11 @@ export default function PropertyAnalyzerPage() {
                         <div className="flex items-center space-x-4">
                           <div className="flex items-center">
                             <span className="w-3 h-3 inline-block mr-1 bg-chart-1 rounded-sm"></span>
-                            <span className="text-xs text-muted-foreground">
-                              Net Income
-                            </span>
+                            <span className="text-xs text-muted-foreground">Net Income</span>
                           </div>
                           <div className="flex items-center">
                             <span className="w-3 h-3 inline-block mr-1 bg-chart-2 rounded-sm"></span>
-                            <span className="text-xs text-muted-foreground">
-                              Cumulative
-                            </span>
+                            <span className="text-xs text-muted-foreground">Cumulative</span>
                           </div>
                         </div>
                       </div>
@@ -1005,12 +853,8 @@ export default function PropertyAnalyzerPage() {
                     <div className="space-y-4">
                       <div>
                         <RentalPerformance
-                          shortTermNightlyRate={Number(
-                            analysisResult.shortTermNightlyRate,
-                          )}
-                          annualOccupancy={Number(
-                            analysisResult.annualOccupancy,
-                          )}
+                          shortTermNightlyRate={Number(analysisResult.shortTermNightlyRate)}
+                          annualOccupancy={Number(analysisResult.annualOccupancy)}
                           shortTermAnnualRevenue={Number(
                             analysisResult.analysis.shortTermAnnualRevenue,
                           )}
@@ -1023,19 +867,11 @@ export default function PropertyAnalyzerPage() {
 
                       <div>
                         <CashflowMetrics
-                          monthlyBondRepayment={Number(
-                            analysisResult.monthlyBondRepayment,
-                          )}
+                          monthlyBondRepayment={Number(analysisResult.monthlyBondRepayment)}
                           monthlyLevies={Number(formData?.monthlyLevies)}
-                          monthlyRatesTaxes={Number(
-                            formData?.monthlyRatesTaxes,
-                          )}
-                          otherMonthlyExpenses={Number(
-                            formData?.otherMonthlyExpenses,
-                          )}
-                          maintenancePercent={Number(
-                            formData?.maintenancePercent,
-                          )}
+                          monthlyRatesTaxes={Number(formData?.monthlyRatesTaxes)}
+                          otherMonthlyExpenses={Number(formData?.otherMonthlyExpenses)}
+                          maintenancePercent={Number(formData?.maintenancePercent)}
                           managementFee={Number(analysisResult.managementFee)}
                         />
                       </div>
@@ -1069,13 +905,13 @@ export default function PropertyAnalyzerPage() {
             <DialogHeader>
               <DialogTitle>Generate Property Analysis Report</DialogTitle>
             </DialogHeader>
-            {isDataReady && pdfData && (
+            {isSubmitting && pdfData && (
               <PropertyAnalyzerPDF
                 data={pdfData}
                 companyLogo={user?.settings?.companyLogo || ""}
                 onClose={() => {
                   setShowPDFGenerator(false);
-                  setIsDataReady(false);
+                  setIsSubmitting(false);
                 }}
                 isOpen={showPDFGenerator}
               />
