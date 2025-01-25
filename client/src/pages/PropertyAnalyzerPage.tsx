@@ -258,7 +258,6 @@ export default function PropertyAnalyzerPage() {
       </>
     );
   }
-  const [analysisId, setAnalysisId] = useState<string | null>(null);
 
   console.log("Preparing PDF Data:", {
     fullAnalysisResult: analysisResult,
@@ -271,11 +270,6 @@ export default function PropertyAnalyzerPage() {
     },
   });
 
-  const [pdfData, setPDFData] = useState<any>(null);
-  const [capturedMapImage, setCapturedMapImage] = useState<string | null>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [showPDFGenerator, setShowPDFGenerator] = useState(false);
   const companyLogo = "/your-company-logo.png";
 
   const calculateBondRegistration = (
