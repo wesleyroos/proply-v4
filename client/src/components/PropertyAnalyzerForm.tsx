@@ -203,13 +203,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       // Ensure all form fields are included and properly typed
       const analysisData = {
         // Property Details
-        address: data.address,
-        propertyUrl: data.propertyUrl,
-        purchasePrice: Number(data.purchasePrice),
-        floorArea: Number(data.floorArea),
-        bedrooms: Number(data.bedrooms),
-        bathrooms: Number(data.bathrooms),
-        parkingSpaces: Number(data.parkingSpaces || 0),
+        address: formData.address,
+        propertyUrl: formData.propertyUrl,
+        purchasePrice: Number(formData.purchasePrice),
+        floorArea: Number(formData.floorArea),
+        bedrooms: Number(formData.bedrooms),
+        bathrooms: Number(formData.bathrooms),
+        parkingSpaces: Number(formData.parkingSpaces || 0),
 
         // Financing Details
         depositType: data.depositType,
