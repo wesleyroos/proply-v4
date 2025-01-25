@@ -134,12 +134,12 @@ const STEPS = [
 ];
 
 export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
-  // Move all hooks to the top level
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [showPercentileDialog, setShowPercentileDialog] = useState(false);
+  const [demoClicks, setDemoClicks] = useState(0);
   const [revenueData, setRevenueData] = useState<{
     "25": RevenueData;
     "50": RevenueData;
@@ -188,7 +188,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     setIsSubmitting(true);
     try {
       const analysisData = {
-        // Keep existing analysis data preparation
         address: data.address,
         propertyUrl: data.propertyUrl,
         purchasePrice: Number(data.purchasePrice),
@@ -391,7 +390,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
   return (
     <div className="space-y-8 max-w-[75%]">
-      {/* Step indicator */}
       <div className="mb-12">
         <nav aria-label="Progress">
           <ol className="flex items-center justify-between w-full px-6">
@@ -993,7 +991,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               if (hasProAccess) {
                                 fetchRevenueData();
                               } else {
-                                //setShowUpgradeModal(true); //removed
                               }
                             }}
                             disabled={isLoading}
@@ -1213,6 +1210,50 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
           </div>
         </form>
       </Form>
+
+      <button
+        type="button"
+        onClick={() => {
+          setDemoClicks((prev) => {
+            if (prev === 2) {
+              form.reset({
+                address: "27 Leeuwen St, Cape Town City Centre, 8001",
+                propertyUrl:
+                  "https://property24.com/apartments-for-sale/cape-town-city-centre/western-cape/7925/3142089",
+                purchasePrice: 3500000,
+                floorArea: 85,
+                bedrooms: 2,
+                bathrooms: 2,
+                parkingSpaces: 1,
+                depositType: "percentage",
+                depositAmount: 350000,
+                depositPercentage: 10,
+                interestRate: 11.75,
+                loanTerm: 20,
+                monthlyLevies: 2500,
+                monthlyRatesTaxes: 1800,
+                otherMonthlyExpenses: 2000,
+                maintenancePercent: 10,
+                managementFee: 20,
+                airbnbNightlyRate: 2500,
+                occupancyRate: 65,
+                longTermRental: 25000,
+                leaseCycleGap: 7,
+                annualIncomeGrowth: 8,
+                annualExpenseGrowth: 6,
+                annualPropertyAppreciation: 6,
+                cmaRatePerSqm: 45000,
+                comments:
+                  "Prime location in Cape Town CBD. Close to amenities and tourist attractions. High potential for both short-term and long-term rentals.",
+              });
+              return 0;
+            }
+            return prev + 1;
+          });
+        }}
+        className="fixed bottom-4 right-4 w-4 h-4 opacity-5 hover:opacity-10 bg-gray-500 rounded-full"
+        aria-hidden="true"
+      />
     </div>
   );
 }
