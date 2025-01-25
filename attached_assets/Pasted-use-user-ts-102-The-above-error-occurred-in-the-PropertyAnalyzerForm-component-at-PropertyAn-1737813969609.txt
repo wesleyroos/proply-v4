@@ -1,0 +1,38 @@
+use-user.ts:102 The above error occurred in the <PropertyAnalyzerForm> component:
+
+    at PropertyAnalyzerForm (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/components/PropertyAnalyzerForm.tsx:94:41)
+    at div
+    at div
+    at PropertyAnalyzerPage (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/pages/PropertyAnalyzerPage.tsx:51:41)
+    at div
+    at MotionComponent (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.…nner/workspace/node_modules/.vite/deps/framer-motion.js?v=0d5ea378:6536:40)
+    at PageTransition (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/components/PageTransition.tsx:18:34)
+    at main
+    at div
+    at ProtectedRoute (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/App.tsx:53:38)
+    at component
+    at Route (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=0d5ea378:191:16)
+    at Switch (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=0d5ea378:247:17)
+    at PresenceChild (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.…nner/workspace/node_modules/.vite/deps/framer-motion.js?v=0d5ea378:7742:24)
+    at AnimatePresence (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.…nner/workspace/node_modules/.vite/deps/framer-motion.js?v=0d5ea378:7800:26)
+    at Provider (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.…unner/workspace/node_modules/.vite/deps/chunk-NJOPR2ZS.js?v=0d5ea378:38:15)
+    at TooltipProvider (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.…rkspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=0d5ea378:61:5)
+    at App (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/App.tsx:160:22)
+    at ToastProvider (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/hooks/use-toast.ts:66:3)
+    at QueryClientProvider (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.…rkspace/node_modules/.vite/deps/@tanstack_react-query.js?v=0d5ea378:2805:3)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+chunk-276SZO74.js?v=0d5ea378:11595 Uncaught Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
+    at renderWithHooks (chunk-276SZO74.js?v=0d5ea378:11595:19)
+    at updateFunctionComponent (chunk-276SZO74.js?v=0d5ea378:14582:28)
+    at beginWork (chunk-276SZO74.js?v=0d5ea378:15924:22)
+    at beginWork$1 (chunk-276SZO74.js?v=0d5ea378:19753:22)
+    at performUnitOfWork (chunk-276SZO74.js?v=0d5ea378:19198:20)
+    at workLoopSync (chunk-276SZO74.js?v=0d5ea378:19137:13)
+    at renderRootSync (chunk-276SZO74.js?v=0d5ea378:19116:15)
+    at recoverFromConcurrentError (chunk-276SZO74.js?v=0d5ea378:18736:28)
+    at performSyncWorkOnRoot (chunk-276SZO74.js?v=0d5ea378:18879:28)
+    at flushSyncCallbacks (chunk-276SZO74.js?v=0d5ea378:9119:30)
+﻿
+
