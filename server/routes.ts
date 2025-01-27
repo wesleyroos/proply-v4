@@ -1066,28 +1066,27 @@ export function registerRoutes(app: Express): Server {
       );
 
       // Get current user data first
-      const [currentUser] = await db
+      // Increment the user's property analyzer usage count
+      await db
+        .update(users)
+        .set({
+          propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`
+        })
+        .where(eq(users.id, req.user!.id));
+
+      // Fetch updated user data for logging
+      const [updatedUser] = await db
         .select({
+          email: users.email,
           propertyAnalyzerUsage: users.propertyAnalyzerUsage
         })
         .from(users)
         .where(eq(users.id, req.user!.id))
         .limit(1);
 
-      const newUsage = (currentUser?.propertyAnalyzerUsage || 0) + 1;
-
-      // Increment the user's property analyzer usage count
-      await db
-        .update(users)
-        .set({
-          propertyAnalyzerUsage: newUsage
-        })
-        .where(eq(users.id, req.user!.id));
-
       console.log("Updated analyzer usage:", {
-        email: user.email,
-        oldUsage: currentUser?.propertyAnalyzerUsage,
-        newUsage: newUsage
+        email: updatedUser.email,
+        propertyAnalyzerUsage: updatedUser.propertyAnalyzerUsage
       });
 
       res.json(analysisResult);
