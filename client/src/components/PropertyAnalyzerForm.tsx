@@ -190,8 +190,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
       // Ensure numeric values for deposit calculation
       const purchasePrice = Number(formData.purchasePrice);
-      const depositAmount = formData.depositType === "amount" ? Number(formData.depositAmount) : 0;
-      const depositPercentage = formData.depositType === "percentage" ? Number(formData.depositPercentage) : 0;
+      const depositAmount = Number(formData.depositAmount);
+      const depositPercentage = Number(formData.depositPercentage);
 
       console.log("Converted numeric values:", {
         purchasePrice,
