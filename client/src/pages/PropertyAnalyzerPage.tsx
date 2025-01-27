@@ -498,13 +498,17 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <div className="px-4 py-6">
-      <div className="flex items-center mb-8">
+      <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Property Analysis</h1>
           <p className="text-muted-foreground mt-1">
             Enter property details to generate analysis
           </p>
-          
+        </div>
+        <div className="bg-blue-50 px-4 py-2 rounded-lg border border-blue-100">
+          <p className="text-sm text-blue-700 font-medium">
+            Analyses used: {user?.propertyAnalyzerUsage || 0}
+          </p>
         </div>
       </div>
 
