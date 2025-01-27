@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Hooks
@@ -147,13 +147,24 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [showPercentileDialog, setShowPercentileDialog] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [demoClicks, setDemoClicks] = useState(0);
+  const [revenueData, setRevenueData] = useState<{
+    "25": RevenueData;
+    "50": RevenueData;
+    "75": RevenueData;
+    "90": RevenueData;
+  } | null>(null);
 
   const { hasAccess: hasProAccess, isLoading: isProAccessLoading } = useProAccess();
   const { user, isLoading: isUserLoading } = useUser();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient(); // Added useQueryClient hook
+
+  // Check if user has reached their limit
+  // Removed limit checks - will be reimplemented later
 
   // If still loading user data, show loading state
   if (isUserLoading || isProAccessLoading) {
@@ -165,20 +176,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   }
 
   const onSubmit = async (formData: PropertyAnalyzerFormValues) => {
-    // Prevent double submission
-    if (isSubmitting) return;
-
-    // Check usage limit for free users
-    if (!hasProAccess && user && user.propertyAnalyzerUsage >= 3) {
-      setShowUpgradeModal(true);
-      toast({
-        variant: "destructive",
-        title: "Analysis Limit Reached",
-        description: "You've reached your free analysis limit. Please upgrade to continue.",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       // Clean and prepare the analysis data
@@ -242,7 +239,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       const data = await response.json();
       console.log("Analysis response:", data);
 
-      // Invalidate user query to refresh usage count
+      // Invalidate user query to refresh usage count - Moved here for correct timing
       await queryClient.invalidateQueries({ queryKey: ['user'] });
 
       if (props.onAnalysisComplete) {
@@ -329,6 +326,78 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     }
   };
 
+  const fetchRevenueData = async () => {
+    setIsLoading(true);
+    try {
+      const address = form.getValues("address");
+      const bedrooms = form.getValues("bedrooms");
+
+      if (!address || !bedrooms) {
+        toast({
+          title: "Missing Information",
+          description:
+            "Please enter the property address and number of bedrooms first.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const response = await fetch(
+        `/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`,
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.KPIsByBedroomCategory?.[bedrooms]) {
+        const result = data.KPIsByBedroomCategory[bedrooms];
+        setRevenueData({
+          "25": {
+            adr: result.ADR25PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 25,
+          },
+          "50": {
+            adr: result.ADR50PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 50,
+          },
+          "75": {
+            adr: result.ADR75PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 75,
+          },
+          "90": {
+            adr: result.ADR90PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 90,
+          },
+        });
+        setShowPercentileDialog(true);
+      }
+    } catch (error) {
+      console.error("Error fetching revenue data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch revenue data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const applyPercentileData = (percentile: "25" | "50" | "75" | "90") => {
+    if (!revenueData) return;
+
+    const data = revenueData[percentile];
+    form.setValue("airbnbNightlyRate", data.adr);
+    form.setValue("occupancyRate", data.occupancy);
+    setShowPercentileDialog(false);
+  };
 
   const form = useForm<PropertyAnalyzerFormValues>({
     resolver: zodResolver(formSchema),
@@ -364,6 +433,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
   return (
     <div className="space-y-8 max-w-[75%]">
+      {/* Step indicator */}
       <div className="mb-12">
         <nav aria-label="Progress">
           <ol className="flex items-center justify-between w-full px-6">
@@ -386,6 +456,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
               return (
                 <li key={step} className="relative flex flex-col items-center">
+                  {/* Connecting line */}
                   {index !== STEPS.length - 1 && (
                     <div
                       className={`absolute top-5 w-[calc(200%_-_2.5rem)] h-[2px] ${
@@ -398,6 +469,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   )}
 
                   <div className="relative flex flex-col items-center">
+                    {/* Checkmark for completed steps */}
                     {isStepComplete && (
                       <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20">
                         <div className="bg-white rounded-full p-1">
@@ -418,6 +490,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       </div>
                     )}
 
+                    {/* Step button */}
                     <button
                       type="button"
                       onClick={() => setCurrentStep(index)}
@@ -971,45 +1044,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             onClick={async () => {
                               // Double check pro access
                               if (user?.subscriptionStatus === 'pro' || user?.isAdmin) {
-                                setIsLoading(true);
-                                try {
-                                  const address = form.getValues("address");
-                                  const bedrooms = form.getValues("bedrooms");
-
-                                  if (!address || !bedrooms) {
-                                    toast({
-                                      title: "Missing Information",
-                                      description:
-                                        "Please enter the property address and number of bedrooms first.",
-                                      variant: "destructive",
-                                    });
-                                    return;
-                                  }
-
-                                  const response = await fetch(
-                                    `/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`,
-                                  );
-
-                                  if (!response.ok) {
-                                    throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
-                                  }
-
-                                  const data = await response.json();
-
-                                  if (data.KPIsByBedroomCategory?.[bedrooms]) {
-                                    const result = data.KPIsByBedroomCategory[bedrooms];
-                                    setShowPercentileDialog(true);
-                                  }
-                                } catch (error) {
-                                  console.error("Error fetching revenue data:", error);
-                                  toast({
-                                    title: "Error",
-                                    description: "Failed to fetch revenue data. Please try again.",
-                                    variant: "destructive",
-                                  });
-                                } finally {
-                                  setIsLoading(false);
-                                }
+                                fetchRevenueData();
                               } else {
                                 setShowUpgradeModal(true);
                               }
@@ -1018,8 +1053,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           >
                             {isLoading ? (
                               <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                                Getting Data...                              </>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Getting Data...
+                              </>
                             ) : (
                               <>
                                 Get Revenue Data
@@ -1091,7 +1127,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   control={form.control}
                   name="annualIncomeGrowth"
                   render={({ field }) => (
-                                        <FormItem>
+                    <FormItem>
                       <FormLabel>Annual Income Growth (%)</FormLabel>
                       <FormControl>
                         <Input
@@ -1345,29 +1381,37 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 </tr>
               </thead>
               <tbody>
-                {showPercentileDialog && (
-                  <tr>
-                    <td className="py-2 px-4">50th Percentile</td>
-                    <td className="text-right py-2 px-4">
-                      {/* Placeholder for ADR */}
-                    </td>
-                    <td className="text-right py-2 px-4">
-                      <Button
-                        onClick={() => setShowPercentileDialog(false)}
-                        variant="secondary"
-                        size="sm"
-                      >
-                        Select
-                      </Button>
-                    </td>
-                  </tr>
-                )}
+                {revenueData &&
+                  Object.entries(revenueData).map(([percentile, data]) => (
+                    <tr key={percentile} className="border-b">
+                      <td className="py-2 px-4">{percentile}th Percentile</td>
+                      <td className="text-right py-2 px-4">
+                        {new Intl.NumberFormat("en-ZA", {
+                          style: "currency",
+                          currency: "ZAR",
+                        }).format(data.adr)}
+                      </td>
+                      <td className="text-right py-2 px-4">
+                        <Button
+                          onClick={() =>
+                            applyPercentileData(
+                              percentile as "25" | "50" | "75" | "90",
+                            )
+                          }
+                          variant="secondary"
+                          size="sm"
+                        >
+                          Select
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
             <div className="mt-4 text-sm text-gray-500">
-              <p>Occupancy: </p>
+              <p>Occupancy: {revenueData?.["50"].occupancy.toFixed(1)}%</p>
               <p className="mt-1">
-                Number of Listings: 
+                Number of Listings: {revenueData?.["50"].occupancy}
               </p>
             </div>
           </div>
@@ -1375,7 +1419,49 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       </Dialog>
 
       {/* Hidden demo data button */}
-      
+      <button
+        type="button"
+        onClick={() => {
+          setDemoClicks((prev) => {
+            if (prev === 2) {
+              form.reset({
+                address: "27 Leeuwen St, Cape Town City Centre, 8001",
+                propertyUrl:
+                  "https://property24.com/apartments-for-sale/cape-town-city-centre/western-cape/7925/3142089",
+                purchasePrice: 3500000,
+                floorArea: 85,
+                bedrooms: 2,
+                bathrooms: 2,
+                parkingSpaces: 1,
+                depositType: "percentage",
+                depositAmount: 350000,
+                depositPercentage: 10,
+                interestRate: 11.75,
+                loanTerm: 20,
+                monthlyLevies: 2500,
+                monthlyRatesTaxes: 1800,
+                otherMonthlyExpenses: 2000,
+                maintenancePercent: 10,
+                managementFee: 20,
+                airbnbNightlyRate: 2500,
+                occupancyRate: 65,
+                longTermRental: 25000,
+                leaseCycleGap: 7,
+                annualIncomeGrowth: 8,
+                annualExpenseGrowth: 6,
+                annualPropertyAppreciation: 6,
+                cmaRatePerSqm: 45000,
+                comments:
+                  "Prime location in Cape Town CBD. Close to amenities and tourist attractions. High potential for both short-term and long-term rentals.",
+              });
+              return 0;
+            }
+            return prev + 1;
+          });
+        }}
+        className="fixed bottom-4 right-4 w-4 h-4 opacity-5 hover:opacity-10 bg-gray-500 rounded-full"
+        aria-hidden="true"
+      />
     </div>
   );
 }
