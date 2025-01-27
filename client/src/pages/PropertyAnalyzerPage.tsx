@@ -336,7 +336,7 @@ export default function PropertyAnalyzerPage() {
       console.log("Analysis response:", data);
 
       setAnalysisResult({
-        ...resultData,
+        ...data,
         shortTermNightlyRate: requestBody.shortTermNightlyRate,
         annualOccupancy: requestBody.annualOccupancy,
         managementFee: requestBody.managementFee,
