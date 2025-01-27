@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, AlertTriangle } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Hooks
@@ -161,10 +161,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const { hasAccess: hasProAccess, isLoading: isProAccessLoading } = useProAccess();
   const { user, isLoading: isUserLoading } = useUser();
   const { toast } = useToast();
-  const queryClient = useQueryClient(); // Added useQueryClient hook
-
-  // Check if user has reached their limit
-  // Removed limit checks - will be reimplemented later
+  const queryClient = useQueryClient();
 
   // If still loading user data, show loading state
   if (isUserLoading || isProAccessLoading) {
@@ -176,6 +173,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   }
 
   const onSubmit = async (formData: PropertyAnalyzerFormValues) => {
+    // Check usage limit for free users
+    if (!hasProAccess && user && user.propertyAnalyzerUsage >= 3) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // Clean and prepare the analysis data
@@ -239,7 +242,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       const data = await response.json();
       console.log("Analysis response:", data);
 
-      // Invalidate user query to refresh usage count - Moved here for correct timing
+      // Invalidate user query to refresh usage count
       await queryClient.invalidateQueries({ queryKey: ['user'] });
 
       if (props.onAnalysisComplete) {
@@ -433,6 +436,18 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
   return (
     <div className="space-y-8 max-w-[75%]">
+      {/* Add usage counter */}
+      <div className="flex justify-end">
+        <div className="text-sm text-gray-600">
+          {!hasProAccess && (
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
+              <span>Analyses remaining: {user ? 3 - (user.propertyAnalyzerUsage || 0) : 0}/3</span>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Step indicator */}
       <div className="mb-12">
         <nav aria-label="Progress">
