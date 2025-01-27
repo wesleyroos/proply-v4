@@ -1061,20 +1061,6 @@ export function registerRoutes(app: Express): Server {
         JSON.stringify(analysisResult, null, 2),
       );
 
-      // Increment the analyzer usage counter
-      const [updatedUser] = await db
-        .update(users)
-        .set({
-          propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
-        })
-        .where(eq(users.id, req.user!.id))
-        .returning();
-
-      console.log("Updated analyzer usage for user:", {
-        userId: updatedUser.id,
-        usage: updatedUser.propertyAnalyzerUsage
-      });
-
       res.json(analysisResult);
     } catch (error) {
       console.error("=== Analysis Error ===");
@@ -1213,6 +1199,20 @@ export function registerRoutes(app: Express): Server {
     try {
       console.log("Saving property analysis for user:", req.user.id);
       console.log("Analysis data:", JSON.stringify(req.body, null, 2));
+
+      // Increment the analyzer usage counter
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning();
+
+      console.log("Updated analyzer usage for user:", {
+        userId: updatedUser.id,
+        usage: updatedUser.propertyAnalyzerUsage
+      });
 
       // Insert analysis result
       const [savedAnalysis] = await db
