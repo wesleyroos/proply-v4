@@ -1000,91 +1000,58 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Get user info
+      // Get current user and check limits
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.id, req.user!.id))
         .limit(1);
-      console.log("\n=== Starting Property Analysis ===");
-      console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
 
-      const propertyData = {
-        purchasePrice: parseFloat(req.body.purchasePrice),
-        shortTermNightlyRate: req.body.shortTermNightlyRate
-          ? parseFloat(req.body.shortTermNightlyRate)
-          : null,
-        annualOccupancy: req.body.annualOccupancy
-          ? parseFloat(req.body.annualOccupancy)
-          : null,
-        longTermRental: req.body.longTermRental
-          ? parseFloat(req.body.longTermRental)
-          : null,
-        leaseCycleGap: req.body.leaseCycleGap
-          ? parseInt(req.body.leaseCycleGap)
-          : null,
-        propertyDescription: req.body.propertyDescription || null,
-        address: req.body.address,
-        deposit:
-          req.body.depositType === "amount"
-            ? parseFloat(req.body.deposit)
-            : (parseFloat(req.body.purchasePrice) *
-                parseFloat(req.body.depositPercentage)) /
-              100,
-        interestRate: parseFloat(req.body.interestRate),
-        loanTerm: parseInt(req.body.loanTerm),
-        floorArea: parseFloat(req.body.floorArea),
-        ratePerSquareMeter: parseFloat(
-          req.body.ratePerSquareMeter || req.body.cmaRatePerSqm || 0,
-        ),
-        incomeGrowthRate: parseFloat(req.body.annualIncomeGrowth || 8),
-        expenseGrowthRate: parseFloat(req.body.annualExpenseGrowth || 6),
-        monthlyLevies: parseFloat(req.body.monthlyLevies || 0),
-        monthlyRatesTaxes: parseFloat(req.body.monthlyRatesTaxes || 0),
-        otherMonthlyExpenses: parseFloat(req.body.otherMonthlyExpenses || 0),
-        maintenancePercent: parseFloat(req.body.maintenancePercent || 0),
-        managementFee: parseFloat(req.body.managementFee || 0),
-      };
+      if (!user) {
+        return res.status(404).send("User not found");
+      }
 
-      console.log("\n=== Starting Property Analysis ===");
-      console.log("Raw Input Data:", JSON.stringify(propertyData, null, 2));
+      // Check if user has pro access or still has free analyses available
+      const isProUser = user.subscriptionStatus === "pro";
+      const hasReachedLimit = !isProUser && (user.propertyAnalyzerUsage || 0) >= 3;
 
-      const analysisResult = calculateYields(propertyData);
-      console.log(
-        "Analysis complete. Result:",
-        JSON.stringify(analysisResult, null, 2),
-      );
+      if (hasReachedLimit) {
+        return res.status(403).json({
+          error: "Analysis limit reached",
+          message: "Please upgrade to Pro for unlimited analyses",
+        });
+      }
 
-      // Increment the user's analysis count and get updated count
-      const [updatedUser] = await db
-        .update(users)
-        .set({
-          propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
-        })
-        .where(eq(users.id, req.user!.id))
-        .returning();
+      // Analyze the property
+      const analysis = await analyzeProperty(req.body);
 
-      console.log("Updated analyzer usage for user:", {
-        userId: updatedUser.id,
-        usage: updatedUser.propertyAnalyzerUsage
-      });
+      // Only increment usage for free users
+      if (!isProUser) {
+        console.log(`Incrementing analysis usage for user ${user.id} from ${user.propertyAnalyzerUsage || 0}`);
+
+        // Use a transaction to ensure atomic update
+        await db.transaction(async (tx) => {
+          const [updated] = await tx
+            .update(users)
+            .set({
+              propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
+              updatedAt: new Date(),
+            })
+            .where(eq(users.id, user.id))
+            .returning();
+
+          console.log(`Updated analysis usage for user ${user.id} to ${updated.propertyAnalyzerUsage}`);
+        });
+      }
 
       res.json({
-        ...analysisResult,
-        propertyAnalyzerUsage: updatedUser.propertyAnalyzerUsage
+        status: "success",
+        analysis,
       });
     } catch (error) {
-      console.error("=== Analysis Error ===");
-      console.error("Error details:", error);
-
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to analyze property data";
-      console.error("Sending error response:", { error: errorMessage });
-
+      console.error("Analysis error:", error);
       res.status(500).json({
-        error: errorMessage,
+        error: "Failed to analyze property",
         details: error instanceof Error ? error.message : undefined,
       });
     }

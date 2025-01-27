@@ -51,6 +51,9 @@ interface User {
   username: string;
   propertyAnalyzerUsage: number;
   subscriptionStatus: string;
+  firstName?: string;
+  email?: string;
+  isAdmin?: boolean;
 }
 
 interface UseUserResult {
@@ -160,14 +163,13 @@ const STEPS = [
   "Miscellaneous",
 ];
 
-export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
+const PropertyAnalyzerForm: React.FC<PropertyAnalyzerFormProps> = (props) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [showPercentileDialog, setShowPercentileDialog] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [demoClicks, setDemoClicks] = useState(0);
   const [revenueData, setRevenueData] = useState<{
     "25": RevenueData;
     "50": RevenueData;
@@ -193,6 +195,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   }
 
   const onSubmit = async (formData: PropertyAnalyzerFormValues) => {
+    // Prevent multiple submissions while processing
+    if (isSubmitting) return;
+
     // Check usage limit before proceeding
     if (hasReachedLimit) {
       setShowUpgradeModal(true);
@@ -263,7 +268,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       const data = await response.json();
       console.log("Analysis response:", data);
 
-      // Invalidate queries to refresh usage count
+      // Only invalidate queries once
       await queryClient.invalidateQueries({ queryKey: ['/api/user'] });
 
       if (props.onAnalysisComplete) {
@@ -1311,24 +1316,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         </form>
       </Form>
 
-      {/* Usage Counter for free users */}
-      {!hasProAccess && (
-        <div className="flex justify-end items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            Analyses remaining: {3 - (user?.propertyAnalyzerUsage || 0)}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowUpgradeModal(true)}
-            className="hover:bg-primary/90"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Upgrade to Pro
-          </Button>
-        </div>
-      )}
-
       {/* Upgrade Modal */}
       <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
         <DialogContent className="sm:max-w-[425px]">
@@ -1459,51 +1446,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Hidden demo data button */}
-      <button
-        type="button"
-        onClick={() => {
-          setDemoClicks((prev) => {
-            if (prev === 2) {
-              form.reset({
-                address: "27 Leeuwen St, Cape Town City Centre, 8001",
-                propertyUrl:
-                  "https://property24.com/apartments-for-sale/cape-town-city-centre/western-cape/7925/3142089",
-                purchasePrice: 3500000,
-                floorArea: 85,
-                bedrooms: 2,
-                bathrooms: 2,
-                parkingSpaces: 1,
-                depositType: "percentage",
-                depositAmount: 350000,
-                depositPercentage: 10,
-                interestRate: 11.75,
-                loanTerm: 20,
-                monthlyLevies: 2500,
-                monthlyRatesTaxes: 1800,
-                otherMonthlyExpenses: 2000,
-                maintenancePercent: 10,
-                managementFee: 20,
-                airbnbNightlyRate: 2500,
-                occupancyRate: 65,
-                longTermRental: 25000,
-                leaseCycleGap: 7,
-                annualIncomeGrowth: 8,
-                annualExpenseGrowth: 6,
-                annualPropertyAppreciation: 6,
-                cmaRatePerSqm: 45000,
-                comments:
-                  "Prime location in Cape Town CBD. Close to amenities and tourist attractions. High potential for both short-term and long-term rentals.",
-              });
-              return 0;
-            }
-            return prev + 1;
-          });
-        }}
-        className="fixed bottom-4 right-4 w-4 h-4 opacity-5 hover:opacity-10 bg-gray-500 rounded-full"
-        aria-hidden="true"
-      />
     </div>
   );
-}
+};
+
+export default PropertyAnalyzerForm;
