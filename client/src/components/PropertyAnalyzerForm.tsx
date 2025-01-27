@@ -758,15 +758,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               min="0"
                               placeholder="250000,00"
                               {...field}
-                              onChange={(e) => {
-                                field.onChange(e.target.valueAsNumber);
-                                const amount = e.target.valueAsNumber;
-                                const purchasePrice = form.getValues("purchasePrice");
-                                if (purchasePrice && amount) {
-                                  const percentage = (amount / purchasePrice) * 100;
-                                  form.setValue("depositPercentage", percentage);
-                                }
-                              }}
+                              onChange={(e) =>
+                                field.onChange(e.target.valueAsNumber)
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -795,21 +789,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               max="100"
                               placeholder="10"
                               {...field}
-                              onChange={(e) => {
-                                const percentage = e.target.valueAsNumber;
-                                field.onChange(percentage);
-                                // Calculate amount based on percentage
-                                const purchasePrice =
-                                  form.getValues("purchasePrice");
-                                if (purchasePrice && percentage) {
-                                  const amount =
-                                    (percentage / 100) * purchasePrice;
-                                  form.setValue(
-                                    "depositAmount",
-                                    Number(amount.toFixed(0)),
-                                  );
-                                }
-                              }}
+                              onChange={(e) =>
+                                field.onChange(e.target.valueAsNumber)
+                              }
                             />
                           </FormControl>
                           <FormMessage />
