@@ -25,6 +25,7 @@ import {
   Save,
   FileText,
   Info,
+  Sparkles,
 } from "lucide-react";
 import AnalyzerIndicator from "@/components/AnalyzerIndicator";
 import CashflowMetrics from "@/components/CashflowMetrics";
