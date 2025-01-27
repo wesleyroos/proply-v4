@@ -509,14 +509,6 @@ export default function PropertyAnalyzerPage() {
           <p className="text-sm text-[#1BA3FF] font-medium">
             Analyses used: {user?.propertyAnalyzerUsage || 0}
           </p>
-          {!hasProAccess && (
-            <Link href="/pricing" className="block mt-2">
-              <Button className="w-full bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Upgrade to Pro
-              </Button>
-            </Link>
-          )}
         </div>
       </div>
 
