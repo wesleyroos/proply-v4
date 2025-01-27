@@ -1065,16 +1065,19 @@ export function registerRoutes(app: Express): Server {
         JSON.stringify(analysisResult, null, 2),
       );
 
-      // Get current user data first
+      // Get current user data first 
       const [currentUser] = await db
         .select({
-          propertyAnalyzerUsage: users.propertyAnalyzerUsage
+          propertyAnalyzerUsage: users.propertyAnalyzerUsage,
+          email: users.email
         })
         .from(users)
         .where(eq(users.id, req.user!.id))
         .limit(1);
 
-      const newUsage = (currentUser?.propertyAnalyzerUsage || 0) + 1;
+      // Ensure we increment from the current value
+      const currentUsage = currentUser?.propertyAnalyzerUsage ?? 0;
+      const newUsage = currentUsage + 1;
 
       // Increment the user's property analyzer usage count
       await db
