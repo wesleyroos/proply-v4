@@ -1012,31 +1012,31 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // First check if the user is on the free plan and increment their usage
+      // Get user info first
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.id, req.user!.id))
         .limit(1);
 
-      // Only increment for free plan users
+      // Only increment usage for non-pro users, and do it once at the start
       if (user.subscriptionStatus !== "pro") {
         console.log("Updating analyzer usage:", {
           email: user.email,
           oldUsage: user.propertyAnalyzerUsage,
-          newUsage: (user.propertyAnalyzerUsage || 0) + 1
+          newUsage: user.propertyAnalyzerUsage + 1
         });
 
-        // Increment the property analyzer usage for free plan users
         await db
           .update(users)
           .set({
-            propertyAnalyzerUsage: (user.propertyAnalyzerUsage || 0) + 1,
+            propertyAnalyzerUsage: (user.propertyAnalyzerUsage || 0) + 1
           })
           .where(eq(users.id, req.user!.id));
       }
 
-      // Rest of your analysis logic here
+      console.log("Analysis starting with data:", req.body);
+
       const propertyData = {
         purchasePrice: parseFloat(req.body.purchasePrice),
         shortTermNightlyRate: req.body.shortTermNightlyRate
@@ -1051,40 +1051,32 @@ export function registerRoutes(app: Express): Server {
         leaseCycleGap: req.body.leaseCycleGap
           ? parseInt(req.body.leaseCycleGap)
           : null,
-        propertyDescription: req.body.propertyDescription,
+        propertyDescription: req.body.propertyDescription || "",
         address: req.body.address,
         deposit:
           req.body.depositType === "amount"
-            ? parseFloat(req.body.deposit)
+            ? parseFloat(req.body.depositAmount)
             : (parseFloat(req.body.purchasePrice) *
                 parseFloat(req.body.depositPercentage)) /
               100,
+        ratePerSquareMeter: parseFloat(req.body.cmaRatePerSqm || 0),
+        managementFee: parseFloat(req.body.managementFee || 0),
+        purchasePrice: parseFloat(req.body.purchasePrice),
+        floorArea: parseFloat(req.body.floorArea),
         interestRate: parseFloat(req.body.interestRate),
         loanTerm: parseInt(req.body.loanTerm),
-        floorArea: parseFloat(req.body.floorArea),
-        ratePerSquareMeter: parseFloat(
-          req.body.ratePerSquareMeter || req.body.cmaRatePerSqm || 0,
-        ),
-        incomeGrowthRate: parseFloat(req.body.annualIncomeGrowth || 8),
-        expenseGrowthRate: parseFloat(req.body.annualExpenseGrowth || 6),
         monthlyLevies: parseFloat(req.body.monthlyLevies || 0),
         monthlyRatesTaxes: parseFloat(req.body.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: parseFloat(req.body.otherMonthlyExpenses || 0),
         maintenancePercent: parseFloat(req.body.maintenancePercent || 0),
-        managementFee: parseFloat(req.body.managementFee || 0),
+        annualIncomeGrowth: parseFloat(req.body.annualIncomeGrowth || 0),
+        annualExpenseGrowth: parseFloat(req.body.annualExpenseGrowth || 0),
+        annualPropertyAppreciation: parseFloat(
+          req.body.annualPropertyAppreciation || 0,
+        ),
       };
 
-      console.log("Analysis starting with data:", propertyData);
       const result = await calculateYields(propertyData);
-
-      if (result.error) {
-        throw new Error(result.error);
-      }
-
-      const suburb = await analyzeSuburb(req.body.address);
-      result.propertyDescription = suburb;
-      result.address = req.body.address;
-
       res.json(result);
     } catch (error) {
       console.error("Analysis error:", error);
