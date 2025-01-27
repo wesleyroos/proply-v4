@@ -531,8 +531,6 @@ export default function PropertyAnalyzerPage() {
       <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
       </div>
 
-      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
-
       <div className="space-y-6">
         <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
 
