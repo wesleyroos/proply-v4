@@ -1064,6 +1064,19 @@ export function registerRoutes(app: Express): Server {
         JSON.stringify(analysisResult, null, 2),
       );
 
+      // Increment the user's property analyzer usage count
+      await db
+        .update(users)
+        .set({
+          propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
+        })
+        .where(eq(users.id, req.user!.id));
+
+      console.log("Sending user data with analyzer usage:", {
+        email: user.email,
+        propertyAnalyzerUsage: user.propertyAnalyzerUsage
+      });
+
       res.json(analysisResult);
     } catch (error) {
       console.error("=== Analysis Error ===");
