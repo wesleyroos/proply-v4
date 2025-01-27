@@ -1019,64 +1019,91 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user!.id))
         .limit(1);
 
-      console.log("Data being sent to analyzer:", req.body);
-
-      // Only increment usage for non-pro users, and do it once at the start
-      if (user.subscriptionStatus !== "pro") {
-        console.log("Updating analyzer usage:", {
-          email: user.email,
-          oldUsage: user.propertyAnalyzerUsage,
-          newUsage: (user.propertyAnalyzerUsage || 0) + 1
-        });
-
-        await db
-          .update(users)
-          .set({
-            propertyAnalyzerUsage: (user.propertyAnalyzerUsage || 0) + 1
-          })
-          .where(eq(users.id, req.user!.id));
-      }
+      console.log("\n=== Starting Property Analysis ===");
+      console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
 
       const propertyData = {
         purchasePrice: parseFloat(req.body.purchasePrice),
-        shortTermNightlyRate: parseFloat(req.body.airbnbNightlyRate || 0),
-        annualOccupancy: parseFloat(req.body.occupancyRate || 0),
-        longTermRental: parseFloat(req.body.longTermRental || 0),
-        leaseCycleGap: parseInt(req.body.leaseCycleGap || 0),
-        propertyDescription: req.body.comments || "",
+        shortTermNightlyRate: req.body.shortTermNightlyRate
+          ? parseFloat(req.body.shortTermNightlyRate)
+          : null,
+        annualOccupancy: req.body.annualOccupancy
+          ? parseFloat(req.body.annualOccupancy)
+          : null,
+        longTermRental: req.body.longTermRental
+          ? parseFloat(req.body.longTermRental)
+          : null,
+        leaseCycleGap: req.body.leaseCycleGap
+          ? parseInt(req.body.leaseCycleGap)
+          : null,
+        propertyDescription: req.body.propertyDescription || null,
         address: req.body.address,
-        deposit: req.body.depositType === "amount"
-          ? parseFloat(req.body.depositAmount)
-          : (parseFloat(req.body.purchasePrice) * parseFloat(req.body.depositPercentage)) / 100,
-        ratePerSquareMeter: parseFloat(req.body.cmaRatePerSqm || 0),
-        managementFee: parseFloat(req.body.managementFee || 0),
-        floorArea: parseFloat(req.body.floorArea),
+        deposit:
+          req.body.depositType === "amount"
+            ? parseFloat(req.body.deposit)
+            : (parseFloat(req.body.purchasePrice) *
+                parseFloat(req.body.depositPercentage)) /
+              100,
         interestRate: parseFloat(req.body.interestRate),
         loanTerm: parseInt(req.body.loanTerm),
+        floorArea: parseFloat(req.body.floorArea),
+        ratePerSquareMeter: parseFloat(
+          req.body.ratePerSquareMeter || req.body.cmaRatePerSqm || 0,
+        ),
+        incomeGrowthRate: parseFloat(req.body.annualIncomeGrowth || 8),
+        expenseGrowthRate: parseFloat(req.body.annualExpenseGrowth || 6),
         monthlyLevies: parseFloat(req.body.monthlyLevies || 0),
         monthlyRatesTaxes: parseFloat(req.body.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: parseFloat(req.body.otherMonthlyExpenses || 0),
         maintenancePercent: parseFloat(req.body.maintenancePercent || 0),
-        incomeGrowthRate: parseFloat(req.body.annualIncomeGrowth || 0),
-        expenseGrowthRate: parseFloat(req.body.annualExpenseGrowth || 0),
-        annualAppreciation: parseFloat(req.body.annualPropertyAppreciation || 0)
+        managementFee: parseFloat(req.body.managementFee || 0),
       };
 
-      console.log("Analysis starting with data:", propertyData);
-      const result = await calculateYields(propertyData);
+      const analysisResult = calculateYields(propertyData);
+      console.log(
+        "Analysis complete. Result:",
+        JSON.stringify(analysisResult, null, 2),
+      );
 
-      if (!result) {
-        throw new Error("Analysis calculation failed");
-      }
+      // Get current user data first
+      const [currentUser] = await db
+        .select({
+          propertyAnalyzerUsage: users.propertyAnalyzerUsage
+        })
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
 
-      // Add the address to the result
-      result.address = req.body.address;
+      const newUsage = (currentUser?.propertyAnalyzerUsage || 0) + 1;
 
-      res.json(result);
+      // Increment the user's property analyzer usage count
+      await db
+        .update(users)
+        .set({
+          propertyAnalyzerUsage: newUsage
+        })
+        .where(eq(users.id, req.user!.id));
+
+      console.log("Updated analyzer usage:", {
+        email: user.email,
+        oldUsage: currentUser?.propertyAnalyzerUsage,
+        newUsage: newUsage
+      });
+
+      res.json(analysisResult);
     } catch (error) {
-      console.error("Analysis error:", error);
-      res.status(500).json({ 
-        error: error instanceof Error ? error.message : "Failed to analyze property"
+      console.error("=== Analysis Error ===");
+      console.error("Error details:", error);
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to analyze property data";
+      console.error("Sending error response:", { error: errorMessage });
+
+      res.status(500).json({
+        error: errorMessage,
+        details: error instanceof Error ? error.message : undefined,
       });
     }
   });
@@ -1465,7 +1492,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Add this new endpoint after the existing signup analytics endpoint
+  // Add new endpoint after the existing signup analytics endpoint
   app.get("/api/analytics/reports", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
       return res.status(403).send("Not authorized");
