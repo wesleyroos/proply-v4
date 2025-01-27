@@ -209,15 +209,14 @@ interface AnalysisResult {
 
 export default function PropertyAnalyzerPage() {
   const [isDataReady, setIsDataReady] = useState(false);
-  const [showLimitModal, setShowLimitModal] = useState(false); //This state is no longer used.
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const { user } = useUser();
   const hasProAccess = useProAccess();
-  const queryClient = useQueryClient(); // Added React Query client initialization
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    //This useEffect is no longer used, but kept to avoid breaking changes.
     if (user && !hasProAccess && user.propertyAnalyzerUsage >= 3) {
-      setShowLimitModal(true); //This line is no longer used.
+      setShowLimitModal(true);
     }
   }, [user, hasProAccess]);
 
@@ -337,9 +336,9 @@ export default function PropertyAnalyzerPage() {
 
       const data = await response.json();
       console.log("Analysis response:", data);
-      
-      // Invalidate the user query to refresh the counter
-      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      // Invalidate the user query to refresh usage count
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
 
       setAnalysisResult({
         ...data,
@@ -944,7 +943,7 @@ export default function PropertyAnalyzerPage() {
                           Remove VAT
                         </label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex itemscenter space-x-2">
                         <Checkbox
                           id="removeTransferDuty"
                           checked={removeTransferDuty}

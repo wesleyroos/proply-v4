@@ -971,6 +971,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  
   // Change password
   app.post("/api/change-password", async (req, res) => {
     if (!req.isAuthenticated()) {
@@ -1012,16 +1013,24 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Get user info first
+      // First check if the user is on the free plan and increment their usage
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.id, req.user!.id))
         .limit(1);
 
-      console.log("\n=== Starting Property Analysis ===");
-      console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
+      if (user.subscriptionStatus !== "pro") {
+        // Increment the property analyzer usage for free plan users
+        await db
+          .update(users)
+          .set({
+            propertyAnalyzerUsage: sql`${users.propertyAnalyzerUsage} + 1`,
+          })
+          .where(eq(users.id, req.user!.id));
+      }
 
+      // Rest of your analysis logic here
       const propertyData = {
         purchasePrice: parseFloat(req.body.purchasePrice),
         shortTermNightlyRate: req.body.shortTermNightlyRate
