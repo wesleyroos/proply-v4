@@ -15,7 +15,7 @@ interface UpgradeModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
+export default function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
   const { user } = useUser();
 
   const handlePayment = (e: React.MouseEvent) => {
