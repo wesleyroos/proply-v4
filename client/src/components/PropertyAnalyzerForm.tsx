@@ -232,16 +232,18 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       });
 
 
+      const data = await response.json();
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || response.statusText);
+        throw new Error(data.error || response.statusText);
       }
 
-      const data = await response.json();
-      console.log("Analysis response:", data);;
+      console.log("Analysis response:", data);
 
       if (props.onAnalysisComplete) {
-        await props.onAnalysisComplete(analysisData);
+        await props.onAnalysisComplete({
+          ...analysisData,
+          analysisResult: data
+        });
       }
     } catch (error) {
       console.error('Analysis error:', error);

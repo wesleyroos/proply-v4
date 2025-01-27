@@ -1023,16 +1023,10 @@ export function registerRoutes(app: Express): Server {
       console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
 
       const propertyData = {
-        purchasePrice: parseFloat(req.body.purchasePrice),
-        shortTermNightlyRate: req.body.shortTermNightlyRate
-          ? parseFloat(req.body.shortTermNightlyRate)
-          : null,
-        annualOccupancy: req.body.annualOccupancy
-          ? parseFloat(req.body.annualOccupancy)
-          : null,
-        longTermRental: req.body.longTermRental
-          ? parseFloat(req.body.longTermRental)
-          : null,
+        purchasePrice: parseFloat(req.body.purchasePrice) || 0,
+        shortTermNightlyRate: parseFloat(req.body.shortTermNightlyRate || 0),
+        annualOccupancy: parseFloat(req.body.annualOccupancy || 0),
+        longTermRental: parseFloat(req.body.longTermRental || 0),
         leaseCycleGap: req.body.leaseCycleGap
           ? parseInt(req.body.leaseCycleGap)
           : null,
