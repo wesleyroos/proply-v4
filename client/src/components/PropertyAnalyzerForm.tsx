@@ -147,10 +147,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
-  const [showPercentileDialog, setShowPercentileDialog] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [demoClicks, setDemoClicks] = useState(0);
+  const [showPercentileDialog, setShowPercentileDialog] = useState(false);
   const [revenueData, setRevenueData] = useState<{
     "25": RevenueData;
     "50": RevenueData;
@@ -173,9 +171,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   }
 
   const onSubmit = async (formData: PropertyAnalyzerFormValues) => {
+    // Prevent double submission
+    if (isSubmitting) return;
+
     // Check usage limit for free users
     if (!hasProAccess && user && user.propertyAnalyzerUsage >= 3) {
       setShowUpgradeModal(true);
+      toast({
+        variant: "destructive",
+        title: "Analysis Limit Reached",
+        description: "You've reached your free analysis limit. Please upgrade to continue.",
+      });
       return;
     }
 
@@ -435,17 +441,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   });
 
   return (
-    <div className="space-y-8 max-w-[75%]">
-      {/* Add usage counter */}
-      <div className="flex justify-end">
-        <div className="text-sm text-gray-600">
-          {!hasProAccess && (
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-orange-500" />
-              <span>Analyses remaining: {user ? 3 - (user.propertyAnalyzerUsage || 0) : 0}/3</span>
-            </div>
-          )}
-        </div>
+    <div className="space-y-8 max-w-[75%] relative"> {/* Added relative to position usage counter */}
+      {/* Usage counter - positioned in top right */}
+      <div className="absolute top-4 right-4">
+        {!hasProAccess && user && (
+          <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-md px-3 py-1.5 shadow-sm border">
+            <AlertTriangle className="h-4 w-4 text-orange-500" />
+            <span className="text-sm font-medium text-gray-700">
+              Analyses remaining: {Math.max(0, 3 - (user.propertyAnalyzerUsage || 0))}/3
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Step indicator */}
@@ -1068,9 +1074,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           >
                             {isLoading ? (
                               <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Getting Data...
-                              </>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                                Getting Data...                              </>
                             ) : (
                               <>
                                 Get Revenue Data
