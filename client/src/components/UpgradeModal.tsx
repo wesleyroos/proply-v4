@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,14 +35,14 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
       amount: "2000.00",
       item_name: "Proply Pro Subscription",
       subscription_type: "1",
-      billing_date: new Date().toISOString().split('T')[0],
+      billing_date: new Date().toISOString().split("T")[0],
       recurring_amount: "2000.00",
       frequency: "3",
       cycles: "0",
       custom_str1: JSON.stringify({
         userId: user?.id,
-        subscriptionStatus: 'pro'
-      })
+        subscriptionStatus: "pro",
+      }),
     };
 
     Object.entries(paymentData).forEach(([key, value]) => {
@@ -69,7 +68,9 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
             <DialogTitle className="text-2xl">Upgrade to</DialogTitle>
-            <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">PRO</span>
+            <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+              PRO
+            </span>
           </div>
           <DialogDescription className="text-center">
             Get unlimited access to all Proply features and tools
@@ -83,6 +84,7 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
               <li>Real occupancy rates from similar properties</li>
               <li>Seasonal pricing trends and recommendations</li>
               <li>Unlimited property analyses</li>
+              <li>Side by side property comparisons</li>
               <li>Priority support</li>
             </ul>
           </div>
