@@ -33,8 +33,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-// RadioGroup removed
-
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 // Types
 interface RevenueData {
@@ -63,12 +62,12 @@ const formSchema = z.object({
   propertyPhoto: z.instanceof(File).optional().nullable(),
 
   // Step 2: Financing Details
-  //depositType: z.enum(["amount", "percentage"]), // Removed depositType
-  depositAmount: z.number().min(0, "Deposit must be positive"), //Deposit amount remains
+  depositType: z.enum(["amount", "percentage"]),
+  depositAmount: z.number().min(0, "Deposit must be positive"),
   depositPercentage: z
     .number()
     .min(0, "Deposit percentage must be positive")
-    .max(100, "Deposit percentage cannot exceed 100"), //Deposit Percentage remains.
+    .max(100, "Deposit percentage cannot exceed 100"),
   interestRate: z
     .number()
     .min(0, "Interest rate must be positive")
@@ -193,7 +192,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         parkingSpaces: Number(formData.parkingSpaces || 0),
 
         // Financing Details
-        //depositType: formData.depositType, //Removed depositType
+        depositType: formData.depositType,
         depositAmount: Number(formData.depositAmount),
         depositPercentage: Number(formData.depositPercentage),
         interestRate: Number(formData.interestRate),
@@ -291,6 +290,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         ];
       case 1:
         return [
+          "depositType",
           "depositAmount",
           "depositPercentage",
           "interestRate",
@@ -407,7 +407,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       bedrooms: undefined,
       bathrooms: undefined,
       parkingSpaces: undefined,
-      //depositType: "percentage", //Removed depositType
+      depositType: "percentage",
       depositAmount: undefined,
       depositPercentage: undefined,
       interestRate: undefined,
@@ -707,51 +707,119 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
             {/* Step 2: Financing Details */}
             {currentStep === 1 && (
               <div className="space-y-4">
-                {/*Removed depositType Radio group */}
                 <FormField
                   control={form.control}
-                  name="depositAmount"
+                  name="depositType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Deposit Amount (R)</FormLabel>
+                      <FormLabel>Deposit Type</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          min="0"
-                          placeholder="Enter deposit amount"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
-                        />
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex space-x-4"
+                        >
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <RadioGroupItem value="amount" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Amount (R)
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <RadioGroupItem value="percentage" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Percentage (%)
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="depositPercentage"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Deposit Percentage (%)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder="Enter deposit percentage"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="flex gap-4 items-end">
+                  <div className="flex-1">
+                    <FormField
+                      control={form.control}
+                      name="depositAmount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>R</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              placeholder="250000,00"
+                              {...field}
+                              value={field.value || ''}
+                              onChange={(e) => {
+                                const amount = e.target.valueAsNumber;
+                                field.onChange(amount);
+                                const purchasePrice = form.getValues("purchasePrice");
+                                if (purchasePrice && amount) {
+                                  const percentage = (amount / purchasePrice) * 100;
+                                  form.setValue(
+                                    "depositPercentage",
+                                    Number(percentage.toFixed(2)),
+                                    { shouldValidate: true }
+                                  );
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-center px-4">
+                    <span className="text-sm font-medium text-gray-600">
+                      OR
+                    </span>
+                  </div>
+
+                  <div className="flex-1">
+                    <FormField
+                      control={form.control}
+                      name="depositPercentage"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>%</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              placeholder="10"
+                              {...field}
+                              value={field.value || ''}
+                              onChange={(e) => {
+                                const percentage = e.target.valueAsNumber;
+                                field.onChange(percentage);
+                                const purchasePrice = form.getValues("purchasePrice");
+                                if (purchasePrice && percentage) {
+                                  const amount = (percentage / 100) * purchasePrice;
+                                  form.setValue(
+                                    "depositAmount",
+                                    Number(amount.toFixed(0)),
+                                    { shouldValidate: true }
+                                  );
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
 
                 <FormField
                   control={form.control}
@@ -1098,7 +1166,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 <FormField
                   control={form.control}
                   name="annualPropertyAppreciation"
-                  render={({ field })=> (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Annual Property Appreciation (%)</FormLabel>
                       <FormControl>
@@ -1280,7 +1348,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 bedrooms: 2,
                 bathrooms: 2,
                 parkingSpaces: 1,
-                //depositType: "percentage", //Removed depositType
+                depositType: "percentage",
                 depositAmount: 350000,
                 depositPercentage: 10,
                 interestRate: 11.75,
