@@ -505,8 +505,8 @@ export default function PropertyAnalyzerPage() {
             Enter property details to generate analysis
           </p>
         </div>
-        <div className="bg-blue-50 px-4 py-2 rounded-lg border border-blue-100">
-          <p className="text-sm text-blue-700 font-medium">
+        <div className="bg-[#1BA3FF]/10 px-4 py-2 rounded-lg border border-[#1BA3FF]/20">
+          <p className="text-sm text-[#1BA3FF] font-medium">
             Analyses used: {user?.propertyAnalyzerUsage || 0}
           </p>
         </div>
