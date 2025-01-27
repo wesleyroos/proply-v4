@@ -54,7 +54,7 @@ import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFServic
 import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query"; // Added import for React Query
-import UpgradeModal from "@/components/UpgradeModal";
+import UpgradeModal from "@/components/UpgradeModal"; // Import the UpgradeModal component
 
 interface YearlyMetrics {
   grossYield: number;
@@ -516,20 +516,19 @@ export default function PropertyAnalyzerPage() {
               Analyses used: {user?.propertyAnalyzerUsage || 0}
             </p>
             <Button 
-              onClick={() => setShowUpgradeModal(true)} 
-              className="w-full mt-2"
-              variant="premium"
+              onClick={() => setShowUpgradeModal(true)}
+              className="w-full mt-2 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              Upgrade to Pro
+              Upgrade to 
+              <span className="bg-white/20 text-white text-xs font-semibold ml-2 px-2 py-0.5 rounded-full">
+                PRO
+              </span>
             </Button>
           </div>
         )}
 
-        <UpgradeModal 
-          open={showUpgradeModal} 
-          onOpenChange={setShowUpgradeModal} 
-        />
+      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
       </div>
 
       <div className="space-y-6">
