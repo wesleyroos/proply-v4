@@ -47,12 +47,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAnalyzerPDF";
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
 import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query"; // Added import for React Query
+import UpgradeModal from "@/components/UpgradeModal"; // Import the UpgradeModal component
 
 interface YearlyMetrics {
   grossYield: number;
@@ -337,7 +339,7 @@ export default function PropertyAnalyzerPage() {
 
       const data = await response.json();
       console.log("Analysis response:", data);
-      
+
       // Invalidate the user query to refresh the counter
       queryClient.invalidateQueries({ queryKey: ['user'] });
 
@@ -527,44 +529,7 @@ export default function PropertyAnalyzerPage() {
         )}
       </div>
 
-      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader className="text-center">
-            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <Sparkles className="h-6 w-6 text-primary" />
-            </div>
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <DialogTitle className="text-2xl">Upgrade to</DialogTitle>
-              <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">PRO</span>
-            </div>
-            <DialogDescription className="text-center">
-              Get unlimited access to all Proply features and tools
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <h4 className="font-semibold">Pro Features Include:</h4>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Accurate nightly rates based on local market data</li>
-                <li>Real occupancy rates from similar properties</li>
-                <li>Seasonal pricing trends and recommendations</li>
-                <li>Unlimited property analyses</li>
-                <li>Priority support</li>
-              </ul>
-            </div>
-            <div className="bg-muted p-4 rounded-lg text-center">
-              <p className="text-2xl font-bold">R2000/month</p>
-              <p className="text-sm text-muted-foreground">Cancel anytime</p>
-            </div>
-            <Button onClick={() => {
-              setShowUpgradeModal(false);
-              // Add navigation to pricing/payment page here
-            }} className="w-full">
-              Continue to Payment
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
 
       <div className="space-y-6">
         <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
