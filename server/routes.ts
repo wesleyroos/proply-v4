@@ -971,7 +971,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  
   // Change password
   app.post("/api/change-password", async (req, res) => {
     if (!req.isAuthenticated()) {
@@ -1020,12 +1019,19 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user!.id))
         .limit(1);
 
+      // Only increment for free plan users
       if (user.subscriptionStatus !== "pro") {
+        console.log("Updating analyzer usage:", {
+          email: user.email,
+          oldUsage: user.propertyAnalyzerUsage,
+          newUsage: (user.propertyAnalyzerUsage || 0) + 1
+        });
+
         // Increment the property analyzer usage for free plan users
         await db
           .update(users)
           .set({
-            propertyAnalyzerUsage: sql`${users.propertyAnalyzerUsage} + 1`,
+            propertyAnalyzerUsage: (user.propertyAnalyzerUsage || 0) + 1,
           })
           .where(eq(users.id, req.user!.id));
       }
@@ -1045,7 +1051,7 @@ export function registerRoutes(app: Express): Server {
         leaseCycleGap: req.body.leaseCycleGap
           ? parseInt(req.body.leaseCycleGap)
           : null,
-        propertyDescription: req.body.propertyDescription || null,
+        propertyDescription: req.body.propertyDescription,
         address: req.body.address,
         deposit:
           req.body.depositType === "amount"
@@ -1068,52 +1074,21 @@ export function registerRoutes(app: Express): Server {
         managementFee: parseFloat(req.body.managementFee || 0),
       };
 
-      const analysisResult = calculateYields(propertyData);
-      console.log(
-        "Analysis complete. Result:",
-        JSON.stringify(analysisResult, null, 2),
-      );
+      console.log("Analysis starting with data:", propertyData);
+      const result = await calculateYields(propertyData);
 
-      // Get current user data first
-      const [currentUser] = await db
-        .select({
-          propertyAnalyzerUsage: users.propertyAnalyzerUsage
-        })
-        .from(users)
-        .where(eq(users.id, req.user!.id))
-        .limit(1);
+      if (result.error) {
+        throw new Error(result.error);
+      }
 
-      const newUsage = (currentUser?.propertyAnalyzerUsage || 0) + 1;
+      const suburb = await analyzeSuburb(req.body.address);
+      result.propertyDescription = suburb;
+      result.address = req.body.address;
 
-      // Increment the user's property analyzer usage count
-      await db
-        .update(users)
-        .set({
-          propertyAnalyzerUsage: newUsage
-        })
-        .where(eq(users.id, req.user!.id));
-
-      console.log("Updated analyzer usage:", {
-        email: user.email,
-        oldUsage: currentUser?.propertyAnalyzerUsage,
-        newUsage: newUsage
-      });
-
-      res.json(analysisResult);
+      res.json(result);
     } catch (error) {
-      console.error("=== Analysis Error ===");
-      console.error("Error details:", error);
-
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to analyze property data";
-      console.error("Sending error response:", { error: errorMessage });
-
-      res.status(500).json({
-        error: errorMessage,
-        details: error instanceof Error ? error.message : undefined,
-      });
+      console.error("Analysis error:", error);
+      res.status(500).json({ error: "Failed to analyze property" });
     }
   });
 
@@ -1501,7 +1476,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Add new endpoint after the existing signup analytics endpoint
+  // Add this new endpoint after the existing signup analytics endpoint
   app.get("/api/analytics/reports", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
       return res.status(403).send("Not authorized");
