@@ -1080,7 +1080,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           <p className="text-xs text-muted-foreground">
                             Get accurate rates from Airbnb listings in your area
                           </p>
-                        </                        </div>
+                        </div>
                       </FormControl>
                     </FormItem>
                   </div>
