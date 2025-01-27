@@ -969,7 +969,7 @@ export function registerRoutes(app: Express): Server {
   // Change password
   app.post("/api/change-password", async (req, res) => {
     if (!req.isAuthenticated()) {
-      return res.status(401).send("Not authenticated");
+      return res.status(401).send(""Not authenticated");
     }
 
     const { currentPassword, newPassword } = req.body;
@@ -1217,7 +1217,6 @@ export function registerRoutes(app: Express): Server {
       console.log("Saving property analysis for user:", req.user.id);
       console.log("Analysis data:", JSON.stringify(req.body, null, 2));
 
-      // Start a transaction to ensure both operations complete
       // Insert analysis result without incrementing counter
       const [savedAnalysis] = await db
         .insert(propertyAnalyzerResults)
