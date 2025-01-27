@@ -164,28 +164,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const queryClient = useQueryClient(); // Added useQueryClient hook
 
   // Check if user has reached their limit
-  const reachedLimit = !isUserLoading && !isProAccessLoading && !hasProAccess && (user?.propertyAnalyzerUsage ?? 0) >= 3;
-
-  // Show warning when approaching limit (2 analyses used)
-  const showUsageWarning = !hasProAccess && (user?.propertyAnalyzerUsage ?? 0) === 2;
-
-  // Show upgrade modal if limit is reached
-  useEffect(() => {
-    if (reachedLimit) {
-      setShowUpgradeModal(true);
-    }
-  }, [reachedLimit]);
-
-  // Show warning toast when close to limit
-  useEffect(() => {
-    if (showUsageWarning) {
-      toast({
-        title: "Usage Limit Warning",
-        description: "You have 1 free analysis remaining. Upgrade to Pro for unlimited analyses.",
-        duration: 5000,
-      });
-    }
-  }, [showUsageWarning, toast]);
+  // Removed limit checks - will be reimplemented later
 
   // If still loading user data, show loading state
   if (isUserLoading || isProAccessLoading) {
