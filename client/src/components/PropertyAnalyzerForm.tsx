@@ -181,43 +181,44 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     try {
       // Clean and prepare the analysis data
       // Ensure all form fields are included and properly typed
+      const deposit = formData.depositType === "amount" ? parseFloat(formData.depositAmount) : (parseFloat(formData.purchasePrice) * parseFloat(formData.depositPercentage)) / 100;
       const analysisData = {
         // Property Details
         address: formData.address,
-        propertyUrl: formData.propertyUrl,
-        purchasePrice: Number(formData.purchasePrice),
-        floorArea: Number(formData.floorArea),
-        bedrooms: Number(formData.bedrooms),
-        bathrooms: Number(formData.bathrooms),
-        parkingSpaces: Number(formData.parkingSpaces || 0),
+        propertyUrl: formData.propertyUrl || "",
+        purchasePrice: parseFloat(formData.purchasePrice),
+        floorArea: parseFloat(formData.floorArea),
+        bedrooms: parseInt(formData.bedrooms),
+        bathrooms: parseInt(formData.bathrooms),
+        parkingSpaces: parseInt(formData.parkingSpaces || 0),
 
         // Financing Details
         depositType: formData.depositType,
-        depositAmount: Number(formData.depositAmount),
-        depositPercentage: Number(formData.depositPercentage),
-        interestRate: Number(formData.interestRate),
-        loanTerm: Number(formData.loanTerm),
+        deposit: deposit,
+        depositPercentage: formData.depositType === "amount" ? (parseFloat(formData.depositAmount) / parseFloat(formData.purchasePrice)) * 100 : parseFloat(formData.depositPercentage),
+        interestRate: parseFloat(formData.interestRate),
+        loanTerm: parseInt(formData.loanTerm),
 
         // Operating Expenses
-        monthlyLevies: Number(formData.monthlyLevies || 0),
-        monthlyRatesTaxes: Number(formData.monthlyRatesTaxes || 0),
-        otherMonthlyExpenses: Number(formData.otherMonthlyExpenses || 0),
-        maintenancePercent: Number(formData.maintenancePercent || 0),
-        managementFee: Number(formData.managementFee || 0),
+        monthlyLevies: parseFloat(formData.monthlyLevies || 0),
+        monthlyRatesTaxes: parseFloat(formData.monthlyRatesTaxes || 0),
+        otherMonthlyExpenses: parseFloat(formData.otherMonthlyExpenses || 0),
+        maintenancePercent: parseFloat(formData.maintenancePercent || 0),
+        managementFee: parseFloat(formData.managementFee || 0),
 
         // Revenue Performance
-        airbnbNightlyRate: Number(formData.airbnbNightlyRate || 0),
-        occupancyRate: Number(formData.occupancyRate || 0),
-        longTermRental: Number(formData.longTermRental || 0),
-        leaseCycleGap: Number(formData.leaseCycleGap || 0),
+        airbnbNightlyRate: parseFloat(formData.airbnbNightlyRate || 0),
+        occupancyRate: parseFloat(formData.occupancyRate || 0),
+        longTermRental: parseFloat(formData.longTermRental || 0),
+        leaseCycleGap: parseFloat(formData.leaseCycleGap || 0),
 
         // Escalations
-        annualIncomeGrowth: Number(formData.annualIncomeGrowth || 0),
-        annualExpenseGrowth: Number(formData.annualExpenseGrowth || 0),
-        annualPropertyAppreciation: Number(formData.annualPropertyAppreciation || 0),
+        annualIncomeGrowth: parseFloat(formData.annualIncomeGrowth || 0),
+        annualExpenseGrowth: parseFloat(formData.annualExpenseGrowth || 0),
+        annualPropertyAppreciation: parseFloat(formData.annualPropertyAppreciation || 0),
 
         // Miscellaneous
-        cmaRatePerSqm: Number(formData.cmaRatePerSqm || 0),
+        cmaRatePerSqm: parseFloat(formData.cmaRatePerSqm || 0),
         comments: formData.comments || "",
       };
 
