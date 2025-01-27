@@ -190,21 +190,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
       // Ensure numeric values for deposit calculation
       const purchasePrice = Number(formData.purchasePrice);
-      const depositAmount = Number(formData.depositAmount);
-      const depositPercentage = Number(formData.depositPercentage);
+      let deposit: number;
 
-      console.log("Converted numeric values:", {
-        purchasePrice,
-        depositAmount,
-        depositPercentage
-      });
-
-      // Calculate deposit based on type with validation
-      let deposit = 0;
+      // Calculate deposit based on type
       if (formData.depositType === "amount") {
-        deposit = depositAmount;
-        console.log("Using deposit amount:", deposit);
+        deposit = Number(formData.depositAmount);
+        if (isNaN(deposit)) {
+          throw new Error("Deposit amount must be a valid number");
+        }
       } else {
+        // Handle percentage case
+        const depositPercentage = Number(formData.depositPercentage);
         if (isNaN(purchasePrice)) {
           throw new Error("Purchase price must be a valid number");
         }
@@ -212,22 +208,11 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
           throw new Error("Deposit percentage must be a valid number");
         }
         deposit = (purchasePrice * depositPercentage) / 100;
-        console.log("Calculating deposit from percentage:", {
-          purchasePrice,
-          depositPercentage,
-          calculation: `${purchasePrice} * ${depositPercentage} / 100`,
-          deposit
-        });
       }
 
       // Final validation
       if (isNaN(deposit) || deposit < 0) {
-        throw new Error(`Invalid deposit calculation: ${deposit}. Values used: ${JSON.stringify({
-          depositType: formData.depositType,
-          depositAmount,
-          depositPercentage,
-          purchasePrice
-        }, null, 2)}`);
+        throw new Error("Invalid deposit calculation. Please check your input values.");
       }
 
       const analysisData = {
@@ -1078,7 +1063,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         </div>
                       </FormControl>
                     </FormItem>
-                                    </div>
+                  </div>
                 </div>
 
                 <FormField
@@ -1093,7 +1078,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           min="0"
                           placeholder="Monthly long-term rental income"
                           {...field}
-                          onChange={(e) =>
+                          onChange{(e) =>
                             field.onChange(e.target.valueAsNumber)
                           }
                         />
