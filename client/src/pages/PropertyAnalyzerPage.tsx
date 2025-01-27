@@ -335,9 +335,6 @@ export default function PropertyAnalyzerPage() {
       const data = await response.json();
       console.log("Analysis response:", data);
 
-      // Destructure the analyzer usage from the response
-      const { propertyAnalyzerUsage, ...resultData } = data;
-
       setAnalysisResult({
         ...resultData,
         shortTermNightlyRate: requestBody.shortTermNightlyRate,

@@ -1075,10 +1075,7 @@ export function registerRoutes(app: Express): Server {
         usage: updatedUser.propertyAnalyzerUsage
       });
 
-      res.json({
-        ...analysisResult,
-        propertyAnalyzerUsage: updatedUser.propertyAnalyzerUsage
-      });
+      res.json(analysisResult);
     } catch (error) {
       console.error("=== Analysis Error ===");
       console.error("Error details:", error);
