@@ -179,9 +179,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const onSubmit = async (formData: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
     try {
-      // Clean and prepare the analysis data
       const analysisData = {
-        // Property Details
         address: formData.address,
         propertyUrl: formData.propertyUrl,
         purchasePrice: Number(formData.purchasePrice),
@@ -189,33 +187,23 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         bedrooms: Number(formData.bedrooms),
         bathrooms: Number(formData.bathrooms),
         parkingSpaces: Number(formData.parkingSpaces || 0),
-
-        // Financing Details
         depositType: formData.depositType,
         depositAmount: Number(formData.depositAmount),
         depositPercentage: Number(formData.depositPercentage),
         interestRate: Number(formData.interestRate),
         loanTerm: Number(formData.loanTerm),
-
-        // Operating Expenses
         monthlyLevies: Number(formData.monthlyLevies || 0),
         monthlyRatesTaxes: Number(formData.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(formData.otherMonthlyExpenses || 0),
         maintenancePercent: Number(formData.maintenancePercent || 0),
         managementFee: Number(formData.managementFee || 0),
-
-        // Revenue Performance
         shortTermNightlyRate: Number(formData.airbnbNightlyRate || 0),
         occupancyRate: Number(formData.occupancyRate || 0),
         longTermRental: Number(formData.longTermRental || 0),
         leaseCycleGap: Number(formData.leaseCycleGap || 0),
-
-        // Escalations
         annualIncomeGrowth: Number(formData.annualIncomeGrowth || 0),
         annualExpenseGrowth: Number(formData.annualExpenseGrowth || 0),
         annualPropertyAppreciation: Number(formData.annualPropertyAppreciation || 0),
-
-        // Miscellaneous
         cmaRatePerSqm: Number(formData.cmaRatePerSqm || 0),
         comments: formData.comments || "",
       };
@@ -231,17 +219,30 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         body: JSON.stringify(analysisData),
       });
 
-      let data;
-      const textResponse = await response.text();
+      let responseText;
       try {
-        data = JSON.parse(textResponse);
+        responseText = await response.text();
+        console.log("Raw response:", responseText);
       } catch (e) {
-        console.error('Error parsing response:', textResponse);
-        throw new Error('Invalid response from server');
+        console.error("Error reading response:", e);
+        throw new Error("Failed to read server response");
+      }
+
+      let data;
+      try {
+        data = responseText ? JSON.parse(responseText) : null;
+      } catch (e) {
+        console.error("Error parsing response:", responseText);
+        throw new Error(`Invalid JSON response from server: ${responseText.substring(0, 100)}...`);
       }
 
       if (!response.ok) {
-        throw new Error(data.message || data.error || response.statusText);
+        const errorMessage = data?.message || data?.error || response.statusText || "Unknown error occurred";
+        throw new Error(errorMessage);
+      }
+
+      if (!data) {
+        throw new Error("No data received from server");
       }
 
       console.log("Analysis response:", data);
