@@ -514,7 +514,7 @@ export default function PropertyAnalyzerPage() {
             <div className="absolute top-6 right-6">
               <div className="bg-blue-50 border border-[#1BA3FF] rounded-lg px-4 py-2">
                 <p className="text-sm text-blue-900">
-                  Free Plan: <span className="font-bold text-[#1BA3FF]">{user.propertyAnalyzerUsage || 0} of 3</span> analyses used
+                  Analyses used: <span className="font-bold text-[#1BA3FF]">{user.propertyAnalyzerUsage || 0}</span>
                 </p>
               </div>
             </div>
