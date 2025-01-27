@@ -517,14 +517,12 @@ export default function PropertyAnalyzerPage() {
             </p>
             <Button 
               onClick={() => setShowUpgradeModal(true)}
-              className="w-full mt-2 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
+              className="w-full mt-2"
+              variant="premium"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              Upgrade to 
-              <span className="bg-white/20 text-white text-xs font-semibold ml-2 px-2 py-0.5 rounded-full">
-                PRO
-              </span>
-            </Button>
+              Upgrade to Pro
+      </Button>
           </div>
         )}
 
