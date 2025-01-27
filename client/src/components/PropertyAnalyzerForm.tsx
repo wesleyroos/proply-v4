@@ -62,6 +62,7 @@ const formSchema = z.object({
   propertyPhoto: z.instanceof(File).optional().nullable(),
 
   // Step 2: Financing Details
+  depositType: z.enum(["amount", "percentage"]),
   depositAmount: z.number().min(0, "Deposit must be positive"),
   depositPercentage: z
     .number()
@@ -191,6 +192,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         parkingSpaces: Number(formData.parkingSpaces || 0),
 
         // Financing Details
+        depositType: formData.depositType,
         depositAmount: Number(formData.depositAmount),
         depositPercentage: Number(formData.depositPercentage),
         interestRate: Number(formData.interestRate),
@@ -288,6 +290,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         ];
       case 1:
         return [
+          "depositType",
           "depositAmount",
           "depositPercentage",
           "interestRate",
@@ -404,6 +407,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       bedrooms: undefined,
       bathrooms: undefined,
       parkingSpaces: undefined,
+      depositType: "percentage",
       depositAmount: undefined,
       depositPercentage: undefined,
       interestRate: undefined,
@@ -703,6 +707,41 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
             {/* Step 2: Financing Details */}
             {currentStep === 1 && (
               <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="depositType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Deposit Type</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex space-x-4"
+                        >
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <RadioGroupItem value="amount" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Amount (R)
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <RadioGroupItem value="percentage" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Percentage (%)
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <div className="flex gap-4 items-end">
                   <div className="flex-1">
                     <FormField
@@ -1092,7 +1131,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           max="100"
                           {...field}
                           onChange={(e) =>
-                            field.onChange                            field.onChange(e.target.valueAsNumber)
+                            field.onChange(e.target.valueAsNumber)
                           }
                         />
                       </FormControl>
@@ -1309,6 +1348,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 bedrooms: 2,
                 bathrooms: 2,
                 parkingSpaces: 1,
+                depositType: "percentage",
                 depositAmount: 350000,
                 depositPercentage: 10,
                 interestRate: 11.75,
