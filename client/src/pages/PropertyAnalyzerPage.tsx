@@ -511,9 +511,13 @@ export default function PropertyAnalyzerPage() {
             Enter property details to generate analysis
           </p>
           {!hasProAccess && user && (
-            <p className="text-sm text-muted-foreground mt-2">
-              <span className="font-medium">{user.propertyAnalyzerUsage || 0} of 3</span> free analyses used
-            </p>
+            <div className="absolute top-6 right-6">
+              <div className="bg-blue-50 border border-[#1BA3FF] rounded-lg px-4 py-2">
+                <p className="text-sm text-blue-900">
+                  Free Plan: <span className="font-bold text-[#1BA3FF]">{user.propertyAnalyzerUsage || 0} of 3</span> analyses used
+                </p>
+              </div>
+            </div>
           )}
         </div>
       </div>
