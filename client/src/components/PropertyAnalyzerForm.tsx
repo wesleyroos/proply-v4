@@ -1062,8 +1062,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             type="button"
                             variant="outline"
                             className="w-full h-10"
-                            onClick={() => {
-                              if (hasProAccess) {
+                            onClick={async () => {
+                              // Double check pro access
+                              if (user?.subscriptionStatus === 'pro' || user?.isAdmin) {
                                 fetchRevenueData();
                               } else {
                                 setShowUpgradeModal(true);
