@@ -237,10 +237,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       }
 
       const data = await response.json();
-      console.log("Analysis response:", data);
-
-      // Invalidate user query to refresh usage count - Moved here for correct timing
-      await queryClient.invalidateQueries({ queryKey: ['user'] });
+      console.log("Analysis response:", data);;
 
       if (props.onAnalysisComplete) {
         await props.onAnalysisComplete(analysisData);

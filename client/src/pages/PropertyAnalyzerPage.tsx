@@ -346,9 +346,6 @@ export default function PropertyAnalyzerPage() {
         loanTerm: requestBody.loanTerm,
       });
 
-      // Invalidate the user query to refresh the usage count
-      //queryClient.invalidateQueries({ queryKey: ["user"] }); //This line is redundant now.
-
       setTimeout(() => {
         if (resultsRef.current) {
           const yOffset = -100;
