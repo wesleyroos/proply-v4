@@ -757,18 +757,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               placeholder="250000,00"
                               {...field}
                               onChange={(e) => {
+                                field.onChange(e.target.valueAsNumber);
                                 const amount = e.target.valueAsNumber;
-                                field.onChange(amount);
-                                // Calculate percentage based on amount
-                                const purchasePrice =
-                                  form.getValues("purchasePrice");
+                                const purchasePrice = form.getValues("purchasePrice");
                                 if (purchasePrice && amount) {
-                                  const percentage =
-                                    (amount / purchasePrice) * 100;
-                                  form.setValue(
-                                    "depositPercentage",
-                                    Number(percentage.toFixed(2)),
-                                  );
+                                  const percentage = (amount / purchasePrice) * 100;
+                                  form.setValue("depositPercentage", percentage);
                                 }
                               }}
                             />
