@@ -50,6 +50,7 @@ import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAn
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
 import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query"; // Added import for React Query
 
 interface YearlyMetrics {
   grossYield: number;
@@ -209,6 +210,7 @@ export default function PropertyAnalyzerPage() {
   const [showLimitModal, setShowLimitModal] = useState(false); //This state is no longer used.
   const { user } = useUser();
   const hasProAccess = useProAccess();
+  const queryClient = useQueryClient(); // Added React Query client initialization
 
   useEffect(() => {
     //This useEffect is no longer used, but kept to avoid breaking changes.
@@ -333,13 +335,19 @@ export default function PropertyAnalyzerPage() {
       const data = await response.json();
       console.log("Analysis response:", data);
 
+      // Destructure the analyzer usage from the response
+      const { propertyAnalyzerUsage, ...resultData } = data;
+
       setAnalysisResult({
-        ...data,
+        ...resultData,
         shortTermNightlyRate: requestBody.shortTermNightlyRate,
         annualOccupancy: requestBody.annualOccupancy,
         managementFee: requestBody.managementFee,
         loanTerm: requestBody.loanTerm,
       });
+
+      // Invalidate the user query to refresh the usage count
+      queryClient.invalidateQueries({ queryKey: ["user"] });
 
       setTimeout(() => {
         if (resultsRef.current) {
