@@ -1072,13 +1072,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Long Term Rental (Monthly)</FormLabel>
-                      <FormControl>
+                                            <FormControl>
                         <Input
                           type="number"
                           min="0"
                           placeholder="Monthly long-term rental income"
                           {...field}
-                          onChange{(e) =>
+                          onChange={(e) =>
                             field.onChange(e.target.valueAsNumber)
                           }
                         />
