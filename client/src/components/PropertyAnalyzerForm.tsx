@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Sparkles } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { UpgradeModal } from "@/components/UpgradeModal"; // Added import
 
 // Hooks
 import { useProAccess } from "@/hooks/use-pro-access";
@@ -158,7 +157,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     "75": RevenueData;
     "90": RevenueData;
   } | null>(null);
-  const [analysisError, setAnalysisError] = useState<string | null>(null); // Added state for error handling
 
   const { hasAccess: hasProAccess, isLoading: isProAccessLoading } = useProAccess();
   const { user, isLoading: isUserLoading } = useUser();
@@ -245,26 +243,11 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         await props.onAnalysisComplete(analysisData);
       }
     } catch (error) {
-      console.error("=== Property Analysis Failed ===");
-      console.error("Error Type:", error?.constructor?.name);
-      console.error("Error Message:", error?.message);
-      console.error("Error Stack:", error?.stack);
-      console.error("Timestamp:", new Date().toISOString());
-
-      let errorMessage = "Failed to analyze property data.";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (error instanceof Response) {
-        errorMessage = `Server Error: ${error.status} ${error.statusText}`;
-      }
-
-      setAnalysisError(errorMessage);
-      setAnalysisResult(null);
-
+      console.error('Analysis error:', error);
       toast({
         variant: "destructive",
         title: "Analysis Failed",
-        description: errorMessage,
+        description: error instanceof Error ? error.message : "Failed to analyze property data.",
         duration: 7000,
       });
     } finally {
@@ -303,7 +286,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
           "bedrooms",
           "bathrooms",
           "parkingSpaces",
-          "propertyPhoto"
         ];
       case 1:
         return [
@@ -773,17 +755,18 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               min="0"
                               placeholder="250000,00"
                               {...field}
-                              value={field.value || ''}
                               onChange={(e) => {
                                 const amount = e.target.valueAsNumber;
                                 field.onChange(amount);
-                                const purchasePrice = form.getValues("purchasePrice");
+                                // Calculate percentage based on amount
+                                const purchasePrice =
+                                  form.getValues("purchasePrice");
                                 if (purchasePrice && amount) {
-                                  const percentage = (amount / purchasePrice) * 100;
+                                  const percentage =
+                                    (amount / purchasePrice) * 100;
                                   form.setValue(
                                     "depositPercentage",
                                     Number(percentage.toFixed(2)),
-                                    { shouldValidate: true }
                                   );
                                 }
                               }}
@@ -815,17 +798,18 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               max="100"
                               placeholder="10"
                               {...field}
-                              value={field.value || ''}
                               onChange={(e) => {
                                 const percentage = e.target.valueAsNumber;
                                 field.onChange(percentage);
-                                const purchasePrice = form.getValues("purchasePrice");
+                                // Calculate amount based on percentage
+                                const purchasePrice =
+                                  form.getValues("purchasePrice");
                                 if (purchasePrice && percentage) {
-                                  const amount = (percentage / 100) * purchasePrice;
+                                  const amount =
+                                    (percentage / 100) * purchasePrice;
                                   form.setValue(
                                     "depositAmount",
                                     Number(amount.toFixed(0)),
-                                    { shouldValidate: true }
                                   );
                                 }
                               }}
@@ -1054,8 +1038,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             type="button"
                             variant="outline"
                             className="w-full h-10"
-                            onClick={() => {
-                              if (hasProAccess) {
+                            onClick={async () => {
+                              // Double check pro access
+                              if (user?.subscriptionStatus === 'pro' || user?.isAdmin) {
                                 fetchRevenueData();
                               } else {
                                 setShowUpgradeModal(true);
@@ -1104,7 +1089,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>)}
+                    </FormItem>
+                  )}
                 />
 
                 <FormField
@@ -1289,7 +1275,86 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       </Form>
 
       {/* Upgrade Modal */}
-      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader className="text-center">
+            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Sparkles className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <DialogTitle className="text-2xl">Upgrade to</DialogTitle>
+              <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">PRO</span>
+            </div>
+            <DialogDescription className="text-center">
+              Get unlimited access to all Proply features and tools
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h4 className="font-semibold">Pro Features Include:</h4>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Accurate nightly rates based on local market data</li>
+                <li>Real occupancy rates from similar properties</li>
+                <li>Seasonal pricing trends and recommendations</li>
+                <li>Unlimited property analyses</li>
+                <li>Priority support</li>
+              </ul>
+            </div>
+            <div className="bg-muted p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-primary">R2000/month</div>
+              <p className="text-muted-foreground mt-1">Cancel anytime</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              type="submit" 
+              className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
+              onClick={(e) => {
+                e.preventDefault();
+                const form = document.createElement("form");
+                form.method = "POST";
+                form.action = "https://sandbox.payfast.co.za/eng/process";
+
+                const paymentData = {
+                  merchant_id: "10000100",
+                  merchant_key: "46f0cd694581a",
+                  return_url: `${window.location.origin}/settings?payment=success`,
+                  cancel_url: `${window.location.origin}/settings?payment=cancelled`,
+                  notify_url: `${window.location.origin}/api/payment-webhook`,
+                  name_first: user?.firstName || "",
+                  email_address: user?.email || "",
+                  amount: "2000.00",
+                  item_name: "Proply Pro Subscription",
+                  subscription_type: "1",
+                  billing_date: new Date().toISOString().split('T')[0],
+                  recurring_amount: "2000.00",
+                  frequency: "3",
+                  cycles: "0",
+                  custom_str1: JSON.stringify({
+                    userId: user?.id,
+                    subscriptionStatus: 'pro'
+                  })
+                };
+
+                Object.entries(paymentData).forEach(([key, value]) => {
+                  if (value !== undefined) {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = key;
+                    input.value = value.toString();
+                    form.appendChild(input);
+                  }
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+              }}
+            >
+              Continue to Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Percentile Selection Modal */}
       <Dialog
