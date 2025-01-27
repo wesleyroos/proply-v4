@@ -1059,20 +1059,6 @@ export function registerRoutes(app: Express): Server {
         managementFee: parseFloat(req.body.managementFee || 0),
       };
 
-      // Increment the analyzer usage counter
-      const [updatedUser] = await db
-        .update(users)
-        .set({
-          propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
-        })
-        .where(eq(users.id, req.user!.id))
-        .returning();
-
-      console.log("Updated analyzer usage for user:", {
-        userId: updatedUser.id,
-        usage: updatedUser.propertyAnalyzerUsage,
-      });
-
       const analysisResult = calculateYields(propertyData);
       console.log(
         "Analysis complete. Result:",
