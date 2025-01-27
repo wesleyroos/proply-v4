@@ -232,18 +232,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       });
 
 
-      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || response.statusText);
+        const errorData = await response.json();
+        throw new Error(errorData.error || response.statusText);
       }
 
-      console.log("Analysis response:", data);
+      const data = await response.json();
+      console.log("Analysis response:", data);;
 
       if (props.onAnalysisComplete) {
-        await props.onAnalysisComplete({
-          ...analysisData,
-          analysisResult: data
-        });
+        await props.onAnalysisComplete(analysisData);
       }
     } catch (error) {
       console.error('Analysis error:', error);
@@ -758,9 +756,20 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               min="0"
                               placeholder="250000,00"
                               {...field}
-                              onChange={(e) =>
-                                field.onChange(e.target.valueAsNumber)
-                              }
+                              value={field.value || ''}
+                              onChange={(e) => {
+                                const amount = e.target.valueAsNumber;
+                                field.onChange(amount);
+                                const purchasePrice = form.getValues("purchasePrice");
+                                if (purchasePrice && amount) {
+                                  const percentage = (amount / purchasePrice) * 100;
+                                  form.setValue(
+                                    "depositPercentage",
+                                    Number(percentage.toFixed(2)),
+                                    { shouldValidate: true }
+                                  );
+                                }
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
@@ -789,9 +798,20 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               max="100"
                               placeholder="10"
                               {...field}
-                              onChange={(e) =>
-                                field.onChange(e.target.valueAsNumber)
-                              }
+                              value={field.value || ''}
+                              onChange={(e) => {
+                                const percentage = e.target.valueAsNumber;
+                                field.onChange(percentage);
+                                const purchasePrice = form.getValues("purchasePrice");
+                                if (purchasePrice && percentage) {
+                                  const amount = (percentage / 100) * purchasePrice;
+                                  form.setValue(
+                                    "depositAmount",
+                                    Number(amount.toFixed(0)),
+                                    { shouldValidate: true }
+                                  );
+                                }
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
