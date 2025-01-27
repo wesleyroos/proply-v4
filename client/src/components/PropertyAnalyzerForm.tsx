@@ -204,7 +204,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         maintenancePercent: Number(formData.maintenancePercent || 0),
         managementFee: Number(formData.managementFee || 0),
 
-        // Revenue Performance - Map airbnbNightlyRate to shortTermNightlyRate
+        // Revenue Performance
         shortTermNightlyRate: Number(formData.airbnbNightlyRate || 0),
         occupancyRate: Number(formData.occupancyRate || 0),
         longTermRental: Number(formData.longTermRental || 0),
@@ -220,7 +220,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         comments: formData.comments || "",
       };
 
-      console.log("Submitting complete analysis data:", analysisData);
+      console.log("Submitting analysis data:", analysisData);
 
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -231,17 +231,30 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         body: JSON.stringify(analysisData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || response.statusText);
+      let data;
+      const textResponse = await response.text();
+      try {
+        data = JSON.parse(textResponse);
+      } catch (e) {
+        console.error('Error parsing response:', textResponse);
+        throw new Error('Invalid response from server');
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || data.error || response.statusText);
+      }
+
       console.log("Analysis response:", data);
 
       if (props.onAnalysisComplete) {
         await props.onAnalysisComplete(formData);
       }
+
+      toast({
+        title: "Analysis Complete",
+        description: "Property analysis has been completed successfully.",
+      });
+
     } catch (error) {
       console.error('Analysis error:', error);
       toast({
@@ -1091,7 +1104,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               </div>
             )}
 
-            {/* Step 5: Escalations            {currentStep === 4 && (
+            {/* Step 5: Escalations */}
+            {currentStep === 4 && (
               <div className="space-y-4">
                 <FormField
                   control={form.control}
