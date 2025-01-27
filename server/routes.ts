@@ -1061,24 +1061,33 @@ export function registerRoutes(app: Express): Server {
         JSON.stringify(analysisResult, null, 2),
       );
 
-      // Increment the user's analysis count and get updated count
-      const [updatedUser] = await db
-        .update(users)
-        .set({
-          propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
-        })
-        .where(eq(users.id, req.user!.id))
-        .returning();
-
-      console.log("Updated analyzer usage for user:", {
-        userId: updatedUser.id,
-        usage: updatedUser.propertyAnalyzerUsage
+      // Get current usage before incrementing
+      const currentUser = await db.query.users.findFirst({
+        where: eq(users.id, req.user!.id)
       });
 
-      res.json({
-        ...analysisResult,
-        propertyAnalyzerUsage: updatedUser.propertyAnalyzerUsage
-      });
+      // Only increment if this is a new analysis
+      if (!currentUser?.propertyAnalyzerUsage || currentUser.propertyAnalyzerUsage < 1) {
+        const [updatedUser] = await db
+          .update(users)
+          .set({
+            propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
+          })
+          .where(eq(users.id, req.user!.id))
+          .returning();
+
+        console.log("Updated analyzer usage for user:", {
+          userId: updatedUser.id,
+          usage: updatedUser.propertyAnalyzerUsage
+        });
+
+        res.json({
+          ...analysisResult,
+          propertyAnalyzerUsage: updatedUser.propertyAnalyzerUsage
+        });
+      } else {
+        res.json(analysisResult);
+      }
     } catch (error) {
       console.error("=== Analysis Error ===");
       console.error("Error details:", error);
