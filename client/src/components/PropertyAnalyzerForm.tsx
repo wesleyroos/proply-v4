@@ -179,70 +179,49 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const onSubmit = async (formData: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
     try {
-      // Log input values
-      console.log("=== Starting Property Analysis ===");
-      console.log("Raw Input Data:", {
-        depositType: formData.depositType,
-        depositAmount: formData.depositAmount,
-        depositPercentage: formData.depositPercentage,
-        purchasePrice: formData.purchasePrice
-      });
-
-      // Ensure numeric values for deposit calculation
-      const purchasePrice = Number(formData.purchasePrice);
-      let deposit: number;
-
-      // Calculate deposit based on type
-      if (formData.depositType === "amount") {
-        deposit = Number(formData.depositAmount);
-        if (isNaN(deposit)) {
-          throw new Error("Deposit amount must be a valid number");
-        }
-      } else {
-        // Handle percentage case
-        const depositPercentage = Number(formData.depositPercentage);
-        if (isNaN(purchasePrice)) {
-          throw new Error("Purchase price must be a valid number");
-        }
-        if (isNaN(depositPercentage)) {
-          throw new Error("Deposit percentage must be a valid number");
-        }
-        deposit = (purchasePrice * depositPercentage) / 100;
-      }
-
-      // Final validation
-      if (isNaN(deposit) || deposit < 0) {
-        throw new Error("Invalid deposit calculation. Please check your input values.");
-      }
-
+      // Clean and prepare the analysis data
+      // Ensure all form fields are included and properly typed
       const analysisData = {
+        // Property Details
         address: formData.address,
-        propertyUrl: formData.propertyUrl || "",
-        purchasePrice: purchasePrice,
+        propertyUrl: formData.propertyUrl,
+        purchasePrice: Number(formData.purchasePrice),
         floorArea: Number(formData.floorArea),
         bedrooms: Number(formData.bedrooms),
         bathrooms: Number(formData.bathrooms),
         parkingSpaces: Number(formData.parkingSpaces || 0),
-        deposit,
+
+        // Financing Details
+        depositType: formData.depositType,
+        depositAmount: Number(formData.depositAmount),
+        depositPercentage: Number(formData.depositPercentage),
         interestRate: Number(formData.interestRate),
         loanTerm: Number(formData.loanTerm),
+
+        // Operating Expenses
         monthlyLevies: Number(formData.monthlyLevies || 0),
         monthlyRatesTaxes: Number(formData.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(formData.otherMonthlyExpenses || 0),
         maintenancePercent: Number(formData.maintenancePercent || 0),
         managementFee: Number(formData.managementFee || 0),
-        shortTermNightlyRate: Number(formData.airbnbNightlyRate || 0),
-        annualOccupancy: Number(formData.occupancyRate || 0),
+
+        // Revenue Performance
+        airbnbNightlyRate: Number(formData.airbnbNightlyRate || 0),
+        occupancyRate: Number(formData.occupancyRate || 0),
         longTermRental: Number(formData.longTermRental || 0),
         leaseCycleGap: Number(formData.leaseCycleGap || 0),
+
+        // Escalations
         annualIncomeGrowth: Number(formData.annualIncomeGrowth || 0),
         annualExpenseGrowth: Number(formData.annualExpenseGrowth || 0),
         annualPropertyAppreciation: Number(formData.annualPropertyAppreciation || 0),
+
+        // Miscellaneous
         cmaRatePerSqm: Number(formData.cmaRatePerSqm || 0),
         comments: formData.comments || "",
       };
 
-      console.log("Final analysis data:", analysisData);
+      console.log("Submitting complete analysis data:", analysisData);
 
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -252,20 +231,22 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         body: JSON.stringify(analysisData),
       });
 
+
       const data = await response.json();
       if (!response.ok) {
-        console.error("API Error Response:", data);
         throw new Error(data.error || response.statusText);
       }
 
       console.log("Analysis response:", data);
 
       if (props.onAnalysisComplete) {
-        await props.onAnalysisComplete(formData);
+        await props.onAnalysisComplete({
+          ...analysisData,
+          analysisResult: data
+        });
       }
     } catch (error) {
-      console.error('=== Analysis Error ===');
-      console.error('Error details:', error);
+      console.error('Analysis error:', error);
       toast({
         variant: "destructive",
         title: "Analysis Failed",
@@ -1052,9 +1033,11 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               </>
                             ) : (
                               <>
-                                Get Revenue Data                                <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                                Get Revenue Data
+                                <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
                                   PRO
-                                </span>                              </>
+                                </span>
+                              </>
                             )}
                           </Button>
                           <p className="text-xs text-muted-foreground">
@@ -1072,7 +1055,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Long Term Rental (Monthly)</FormLabel>
-                                            <FormControl>
+                      <FormControl>
                         <Input
                           type="number"
                           min="0"
@@ -1099,7 +1082,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           min="0"
                           placeholder="Average days between lease cycles"
                           {...field}
-                          onChange={(e)=>
+                          onChange={(e) =>
                             field.onChange(e.target.valueAsNumber)
                           }
                         />
