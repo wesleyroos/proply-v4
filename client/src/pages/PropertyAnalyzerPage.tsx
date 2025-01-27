@@ -581,6 +581,16 @@ export default function PropertyAnalyzerPage() {
                               fullAnalysisResult: analysisResult,
                             });
 
+                            // Ensure we have valid operating income data before generating PDF
+                            if (!analysisResult.analysis.netOperatingIncome && !analysisResult.analysis.longTermNetOperatingIncome) {
+                              toast({
+                                title: "Missing Data",
+                                description: "Operating income data is not available. Please ensure all required fields are filled.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+
                             setPDFData({
                               propertyDetails: {
                                 address: analysisResult.address,
