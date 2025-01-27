@@ -158,6 +158,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     "75": RevenueData;
     "90": RevenueData;
   } | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null); // Added state for error handling
 
   const { hasAccess: hasProAccess, isLoading: isProAccessLoading } = useProAccess();
   const { user, isLoading: isUserLoading } = useUser();
@@ -244,11 +245,26 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         await props.onAnalysisComplete(analysisData);
       }
     } catch (error) {
-      console.error('Analysis error:', error);
+      console.error("=== Property Analysis Failed ===");
+      console.error("Error Type:", error?.constructor?.name);
+      console.error("Error Message:", error?.message);
+      console.error("Error Stack:", error?.stack);
+      console.error("Timestamp:", new Date().toISOString());
+
+      let errorMessage = "Failed to analyze property data.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (error instanceof Response) {
+        errorMessage = `Server Error: ${error.status} ${error.statusText}`;
+      }
+
+      setAnalysisError(errorMessage);
+      setAnalysisResult(null);
+
       toast({
         variant: "destructive",
         title: "Analysis Failed",
-        description: error instanceof Error ? error.message : "Failed to analyze property data.",
+        description: errorMessage,
         duration: 7000,
       });
     } finally {
@@ -287,6 +303,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
           "bedrooms",
           "bathrooms",
           "parkingSpaces",
+          "propertyPhoto"
         ];
       case 1:
         return [
@@ -1063,7 +1080,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           <p className="text-xs text-muted-foreground">
                             Get accurate rates from Airbnb listings in your area
                           </p>
-                        </div>
+                        </                        </div>
                       </FormControl>
                     </FormItem>
                   </div>
