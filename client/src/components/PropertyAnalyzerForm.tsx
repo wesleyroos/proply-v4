@@ -179,7 +179,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const onSubmit = async (formData: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
     try {
+      // Clean and prepare the analysis data
+      // Ensure all form fields are included and properly typed
       const analysisData = {
+        // Property Details
         address: formData.address,
         propertyUrl: formData.propertyUrl,
         purchasePrice: Number(formData.purchasePrice),
@@ -187,75 +190,61 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         bedrooms: Number(formData.bedrooms),
         bathrooms: Number(formData.bathrooms),
         parkingSpaces: Number(formData.parkingSpaces || 0),
+
+        // Financing Details
         depositType: formData.depositType,
         depositAmount: Number(formData.depositAmount),
         depositPercentage: Number(formData.depositPercentage),
         interestRate: Number(formData.interestRate),
         loanTerm: Number(formData.loanTerm),
+
+        // Operating Expenses
         monthlyLevies: Number(formData.monthlyLevies || 0),
         monthlyRatesTaxes: Number(formData.monthlyRatesTaxes || 0),
         otherMonthlyExpenses: Number(formData.otherMonthlyExpenses || 0),
         maintenancePercent: Number(formData.maintenancePercent || 0),
         managementFee: Number(formData.managementFee || 0),
-        shortTermNightlyRate: Number(formData.airbnbNightlyRate || 0),
+
+        // Revenue Performance
+        airbnbNightlyRate: Number(formData.airbnbNightlyRate || 0),
         occupancyRate: Number(formData.occupancyRate || 0),
         longTermRental: Number(formData.longTermRental || 0),
         leaseCycleGap: Number(formData.leaseCycleGap || 0),
+
+        // Escalations
         annualIncomeGrowth: Number(formData.annualIncomeGrowth || 0),
         annualExpenseGrowth: Number(formData.annualExpenseGrowth || 0),
         annualPropertyAppreciation: Number(formData.annualPropertyAppreciation || 0),
+
+        // Miscellaneous
         cmaRatePerSqm: Number(formData.cmaRatePerSqm || 0),
         comments: formData.comments || "",
       };
 
-      console.log("Submitting analysis data:", analysisData);
+      console.log("Submitting complete analysis data:", analysisData);
 
       const response = await fetch('/api/analyze', {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(analysisData),
       });
 
-      let responseText;
-      try {
-        responseText = await response.text();
-        console.log("Raw response:", responseText);
-      } catch (e) {
-        console.error("Error reading response:", e);
-        throw new Error("Failed to read server response");
-      }
 
-      let data;
-      try {
-        data = responseText ? JSON.parse(responseText) : null;
-      } catch (e) {
-        console.error("Error parsing response:", responseText);
-        throw new Error(`Invalid JSON response from server: ${responseText.substring(0, 100)}...`);
-      }
-
+      const data = await response.json();
       if (!response.ok) {
-        const errorMessage = data?.message || data?.error || response.statusText || "Unknown error occurred";
-        throw new Error(errorMessage);
-      }
-
-      if (!data) {
-        throw new Error("No data received from server");
+        throw new Error(data.error || response.statusText);
       }
 
       console.log("Analysis response:", data);
 
       if (props.onAnalysisComplete) {
-        await props.onAnalysisComplete(formData);
+        await props.onAnalysisComplete({
+          ...analysisData,
+          analysisResult: data
+        });
       }
-
-      toast({
-        title: "Analysis Complete",
-        description: "Property analysis has been completed successfully.",
-      });
-
     } catch (error) {
       console.error('Analysis error:', error);
       toast({
