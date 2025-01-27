@@ -334,6 +334,9 @@ export default function PropertyAnalyzerPage() {
 
       const data = await response.json();
       console.log("Analysis response:", data);
+      
+      // Invalidate the user query to refresh the counter
+      queryClient.invalidateQueries({ queryKey: ['user'] });
 
       setAnalysisResult({
         ...data,
