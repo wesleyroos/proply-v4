@@ -13,14 +13,20 @@ import {
   apiUsage,
   subscriptionHistory, // Added import for subscription history table
 } from "@db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
 import { analyzeSuburb } from "./services/openai";
-// Add this at the top with other imports
-import { analyzeProperty } from "./services/propertyAnalysis"; // You'll need to create this service
+import { sql } from "drizzle-orm";
+import { suburbs } from "@db/schema";
 
+// Extend Express.User to include our schema
+declare global {
+  namespace Express {
+    interface User extends SelectUser {}
+  }
+}
 
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
@@ -1000,58 +1006,91 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Get current user and check limits
+      // Get user info
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.id, req.user!.id))
         .limit(1);
+      console.log("\n=== Starting Property Analysis ===");
+      console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
 
-      if (!user) {
-        return res.status(404).send("User not found");
-      }
+      const propertyData = {
+        purchasePrice: parseFloat(req.body.purchasePrice),
+        shortTermNightlyRate: req.body.shortTermNightlyRate
+          ? parseFloat(req.body.shortTermNightlyRate)
+          : null,
+        annualOccupancy: req.body.annualOccupancy
+          ? parseFloat(req.body.annualOccupancy)
+          : null,
+        longTermRental: req.body.longTermRental
+          ? parseFloat(req.body.longTermRental)
+          : null,
+        leaseCycleGap: req.body.leaseCycleGap
+          ? parseInt(req.body.leaseCycleGap)
+          : null,
+        propertyDescription: req.body.propertyDescription || null,
+        address: req.body.address,
+        deposit:
+          req.body.depositType === "amount"
+            ? parseFloat(req.body.deposit)
+            : (parseFloat(req.body.purchasePrice) *
+                parseFloat(req.body.depositPercentage)) /
+              100,
+        interestRate: parseFloat(req.body.interestRate),
+        loanTerm: parseInt(req.body.loanTerm),
+        floorArea: parseFloat(req.body.floorArea),
+        ratePerSquareMeter: parseFloat(
+          req.body.ratePerSquareMeter || req.body.cmaRatePerSqm || 0,
+        ),
+        incomeGrowthRate: parseFloat(req.body.annualIncomeGrowth || 8),
+        expenseGrowthRate: parseFloat(req.body.annualExpenseGrowth || 6),
+        monthlyLevies: parseFloat(req.body.monthlyLevies || 0),
+        monthlyRatesTaxes: parseFloat(req.body.monthlyRatesTaxes || 0),
+        otherMonthlyExpenses: parseFloat(req.body.otherMonthlyExpenses || 0),
+        maintenancePercent: parseFloat(req.body.maintenancePercent || 0),
+        managementFee: parseFloat(req.body.managementFee || 0),
+      };
 
-      // Check if user has pro access or still has free analyses available
-      const isProUser = user.subscriptionStatus === "pro";
-      const hasReachedLimit = !isProUser && (user.propertyAnalyzerUsage || 0) >= 3;
+      console.log("\n=== Starting Property Analysis ===");
+      console.log("Raw Input Data:", JSON.stringify(propertyData, null, 2));
 
-      if (hasReachedLimit) {
-        return res.status(403).json({
-          error: "Analysis limit reached",
-          message: "Please upgrade to Pro for unlimited analyses",
-        });
-      }
+      const analysisResult = calculateYields(propertyData);
+      console.log(
+        "Analysis complete. Result:",
+        JSON.stringify(analysisResult, null, 2),
+      );
 
-      // Analyze the property
-      const analysis = await analyzeProperty(req.body);
+      // Increment the user's analysis count and get updated count
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning();
 
-      // Only increment usage for free users
-      if (!isProUser) {
-        console.log(`Incrementing analysis usage for user ${user.id} from ${user.propertyAnalyzerUsage || 0}`);
-
-        // Use a transaction to ensure atomic update
-        await db.transaction(async (tx) => {
-          const [updated] = await tx
-            .update(users)
-            .set({
-              propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
-              updatedAt: new Date(),
-            })
-            .where(eq(users.id, user.id))
-            .returning();
-
-          console.log(`Updated analysis usage for user ${user.id} to ${updated.propertyAnalyzerUsage}`);
-        });
-      }
+      console.log("Updated analyzer usage for user:", {
+        userId: updatedUser.id,
+        usage: updatedUser.propertyAnalyzerUsage
+      });
 
       res.json({
-        status: "success",
-        analysis,
+        ...analysisResult,
+        propertyAnalyzerUsage: updatedUser.propertyAnalyzerUsage
       });
     } catch (error) {
-      console.error("Analysis error:", error);
+      console.error("=== Analysis Error ===");
+      console.error("Error details:", error);
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to analyze property data";
+      console.error("Sending error response:", { error: errorMessage });
+
       res.status(500).json({
-        error: "Failed to analyze property",
+        error: errorMessage,
         details: error instanceof Error ? error.message : undefined,
       });
     }
@@ -1488,85 +1527,6 @@ export function registerRoutes(app: Express): Server {
       console.error("Error fetching report analytics:", error);
       res.status(500).json({
         error: "Failed to fetch report analytics",
-        details: error instanceof Error ? error.message : undefined,
-      });
-    }
-  });
-
-  // Add this new endpoint after the existing property endpoints
-  app.post("/api/property-analyzer/analyze", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).send("Not authenticated");
-    }
-
-    try {
-      // Get current user
-      const [user] = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, req.user!.id))
-        .limit(1);
-
-      // Check usage limit for free users
-      if (user.subscriptionStatus === "free" && user.propertyAnalyzerUsage >= 3) {
-        return res.status(403).json({
-          error: "Usage limit reached",
-          message: "Free users are limited to 3 analyses. Please upgrade to continue.",
-          currentUsage: user.propertyAnalyzerUsage,
-        });
-      }
-
-      // Perform analysis (your existing analysis logic here)
-      const analysisResult = await analyzeProperty(req.body);
-
-      // Increment usage counter
-      const [updatedUser] = await db
-        .update(users)
-        .set({
-          propertyAnalyzerUsage: sql`${users.propertyAnalyzerUsage} + 1`,
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, req.user!.id))
-        .returning();
-
-      // Return analysis result along with updated usage count
-      res.json({
-        ...analysisResult,
-        usageCount: updatedUser.propertyAnalyzerUsage,
-      });
-    } catch (error) {
-      console.error("Property analysis error:", error);
-      res.status(500).json({
-        error: "Failed to analyze property",
-        details: error instanceof Error ? error.message : undefined,
-      });
-    }
-  });
-
-  // Add endpoint to reset usage count (called when subscription changes)
-  app.post("/api/property-analyzer/reset-usage", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).send("Not authenticated");
-    }
-
-    try {
-      const [updatedUser] = await db
-        .update(users)
-        .set({
-          propertyAnalyzerUsage: 0,
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, req.user!.id))
-        .returning();
-
-      res.json({
-        message: "Usage count reset successfully",
-        usageCount: updatedUser.propertyAnalyzerUsage,
-      });
-    } catch (error) {
-      console.error("Error resetting usage count:", error);
-      res.status(500).json({
-        error: "Failed to reset usage count",
         details: error instanceof Error ? error.message : undefined,
       });
     }

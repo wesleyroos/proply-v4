@@ -45,26 +45,6 @@ interface PropertyAnalyzerFormProps {
   onAnalysisComplete?: (data: PropertyAnalyzerFormValues) => Promise<void>;
 }
 
-// Add type for the user hook result
-interface User {
-  id: number;
-  username: string;
-  propertyAnalyzerUsage: number;
-  subscriptionStatus: string;
-  firstName?: string;
-  email?: string;
-  isAdmin?: boolean;
-}
-
-interface UseUserResult {
-  user: User | null;
-  isLoading: boolean;
-}
-
-interface UseProAccessResult {
-  hasAccess: boolean;
-  isLoading: boolean;
-}
 
 const formSchema = z.object({
   // Step 1: Property Details
@@ -163,13 +143,14 @@ const STEPS = [
   "Miscellaneous",
 ];
 
-const PropertyAnalyzerForm: React.FC<PropertyAnalyzerFormProps> = (props) => {
+export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [showPercentileDialog, setShowPercentileDialog] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [demoClicks, setDemoClicks] = useState(0);
   const [revenueData, setRevenueData] = useState<{
     "25": RevenueData;
     "50": RevenueData;
@@ -177,13 +158,13 @@ const PropertyAnalyzerForm: React.FC<PropertyAnalyzerFormProps> = (props) => {
     "90": RevenueData;
   } | null>(null);
 
-  const { hasAccess: hasProAccess, isLoading: isProAccessLoading } = useProAccess() as UseProAccessResult;
-  const { user, isLoading: isUserLoading } = useUser() as UseUserResult;
+  const { hasAccess: hasProAccess, isLoading: isProAccessLoading } = useProAccess();
+  const { user, isLoading: isUserLoading } = useUser();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient(); // Added useQueryClient hook
 
   // Check if user has reached their limit
-  const hasReachedLimit = !hasProAccess && user?.propertyAnalyzerUsage >= 3;
+  // Removed limit checks - will be reimplemented later
 
   // If still loading user data, show loading state
   if (isUserLoading || isProAccessLoading) {
@@ -195,18 +176,10 @@ const PropertyAnalyzerForm: React.FC<PropertyAnalyzerFormProps> = (props) => {
   }
 
   const onSubmit = async (formData: PropertyAnalyzerFormValues) => {
-    // Prevent multiple submissions while processing
-    if (isSubmitting) return;
-
-    // Check usage limit before proceeding
-    if (hasReachedLimit) {
-      setShowUpgradeModal(true);
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       // Clean and prepare the analysis data
+      // Ensure all form fields are included and properly typed
       const analysisData = {
         // Property Details
         address: formData.address,
@@ -247,7 +220,9 @@ const PropertyAnalyzerForm: React.FC<PropertyAnalyzerFormProps> = (props) => {
         comments: formData.comments || "",
       };
 
-      const response = await fetch('/api/property-analyzer/analyze', {
+      console.log("Submitting complete analysis data:", analysisData);
+
+      const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -255,35 +230,21 @@ const PropertyAnalyzerForm: React.FC<PropertyAnalyzerFormProps> = (props) => {
         body: JSON.stringify(analysisData),
       });
 
+
       if (!response.ok) {
         const errorData = await response.json();
-        // Handle usage limit error specifically
-        if (response.status === 403 && errorData.error === "Usage limit reached") {
-          setShowUpgradeModal(true);
-          return;
-        }
         throw new Error(errorData.error || response.statusText);
       }
 
       const data = await response.json();
       console.log("Analysis response:", data);
 
-      // Only invalidate queries once
-      await queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      // Invalidate user query to refresh usage count - Moved here for correct timing
+      await queryClient.invalidateQueries({ queryKey: ['user'] });
 
       if (props.onAnalysisComplete) {
         await props.onAnalysisComplete(analysisData);
       }
-
-      // Show success message with updated usage count
-      toast({
-        title: "Analysis Complete",
-        description: hasProAccess ?
-          "Your property analysis is ready." :
-          `Analysis complete! You have ${3 - (user?.propertyAnalyzerUsage || 0)} analyses remaining.`,
-        duration: 5000,
-      });
-
     } catch (error) {
       console.error('Analysis error:', error);
       toast({
@@ -1319,29 +1280,38 @@ const PropertyAnalyzerForm: React.FC<PropertyAnalyzerFormProps> = (props) => {
       {/* Upgrade Modal */}
       <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
         <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="text-center">Upgrade to Pro</DialogTitle>
+          <DialogHeader className="text-center">
+            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Sparkles className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <DialogTitle className="text-2xl">Upgrade to</DialogTitle>
+              <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">PRO</span>
+            </div>
             <DialogDescription className="text-center">
-              Get unlimited property analyses and advanced features
+              Get unlimited access to all Proply features and tools
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Free users are limited to 3 property analyses. Upgrade to Pro for:
-              </p>
+              <h4 className="font-semibold">Pro Features Include:</h4>
               <ul className="list-disc list-inside space-y-1">
+                <li>Accurate nightly rates based on local market data</li>
+                <li>Real occupancy rates from similar properties</li>
+                <li>Seasonal pricing trends and recommendations</li>
                 <li>Unlimited property analyses</li>
-                <li>Advanced market insights</li>
-                <li>Comparative market analysis</li>
                 <li>Priority support</li>
               </ul>
             </div>
+            <div className="bg-muted p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-primary">R2000/month</div>
+              <p className="text-muted-foreground mt-1">Cancel anytime</p>
+            </div>
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              className="w-full"
+            <Button 
+              type="submit" 
+              className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
               onClick={(e) => {
                 e.preventDefault();
                 const form = document.createElement("form");
@@ -1383,11 +1353,12 @@ const PropertyAnalyzerForm: React.FC<PropertyAnalyzerFormProps> = (props) => {
                 form.submit();
               }}
             >
-              Upgrade Now
+              Continue to Payment
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       {/* Percentile Selection Modal */}
       <Dialog
         open={showPercentileDialog}
@@ -1446,8 +1417,51 @@ const PropertyAnalyzerForm: React.FC<PropertyAnalyzerFormProps> = (props) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Hidden demo data button */}
+      <button
+        type="button"
+        onClick={() => {
+          setDemoClicks((prev) => {
+            if (prev === 2) {
+              form.reset({
+                address: "27 Leeuwen St, Cape Town City Centre, 8001",
+                propertyUrl:
+                  "https://property24.com/apartments-for-sale/cape-town-city-centre/western-cape/7925/3142089",
+                purchasePrice: 3500000,
+                floorArea: 85,
+                bedrooms: 2,
+                bathrooms: 2,
+                parkingSpaces: 1,
+                depositType: "percentage",
+                depositAmount: 350000,
+                depositPercentage: 10,
+                interestRate: 11.75,
+                loanTerm: 20,
+                monthlyLevies: 2500,
+                monthlyRatesTaxes: 1800,
+                otherMonthlyExpenses: 2000,
+                maintenancePercent: 10,
+                managementFee: 20,
+                airbnbNightlyRate: 2500,
+                occupancyRate: 65,
+                longTermRental: 25000,
+                leaseCycleGap: 7,
+                annualIncomeGrowth: 8,
+                annualExpenseGrowth: 6,
+                annualPropertyAppreciation: 6,
+                cmaRatePerSqm: 45000,
+                comments:
+                  "Prime location in Cape Town CBD. Close to amenities and tourist attractions. High potential for both short-term and long-term rentals.",
+              });
+              return 0;
+            }
+            return prev + 1;
+          });
+        }}
+        className="fixed bottom-4 right-4 w-4 h-4 opacity-5 hover:opacity-10 bg-gray-500 rounded-full"
+        aria-hidden="true"
+      />
     </div>
   );
-};
-
-export default PropertyAnalyzerForm;
+}
