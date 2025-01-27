@@ -179,15 +179,67 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const onSubmit = async (formData: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
     try {
-      // Calculate deposit based on type
-      const deposit = formData.depositType === "amount"
-        ? formData.depositAmount
-        : (formData.purchasePrice * formData.depositPercentage) / 100;
+      // Log input values
+      console.log("=== Starting Property Analysis ===");
+      console.log("Raw Input Data:", {
+        depositType: formData.depositType,
+        depositAmount: formData.depositAmount,
+        depositPercentage: formData.depositPercentage,
+        purchasePrice: formData.purchasePrice
+      });
+
+      // Ensure numeric values for deposit calculation
+      const purchasePrice = Number(formData.purchasePrice);
+      const depositAmount = formData.depositType === "amount" ? Number(formData.depositAmount) : 0;
+      const depositPercentage = formData.depositType === "percentage" ? Number(formData.depositPercentage) : 0;
+
+      console.log("Converted numeric values:", {
+        purchasePrice,
+        depositAmount,
+        depositPercentage
+      });
+
+      // Validate input numbers
+      if (isNaN(purchasePrice)) {
+        throw new Error("Invalid purchase price: must be a valid number");
+      }
+      if (formData.depositType === "amount" && isNaN(depositAmount)) {
+        throw new Error("Invalid deposit amount: must be a valid number");
+      }
+      if (formData.depositType === "percentage" && isNaN(depositPercentage)) {
+        throw new Error("Invalid deposit percentage: must be a valid number");
+      }
+
+      // Calculate deposit based on type with validation
+      let deposit = 0;
+      if (formData.depositType === "amount") {
+        deposit = depositAmount;
+        console.log("Calculating deposit from amount:", { depositAmount, deposit });
+      } else {
+        deposit = (purchasePrice * depositPercentage) / 100;
+        console.log("Calculating deposit from percentage:", {
+          purchasePrice,
+          depositPercentage,
+          calculation: `${purchasePrice} * ${depositPercentage} / 100`,
+          deposit
+        });
+      }
+
+      // Validate deposit is a valid number
+      if (isNaN(deposit)) {
+        throw new Error(`Invalid deposit calculation. Values used: ${JSON.stringify({
+          depositType: formData.depositType,
+          depositAmount,
+          depositPercentage,
+          purchasePrice,
+          calculatedDeposit: deposit
+        }, null, 2)}`);
+      }
 
       const analysisData = {
         address: formData.address,
         propertyUrl: formData.propertyUrl || "",
-        purchasePrice: Number(formData.purchasePrice),
+        purchasePrice: purchasePrice,
         floorArea: Number(formData.floorArea),
         bedrooms: Number(formData.bedrooms),
         bathrooms: Number(formData.bathrooms),
@@ -211,7 +263,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         comments: formData.comments || "",
       };
 
-      console.log("Submitting analysis data:", analysisData);
+      console.log("Final analysis data:", analysisData);
 
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -221,9 +273,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         body: JSON.stringify(analysisData),
       });
 
-
       const data = await response.json();
       if (!response.ok) {
+        console.error("API Error Response:", data);
         throw new Error(data.error || response.statusText);
       }
 
@@ -233,7 +285,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         await props.onAnalysisComplete(formData);
       }
     } catch (error) {
-      console.error('Analysis error:', error);
+      console.error('=== Analysis Error ===');
+      console.error('Error details:', error);
       toast({
         variant: "destructive",
         title: "Analysis Failed",
@@ -1020,8 +1073,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               </>
                             ) : (
                               <>
-                                Get Revenue Data
-                                <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                                Get Revenue Data                                <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
                                   PRO
                                 </span>
                               </>
@@ -1069,7 +1121,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           min="0"
                           placeholder="Average days between lease cycles"
                           {...field}
-                          onChange={(e) =>
+                          onChange={(e)=>
                             field.onChange(e.target.valueAsNumber)
                           }
                         />
