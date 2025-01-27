@@ -1,5 +1,5 @@
 
-import { UpgradeModal } from "@/components/UpgradeModal";
+import UpgradeModal from "@/components/UpgradeModal";
 
 import { useState } from "react";
 import { useProAccess } from "../hooks/use-pro-access";

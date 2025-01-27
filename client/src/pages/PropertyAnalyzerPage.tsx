@@ -54,7 +54,7 @@ import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFServic
 import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query"; // Added import for React Query
-import UpgradeModal from "@/components/UpgradeModal"; // Import the UpgradeModal component
+import UpgradeModal from "@/components/UpgradeModal";
 
 interface YearlyMetrics {
   grossYield: number;
