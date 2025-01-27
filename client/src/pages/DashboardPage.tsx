@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { UpgradeModal } from "@/components/UpgradeModal";
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { useProAccess } from "@/hooks/use-pro-access";
@@ -47,6 +47,7 @@ interface PropertyMapData {
 export default function DashboardPage() {
   const { user } = useUser();
   const hasProAccess = useProAccess();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Fetch property analyzer properties with user-specific query key
   const { data: analyzerProperties, isLoading: isLoadingAnalyzer } = useQuery<AnalyzerProperty[]>({
@@ -115,107 +116,18 @@ export default function DashboardPage() {
 
         {!hasProAccess && (
           <>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="sm" className="bg-primary hover:opacity-90">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Upgrade to Pro
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader className="text-center">
-                  <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <DialogTitle className="text-2xl">Upgrade to</DialogTitle>
-                    <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">PRO</span>
-                  </div>
-                  <DialogDescription className="text-center">
-                    Get unlimited access to all Proply features and tools
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-center">Pro Features Include:</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-primary" />
-                        <span>Unlimited property analyses</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-primary" />
-                        <span>Advanced market insights</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-primary" />
-                        <span>Comparative market analysis</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-primary" />
-                        <span>Detailed investment metrics</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-primary" />
-                        <span>Priority support</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="bg-primary/5 p-6 rounded-lg text-center">
-                    <div className="text-3xl font-bold text-primary">R2000/month</div>
-                    <p className="text-muted-foreground mt-1">Cancel anytime</p>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const form = document.createElement("form");
-                      form.method = "POST";
-                      form.action = "https://sandbox.payfast.co.za/eng/process";
-                      
-                      const paymentData = {
-                        merchant_id: "10000100",
-                        merchant_key: "46f0cd694581a",
-                        return_url: `${window.location.origin}/settings?payment=success`,
-                        cancel_url: `${window.location.origin}/settings?payment=cancelled`,
-                        notify_url: `${window.location.origin}/api/payment-webhook`,
-                        name_first: user?.firstName || "",
-                        email_address: user?.email || "",
-                        amount: "2000.00",
-                        item_name: "Proply Pro Subscription",
-                        subscription_type: "1",
-                        billing_date: new Date().toISOString().split('T')[0],
-                        recurring_amount: "2000.00",
-                        frequency: "3",
-                        cycles: "0",
-                        custom_str1: JSON.stringify({
-                          userId: user?.id,
-                          subscriptionStatus: 'pro'
-                        })
-                      };
-
-                      Object.entries(paymentData).forEach(([key, value]) => {
-                        if (value !== undefined) {
-                          const input = document.createElement("input");
-                          input.type = "hidden";
-                          input.name = key;
-                          input.value = value.toString();
-                          form.appendChild(input);
-                        }
-                      });
-
-                      document.body.appendChild(form);
-                      form.submit();
-                    }}
-                  >
-                    Continue to Payment
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button 
+              size="sm" 
+              className="bg-primary hover:opacity-90"
+              onClick={() => setShowUpgradeModal(true)}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Upgrade to Pro
+            </Button>
+            <UpgradeModal 
+              open={showUpgradeModal} 
+              onOpenChange={setShowUpgradeModal} 
+            />
           </>
         )}
       </div>
