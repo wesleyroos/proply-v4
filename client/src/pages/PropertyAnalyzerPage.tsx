@@ -50,7 +50,8 @@ import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAn
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
 import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
 import Link from "next/link";
-import { useQueryClient } from "@tanstack/react-query"; // Added import for React Query
+import { useQueryClient } from "@tanstack/react-query";
+import { AlertTriangle } from "lucide-react";
 
 interface YearlyMetrics {
   grossYield: number;
@@ -207,15 +208,14 @@ interface AnalysisResult {
 
 export default function PropertyAnalyzerPage() {
   const [isDataReady, setIsDataReady] = useState(false);
-  const [showLimitModal, setShowLimitModal] = useState(false); //This state is no longer used.
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const { user } = useUser();
   const hasProAccess = useProAccess();
-  const queryClient = useQueryClient(); // Added React Query client initialization
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    //This useEffect is no longer used, but kept to avoid breaking changes.
     if (user && !hasProAccess && user.propertyAnalyzerUsage >= 3) {
-      setShowLimitModal(true); //This line is no longer used.
+      setShowLimitModal(true);
     }
   }, [user, hasProAccess]);
 
@@ -335,10 +335,8 @@ export default function PropertyAnalyzerPage() {
       const data = await response.json();
       console.log("Analysis response:", data);
 
-      // Destructure the analyzer usage from the response
       const { propertyAnalyzerUsage, ...resultData } = data;
 
-      // Force a refresh of the user data to get updated usage count
       await queryClient.invalidateQueries({ queryKey: ["user"] });
 
       setAnalysisResult({
@@ -348,9 +346,6 @@ export default function PropertyAnalyzerPage() {
         managementFee: requestBody.managementFee,
         loanTerm: requestBody.loanTerm,
       });
-
-      // Invalidate the user query to refresh the usage count
-      //queryClient.invalidateQueries({ queryKey: ["user"] }); //This line is redundant now.
 
       setTimeout(() => {
         if (resultsRef.current) {
@@ -504,22 +499,23 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <div className="px-4 py-6">
-      <div className="flex items-center mb-8">
+      <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Property Analysis</h1>
           <p className="text-muted-foreground mt-1">
             Enter property details to generate analysis
           </p>
-          {!hasProAccess && user && (
-            <div className="absolute top-6 right-6">
-              <div className="bg-blue-50 border border-[#1BA3FF] rounded-lg px-4 py-2">
-                <p className="text-sm text-blue-900">
-                  Free Plan: <span className="font-bold text-[#1BA3FF]">{user.propertyAnalyzerUsage || 0} of 3</span> analyses used
-                </p>
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Usage counter for free users */}
+        {!hasProAccess && user && (
+          <div className="flex items-center gap-2 bg-blue-50 border border-[#1BA3FF] rounded-lg px-4 py-2">
+            <AlertTriangle className="h-4 w-4 text-[#1BA3FF]" />
+            <p className="text-sm text-blue-900">
+              Free Plan: <span className="font-bold text-[#1BA3FF]">{3 - (user.propertyAnalyzerUsage || 0)} of 3</span> analyses remaining
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="space-y-6">
@@ -562,11 +558,9 @@ export default function PropertyAnalyzerPage() {
                     <TooltipTrigger asChild>
                       <div>
                         <Button
-                          // Update the pdfData preparation in the Export PDF button click handler:
                           onClick={() => {
                             if (!analysisResult || !analysisId) return;
 
-                            // Add this console log right before setPDFData
                             console.log("Raw Analysis Result:", {
                               managementFee: analysisResult.managementFee,
                               fullAnalysisResult: analysisResult,
@@ -602,7 +596,6 @@ export default function PropertyAnalyzerPage() {
                                 longTermNetOperatingIncome: analysisResult.analysis.longTermNetOperatingIncome,
                                 revenueProjections: analysisResult.analysis.revenueProjections,
                               },
-                              // Add this new performance object
                               performance: {
                                 shortTermNightlyRate: Number(
                                   analysisResult.shortTermNightlyRate,
@@ -658,7 +651,6 @@ export default function PropertyAnalyzerPage() {
                                   ),
                               },
                               expenses: {
-                                // Changed from operatingExpenses to expenses
                                 monthlyLevies: Number(formData?.monthlyLevies) || 0,
                                 monthlyRatesTaxes: Number(
                                   formData?.monthlyRatesTaxes
@@ -702,9 +694,8 @@ export default function PropertyAnalyzerPage() {
                               revenueProjections:
                                 analysisResult.analysis.revenueProjections,
                             });
-                            setIsDataReady(true); // Add this after setPDFData
+                            setIsDataReady(true);
 
-                            // Add this console log after setPDFData
                             console.log("PDF Data being passed:", pdfData);
 
                             setShowPDFGenerator(true);
@@ -972,8 +963,7 @@ export default function PropertyAnalyzerPage() {
                             <p className="text-base text-slate-600">
                               R
                               {Math.round(
-                                (analysisResult.analysis
-                                  .shortTermAnnualRevenue || 0) / 12,
+                                (analysisResult.analysis                                  .shortTermAnnualRevenue || 0) / 12,
                               ).toLocaleString()}
                               /month
                             </p>
@@ -1176,154 +1166,155 @@ export default function PropertyAnalyzerPage() {
                   </CardContent>
                 </Card>
               </div>
+
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-emerald-500" />
+                      Rental Performance
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <RentalPerformance
+                      shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                      longTermMonthly={
+                        analysisResult.analysis.longTermAnnualRevenue
+                          ? analysisResult.analysis.longTermAnnualRevenue / 12
+                          : 0
+                      }
+                      managementFee={analysisResult.managementFee || 0}
+                    />
+                  </CardContent>
+                </Card>
+
+                <CashflowMetrics
+                  shortTermNightly={analysisResult.shortTermNightlyRate || 0}
+                  longTermMonthly={
+                    analysisResult.analysis.longTermAnnualRevenue
+                      ? analysisResult.analysis.longTermAnnualRevenue / 12
+                      : 0
+                  }
+                  monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
+                  managementFee={analysisResult.managementFee}
+                  revenueProjections={{
+                    shortTerm:
+                      analysisResult.analysis.revenueProjections?.shortTerm ||
+                      null,
+                  }}
+                  operatingExpenses={analysisResult.analysis.operatingExpenses}
+                  netOperatingIncome={analysisResult.analysis.netOperatingIncome}
+                  longTermNetOperatingIncome={
+                    analysisResult.analysis.longTermNetOperatingIncome
+                  }
+                />
+
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-green-500" />
+                      Investment Metrics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <InvestmentMetrics
+                      yearlyMetrics={analysisResult.analysis.investmentMetrics}
+                      metricDescriptions={{
+                        grossYield: {
+                          title: "Gross Yield",
+                          explanation:
+                            "Annual gross rental income as a percentage of the property's purchase price",
+                          calculationMethod:
+                            "(Annual Gross Rental Income / Property Purchase Price) × 100",
+                        },
+                        netYield: {
+                          title: "Net Yield",
+                          explanation:
+                            "Annual net rental income (after expenses) as a percentage of the property's purchase price",
+                          calculationMethod:
+                            "(Annual Net Operating Income / Property Purchase Price) × 100",
+                        },
+                        returnOnEquity: {
+                          title: "Return on Equity",
+                          explanation:
+                            "Annual return relative to the equity invested in the property",
+                          calculationMethod:
+                            "(Annual Net Operating Income / Total Equity Invested) × 100",
+                        },
+                        annualReturn: {
+                          title: "Annual Return",
+                          explanation:
+                            "Total return including rental income and property appreciation for the year",
+                          calculationMethod:
+                            "((Net Operating Income + Property Value Increase) / Initial Investment) × 100",
+                        },
+                        capRate: {
+                          title: "Cap Rate",
+                          explanation:
+                            "Net operating income as a percentage of property value, indicating potential return regardless of financing",
+                          calculationMethod:
+                            "(Net Operating Income / Current Property Value) × 100",
+                        },
+                        cashOnCashReturn: {
+                          title: "Cash on Cash Return",
+                          explanation:
+                            "Annual pre-tax cash flow relative to total cash invested",
+                          calculationMethod:
+                            "(Annual Pre-tax Cash Flow / Total Cash Invested) × 100",
+                        },
+                        irr: {
+                          title: "Internal Rate of Return (IRR)",
+                          explanation:
+                            "The discount rate that makes the net present value of all cash flows equal to zero",
+                          calculationMethod:
+                            "Complex calculation using all future cash flows and initial investment",
+                        },
+                        netWorthChange: {
+                          title: "Net Worth Change",
+                          explanation:
+                            "Total change in net worth including equity buildup, appreciation, and rental income",
+                          calculationMethod:
+                            "Property Value Increase + Loan Principal Paid + Cumulative Rental Income",
+                        },
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+
+                <AssetGrowthMetrics
+                  purchasePrice={analysisResult.analysis.purchasePrice}
+                  deposit={analysisResult.deposit || 0}
+                  loanAmount={
+                    analysisResult.analysis.purchasePrice -
+                    (analysisResult.deposit || 0)
+                  }
+                  interestRate={analysisResult.interestRate || 0}
+                  loanTerm={analysisResult.loanTerm || 20}
+                  annualAppreciation={formData?.annualPropertyAppreciation || 5}
+                />
+              </div>
             </div>
 
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-emerald-500" />
-                    Rental Performance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <RentalPerformance
-                    shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                    longTermMonthly={
-                      analysisResult.analysis.longTermAnnualRevenue
-                        ? analysisResult.analysis.longTermAnnualRevenue / 12
-                        : 0
-                    }
-                    managementFee={analysisResult.managementFee || 0}
-                  />
-                </CardContent>
-              </Card>
-
-              <CashflowMetrics
-                shortTermNightly={analysisResult.shortTermNightlyRate || 0}
-                longTermMonthly={
-                  analysisResult.analysis.longTermAnnualRevenue
-                    ? analysisResult.analysis.longTermAnnualRevenue / 12
-                    : 0
-                }
-                monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
-                managementFee={analysisResult.managementFee}
-                revenueProjections={{
-                  shortTerm:
-                    analysisResult.analysis.revenueProjections?.shortTerm ||
-                    null,
-                }}
-                operatingExpenses={analysisResult.analysis.operatingExpenses}
-                netOperatingIncome={analysisResult.analysis.netOperatingIncome}
-                longTermNetOperatingIncome={
-                  analysisResult.analysis.longTermNetOperatingIncome
-                }
-              />
-
-              <Card className="mt-6">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-green-500" />
-                    Investment Metrics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <InvestmentMetrics
-                    yearlyMetrics={analysisResult.analysis.investmentMetrics}
-                    metricDescriptions={{
-                      grossYield: {
-                        title: "Gross Yield",
-                        explanation:
-                          "Annual gross rental income as a percentage of the property's purchase price",
-                        calculationMethod:
-                          "(Annual Gross Rental Income / Property Purchase Price) × 100",
-                      },
-                      netYield: {
-                        title: "Net Yield",
-                        explanation:
-                          "Annual net rental income (after expenses) as a percentage of the property's purchase price",
-                        calculationMethod:
-                          "(Annual Net Operating Income / Property Purchase Price) × 100",
-                      },
-                      returnOnEquity: {
-                        title: "Return on Equity",
-                        explanation:
-                          "Annual return relative to the equity invested in the property",
-                        calculationMethod:
-                          "(Annual Net Operating Income / Total Equity Invested) × 100",
-                      },
-                      annualReturn: {
-                        title: "Annual Return",
-                        explanation:
-                          "Total return including rental income and property appreciation for the year",
-                        calculationMethod:
-                          "((Net Operating Income + Property Value Increase) / Initial Investment) × 100",
-                      },
-                      capRate: {
-                        title: "Cap Rate",
-                        explanation:
-                          "Net operating income as a percentage of property value, indicating potential return regardless of financing",
-                        calculationMethod:
-                          "(Net Operating Income / Current Property Value) × 100",
-                      },
-                      cashOnCashReturn: {
-                        title: "Cash on Cash Return",
-                        explanation:
-                          "Annual pre-tax cash flow relative to total cash invested",
-                        calculationMethod:
-                          "(Annual Pre-tax Cash Flow / Total Cash Invested) × 100",
-                      },
-                      irr: {
-                        title: "Internal Rate of Return (IRR)",
-                        explanation:
-                          "The discount rate that makes the net present value of all cash flows equal to zero",
-                        calculationMethod:
-                          "Complex calculation using all future cash flows and initial investment",
-                      },
-                      netWorthChange: {
-                        title: "Net Worth Change",
-                        explanation:
-                          "Total change in net worth including equity buildup, appreciation, and rental income",
-                        calculationMethod:
-                          "Property Value Increase + Loan Principal Paid + Cumulative Rental Income",
-                      },
+            <Dialog open={showPDFGenerator} onOpenChange={setShowPDFGenerator}>
+              <DialogContent className="max-w-4xl max-h-[90vh]">
+                <DialogHeader>
+                  <DialogTitle>Generate Property Analysis Report</DialogTitle>
+                </DialogHeader>
+                {isDataReady && pdfData && (
+                  <PropertyAnalyzerPDF
+                    data={pdfData}
+                    companyLogo={user?.settings?.companyLogo || ""}
+                    onClose={() => {
+                      setShowPDFGenerator(false);
+                      setIsDataReady(false);
                     }}
+                    isOpen={showPDFGenerator}
                   />
-                </CardContent>
-              </Card>
-
-              <AssetGrowthMetrics
-                purchasePrice={analysisResult.analysis.purchasePrice}
-                deposit={analysisResult.deposit || 0}
-                loanAmount={
-                  analysisResult.analysis.purchasePrice -
-                  (analysisResult.deposit || 0)
-                }
-                interestRate={analysisResult.interestRate || 0}
-                loanTerm={analysisResult.loanTerm || 20}
-                annualAppreciation={formData?.annualPropertyAppreciation || 5}
-              />
-            </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         )}
-        <Dialog open={showPDFGenerator} onOpenChange={setShowPDFGenerator}>
-          <DialogContent className="max-w-4xl max-h-[90vh]">
-            <DialogHeader>
-              <DialogTitle>Generate Property Analysis Report</DialogTitle>
-            </DialogHeader>
-            {isDataReady && pdfData && (
-              <PropertyAnalyzerPDF
-                data={pdfData}
-                companyLogo={user?.settings?.companyLogo || ""}
-                onClose={() => {
-                  setShowPDFGenerator(false);
-                  setIsDataReady(false);
-                }}
-                isOpen={showPDFGenerator}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );
