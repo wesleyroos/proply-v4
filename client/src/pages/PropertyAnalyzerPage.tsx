@@ -508,11 +508,11 @@ export default function PropertyAnalyzerPage() {
             Enter property details to generate analysis
           </p>
         </div>
-        <div className="bg-[#1BA3FF]/10 px-4 py-2 rounded-lg border border-[#1BA3FF]/20">
-          <p className="text-sm text-[#1BA3FF] font-medium">
-            Analyses used: {user?.propertyAnalyzerUsage || 0}
-          </p>
-          {!hasProAccess && (
+        {!hasProAccess && (
+          <div className="bg-[#1BA3FF]/10 px-4 py-2 rounded-lg border border-[#1BA3FF]/20">
+            <p className="text-sm text-[#1BA3FF] font-medium">
+              Analyses used: {user?.propertyAnalyzerUsage || 0}
+            </p>
             <Button 
               onClick={() => setShowUpgradeModal(true)}
               className="w-full mt-2 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
@@ -523,8 +523,8 @@ export default function PropertyAnalyzerPage() {
                 PRO
               </span>
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
