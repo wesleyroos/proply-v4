@@ -516,17 +516,20 @@ export default function PropertyAnalyzerPage() {
               Analyses used: {user?.propertyAnalyzerUsage || 0}
             </p>
             <Button 
-              onClick={() => setShowUpgradeModal(true)}
+              onClick={() => setShowUpgradeModal(true)} 
               className="w-full mt-2"
               variant="premium"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               Upgrade to Pro
-      </Button>
+            </Button>
           </div>
         )}
 
-      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+        <UpgradeModal 
+          open={showUpgradeModal} 
+          onOpenChange={setShowUpgradeModal} 
+        />
       </div>
 
       <div className="space-y-6">
