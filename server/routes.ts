@@ -1061,6 +1061,14 @@ export function registerRoutes(app: Express): Server {
         JSON.stringify(analysisResult, null, 2),
       );
 
+      // Increment the user's analysis count
+      await db
+        .update(users)
+        .set({
+          propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
+        })
+        .where(eq(users.id, req.user!.id));
+
       res.json(analysisResult);
     } catch (error) {
       console.error("=== Analysis Error ===");
@@ -1201,27 +1209,17 @@ export function registerRoutes(app: Express): Server {
       console.log("Analysis data:", JSON.stringify(req.body, null, 2));
 
       // Start a transaction to ensure both operations complete
-      await db.transaction(async (tx) => {
-        // Insert analysis result
-        const [savedAnalysis] = await tx
-          .insert(propertyAnalyzerResults)
-          .values({
-            ...req.body,
-            userId: req.user!.id,
-            createdAt: new Date(),
-          })
-          .returning();
+      // Insert analysis result without incrementing counter
+      const [savedAnalysis] = await db
+        .insert(propertyAnalyzerResults)
+        .values({
+          ...req.body,
+          userId: req.user!.id,
+          createdAt: new Date(),
+        })
+        .returning();
 
-        // Increment the user's report count
-        await tx
-          .update(users)
-          .set({
-            reportsGenerated: sql`${users.reportsGenerated} + 1`,
-          })
-          .where(eq(users.id, req.user!.id));
-
-        res.json(savedAnalysis);
-      });
+      res.json(savedAnalysis);
     } catch (error) {
       console.error("Error saving property analysis:", error);
       res.status(500).json({
