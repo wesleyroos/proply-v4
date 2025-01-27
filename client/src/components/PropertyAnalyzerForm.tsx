@@ -181,8 +181,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     try {
       // Calculate deposit based on type
       const deposit = formData.depositType === "amount"
-        ? Number(formData.depositAmount)
-        : (Number(formData.purchasePrice) * Number(formData.depositPercentage)) / 100;
+        ? formData.depositAmount
+        : (formData.purchasePrice * formData.depositPercentage) / 100;
 
       const analysisData = {
         address: formData.address,
@@ -193,8 +193,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         bathrooms: Number(formData.bathrooms),
         parkingSpaces: Number(formData.parkingSpaces || 0),
         deposit: deposit,
-        depositType: formData.depositType,
-        depositPercentage: Number(formData.depositPercentage),
         interestRate: Number(formData.interestRate),
         loanTerm: Number(formData.loanTerm),
         monthlyLevies: Number(formData.monthlyLevies || 0),
@@ -213,7 +211,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         comments: formData.comments || "",
       };
 
-      console.log("Submitting complete analysis data:", analysisData);
+      console.log("Submitting analysis data:", analysisData);
 
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -232,10 +230,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       console.log("Analysis response:", data);
 
       if (props.onAnalysisComplete) {
-        await props.onAnalysisComplete({
-          ...analysisData,
-          analysisResult: data
-        });
+        await props.onAnalysisComplete(formData);
       }
     } catch (error) {
       console.error('Analysis error:', error);
