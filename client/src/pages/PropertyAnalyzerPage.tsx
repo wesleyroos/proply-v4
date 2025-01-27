@@ -338,9 +338,6 @@ export default function PropertyAnalyzerPage() {
       // Destructure the analyzer usage from the response
       const { propertyAnalyzerUsage, ...resultData } = data;
 
-      // Force a refresh of the user data to get updated usage count
-      await queryClient.invalidateQueries({ queryKey: ["user"] });
-
       setAnalysisResult({
         ...resultData,
         shortTermNightlyRate: requestBody.shortTermNightlyRate,
