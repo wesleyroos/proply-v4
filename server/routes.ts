@@ -71,6 +71,7 @@ export function registerRoutes(app: Express): Server {
           payfastSubscriptionStatus: users.payfastSubscriptionStatus,
           subscriptionPausedUntil: users.subscriptionPausedUntil,
           pendingDowngrade: users.pendingDowngrade,
+          propertyAnalyzerUsage: users.propertyAnalyzerUsage,
         })
         .from(users)
         .where(eq(users.id, req.user.id))
