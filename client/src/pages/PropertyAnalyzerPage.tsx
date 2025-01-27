@@ -527,6 +527,8 @@ export default function PropertyAnalyzerPage() {
             </Button>
           </div>
         )}
+
+      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
       </div>
 
       <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
