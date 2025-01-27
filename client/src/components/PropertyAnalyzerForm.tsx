@@ -199,23 +199,18 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         depositPercentage
       });
 
-      // Validate input numbers
-      if (isNaN(purchasePrice)) {
-        throw new Error("Invalid purchase price: must be a valid number");
-      }
-      if (formData.depositType === "amount" && isNaN(depositAmount)) {
-        throw new Error("Invalid deposit amount: must be a valid number");
-      }
-      if (formData.depositType === "percentage" && isNaN(depositPercentage)) {
-        throw new Error("Invalid deposit percentage: must be a valid number");
-      }
-
       // Calculate deposit based on type with validation
       let deposit = 0;
       if (formData.depositType === "amount") {
         deposit = depositAmount;
-        console.log("Calculating deposit from amount:", { depositAmount, deposit });
+        console.log("Using deposit amount:", deposit);
       } else {
+        if (isNaN(purchasePrice)) {
+          throw new Error("Purchase price must be a valid number");
+        }
+        if (isNaN(depositPercentage)) {
+          throw new Error("Deposit percentage must be a valid number");
+        }
         deposit = (purchasePrice * depositPercentage) / 100;
         console.log("Calculating deposit from percentage:", {
           purchasePrice,
@@ -225,14 +220,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         });
       }
 
-      // Validate deposit is a valid number
-      if (isNaN(deposit)) {
-        throw new Error(`Invalid deposit calculation. Values used: ${JSON.stringify({
+      // Final validation
+      if (isNaN(deposit) || deposit < 0) {
+        throw new Error(`Invalid deposit calculation: ${deposit}. Values used: ${JSON.stringify({
           depositType: formData.depositType,
           depositAmount,
           depositPercentage,
-          purchasePrice,
-          calculatedDeposit: deposit
+          purchasePrice
         }, null, 2)}`);
       }
 
@@ -244,7 +238,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         bedrooms: Number(formData.bedrooms),
         bathrooms: Number(formData.bathrooms),
         parkingSpaces: Number(formData.parkingSpaces || 0),
-        deposit: deposit,
+        deposit,
         interestRate: Number(formData.interestRate),
         loanTerm: Number(formData.loanTerm),
         monthlyLevies: Number(formData.monthlyLevies || 0),
@@ -1084,7 +1078,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         </div>
                       </FormControl>
                     </FormItem>
-                  </div>
+                                    </div>
                 </div>
 
                 <FormField

@@ -1,0 +1,80 @@
+=== Starting Property Analysis ===
+PropertyAnalyzerForm.tsx:184 Raw Input Data: {depositType: 'percentage', depositAmount: 350000, depositPercentage: 10, purchasePrice: 3500000}
+PropertyAnalyzerForm.tsx:196 Converted numeric values: {purchasePrice: 3500000, depositAmount: 350000, depositPercentage: 10}
+PropertyAnalyzerForm.tsx:220 Calculating deposit from percentage: {purchasePrice: 3500000, depositPercentage: 10, calculation: '3500000 * 10 / 100', deposit: 350000}
+PropertyAnalyzerForm.tsx:266 Final analysis data: {address: '27 Leeuwen St, Cape Town City Centre, 8001', propertyUrl: 'https://property24.com/apartments-for-sale/cape-town-city-centre/western-cape/7925/3142089', purchasePrice: 3500000, floorArea: 85, bedrooms: 2, …}
+PropertyAnalyzerForm.tsx:268 
+        
+        
+       POST https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/api/analyze 500 (Internal Server Error)
+onSubmit @ PropertyAnalyzerForm.tsx:268
+(anonymous) @ chunk-BW5TH624.js?v=0d5ea378:1675
+await in (anonymous)
+callCallback2 @ chunk-276SZO74.js?v=0d5ea378:3674
+invokeGuardedCallbackDev @ chunk-276SZO74.js?v=0d5ea378:3699
+invokeGuardedCallback @ chunk-276SZO74.js?v=0d5ea378:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-276SZO74.js?v=0d5ea378:3736
+executeDispatch @ chunk-276SZO74.js?v=0d5ea378:7014
+processDispatchQueueItemsInOrder @ chunk-276SZO74.js?v=0d5ea378:7034
+processDispatchQueue @ chunk-276SZO74.js?v=0d5ea378:7043
+dispatchEventsForPlugins @ chunk-276SZO74.js?v=0d5ea378:7051
+(anonymous) @ chunk-276SZO74.js?v=0d5ea378:7174
+batchedUpdates$1 @ chunk-276SZO74.js?v=0d5ea378:18913
+batchedUpdates @ chunk-276SZO74.js?v=0d5ea378:3579
+dispatchEventForPluginEventSystem @ chunk-276SZO74.js?v=0d5ea378:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-276SZO74.js?v=0d5ea378:5478
+dispatchEvent @ chunk-276SZO74.js?v=0d5ea378:5472
+dispatchDiscreteEvent @ chunk-276SZO74.js?v=0d5ea378:5449Understand this errorAI
+PropertyAnalyzerForm.tsx:278 API Error Response: {error: '[\n  {\n    "code": "invalid_type",\n    "expected": … "message": "Expected number, received nan"\n  }\n]', details: '[\n  {\n    "code": "invalid_type",\n    "expected": … "message": "Expected number, received nan"\n  }\n]'}
+onSubmit @ PropertyAnalyzerForm.tsx:278
+await in onSubmit
+(anonymous) @ chunk-BW5TH624.js?v=0d5ea378:1675
+await in (anonymous)
+callCallback2 @ chunk-276SZO74.js?v=0d5ea378:3674
+invokeGuardedCallbackDev @ chunk-276SZO74.js?v=0d5ea378:3699
+invokeGuardedCallback @ chunk-276SZO74.js?v=0d5ea378:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-276SZO74.js?v=0d5ea378:3736
+executeDispatch @ chunk-276SZO74.js?v=0d5ea378:7014
+processDispatchQueueItemsInOrder @ chunk-276SZO74.js?v=0d5ea378:7034
+processDispatchQueue @ chunk-276SZO74.js?v=0d5ea378:7043
+dispatchEventsForPlugins @ chunk-276SZO74.js?v=0d5ea378:7051
+(anonymous) @ chunk-276SZO74.js?v=0d5ea378:7174
+batchedUpdates$1 @ chunk-276SZO74.js?v=0d5ea378:18913
+batchedUpdates @ chunk-276SZO74.js?v=0d5ea378:3579
+dispatchEventForPluginEventSystem @ chunk-276SZO74.js?v=0d5ea378:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-276SZO74.js?v=0d5ea378:5478
+dispatchEvent @ chunk-276SZO74.js?v=0d5ea378:5472
+dispatchDiscreteEvent @ chunk-276SZO74.js?v=0d5ea378:5449Understand this errorAI
+PropertyAnalyzerForm.tsx:288 === Analysis Error ===
+onSubmit @ PropertyAnalyzerForm.tsx:288
+await in onSubmit
+(anonymous) @ chunk-BW5TH624.js?v=0d5ea378:1675
+await in (anonymous)
+callCallback2 @ chunk-276SZO74.js?v=0d5ea378:3674
+invokeGuardedCallbackDev @ chunk-276SZO74.js?v=0d5ea378:3699
+invokeGuardedCallback @ chunk-276SZO74.js?v=0d5ea378:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-276SZO74.js?v=0d5ea378:3736
+executeDispatch @ chunk-276SZO74.js?v=0d5ea378:7014
+processDispatchQueueItemsInOrder @ chunk-276SZO74.js?v=0d5ea378:7034
+processDispatchQueue @ chunk-276SZO74.js?v=0d5ea378:7043
+dispatchEventsForPlugins @ chunk-276SZO74.js?v=0d5ea378:7051
+(anonymous) @ chunk-276SZO74.js?v=0d5ea378:7174
+batchedUpdates$1 @ chunk-276SZO74.js?v=0d5ea378:18913
+batchedUpdates @ chunk-276SZO74.js?v=0d5ea378:3579
+dispatchEventForPluginEventSystem @ chunk-276SZO74.js?v=0d5ea378:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-276SZO74.js?v=0d5ea378:5478
+dispatchEvent @ chunk-276SZO74.js?v=0d5ea378:5472
+dispatchDiscreteEvent @ chunk-276SZO74.js?v=0d5ea378:5449Understand this errorAI
+PropertyAnalyzerForm.tsx:289 Error details: Error: [
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "nan",
+    "path": [
+      "deposit"
+    ],
+    "message": "Expected number, received nan"
+  }
+]
+    at onSubmit (PropertyAnalyzerForm.tsx:279:15)
+    at async chunk-BW5TH624.js?v=0d5ea378:1675:9
