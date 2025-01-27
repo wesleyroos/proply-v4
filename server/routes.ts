@@ -13,20 +13,14 @@ import {
   apiUsage,
   subscriptionHistory, // Added import for subscription history table
 } from "@db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
 import { analyzeSuburb } from "./services/openai";
-import { sql } from "drizzle-orm";
-import { suburbs } from "@db/schema";
+// Add this at the top with other imports
+import { analyzeProperty } from "./services/propertyAnalysis"; // You'll need to create this service
 
-// Extend Express.User to include our schema
-declare global {
-  namespace Express {
-    interface User extends SelectUser {}
-  }
-}
 
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
@@ -1527,6 +1521,85 @@ export function registerRoutes(app: Express): Server {
       console.error("Error fetching report analytics:", error);
       res.status(500).json({
         error: "Failed to fetch report analytics",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
+  // Add this new endpoint after the existing property endpoints
+  app.post("/api/property-analyzer/analyze", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      // Get current user
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
+
+      // Check usage limit for free users
+      if (user.subscriptionStatus === "free" && user.propertyAnalyzerUsage >= 3) {
+        return res.status(403).json({
+          error: "Usage limit reached",
+          message: "Free users are limited to 3 analyses. Please upgrade to continue.",
+          currentUsage: user.propertyAnalyzerUsage,
+        });
+      }
+
+      // Perform analysis (your existing analysis logic here)
+      const analysisResult = await analyzeProperty(req.body);
+
+      // Increment usage counter
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          propertyAnalyzerUsage: sql`${users.propertyAnalyzerUsage} + 1`,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning();
+
+      // Return analysis result along with updated usage count
+      res.json({
+        ...analysisResult,
+        usageCount: updatedUser.propertyAnalyzerUsage,
+      });
+    } catch (error) {
+      console.error("Property analysis error:", error);
+      res.status(500).json({
+        error: "Failed to analyze property",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
+  // Add endpoint to reset usage count (called when subscription changes)
+  app.post("/api/property-analyzer/reset-usage", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          propertyAnalyzerUsage: 0,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning();
+
+      res.json({
+        message: "Usage count reset successfully",
+        usageCount: updatedUser.propertyAnalyzerUsage,
+      });
+    } catch (error) {
+      console.error("Error resetting usage count:", error);
+      res.status(500).json({
+        error: "Failed to reset usage count",
         details: error instanceof Error ? error.message : undefined,
       });
     }

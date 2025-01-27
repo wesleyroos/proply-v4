@@ -45,6 +45,23 @@ interface PropertyAnalyzerFormProps {
   onAnalysisComplete?: (data: PropertyAnalyzerFormValues) => Promise<void>;
 }
 
+// Add type for the user hook result
+interface User {
+  id: number;
+  username: string;
+  propertyAnalyzerUsage: number;
+  subscriptionStatus: string;
+}
+
+interface UseUserResult {
+  user: User | null;
+  isLoading: boolean;
+}
+
+interface UseProAccessResult {
+  hasAccess: boolean;
+  isLoading: boolean;
+}
 
 const formSchema = z.object({
   // Step 1: Property Details
@@ -158,13 +175,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     "90": RevenueData;
   } | null>(null);
 
-  const { hasAccess: hasProAccess, isLoading: isProAccessLoading } = useProAccess();
-  const { user, isLoading: isUserLoading } = useUser();
+  const { hasAccess: hasProAccess, isLoading: isProAccessLoading } = useProAccess() as UseProAccessResult;
+  const { user, isLoading: isUserLoading } = useUser() as UseUserResult;
   const { toast } = useToast();
-  const queryClient = useQueryClient(); // Added useQueryClient hook
+  const queryClient = useQueryClient();
 
   // Check if user has reached their limit
-  // Removed limit checks - will be reimplemented later
+  const hasReachedLimit = !hasProAccess && user?.propertyAnalyzerUsage >= 3;
 
   // If still loading user data, show loading state
   if (isUserLoading || isProAccessLoading) {
@@ -176,10 +193,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   }
 
   const onSubmit = async (formData: PropertyAnalyzerFormValues) => {
+    // Check usage limit before proceeding
+    if (hasReachedLimit) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // Clean and prepare the analysis data
-      // Ensure all form fields are included and properly typed
       const analysisData = {
         // Property Details
         address: formData.address,
@@ -220,9 +242,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         comments: formData.comments || "",
       };
 
-      console.log("Submitting complete analysis data:", analysisData);
-
-      const response = await fetch('/api/analyze', {
+      const response = await fetch('/api/property-analyzer/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -230,21 +250,35 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         body: JSON.stringify(analysisData),
       });
 
-
       if (!response.ok) {
         const errorData = await response.json();
+        // Handle usage limit error specifically
+        if (response.status === 403 && errorData.error === "Usage limit reached") {
+          setShowUpgradeModal(true);
+          return;
+        }
         throw new Error(errorData.error || response.statusText);
       }
 
       const data = await response.json();
       console.log("Analysis response:", data);
 
-      // Invalidate user query to refresh usage count - Moved here for correct timing
-      await queryClient.invalidateQueries({ queryKey: ['user'] });
+      // Invalidate queries to refresh usage count
+      await queryClient.invalidateQueries({ queryKey: ['/api/user'] });
 
       if (props.onAnalysisComplete) {
         await props.onAnalysisComplete(analysisData);
       }
+
+      // Show success message with updated usage count
+      toast({
+        title: "Analysis Complete",
+        description: hasProAccess ?
+          "Your property analysis is ready." :
+          `Analysis complete! You have ${3 - (user?.propertyAnalyzerUsage || 0)} analyses remaining.`,
+        duration: 5000,
+      });
+
     } catch (error) {
       console.error('Analysis error:', error);
       toast({
@@ -1277,41 +1311,50 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         </form>
       </Form>
 
+      {/* Usage Counter for free users */}
+      {!hasProAccess && (
+        <div className="flex justify-end items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            Analyses remaining: {3 - (user?.propertyAnalyzerUsage || 0)}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowUpgradeModal(true)}
+            className="hover:bg-primary/90"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Upgrade to Pro
+          </Button>
+        </div>
+      )}
+
       {/* Upgrade Modal */}
       <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
         <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader className="text-center">
-            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <Sparkles className="h-6 w-6 text-primary" />
-            </div>
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <DialogTitle className="text-2xl">Upgrade to</DialogTitle>
-              <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">PRO</span>
-            </div>
+          <DialogHeader>
+            <DialogTitle className="text-center">Upgrade to Pro</DialogTitle>
             <DialogDescription className="text-center">
-              Get unlimited access to all Proply features and tools
+              Get unlimited property analyses and advanced features
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <h4 className="font-semibold">Pro Features Include:</h4>
+              <p className="text-sm text-muted-foreground">
+                Free users are limited to 3 property analyses. Upgrade to Pro for:
+              </p>
               <ul className="list-disc list-inside space-y-1">
-                <li>Accurate nightly rates based on local market data</li>
-                <li>Real occupancy rates from similar properties</li>
-                <li>Seasonal pricing trends and recommendations</li>
                 <li>Unlimited property analyses</li>
+                <li>Advanced market insights</li>
+                <li>Comparative market analysis</li>
                 <li>Priority support</li>
               </ul>
             </div>
-            <div className="bg-muted p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-primary">R2000/month</div>
-              <p className="text-muted-foreground mt-1">Cancel anytime</p>
-            </div>
           </div>
           <DialogFooter>
-            <Button 
-              type="submit" 
-              className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
+            <Button
+              type="button"
+              className="w-full"
               onClick={(e) => {
                 e.preventDefault();
                 const form = document.createElement("form");
@@ -1353,12 +1396,11 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                 form.submit();
               }}
             >
-              Continue to Payment
+              Upgrade Now
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       {/* Percentile Selection Modal */}
       <Dialog
         open={showPercentileDialog}
