@@ -204,8 +204,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         maintenancePercent: Number(formData.maintenancePercent || 0),
         managementFee: Number(formData.managementFee || 0),
 
-        // Revenue Performance
-        airbnbNightlyRate: Number(formData.airbnbNightlyRate || 0),
+        // Revenue Performance - Map airbnbNightlyRate to shortTermNightlyRate
+        shortTermNightlyRate: Number(formData.airbnbNightlyRate || 0),
         occupancyRate: Number(formData.occupancyRate || 0),
         longTermRental: Number(formData.longTermRental || 0),
         leaseCycleGap: Number(formData.leaseCycleGap || 0),
@@ -1091,8 +1091,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               </div>
             )}
 
-            {/* Step 5: Escalations */}
-            {currentStep === 4 && (
+            {/* Step 5: Escalations            {currentStep === 4 && (
               <div className="space-y-4">
                 <FormField
                   control={form.control}
