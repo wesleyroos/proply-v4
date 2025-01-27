@@ -77,17 +77,17 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user.id))
         .limit(1);
 
-      console.log('Fetched user data:', {
+      console.log("Fetched user data:", {
         id: user.id,
         subscriptionStatus: user.subscriptionStatus,
         startDate: user.subscriptionStartDate,
-        nextBilling: user.subscriptionNextBillingDate
+        nextBilling: user.subscriptionNextBillingDate,
       });
 
       res.json(user);
     } catch (error) {
-      console.error('Error fetching user:', error);
-      res.status(500).json({ error: 'Failed to fetch user data' });
+      console.error("Error fetching user:", error);
+      res.status(500).json({ error: "Failed to fetch user data" });
     }
   });
 
@@ -144,7 +144,7 @@ export function registerRoutes(app: Express): Server {
         userId: updatedUser.id,
         newStatus: updatedUser.subscriptionStatus,
         startDate: updatedUser.subscriptionStartDate,
-        nextBillingDate: updatedUser.subscriptionNextBillingDate
+        nextBillingDate: updatedUser.subscriptionNextBillingDate,
       });
 
       res.json({
@@ -153,7 +153,7 @@ export function registerRoutes(app: Express): Server {
           id: updatedUser.id,
           subscriptionStatus: updatedUser.subscriptionStatus,
           subscriptionStartDate: updatedUser.subscriptionStartDate,
-          subscriptionNextBillingDate: updatedUser.subscriptionNextBillingDate
+          subscriptionNextBillingDate: updatedUser.subscriptionNextBillingDate,
         },
       });
     } catch (error) {
@@ -200,7 +200,7 @@ export function registerRoutes(app: Express): Server {
             signature,
           },
           body: JSON.stringify({ cycles }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -278,7 +278,7 @@ export function registerRoutes(app: Express): Server {
             timestamp,
             signature,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -335,7 +335,9 @@ export function registerRoutes(app: Express): Server {
 
       // Set pending downgrade flag instead of immediate downgrade
       // Calculate next billing date as expiry date
-      const nextBillingDate = user.subscriptionNextBillingDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      const nextBillingDate =
+        user.subscriptionNextBillingDate ||
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
       const [updatedUser] = await db
         .update(users)
@@ -351,12 +353,12 @@ export function registerRoutes(app: Express): Server {
         userId: updatedUser.id,
         currentPlan: updatedUser.subscriptionStatus,
         nextBillingDate: updatedUser.subscriptionNextBillingDate,
-        pendingDowngrade: updatedUser.pendingDowngrade
+        pendingDowngrade: updatedUser.pendingDowngrade,
       });
 
-      res.json({ 
+      res.json({
         message: "Subscription downgrade scheduled",
-        nextBillingDate: updatedUser.subscriptionNextBillingDate
+        nextBillingDate: updatedUser.subscriptionNextBillingDate,
       });
     } catch (error) {
       console.error("Error scheduling subscription downgrade:", error);
@@ -385,7 +387,9 @@ export function registerRoutes(app: Express): Server {
       }
 
       if (!user.pendingDowngrade) {
-        return res.status(400).json({ error: "No pending downgrade to cancel" });
+        return res
+          .status(400)
+          .json({ error: "No pending downgrade to cancel" });
       }
 
       const [updatedUser] = await db
@@ -399,7 +403,7 @@ export function registerRoutes(app: Express): Server {
 
       console.log("Cancelled pending downgrade for user:", {
         userId: updatedUser.id,
-        currentPlan: updatedUser.subscriptionStatus
+        currentPlan: updatedUser.subscriptionStatus,
       });
 
       res.json({ message: "Pending downgrade cancelled successfully" });
@@ -894,8 +898,9 @@ export function registerRoutes(app: Express): Server {
 
       // If there's a pending downgrade and we've reached the next billing date,
       // downgrade the subscription to free
-      const shouldDowngrade = user.pendingDowngrade && 
-        user.subscriptionNextBillingDate && 
+      const shouldDowngrade =
+        user.pendingDowngrade &&
+        user.subscriptionNextBillingDate &&
         now >= user.subscriptionNextBillingDate;
 
       const [updatedUser] = await db
@@ -916,7 +921,7 @@ export function registerRoutes(app: Express): Server {
         startDate: updatedUser.subscriptionStartDate,
         nextBilling: updatedUser.subscriptionNextBillingDate,
         status: updatedUser.subscriptionStatus,
-        wasDowngraded: shouldDowngrade
+        wasDowngraded: shouldDowngrade,
       });
 
       res.json({ success: true });
@@ -976,7 +981,7 @@ export function registerRoutes(app: Express): Server {
 
     try {
       // Verify current password
-      const [user] =await db
+      const [user] = await db
         .select()
         .from(users)
         .where(eq(users.id, req.user!.id))
@@ -990,7 +995,8 @@ export function registerRoutes(app: Express): Server {
       // Hash new password and update
       const hashedPassword = await crypto.hash(newPassword);
       await db
-        .update(users)        .set({ password: hashedPassword })
+        .update(users)
+        .set({ password: hashedPassword })
         .where(eq(users.id, req.user!.id));
 
       res.json({ message: "Password updated successfully" });
@@ -1006,12 +1012,13 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Get user info
+      // Get user info first
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.id, req.user!.id))
         .limit(1);
+
       console.log("\n=== Starting Property Analysis ===");
       console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
 
@@ -1052,8 +1059,19 @@ export function registerRoutes(app: Express): Server {
         managementFee: parseFloat(req.body.managementFee || 0),
       };
 
-      console.log("\n=== Starting Property Analysis ===");
-      console.log("Raw Input Data:", JSON.stringify(propertyData, null, 2));
+      // Increment the analyzer usage counter
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning();
+
+      console.log("Updated analyzer usage for user:", {
+        userId: updatedUser.id,
+        usage: updatedUser.propertyAnalyzerUsage,
+      });
 
       const analysisResult = calculateYields(propertyData);
       console.log(
@@ -1199,20 +1217,6 @@ export function registerRoutes(app: Express): Server {
     try {
       console.log("Saving property analysis for user:", req.user.id);
       console.log("Analysis data:", JSON.stringify(req.body, null, 2));
-
-      // Increment the analyzer usage counter
-      const [updatedUser] = await db
-        .update(users)
-        .set({
-          propertyAnalyzerUsage: sql`COALESCE(${users.propertyAnalyzerUsage}, 0) + 1`,
-        })
-        .where(eq(users.id, req.user!.id))
-        .returning();
-
-      console.log("Updated analyzer usage for user:", {
-        userId: updatedUser.id,
-        usage: updatedUser.propertyAnalyzerUsage
-      });
 
       // Insert analysis result
       const [savedAnalysis] = await db
