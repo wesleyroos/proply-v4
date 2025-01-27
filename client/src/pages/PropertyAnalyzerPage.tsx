@@ -504,15 +504,7 @@ export default function PropertyAnalyzerPage() {
           <p className="text-muted-foreground mt-1">
             Enter property details to generate analysis
           </p>
-          {!hasProAccess && user && (
-            <div className="absolute top-6 right-6">
-              <div className="bg-blue-50 border border-[#1BA3FF] rounded-lg px-4 py-2">
-                <p className="text-sm text-blue-900">
-                  Analyses used: <span className="font-bold text-[#1BA3FF]">{user.propertyAnalyzerUsage || 0}</span>
-                </p>
-              </div>
-            </div>
-          )}
+          
         </div>
       </div>
 
