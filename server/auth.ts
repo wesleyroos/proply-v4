@@ -299,12 +299,10 @@ export function setupAuth(app: Express) {
         isAdmin: user.isAdmin,
         pendingDowngrade: user.pendingDowngrade,
         subscriptionStartDate: user.subscriptionStartDate,
-        subscriptionNextBillingDate: user.subscriptionNextBillingDate,
-        propertyAnalyzerUsage: user.propertyAnalyzerUsage || 0
+        subscriptionNextBillingDate: user.subscriptionNextBillingDate
       };
       console.log('Sending user data with analyzer usage:', {
-        email: userData.email,
-        propertyAnalyzerUsage: userData.propertyAnalyzerUsage
+        email: userData.email
       });
       return res.json(userData);
     }

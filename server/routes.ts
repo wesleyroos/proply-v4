@@ -71,7 +71,7 @@ export function registerRoutes(app: Express): Server {
           payfastSubscriptionStatus: users.payfastSubscriptionStatus,
           subscriptionPausedUntil: users.subscriptionPausedUntil,
           pendingDowngrade: users.pendingDowngrade,
-          propertyAnalyzerUsage: users.propertyAnalyzerUsage,
+          reportsGenerated: users.reportsGenerated,
         })
         .from(users)
         .where(eq(users.id, req.user.id))
@@ -1066,49 +1066,41 @@ export function registerRoutes(app: Express): Server {
       );
 
       // Get current user data first
-      const [currentUser] = await db
-        .select({
-          propertyAnalyzerUsage: users.propertyAnalyzerUsage
-        })
-        .from(users)
-        .where(eq(users.id, req.user!.id))
-        .limit(1);
+      // const [currentUser] = await db
+      //   .select({
+      //     propertyAnalyzerUsage: users.propertyAnalyzerUsage
+      //   })
+      //   .from(users)
+      //   .where(eq(users.id, req.user!.id))
+      //   .limit(1);
 
-      const newUsage = (currentUser?.propertyAnalyzerUsage || 0) + 1;
+      // const newUsage = (user?.propertyAnalyzerUsage || 0) + 1;
+      const newUsage = (user?.reportsGenerated || 0) + 1;
 
       // Increment the user's property analyzer usage count
       await db
         .update(users)
         .set({
-          propertyAnalyzerUsage: newUsage
+          reportsGenerated: newUsage
         })
         .where(eq(users.id, req.user!.id));
 
       console.log("Updated analyzer usage:", {
         email: user.email,
-        oldUsage: currentUser?.propertyAnalyzerUsage,
+        oldUsage: user?.reportsGenerated,
         newUsage: newUsage
       });
 
       res.json(analysisResult);
     } catch (error) {
-      console.error("\n=== Analysis Error ===");
-      console.error("Error Type:", error.constructor.name);
-      console.error("Error Message:", error.message);
-      console.error("Error Stack:", error.stack);
-      console.error("User ID:", req.user?.id);
-      console.error("Input Data:", JSON.stringify(req.body, null, 2));
-      console.error("Time:", new Date().toISOString());
+      console.error("=== Analysis Error ===");
+      console.error("Error details:", error);
 
-      const errorMessage = error instanceof Error ? error.message : "Failed to analyze property data";
-      const errorResponse = {
-        error: errorMessage,
-        code: error.code || 'UNKNOWN_ERROR',
-        timestamp: new Date().toISOString(),
-        requestId: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-      };
-      
-      console.error("Sending error response:", errorResponse);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to analyze property data";
+      console.error("Sending error response:", { error: errorMessage });
 
       res.status(500).json({
         error: errorMessage,

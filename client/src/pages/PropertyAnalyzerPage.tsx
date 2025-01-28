@@ -218,7 +218,7 @@ export default function PropertyAnalyzerPage() {
 
   useEffect(() => {
     //This useEffect is no longer used, but kept to avoid breaking changes.
-    if (user && !hasProAccess && user.propertyAnalyzerUsage >= 3) {
+    if (user && !hasProAccess && user.reportsGenerated >= 3) {
       setShowLimitModal(true); //This line is no longer used.
     }
   }, [user, hasProAccess]);
@@ -513,7 +513,7 @@ export default function PropertyAnalyzerPage() {
         {!hasProAccess && (
           <div className="bg-[#1BA3FF]/10 px-4 py-2 rounded-lg border border-[#1BA3FF]/20">
             <p className="text-sm text-[#1BA3FF] font-medium">
-              Analyses used: {user?.propertyAnalyzerUsage || 0}
+              Analyses used: {user?.reportsGenerated || 0}
             </p>
             <Button 
               onClick={() => setShowUpgradeModal(true)}
@@ -580,16 +580,6 @@ export default function PropertyAnalyzerPage() {
                               managementFee: analysisResult.managementFee,
                               fullAnalysisResult: analysisResult,
                             });
-
-                            // Ensure we have valid operating income data before generating PDF
-                            if (!analysisResult.analysis.netOperatingIncome && !analysisResult.analysis.longTermNetOperatingIncome) {
-                              toast({
-                                title: "Missing Data",
-                                description: "Operating income data is not available. Please ensure all required fields are filled.",
-                                variant: "destructive"
-                              });
-                              return;
-                            }
 
                             setPDFData({
                               propertyDetails: {
