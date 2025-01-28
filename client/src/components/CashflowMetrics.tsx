@@ -113,6 +113,7 @@ export default function CashflowMetrics({
   managementFee,
   revenueProjections,
   operatingExpenses,
+  longTermOperatingExpenses,
   netOperatingIncome,
   longTermNetOperatingIncome  // Add this line
 }: CashflowMetricsProps) {
@@ -403,21 +404,17 @@ export default function CashflowMetrics({
                         </TooltipContent>
                       </Tooltip>
                     </td>
-                    {years.map((year) => {
-                      const revenue =
-                        longTermMonthly * 12 * Math.pow(1.08, year - 1);
-                      return (
-                        <td key={year} className="text-right py-3 px-6">
-                          <div className="flex items-center justify-end gap-2">
-                            {formatter(revenue)}
-                            <span
-                              className="h-2 w-2 rounded-full bg-red-500"
-                              title="Calculated by analysis engine"
-                            />
-                          </div>
-                        </td>
-                      );
-                    })}
+                    {years.map((year) => (
+                      <td key={year} className="text-right py-3 px-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {formatter(longTermOperatingExpenses[`year${year}`])}
+                          <span
+                            className="h-2 w-2 rounded-full bg-red-500"
+                            title="Calculated by analysis engine"
+                          />
+                        </div>
+                      </td>
+                    ))}
                   </tr>
 
                   {/* Net Operating Expenses */}

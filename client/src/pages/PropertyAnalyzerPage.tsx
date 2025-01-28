@@ -107,6 +107,15 @@ interface AnalysisResult {
       year10: number;
       year20: number;
     };
+    longTermOperatingExpenses: {
+      year1: number;
+      year2: number;
+      year3: number;
+      year4: number;
+      year5: number;
+      year10: number;
+      year20: number;
+    };
     netOperatingIncome: {
       year1: {
         value: number;
@@ -420,6 +429,7 @@ export default function PropertyAnalyzerPage() {
       ratePerSquareMeter: Number(formData.cmaRatePerSqm || 0),
       revenueProjections: analysisResult.analysis.revenueProjections || {},
       operatingExpenses: analysisResult.analysis.operatingExpenses || {},
+      longTermOperatingExpenses: analysisResult.analysis.longTermOperatingExpenses || {},
       netOperatingIncome: analysisResult.netOperatingIncome || {},
       investmentMetrics: analysisResult.analysis.investmentMetrics || {},
     };
@@ -1223,6 +1233,7 @@ export default function PropertyAnalyzerPage() {
                     null,
                 }}
                 operatingExpenses={analysisResult.analysis.operatingExpenses}
+                longTermOperatingExpenses={analysisResult.analysis.longTermOperatingExpenses}
                 netOperatingIncome={analysisResult.analysis.netOperatingIncome}
                 longTermNetOperatingIncome={
                   analysisResult.analysis.longTermNetOperatingIncome
