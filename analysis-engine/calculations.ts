@@ -433,12 +433,12 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
 
   const longTermOperatingExpenses = {
     year1: fixedMonthlyExpenses * 12,
-    year2: fixedMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 2),
-    year3: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 2),
-    year4: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 3),
-    year5: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 4),
-    year10: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 9),
-    year20: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 19),
+    year2: fixedMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 1),
+    year3: fixedMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 2),
+    year4: fixedMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 3),
+    year5: fixedMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 4),
+    year10: fixedMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 9),
+    year20: fixedMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 19),
   };
 
   // Calculate Net Operating Income for each year
@@ -530,7 +530,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
           value: revenueProjections.longTerm.year1 - operatingExpenses.year1,
           annualCashflow:
             revenueProjections.longTerm.year1 -
-            operatingExpenses.year1 -
+            longTermOperatingExpenses.year1 -
             monthlyBondRepayment * 12,
           cumulativeRentalIncome:
             revenueProjections.longTerm.year1 -
@@ -541,7 +541,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
           value: revenueProjections.longTerm.year2 - operatingExpenses.year2,
           annualCashflow:
             revenueProjections.longTerm.year2 -
-            operatingExpenses.year2 -
+            longTermOperatingExpenses.year2 -
             monthlyBondRepayment * 12,
           cumulativeRentalIncome:
             revenueProjections.longTerm.year2 -
@@ -552,7 +552,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
           value: revenueProjections.longTerm.year3 - operatingExpenses.year3,
           annualCashflow:
             revenueProjections.longTerm.year3 -
-            operatingExpenses.year3 -
+            longTermOperatingExpenses.year3 -
             monthlyBondRepayment * 12,
           cumulativeRentalIncome:
             revenueProjections.longTerm.year3 -
@@ -563,7 +563,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
           value: revenueProjections.longTerm.year4 - operatingExpenses.year4,
           annualCashflow:
             revenueProjections.longTerm.year4 -
-            operatingExpenses.year4 -
+            longTermOperatingExpenses.year4 -
             monthlyBondRepayment * 12,
           cumulativeRentalIncome:
             revenueProjections.longTerm.year4 -
@@ -574,7 +574,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
           value: revenueProjections.longTerm.year5 - operatingExpenses.year5,
           annualCashflow:
             revenueProjections.longTerm.year5 -
-            operatingExpenses.year5 -
+            longTermOperatingExpenses.year5 -
             monthlyBondRepayment * 12,
           cumulativeRentalIncome:
             revenueProjections.longTerm.year5 -
@@ -585,7 +585,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
           value: revenueProjections.longTerm.year10 - operatingExpenses.year10,
           annualCashflow:
             revenueProjections.longTerm.year10 -
-            operatingExpenses.year10 -
+            longTermOperatingExpenses.year10 -
             monthlyBondRepayment * 12,
           cumulativeRentalIncome:
             revenueProjections.longTerm.year10 -
@@ -596,7 +596,7 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
           value: revenueProjections.longTerm.year20 - operatingExpenses.year20,
           annualCashflow:
             revenueProjections.longTerm.year20 -
-            operatingExpenses.year20 -
+            longTermOperatingExpenses.year20 -
             monthlyBondRepayment * 12,
           cumulativeRentalIncome:
             revenueProjections.longTerm.year20 -
