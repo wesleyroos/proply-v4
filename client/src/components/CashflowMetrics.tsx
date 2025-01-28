@@ -443,8 +443,7 @@ export default function CashflowMetrics({
                       </Tooltip>
                     </td>
                     {years.map((year) => {
-                      const expenses =
-                        monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
+                      const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
