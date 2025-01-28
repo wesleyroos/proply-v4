@@ -385,7 +385,11 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     const occupiedDays = 365 - vacancyDays;
     const occupancyRatio = occupiedDays / 365;
 
-    longTermAnnualRevenue = data.longTermRental * 12 * occupancyRatio;
+    const monthlyRevenue = data.longTermRental;
+    const longTermMaintenanceExpense = (monthlyRevenue * Number(data.maintenancePercent || 0)) / 100;
+    const longTermManagementFee = (monthlyRevenue * Number(data.managementFee || 0)) / 100;
+    
+    longTermAnnualRevenue = monthlyRevenue * 12 * occupancyRatio;
     longTermGrossYield = (longTermAnnualRevenue / data.purchasePrice) * 100;
     revenueProjections.longTerm = {
       year1: longTermAnnualRevenue,
