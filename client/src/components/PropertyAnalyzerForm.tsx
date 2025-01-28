@@ -223,22 +223,24 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
       console.log("Submitting complete analysis data:", analysisData);
 
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(analysisData),
-      });
+      // Duplicate call. Don't use
+      
+      // const response = await fetch('/api/analyze', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(analysisData),
+      // });
 
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || response.statusText);
-      }
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.error || response.statusText);
+      // }
 
-      const data = await response.json();
-      console.log("Analysis response:", data);;
+      // const data = await response.json();
+      // console.log("Analysis response:", data);;
 
       if (props.onAnalysisComplete) {
         await props.onAnalysisComplete(analysisData);
