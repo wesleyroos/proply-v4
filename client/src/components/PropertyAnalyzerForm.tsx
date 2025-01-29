@@ -307,16 +307,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   };
 
   const fetchRevenueData = async () => {
-    console.log("Pro access status:", isPro); // Debug log
-
     // Check pro access - show upgrade modal for free users, proceed with data fetch for pro users
     if (!isPro) {
-      console.log("User does not have pro access, showing upgrade modal");
       setShowUpgradeModal(true);
       return;
     }
 
-    console.log("User has pro access, proceeding with data fetch");
     setIsLoading(true);
     try {
       const address = form.getValues("address");
@@ -338,7 +334,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       }
 
       const data = await response.json();
-      console.log("Revenue data received:", data); // Debug log
 
       if (data.KPIsByBedroomCategory?.[bedrooms]) {
         const result = data.KPIsByBedroomCategory[bedrooms];
@@ -364,8 +359,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
             percentile: 90,
           },
         });
-        console.log("Showing percentile dialog for pro user");
-        setShowPercentileDialog(true);
+        setShowPercentileDialog(true); // Show percentile modal for pro users
       }
     } catch (error) {
       console.error("Error fetching revenue data:", error);
@@ -1031,9 +1025,11 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             variant="outline"
                             className="w-full h-10"
                             onClick={() => {
-                              if (!isProAccessLoading && isPro) {
+                              if (isProAccessLoading) return;
+                              
+                              if (isPro) {
                                 fetchRevenueData();
-                              } else if (!isProAccessLoading && !isPro) {
+                              } else {
                                 setShowUpgradeModal(true);
                               }
                             }}
@@ -1075,7 +1071,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           placeholder="Monthly long-term rental income"
                           {...field}
                           onChange={(e) =>
-                            field.onChange(etarget.valueAsNumber)
+                            field.onChange(e.target.valueAsNumber)
                           }
                         />
                       </FormControl>
