@@ -1228,9 +1228,8 @@ export default function PropertyAnalyzerPage() {
                 monthlyBondRepayment={analysisResult.monthlyBondRepayment || 0}
                 managementFee={analysisResult.managementFee}
                 revenueProjections={{
-                  shortTerm:
-                    analysisResult.analysis.revenueProjections?.shortTerm ||
-                    null,
+                  shortTerm: analysisResult.analysis.revenueProjections?.shortTerm || null,
+                  longTerm: analysisResult.analysis.revenueProjections?.longTerm || null
                 }}
                 operatingExpenses={analysisResult.analysis.operatingExpenses}
                 longTermOperatingExpenses={analysisResult.analysis.longTermOperatingExpenses}
