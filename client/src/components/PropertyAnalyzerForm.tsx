@@ -309,12 +309,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   };
 
   const fetchRevenueData = async () => {
-    // Check pro access first
+    // Check pro access first - show upgrade modal for free users
     if (!hasProAccess) {
       setShowUpgradeModal(true);
       return;
     }
 
+    // Continue with revenue data fetch for pro users
     setIsLoading(true);
     try {
       const address = form.getValues("address");
@@ -1086,9 +1087,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   control={form.control}
                   name="leaseCycleGap"
                   render={({ field }) => (
-                    <FormItem>
+                                        <FormItem>
                       <FormLabel>Lease Cycle Gap (Days)</FormLabel>
-                                            <FormControl>
+                      <FormControl>
                         <Input
                           type="number"
                           min="0"
