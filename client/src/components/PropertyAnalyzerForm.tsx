@@ -160,7 +160,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   } | null>(null);
 
   // Fix the destructuring to use hasAccess instead of hasProAccess
-  const { hasAccess: isPro, isLoading: isProAccessLoading } = useProAccess();
+  const { hasAccess, isLoading: isProAccessLoading } = useProAccess();
   const { user, isLoading: isUserLoading } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -1027,7 +1027,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             onClick={() => {
                               if (isProAccessLoading) return;
                               
-                              if (isPro) {
+                              if (hasAccess) {
                                 fetchRevenueData();
                               } else {
                                 setShowUpgradeModal(true);

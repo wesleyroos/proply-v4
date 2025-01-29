@@ -1,17 +1,16 @@
 import { useUser } from "./use-user";
 
 export function useProAccess() {
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
   
-  if (!user) return false;
-  
-  // User has pro access if they:
-  // 1. Are an admin
-  // 2. Have a pro subscription
-  // 3. Have a valid access code
-  return (
+  const hasAccess = user ? (
     user.isAdmin === true || 
     user.subscriptionStatus === "pro" ||
     user.accessCodeId != null
-  );
+  ) : false;
+
+  return {
+    hasAccess,
+    isLoading
+  };
 }
