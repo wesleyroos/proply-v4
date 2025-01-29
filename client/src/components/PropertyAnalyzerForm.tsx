@@ -309,7 +309,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   };
 
   const fetchRevenueData = async () => {
-    // If user doesn't have pro access, show upgrade modal
+    // Check pro access first
     if (!hasProAccess) {
       setShowUpgradeModal(true);
       return;
@@ -364,7 +364,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
             percentile: 90,
           },
         });
-        setShowPercentileDialog(true);
+        setShowPercentileDialog(true); // Show percentile modal for pro users
       }
     } catch (error) {
       console.error("Error fetching revenue data:", error);
@@ -1088,7 +1088,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Lease Cycle Gap (Days)</FormLabel>
-                      <FormControl>
+                                            <FormControl>
                         <Input
                           type="number"
                           min="0"
