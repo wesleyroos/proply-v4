@@ -1042,14 +1042,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             variant="outline"
                             className="w-full h-10"
                             onClick={() => {
-                              const { hasProAccess } = useProAccess();
-                              if (hasProAccess) {
+                              if (!isProAccessLoading && hasProAccess) {
                                 fetchRevenueData();
-                              } else {
+                              } else if (!isProAccessLoading && !hasProAccess) {
                                 setShowUpgradeModal(true);
                               }
                             }}
-                            disabled={isLoading}
+                            disabled={isLoading || isProAccessLoading}
                           >
                             {isLoading ? (
                               <>
