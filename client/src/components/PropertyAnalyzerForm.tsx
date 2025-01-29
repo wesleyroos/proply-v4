@@ -308,7 +308,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
   const fetchRevenueData = async () => {
     // Check pro access - show upgrade modal for free users, proceed with data fetch for pro users
-    if (!isPro) {
+    if (!hasAccess) {
       setShowUpgradeModal(true);
       return;
     }
@@ -1026,7 +1026,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             className="w-full h-10"
                             onClick={() => {
                               if (isProAccessLoading) return;
-                              
+
                               if (hasAccess) {
                                 fetchRevenueData();
                               } else {
