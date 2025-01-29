@@ -282,7 +282,8 @@ export function PDFGenerator({
                           >
                             {itemId
                               .replace(/([A-Z])/g, " $1")
-                              .replace(/^./, (str) => str.toUpperCase())}
+                              .replace(/^./, (str) => str.toUpperCase())
+                              .replace(/\bM2/, "m²")}
                           </Label>
                         </div>
                       ))}
