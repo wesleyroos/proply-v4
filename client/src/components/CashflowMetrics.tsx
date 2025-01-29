@@ -425,7 +425,7 @@ export default function CashflowMetrics({
                     {years.map((year) => (
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
-                          {formatter(revenueProjections?.longTerm?.[`year${year}`] || 0)}
+                          {formatter(revenueProjections.longTerm?.[`year${year}`] || 0)}
                           <span
                             className="h-2 w-2 rounded-full bg-red-500"
                             title="Calculated by analysis engine"
