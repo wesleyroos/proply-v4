@@ -436,14 +436,20 @@ export function calculateYields(inputData: PropertyData): AnalysisResult {
     year20: baseAnnualExpenses * Math.pow(1 + expenseGrowthRate, 19),
   };
 
+  // Calculate fixed management and maintenance fees for long term
+  const longTermMonthlyRevenue = data.longTermRental || 0;
+  const longTermMaintenanceFee = longTermMonthlyRevenue * 0.05; // 5% maintenance
+  const longTermManagementFee = longTermMonthlyRevenue * 0.10; // 10% management
+  const totalLongTermMonthlyExpenses = fixedMonthlyExpenses + longTermMaintenanceFee + longTermManagementFee;
+
   const longTermOperatingExpenses = {
-    year1: fixedMonthlyExpenses * 12,
-    year2: fixedMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 1),
-    year3: fixedMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 2),
-    year4: fixedMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 3),
-    year5: fixedMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 4),
-    year10: fixedMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 9),
-    year20: fixedMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 19),
+    year1: totalLongTermMonthlyExpenses * 12,
+    year2: totalLongTermMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 1),
+    year3: totalLongTermMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 2),
+    year4: totalLongTermMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 3),
+    year5: totalLongTermMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 4),
+    year10: totalLongTermMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 9),
+    year20: totalLongTermMonthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, 19),
   };
 
   // Calculate Net Operating Income for each year
