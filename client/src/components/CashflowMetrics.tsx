@@ -24,8 +24,26 @@ interface CashflowMetricsProps {
       year10: number;
       year20: number;
     } | null;
+    longTerm: {
+      year1: number;
+      year2: number;
+      year3: number;
+      year4: number;
+      year5: number;
+      year10: number;
+      year20: number;
+    } | null;
   };
   operatingExpenses: {
+    year1: number;
+    year2: number;
+    year3: number;
+    year4: number;
+    year5: number;
+    year10: number;
+    year20: number;
+  };
+  longTermOperatingExpenses: {
     year1: number;
     year2: number;
     year3: number;
@@ -115,7 +133,7 @@ export default function CashflowMetrics({
   operatingExpenses,
   longTermOperatingExpenses,
   netOperatingIncome,
-  longTermNetOperatingIncome  // Add this line
+  longTermNetOperatingIncome  
 }: CashflowMetricsProps) {
   const years = [1, 2, 3, 4, 5, 10, 20];
 
@@ -407,7 +425,7 @@ export default function CashflowMetrics({
                     {years.map((year) => (
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
-                          {formatter(revenueProjections.longTerm?.[`year${year}`] || 0)}
+                          {formatter(revenueProjections?.longTerm?.[`year${year}`] || 0)}
                           <span
                             className="h-2 w-2 rounded-full bg-red-500"
                             title="Calculated by analysis engine"
@@ -475,7 +493,7 @@ export default function CashflowMetrics({
                       const revenue =
                         longTermMonthly * 12 * Math.pow(1.08, year - 1);
                       const expenses =
-                        monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
+                        longTermOperatingExpenses[`year${year}`];
                       const income = revenue - expenses;
                       return (
                         <td key={year} className="text-right py-3 px-6">
@@ -542,7 +560,7 @@ export default function CashflowMetrics({
                       const revenue =
                         longTermMonthly * 12 * Math.pow(1.08, year - 1);
                       const expenses =
-                        monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
+                        longTermOperatingExpenses[`year${year}`];
                       const bondPayment = monthlyBondRepayment * 12;
                       const cashflow = revenue - expenses - bondPayment;
                       return (
@@ -583,7 +601,7 @@ export default function CashflowMetrics({
                         const revenue =
                           longTermMonthly * 12 * Math.pow(1.08, y - 1);
                         const expenses =
-                          monthlyBondRepayment * 12 * Math.pow(1.06, y - 1);
+                          longTermOperatingExpenses[`year${y}`];
                         const bondPayment = monthlyBondRepayment * 12;
                         cumulativeCashflow += revenue - expenses - bondPayment;
                       }
