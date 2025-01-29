@@ -117,6 +117,9 @@ export interface ReportSelections {
     areaRatePerSquareMeter?: boolean;
     rateDifference?: boolean;
     propertyDescription?: boolean;
+    areaRateM2?: boolean;
+    currentPropertyRateM2?: boolean; 
+    rateM2Difference?: boolean;
   };
   financialMetrics?: {
     purchasePrice?: boolean;

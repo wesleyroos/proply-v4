@@ -29,6 +29,9 @@ const REPORT_TEMPLATES = {
         floorArea: true,
         parkingSpaces: true,
         purchasePrice: true,
+        areaRateM2: false,
+        currentPropertyRateM2: true,
+        rateM2Difference: false,
       },
       financialMetrics: {
         depositAmount: true,
@@ -61,6 +64,9 @@ const REPORT_TEMPLATES = {
         parkingSpaces: true,
         purchasePrice: true,
         propertyDescription: true,
+        areaRateM2: true,
+        currentPropertyRateM2: true,
+        rateM2Difference: true,
       },
       financialMetrics: {
         depositAmount: true,
@@ -246,7 +252,8 @@ export function PDFGenerator({
               <TabsTrigger key={section} value={section}>
                 {section
                   .replace(/([A-Z])/g, " $1")
-                  .replace(/^./, (str) => str.toUpperCase())}
+                  .replace(/^./, (str) => str.toUpperCase())
+                  .replace(/\bM2/, "m²")}
               </TabsTrigger>
             ))}
           </TabsList>
