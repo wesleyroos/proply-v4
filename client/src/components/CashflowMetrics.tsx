@@ -404,17 +404,20 @@ export default function CashflowMetrics({
                         </TooltipContent>
                       </Tooltip>
                     </td>
-                    {years.map((year) => (
+                    {years.map((year) => {
+                      const expenses = longTermMonthly * 12 * (365 - 7)/365;
+                      return (
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
-                          {formatter(longTermOperatingExpenses[`year${year}`])}
+                          {formatter(expenses)}
                           <span
                             className="h-2 w-2 rounded-full bg-red-500"
                             title="Calculated by analysis engine"
                           />
                         </div>
                       </td>
-                    ))}
+                      );
+                    })}
                   </tr>
 
                   {/* Net Operating Expenses */}
@@ -440,11 +443,10 @@ export default function CashflowMetrics({
                       </Tooltip>
                     </td>
                     {years.map((year) => {
-                      const expenses = monthlyBondRepayment * 12 * Math.pow(1.06, year - 1);
                       return (
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
-                            {formatter(expenses)}
+                            {formatter(longTermOperatingExpenses[`year${year}`])}
                             <span
                               className="h-2 w-2 rounded-full bg-red-500"
                               title="Calculated by analysis engine"
