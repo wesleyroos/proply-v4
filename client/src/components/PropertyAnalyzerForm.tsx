@@ -223,24 +223,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
       console.log("Submitting complete analysis data:", analysisData);
 
-      // Duplicate call. Don't use
-      
-      // const response = await fetch('/api/analyze', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(analysisData),
-      // });
-
-
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.error || response.statusText);
-      // }
-
-      // const data = await response.json();
-      // console.log("Analysis response:", data);;
 
       if (props.onAnalysisComplete) {
         await props.onAnalysisComplete(analysisData);
@@ -327,6 +309,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   };
 
   const fetchRevenueData = async () => {
+    // If user doesn't have pro access, show upgrade modal
+    if (!hasProAccess) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const address = form.getValues("address");
