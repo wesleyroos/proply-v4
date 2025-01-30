@@ -1688,7 +1688,7 @@ export async function generatePDF(
 
     // Add table immediately after chart
     const yearsArray = [1, 2, 3, 4, 5, 10, 20];
-    const calculateAssetMetrics = (year: number, yearIndex?: number) => {
+    const calculateAssetMetrics = (year: number) => {
       const initialValue = data.propertyDetails.purchasePrice;
       const appreciation = data.financialMetrics.annualAppreciation || 5;
       const loanAmount = initialValue - data.financialMetrics.depositAmount;
@@ -1738,11 +1738,7 @@ export async function generatePDF(
       ];
     };
 
-    const assetMetrics = yearsArray.map((year, index) => {
-      // For years 10 and 20, use index 5 and 6 respectively in the metrics array
-      const yearIndex = year <= 5 ? year - 1 : year === 10 ? 5 : 6;
-      return calculateAssetMetrics(year, yearIndex);
-    });
+    const assetMetrics = yearsArray.map((year) => calculateAssetMetrics(year));
 
     monthlyPerformance = months.map((month, index) => {
       // Use investment metrics data directly from analysis engine
