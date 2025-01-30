@@ -1033,50 +1033,50 @@ export async function generatePDF(
         ],
         [
           "Net Yield",
-          ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+          ...years.map((year, index) => {
+            const metric = metrics[index] || {};
             return formatPercentage(metric.netYield || 0);
           }),
         ],
         [
           "ROE",
-          ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+          ...years.map((year, index) => {
+            const metric = metrics[index] || {};
             return formatPercentage(metric.returnOnEquity || 0);
           }),
         ],
         [
           "Annual Return",
-          ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+          ...years.map((year, index) => {
+            const metric = metrics[index] || {};
             return formatPercentage(metric.annualReturn || 0);
           }),
         ],
         [
           "Cap Rate",
-          ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+          ...years.map((year, index) => {
+            const metric = metrics[index] || {};
             return formatPercentage(metric.capRate || 0);
           }),
         ],
         [
           "Cash on Cash",
-          ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+          ...years.map((year, index) => {
+            const metric = metrics[index] || {};
             return formatPercentage(metric.cashOnCashReturn || 0);
           }),
         ],
         [
           "IRR",
-          ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+          ...years.map((year, index) => {
+            const metric = metrics[index] || {};
             return formatPercentage(metric.irr || 0);
           }),
         ],
         [
           "Net Worth Change",
-          ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+          ...years.map((year, index) => {
+            const metric = metrics[index] || {};
             return formatCurrency(metric.netWorthChange || 0);
           }),
         ],
