@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ReportSelections } from '../types/propertyReport';
+import { ReportSelections } from "../types/propertyReport";
 import { useProAccess } from "@/hooks/use-pro-access";
 
 const REPORT_TEMPLATES = {
@@ -132,38 +132,45 @@ export function PDFGenerator({
 }: Props) {
   const [activeTemplate, setActiveTemplate] = useState("basic");
   const [selections, setSelections] = useState<ReportSelections>(
-    REPORT_TEMPLATES.basic.selections
+    REPORT_TEMPLATES.basic.selections,
   );
   const [progress, setProgress] = useState(0);
   const hasProAccess = useProAccess();
 
   const handleTemplateChange = useCallback((template: string) => {
     setActiveTemplate(template);
-    setSelections(REPORT_TEMPLATES[template as keyof typeof REPORT_TEMPLATES].selections);
+    setSelections(
+      REPORT_TEMPLATES[template as keyof typeof REPORT_TEMPLATES].selections,
+    );
   }, []);
 
-  const handleSectionToggle = useCallback((section: string, item: string) => {
-    setSelections((prev) => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [item]: !(prev[section]?.[item] ?? false),
-      },
-    }));
+  const handleSectionToggle = useCallback(
+    (section: string, item: string) => {
+      setSelections((prev) => ({
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [item]: !(prev[section]?.[item] ?? false),
+        },
+      }));
 
-    if (activeTemplate !== "custom") {
-      setActiveTemplate("custom");
-    }
-  }, [activeTemplate]);
+      if (activeTemplate !== "custom") {
+        setActiveTemplate("custom");
+      }
+    },
+    [activeTemplate],
+  );
 
   const handleSelectAll = useCallback((selected: boolean) => {
     const allSections = {} as ReportSelections;
-    Object.entries(REPORT_TEMPLATES.full.selections).forEach(([section, items]) => {
-      allSections[section] = {};
-      Object.keys(items).forEach((item) => {
-        allSections[section][item] = selected;
-      });
-    });
+    Object.entries(REPORT_TEMPLATES.full.selections).forEach(
+      ([section, items]) => {
+        allSections[section] = {};
+        Object.keys(items).forEach((item) => {
+          allSections[section][item] = selected;
+        });
+      },
+    );
     setSelections(allSections);
     setActiveTemplate("custom");
   }, []);
@@ -221,8 +228,10 @@ export function PDFGenerator({
             </SelectContent>
           </Select>
           <span className="text-muted-foreground text-sm flex-grow">
-            {REPORT_TEMPLATES[activeTemplate as keyof typeof REPORT_TEMPLATES]
-              .description}
+            {
+              REPORT_TEMPLATES[activeTemplate as keyof typeof REPORT_TEMPLATES]
+                .description
+            }
           </span>
         </div>
 
@@ -252,8 +261,7 @@ export function PDFGenerator({
               <TabsTrigger key={section} value={section}>
                 {section
                   .replace(/([A-Z])/g, " $1")
-                  .replace(/^./, (str) => str.toUpperCase())
-                  .replace(/\bM2/, "m²")}
+                  .replace(/^./, (str) => str.toUpperCase())}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -283,7 +291,7 @@ export function PDFGenerator({
                             {itemId
                               .replace(/([A-Z])/g, " $1")
                               .replace(/^./, (str) => str.toUpperCase())
-                              .replace(/\bM2/, "m²")}
+                              .replace(/\b M2/, "/m²")}
                           </Label>
                         </div>
                       ))}
@@ -291,7 +299,7 @@ export function PDFGenerator({
                   </CardContent>
                 </Card>
               </TabsContent>
-            )
+            ),
           )}
         </Tabs>
       </div>

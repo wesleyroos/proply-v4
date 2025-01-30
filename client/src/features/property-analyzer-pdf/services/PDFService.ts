@@ -295,7 +295,7 @@ export async function generatePDF(
       [
         "Current Property Rate/m²",
         formatCurrency(
-          data.propertyDetails.purchasePrice / data.propertyDetails.floorArea,
+          data.propertyDetails. purchasePrice / data.propertyDetails.floorArea,
         ),
       ],
       ["Area Rate/m²", formatCurrency(data.propertyDetails.ratePerSquareMeter)],

@@ -11,6 +11,9 @@ export interface PropertyDetails {
   areaRate: number;
   rateDifference: number;
   propertyDescription?: string;
+  areaRateM2: number;
+  currentPropertyRateM2: number;
+  rateM2Difference: number;
 }
 
 export interface FinancialMetrics {
@@ -113,16 +116,14 @@ export interface ReportSelections {
     bathrooms?: boolean;
     floorArea?: boolean;
     parkingSpaces?: boolean;
+    purchasePrice?: boolean;
     propertyRatePerSquareMeter?: boolean;
     areaRatePerSquareMeter?: boolean;
     rateDifference?: boolean;
     propertyDescription?: boolean;
-    areaRateM2?: boolean;
-    currentPropertyRateM2?: boolean; 
-    rateM2Difference?: boolean;
   };
   financialMetrics?: {
-    purchasePrice?: boolean;
+    // purchasePrice?: boolean;
     depositAmount?: boolean;
     depositPercentage?: boolean;
     interestRate?: boolean;
