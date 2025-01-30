@@ -1019,12 +1019,15 @@ export async function generatePDF(
 
       const years = [1, 2, 3, 4, 5, 10, 20];
       const metrics = data.investmentMetrics?.[term] || [];
+      
+      // Add debug logging
+      console.log(`Investment metrics for ${term}:`, metrics);
 
       const tableData = [
         [
           "Gross Yield",
-          ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+          ...years.map((year, index) => {
+            const metric = metrics[index] || {};
             return formatPercentage(metric.grossYield || 0);
           }),
         ],
