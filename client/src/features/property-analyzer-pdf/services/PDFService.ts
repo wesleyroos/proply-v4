@@ -109,66 +109,7 @@ export async function generatePDF(
     console.log("2!@!@!@!");
     console.log(data);
 
-    // Create safe references with proper type assertions
-    // let details = data.propertyDetails
 
-    // as {
-    //   address: string;
-    //   purchasePrice: number;
-    //   floorArea: number;
-    //   ratePerSquareMeter: number;
-    //   bedrooms: number;
-    //   bathrooms: number;
-    //   parkingSpaces: number;
-    // };
-
-    // const performance = data.performance || {
-    //   shortTermNightlyRate: 0,
-    //   annualOccupancy: 0,
-    //   shortTermAnnualRevenue: 0,
-    //   longTermAnnualRevenue: 0,
-    //   shortTermGrossYield: 0,
-    //   longTermGrossYield: 0
-    // };
-
-    // const metrics = data.financialMetrics || {
-    //   depositAmount: 0,
-    //   depositPercentage: 0,
-    //   interestRate: 0,
-    //   monthlyBondRepayment: 0,
-    //   bondRegistration: 0,
-    //   transferCosts: 0,
-    //   loanTerm: 20,
-    //   annualAppreciation: 5
-    // };
-
-    // const expenses = data.operatingExpenses || {
-    //   managementFee: data.propertyDetails?.managementFee || 0,
-    //   monthlyLevies: 0,
-    //   monthlyRatesTaxes: 0,
-    //   otherMonthlyExpenses: 0,
-    //   maintenancePercent: 0
-    // };
-
-    // const analysis = data.analysis || {
-    //   netOperatingIncome: {},
-    //   longTermNetOperatingIncome: {},
-    //   revenueProjections: { shortTerm: {}, longTerm: {} }
-    // };
-
-    // Initialize PDF
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4",
-    });
-
-    // Helper to check if section/item is selected
-    const isSelected = (section: string, item: string) => {
-      return selections[section]?.[item] === true;
-    };
-
-    // Constants for layout
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     const margin = 20;
@@ -889,22 +830,6 @@ export async function generatePDF(
       const operatingIncome = term === "shortTerm" ? data.analysis.netOperatingIncome : data.analysis.longTermNetOperatingIncome || {};
       const revenueData = data.analysis.revenueProjections?.[term] || {};
 
-      // // Add debug log after getting operating income
-      // console.log(`${term} Operating Income Data:`, {
-      //   operatingIncome,
-      //   path:
-      //     term === "shortTerm"
-      //       ? "data.analysis.netOperatingIncome"
-      //       : "data.analysis.longTermNetOperatingIncome",
-      // });
-
-      // // Add debug log after getting revenue data
-      // console.log(`${term} Revenue Data:`, {
-      //   revenueData,
-      //   fullRevenueProjections: data.analysis.revenueProjections,
-      //   path: `data.analysis.revenueProjections.${term}`,
-      // });
-
       const tableData = [
         [
           "Annual Revenue",
@@ -1018,62 +943,71 @@ export async function generatePDF(
       startY += 10;
 
       const years = [1, 2, 3, 4, 5, 10, 20];
+      const yearToIndex = new Map([
+        [1, 0],
+        [2, 1],
+        [3, 2],
+        [4, 3],
+        [5, 4],
+        [10, 5],
+        [20, 6],
+      ]);
       const metrics = data.investmentMetrics?.[term] || [];
 
       const tableData = [
         [
           "Gross Yield",
           ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+            const metric = metrics[yearToIndex.get(year)!] || {};
             return formatPercentage(metric.grossYield || 0);
           }),
         ],
         [
           "Net Yield",
           ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+            const metric = metrics[yearToIndex.get(year)!] || {};
             return formatPercentage(metric.netYield || 0);
           }),
         ],
         [
           "ROE",
           ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+            const metric = metrics[yearToIndex.get(year)!] || {};
             return formatPercentage(metric.returnOnEquity || 0);
           }),
         ],
         [
           "Annual Return",
           ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+            const metric = metrics[yearToIndex.get(year)!] || {};
             return formatPercentage(metric.annualReturn || 0);
           }),
         ],
         [
           "Cap Rate",
           ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+            const metric = metrics[yearToIndex.get(year)!] || {};
             return formatPercentage(metric.capRate || 0);
           }),
         ],
         [
           "Cash on Cash",
           ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+            const metric = metrics[yearToIndex.get(year)!] || {};
             return formatPercentage(metric.cashOnCashReturn || 0);
           }),
         ],
         [
           "IRR",
           ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+            const metric = metrics[yearToIndex.get(year)!] || {};
             return formatPercentage(metric.irr || 0);
           }),
         ],
         [
           "Net Worth Change",
           ...years.map((year) => {
-            const metric = metrics[year - 1] || {};
+            const metric = metrics[yearToIndex.get(year)!] || {};
             return formatCurrency(metric.netWorthChange || 0);
           }),
         ],
