@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { ReportSelections } from "../types/propertyReport";
 import { useProAccess } from "@/hooks/use-pro-access";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 const FULL_TEMPLATE_SELECTIONS = {
   propertyDetails: {
