@@ -193,10 +193,6 @@ export default function CashflowMetrics({
                           {formatter(
                             revenueProjections.shortTerm?.[`year${year}`],
                           )}
-                          <span
-                            className="h-2 w-2 rounded-full bg-red-500"
-                            title="Calculated by analysis engine"
-                          />
                         </div>
                       </td>
                     ))}
@@ -228,10 +224,6 @@ export default function CashflowMetrics({
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
                           {formatter(operatingExpenses[`year${year}`])}
-                          <span
-                            className="h-2 w-2 rounded-full bg-red-500"
-                            title="Calculated by analysis engine"
-                          />
                         </div>
                       </td>
                     ))}
@@ -260,10 +252,6 @@ export default function CashflowMetrics({
                           {formatter(
                             netOperatingIncome?.[`year${year}`]?.value || 0,
                           )}
-                          <span
-                            className="h-2 w-2 rounded-full bg-red-500"
-                            title="Calculated by analysis engine"
-                          />
                         </div>
                       </td>
                     ))}
@@ -290,10 +278,6 @@ export default function CashflowMetrics({
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
                           {formatter(monthlyBondRepayment * 12)}
-                          <span
-                            className="h-2 w-2 rounded-full bg-red-500"
-                            title="Calculated by analysis engine"
-                          />
                         </div>
                       </td>
                     ))}
@@ -328,10 +312,6 @@ export default function CashflowMetrics({
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
                             {formatter(annualCashflow)}
-                            <span
-                              className="h-2 w-2 rounded-full bg-red-500"
-                              title="Calculated by analysis engine"
-                            />
                           </div>
                         </td>
                       );
@@ -373,10 +353,6 @@ export default function CashflowMetrics({
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
                             {formatter(cumulativeCashflow)}
-                            <span
-                              className="h-2 w-2 rounded-full bg-red-500"
-                              title="Calculated by analysis engine"
-                            />
                           </div>
                         </td>
                       );
@@ -426,10 +402,6 @@ export default function CashflowMetrics({
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
                           {formatter(revenueProjections.longTerm?.[`year${year}`] || 0)}
-                          <span
-                            className="h-2 w-2 rounded-full bg-red-500"
-                            title="Calculated by analysis engine"
-                          />
                         </div>
                       </td>
                     ))}
@@ -462,10 +434,6 @@ export default function CashflowMetrics({
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
                             {formatter(longTermOperatingExpenses[`year${year}`])}
-                            <span
-                              className="h-2 w-2 rounded-full bg-red-500"
-                              title="Calculated by analysis engine"
-                            />
                           </div>
                         </td>
                       );
@@ -499,10 +467,6 @@ export default function CashflowMetrics({
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
                             {formatter(income)}
-                            <span
-                              className="h-2 w-2 rounded-full bg-red-500"
-                              title="Calculated by analysis engine"
-                            />
                           </div>
                         </td>
                       );
@@ -530,10 +494,6 @@ export default function CashflowMetrics({
                       <td key={year} className="text-right py-3 px-6">
                         <div className="flex items-center justify-end gap-2">
                           {formatter(monthlyBondRepayment * 12)}
-                          <span
-                            className="h-2 w-2 rounded-full bg-red-500"
-                            title="Calculated by analysis engine"
-                          />
                         </div>
                       </td>
                     ))}
@@ -567,10 +527,6 @@ export default function CashflowMetrics({
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
                             {formatter(cashflow)}
-                            <span
-                              className="h-2 w-2 rounded-full bg-red-500"
-                              title="Calculated by analysis engine"
-                            />
                           </div>
                         </td>
                       );
@@ -609,10 +565,6 @@ export default function CashflowMetrics({
                         <td key={year} className="text-right py-3 px-6">
                           <div className="flex items-center justify-end gap-2">
                             {formatter(cumulativeCashflow)}
-                            <span
-                              className="h-2 w-2 rounded-full bg-red-500"
-                              title="Calculated by analysis engine"
-                            />
                           </div>
                         </td>
                       );
