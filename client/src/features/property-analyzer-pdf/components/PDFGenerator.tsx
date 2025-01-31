@@ -136,6 +136,7 @@ export function PDFGenerator({
     REPORT_TEMPLATES.basic.selections,
   );
   const [progress, setProgress] = useState(0);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const { hasAccess: hasProAccess } = useProAccess();
 
   const handleTemplateChange = useCallback((template: string) => {
@@ -211,17 +212,41 @@ export function PDFGenerator({
               ) : (
                 <>
                   <SelectItem value="full" disabled className="opacity-50">
-                    <div className="flex items-center gap-2">
-                      Full Analysis
-                      <Sparkles className="h-4 w-4 text-primary" />
-                      <span className="text-xs text-primary">Pro</span>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-2">
+                        Full Analysis
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span className="text-xs text-primary">Pro</span>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setUpgradeOpen(true);
+                        }}
+                        className="text-xs text-primary underline hover:text-primary/80"
+                      >
+                        upgrade
+                      </button>
                     </div>
                   </SelectItem>
                   <SelectItem value="custom" disabled className="opacity-50">
-                    <div className="flex items-center gap-2">
-                      Custom Analysis
-                      <Sparkles className="h-4 w-4 text-primary" />
-                      <span className="text-xs text-primary">Pro</span>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-2">
+                        Custom Analysis
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span className="text-xs text-primary">Pro</span>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setUpgradeOpen(true);
+                        }}
+                        className="text-xs text-primary underline hover:text-primary/80"
+                      >
+                        upgrade
+                      </button>
                     </div>
                   </SelectItem>
                 </>
@@ -329,5 +354,6 @@ export function PDFGenerator({
         {isGenerating && <Progress value={progress} className="w-full" />}
       </div>
     </div>
+    <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
   );
 }
