@@ -217,7 +217,7 @@ export function PDFGenerator({
                       <div className="flex items-center gap-2">
                         Full Analysis
                         <Sparkles className="h-4 w-4 text-primary" />
-                        <span className="text-xs text-primary mr-2">Pro</span>
+                        <span className="text-xs text-primary">Pro</span>
                       </div>
                       <button
                         onClick={(e) => {
@@ -236,7 +236,7 @@ export function PDFGenerator({
                       <div className="flex items-center gap-2">
                         Custom Analysis
                         <Sparkles className="h-4 w-4 text-primary" />
-                        <span className="text-xs text-primary mr-2">Pro</span>
+                        <span className="text-xs text-primary">Pro</span>
                       </div>
                       <button
                         onClick={(e) => {
