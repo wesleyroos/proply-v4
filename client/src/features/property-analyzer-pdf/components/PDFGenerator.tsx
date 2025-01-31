@@ -353,7 +353,7 @@ export function PDFGenerator({
         </div>
         {isGenerating && <Progress value={progress} className="w-full" />}
       </div>
-    </div>
     <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
+    </div>
   );
 }
