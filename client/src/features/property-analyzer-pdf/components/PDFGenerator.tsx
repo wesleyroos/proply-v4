@@ -199,9 +199,9 @@ export function PDFGenerator({
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
         {!hasProAccess && (
-          <Button 
+          <Button
             onClick={() => setUpgradeOpen(true)}
-            className="absolute right-6 top-4 bg-primary hover:bg-primary/90"
+            className="absolute right-9 top-4 bg-primary hover:bg-primary/90"
           >
             <Sparkles className="h-4 w-4 mr-2" />
             Upgrade to Pro
@@ -363,7 +363,7 @@ export function PDFGenerator({
         </div>
         {isGenerating && <Progress value={progress} className="w-full" />}
       </div>
-    <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
+      <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </div>
   );
 }
