@@ -286,6 +286,7 @@ export function PDFGenerator({
                         onCheckedChange={() =>
                           handleSectionToggle(sectionId, itemId)
                         }
+                        disabled={!hasProAccess && activeTemplate === "basic"}
                       />
                       <Label
                         htmlFor={`${sectionId}-${itemId}`}
