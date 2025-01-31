@@ -135,7 +135,7 @@ export default function DashboardPage() {
       {/* Quick Links */}
       <div className="grid gap-6 md:grid-cols-3 mb-6">
         <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-          <Link href="/property-analyzer">
+          <Link href="/dashboard/property-analyzer">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ export default function DashboardPage() {
         </Card>
 
         <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-          <Link href="/rent-compare">
+          <Link href="/dashboard/rent-compare">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
