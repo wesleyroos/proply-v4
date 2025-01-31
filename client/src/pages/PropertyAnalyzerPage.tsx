@@ -1145,7 +1145,7 @@ export default function PropertyAnalyzerPage() {
                             {(
                               analysisResult.analysis.purchasePrice /
                               (analysisResult.floorArea || 1)
-                            ).toLocaleString()}
+                            ).toLocaleString(undefined, {maximumFractionDigits: 2, minimumFractionDigits: 2})}
                           </p>
                         </div>
                         <div>
@@ -1169,7 +1169,7 @@ export default function PropertyAnalyzerPage() {
                               R
                               {Math.abs(
                                 analysisResult.rateDifference,
-                              ).toLocaleString()}
+                              ).toLocaleString(undefined, {maximumFractionDigits: 2, minimumFractionDigits: 2})}
                             </p>
                             <span
                               className={`text-sm font-medium ${analysisResult.rateDifference > 0 ? "text-green-600" : "text-red-600"}`}
