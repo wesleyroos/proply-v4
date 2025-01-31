@@ -239,18 +239,30 @@ export function PDFGenerator({
         <div className="flex space-x-2">
           <Button
             variant="outline"
-            onClick={() => handleSelectAll(true)}
+            onClick={() => hasProAccess && handleSelectAll(true)}
             className="text-sm"
+            disabled={!hasProAccess}
           >
             <Check className="w-4 h-4 mr-2" />
             Select All
+            {!hasProAccess && (
+              <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                PRO
+              </span>
+            )}
           </Button>
           <Button
             variant="outline"
-            onClick={() => handleSelectAll(false)}
+            onClick={() => hasProAccess && handleSelectAll(false)}
             className="text-sm"
+            disabled={!hasProAccess}
           >
             Deselect All
+            {!hasProAccess && (
+              <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                PRO
+              </span>
+            )}
           </Button>
         </div>
       </div>
