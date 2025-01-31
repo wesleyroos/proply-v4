@@ -1091,7 +1091,7 @@ export default function PropertyAnalyzerPage() {
                           <div>
                             <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                               R{" "}
-                              {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() ||
+                              {(analysisResult.analysis.longTermAnnualRevenue || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") ||
                                 "0"}
                               <span
                                 className="w-2 h-2 rounded-full bg-red-500"
