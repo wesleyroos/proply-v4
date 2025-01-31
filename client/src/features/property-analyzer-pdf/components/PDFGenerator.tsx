@@ -240,7 +240,6 @@ export function PDFGenerator({
                         }}
                         className="text-xs text-primary underline hover:text-primary/80"
                       >
-                        upgrade
                       </button>
                     </div>
                   </SelectItem>
@@ -259,7 +258,6 @@ export function PDFGenerator({
                         }}
                         className="text-xs text-primary underline hover:text-primary/80"
                       >
-                        upgrade
                       </button>
                     </div>
                   </SelectItem>
