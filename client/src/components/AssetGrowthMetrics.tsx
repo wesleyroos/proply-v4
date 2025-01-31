@@ -125,10 +125,7 @@ return (
                   const propertyValue = purchasePrice * Math.pow(1 + (annualAppreciation / 100), year);
                   return (
                     <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        R{Math.round(propertyValue).toLocaleString()}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
+                      R{Math.round(propertyValue).toLocaleString()}
                     </td>
                   );
                 })}
@@ -148,10 +145,7 @@ return (
                   const appreciationAmount = endValue - startValue;
                   return (
                     <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        R{Math.round(appreciationAmount).toLocaleString()}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
+                      R{Math.round(appreciationAmount).toLocaleString()}
                     </td>
                   );
                 })}
@@ -170,10 +164,7 @@ return (
                   const loanBalance = calculateLoanBalance(monthsPaid);
                   return (
                     <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        R{Math.round(loanBalance).toLocaleString()}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
+                      R{Math.round(loanBalance).toLocaleString()}
                     </td>
                   );
                 })}
@@ -195,10 +186,7 @@ return (
                   const interestPaid = totalPaid - principalPaid;
                   return (
                     <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        R{Math.round(Math.max(0, interestPaid)).toLocaleString()}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
+                      R{Math.round(Math.max(0, interestPaid)).toLocaleString()}
                     </td>
                   );
                 })}
@@ -221,10 +209,7 @@ return (
                   const ratio = principalPayment > 0 ? (interestPayment / principalPayment) * 100 : 0;
                   return (
                     <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        {ratio.toFixed(1)}%
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
+                      {ratio.toFixed(1)}%
                     </td>
                   );
                 })}
@@ -244,10 +229,7 @@ return (
                   const totalEquity = propertyValue - loanBalance;
                   return (
                     <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        R{Math.round(Math.max(0, totalEquity)).toLocaleString()}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
+                      R{Math.round(Math.max(0, totalEquity)).toLocaleString()}
                     </td>
                   );
                 })}
@@ -267,10 +249,7 @@ return (
                   const equityFromRepayment = loanAmount - loanBalance;
                   return (
                     <td key={year} className="text-right py-3 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        R{Math.round(Math.max(0, equityFromRepayment)).toLocaleString()}
-                        <span className="h-2 w-2 rounded-full bg-red-500" title="Analyzer engine metric"/>
-                      </div>
+                      R{Math.round(Math.max(0, equityFromRepayment)).toLocaleString()}
                     </td>
                   );
                 })}
