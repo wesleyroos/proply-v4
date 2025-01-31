@@ -1109,8 +1109,7 @@ export default function PropertyAnalyzerPage() {
                           </div>
                           <p className="text-sm flex items-center gap-2">
                             <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
-                              {analysisResult.longTermGrossYield?.toFixed(2) ||
-                                "0"}
+                              {Number(analysisResult.longTermGrossYield || 0).toFixed(2)}
                               % Gross Yield
                               <span
                                 className="w-2 h-2 rounded-full bg-red-500"
