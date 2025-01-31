@@ -15,7 +15,7 @@ export const formatPercentage = (value: number): string => {
   return new Intl.NumberFormat('en-ZA', {
     style: 'percent',
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    maximumFractionDigits: 2,
   }).format(value / 100);
 };
 
