@@ -1153,7 +1153,7 @@ export default function PropertyAnalyzerPage() {
                             {(
                               analysisResult.analysis.purchasePrice /
                               (analysisResult.floorArea || 1)
-                            ).toLocaleString()}
+                            ).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                           </p>
                         </div>
                         <div>
