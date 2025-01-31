@@ -235,7 +235,8 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                       variant="outline"
                       className="w-full h-10"
                       onClick={() => {
-                        if (hasProAccess) {
+                        const { hasAccess } = useProAccess();
+                        if (hasAccess) {
                           fetchRevenueData();
                         } else {
                           setShowUpgradeModal(true);
