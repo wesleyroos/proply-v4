@@ -95,7 +95,11 @@ const REPORT_TEMPLATES = {
       financialMetrics: {
         depositAmount: true,
         depositPercentage: true,
+        interestRate: true,
+        loanTerm: true,
         monthlyBondRepayment: true,
+        bondRegistration: true,
+        transferCosts: true,
         totalCapitalRequired: true,
       },
       operatingExpenses: {
