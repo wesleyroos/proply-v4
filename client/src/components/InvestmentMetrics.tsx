@@ -123,7 +123,10 @@ export default function InvestmentMetrics({
               </td>
               {years.map((year) => (
                 <td key={year} className="py-3 px-4 text-right">
-                  {format(getMetricValue(year, key, rentalType))}
+                  <div className="flex items-center justify-end gap-2">
+                    <span>{format(getMetricValue(year, key, rentalType))}</span>
+                    <span className="w-2 h-2 rounded-full bg-red-500" />
+                  </div>
                 </td>
               ))}
             </tr>
