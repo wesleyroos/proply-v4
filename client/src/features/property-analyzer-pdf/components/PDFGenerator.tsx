@@ -135,7 +135,7 @@ export function PDFGenerator({
     REPORT_TEMPLATES.basic.selections,
   );
   const [progress, setProgress] = useState(0);
-  const hasProAccess = useProAccess();
+  const { hasAccess: hasProAccess } = useProAccess();
 
   const handleTemplateChange = useCallback((template: string) => {
     setActiveTemplate(template);
