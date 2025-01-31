@@ -198,6 +198,15 @@ export function PDFGenerator({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
+        {!hasProAccess && (
+          <Button 
+            onClick={() => setUpgradeOpen(true)}
+            className="absolute right-4 top-4 bg-primary hover:bg-primary/90"
+          >
+            <Sparkles className="h-4 w-4 mr-2" />
+            Upgrade to Pro
+          </Button>
+        )}
         <div className="flex items-center space-x-4 w-full">
           <Select value={activeTemplate} onValueChange={handleTemplateChange}>
             <SelectTrigger className="w-[200px]">
