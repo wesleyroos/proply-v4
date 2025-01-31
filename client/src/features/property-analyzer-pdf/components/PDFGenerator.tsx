@@ -4,7 +4,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Loader2, Check, Sparkles } from "lucide-react";
 import {
   Select,
@@ -15,6 +14,65 @@ import {
 } from "@/components/ui/select";
 import { ReportSelections } from "../types/propertyReport";
 import { useProAccess } from "@/hooks/use-pro-access";
+
+const FULL_TEMPLATE_SELECTIONS = {
+  propertyDetails: {
+    address: true,
+    propertyPhoto: true,
+    mapImage: true,
+    bedrooms: true,
+    bathrooms: true,
+    floorArea: true,
+    parkingSpaces: true,
+    purchasePrice: true,
+    propertyDescription: true,
+    areaRateM2: true,
+    currentPropertyRateM2: true,
+    rateM2Difference: true,
+  },
+  financialMetrics: {
+    depositAmount: true,
+    depositPercentage: true,
+    interestRate: true,
+    loanTerm: true,
+    monthlyBondRepayment: true,
+    bondRegistration: true,
+    transferCosts: true,
+    totalCapitalRequired: true,
+  },
+  operatingExpenses: {
+    monthlyLevies: true,
+    monthlyRatesTaxes: true,
+    otherMonthlyExpenses: true,
+    maintenancePercent: true,
+    managementFee: true,
+  },
+  rentalPerformance: {
+    shortTermNightlyRate: true,
+    annualOccupancy: true,
+    shortTermAnnualRevenue: true,
+    longTermAnnualRevenue: true,
+    shortTermGrossYield: true,
+    longTermGrossYield: true,
+    platformFee: true,
+  },
+  investmentMetrics: {
+    grossYield: true,
+    netYield: true,
+    returnOnEquity: true,
+    annualReturn: true,
+    capRate: true,
+    cashOnCashReturn: true,
+    irr: true,
+    netWorthChange: true,
+  },
+  cashflowAnalysis: {
+    annualCashflow: true,
+    cumulativeRentalIncome: true,
+    netWorthChange: true,
+    revenueProjections: true,
+  },
+};
 
 const REPORT_TEMPLATES = {
   basic: {
@@ -53,64 +111,7 @@ const REPORT_TEMPLATES = {
   full: {
     name: "Full Analysis",
     description: "Comprehensive property analysis with all metrics",
-    selections: {
-      propertyDetails: {
-        address: true,
-        propertyPhoto: true,
-        mapImage: true,
-        bedrooms: true,
-        bathrooms: true,
-        floorArea: true,
-        parkingSpaces: true,
-        purchasePrice: true,
-        propertyDescription: true,
-        areaRateM2: true,
-        currentPropertyRateM2: true,
-        rateM2Difference: true,
-      },
-      financialMetrics: {
-        depositAmount: true,
-        depositPercentage: true,
-        interestRate: true,
-        loanTerm: true,
-        monthlyBondRepayment: true,
-        bondRegistration: true,
-        transferCosts: true,
-        totalCapitalRequired: true,
-      },
-      operatingExpenses: {
-        monthlyLevies: true,
-        monthlyRatesTaxes: true,
-        otherMonthlyExpenses: true,
-        maintenancePercent: true,
-        managementFee: true,
-      },
-      rentalPerformance: {
-        shortTermNightlyRate: true,
-        annualOccupancy: true,
-        shortTermAnnualRevenue: true,
-        longTermAnnualRevenue: true,
-        shortTermGrossYield: true,
-        longTermGrossYield: true,
-        platformFee: true,
-      },
-      investmentMetrics: {
-        grossYield: true,
-        netYield: true,
-        returnOnEquity: true,
-        annualReturn: true,
-        capRate: true,
-        cashOnCashReturn: true,
-        irr: true,
-        netWorthChange: true,
-      },
-      cashflowAnalysis: {
-        annualCashflow: true,
-        cumulativeRentalIncome: true,
-        netWorthChange: true,
-        revenueProjections: true,
-      },
-    },
+    selections: FULL_TEMPLATE_SELECTIONS,
   },
   custom: {
     name: "Custom",
@@ -254,54 +255,42 @@ export function PDFGenerator({
         </div>
       </div>
 
-      <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-        <Tabs defaultValue="propertyDetails" className="w-full">
-          <TabsList className="w-full justify-start">
-            {Object.keys(REPORT_TEMPLATES.full.selections).map((section) => (
-              <TabsTrigger key={section} value={section}>
-                {section
-                  .replace(/([A-Z])/g, " $1")
-                  .replace(/^./, (str) => str.toUpperCase())}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {Object.entries(REPORT_TEMPLATES.full.selections).map(
-            ([sectionId, sectionItems]) => (
-              <TabsContent key={sectionId} value={sectionId}>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      {Object.keys(sectionItems).map((itemId) => (
-                        <div
-                          key={itemId}
-                          className="flex items-center space-x-2"
-                        >
-                          <Checkbox
-                            id={`${sectionId}-${itemId}`}
-                            checked={selections[sectionId]?.[itemId] ?? false}
-                            onCheckedChange={() =>
-                              handleSectionToggle(sectionId, itemId)
-                            }
-                          />
-                          <Label
-                            htmlFor={`${sectionId}-${itemId}`}
-                            className="text-sm cursor-pointer"
-                          >
-                            {itemId
-                              .replace(/([A-Z])/g, " $1")
-                              .replace(/^./, (str) => str.toUpperCase())
-                              .replace(/\b M2/, "/m²")}
-                          </Label>
-                        </div>
-                      ))}
+      <div className="max-h-[70vh] overflow-y-auto pr-2 space-y-6">
+        {Object.entries(REPORT_TEMPLATES.full.selections).map(
+          ([sectionId, sectionItems]) => (
+            <Card key={sectionId}>
+              <CardContent className="pt-6">
+                <h3 className="text-lg font-semibold mb-4">
+                  {sectionId
+                    .replace(/([A-Z])/g, " $1")
+                    .replace(/^./, (str) => str.toUpperCase())}
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.keys(sectionItems).map((itemId) => (
+                    <div key={itemId} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`${sectionId}-${itemId}`}
+                        checked={selections[sectionId]?.[itemId] ?? false}
+                        onCheckedChange={() =>
+                          handleSectionToggle(sectionId, itemId)
+                        }
+                      />
+                      <Label
+                        htmlFor={`${sectionId}-${itemId}`}
+                        className="text-sm cursor-pointer"
+                      >
+                        {itemId
+                          .replace(/([A-Z])/g, " $1")
+                          .replace(/^./, (str) => str.toUpperCase())
+                          .replace(/\b M2/, "/m²")}
+                      </Label>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            ),
-          )}
-        </Tabs>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ),
+        )}
       </div>
 
       <div className="flex space-x-4">
