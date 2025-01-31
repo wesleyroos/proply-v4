@@ -27,7 +27,7 @@ import {
   Info,
   Sparkles,
 } from "lucide-react";
-import AnalyzerIndicator from "@/components/AnalyzerIndicator";
+//import AnalyzerIndicator from "@/components/AnalyzerIndicator"; // Removed import
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
 import RentalPerformance from "@/components/RentalPerformance";
@@ -819,9 +819,8 @@ export default function PropertyAnalyzerPage() {
 
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-slate-600">
                         Purchase Price
-                        <AnalyzerIndicator />
                       </h3>
                       <p className="mt-2 text-2xl font-bold text-slate-800">
                         R
@@ -829,9 +828,8 @@ export default function PropertyAnalyzerPage() {
                       </p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-slate-600">
                         Deposit
-                        <AnalyzerIndicator />
                       </h3>
                       <p className="mt-2 text-2xl font-bold text-slate-800">
                         R{analysisResult.deposit?.toLocaleString() || "0"}
@@ -844,18 +842,16 @@ export default function PropertyAnalyzerPage() {
 
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-slate-600">
                         Interest Rate
-                        <AnalyzerIndicator />
                       </h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         {analysisResult.interestRate || "0"}%
                       </p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-slate-600">
                         Loan Term
-                        <AnalyzerIndicator />
                       </h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         {analysisResult.loanTerm} years
@@ -865,9 +861,8 @@ export default function PropertyAnalyzerPage() {
 
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-slate-600">
                         Monthly Bond Payment
-                        <AnalyzerIndicator />
                       </h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         R
@@ -876,9 +871,8 @@ export default function PropertyAnalyzerPage() {
                       </p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-slate-600">
                         Bond Registration
-                        <AnalyzerIndicator />
                       </h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         R
@@ -891,9 +885,8 @@ export default function PropertyAnalyzerPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-slate-600">
                       Transfer Costs
-                      <AnalyzerIndicator />
                     </h3>
                     <p className="mt-2 text-lg font-bold text-slate-800">
                       R
@@ -938,9 +931,8 @@ export default function PropertyAnalyzerPage() {
                   </div>
 
                   <div className="pt-4 mt-4 border-t border-gray-200">
-                    <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <h3 className="text-base font-bold text-slate-800">
                       Total Capital Required
-                      <AnalyzerIndicator />
                     </h3>
                     <p className="mt-2 text-2xl font-bold text-slate-800">
                       R
@@ -977,16 +969,12 @@ export default function PropertyAnalyzerPage() {
                         </h3>
                         <div className="space-y-2">
                           <div>
-                            <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                            <p className="text-2xl font-bold text-slate-800">
                               <span>
                                 R
                                 {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
                                   "0"}
                               </span>
-                              <span
-                                className="w-2 h-2 rounded-full bg-red-500"
-                                title="Data from analyzer engine"
-                              />
                             </p>
                             <p className="text-base text-slate-600">
                               R
@@ -998,14 +986,10 @@ export default function PropertyAnalyzerPage() {
                             </p>
                           </div>
                           <p className="text-sm flex items-center gap-2">
-                            <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
+                            <span className="font-semibold text-emerald-600 text-base">
                               {analysisResult.shortTermGrossYield?.toFixed(2) ||
                                 "0"}
                               % Gross Yield
-                              <span
-                                className="w-2 h-2 rounded-full bg-red-500"
-                                title="Calculated by analysis engine"
-                              />
                             </span>
                           </p>
                           <div className="pt-2 border-t border-blue-100">
@@ -1013,21 +997,17 @@ export default function PropertyAnalyzerPage() {
                               <p className="text-sm text-slate-600">
                                 Nightly Rate:
                               </p>
-                              <p className="text-sm font-medium flex items-center gap-2">
+                              <p className="text-sm font-medium">
                                 R
                                 {analysisResult.shortTermNightlyRate?.toLocaleString() ||
                                   "0"}
-                                <span
-                                  className="w-2 h-2 rounded-full bg-red-500"
-                                  title="Calculated by analysis engine"
-                                />
                               </p>
                             </div>
                             <div className="flex justify-between items-center mt-1">
                               <p className="text-sm text-slate-600">
                                 Fee-adjusted Rate:
                               </p>
-                              <p className="text-sm font-medium flex items-center gap-2">
+                              <p className="text-sm font-medium">
                                 R
                                 {analysisResult.shortTermNightlyRate
                                   ? Math.round(
@@ -1038,46 +1018,30 @@ export default function PropertyAnalyzerPage() {
                                             : 0.03)),
                                     ).toLocaleString()
                                   : "0"}
-                                <span
-                                  className="w-2 h-2 rounded-full bg-red-500"
-                                  title="Calculated by analysis engine"
-                                />
                               </p>
                             </div>
                             <div className="flex justify-between items-center mt-1">
                               <p className="text-sm text-slate-600">
                                 Platform Fee:
                               </p>
-                              <p className="text-sm font-medium text-red-600 flex items-center gap-2">
+                              <p className="text-sm font-medium text-red-600">
                                 {analysisResult.managementFee > 0 ? "15" : "3"}%
-                                <span
-                                  className="w-2 h-2 rounded-full bg-red-500"
-                                  title="Calculated by analysis engine"
-                                />
                               </p>
                             </div>
                             <div className="flex justify-between items-center mt-1">
                               <p className="text-sm text-slate-600">
                                 Management Fee:
                               </p>
-                              <p className="text-sm font-medium flex items-center gap-2">
+                              <p className="text-sm font-medium">
                                 {analysisResult.managementFee}%
-                                <span
-                                  className="w-2 h-2 rounded-full bg-red-500"
-                                  title="Calculated by analysis engine"
-                                />
                               </p>
                             </div>
                             <div className="flex justify-between items-center mt-1">
                               <p className="text-sm text-slate-600">
                                 Occupancy:
                               </p>
-                              <p className="text-sm font-medium flex items-center gap-2">
+                              <p className="text-sm font-medium">
                                 {analysisResult.annualOccupancy || "0"}%
-                                <span
-                                  className="w-2 h-2 rounded-full bg-red-500"
-                                  title="Calculated by analysis engine"
-                                />
                               </p>
                             </div>
                           </div>
@@ -1089,25 +1053,17 @@ export default function PropertyAnalyzerPage() {
                         </h3>
                         <div className="space-y-2">
                           <div>
-                            <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                            <p className="text-2xl font-bold text-slate-800">
                               R {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString(undefined, {maximumFractionDigits: 2, minimumFractionDigits: 2}) || "0"}
-                              <span
-                                className="w-2 h-2 rounded-full bg-red-500"
-                                title="Data from analyzer engine"
-                              />
                             </p>
                             <p className="text-base text-slate600">
                               R {Math.round((analysisResult.analysis.longTermAnnualRevenue || 0) / 12).toLocaleString()} /month
                             </p>
                           </div>
                           <p className="text-sm flex items-center gap-2">
-                            <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
+                            <span className="font-semibold text-emerald-600 text-base">
                               {analysisResult.longTermGrossYield?.toFixed(2) || "0"}
                               % Gross Yield
-                              <span
-                                className="w-2 h-2 rounded-full bg-red-500"
-                                title="Calculated by analysis engine"
-                              />
                             </span>
                           </p>
                         </div>
@@ -1127,18 +1083,16 @@ export default function PropertyAnalyzerPage() {
                     <div className="space-y-6">
                       <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                          <h3 className="text-sm font-semibold text-slate-600">
                             Floor Area
-                            <AnalyzerIndicator />
                           </h3>
                           <p className="mt-2 text-lg font-bold text-slate-800">
                             {analysisResult.floorArea || "0"} m²
                           </p>
                         </div>
                         <div>
-                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                          <h3 className="text-sm font-semibold text-slate-600">
                             Current Property Rate/m²
-                            <AnalyzerIndicator />
                           </h3>
                           <p className="mt-2 text-lg font-bold text-slate-800">
                             R
@@ -1149,18 +1103,16 @@ export default function PropertyAnalyzerPage() {
                           </p>
                         </div>
                         <div>
-                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                          <h3 className="text-sm font-semibold text-slate-600">
                             Area Rate/m²
-                            <AnalyzerIndicator />
                           </h3>
                           <p className="mt-2 text-lg font-bold text-slate-800">
                             R{formData?.cmaRatePerSqm?.toLocaleString() || "0"}
                           </p>
                         </div>
                         <div>
-                          <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                          <h3 className="text-sm font-semibold text-slate-600">
                             Rate/m² Difference
-                            <AnalyzerIndicator />
                           </h3>
                           <div className="flex items-center gap-2">
                             <p
