@@ -46,7 +46,7 @@ interface PropertyMapData {
 
 export default function DashboardPage() {
   const { user } = useUser();
-  const hasProAccess = useProAccess();
+  const { hasAccess: hasProAccess } = useProAccess();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Fetch property analyzer properties with user-specific query key
