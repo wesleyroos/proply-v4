@@ -12,7 +12,7 @@ export const formatCurrency = (value: number): string => {
 
 // Format percentage values consistently
 export const formatPercentage = (value: number): string => {
-  return `${value.toFixed(2)}%`;
+  return `${value.toFixed(1)}%`;
 };
 
 // ZAR currency formatter for detailed amounts
