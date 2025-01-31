@@ -201,7 +201,7 @@ export function PDFGenerator({
         {!hasProAccess && (
           <Button 
             onClick={() => setUpgradeOpen(true)}
-            className="absolute right-4 top-4 bg-primary hover:bg-primary/90"
+            className="absolute right-6 top-4 bg-primary hover:bg-primary/90"
           >
             <Sparkles className="h-4 w-4 mr-2" />
             Upgrade to Pro
