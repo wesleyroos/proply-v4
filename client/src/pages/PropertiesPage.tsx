@@ -80,7 +80,7 @@ export default function PropertiesPage() {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedPropertiesForComparison, setSelectedPropertiesForComparison] = useState<AnalyzerProperty[]>([]);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const hasProAccess = useProAccess();
+  const { hasAccess: hasProAccess } = useProAccess();
   const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection }>({
     field: 'address',
     direction: 'asc'
