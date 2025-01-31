@@ -3,11 +3,11 @@
 // Format currency values consistently
 export const formatCurrency = (value: number): string => {
   if (value >= 1000000) {
-    return `R${(value / 1000000).toFixed(1)}M`;
+    return `R${(value / 1000000).toFixed(2)}M`;
   } else if (value >= 1000) {
-    return `R${(value / 1000).toFixed(0)}k`;
+    return `R${(value / 1000).toFixed(2)}k`;
   }
-  return `R${value.toFixed(0)}`;
+  return `R${value.toFixed(2)}`;
 };
 
 // Format percentage values consistently
