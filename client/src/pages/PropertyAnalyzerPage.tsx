@@ -1177,7 +1177,7 @@ export default function PropertyAnalyzerPage() {
                               R
                               {Math.abs(
                                 analysisResult.rateDifference,
-                              ).toLocaleString()}
+                              ).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                             </p>
                             <span
                               className={`text-sm font-medium ${analysisResult.rateDifference > 0 ? "text-green-600" : "text-red-600"}`}
