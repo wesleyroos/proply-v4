@@ -255,7 +255,7 @@ export function PDFGenerator({
         </div>
       </div>
 
-      <div className="max-h-[70vh] overflow-y-auto pr-2 space-y-6">
+      <div className="max-h-[calc(70vh-120px)] overflow-y-auto pr-2 space-y-6 mb-6">
         {Object.entries(REPORT_TEMPLATES.full.selections).map(
           ([sectionId, sectionItems]) => (
             <Card key={sectionId}>
@@ -293,27 +293,28 @@ export function PDFGenerator({
         )}
       </div>
 
-      <div className="flex space-x-4">
-        <Button
-          className="flex-1"
-          onClick={handleGeneratePDF}
-          disabled={isGenerating}
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Generating PDF...
-            </>
-          ) : (
-            <>
-              <FileText className="w-4 h-4 mr-2" />
-              Generate PDF
-            </>
-          )}
-        </Button>
+      <div className="border-t pt-4 bg-background">
+        <div className="flex space-x-4 mb-2">
+          <Button
+            className="flex-1"
+            onClick={handleGeneratePDF}
+            disabled={isGenerating}
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Generating PDF...
+              </>
+            ) : (
+              <>
+                <FileText className="w-4 h-4 mr-2" />
+                Generate PDF
+              </>
+            )}
+          </Button>
+        </div>
+        {isGenerating && <Progress value={progress} className="w-full" />}
       </div>
-
-      {isGenerating && <Progress value={progress} className="w-full" />}
     </div>
   );
 }
