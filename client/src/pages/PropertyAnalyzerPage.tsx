@@ -1090,27 +1090,19 @@ export default function PropertyAnalyzerPage() {
                         <div className="space-y-2">
                           <div>
                             <p className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                              R{" "}
-                              {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString() ||
-                                "0"}
+                              R {analysisResult.analysis.longTermAnnualRevenue?.toLocaleString(undefined, {maximumFractionDigits: 2, minimumFractionDigits: 2}) || "0"}
                               <span
                                 className="w-2 h-2 rounded-full bg-red-500"
                                 title="Data from analyzer engine"
                               />
                             </p>
                             <p className="text-base text-slate600">
-                              R{" "}
-                              {Math.round(
-                                (analysisResult.analysis
-                                  .longTermAnnualRevenue || 0) / 12,
-                              ).toLocaleString()}{" "}
-                              /month
+                              R {Math.round((analysisResult.analysis.longTermAnnualRevenue || 0) / 12).toLocaleString()} /month
                             </p>
                           </div>
                           <p className="text-sm flex items-center gap-2">
                             <span className="font-semibold text-emerald-600 text-base flex items-center gap-2">
-                              {analysisResult.longTermGrossYield?.toFixed(2) ||
-                                "0"}
+                              {analysisResult.longTermGrossYield?.toFixed(2) || "0"}
                               % Gross Yield
                               <span
                                 className="w-2 h-2 rounded-full bg-red-500"
