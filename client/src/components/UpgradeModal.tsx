@@ -25,8 +25,8 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
     form.action = "https://www.payfast.co.za/eng/process";
 
     const paymentData = {
-      merchant_id: import.meta.env.VITE_PAYFAST_MERCHANT_ID,
-      merchant_key: import.meta.env.VITE_PAYFAST_MERCHANT_KEY,
+      merchant_id: import.meta.env.DEV ? "10000100" : import.meta.env.VITE_PAYFAST_MERCHANT_ID,
+      merchant_key: import.meta.env.DEV ? "46f0cd694581a" : import.meta.env.VITE_PAYFAST_MERCHANT_KEY,
       return_url: `${window.location.origin}/settings?payment=success`,
       cancel_url: `${window.location.origin}/settings?payment=cancelled`,
       notify_url: `${window.location.origin}/api/payment-webhook`,
