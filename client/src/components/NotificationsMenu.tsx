@@ -45,12 +45,12 @@ export default function NotificationsMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5 text-white" />
-          {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500" />
-          )}
-        </Button>
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-5 w-5 text-gray-600" />
+            {unreadCount > 0 && (
+              <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500" />
+            )}
+          </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
         {notifications.length === 0 ? (
