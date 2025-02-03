@@ -63,7 +63,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
     <div className="flex min-h-screen">
       <Sidebar />
       <main className="flex-1">
-        <div className="border-b px-6 py-3 flex justify-end">
+        <div className="px-6 py-3 flex justify-end bg-white">
           {user.isAdmin && <NotificationsMenu />}
         </div>
         <PageTransition>
