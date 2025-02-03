@@ -115,15 +115,21 @@ export function registerRoutes(app: Express): Server {
       });
 
       // Create notifications for admin users
+      console.log("Creating notifications for admins:", adminUsers.length);
       for (const admin of adminUsers) {
-        await db.insert(notifications).values({
-          userId: admin.id,
-          type: "new_user",
-          title: "New User Registration",
-          message: `${firstName} ${lastName} (${email}) just signed up`,
-          read: false,
-          timestamp: new Date(),
-        });
+        try {
+          const notification = await db.insert(notifications).values({
+            userId: admin.id,
+            type: "new_user",
+            title: "New User Registration",
+            message: `${firstName} ${lastName} (${email}) just signed up`,
+            read: false,
+            timestamp: new Date(),
+          }).returning();
+          console.log("Created notification:", notification[0]);
+        } catch (error) {
+          console.error("Error creating notification:", error);
+        }
       }
 
       // Log in the newly created user
@@ -674,6 +680,7 @@ export function registerRoutes(app: Express): Server {
     },
   );
 
+  // The delete user endpoint should be updated to include notification cleanup
   app.delete("/api/admin/users/:id", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
       return res.status(403).send("Not authorized");
@@ -701,27 +708,34 @@ export function registerRoutes(app: Express): Server {
       }
 
       try {
-        // First, remove the access code reference from the user
-        await db
-          .update(users)
-          .set({ accessCodeId: null })
-          .where(eq(users.id, userId));
+        // Delete related records in a transaction
+        await db.transaction(async (tx) => {
+          // Delete notifications about this user
+          await tx.delete(notifications)
+            .where(sql`${notifications.message} LIKE ${`%${targetUser.email}%`}`);
 
-        // Then delete any associated access codes
-        await db.delete(accessCodes).where(eq(accessCodes.usedBy, userId));
+          // First, remove the access code reference from the user
+          await tx.update(users)
+            .set({ accessCodeId: null })
+            .where(eq(users.id, userId));
 
-        // Delete any properties owned by the user
-        await db.delete(properties).where(eq(properties.userId, userId));
+          // Then delete any associated access codes
+          await tx.delete(accessCodes)
+            .where(eq(accessCodes.usedBy, userId));
 
-        // Finally, delete the user
-        await db.delete(users).where(eq(users.id, userId));
+          // Delete any properties owned by the user
+          await tx.delete(properties)
+            .where(eq(properties.userId, userId));
+
+          // Finally, delete the user
+          await tx.delete(users)
+            .where(eq(users.id, userId));
+        });
 
         res.json({ message: "User deleted successfully" });
       } catch (error) {
         console.error("Error deleting user:", error);
-        res
-          .status(500)
-          .json({ error: "Failed to delete user and associated data" });
+        res.status(500).json({ error: "Failed to delete user and associated data" });
       }
     } catch (error) {
       console.error("User deletion error:", error);
@@ -954,8 +968,7 @@ export function registerRoutes(app: Express): Server {
         return res.status(403).send("Not authorized to delete this property");
       }
 
-      // Delete the property
-      await db.delete(properties).where(eq(properties.id, propertyId));
+      // Delete the propertyawait db.delete(properties).where(eq(properties.id, propertyId));
 
       res.json({ message: "Property deleted successfully" });
     } catch (error) {
@@ -1634,10 +1647,10 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
-
-    app.get("/api/notifications", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user?.isAdmin) {
-      return res.status(403).send("Not authorized");
+  
+  app.get("/api/notifications", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
     }
 
     try {
@@ -1655,8 +1668,8 @@ export function registerRoutes(app: Express): Server {
   });
 
   app.put("/api/notifications/:id/read", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user?.isAdmin) {
-      return res.status(403).send("Not authorized");
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
     }
 
     const notificationId = parseInt(req.params.id);
