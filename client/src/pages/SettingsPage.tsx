@@ -574,7 +574,9 @@ export default function SettingsPage() {
     try {
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = "https://sandbox.payfast.co.za/eng/process";
+      form.action = import.meta.env.PROD 
+        ? "https://www.payfast.co.za/eng/process"
+        : "https://sandbox.payfast.co.za/eng/process";
 
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value !== undefined) {
