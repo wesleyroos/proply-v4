@@ -110,7 +110,7 @@ export default function RegisterPage() {
       const form = document.createElement("form");
       form.method = "POST";
       form.action = "https://www.payfast.co.za/eng/process";
-
+    
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value !== undefined) {
           const input = document.createElement("input");

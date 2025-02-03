@@ -22,11 +22,11 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
     e.preventDefault();
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = "https://sandbox.payfast.co.za/eng/process";
+    form.action = "https://www.payfast.co.za/eng/process";
 
     const paymentData = {
-      merchant_id: "10000100",
-      merchant_key: "46f0cd694581a",
+      merchant_id: import.meta.env.VITE_PAYFAST_MERCHANT_ID,
+      merchant_key: import.meta.env.VITE_PAYFAST_MERCHANT_KEY,
       return_url: `${window.location.origin}/settings?payment=success`,
       cancel_url: `${window.location.origin}/settings?payment=cancelled`,
       notify_url: `${window.location.origin}/api/payment-webhook`,
@@ -99,7 +99,7 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
             className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
             onClick={handlePayment}
           >
-            Continue to Payment
+            Subscribe Now
           </Button>
         </DialogFooter>
       </DialogContent>
