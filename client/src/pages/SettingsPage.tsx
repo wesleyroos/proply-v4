@@ -49,6 +49,7 @@ interface BillingDetailsProps {
 function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const formatDate = (date: string | Date | null | undefined) => {
     if (!date) return 'Not available';
