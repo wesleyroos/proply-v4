@@ -63,7 +63,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
     <div className="flex min-h-screen">
       <Sidebar />
       <main className="flex-1">
-        <div className="sticky top-0 z-50 bg-white border-b px-6 py-3 flex justify-end">
+        <div className="bg-[#1E293B] border-b px-6 py-3 flex justify-end">
           {user.isAdmin && <NotificationsMenu />}
         </div>
         <PageTransition>
@@ -166,7 +166,7 @@ function App() {
                 <ContactPage />
               </PageTransition>
             )} />
-            <Route path="/payment/success" component={() => (
+             <Route path="/payment/success" component={() => (
               <PageTransition>
                 <PaymentSuccessPage />
               </PageTransition>
@@ -182,14 +182,14 @@ function App() {
             <Route path="/dashboard/property-analyzer" component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} />
             <Route path="/dashboard/market-intelligence" component={() => <ProtectedRoute component={MarketIntelligencePage} />} />
             <Route path="/dashboard/rent-compare" component={() => <ProtectedRoute component={ComparisonPage} />} />
-            <Route path="/dashboard/toast-demo" component={() => <ProtectedRoute component={ToastDemo} />} />
+             <Route path="/dashboard/toast-demo" component={() => <ProtectedRoute component={ToastDemo} />} />
             <Route path="/properties" component={() => <ProtectedRoute component={PropertiesPage} />} />
             <Route path="/settings" component={() => <ProtectedRoute component={SettingsPage} />} />
             <Route path="/admin" component={() => <ProtectedRoute component={AdminPage} />} />
             <Route path="/analytics" component={() => <ProtectedRoute component={AnalyticsPage} />} />
             <Route path="/access-codes" component={() => <ProtectedRoute component={AccessCodePage} />} />
             <Route path="/subscription" component={() => <ProtectedRoute component={SubscriptionPage} />} />
-            <Route path="/dashboard/control-panel" component={() => <ProtectedRoute component={ControlPanel} />} />
+             <Route path="/dashboard/control-panel" component={() => <ProtectedRoute component={ControlPanel} />} />
             <Route component={NotFound} />
           </Switch>
         </AnimatePresence>
