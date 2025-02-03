@@ -511,9 +511,13 @@ export default function SettingsPage() {
   const initiateProUpgrade = () => {
     console.log('Initiating Pro upgrade payment flow (Sandbox Mode)');
 
-    // Use sandbox merchant credentials
-    const merchantId = "10000100";  // Sandbox merchant ID
-    const merchantKey = "46f0cd694581a";  // Sandbox merchant key
+    // Get merchant credentials from environment
+    const merchantId = import.meta.env.DEV 
+      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
+      : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
+    const merchantKey = import.meta.env.DEV
+      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY
+      : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
 
     if (!merchantId || !merchantKey) {
       console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
