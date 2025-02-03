@@ -13,16 +13,17 @@ interface EmailParams {
 export async function sendAdminNotification(params: EmailParams): Promise<boolean> {
   try {
     const adminEmail = 'wesley@proply.co.za';
+    const verifiedSender = 'wesley@grodigital.co.za'; // Using the verified email as sender
 
     console.log('Attempting to send admin notification email:', {
       to: params.to || adminEmail,
-      from: adminEmail,
+      from: verifiedSender,
       subject: params.subject
     });
 
     await mailService.send({
       to: params.to || adminEmail,
-      from: adminEmail, // The sender must be a verified email in SendGrid
+      from: verifiedSender, // Using verified sender email
       subject: params.subject,
       text: params.text || '',
       html: params.html,
