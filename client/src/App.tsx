@@ -33,6 +33,7 @@ import { Toaster } from "@/components/ui/toaster";
 import Sidebar from "./components/Sidebar";
 import { ToastDemo } from "./components/ToastDemo";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import NotificationsMenu from "./components/NotificationsMenu";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -62,6 +63,9 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
     <div className="flex min-h-screen">
       <Sidebar />
       <main className="flex-1">
+        <div className="sticky top-0 z-50 bg-white border-b px-6 py-3 flex justify-end">
+          {user.isAdmin && <NotificationsMenu />}
+        </div>
         <PageTransition>
           <Component />
         </PageTransition>
