@@ -149,7 +149,9 @@ export default function AuthPage() {
 
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = "https://www.payfast.co.za/eng/process";
+    form.action = isDevelopment
+      ? "https://sandbox.payfast.co.za/eng/process"
+      : "https://www.payfast.co.za/eng/process";
 
     Object.entries(paymentData).forEach(([key, value]) => {
       if (value !== undefined) {

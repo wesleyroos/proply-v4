@@ -70,7 +70,7 @@ export default function PaymentForm({ registrationData = null }) {
       const form = document.createElement("form");
       form.method = "POST";
       // Use sandbox URL
-      form.action = "https://www.payfast.co.za/eng/process";
+      form.action = "https://sandbox.payfast.co.za/eng/process";
 
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value !== undefined) {
