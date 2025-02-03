@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { UpgradeModal } from "@/components/UpgradeModal";
 import { useForm } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -382,8 +383,12 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
               <p className="text-sm text-muted-foreground mb-4">
                 Get unlimited property analyses, advanced metrics, and priority support
               </p>
+              <UpgradeModal 
+                open={showUpgradeModal} 
+                onOpenChange={setShowUpgradeModal} 
+              />
               <Button
-                onClick={onUpgrade}
+                onClick={() => setShowUpgradeModal(true)}
                 className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
               >
                 Upgrade Now - R2,000/month
@@ -405,6 +410,7 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
   const [, setLocation] = useLocation();
 
