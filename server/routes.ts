@@ -872,10 +872,17 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Update the payment webhook to handle pending downgrades
+  // Inside the payment webhook route, update the implementation:
   app.post("/api/payment-webhook", async (req, res) => {
-    console.log("Received webhook payload:", req.body);
-    const { user_id, subscription_status } = req.body;
+    console.log("Received sandbox webhook payload:", req.body);
+
+    // For sandbox testing, we'll accept all webhooks
+    // In production, verify the signature here
+    const { 
+      subscription_status = 'active',
+      token = null,
+      user_id
+    } = req.body;
 
     try {
       // Verify the user exists first
@@ -886,6 +893,7 @@ export function registerRoutes(app: Express): Server {
         .limit(1);
 
       if (!user) {
+        console.log("Webhook: User not found:", user_id);
         return res.status(404).json({ error: "User not found" });
       }
 
@@ -896,38 +904,32 @@ export function registerRoutes(app: Express): Server {
       const nextBillingDate = new Date(startDate);
       nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
-      // If there's a pending downgrade and we've reached the next billing date,
-      // downgrade the subscription to free
-      const shouldDowngrade =
-        user.pendingDowngrade &&
-        user.subscriptionNextBillingDate &&
-        now >= user.subscriptionNextBillingDate;
-
+      // Update user with sandbox subscription data
       const [updatedUser] = await db
         .update(users)
         .set({
-          subscriptionStatus: shouldDowngrade ? "free" : subscription_status,
-          subscriptionExpiryDate: shouldDowngrade ? now : nextBillingDate,
-          subscriptionNextBillingDate: shouldDowngrade ? null : nextBillingDate,
-          subscriptionStartDate: shouldDowngrade ? null : startDate,
-          pendingDowngrade: shouldDowngrade ? false : user.pendingDowngrade,
+          subscriptionStatus: subscription_status,
+          payfastToken: token,
+          subscriptionStartDate: startDate,
+          subscriptionNextBillingDate: nextBillingDate,
+          subscriptionExpiryDate: subscription_status === 'active' ? nextBillingDate : now,
           updatedAt: now,
         })
         .where(eq(users.id, user_id))
         .returning();
 
-      console.log("Subscription dates updated:", {
+      console.log("Sandbox: Updated subscription data:", {
         userId: updatedUser.id,
+        status: updatedUser.subscriptionStatus,
+        token: updatedUser.payfastToken,
         startDate: updatedUser.subscriptionStartDate,
         nextBilling: updatedUser.subscriptionNextBillingDate,
-        status: updatedUser.subscriptionStatus,
-        wasDowngraded: shouldDowngrade,
       });
 
       res.json({ success: true });
     } catch (error) {
-      console.error("Payment webhook error:", error);
-      res.status(500).json({ error: "Failed to update subscription" });
+      console.error("Sandbox webhook error:", error);
+      res.status(500).json({ error: "Failed to process sandbox webhook" });
     }
   });
 

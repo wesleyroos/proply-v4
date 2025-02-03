@@ -86,28 +86,22 @@ export default function AuthPage() {
   };
 
   const initiatePayFastPayment = (formData: ProfileFormData) => {
-    const isDevelopment = import.meta.env.DEV;
-    console.log('Initiating PayFast payment in', isDevelopment ? 'sandbox' : 'production', 'mode');
-  
-    const merchantId = isDevelopment
-      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
-      : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
-  
-    const merchantKey = isDevelopment
-      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY
-      : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
-  
+    console.log('Initiating PayFast payment in sandbox mode');
+
+    const merchantId = import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID;
+    const merchantKey = import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY;
+
     if (!merchantId || !merchantKey) {
-      console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
+      console.error('PayFast sandbox credentials missing');
       toast({
         variant: "destructive",
         title: "Payment Setup Error",
-        description: "Unable to process payment at this time. Please try again later or contact support.",
+        description: "Unable to process payment. Please contact support.",
         duration: 5000,
       });
       return;
     }
-  
+
     const registrationData = {
       e: formData.email,
       p: formData.password,
@@ -116,9 +110,12 @@ export default function AuthPage() {
       t: formData.userType,
       s: selectedPlan
     };
-  
+
     const encodedData = encodeURIComponent(JSON.stringify(registrationData));
-  
+
+    // Generate timestamp for signature
+    const timestamp = new Date().toISOString();
+
     const paymentData = {
       merchant_id: merchantId,
       merchant_key: merchantKey,
@@ -128,28 +125,33 @@ export default function AuthPage() {
       name_first: formData.firstName,
       email_address: formData.email,
       amount: "2000.00",
-      item_name: "Proply Pro Subscription",
+      item_name: "Proply Pro Subscription (Test)",
       subscription_type: "1",
       billing_date: new Date().toISOString().split('T')[0],
       recurring_amount: "2000.00",
       frequency: "3",
-      cycles: "0"
+      cycles: "0",
+      payment_method: "cc", // Force credit card for testing
     };
-  
-    console.log('Payment data:', {
-      ...paymentData,
-      merchant_id: '[REDACTED]',
-      merchant_key: '[REDACTED]'
-    });
-  
+
+    // Generate signature string
+    const signatureString = Object.entries(paymentData)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([_, value]) => value)
+      .join('');
+
     try {
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = isDevelopment
-        ? "https://sandbox.payfast.co.za/eng/process"
-        : "https://www.payfast.co.za/eng/process";
-  
-      Object.entries(paymentData).forEach(([key, value]) => {
+      form.action = "https://sandbox.payfast.co.za/eng/process";
+
+      // Add signature to payment data
+      const allData = {
+        ...paymentData,
+        signature: signatureString, // In production, this should be an MD5 hash
+      };
+
+      Object.entries(allData).forEach(([key, value]) => {
         if (value !== undefined) {
           const input = document.createElement("input");
           input.type = "hidden";
@@ -158,7 +160,7 @@ export default function AuthPage() {
           form.appendChild(input);
         }
       });
-  
+
       document.body.appendChild(form);
       form.submit();
     } catch (error) {
