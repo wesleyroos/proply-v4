@@ -21,6 +21,7 @@ import { calculateYields } from "../analysis-engine/calculations";
 import { analyzeSuburb } from "./services/openai";
 import { sql } from "drizzle-orm";
 import { suburbs } from "@db/schema";
+import { z } from "zod";
 
 // Extend Express.User to include our schema
 declare global {
@@ -28,6 +29,18 @@ declare global {
     interface User extends SelectUser {}
   }
 }
+
+const insertUserSchema = z.object({
+  username: z.string().min(3).max(50),
+  email: z.string().email(),
+  password: z.string().min(6),
+  userType: z.enum(["individual", "corporate"]),
+  company: z.string().optional(),
+  firstName: z.string().min(2),
+  lastName: z.string().min(2),
+  accessCode: z.string().optional(),
+  subscriptionStatus: z.enum(["free", "pro"]).optional()
+});
 
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
@@ -46,6 +59,84 @@ export function registerRoutes(app: Express): Server {
       return res.status(401).send("Not authenticated");
     }
     next();
+  });
+
+    app.post("/api/register", async (req, res, next) => {
+    console.log("Registration payload:", req.body);
+    const result = insertUserSchema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({ error: result.error.toString() });
+    }
+
+    const { username, email, password, userType, company, firstName, lastName, accessCode, subscriptionStatus = "free" } = result.data;
+
+    try {
+      // Process registration with subscription
+      console.log("Processing registration with subscription status:", subscriptionStatus);
+
+      // Get admin users to notify
+      const adminUsers = await db
+        .select()
+        .from(users)
+        .where(eq(users.isAdmin, true));
+
+      // Create the user record
+      console.log("Creating user with data:", {
+        username,
+        password: "[REDACTED]",
+        email,
+        userType,
+        company,
+        firstName,
+        lastName,
+        subscriptionStatus,
+        accessCodeId: null,
+      });
+
+      const [user] = await db
+        .insert(users)
+        .values({
+          username,
+          password: await crypto.hash(password),
+          email,
+          userType,
+          company,
+          firstName,
+          lastName,
+          subscriptionStatus,
+          accessCodeId: null,
+        })
+        .returning();
+
+      console.log("User created successfully:", {
+        id: user.id,
+        email: user.email,
+        subscriptionStatus: user.subscriptionStatus,
+      });
+
+      // Create notifications for admin users
+      for (const admin of adminUsers) {
+        await db.insert(notifications).values({
+          userId: admin.id,
+          type: "new_user",
+          title: "New User Registration",
+          message: `${firstName} ${lastName} (${email}) just signed up`,
+          read: false,
+          timestamp: new Date(),
+        });
+      }
+
+      // Log in the newly created user
+      req.login(user, (err) => {
+        if (err) {
+          return next(err);
+        }
+        res.json({ message: "Registration successful", user });
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ error: "Registration failed" });
+    }
   });
 
   // Add to the /api/user route or create it if it doesn't exist (after the auth middleware setup)
@@ -873,7 +964,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Update the payment webhook to handle pending downgrades
+  //  // Update the payment webhook to handle pending downgrades
   app.post("/api/payment-webhook", async (req, res) => {
     console.log("Received webhook payload:", req.body);
     const { user_id, subscription_status } = req.body;
