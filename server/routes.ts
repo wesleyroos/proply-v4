@@ -12,16 +12,14 @@ import {
   type InsertUser,
   apiUsage,
   subscriptionHistory, // Added import for subscription history table
-  notifications, // Added import for notifications table
 } from "@db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
 import { analyzeSuburb } from "./services/openai";
 import { sql } from "drizzle-orm";
 import { suburbs } from "@db/schema";
-import { z } from "zod";
 
 // Extend Express.User to include our schema
 declare global {
@@ -29,18 +27,6 @@ declare global {
     interface User extends SelectUser {}
   }
 }
-
-const insertUserSchema = z.object({
-  username: z.string().min(3).max(50),
-  email: z.string().email(),
-  password: z.string().min(6),
-  userType: z.enum(["individual", "corporate"]),
-  company: z.string().optional(),
-  firstName: z.string().min(2),
-  lastName: z.string().min(2),
-  accessCode: z.string().optional(),
-  subscriptionStatus: z.enum(["free", "pro"]).optional()
-});
 
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
@@ -59,90 +45,6 @@ export function registerRoutes(app: Express): Server {
       return res.status(401).send("Not authenticated");
     }
     next();
-  });
-
-    app.post("/api/register", async (req, res, next) => {
-    console.log("Registration payload:", req.body);
-    const result = insertUserSchema.safeParse(req.body);
-    if (!result.success) {
-      return res.status(400).json({ error: result.error.toString() });
-    }
-
-    const { username, email, password, userType, company, firstName, lastName, accessCode, subscriptionStatus = "free" } = result.data;
-
-    try {
-      // Process registration with subscription
-      console.log("Processing registration with subscription status:", subscriptionStatus);
-
-      // Get admin users to notify
-      const adminUsers = await db
-        .select()
-        .from(users)
-        .where(eq(users.isAdmin, true));
-
-      // Create the user record
-      console.log("Creating user with data:", {
-        username,
-        password: "[REDACTED]",
-        email,
-        userType,
-        company,
-        firstName,
-        lastName,
-        subscriptionStatus,
-        accessCodeId: null,
-      });
-
-      const [user] = await db
-        .insert(users)
-        .values({
-          username,
-          password: await crypto.hash(password),
-          email,
-          userType,
-          company,
-          firstName,
-          lastName,
-          subscriptionStatus,
-          accessCodeId: null,
-        })
-        .returning();
-
-      console.log("User created successfully:", {
-        id: user.id,
-        email: user.email,
-        subscriptionStatus: user.subscriptionStatus,
-      });
-
-      // Create notifications for admin users
-      console.log("Creating notifications for admins:", adminUsers.length);
-      for (const admin of adminUsers) {
-        try {
-          const notification = await db.insert(notifications).values({
-            userId: admin.id,
-            type: "new_user",
-            title: "New User Registration",
-            message: `${firstName} ${lastName} (${email}) just signed up`,
-            read: false,
-            timestamp: new Date(),
-          }).returning();
-          console.log("Created notification:", notification[0]);
-        } catch (error) {
-          console.error("Error creating notification:", error);
-        }
-      }
-
-      // Log in the newly created user
-      req.login(user, (err) => {
-        if (err) {
-          return next(err);
-        }
-        res.json({ message: "Registration successful", user });
-      });
-    } catch (error) {
-      console.error("Registration error:", error);
-      res.status(500).json({ error: "Registration failed" });
-    }
   });
 
   // Add to the /api/user route or create it if it doesn't exist (after the auth middleware setup)
@@ -680,7 +582,6 @@ export function registerRoutes(app: Express): Server {
     },
   );
 
-  // The delete user endpoint should be updated to include notification cleanup
   app.delete("/api/admin/users/:id", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
       return res.status(403).send("Not authorized");
@@ -708,34 +609,27 @@ export function registerRoutes(app: Express): Server {
       }
 
       try {
-        // Delete related records in a transaction
-        await db.transaction(async (tx) => {
-          // Delete notifications about this user
-          await tx.delete(notifications)
-            .where(sql`${notifications.message} LIKE ${`%${targetUser.email}%`}`);
+        // First, remove the access code reference from the user
+        await db
+          .update(users)
+          .set({ accessCodeId: null })
+          .where(eq(users.id, userId));
 
-          // First, remove the access code reference from the user
-          await tx.update(users)
-            .set({ accessCodeId: null })
-            .where(eq(users.id, userId));
+        // Then delete any associated access codes
+        await db.delete(accessCodes).where(eq(accessCodes.usedBy, userId));
 
-          // Then delete any associated access codes
-          await tx.delete(accessCodes)
-            .where(eq(accessCodes.usedBy, userId));
+        // Delete any properties owned by the user
+        await db.delete(properties).where(eq(properties.userId, userId));
 
-          // Delete any properties owned by the user
-          await tx.delete(properties)
-            .where(eq(properties.userId, userId));
-
-          // Finally, delete the user
-          await tx.delete(users)
-            .where(eq(users.id, userId));
-        });
+        // Finally, delete the user
+        await db.delete(users).where(eq(users.id, userId));
 
         res.json({ message: "User deleted successfully" });
       } catch (error) {
         console.error("Error deleting user:", error);
-        res.status(500).json({ error: "Failed to delete user and associated data" });
+        res
+          .status(500)
+          .json({ error: "Failed to delete user and associated data" });
       }
     } catch (error) {
       console.error("User deletion error:", error);
@@ -968,7 +862,8 @@ export function registerRoutes(app: Express): Server {
         return res.status(403).send("Not authorized to delete this property");
       }
 
-      // Delete the propertyawait db.delete(properties).where(eq(properties.id, propertyId));
+      // Delete the property
+      await db.delete(properties).where(eq(properties.id, propertyId));
 
       res.json({ message: "Property deleted successfully" });
     } catch (error) {
@@ -977,7 +872,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  //  // Update the payment webhook to handle pending downgrades
+  // Update the payment webhook to handle pending downgrades
   app.post("/api/payment-webhook", async (req, res) => {
     console.log("Received webhook payload:", req.body);
     const { user_id, subscription_status } = req.body;
@@ -1647,63 +1542,7 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
-  
-  app.get("/api/notifications", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).send("Not authenticated");
-    }
 
-    try {
-      const userNotifications = await db
-        .select()
-        .from(notifications)
-        .where(eq(notifications.userId, req.user.id))
-        .orderBy(desc(notifications.timestamp));
-
-      res.json(userNotifications);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-      res.status(500).json({ error: "Failed to fetch notifications" });
-    }
-  });
-
-  app.put("/api/notifications/:id/read", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).send("Not authenticated");
-    }
-
-    const notificationId = parseInt(req.params.id);
-    if (isNaN(notificationId)) {
-      return res.status(400).send("Invalid notification ID");
-    }
-
-    try {
-      const [notification] = await db
-        .select()
-        .from(notifications)
-        .where(eq(notifications.id, notificationId))
-        .limit(1);
-
-      if (!notification) {
-        return res.status(404).send("Notification not found");
-      }
-
-      if (notification.userId !== req.user.id) {
-        return res.status(403).send("Not authorized to update this notification");
-      }
-
-      const [updatedNotification] = await db
-        .update(notifications)
-        .set({ read: true })
-        .where(eq(notifications.id, notificationId))
-        .returning();
-
-      res.json(updatedNotification);
-    } catch (error) {
-      console.error("Error updating notification:", error);
-      res.status(500).json({ error: "Failed to update notification" });
-    }
-  });
   const httpServer = createServer(app);
   return httpServer;
 }
