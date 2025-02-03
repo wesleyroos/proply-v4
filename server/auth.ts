@@ -218,6 +218,7 @@ export function setupAuth(app: Express) {
         console.error('Failed to send admin notification email:', error);
         // Don't fail registration if email fails
       });
+
       // Mark the access code as used if applicable
       if (validCode) {
         await db

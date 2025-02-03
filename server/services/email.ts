@@ -30,13 +30,14 @@ export async function sendAdminNotification(params: EmailParams): Promise<boolea
 
     console.log('Admin notification email sent successfully');
     return true;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('SendGrid email error:', error);
-    if (error.response) {
+    if (error instanceof Error && 'response' in error) {
+      const sendGridError = error as any;
       console.error('SendGrid API response:', {
-        body: error.response.body,
-        headers: error.response.headers,
-        statusCode: error.response.statusCode
+        body: sendGridError.response?.body,
+        headers: sendGridError.response?.headers,
+        statusCode: sendGridError.response?.statusCode
       });
     }
     return false;
