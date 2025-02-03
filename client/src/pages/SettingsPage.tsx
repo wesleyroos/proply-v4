@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import type { SelectUser } from "@db/schema";
 import { useQueryClient } from "@tanstack/react-query";
+import { UpgradeModal } from "@/components/UpgradeModal";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -383,13 +384,14 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
                 Get unlimited property analyses, advanced metrics, and priority support
               </p>
               <Button
-                onClick={onUpgrade}
+                onClick={() => setShowUpgradeModal(true)}
                 className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
               >
                 Upgrade Now - R2,000/month
               </Button>
             </div>
           </div>
+          <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
         ) : (
           <div className="space-y-4">
 
