@@ -57,6 +57,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SelectUser } from "@db/schema";
+import NotificationsMenu from "@/components/NotificationsMenu";
 
 interface AdminUser extends SelectUser {
   isAdmin: boolean;
@@ -198,12 +199,17 @@ export default function AdminPage() {
     if (!sortConfig.key) return filteredData;
 
     return [...filteredData].sort((a, b) => {
-      if (a[sortConfig.key] === b[sortConfig.key]) return 0;
+      if (sortConfig.key === '') return 0;
+
+      const aValue = a[sortConfig.key] ?? '';
+      const bValue = b[sortConfig.key] ?? '';
+
+      if (aValue === bValue) return 0;
 
       if (sortConfig.direction === 'asc') {
-        return a[sortConfig.key] < b[sortConfig.key] ? -1 : 1;
+        return aValue < bValue ? -1 : 1;
       } else {
-        return a[sortConfig.key] > b[sortConfig.key] ? -1 : 1;
+        return aValue > bValue ? -1 : 1;
       }
     });
   };
@@ -226,20 +232,12 @@ export default function AdminPage() {
       <ChevronUp className="inline h-4 w-4 ml-1" /> :
       <ChevronDown className="inline h-4 w-4 ml-1" />;
   };
-  
-  const NotificationsMenu = () => {
-    return (
-      <div>
-        Notifications Menu
-      </div>
-    );
-  }
 
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">User Management</h1>
-        <NotificationsMenu />
+        {user?.isAdmin && <NotificationsMenu />}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
