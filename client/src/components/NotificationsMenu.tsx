@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bell } from "lucide-react";
 import {
   DropdownMenu,
@@ -8,38 +8,49 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface Notification {
   id: number;
-  type: "new_user";
+  type: string;
   title: string;
   message: string;
   timestamp: string;
   read: boolean;
 }
 
-// Mock notifications for now - will be replaced with real data
-const mockNotifications: Notification[] = [
-  {
-    id: 1,
-    type: "new_user",
-    title: "New User Registration",
-    message: "Wesley Roos (wesley@grodigital.co.za) just signed up",
-    timestamp: new Date().toISOString(),
-    read: false,
-  },
-];
-
 export default function NotificationsMenu() {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const queryClient = useQueryClient();
+
+  // Fetch notifications
+  const { data: notifications = [] } = useQuery<Notification[]>({
+    queryKey: ['/api/notifications'],
+    queryFn: async () => {
+      const response = await fetch('/api/notifications');
+      if (!response.ok) throw new Error('Failed to fetch notifications');
+      return response.json();
+    }
+  });
+
+  // Mark notification as read mutation
+  const markAsReadMutation = useMutation({
+    mutationFn: async (notificationId: number) => {
+      const response = await fetch(`/api/notifications/${notificationId}/read`, {
+        method: 'PUT'
+      });
+      if (!response.ok) throw new Error('Failed to update notification');
+      return response.json();
+    },
+    onSuccess: () => {
+      // Refetch notifications after marking as read
+      queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+    }
+  });
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleNotificationClick = (notificationId: number) => {
-    setNotifications(prev =>
-      prev.map(n =>
-        n.id === notificationId ? { ...n, read: true } : n
-      )
-    );
+    markAsReadMutation.mutate(notificationId);
   };
 
   return (

@@ -12,8 +12,9 @@ import {
   type InsertUser,
   apiUsage,
   subscriptionHistory, // Added import for subscription history table
+  notifications, // Added import for notifications table
 } from "@db/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
@@ -1543,6 +1544,62 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+    app.get("/api/notifications", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    try {
+      const userNotifications = await db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.userId, req.user.id))
+        .orderBy(desc(notifications.timestamp));
+
+      res.json(userNotifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ error: "Failed to fetch notifications" });
+    }
+  });
+
+  app.put("/api/notifications/:id/read", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    const notificationId = parseInt(req.params.id);
+    if (isNaN(notificationId)) {
+      return res.status(400).send("Invalid notification ID");
+    }
+
+    try {
+      const [notification] = await db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.id, notificationId))
+        .limit(1);
+
+      if (!notification) {
+        return res.status(404).send("Notification not found");
+      }
+
+      if (notification.userId !== req.user.id) {
+        return res.status(403).send("Not authorized to update this notification");
+      }
+
+      const [updatedNotification] = await db
+        .update(notifications)
+        .set({ read: true })
+        .where(eq(notifications.id, notificationId))
+        .returning();
+
+      res.json(updatedNotification);
+    } catch (error) {
+      console.error("Error updating notification:", error);
+      res.status(500).json({ error: "Failed to update notification" });
+    }
+  });
   const httpServer = createServer(app);
   return httpServer;
 }

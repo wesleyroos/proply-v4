@@ -262,6 +262,17 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Add notifications table after the existing tables
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  type: text("type").notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  read: boolean("read").default(false).notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
 // Export the schema and types
 export const insertPropertyAnalyzerResultSchema = propertyAnalyzerSchema;
 export const selectPropertyAnalyzerResultSchema = createSelectSchema(propertyAnalyzerResults);
@@ -308,7 +319,6 @@ export const reportTrackingRelations = relations(reportTracking, ({ one }) => ({
   }),
 }));
 
-
 // Add this to the relations section
 export const apiUsageRelations = relations(apiUsage, ({ one }) => ({
   user: one(users, {
@@ -321,6 +331,14 @@ export const apiUsageRelations = relations(apiUsage, ({ one }) => ({
 export const subscriptionHistoryRelations = relations(subscriptionHistory, ({ one }) => ({
   user: one(users, {
     fields: [subscriptionHistory.userId],
+    references: [users.id],
+  }),
+}));
+
+// Add notifications relations
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
     references: [users.id],
   }),
 }));
@@ -347,6 +365,10 @@ export const selectApiUsageSchema = createSelectSchema(apiUsage);
 export const insertSubscriptionHistorySchema = createInsertSchema(subscriptionHistory);
 export const selectSubscriptionHistorySchema = createSelectSchema(subscriptionHistory);
 
+// Add to schema exports
+export const insertNotificationSchema = createInsertSchema(notifications);
+export const selectNotificationSchema = createSelectSchema(notifications);
+
 // Types
 export type InsertAccessCode = typeof accessCodes.$inferInsert;
 export type SelectAccessCode = typeof accessCodes.$inferSelect;
@@ -369,3 +391,6 @@ export type InsertApiUsage = typeof apiUsage.$inferInsert;
 export type SelectApiUsage = typeof apiUsage.$inferSelect;
 export type InsertSubscriptionHistory = typeof subscriptionHistory.$inferInsert;
 export type SelectSubscriptionHistory = typeof subscriptionHistory.$inferSelect;
+
+export type InsertNotification = typeof notifications.$inferInsert;
+export type SelectNotification = typeof notifications.$inferSelect;
