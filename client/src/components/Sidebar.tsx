@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
+import NotificationsMenu from "./NotificationsMenu";
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(true);
@@ -65,12 +66,12 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        "h-screen sticky top-0 bg-[#1E293B] transition-all duration-300 border-none", 
+        "h-screen sticky top-0 bg-[#1E293B] transition-all duration-300 border-none",
         expanded ? "w-64" : "w-16"
       )}
     >
       <div className="flex flex-col h-full">
-        {/* Header with logo */}
+        {/* Header with logo and notifications */}
         <div className="p-4 flex justify-between items-center">
           <img
             src={expanded ? "/proply-logo.png" : "/proply-favicon.png"}
@@ -80,18 +81,21 @@ export default function Sidebar() {
               expanded ? "w-24" : "w-8"
             )}
           />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setExpanded(!expanded)}
-            className="text-white hover:bg-white/10"
-          >
-            {expanded ? (
-              <ChevronLeft className="h-4 w-4 text-white" />
-            ) : (
-              <ChevronRight className="h-4 w-4 text-white" />
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            {user?.isAdmin && <NotificationsMenu />}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setExpanded(!expanded)}
+              className="text-white hover:bg-white/10"
+            >
+              {expanded ? (
+                <ChevronLeft className="h-4 w-4 text-white" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-white" />
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Navigation */}
@@ -100,7 +104,6 @@ export default function Sidebar() {
             const Icon = item.icon;
             const isActive = location === item.href;
 
-            // Skip admin-only items for non-admin users
             if (item.adminOnly && !user?.isAdmin) {
               return null;
             }
