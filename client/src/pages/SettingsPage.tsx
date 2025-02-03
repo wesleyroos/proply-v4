@@ -44,9 +44,11 @@ interface ProfileFormData {
 interface BillingDetailsProps {
   user: SelectUser;
   onUpgrade: () => void;
+  showUpgradeModal: boolean;
+  setShowUpgradeModal: (value: boolean) => void;
 }
 
-function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
+function BillingDetails({ user, onUpgrade, showUpgradeModal, setShowUpgradeModal }: BillingDetailsProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -116,7 +118,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
               {user?.subscriptionStatus || 'Free'}
             </p>
           </div>
-          
+
           {user?.subscriptionStatus === 'pro' && (
             <>
               <div>
@@ -372,7 +374,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
           )}
         </div>
       )}
-      
+
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Subscription Management</h3>
@@ -787,7 +789,12 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   )}
-                  <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
+                  <BillingDetails 
+                    user={user} 
+                    onUpgrade={initiateProUpgrade}
+                    showUpgradeModal={showUpgradeModal}
+                    setShowUpgradeModal={setShowUpgradeModal}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
