@@ -117,7 +117,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
               {user?.subscriptionStatus || 'Free'}
             </p>
           </div>
-          
+
           {user?.subscriptionStatus === 'pro' && (
             <>
               <div>
@@ -373,7 +373,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
           )}
         </div>
       )}
-      
+
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Subscription Management</h3>
@@ -392,12 +392,12 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
               </Button>
             </div>
           </div>
-          <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
-        ) : (
-          <div className="space-y-4">
+          ) : (
+            <div className="space-y-4">
 
-          </div>
-        )}
+            </div>
+          )}
+          <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
       </div>
     </div>
   );
