@@ -38,7 +38,7 @@ interface ProfileFormData {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
-  companyLogo?: string; 
+  companyLogo?: string;
 }
 
 interface BillingDetailsProps {
@@ -385,9 +385,9 @@ function BillingDetails({ user, onUpgrade, showUpgradeModal, setShowUpgradeModal
               <p className="text-sm text-muted-foreground mb-4">
                 Get unlimited property analyses, advanced metrics, and priority support
               </p>
-              <UpgradeModal 
-                open={showUpgradeModal} 
-                onOpenChange={setShowUpgradeModal} 
+              <UpgradeModal
+                open={showUpgradeModal}
+                onOpenChange={setShowUpgradeModal}
               />
               <Button
                 onClick={() => setShowUpgradeModal(true)}
@@ -448,7 +448,7 @@ export default function SettingsPage() {
         body: JSON.stringify({
           firstName: data.firstName,
           lastName: data.lastName,
-          companyLogo: data.companyLogo || previewLogo 
+          companyLogo: data.companyLogo || previewLogo
         }),
         credentials: 'include'
       });
@@ -582,7 +582,7 @@ export default function SettingsPage() {
     try {
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = import.meta.env.PROD 
+      form.action = import.meta.env.PROD
         ? "https://www.payfast.co.za/eng/process"
         : "https://sandbox.payfast.co.za/eng/process";
 
@@ -595,6 +595,7 @@ export default function SettingsPage() {
           form.appendChild(input);
         }
       });
+
 
       document.body.appendChild(form);
       console.log('Submitting upgrade payment form to PayFast sandbox...');
@@ -681,7 +682,7 @@ export default function SettingsPage() {
                             <Input
                               type="file"
                               accept="image/*"
-                              onChange={handleLogoUpload} 
+                              onChange={handleLogoUpload}
                               className="mb-2"
                             />
                             <p className="text-sm text-gray-500">
@@ -789,8 +790,8 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   )}
-                  <BillingDetails 
-                    user={user} 
+                  <BillingDetails
+                    user={user}
                     onUpgrade={initiateProUpgrade}
                     showUpgradeModal={showUpgradeModal}
                     setShowUpgradeModal={setShowUpgradeModal}

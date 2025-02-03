@@ -22,7 +22,9 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
     e.preventDefault();
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = "https://www.payfast.co.za/eng/process";
+    form.action = import.meta.env.PROD
+      ? "https://www.payfast.co.za/eng/process"
+      : "https://sandbox.payfast.co.za/eng/process";
 
     const paymentData = {
       merchant_id: import.meta.env.VITE_PAYFAST_MERCHANT_ID,
