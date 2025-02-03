@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { UpgradeModal } from "@/components/UpgradeModal";
 import { useForm } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,17 +37,15 @@ interface ProfileFormData {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
-  companyLogo?: string;
+  companyLogo?: string; 
 }
 
 interface BillingDetailsProps {
   user: SelectUser;
   onUpgrade: () => void;
-  showUpgradeModal: boolean;
-  setShowUpgradeModal: (value: boolean) => void;
 }
 
-function BillingDetails({ user, onUpgrade, showUpgradeModal, setShowUpgradeModal }: BillingDetailsProps) {
+function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -118,7 +115,7 @@ function BillingDetails({ user, onUpgrade, showUpgradeModal, setShowUpgradeModal
               {user?.subscriptionStatus || 'Free'}
             </p>
           </div>
-
+          
           {user?.subscriptionStatus === 'pro' && (
             <>
               <div>
@@ -374,7 +371,7 @@ function BillingDetails({ user, onUpgrade, showUpgradeModal, setShowUpgradeModal
           )}
         </div>
       )}
-
+      
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Subscription Management</h3>
@@ -385,12 +382,8 @@ function BillingDetails({ user, onUpgrade, showUpgradeModal, setShowUpgradeModal
               <p className="text-sm text-muted-foreground mb-4">
                 Get unlimited property analyses, advanced metrics, and priority support
               </p>
-              <UpgradeModal
-                open={showUpgradeModal}
-                onOpenChange={setShowUpgradeModal}
-              />
               <Button
-                onClick={() => setShowUpgradeModal(true)}
+                onClick={onUpgrade}
                 className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
               >
                 Upgrade Now - R2,000/month
@@ -412,7 +405,6 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
   const [, setLocation] = useLocation();
 
@@ -448,7 +440,7 @@ export default function SettingsPage() {
         body: JSON.stringify({
           firstName: data.firstName,
           lastName: data.lastName,
-          companyLogo: data.companyLogo || previewLogo
+          companyLogo: data.companyLogo || previewLogo 
         }),
         credentials: 'include'
       });
@@ -582,9 +574,7 @@ export default function SettingsPage() {
     try {
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = import.meta.env.PROD
-        ? "https://www.payfast.co.za/eng/process"
-        : "https://sandbox.payfast.co.za/eng/process";
+      form.action = "https://sandbox.payfast.co.za/eng/process";
 
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value !== undefined) {
@@ -595,7 +585,6 @@ export default function SettingsPage() {
           form.appendChild(input);
         }
       });
-
 
       document.body.appendChild(form);
       console.log('Submitting upgrade payment form to PayFast sandbox...');
@@ -682,7 +671,7 @@ export default function SettingsPage() {
                             <Input
                               type="file"
                               accept="image/*"
-                              onChange={handleLogoUpload}
+                              onChange={handleLogoUpload} 
                               className="mb-2"
                             />
                             <p className="text-sm text-gray-500">
@@ -790,12 +779,7 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   )}
-                  <BillingDetails
-                    user={user}
-                    onUpgrade={initiateProUpgrade}
-                    showUpgradeModal={showUpgradeModal}
-                    setShowUpgradeModal={setShowUpgradeModal}
-                  />
+                  <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
                 </CardContent>
               </Card>
             </TabsContent>
