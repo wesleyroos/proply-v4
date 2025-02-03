@@ -226,10 +226,21 @@ export default function AdminPage() {
       <ChevronUp className="inline h-4 w-4 ml-1" /> :
       <ChevronDown className="inline h-4 w-4 ml-1" />;
   };
+  
+  const NotificationsMenu = () => {
+    return (
+      <div>
+        Notifications Menu
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">User Management</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">User Management</h1>
+        <NotificationsMenu />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <Card>
