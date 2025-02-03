@@ -18,11 +18,16 @@ interface UpgradeModalProps {
 export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
   const { user } = useUser();
 
-  const handlePayment = (e: React.MouseEvent) => {
+  const handlePayment = async (e: React.MouseEvent) => {
     e.preventDefault();
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = "https://www.payfast.co.za/eng/process";
+    try {
+      console.log('Initiating payment flow...');
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "https://www.payfast.co.za/eng/process";
+      
+      // Add a small delay to ensure proper form setup
+      await new Promise(resolve => setTimeout(resolve, 100));
 
     const paymentData = {
       merchant_id: import.meta.env.DEV ? "10000100" : import.meta.env.VITE_PAYFAST_MERCHANT_ID,
@@ -57,6 +62,12 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
 
     document.body.appendChild(form);
     form.submit();
+    } catch (error) {
+      console.error('Payment form submission error:', error);
+      // Remove any lingering form elements
+      const existingForms = document.querySelectorAll('form[action*="payfast"]');
+      existingForms.forEach(form => form.remove());
+    }
   };
 
   return (
