@@ -58,14 +58,16 @@ export default function RegisterPage() {
   });
 
   const initiatePayFastPayment = (formData: ProfileFormData) => {
-    console.log('Initiating PayFast payment with form data:', {
-      ...formData,
-      password: '[REDACTED]',
-      plan: selectedPlan
-    });
+    const isDevelopment = import.meta.env.DEV;
+    console.log('Initiating PayFast payment in', isDevelopment ? 'sandbox' : 'production', 'mode');
 
-    const merchantId = import.meta.env.VITE_PAYFAST_MERCHANT_ID;
-    const merchantKey = import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
+    const merchantId = isDevelopment
+      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
+      : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
+
+    const merchantKey = isDevelopment
+      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY
+      : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
 
     if (!merchantId || !merchantKey) {
       console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
@@ -106,11 +108,19 @@ export default function RegisterPage() {
       cycles: "0"
     };
 
+    console.log('Payment data:', {
+      ...paymentData,
+      merchant_id: '[REDACTED]',
+      merchant_key: '[REDACTED]'
+    });
+
     try {
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = "https://www.payfast.co.za/eng/process";
-    
+      form.action = isDevelopment
+        ? "https://sandbox.payfast.co.za/eng/process"
+        : "https://www.payfast.co.za/eng/process";
+
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value !== undefined) {
           const input = document.createElement("input");

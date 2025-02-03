@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast"; 
+import { useToast } from "@/hooks/use-toast";
 import {
   Form,
   FormControl,
@@ -74,7 +74,7 @@ export default function AuthPage() {
         username: data.email,
         email: data.email,
         password: data.password,
-        userType: 'individual' 
+        userType: 'individual'
       });
       setLocation('/dashboard');
     } catch (error) {
@@ -87,49 +87,38 @@ export default function AuthPage() {
 
   const initiatePayFastPayment = (formData: ProfileFormData) => {
     const isDevelopment = import.meta.env.DEV;
-
-    console.log('Initiating PayFast payment with form data:', {
-      ...formData,
-      password: '[REDACTED]',
-      plan: selectedPlan
-    });
-
+    console.log('Initiating PayFast payment in', isDevelopment ? 'sandbox' : 'production', 'mode');
+  
     const merchantId = isDevelopment
       ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
       : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
-
+  
     const merchantKey = isDevelopment
       ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY
       : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
-
+  
     if (!merchantId || !merchantKey) {
+      console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
       toast({
-        title: "Error",
-        description: "Payment configuration is missing. Please try again later.",
-        variant: "destructive"
+        variant: "destructive",
+        title: "Payment Setup Error",
+        description: "Unable to process payment at this time. Please try again later or contact support.",
+        duration: 5000,
       });
       return;
     }
-
+  
     const registrationData = {
-      e: formData.email, 
-      p: formData.password, 
-      f: formData.firstName, 
-      l: formData.lastName, 
-      t: formData.userType, 
-      s: selectedPlan 
+      e: formData.email,
+      p: formData.password,
+      f: formData.firstName,
+      l: formData.lastName,
+      t: formData.userType,
+      s: selectedPlan
     };
-
-    console.log('Compressed registration data:', {
-      ...registrationData,
-      p: '[REDACTED]',
-      selectedPlan,
-      formPlan: formData.plan
-    });
-
+  
     const encodedData = encodeURIComponent(JSON.stringify(registrationData));
-    console.log('Encoded registration data length:', encodedData.length);
-
+  
     const paymentData = {
       merchant_id: merchantId,
       merchant_key: merchantKey,
@@ -146,26 +135,36 @@ export default function AuthPage() {
       frequency: "3",
       cycles: "0"
     };
-
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = isDevelopment
-      ? "https://sandbox.payfast.co.za/eng/process"
-      : "https://www.payfast.co.za/eng/process";
-
-    Object.entries(paymentData).forEach(([key, value]) => {
-      if (value !== undefined) {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = value.toString();
-        form.appendChild(input);
-      }
+  
+    console.log('Payment data:', {
+      ...paymentData,
+      merchant_id: '[REDACTED]',
+      merchant_key: '[REDACTED]'
     });
-
-    document.body.appendChild(form);
-    console.log('Submitting payment form to PayFast...');
-    form.submit();
+  
+    try {
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = isDevelopment
+        ? "https://sandbox.payfast.co.za/eng/process"
+        : "https://www.payfast.co.za/eng/process";
+  
+      Object.entries(paymentData).forEach(([key, value]) => {
+        if (value !== undefined) {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = value.toString();
+          form.appendChild(input);
+        }
+      });
+  
+      document.body.appendChild(form);
+      form.submit();
+    } catch (error) {
+      console.error('Error submitting payment form:', error);
+      setError(error instanceof Error ? error.message : "Failed to initiate payment");
+    }
   };
 
   const handleRegister = async (data: ProfileFormData) => {
