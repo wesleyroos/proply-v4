@@ -62,11 +62,11 @@ export default function RegisterPage() {
     console.log('Initiating PayFast payment in', isDevelopment ? 'sandbox' : 'production', 'mode');
 
     const merchantId = isDevelopment
-      ? "10036450"
+      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
       : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
 
     const merchantKey = isDevelopment
-      ? "8dafsqrcr99g5"
+      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY
       : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
 
     if (!merchantId || !merchantKey) {
