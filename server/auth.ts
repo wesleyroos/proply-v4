@@ -8,6 +8,7 @@ import { promisify } from "util";
 import { users, insertUserSchema, accessCodes } from "@db/schema";
 import { db } from "@db";
 import { eq } from "drizzle-orm";
+import { sendNewUserNotification } from "./services/email";
 
 const scryptAsync = promisify(scrypt);
 export const crypto = {
@@ -137,7 +138,7 @@ export function setupAuth(app: Express) {
         firstName, 
         lastName, 
         accessCode,
-        subscriptionStatus = 'free' // Default to free unless explicitly set
+        subscriptionStatus = 'free'
       } = req.body;
 
       console.log("Processing registration with subscription status:", subscriptionStatus);
@@ -186,7 +187,7 @@ export function setupAuth(app: Express) {
         company,
         firstName,
         lastName,
-        subscriptionStatus: validCode ? "pro" : subscriptionStatus, // Use provided status or 'pro' if valid code
+        subscriptionStatus: validCode ? "pro" : subscriptionStatus,
         accessCodeId: validCode?.id || null,
       };
 
@@ -206,6 +207,17 @@ export function setupAuth(app: Express) {
         subscriptionStatus: newUser.subscriptionStatus
       });
 
+      // Send admin notification email
+      await sendNewUserNotification({
+        email: newUser.email || '',
+        firstName: newUser.firstName || '',
+        lastName: newUser.lastName || '',
+        userType: newUser.userType || 'individual',
+        subscriptionStatus: newUser.subscriptionStatus || 'free'
+      }).catch(error => {
+        console.error('Failed to send admin notification email:', error);
+        // Don't fail registration if email fails
+      });
       // Mark the access code as used if applicable
       if (validCode) {
         await db
