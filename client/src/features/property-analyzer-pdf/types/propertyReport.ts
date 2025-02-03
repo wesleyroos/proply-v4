@@ -107,79 +107,79 @@ export interface PropertyData {
   };
 }
 
-export interface ReportSelections {
-  propertyDetails?: {
-    address?: boolean;
-    propertyPhoto?: boolean;
-    map?: boolean;
-    bedrooms?: boolean;
-    bathrooms?: boolean;
-    floorArea?: boolean;
-    parkingSpaces?: boolean;
-    purchasePrice?: boolean;
-    propertyRatePerSquareMeter?: boolean;
-    areaRatePerSquareMeter?: boolean;
-    rateDifference?: boolean;
-    propertyDescription?: boolean;
-  };
-  financialMetrics?: {
-    // purchasePrice?: boolean;
-    depositAmount?: boolean;
-    depositPercentage?: boolean;
-    interestRate?: boolean;
-    loanTerm?: boolean;
-    monthlyBondRepayment?: boolean;
-    bondRegistration?: boolean;
-    transferCosts?: boolean;
-    totalCapitalRequired?: boolean;
-  };
-  operatingExpenses?: {
-    monthlyLevies?: boolean;
-    monthlyRatesTaxes?: boolean;
-    otherMonthlyExpenses?: boolean;
-    maintenancePercent?: boolean;
-    managementFee?: boolean;
-  };
-  rentalPerformance?: {
-    shortTerm?: boolean;
-    longTerm?: boolean;
-    platformFee?: boolean;
-    feeAdjustedRate?: boolean;
-    shortTermNightlyRate?: boolean;
-    annualOccupancy?: boolean;
-    shortTermAnnualRevenue?: boolean;
-    longTermAnnualRevenue?: boolean;
-    shortTermGrossYield?: boolean;
-    longTermGrossYield?: boolean;
-  };
-  investmentMetrics?: {
-    grossYield?: boolean;
-    netYield?: boolean;
-    returnOnEquity?: boolean;
-    annualReturn?: boolean;
-    capRate?: boolean;
-    cashOnCashReturn?: boolean;
-    irr?: boolean;
-    netWorthChange?: boolean;
-  };
-  cashflowAnalysis?: {
-    year1?: boolean;
-    year2?: boolean;
-    year3?: boolean;
-    year4?: boolean;
-    year5?: boolean;
-    year10?: boolean;
-    year20?: boolean;
-    cumulativeRentalIncome?: boolean;
-    netWorthChange?: boolean;
-  };
-  revenueProjections?: {
-    shortTerm?: boolean;
-    longTerm?: boolean;
-  };
-  dataVisualizations?: {
-    charts?: boolean;
-  };
-  includeWatermark?: boolean;
-  includeMap?: boolean;
-}
+// export interface ReportSelections {
+//   propertyDetails?: {
+//     address?: boolean;
+//     propertyPhoto?: boolean;
+//     map?: boolean;
+//     bedrooms?: boolean;
+//     bathrooms?: boolean;
+//     floorArea?: boolean;
+//     parkingSpaces?: boolean;
+//     purchasePrice?: boolean;
+//     propertyRatePerSquareMeter?: boolean;
+//     areaRatePerSquareMeter?: boolean;
+//     rateDifference?: boolean;
+//     propertyDescription?: boolean;
+//   };
+//   financialMetrics?: {
+//     // purchasePrice?: boolean;
+//     depositAmount?: boolean;
+//     depositPercentage?: boolean;
+//     interestRate?: boolean;
+//     loanTerm?: boolean;
+//     monthlyBondRepayment?: boolean;
+//     bondRegistration?: boolean;
+//     transferCosts?: boolean;
+//     totalCapitalRequired?: boolean;
+//   };
+//   operatingExpenses?: {
+//     monthlyLevies?: boolean;
+//     monthlyRatesTaxes?: boolean;
+//     otherMonthlyExpenses?: boolean;
+//     maintenancePercent?: boolean;
+//     managementFee?: boolean;
+//   };
+//   rentalPerformance?: {
+//     shortTerm?: boolean;
+//     longTerm?: boolean;
+//     platformFee?: boolean;
+//     feeAdjustedRate?: boolean;
+//     shortTermNightlyRate?: boolean;
+//     annualOccupancy?: boolean;
+//     shortTermAnnualRevenue?: boolean;
+//     longTermAnnualRevenue?: boolean;
+//     shortTermGrossYield?: boolean;
+//     longTermGrossYield?: boolean;
+//   };
+//   investmentMetrics?: {
+//     grossYield?: boolean;
+//     netYield?: boolean;
+//     returnOnEquity?: boolean;
+//     annualReturn?: boolean;
+//     capRate?: boolean;
+//     cashOnCashReturn?: boolean;
+//     irr?: boolean;
+//     netWorthChange?: boolean;
+//   };
+//   cashflowAnalysis?: {
+//     year1?: boolean;
+//     year2?: boolean;
+//     year3?: boolean;
+//     year4?: boolean;
+//     year5?: boolean;
+//     year10?: boolean;
+//     year20?: boolean;
+//     cumulativeRentalIncome?: boolean;
+//     netWorthChange?: boolean;
+//   };
+//   revenueProjections?: {
+//     shortTerm?: boolean;
+//     longTerm?: boolean;
+//   };
+//   dataVisualizations?: {
+//     charts?: boolean;
+//   };
+//   includeWatermark?: boolean;
+//   includeMap?: boolean;
+// }

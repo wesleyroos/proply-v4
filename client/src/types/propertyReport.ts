@@ -53,12 +53,12 @@ export interface PropertyData {
   };
 }
 
-export interface ReportSelections {
-  propertyDetails?: {
-    map?: boolean;
-    [key: string]: boolean | undefined;
-  };
-  [key: string]: {
-    [key: string]: boolean | undefined;
-  } | undefined;
-}
+// export interface ReportSelections {
+//   propertyDetails?: {
+//     map?: boolean;
+//     [key: string]: boolean | undefined;
+//   };
+//   [key: string]: {
+//     [key: string]: boolean | undefined;
+//   } | undefined;
+// }

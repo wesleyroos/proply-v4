@@ -51,7 +51,7 @@ import {
 } from "@/components/ui/dialog";
 import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAnalyzerPDF";
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
-import { ReportSelections } from "@/features/property-analyzer-pdf/types/propertyReport";
+import { ReportSelections } from "@/types/ReportSelections";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query"; // Added import for React Query
 import { UpgradeModal } from "@/components/UpgradeModal"; // Import the UpgradeModal component
