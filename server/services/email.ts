@@ -14,6 +14,12 @@ export async function sendAdminNotification(params: EmailParams): Promise<boolea
   try {
     const adminEmail = 'wesley@proply.co.za';
 
+    console.log('Attempting to send admin notification email:', {
+      to: params.to || adminEmail,
+      from: adminEmail,
+      subject: params.subject
+    });
+
     await mailService.send({
       to: params.to || adminEmail,
       from: adminEmail, // The sender must be a verified email in SendGrid
@@ -26,6 +32,13 @@ export async function sendAdminNotification(params: EmailParams): Promise<boolea
     return true;
   } catch (error) {
     console.error('SendGrid email error:', error);
+    if (error.response) {
+      console.error('SendGrid API response:', {
+        body: error.response.body,
+        headers: error.response.headers,
+        statusCode: error.response.statusCode
+      });
+    }
     return false;
   }
 }
@@ -37,6 +50,8 @@ export async function sendNewUserNotification(userData: {
   userType: string;
   subscriptionStatus: string;
 }): Promise<boolean> {
+  console.log('Preparing new user notification email for:', userData.email);
+
   const subject = 'New User Registration on Proply';
   const html = `
     <h2>New User Registration</h2>
