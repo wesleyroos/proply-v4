@@ -115,7 +115,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
               {user?.subscriptionStatus || 'Free'}
             </p>
           </div>
-          
+
           {user?.subscriptionStatus === 'pro' && (
             <>
               <div>
@@ -371,7 +371,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
           )}
         </div>
       )}
-      
+
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Subscription Management</h3>
@@ -512,8 +512,8 @@ export default function SettingsPage() {
     console.log('Initiating Pro upgrade payment flow (Sandbox Mode)');
 
     // Use sandbox merchant credentials
-    const merchantId = "10000100";  // Sandbox merchant ID
-    const merchantKey = "46f0cd694581a";  // Sandbox merchant key
+    const merchantId = "10036450";  // Sandbox merchant ID
+    const merchantKey = "8dafsqrcr99g5";  // Sandbox merchant key
 
     if (!merchantId || !merchantKey) {
       console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
@@ -580,8 +580,8 @@ export default function SettingsPage() {
 
       // Add required merchant details for sandbox
       const merchantData = {
-        merchant_id: import.meta.env.DEV ? "10000100" : import.meta.env.VITE_PAYFAST_MERCHANT_ID,
-        merchant_key: import.meta.env.DEV ? "46f0cd694581a" : import.meta.env.VITE_PAYFAST_MERCHANT_KEY,
+        merchant_id: import.meta.env.DEV ? "10036450" : import.meta.env.VITE_PAYFAST_MERCHANT_ID,
+        merchant_key: import.meta.env.DEV ? "8dafsqrcr99g5" : import.meta.env.VITE_PAYFAST_MERCHANT_KEY,
         return_url: window.location.origin + "/payment-success",
         cancel_url: window.location.origin + "/payment-failure",
         notify_url: window.location.origin + "/api/payment-webhook",
