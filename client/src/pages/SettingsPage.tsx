@@ -578,6 +578,15 @@ export default function SettingsPage() {
         ? "https://sandbox.payfast.co.za/eng/process"
         : "https://www.payfast.co.za/eng/process";
 
+      // Add required merchant details for sandbox
+      const merchantData = {
+        merchant_id: import.meta.env.DEV ? "10000100" : import.meta.env.VITE_PAYFAST_MERCHANT_ID,
+        merchant_key: import.meta.env.DEV ? "46f0cd694581a" : import.meta.env.VITE_PAYFAST_MERCHANT_KEY,
+        return_url: window.location.origin + "/payment-success",
+        cancel_url: window.location.origin + "/payment-failure",
+        notify_url: window.location.origin + "/api/payment-webhook",
+      };
+
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value !== undefined) {
           const input = document.createElement("input");
