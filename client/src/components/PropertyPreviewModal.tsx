@@ -355,9 +355,9 @@ async function generatePropertyPreviewPDF(
     doc.setTextColor(100);
     doc.text(
       `Page ${i} of ${totalPages}`,
-      doc.internal.pageSize.getWidth() / 2,
+      doc.internal.pageSize.getWidth() - 20,
       doc.internal.pageSize.getHeight() - 10,
-      { align: 'center' }
+      { align: 'right' }
     );
   }
 
@@ -409,7 +409,7 @@ export function PropertyPreviewModal({
   onOpenChange,
 }: PropertyPreviewModalProps) {
   if (!property) return null;
-  
+
   const { user } = useUser();
   const platformFee = property.managementFee > 0 ? 15 : 3;
   const feeAdjustedNightlyRate =
