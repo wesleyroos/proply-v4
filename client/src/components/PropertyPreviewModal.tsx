@@ -593,20 +593,21 @@ export function PropertyPreviewModal({
                   </DialogDescription>
                 </DialogHeader>
                 {hasProAccess ? (
-                  <>
-                    <div className="flex items-center gap-4 mb-4">
-                      {user?.companyLogo ? (
+                  <div className="flex flex-col gap-4">
+                    {user?.companyLogo ? (
+                      <div className="flex items-center gap-4 mb-4">
                         <img
                           src={user.companyLogo}
                           alt="Company Logo"
                           className="w-32 h-32 object-contain border rounded-lg"
                         />
-                      ) : (
-                        <div>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={async (e) => {
+                      </div>
+                    ) : (
+                      <div>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
                               const file = e.target.files?.[0];
                               if (file) {
                                 const reader = new FileReader();
@@ -665,7 +666,7 @@ export function PropertyPreviewModal({
                         Include Branding
                       </Button>
                     </div>
-                  </>
+                  </div>
                 ) : (
                   <>
                     {user?.companyLogo && (
