@@ -252,13 +252,48 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     formatter.format(property.longTermMonthly)
   ]);
 
+  // Calculate averages for occupancy rates
+  const avgLowOcc = (OCCUPANCY_RATES.low.reduce((a, b) => a + b, 0) / 12).toFixed(1) + '%';
+  const avgMedOcc = (OCCUPANCY_RATES.medium.reduce((a, b) => a + b, 0) / 12).toFixed(1) + '%';
+  const avgHighOcc = (OCCUPANCY_RATES.high.reduce((a, b) => a + b, 0) / 12).toFixed(1) + '%';
+
+  // Calculate totals for revenues
+  const totalLowRevenue = Array(12).fill(0)
+    .reduce((sum, _, i) => sum + calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee), 0);
+  const totalMedRevenue = Array(12).fill(0)
+    .reduce((sum, _, i) => sum + calculateMonthlyRevenue('medium', i, property.shortTermNightly, property.managementFee > 0, property.managementFee), 0);
+  const totalHighRevenue = Array(12).fill(0)
+    .reduce((sum, _, i) => sum + calculateMonthlyRevenue('high', i, property.shortTermNightly, property.managementFee > 0, property.managementFee), 0);
+  const totalLongTerm = property.longTermMonthly * 12;
+
+  // Add totals row
+  tableData.push([
+    'Averages/Totals',
+    '-',
+    '-',
+    avgLowOcc,
+    formatter.format(totalLowRevenue),
+    avgMedOcc,
+    formatter.format(totalMedRevenue),
+    avgHighOcc,
+    formatter.format(totalHighRevenue),
+    formatter.format(totalLongTerm)
+  ]);
+
   autoTable(doc, {
     head: [tableHeaders],
     body: tableData,
     startY: yPos,
     styles: { fontSize: 6.5 },
     headStyles: { fillColor: [27, 163, 255], fontSize: 7 },
-    margin: { left: margin }
+    margin: { left: margin },
+    didParseCell: function(data) {
+      // Make last row (totals) bold
+      if (data.row.index === tableData.length - 1) {
+        data.cell.styles.fontStyle = 'bold';
+        data.cell.styles.fillColor = [243, 244, 246];
+      }
+    }
   });
 
   yPos = (doc as any).lastAutoTable.finalY + 20;
