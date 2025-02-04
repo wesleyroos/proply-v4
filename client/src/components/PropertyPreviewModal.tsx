@@ -463,12 +463,6 @@ export function PropertyPreviewModal({
                   }}>
                     Yes
                   </Button>
-                  <div className="absolute -top-1 -right-1 flex items-center gap-1">
-                    <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
-                      PRO
-                    </span>
-                    <Sparkles className="h-4 w-4 text-yellow-500" />
-                  </div>
                 </div>
               </DialogContent>
             </Dialog>
