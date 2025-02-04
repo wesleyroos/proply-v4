@@ -787,7 +787,7 @@ export function PropertyPreviewModal({
                             {formatter.format(getFeeAdjustedRate(getSeasonalNightlyRate(property.shortTermNightly, i), property.managementFee > 0))}
                           </td>
                         ))}
-                        <<td className="text-right py-3 px-4 border-l"></td>
+                        <td className="text-right py-3 px-4 border-l"></td>
                         <td className="text-right py-3 px-4"></td>
                       </tr>
                       <tr className="border-t">
