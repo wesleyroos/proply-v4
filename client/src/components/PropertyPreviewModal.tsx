@@ -1,9 +1,9 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatter } from "@/utils/formatting";
 import { Building2, TrendingUp, BarChart3, MapPin } from "lucide-react";
 import PropertyMap from "./PropertyMap";
+import { Progress } from "@/components/ui/progress"; // Assuming Progress component exists
 
 interface Property {
   id: number;
@@ -133,11 +133,37 @@ export function PropertyPreviewModal({ property, open, onOpenChange }: PropertyP
                     {formatter.format(property.longTermMonthly)}/month
                   </p>
                 </div>
-                <div className="pt-2 border-t border-purple-100">
-                  <div className="flex justify-between items-center mt-2">
-                    <p className="text-sm text-slate-600">Break-even Occupancy:</p>
-                    <p className="text-sm font-medium">{property.breakEvenOccupancy}%</p>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-slate-600">Projected Occupancy</span>
+                      <span className="text-sm font-medium">{property.annualOccupancy}%</span>
+                    </div>
+                    <div className="relative">
+                      <Progress value={property.annualOccupancy} className="h-2" />
+                      <div
+                        className="absolute top-0 h-4 w-0.5 bg-red-500 transform -translate-y-1"
+                        style={{ left: `${property.breakEvenOccupancy}%` }}
+                        title="Break-even point"
+                      />
+                    </div>
                   </div>
+                  <div className="flex items-center gap-4 text-sm text-slate-600">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-2 bg-primary rounded-full"></div>
+                      <span>Projected {property.annualOccupancy}%</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-0.5 h-3 bg-red-500"></div>
+                      <span>Break-even {property.breakEvenOccupancy}%</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-600">
+                    Your short-term rental needs {property.breakEvenOccupancy}% occupancy to match long-term rental income.
+                    {property.annualOccupancy > property.breakEvenOccupancy
+                      ? ` At ${property.annualOccupancy}% projected occupancy, short-term rental is more profitable.`
+                      : ` At ${property.annualOccupancy}% projected occupancy, long-term rental may be more suitable.`}
+                  </p>
                 </div>
               </div>
             </CardContent>
