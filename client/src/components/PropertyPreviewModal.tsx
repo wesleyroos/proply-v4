@@ -347,72 +347,27 @@ async function generatePropertyPreviewPDF(
 
   yPos = (doc as any).lastAutoTable.finalY + 20;
 
-  // Add footer elements to all pages
+  // Add page numbers to all pages
   const totalPages = doc.getNumberOfPages();
-  const margin = 20;
-  const footerPadding = 10;
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text(
+      `Page ${i} of ${totalPages}`,
+      doc.internal.pageSize.getWidth() - 20,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'right' }
+    );
 
-  try {
-    const logo = new Image();
-    logo.src = "/proply-logo-1.png";
-    
-    await new Promise((resolve) => {
-      logo.onload = () => {
-        for (let i = 1; i <= totalPages; i++) {
-          doc.setPage(i);
-          
-          // Add Proply logo to bottom left
-          const logoHeight = 8;
-          const aspectRatio = logo.width / logo.height;
-          const logoWidth = logoHeight * aspectRatio;
-          doc.addImage(logo, "PNG", margin, doc.internal.pageSize.getHeight() - margin - logoHeight, logoWidth, logoHeight);
-
-          // Add page numbers to bottom right
-          doc.setFontSize(8);
-          doc.setTextColor(100);
-          doc.text(
-            `Page ${i} of ${totalPages}`,
-            doc.internal.pageSize.getWidth() - margin,
-            doc.internal.pageSize.getHeight() - footerPadding,
-            { align: 'right' }
-          );
-
-          // Add copyright text to center
-          const currentYear = new Date().getFullYear();
-          doc.text(
-            `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
-            doc.internal.pageSize.getWidth() / 2,
-            doc.internal.pageSize.getHeight() - footerPadding,
-            { align: 'center' }
-          );
-        }
-        resolve(null);
-      };
-      logo.onerror = () => {
-        console.error("Error loading logo in footer");
-        resolve(null);
-      };
-    });
-  } catch (error) {
-    console.error("Error adding footer elements:", error);
-    // If logo fails, still add page numbers and copyright
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(100);
-      doc.text(
-        `Page ${i} of ${totalPages}`,
-        doc.internal.pageSize.getWidth() - margin,
-        doc.internal.pageSize.getHeight() - footerPadding,
-        { align: 'right' }
-      );
-      doc.text(
-        `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
-        doc.internal.pageSize.getWidth() / 2,
-        doc.internal.pageSize.getHeight() - footerPadding,
-        { align: 'center' }
-      );
-    }
+    // Add copyright text to center
+    const currentYear = new Date().getFullYear();
+    doc.text(
+      `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
+      doc.internal.pageSize.getWidth() / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    );
   }
 
   // Add new page for disclaimer
