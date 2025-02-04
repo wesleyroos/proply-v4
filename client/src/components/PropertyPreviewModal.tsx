@@ -35,13 +35,14 @@ export function PropertyPreviewModal({ property, open, onOpenChange }: PropertyP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-4xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="text-3xl font-bold text-slate-800">
             {property.title}
           </DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-3 gap-4 py-4">
+        <ScrollArea className="h-[calc(80vh-8rem)]">
+          <div className="grid grid-cols-3 gap-4 py-4">
           <Card>
             <CardHeader>
               <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -200,6 +201,7 @@ export function PropertyPreviewModal({ property, open, onOpenChange }: PropertyP
             </CardContent>
           </Card>
         </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
