@@ -713,8 +713,12 @@ export function PropertyPreviewModal({
                             {formatter.format(property.longTermMonthly)}
                           </td>
                         ))}
-                        <td className="text-right py-3 px-4 border-l"></td>
-                        <td className="text-right py-3 px-4"></td>
+                        <td className="text-right py-3 px-4 border-l font-medium">
+                          {formatter.format(property.longTermMonthly * 12)}
+                        </td>
+                        <td className="text-right py-3 px-4 font-medium">
+                          {formatter.format(property.longTermMonthly)}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
