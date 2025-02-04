@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import PropertyForm from "../components/PropertyForm";
 import ComparisonChart from "../components/ComparisonChart";
 import { useUser } from "../hooks/use-user";
+import { useQueryClient } from "@tanstack/react-query"; // Added import
+
 
 export default function ComparisonPage() {
   const [, setLocation] = useLocation();
@@ -13,6 +15,7 @@ export default function ComparisonPage() {
   const [comparisonData, setComparisonData] = useState<ComparisonData | null>(
     null,
   );
+  const queryClient = useQueryClient(); // Added useQueryClient hook
 
   interface ComparisonData {
     title: string;
@@ -99,7 +102,7 @@ export default function ComparisonPage() {
         <div className="max-w-4xl space-y-6">
           <Card>
             <CardContent className="pt-6">
-              <PropertyForm onSubmit={handleCompare} />
+              <PropertyForm onSubmit={handleCompare} queryClient={queryClient} /> {/* Pass queryClient */}
             </CardContent>
           </Card>
 
