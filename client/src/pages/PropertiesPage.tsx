@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatter } from "../utils/formatting";
-import { Trash2, Calculator, ArrowUpDown, Eye, ChevronUp, ChevronDown, BarChart3, Sparkles } from "lucide-react";
+import { Trash2, Calculator, ArrowUpDown, Eye, ChevronUp, ChevronDown, BarChart3, Sparkles, Search } from "lucide-react";
+import { PropertyPreviewModal } from "@/components/PropertyPreviewModal";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { PropertyComparisonModal } from "@/components/PropertyComparisonModal";
 import {
@@ -76,6 +77,7 @@ export default function PropertiesPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<AnalyzerProperty | null>(null);
+  const [previewProperty, setPreviewProperty] = useState<Property | null>(null);
   const [selectedProperties, setSelectedProperties] = useState<number[]>([]);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedPropertiesForComparison, setSelectedPropertiesForComparison] = useState<AnalyzerProperty[]>([]);
@@ -558,15 +560,25 @@ export default function PropertiesPage() {
                           <td className="py-3 px-4 text-right whitespace-nowrap">
                             {new Date(property.createdAt).toLocaleDateString()}
                           </td>
-                          <td className="py-3 px-4 text-right">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                              onClick={() => setPropertyToDelete(property)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                          <td className="py-3 px-4">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                onClick={() => setPreviewProperty(property)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => setPropertyToDelete(property)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -639,6 +651,11 @@ export default function PropertiesPage() {
       />
 
       <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+      <PropertyPreviewModal
+        property={previewProperty}
+        open={!!previewProperty}
+        onOpenChange={(open) => !open && setPreviewProperty(null)}
+      />
     </div>
   );
 }
