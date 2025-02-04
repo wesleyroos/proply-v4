@@ -683,9 +683,20 @@ export function PropertyPreviewModal({
                       <p className="text-sm text-muted-foreground text-center">
                         Company branding requires a Pro subscription
                       </p>
-                      <Button onClick={() => setShowUpgradeModal(true)}>
-                        Upgrade to Pro
-                      </Button>
+                      <div className="flex gap-4">
+                        <Button onClick={() => setShowUpgradeModal(true)}>
+                          Upgrade to Pro
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            onOpenChange(false);
+                            generatePropertyPreviewPDF(property, false, user);
+                          }}
+                        >
+                          Continue without branding
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
