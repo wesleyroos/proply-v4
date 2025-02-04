@@ -366,7 +366,8 @@ export function PropertyPreviewModal({
   onOpenChange,
 }: PropertyPreviewModalProps) {
   if (!property) return null;
-
+  
+  const { user } = useUser();
   const platformFee = property.managementFee > 0 ? 15 : 3;
   const feeAdjustedNightlyRate =
     property.shortTermNightly * (1 - platformFee / 100);
