@@ -185,6 +185,44 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
   });
 
+  // Add disclaimer page
+  doc.addPage();
+
+  // Add disclaimer heading
+  doc.setFontSize(16);
+  doc.setTextColor(0);
+  doc.text("Important Disclaimers & Legal Notices", 20, 20);
+
+  // Set disclaimer text style
+  doc.setFontSize(8);
+  doc.setTextColor(90);
+
+  const currentYear = new Date().getFullYear();
+  const disclaimerText = [
+    "DISCLAIMER: The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.",
+    "",
+    "This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice. Any decisions made based on this information are solely the responsibility of the user. Property investment carries inherent risks, and market conditions can change rapidly.",
+    "",
+    "Proply Tech (Pty) Ltd and its affiliates expressly disclaim any and all liability for any direct, indirect, incidental, or consequential damages arising from the use of this information. Actual results may vary significantly from the projections and estimates presented.",
+    "",
+    "By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.",
+    "",
+    `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`
+  ];
+
+  let yPosition = 40;
+  disclaimerText.forEach(text => {
+    if (text === "") {
+      yPosition += 5;
+      return;
+    }
+    const lines = doc.splitTextToSize(text, 170);
+    lines.forEach(line => {
+      doc.text(line, 20, yPosition);
+      yPosition += 5;
+    });
+  });
+
   doc.save(`${property.title.replace(/[^a-zA-Z0-9]/g, "_")}_preview.pdf`);
 }
 
@@ -208,7 +246,7 @@ export function PropertyPreviewModal({
             <DialogTitle className="text-3xl font-bold text-slate-800">
               {property.title}
             </DialogTitle>
-            
+
             <Button
               onClick={() => generatePropertyPreviewPDF(property)}
               className="mr-6 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
