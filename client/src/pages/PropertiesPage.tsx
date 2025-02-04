@@ -428,7 +428,7 @@ export default function PropertiesPage() {
                       <tr>
                         <td colSpan={11} className="text-center py-8 text-muted-foreground">
                           No properties analyzed yet.{' '}
-                          <Link href="/analyzer" className="text-primary hover:underline">
+                          <Link href="/dashboard/property-analyzer" className="text-primary hover:underline">
                             Analyze your first property
                           </Link>
                         </td>
