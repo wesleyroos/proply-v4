@@ -133,38 +133,56 @@ export function PropertyPreviewModal({ property, open, onOpenChange }: PropertyP
                     {formatter.format(property.longTermMonthly)}/month
                   </p>
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm text-slate-600">Projected Occupancy</span>
-                      <span className="text-sm font-medium">{property.annualOccupancy}%</span>
-                    </div>
-                    <div className="relative">
-                      <Progress value={property.annualOccupancy} className="h-2" />
-                      <div
-                        className="absolute top-0 h-4 w-0.5 bg-red-500 transform -translate-y-1"
-                        style={{ left: `${property.breakEvenOccupancy}%` }}
-                        title="Break-even point"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-slate-600">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-2 bg-primary rounded-full"></div>
-                      <span>Projected {property.annualOccupancy}%</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-0.5 h-3 bg-red-500"></div>
-                      <span>Break-even {property.breakEvenOccupancy}%</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-slate-600">
-                    Your short-term rental needs {property.breakEvenOccupancy}% occupancy to match long-term rental income.
-                    {property.annualOccupancy > property.breakEvenOccupancy
-                      ? ` At ${property.annualOccupancy}% projected occupancy, short-term rental is more profitable.`
-                      : ` At ${property.annualOccupancy}% projected occupancy, long-term rental may be more suitable.`}
+                <div>
+                  <p className="text-sm text-slate-600">Monthly Revenue:</p>
+                  <p className="text-base text-slate-800">
+                    {formatter.format(property.longTermMonthly)}/month
                   </p>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Breakeven Analysis Card */}
+          <Card className="col-span-3">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-orange-500" />
+                Breakeven Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm text-slate-600">Projected Occupancy</span>
+                    <span className="text-sm font-medium">{property.annualOccupancy}%</span>
+                  </div>
+                  <div className="relative">
+                    <Progress value={property.annualOccupancy} className="h-2" />
+                    <div
+                      className="absolute top-0 h-4 w-0.5 bg-red-500 transform -translate-y-1"
+                      style={{ left: `${property.breakEvenOccupancy}%` }}
+                      title="Break-even point"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-sm text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-2 bg-primary rounded-full"></div>
+                    <span>Projected {property.annualOccupancy}%</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-0.5 h-3 bg-red-500"></div>
+                    <span>Break-even {property.breakEvenOccupancy}%</span>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600">
+                  Your short-term rental needs {property.breakEvenOccupancy}% occupancy to match long-term rental income.
+                  {property.annualOccupancy > property.breakEvenOccupancy
+                    ? ` At ${property.annualOccupancy}% projected occupancy, short-term rental is more profitable.`
+                    : ` At ${property.annualOccupancy}% projected occupancy, long-term rental may be more suitable.`}
+                </p>
               </div>
             </CardContent>
           </Card>
