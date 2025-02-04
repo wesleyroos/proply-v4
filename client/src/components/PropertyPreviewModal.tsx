@@ -412,12 +412,6 @@ export function PropertyPreviewModal({
                       {formatter.format(property.longTermMonthly)}/month
                     </p>
                   </div>
-                  <div>
-                    <p className="text-sm text-slate-600">Monthly Revenue:</p>
-                    <p className="text-base text-slate-800">
-                      {formatter.format(property.longTermMonthly)}/month
-                    </p>
-                  </div>
                 </div>
               </CardContent>
             </Card>
