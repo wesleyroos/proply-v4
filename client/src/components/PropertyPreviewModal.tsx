@@ -594,63 +594,58 @@ export function PropertyPreviewModal({
                 </DialogHeader>
                 {hasProAccess ? (
                   <>
-                    {user?.companyLogo ? (
-                      <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center gap-4 mb-4">
+                      {user?.companyLogo ? (
                         <img
                           src={user.companyLogo}
                           alt="Company Logo"
                           className="w-32 h-32 object-contain border rounded-lg"
                         />
+                      ) : (
                         <div>
-                          <p className="text-sm text-muted-foreground">
-                            Your current company logo
-                          </p>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onloadend = async () => {
+                                  const base64Data = reader.result as string;
+                                  try {
+                                    const response = await fetch("/api/profile", {
+                                      method: "POST",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({
+                                        companyLogo: base64Data,
+                                      }),
+                                      credentials: "include",
+                                    });
+                                    if (!response.ok)
+                                      throw new Error(await response.text());
+                                    queryClient.invalidateQueries(["user"]);
+                                    toast({
+                                      title: "Success",
+                                      description:
+                                        "Company logo uploaded successfully",
+                                      duration: 3000,
+                                    });
+                                  } catch (error) {
+                                    toast({
+                                      variant: "destructive",
+                                      title: "Error",
+                                      description: "Failed to upload company logo",
+                                      duration: 5000,
+                                    });
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
                         </div>
-                      </div>
-                    ) : (
-                      <div className="mb-4">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onloadend = async () => {
-                                const base64Data = reader.result as string;
-                                try {
-                                  const response = await fetch("/api/profile", {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({
-                                      companyLogo: base64Data,
-                                    }),
-                                    credentials: "include",
-                                  });
-                                  if (!response.ok)
-                                    throw new Error(await response.text());
-                                  queryClient.invalidateQueries(["user"]);
-                                  toast({
-                                    title: "Success",
-                                    description:
-                                      "Company logo uploaded successfully",
-                                    duration: 3000,
-                                  });
-                                } catch (error) {
-                                  toast({
-                                    variant: "destructive",
-                                    title: "Error",
-                                    description: "Failed to upload company logo",
-                                    duration: 5000,
-                                  });
-                                }
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                        />
-                      </div>
-                    )}
+                      )}
+                    </div>
                     <div className="flex justify-end gap-4 mt-4">
                       <Button
                         variant="outline"
