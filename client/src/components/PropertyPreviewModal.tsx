@@ -199,16 +199,17 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     );
   }
 
-  // Add disclaimer page
-  doc.addPage();
+  // Add disclaimer section at bottom of page 2
+  doc.setPage(2);
+  const pageHeight = doc.internal.pageSize.getHeight();
 
   // Add disclaimer heading
-  doc.setFontSize(16);
+  doc.setFontSize(12);
   doc.setTextColor(0);
-  doc.text("Important Disclaimers & Legal Notices", 20, 20);
+  doc.text("Important Disclaimers & Legal Notices", 20, pageHeight - 100);
 
   // Set disclaimer text style
-  doc.setFontSize(8);
+  doc.setFontSize(7);
   doc.setTextColor(90);
 
   const currentYear = new Date().getFullYear();
@@ -224,7 +225,7 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`
   ];
 
-  let yPosition = 40;
+  let yPosition = pageHeight - 95;
   disclaimerText.forEach(text => {
     if (text === "") {
       yPosition += 5;
