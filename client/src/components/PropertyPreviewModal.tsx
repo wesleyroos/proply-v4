@@ -1,6 +1,8 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatter } from "@/utils/formatting";
+import { Building2, TrendingUp, BarChart3 } from "lucide-react";
 
 interface Property {
   id: number;
@@ -27,49 +29,118 @@ interface PropertyPreviewModalProps {
 export function PropertyPreviewModal({ property, open, onOpenChange }: PropertyPreviewModalProps) {
   if (!property) return null;
 
+  const platformFee = property.managementFee > 0 ? 15 : 3;
+  const feeAdjustedNightlyRate = property.shortTermNightly * (1 - (platformFee / 100));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>{property.title}</DialogTitle>
+          <DialogTitle className="text-3xl font-bold text-slate-800">
+            {property.title}
+          </DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <h3 className="font-medium mb-2">Property Details</h3>
-              <div className="space-y-2 text-sm">
-                <p><span className="text-muted-foreground">Address:</span> {property.address}</p>
-                <p><span className="text-muted-foreground">Bedrooms:</span> {property.bedrooms}</p>
-                <p><span className="text-muted-foreground">Bathrooms:</span> {property.bathrooms}</p>
-                <p><span className="text-muted-foreground">Added:</span> {new Date(property.createdAt).toLocaleDateString()}</p>
-              </div>
-            </div>
-            <div>
-              <h3 className="font-medium mb-2">Short-Term Details</h3>
-              <div className="space-y-2 text-sm">
-                <p><span className="text-muted-foreground">Nightly Rate:</span> {formatter.format(property.shortTermNightly)}</p>
-                <p><span className="text-muted-foreground">Annual Occupancy:</span> {property.annualOccupancy}%</p>
-                <p><span className="text-muted-foreground">Management Fee:</span> {property.managementFee}%</p>
-                <p><span className="text-muted-foreground">Break-even Occupancy:</span> {property.breakEvenOccupancy}%</p>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <h3 className="font-medium">Financial Comparison</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-3 gap-4 py-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-indigo-500" />
+                Property Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
-                <h4 className="text-muted-foreground mb-2">Long-Term Rental</h4>
-                <p><span className="text-muted-foreground">Monthly Revenue:</span> {formatter.format(property.longTermMonthly)}</p>
-                <p><span className="text-muted-foreground">Annual Revenue:</span> {formatter.format(property.longTermMonthly * 12)}</p>
+                <h3 className="text-sm font-semibold text-slate-600">Address</h3>
+                <p className="mt-1 text-slate-800">{property.address}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-600">Bedrooms</h3>
+                  <p className="mt-1 text-slate-800">{property.bedrooms}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-600">Bathrooms</h3>
+                  <p className="mt-1 text-slate-800">{property.bathrooms}</p>
+                </div>
               </div>
               <div>
-                <h4 className="text-muted-foreground mb-2">Short-Term Rental</h4>
-                <p><span className="text-muted-foreground">Monthly Average:</span> {formatter.format(property.shortTermAnnual / 12)}</p>
-                <p><span className="text-muted-foreground">Annual Revenue:</span> {formatter.format(property.shortTermAnnual)}</p>
-                <p><span className="text-muted-foreground">After Fees:</span> {formatter.format(property.shortTermAfterFees)}</p>
+                <h3 className="text-sm font-semibold text-slate-600">Added</h3>
+                <p className="mt-1 text-slate-800">{new Date(property.createdAt).toLocaleDateString()}</p>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-emerald-500" />
+                Short-Term Performance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="p-4 rounded-lg bg-blue-50/50 space-y-4">
+                <div>
+                  <p className="text-2xl font-bold text-slate-800">
+                    {formatter.format(property.shortTermAnnual)}
+                    <span className="text-base font-normal text-slate-600 ml-2">/ year</span>
+                  </p>
+                  <p className="text-base text-slate-600">
+                    {formatter.format(property.shortTermAnnual / 12)}/month
+                  </p>
+                </div>
+                <div className="pt-2 border-t border-blue-100 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-slate-600">Nightly Rate:</p>
+                    <p className="text-sm font-medium">{formatter.format(property.shortTermNightly)}</p>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-slate-600">Fee-adjusted Rate:</p>
+                    <p className="text-sm font-medium">{formatter.format(feeAdjustedNightlyRate)}</p>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-slate-600">Platform Fee:</p>
+                    <p className="text-sm font-medium text-red-600">{platformFee}%</p>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-slate-600">Management Fee:</p>
+                    <p className="text-sm font-medium">{property.managementFee}%</p>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-slate-600">Occupancy:</p>
+                    <p className="text-sm font-medium">{property.annualOccupancy}%</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-purple-500" />
+                Long-Term Performance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="p-4 rounded-lg bg-purple-50/50 space-y-4">
+                <div>
+                  <p className="text-2xl font-bold text-slate-800">
+                    {formatter.format(property.longTermMonthly * 12)}
+                    <span className="text-base font-normal text-slate-600 ml-2">/ year</span>
+                  </p>
+                  <p className="text-base text-slate-600">
+                    {formatter.format(property.longTermMonthly)}/month
+                  </p>
+                </div>
+                <div className="pt-2 border-t border-purple-100">
+                  <div className="flex justify-between items-center mt-2">
+                    <p className="text-sm text-slate-600">Break-even Occupancy:</p>
+                    <p className="text-sm font-medium">{property.breakEvenOccupancy}%</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </DialogContent>
     </Dialog>
