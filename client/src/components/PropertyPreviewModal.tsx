@@ -23,6 +23,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatter } from "@/utils/formatting";
 import { useUser } from "@/hooks/use-user";
+import { useProAccess } from "@/hooks/use-pro-access";
+import { UpgradeModal } from "./UpgradeModal";
+import { useState } from "react";
 import {
   Building2,
   TrendingUp,
@@ -554,6 +557,8 @@ export function PropertyPreviewModal({
   if (!property) return null;
 
   const { user } = useUser();
+  const { hasProAccess } = useProAccess();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const platformFee = property.managementFee > 0 ? 15 : 3;
   const feeAdjustedNightlyRate =
     property.shortTermNightly * (1 - platformFee / 100);
@@ -587,6 +592,7 @@ export function PropertyPreviewModal({
                     Would you like to include your company branding in the PDF?
                   </DialogDescription>
                 </DialogHeader>
+                {hasProAccess ? (
                 {user?.companyLogo ? (
                   <div className="flex items-center gap-4 mb-4">
                     <img
@@ -666,7 +672,18 @@ export function PropertyPreviewModal({
                     Yes
                   </Button>
                 </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-4">
+                    <p className="text-sm text-muted-foreground text-center">
+                      Company branding requires a Pro subscription
+                    </p>
+                    <Button onClick={() => setShowUpgradeModal(true)}>
+                      Upgrade to Pro
+                    </Button>
+                  </div>
+                )}
               </DialogContent>
+              <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
             </Dialog>
           </div>
         </DialogHeader>
