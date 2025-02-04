@@ -249,13 +249,13 @@ export default function PropertiesPage() {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">My Properties</h1>
           <div className="flex gap-2">
-            <Link href="/compare">
+            <Link href="/dashboard/rent-compare">
               <Button variant="outline" className="flex items-center gap-2">
                 <ArrowUpDown className="h-4 w-4" />
                 Rent Compare
               </Button>
             </Link>
-            <Link href="/analyzer">
+            <Link href="/dashboard/property-analyzer">
               <Button variant="outline" className="flex items-center gap-2">
                 <Calculator className="h-4 w-4" />
                 Property Analyzer
