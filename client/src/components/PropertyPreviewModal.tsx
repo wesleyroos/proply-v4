@@ -185,6 +185,20 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
   });
 
+  // Add page numbers to all pages
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text(
+      `Page ${i} of ${totalPages}`,
+      doc.internal.pageSize.getWidth() / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    );
+  }
+
   // Add disclaimer page
   doc.addPage();
 
@@ -223,7 +237,7 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     });
   });
 
-  doc.save(`${property.title.replace(/[^a-zA-Z0-9]/g, "_")}_preview.pdf`);
+  doc.save(`Rent Compare for ${property.address.replace(/[^a-zA-Z0-9]/g, " ")}.pdf`);
 }
 
 
