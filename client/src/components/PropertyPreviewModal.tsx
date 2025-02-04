@@ -391,7 +391,13 @@ export function PropertyPreviewModal({
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Include Company Branding?</DialogTitle>
+                  <div className="flex items-center gap-2">
+                    <DialogTitle>Include Company Branding?</DialogTitle>
+                    <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+                      PRO
+                    </span>
+                    <Sparkles className="h-4 w-4 text-[#1BA3FF]" />
+                  </div>
                   <DialogDescription>
                     Would you like to include your company branding in the PDF?
                   </DialogDescription>
