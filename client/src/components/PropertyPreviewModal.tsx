@@ -534,6 +534,128 @@ export function PropertyPreviewModal({
                     </thead>
                     <tbody>
                       <tr className="border-t">
+                        <td className="py-3 px-4">Nightly Rate</td>
+                        {Array(12).fill(0).map((_, i) => (
+                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">
+                            {formatter.format(getSeasonalNightlyRate(property.shortTermNightly, i))}
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-t">
+                        <td className="py-3 px-4">Fee-Adjusted Rate</td>
+                        {Array(12).fill(0).map((_, i) => (
+                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">
+                            {formatter.format(getFeeAdjustedRate(getSeasonalNightlyRate(property.shortTermNightly, i), property.managementFee > 0))}
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-t">
+                        <td className="py-3 px-4">Occupancy Low</td>
+                        {OCCUPANCY_RATES.low.map((rate, i) => (
+                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">{rate}%</td>
+                        ))}
+                      </tr>
+                      <tr className="border-t">
+                        <td className="py-3 px-4">Occupancy Medium</td>
+                        {OCCUPANCY_RATES.medium.map((rate, i) => (
+                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">{rate}%</td>
+                        ))}
+                      </tr>
+                      <tr className="border-t">
+                        <td className="py-3 px-4">Occupancy High</td>
+                        {OCCUPANCY_RATES.high.map((rate, i) => (
+                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">{rate}%</td>
+                        ))}
+                      </tr>
+                      <tr className="border-t bg-[#FF6B6B]/10">
+                        <td className="py-3 px-4 text-[#FF6B6B] font-medium">Revenue Low</td>
+                        {Array(12).fill(0).map((_, i) => (
+                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">
+                            {formatter.format(calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee))}
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-t bg-[#4ECDC4]/10">
+                        <td className="py-3 px-4 text-[#4ECDC4] font-medium">Revenue Medium</td>
+                        {Array(12).fill(0).map((_, i) => (
+                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">
+                            {formatter.format(calculateMonthlyRevenue('medium', i, property.shortTermNightly, property.managementFee > 0, property.managementFee))}
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-t bg-[#45B7D1]/10">
+                        <td className="py-3 px-4 text-[#45B7D1] font-medium">Revenue High</td>
+                        {Array(12).fill(0).map((_, i) => (
+                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">
+                            {formatter.format(calculateMonthlyRevenue('high', i, property.shortTermNightly, property.managementFee > 0, property.managementFee))}
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-t bg-[#FFE66D]/10">
+                        <td className="py-3 px-4 text-[#B8860B] font-medium">Long Term Rental</td>
+                        {Array(12).fill(0).map((_, i) => (
+                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">
+                            {formatter.format(property.longTermMonthly)}
+                          </td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Revenue Comparison Chart */}
+            <Card className="col-span-3">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-slate-800">Revenue Comparison</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={Array(12).fill(0).map((_, i) => ({
+                        month: new Date(2024, i).toLocaleString('default', { month: 'short' }),
+                        low: calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee),
+                        medium: calculateMonthlyRevenue('medium', i, property.shortTermNightly, property.managementFee > 0, property.managementFee),
+                        high: calculateMonthlyRevenue('high', i, property.shortTermNightly, property.managementFee > 0, property.managementFee),
+                        longTerm: property.longTermMonthly,
+                      }))}
+                    >
+                      <XAxis dataKey="month" />
+                      <YAxis tickFormatter={(value) => formatter.format(value)} />
+                      <RechartsTooltip formatter={(value) => formatter.format(value as number)} />
+                      <Legend />
+                      <Line type="monotone" dataKey="low" stroke="#FF6B6B" name="Revenue Low" />
+                      <Line type="monotone" dataKey="medium" stroke="#4ECDC4" name="Revenue Medium" />
+                      <Line type="monotone" dataKey="high" stroke="#45B7D1" name="Revenue High" />
+                      <Line type="monotone" dataKey="longTerm" stroke="#FFE66D" strokeDasharray="5 5" name="Long Term Rental" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Monthly Revenue Table */}
+            <Card className="col-span-3">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-slate-800">Monthly Revenue Breakdown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left py-3 px-4">Metric</th>
+                        {Array(12).fill(0).map((_, i) => (
+                          <th key={i} className="text-right py-3 px-4">
+                            {new Date(2024, i).toLocaleString('default', { month: 'short' })}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-t">
                         <td className="py-3 px-4">Short-Term (Low)</td>
                         {Array(12).fill(0).map((_, i) => (
                           <td key={i} className="text-right py-3 px-4">
@@ -584,6 +706,23 @@ const OCCUPANCY_RATES = {
   high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
 };
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const SEASONALITY_FACTORS = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
+
+function getSeasonalMultiplier(month: number): number {
+  return SEASONALITY_FACTORS[month];
+}
+
+function getSeasonalNightlyRate(baseRate: number, month: number): number {
+  return baseRate * getSeasonalMultiplier(month);
+}
+
+function getFeeAdjustedRate(rate: number, hasManagementFee: boolean): number {
+  return hasManagementFee
+    ? rate * 0.85  // 15% Airbnb fee for professionally managed
+    : rate * 0.97; // 3% fee for self-managed
+}
+
 function calculateMonthlyRevenue(
   scenario: 'low' | 'medium' | 'high',
   month: number,
@@ -593,10 +732,14 @@ function calculateMonthlyRevenue(
 ): number {
   const occupancyRate = OCCUPANCY_RATES[scenario][month] / 100;
   const daysInMonth = new Date(2024, month + 1, 0).getDate();
-  const platformFee = hasManagementFee ? 0.15 : 0.03;
   
-  let revenue = nightly * daysInMonth * occupancyRate * (1 - platformFee);
+  // Apply seasonal adjustment and platform fee
+  const seasonalRate = getSeasonalNightlyRate(nightly, month);
+  const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, hasManagementFee);
   
+  let revenue = feeAdjustedRate * daysInMonth * occupancyRate;
+  
+  // Apply management fee if present
   if (hasManagementFee) {
     revenue *= (1 - managementFeePercent);
   }
