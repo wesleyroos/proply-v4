@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/components/ui/use-toast";
 
 interface ComparisonData {
   title: string;
@@ -55,13 +54,20 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
     },
   ];
 
-  const { toast } = useToast();
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   return (
     <TooltipProvider>
       <div id="comparison-results" className="space-y-6">
         <div className="flex justify-end gap-4">
           <div className="flex items-center gap-4">
+            {saveMessage && (
+              <div className={`px-4 py-2 rounded ${
+                saveMessage.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {saveMessage.text}
+              </div>
+            )}
             <Button
               onClick={async () => {
                 try {
@@ -94,20 +100,12 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
                     throw new Error('Failed to save property');
                   }
 
-                  toast({
-                    variant: "success",
-                    title: "Success",
-                    description: "Property saved successfully",
-                    duration: 3000,
-                  });
+                  setSaveMessage({ type: 'success', text: 'Property saved successfully' });
+                  setTimeout(() => setSaveMessage(null), 3000);
                 } catch (error) {
                   console.error('Error saving property:', error);
-                  toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Failed to save property",
-                    duration: 3000,
-                  });
+                  setSaveMessage({ type: 'error', text: 'Failed to save property' });
+                  setTimeout(() => setSaveMessage(null), 3000);
                 }
               }}
               className="bg-green-600 hover:bg-green-700"
