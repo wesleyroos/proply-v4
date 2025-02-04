@@ -65,6 +65,9 @@ async function generatePropertyPreviewPDF(
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 20;
 
+  const startY = 20;
+  let maxLogoHeight = 0;
+
   // Add company logo if branding is enabled and logo exists
   if (includeCompanyBranding && userData?.companyLogo) {
     try {
@@ -74,15 +77,15 @@ async function generatePropertyPreviewPDF(
         img.onload = () => {
           const aspectRatio = img.height / img.width;
           const logoHeight = logoWidth * aspectRatio;
+          maxLogoHeight = Math.max(maxLogoHeight, logoHeight);
           doc.addImage(
             userData.companyLogo,
             "PNG",
             margin,
-            margin,
+            startY,
             logoWidth,
             logoHeight
           );
-          yPos = Math.max(yPos, margin + logoHeight + 10);
           resolve();
         };
         img.onerror = () => {
@@ -105,11 +108,12 @@ async function generatePropertyPreviewPDF(
       proplyLogo.onload = () => {
         const aspectRatio = proplyLogo.height / proplyLogo.width;
         const proplyLogoHeight = proplyLogoWidth * aspectRatio;
+        maxLogoHeight = Math.max(maxLogoHeight, proplyLogoHeight);
         doc.addImage(
           "/proply-logo-1.png",
           "PNG",
           doc.internal.pageSize.getWidth() - 60,
-          yPos,
+          startY,
           proplyLogoWidth,
           proplyLogoHeight
         );
@@ -118,7 +122,7 @@ async function generatePropertyPreviewPDF(
         doc.text(
           "Powered by Proply",
           doc.internal.pageSize.getWidth() - 60,
-          yPos + proplyLogoHeight + 5
+          startY + proplyLogoHeight + 5
         );
         resolve();
       };
@@ -131,6 +135,8 @@ async function generatePropertyPreviewPDF(
   } catch (error) {
     console.error("Error adding Proply logo:", error);
   }
+
+  yPos = startY + maxLogoHeight + 20;
 
   yPos = Math.max(yPos + 40, 60);
 
