@@ -15,7 +15,8 @@ import {
   MapPin,
   FileText,
 } from "lucide-react";
-// import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService"; //Removed as it's for a different product
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 import PropertyMap from "./PropertyMap";
 import { Progress } from "@/components/ui/progress"; // Assuming Progress component exists
 
