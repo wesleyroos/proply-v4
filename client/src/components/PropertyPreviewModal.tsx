@@ -653,34 +653,37 @@ export function PropertyPreviewModal({
                   </div>
                 )}
                 <div className="flex justify-end gap-4 mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      onOpenChange(false);
-                      generatePropertyPreviewPDF(property, false, user);
-                    }}
-                  >
-                    No
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      onOpenChange(false);
-                      generatePropertyPreviewPDF(property, true, user);
-                    }}
-                  >
-                    Yes
-                  </Button>
+                  {hasProAccess && user?.companyLogo ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          onOpenChange(false);
+                          generatePropertyPreviewPDF(property, false, user);
+                        }}
+                      >
+                        No
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          onOpenChange(false);
+                          generatePropertyPreviewPDF(property, true, user);
+                        }}
+                      >
+                        Yes
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center gap-4">
+                      <p className="text-sm text-muted-foreground text-center">
+                        Company branding requires a Pro subscription
+                      </p>
+                      <Button onClick={() => setShowUpgradeModal(true)}>
+                        Upgrade to Pro
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-4">
-                    <p className="text-sm text-muted-foreground text-center">
-                      Company branding requires a Pro subscription
-                    </p>
-                    <Button onClick={() => setShowUpgradeModal(true)}>
-                      Upgrade to Pro
-                    </Button>
-                  </div>
-                )}
               </DialogContent>
               <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
             </Dialog>
@@ -928,36 +931,42 @@ export function PropertyPreviewModal({
                     >
                       <XAxis dataKey="month" />
                       <YAxis
-                        tickFormatter={(value) => formatter.format(value)}
-                      />
-                      <RechartsTooltip
-                        formatter={(value) => formatter.format(value as number)}
+                        tickFormatter={(value) =>
+                          formatter.format(value).replace(/[^0-9.]/g, "")
+                        }
                       />
                       <Legend />
+                      <RechartsTooltip
+                        formatter={(value: number) => formatter.format(value)}
+                      />
                       <Line
                         type="monotone"
                         dataKey="low"
-                        stroke="#FF6B6B"
-                        name="Revenue Low"
+                        name="Low Season"
+                        stroke="#fca5a5"
+                        strokeWidth={2}
                       />
                       <Line
                         type="monotone"
                         dataKey="medium"
-                        stroke="#4ECDC4"
-                        name="Revenue Medium"
+                        name="Medium Season"
+                        stroke="#fdba74"
+                        strokeWidth={2}
                       />
                       <Line
                         type="monotone"
                         dataKey="high"
-                        stroke="#45B7D1"
-                        name="Revenue High"
+                        name="High Season"
+                        stroke="#86efac"
+                        strokeWidth={2}
                       />
                       <Line
                         type="monotone"
                         dataKey="longTerm"
-                        stroke="#FFE66D"
+                        name="Long Term"
+                        stroke="#93c5fd"
+                        strokeWidth={2}
                         strokeDasharray="5 5"
-                        name="Long Term Rental"
                       />
                     </LineChart>
                   </ResponsiveContainer>
