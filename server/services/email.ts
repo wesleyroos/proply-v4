@@ -21,14 +21,15 @@ export async function sendAdminNotification(params: EmailParams): Promise<boolea
       subject: params.subject
     });
 
-    await mailService.send({
+    const msg = {
       to: params.to || adminEmail,
-      from: verifiedSender, // Using verified sender email
+      from: verifiedSender,
       subject: params.subject,
       text: params.text || '',
       html: params.html,
-    });
+    };
 
+    await mailService.send(msg);
     console.log('Admin notification email sent successfully');
     return true;
   } catch (error: unknown) {
