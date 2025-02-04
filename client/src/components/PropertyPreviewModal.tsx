@@ -63,10 +63,6 @@ interface PropertyPreviewModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface SelectUser {
-  companyLogo?: string;
-}
-
 // Function to generate the PDF with comprehensive property details
 async function generatePropertyPreviewPDF(
   property: Property | null,
@@ -675,11 +671,18 @@ export function PropertyPreviewModal({
                     Yes
                   </Button>
                 </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-4">
+                    <p className="text-sm text-muted-foreground text-center">
+                      Company branding requires a Pro subscription
+                    </p>
+                    <Button onClick={() => setShowUpgradeModal(true)}>
+                      Upgrade to Pro
+                    </Button>
+                  </div>
+                )}
               </DialogContent>
-              <UpgradeModal 
-                open={showUpgradeModal} 
-                onOpenChange={setShowUpgradeModal} 
-              />
+              <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
             </Dialog>
           </div>
         </DialogHeader>
