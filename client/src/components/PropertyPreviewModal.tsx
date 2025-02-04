@@ -277,14 +277,13 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     );
   }
 
-  // Add disclaimer section at bottom of page 2
-  doc.setPage(2);
-  const pageHeight = doc.internal.pageSize.getHeight();
-
+  // Add new page for disclaimer
+  doc.addPage();
+  
   // Add disclaimer heading
   doc.setFontSize(12);
   doc.setTextColor(0);
-  doc.text("Important Disclaimers & Legal Notices", 20, pageHeight - 100);
+  doc.text("Important Disclaimers & Legal Notices", 20, 40);
 
   // Set disclaimer text style
   doc.setFontSize(7);
@@ -303,7 +302,7 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`
   ];
 
-  let yPosition = pageHeight - 95;
+  let yPosition = 60;
   disclaimerText.forEach(text => {
     if (text === "") {
       yPosition += 5;
