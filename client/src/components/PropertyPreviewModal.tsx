@@ -586,8 +586,14 @@ export function PropertyPreviewModal({
               <BrandingDialog 
                 open={open}
                 onOpenChange={onOpenChange}
-                onGeneratePDF={(includeBranding) => generatePropertyPreviewPDF(property, includeBranding, user)}
-                onShowUpgrade={() => setShowUpgradeModal(true)}
+                onGeneratePDF={(includeBranding) => {
+                  generatePropertyPreviewPDF(property, includeBranding, user);
+                  onOpenChange(false);
+                }}
+                onShowUpgrade={() => {
+                  onOpenChange(false);
+                  setShowUpgradeModal(true);
+                }}
               />
             </Dialog>
           </div>
