@@ -13,22 +13,26 @@ interface EmailParams {
 export async function sendAdminNotification(params: EmailParams): Promise<boolean> {
   try {
     const adminEmail = 'wesley@proply.co.za';
-    const verifiedSender = 'wesley@grodigital.co.za'; // Using the verified email as sender
+    // Important: This must be your verified sender in SendGrid
+    const verifiedSender = 'wesley@proply.co.za'; 
 
-    console.log('Attempting to send admin notification email:', {
+    console.log('Preparing to send admin notification email:', {
       to: params.to || adminEmail,
       from: verifiedSender,
-      subject: params.subject
+      subject: params.subject,
+      hasHtml: !!params.html,
+      hasText: !!params.text
     });
 
     const msg = {
       to: params.to || adminEmail,
-      from: verifiedSender,
+      from: verifiedSender, // Must be your verified sender
       subject: params.subject,
       text: params.text || '',
       html: params.html,
     };
 
+    console.log('Sending email with SendGrid...');
     await mailService.send(msg);
     console.log('Admin notification email sent successfully');
     return true;
@@ -36,10 +40,11 @@ export async function sendAdminNotification(params: EmailParams): Promise<boolea
     console.error('SendGrid email error:', error);
     if (error instanceof Error && 'response' in error) {
       const sendGridError = error as any;
-      console.error('SendGrid API response:', {
+      console.error('SendGrid API detailed error:', {
         body: sendGridError.response?.body,
-        headers: sendGridError.response?.headers,
-        statusCode: sendGridError.response?.statusCode
+        statusCode: sendGridError.response?.statusCode,
+        message: sendGridError.message,
+        name: sendGridError.name
       });
     }
     return false;
@@ -53,7 +58,11 @@ export async function sendNewUserNotification(userData: {
   userType: string;
   subscriptionStatus: string;
 }): Promise<boolean> {
-  console.log('Preparing new user notification email for:', userData.email);
+  console.log('Preparing new user notification email for:', {
+    userEmail: userData.email,
+    name: `${userData.firstName} ${userData.lastName}`,
+    type: userData.userType
+  });
 
   const subject = 'New User Registration on Proply';
   const html = `
@@ -69,9 +78,24 @@ export async function sendNewUserNotification(userData: {
     <p>Login to the admin dashboard for more details.</p>
   `;
 
+  const text = `
+    New User Registration
+
+    A new user has registered on the Proply platform.
+
+    User Details:
+    - Name: ${userData.firstName} ${userData.lastName}
+    - Email: ${userData.email}
+    - Account Type: ${userData.userType}
+    - Subscription: ${userData.subscriptionStatus}
+
+    Login to the admin dashboard for more details.
+  `;
+
   return sendAdminNotification({
     to: 'wesley@proply.co.za',
     subject,
     html,
+    text,
   });
 }
