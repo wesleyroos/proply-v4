@@ -157,7 +157,7 @@ export function PropertyPreviewModal({
 
                 generatePDF(pdfData, selections);
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="mr-auto ml-6 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
             >
               <FileText className="w-4 h-4 mr-2" />
               Export PDF
