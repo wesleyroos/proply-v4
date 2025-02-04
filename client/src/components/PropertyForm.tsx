@@ -1,4 +1,3 @@
-
 import { UpgradeModal } from "@/components/UpgradeModal";
 
 import { useState } from "react";
@@ -63,7 +62,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
     try {
       const address = form.getValues("address");
       const bedrooms = form.getValues("bedrooms");
-      
+
       if (!address || !bedrooms) {
         alert("Please enter the property address and number of bedrooms first.");
         return;
@@ -109,7 +108,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
 
   const applyPercentileData = (percentile: '25' | '50' | '75' | '90') => {
     if (!revenueData) return;
-    
+
     const data = revenueData[percentile];
     form.setValue("shortTermNightly", data.adr.toString());
     form.setValue("annualOccupancy", data.occupancy.toString());
@@ -154,7 +153,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                 <FormItem>
                   <FormLabel>Bedrooms</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" min="0" />
+                    <Input {...field} type="number" step="0.5" min="0.5" onChange={(e) => field.onChange(e.target.valueAsNumber)} />
                   </FormControl>
                 </FormItem>
               )}
