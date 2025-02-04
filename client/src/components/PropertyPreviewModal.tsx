@@ -347,72 +347,18 @@ async function generatePropertyPreviewPDF(
 
   yPos = (doc as any).lastAutoTable.finalY + 20;
 
-  // Add footer elements to all pages
+  // Add page numbers to all pages
   const totalPages = doc.getNumberOfPages();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const currentYear = new Date().getFullYear();
-
-  try {
-    const logo = new Image();
-    logo.src = "/proply-logo-1.png";
-    
-    await new Promise((resolve) => {
-      logo.onload = () => {
-        for (let i = 1; i <= totalPages; i++) {
-          doc.setPage(i);
-          
-          // Add Proply logo to bottom left
-          const logoHeight = 8;
-          const aspectRatio = logo.width / logo.height;
-          const logoWidth = logoHeight * aspectRatio;
-          doc.addImage(logo, "PNG", 20, pageHeight - 20, logoWidth, logoHeight);
-
-          // Add copyright text in center
-          doc.setFontSize(8);
-          doc.setTextColor(100);
-          doc.text(
-            `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
-            pageWidth / 2,
-            pageHeight - 15,
-            { align: 'center' }
-          );
-
-          // Add page numbers to bottom right
-          doc.text(
-            `Page ${i} of ${totalPages}`,
-            pageWidth - 20,
-            pageHeight - 15,
-            { align: 'right' }
-          );
-        }
-        resolve(null);
-      };
-      logo.onerror = () => {
-        console.error("Error loading logo in footer");
-        resolve(null);
-      };
-    });
-  } catch (error) {
-    console.error("Error adding footer elements:", error);
-    // If logo fails, still add page numbers and copyright
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(100);
-      doc.text(
-        `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
-        pageWidth / 2,
-        pageHeight - 15,
-        { align: 'center' }
-      );
-      doc.text(
-        `Page ${i} of ${totalPages}`,
-        pageWidth - 20,
-        pageHeight - 15,
-        { align: 'right' }
-      );
-    }
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text(
+      `Page ${i} of ${totalPages}`,
+      doc.internal.pageSize.getWidth() / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    );
   }
 
   // Add new page for disclaimer
