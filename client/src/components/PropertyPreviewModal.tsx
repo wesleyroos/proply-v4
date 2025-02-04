@@ -92,7 +92,7 @@ async function generatePropertyPreviewPDF(property: Property | null) {
   doc.setTextColor(0);
   doc.text("Rent Compare Analysis", 20, yPos); //Added heading
   yPos += 10;
-  
+
   // Add description
   doc.setFontSize(10);
   doc.setTextColor(90);
@@ -103,24 +103,16 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     doc.text(line, 20, yPos);
     yPos += 5;
   });
-  yPos += 10;
-  
-  // Reset text properties
-  doc.setFontSize(12);
-  doc.setTextColor(0);
-  doc.setFontSize(12);
-  doc.text(property.title, 20, yPos);
-  yPos += 10;
-  doc.setFontSize(12);
-  doc.text(property.address, 20, yPos);
-  yPos += 20;
+  yPos += 15;
 
-  // Property Details
+  // Property Details section
   doc.setFontSize(16);
   doc.text("Property Details", 20, yPos);
   yPos += 10;
 
   const propertyDetails = [
+    ["Property Name", property.title],
+    ["Address", property.address],
     ["Bedrooms", property.bedrooms],
     ["Bathrooms", property.bathrooms],
     property.parkingSpaces ? ["Parking Spaces", property.parkingSpaces] : null,
