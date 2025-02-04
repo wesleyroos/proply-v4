@@ -36,9 +36,6 @@ import autoTable from "jspdf-autotable";
 import PropertyMap from "./PropertyMap";
 import { Progress } from "@/components/ui/progress"; // Assuming Progress component exists
 import html2canvas from "html2canvas";
-import { useState } from "react";
-import { useProAccess } from "@/hooks/use-pro-access"; // Assuming this hook exists
-import UpgradeModalComponent from "./UpgradeModalComponent"; // Placeholder component
 
 interface Property {
   id: number;
@@ -557,768 +554,736 @@ export function PropertyPreviewModal({
   if (!property) return null;
 
   const { user } = useUser();
-  const { hasAccess } = useProAccess();
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const platformFee = property.managementFee > 0 ? 15 : 3;
   const feeAdjustedNightlyRate =
     property.shortTermNightly * (1 - platformFee / 100);
 
-  const handleBrandingChoice = (includeCompanyBranding: boolean) => {
-    if (includeCompanyBranding && !hasAccess) {
-      setShowUpgradeModal(true);
-      return;
-    }
-    onOpenChange(false);
-    generatePropertyPreviewPDF(property, includeCompanyBranding, user);
-  };
-
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[80vh]">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-3xl font-bold text-slate-800">
-                {property.title}
-              </DialogTitle>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[80vh]">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-3xl font-bold text-slate-800">
+              {property.title}
+            </DialogTitle>
 
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="mr-6 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Export Preview
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="mr-6 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Export Preview
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <div className="flex items-center gap-2">
+                    <DialogTitle>Include Company Branding?</DialogTitle>
+                    <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+                      PRO
+                    </span>
+                    <Sparkles className="h-4 w-4 text-[#1BA3FF]" />
+                  </div>
+                  <DialogDescription>
+                    Would you like to include your company branding in the PDF?
+                  </DialogDescription>
+                </DialogHeader>
+                {user?.companyLogo ? (
+                  <div className="flex items-center gap-4 mb-4">
+                    <img
+                      src={user.companyLogo}
+                      alt="Company Logo"
+                      className="w-32 h-32 object-contain border rounded-lg"
+                    />
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Your current company logo
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mb-4">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      No company logo found. Upload one now:
+                    </p>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = async () => {
+                            const base64Data = reader.result as string;
+                            try {
+                              const response = await fetch("/api/profile", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  companyLogo: base64Data,
+                                }),
+                                credentials: "include",
+                              });
+                              if (!response.ok)
+                                throw new Error(await response.text());
+                              queryClient.invalidateQueries(["user"]);
+                              toast({
+                                title: "Success",
+                                description:
+                                  "Company logo uploaded successfully",
+                                duration: 3000,
+                              });
+                            } catch (error) {
+                              toast({
+                                variant: "destructive",
+                                title: "Error",
+                                description: "Failed to upload company logo",
+                                duration: 5000,
+                              });
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+                <div className="flex justify-end gap-4 mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      onOpenChange(false);
+                      generatePropertyPreviewPDF(property, false, user);
+                    }}
+                  >
+                    No
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <div className="flex items-center gap-2">
-                      <DialogTitle>Include Company Branding?</DialogTitle>
-                      <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
-                        PRO
-                      </span>
-                      <Sparkles className="h-4 w-4 text-[#1BA3FF]" />
-                    </div>
-                    <DialogDescription>
-                      Would you like to include your company branding in the PDF?
-                    </DialogDescription>
-                  </DialogHeader>
-                  {user?.companyLogo ? (
-                    <div className="flex items-center gap-4 mb-4">
-                      <img
-                        src={user.companyLogo}
-                        alt="Company Logo"
-                        className="w-32 h-32 object-contain border rounded-lg"
-                      />
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Your current company logo
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mb-4">
-                      <p className="text-sm text-muted-foreground mb-2">
-                        No company logo found. Upload one now:
-                      </p>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = async () => {
-                              const base64Data = reader.result as string;
-                              try {
-                                const response = await fetch("/api/profile", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({
-                                    companyLogo: base64Data,
-                                  }),
-                                  credentials: "include",
-                                });
-                                if (!response.ok)
-                                  throw new Error(await response.text());
-                                queryClient.invalidateQueries(["user"]);
-                                toast({
-                                  title: "Success",
-                                  description:
-                                    "Company logo uploaded successfully",
-                                  duration: 3000,
-                                });
-                              } catch (error) {
-                                toast({
-                                  variant: "destructive",
-                                  title: "Error",
-                                  description: "Failed to upload company logo",
-                                  duration: 5000,
-                                });
-                              }
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                    </div>
-                  )}
-                  <div className="flex justify-end gap-4 mt-4">
-                    <Button onClick={() => handleBrandingChoice(false)}>No</Button>
-                    <Button onClick={() => handleBrandingChoice(true)}>Yes</Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </DialogHeader>
-          <ScrollArea className="h-[calc(80vh-8rem)]">
-            <div className="grid grid-cols-3 gap-4 py-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-indigo-500" />
-                    Property Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                  <Button
+                    onClick={() => {
+                      onOpenChange(false);
+                      generatePropertyPreviewPDF(property, true, user);
+                    }}
+                  >
+                    Yes
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </DialogHeader>
+        <ScrollArea className="h-[calc(80vh-8rem)]">
+          <div className="grid grid-cols-3 gap-4 py-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-indigo-500" />
+                  Property Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-600">
+                    Address
+                  </h3>
+                  <p className="mt-1 text-slate-800">{property.address}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <h3 className="text-sm font-semibold text-slate-600">
-                      Address
+                      Bedrooms
                     </h3>
-                    <p className="mt-1 text-slate-800">{property.address}</p>
+                    <p className="mt-1 text-slate-800">{property.bedrooms}</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Bedrooms
-                      </h3>
-                      <p className="mt-1 text-slate-800">
-                        {property.bedrooms}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Bathrooms
-                      </h3>
-                      <p className="mt-1 text-slate-800">
-                        {property.bathrooms}
-                      </p>
-                    </div>
-                  </div>
-                  {property.parkingSpaces && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Parking Spaces
-                      </h3>
-                      <p className="mt-1 text-slate-800">
-                        {property.parkingSpaces}
-                      </p>
-                    </div>
-                  )}
                   <div>
                     <h3 className="text-sm font-semibold text-slate-600">
-                      Added
+                      Bathrooms
+                    </h3>
+                    <p className="mt-1 text-slate-800">{property.bathrooms}</p>
+                  </div>
+                </div>
+                {property.parkingSpaces && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-600">
+                      Parking Spaces
                     </h3>
                     <p className="mt-1 text-slate-800">
-                      {new Date(property.createdAt).toLocaleDateString()}
+                      {property.parkingSpaces}
                     </p>
                   </div>
-                </CardContent>
-              </Card>
+                )}
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-600">
+                    Added
+                  </h3>
+                  <p className="mt-1 text-slate-800">
+                    {new Date(property.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-emerald-500" />
-                    Short-Term Performance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="p-4 rounded-lg bg-blue-50/50 space-y-4">
-                    <div>
-                      <p className="text-2xl font-bold text-slate-800">
-                        {formatter.format(property.shortTermAnnual)}
-                        <span className="text-base font-normal text-slate-600 ml-2">
-                          / year
-                        </span>
-                      </p>
-                      <p className="text-base text-slate-600">
-                        {formatter.format(property.shortTermAnnual / 12)}
-                        /month
-                      </p>
-                    </div>
-                    <div className="pt-2 border-t border-blue-100 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm text-slate-600">
-                          Nightly Rate:
-                        </p>
-                        <p className="text-sm font-medium">
-                          {formatter.format(property.shortTermNightly)}
-                        </p>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm text-slate-600">
-                          Fee-adjusted Rate:
-                        </p>
-                        <p className="text-sm font-medium">
-                          {formatter.format(feeAdjustedNightlyRate)}
-                        </p>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm text-slate-600">
-                          Platform Fee:
-                        </p>
-                        <p className="text-sm font-medium text-red-600">
-                          {platformFee}%
-                        </p>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm text-slate-600">
-                          Management Fee:
-                        </p>
-                        <p className="text-sm font-medium">
-                          {property.managementFee}%
-                        </p>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm text-slate-600">Occupancy:</p>
-                        <p className="text-sm font-medium">
-                          {property.annualOccupancy}%
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-purple-500" />
-                    Long-Term Performance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="p-4 rounded-lg bg-purple-50/50 space-y-4">
-                    <div>
-                      <p className="text-2xl font-bold text-slate-800">
-                        {formatter.format(property.longTermMonthly * 12)}
-                        <span className="text-base font-normal text-slate-600 ml-2">
-                          / year
-                        </span>
-                      </p>
-                      <p className="text-base text-slate-600">
-                        {formatter.format(property.longTermMonthly)}/month
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Breakeven Analysis Card */}
-              <Card className="col-span-3">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-orange-500" />
-                    Breakeven Analysis
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between mb-2">
-                        <span className="text-sm text-slate-600">
-                          Projected Occupancy
-                        </span>
-                        <span className="text-sm font-medium">
-                          {property.annualOccupancy}%
-                        </span>
-                      </div>
-                      <div className="relative">
-                        <Progress
-                          value={property.annualOccupancy}
-                          className="h-2"
-                        />
-                        <div
-                          className="absolute top-0 h-4 w-0.5 bg-red-500 transform -translate-y-1"
-                          style={{ left: `${property.breakEvenOccupancy}%` }}
-                          title="Break-even point"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-slate-600">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-2 bg-primary rounded-full"></div>
-                        <span>Projected {property.annualOccupancy}%</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-0.5 h-3 bg-red-500"></div>
-                        <span>Break-even {property.breakEvenOccupancy}%</span>
-                      </div>
-                    </div>
-                    <p className="text-sm text-slate-600">
-                      Your short-term rental needs {property.breakEvenOccupancy}%
-                      occupancy to match long-term rental income.
-                      {property.annualOccupancy > property.breakEvenOccupancy
-                        ? ` At ${property.annualOccupancy}% projected occupancy, short-term rental is more profitable.`
-                        : ` At ${property.annualOccupancy}% projected occupancy, long-term rental may be more suitable.`}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-emerald-500" />
+                  Short-Term Performance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-4 rounded-lg bg-blue-50/50 space-y-4">
+                  <div>
+                    <p className="text-2xl font-bold text-slate-800">
+                      {formatter.format(property.shortTermAnnual)}
+                      <span className="text-base font-normal text-slate-600 ml-2">
+                        / year
+                      </span>
+                    </p>
+                    <p className="text-base text-slate-600">
+                      {formatter.format(property.shortTermAnnual / 12)}/month
                     </p>
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="pt-2 border-t border-blue-100 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-slate-600">Nightly Rate:</p>
+                      <p className="text-sm font-medium">
+                        {formatter.format(property.shortTermNightly)}
+                      </p>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-slate-600">
+                        Fee-adjusted Rate:
+                      </p>
+                      <p className="text-sm font-medium">
+                        {formatter.format(feeAdjustedNightlyRate)}
+                      </p>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-slate-600">Platform Fee:</p>
+                      <p className="text-sm font-medium text-red-600">
+                        {platformFee}%
+                      </p>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-slate-600">Management Fee:</p>
+                      <p className="text-sm font-medium">
+                        {property.managementFee}%
+                      </p>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-slate-600">Occupancy:</p>
+                      <p className="text-sm font-medium">
+                        {property.annualOccupancy}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Property Map */}
-              <Card className="col-span-3">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-cyan-500" />
-                    Location
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <PropertyMap address={property.address} />
-                </CardContent>
-              </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-purple-500" />
+                  Long-Term Performance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-4 rounded-lg bg-purple-50/50 space-y-4">
+                  <div>
+                    <p className="text-2xl font-bold text-slate-800">
+                      {formatter.format(property.longTermMonthly * 12)}
+                      <span className="text-base font-normal text-slate-600 ml-2">
+                        / year
+                      </span>
+                    </p>
+                    <p className="text-base text-slate-600">
+                      {formatter.format(property.longTermMonthly)}/month
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Revenue Comparison Chart */}
-              <Card className="col-span-3">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-800">
-                    Revenue Comparison
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        className="revenue-chart"
-                        data={Array(12)
+            {/* Breakeven Analysis Card */}
+            <Card className="col-span-3">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-orange-500" />
+                  Breakeven Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-slate-600">
+                        Projected Occupancy
+                      </span>
+                      <span className="text-sm font-medium">
+                        {property.annualOccupancy}%
+                      </span>
+                    </div>
+                    <div className="relative">
+                      <Progress
+                        value={property.annualOccupancy}
+                        className="h-2"
+                      />
+                      <div
+                        className="absolute top-0 h-4 w-0.5 bg-red-500 transform -translate-y-1"
+                        style={{ left: `${property.breakEvenOccupancy}%` }}
+                        title="Break-even point"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-slate-600">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-2 bg-primary rounded-full"></div>
+                      <span>Projected {property.annualOccupancy}%</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-0.5 h-3 bg-red-500"></div>
+                      <span>Break-even {property.breakEvenOccupancy}%</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-600">
+                    Your short-term rental needs {property.breakEvenOccupancy}%
+                    occupancy to match long-term rental income.
+                    {property.annualOccupancy > property.breakEvenOccupancy
+                      ? ` At ${property.annualOccupancy}% projected occupancy, short-term rental is more profitable.`
+                      : ` At ${property.annualOccupancy}% projected occupancy, long-term rental may be more suitable.`}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Property Map */}
+            <Card className="col-span-3">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-cyan-500" />
+                  Location
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PropertyMap address={property.address} />
+              </CardContent>
+            </Card>
+
+            {/* Revenue Comparison Chart */}
+            <Card className="col-span-3">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-slate-800">
+                  Revenue Comparison
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      className="revenue-chart"
+                      data={Array(12)
+                        .fill(0)
+                        .map((_, i) => ({
+                          month: new Date(2024, i).toLocaleString("default", {
+                            month: "short",
+                          }),
+                          low: calculateMonthlyRevenue(
+                            "low",
+                            i,
+                            property.shortTermNightly,
+                            property.managementFee > 0,
+                            property.managementFee,
+                          ),
+                          medium: calculateMonthlyRevenue(
+                            "medium",
+                            i,
+                            property.shortTermNightly,
+                            property.managementFee > 0,
+                            property.managementFee,
+                          ),
+                          high: calculateMonthlyRevenue(
+                            "high",
+                            i,
+                            property.shortTermNightly,
+                            property.managementFee > 0,
+                            property.managementFee,
+                          ),
+                          longTerm: property.longTermMonthly,
+                        }))}
+                    >
+                      <XAxis dataKey="month" />
+                      <YAxis
+                        tickFormatter={(value) => formatter.format(value)}
+                      />
+                      <RechartsTooltip
+                        formatter={(value) => formatter.format(value as number)}
+                      />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="low"
+                        stroke="#FF6B6B"
+                        name="Revenue Low"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="medium"
+                        stroke="#4ECDC4"
+                        name="Revenue Medium"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="high"
+                        stroke="#45B7D1"
+                        name="Revenue High"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="longTerm"
+                        stroke="#FFE66D"
+                        strokeDasharray="5 5"
+                        name="Long Term Rental"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Monthly Revenue Table */}
+            <Card className="col-span-3">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-slate-800">
+                  Monthly Revenue Breakdown
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left py-3 px-4">Metric</th>
+                        {Array(12)
                           .fill(0)
-                          .map((_, i) => ({
-                            month: new Date(2024, i).toLocaleString(
-                              "default",
-                              {
+                          .map((_, i) => (
+                            <th key={i} className="text-right py-3 px-4">
+                              {new Date(2024, i).toLocaleString("default", {
                                 month: "short",
-                              },
-                            ),
-                            low: calculateMonthlyRevenue(
+                              })}
+                            </th>
+                          ))}
+                        <th className="text-right py-3 px-4 border-l">Total</th>
+                        <th className="text-right py-3 px-4">Average</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-t">
+                        <td className="py-3 px-4">Nightly Rate</td>
+                        {Array(12)
+                          .fill(0)
+                          .map((_, i) => (
+                            <td
+                              key={i}
+                              className="text-right py-3 px-4 whitespace-nowrap"
+                            >
+                              {formatter.format(
+                                getSeasonalNightlyRate(
+                                  property.shortTermNightly,
+                                  i,
+                                ),
+                              )}
+                            </td>
+                          ))}
+                        <td className="text-right py-3 px-4 border-l"></td>
+                        <td className="text-right py-3 px-4"></td>
+                      </tr>
+                      <tr className="border-t">
+                        <td className="py-3 px-4">Fee-Adjusted Rate</td>
+                        {Array(12)
+                          .fill(0)
+                          .map((_, i) => (
+                            <td
+                              key={i}
+                              className="text-right py-3 px-4 whitespace-nowrap"
+                            >
+                              {formatter.format(
+                                getFeeAdjustedRate(
+                                  getSeasonalNightlyRate(
+                                    property.shortTermNightly,
+                                    i,
+                                  ),
+                                  property.managementFee > 0,
+                                ),
+                              )}
+                            </td>
+                          ))}
+                        <td className="text-right py-3 px-4 border-l"></td>
+                        <td className="text-right py-3 px-4"></td>
+                      </tr>
+                      <tr className="border-t">
+                        <td className="py-3 px-4">Occupancy Low</td>
+                        {OCCUPANCY_RATES.low.map((rate, i) => (
+                          <td
+                            key={i}
+                            className="text-right py-3 px-4 whitespace-nowrap"
+                          >
+                            {rate}%
+                          </td>
+                        ))}
+                        <td className="text-right py-3 px-4 border-l">-</td>
+                        <td className="text-right py-3 px-4">
+                          {(
+                            OCCUPANCY_RATES.low.reduce((a, b) => a + b, 0) / 12
+                          ).toFixed(1)}
+                          %
+                        </td>
+                      </tr>
+                      <tr className="border-t">
+                        <td className="py-3 px-4">Occupancy Medium</td>
+                        {OCCUPANCY_RATES.medium.map((rate, i) => (
+                          <td
+                            key={i}
+                            className="text-right py-3 px-4 whitespace-nowrap"
+                          >
+                            {rate}%
+                          </td>
+                        ))}
+                        <td className="text-right py-3 px-4 border-l">-</td>
+                        <td className="text-right py-3 px-4">
+                          {(
+                            OCCUPANCY_RATES.medium.reduce((a, b) => a + b, 0) /
+                            12
+                          ).toFixed(1)}
+                          %
+                        </td>
+                      </tr>
+                      <tr className="border-t">
+                        <td className="py-3 px-4">Occupancy High</td>
+                        {OCCUPANCY_RATES.high.map((rate, i) => (
+                          <td
+                            key={i}
+                            className="text-right py-3 px-4 whitespace-nowrap"
+                          >
+                            {rate}%
+                          </td>
+                        ))}
+                        <td className="text-right py-3 px-4 border-l">-</td>
+                        <td className="text-right py-3 px-4">
+                          {(
+                            OCCUPANCY_RATES.high.reduce((a, b) => a + b, 0) / 12
+                          ).toFixed(1)}
+                          %
+                        </td>
+                      </tr>
+                      <tr className="border-t bg-[#FF6B6B]/10">
+                        <td className="py-3 px-4 text-[#FF6B6B] font-medium">
+                          Revenue Low
+                        </td>
+                        {Array(12)
+                          .fill(0)
+                          .map((_, i) => {
+                            const revenue = calculateMonthlyRevenue(
                               "low",
                               i,
                               property.shortTermNightly,
                               property.managementFee > 0,
                               property.managementFee,
-                            ),
-                            medium: calculateMonthlyRevenue(
+                            );
+                            return (
+                              <td
+                                key={i}
+                                className="text-right py-3 px-4 whitespace-nowrap"
+                              >
+                                {formatter.format(revenue)}
+                              </td>
+                            );
+                          })}
+                        <td className="text-right py-3 px-4 border-l font-medium">
+                          {formatter.format(
+                            Array(12)
+                              .fill(0)
+                              .reduce(
+                                (sum, _, i) =>
+                                  sum +
+                                  calculateMonthlyRevenue(
+                                    "low",
+                                    i,
+                                    property.shortTermNightly,
+                                    property.managementFee > 0,
+                                    property.managementFee,
+                                  ),
+                                0,
+                              ),
+                          )}
+                        </td>
+                        <td className="text-right py-3 px-4 font-medium">
+                          {formatter.format(
+                            Array(12)
+                              .fill(0)
+                              .reduce(
+                                (sum, _, i) =>
+                                  sum +
+                                  calculateMonthlyRevenue(
+                                    "low",
+                                    i,
+                                    property.shortTermNightly,
+                                    property.managementFee > 0,
+                                    property.managementFee,
+                                  ),
+                                0,
+                              ) / 12,
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="border-t bg-[#4ECDC4]/10">
+                        <td className="py-3 px-4 text-[#4ECDC4] font-medium">
+                          Revenue Medium
+                        </td>
+                        {Array(12)
+                          .fill(0)
+                          .map((_, i) => {
+                            const revenue = calculateMonthlyRevenue(
                               "medium",
                               i,
                               property.shortTermNightly,
                               property.managementFee > 0,
                               property.managementFee,
-                            ),
-                            high: calculateMonthlyRevenue(
+                            );
+                            return (
+                              <td
+                                key={i}
+                                className="text-right py-3 px-4 whitespace-nowrap"
+                              >
+                                {formatter.format(revenue)}
+                              </td>
+                            );
+                          })}
+                        <td className="text-right py-3 px-4 border-l font-medium">
+                          {formatter.format(
+                            Array(12)
+                              .fill(0)
+                              .reduce(
+                                (sum, _, i) =>
+                                  sum +
+                                  calculateMonthlyRevenue(
+                                    "medium",
+                                    i,
+                                    property.shortTermNightly,
+                                    property.managementFee > 0,
+                                    property.managementFee,
+                                  ),
+                                0,
+                              ),
+                          )}
+                        </td>
+                        <td className="text-right py-3 px-4 font-medium">
+                          {formatter.format(
+                            Array(12)
+                              .fill(0)
+                              .reduce(
+                                (sum, _, i) =>
+                                  sum +
+                                  calculateMonthlyRevenue(
+                                    "medium",
+                                    i,
+                                    property.shortTermNightly,
+                                    property.managementFee > 0,
+                                    property.managementFee,
+                                  ),
+                                0,
+                              ) / 12,
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="border-t bg-[#45B7D1]/10">
+                        <td className="py-3 px-4 text-[#45B7D1] font-medium">
+                          Revenue High
+                        </td>
+                        {Array(12)
+                          .fill(0)
+                          .map((_, i) => {
+                            const revenue = calculateMonthlyRevenue(
                               "high",
                               i,
                               property.shortTermNightly,
                               property.managementFee > 0,
                               property.managementFee,
-                            ),
-                            longTerm: property.longTermMonthly,
-                          }))}
-                      >
-                        <XAxis dataKey="month" />
-                        <YAxis
-                          tickFormatter={(value) => formatter.format(value)}
-                        />
-                        <RechartsTooltip
-                          formatter={(value) =>
-                            formatter.format(value as number)
-                          }
-                        />
-                        <Legend />
-                        <Line
-                          type="monotone"
-                          dataKey="low"
-                          stroke="#FF6B6B"
-                          name="Revenue Low"
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="medium"
-                          stroke="#4ECDC4"
-                          name="Revenue Medium"
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="high"
-                          stroke="#45B7D1"
-                          name="Revenue High"
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="longTerm"
-                          stroke="#FFE66D"
-                          strokeDasharray="5 5"
-                          name="Long Term Rental"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Monthly Revenue Table */}
-              <Card className="col-span-3">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-800">
-                    Monthly Revenue Breakdown
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="text-left py-3 px-4">Metric</th>
-                          {Array(12)
-                            .fill(0)
-                            .map((_, i) => (
-                              <th key={i} className="text-right py-3 px-4">
-                                {new Date(2024, i).toLocaleString(
-                                  "default",
-                                  {
-                                    month: "short",
-                                  },
-                                )}
-                              </th>
-                            ))}
-                          <th className="text-right py-3 px-4 border-l">
-                            Total
-                          </th>
-                          <th className="text-right py-3 px-4">Average</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr className="border-t">
-                          <td className="py-3 px-4">Nightly Rate</td>
-                          {Array(12)
-                            .fill(0)
-                            .map((_, i) => (
+                            );
+                            return (
                               <td
                                 key={i}
                                 className="text-right py-3 px-4 whitespace-nowrap"
                               >
-                                {formatter.format(
-                                  getSeasonalNightlyRate(
-                                    property.shortTermNightly,
+                                {formatter.format(revenue)}
+                              </td>
+                            );
+                          })}
+                        <td className="text-right py-3 px-4 border-l font-medium">
+                          {formatter.format(
+                            Array(12)
+                              .fill(0)
+                              .reduce(
+                                (sum, _, i) =>
+                                  sum +
+                                  calculateMonthlyRevenue(
+                                    "high",
                                     i,
-                                  ),
-                                )}
-                              </td>
-                            ))}
-                          <td className="text-right py-3 px-4 border-l"></td>
-                          <td className="text-right py-3 px-4"></td>
-                        </tr>
-                        <tr className="border-t">
-                          <td className="py-3 px-4">Fee-Adjusted Rate</td>
-                          {Array(12)
-                            .fill(0)
-                            .map((_, i) => (
-                              <td
-                                key={i}
-                                className="text-right py-3 px-4 whitespace-nowrap"
-                              >
-                                {formatter.format(
-                                  getFeeAdjustedRate(
-                                    getSeasonalNightlyRate(
-                                      property.shortTermNightly,
-                                      i,
-                                    ),
+                                    property.shortTermNightly,
                                     property.managementFee > 0,
+                                    property.managementFee,
                                   ),
-                                )}
-                              </td>
-                            ))}
-                          <td className="text-right py-3 px-4 border-l"></td>
-                          <td className="text-right py-3 px-4"></td>
-                        </tr>
-                        <tr className="border-t">
-                          <td className="py-3 px-4">Occupancy Low</td>
-                          {OCCUPANCY_RATES.low.map((rate, i) => (
-                            <td
-                              key={i}
-                              className="text-right py-3 px-4 whitespace-nowrap"
-                            >
-                              {rate}%
-                            </td>
-                          ))}
-                          <td className="text-right py-3 px-4 border-l">-</td>
-                          <td className="text-right py-3 px-4">
-                            {(
-                              OCCUPANCY_RATES.low.reduce((a, b) => a + b, 0) /
-                              12
-                            ).toFixed(1)}
-                            %
-                          </td>
-                        </tr>
-                        <tr className="border-t">
-                          <td className="py-3 px-4">Occupancy Medium</td>
-                          {OCCUPANCY_RATES.medium.map((rate, i) => (
-                            <td
-                              key={i}
-                              className="text-right py-3 px-4 whitespace-nowrap"
-                            >
-                              {rate}%
-                            </td>
-                          ))}
-                          <td className="text-right py-3 px-4 border-l">-</td>
-                          <td className="text-right py-3 px-4">
-                            {(
-                              OCCUPANCY_RATES.medium.reduce(
-                                (a, b) => a + b,
                                 0,
-                              ) /
-                              12
-                            ).toFixed(1)}
-                            %
-                          </td>
-                        </tr>
-                        <tr className="border-t">
-                          <td className="py-3 px-4">Occupancy High</td>
-                          {OCCUPANCY_RATES.high.map((rate, i) => (
+                              ),
+                          )}
+                        </td>
+                        <td className="text-right py-3 px-4 font-medium">
+                          {formatter.format(
+                            Array(12)
+                              .fill(0)
+                              .reduce(
+                                (sum, _, i) =>
+                                  sum +
+                                  calculateMonthlyRevenue(
+                                    "high",
+                                    i,
+                                    property.shortTermNightly,
+                                    property.managementFee > 0,
+                                    property.managementFee,
+                                  ),
+                                0,
+                              ) / 12,
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="border-t bg-[#FFE66D]/10">
+                        <td className="py-3 px-4 text-[#B8860B] font-medium">
+                          Long Term Rental
+                        </td>
+                        {Array(12)
+                          .fill(0)
+                          .map((_, i) => (
                             <td
                               key={i}
                               className="text-right py-3 px-4 whitespace-nowrap"
                             >
-                              {rate}%
+                              {formatter.format(property.longTermMonthly)}
                             </td>
                           ))}
-                          <td className="text-right py-3 px-4 border-l">-</td>
-                          <td className="text-right py-3 px-4">
-                            {(
-                              OCCUPANCY_RATES.high.reduce(
-                                (a, b) => a + b,
-                                0,
-                              ) /
-                              12
-                            ).toFixed(1)}
-                            %
-                          </td>
-                        </tr>
-                        <tr className="border-t bg-[#FF6B6B]/10">
-                          <td className="py-3 px-4 text-[#FF6B6B] font-medium">
-                            Revenue Low
-                          </td>
-                          {Array(12)
-                            .fill(0)
-                            .map((_, i) => {
-                              const revenue = calculateMonthlyRevenue(
-                                "low",
-                                i,
-                                property.shortTermNightly,
-                                property.managementFee > 0,
-                                property.managementFee,
-                              );
-                              return (
-                                <td
-                                  key={i}
-                                  className="text-right py-3 px-4 whitespace-nowrap"
-                                >
-                                  {formatter.format(revenue)}
-                                </td>
-                              );
-                            })}
-                          <td className="text-right py-3 px-4 border-l font-medium">
-                            {formatter.format(
-                              Array(12)
-                                .fill(0)
-                                .reduce(
-                                  (sum, _, i) =>
-                                    sum +
-                                    calculateMonthlyRevenue(
-                                      "low",
-                                      i,
-                                      property.shortTermNightly,
-                                      property.managementFee > 0,
-                                      property.managementFee,
-                                    ),
-                                  0,
-                                ),
-                            )}
-                          </td>
-                          <td className="text-right py-3 px-4 font-medium">
-                            {formatter.format(
-                              Array(12)
-                                .fill(0)
-                                .reduce(
-                                  (sum, _, i) =>
-                                    sum +
-                                    calculateMonthlyRevenue(
-                                      "low",
-                                      i,
-                                      property.shortTermNightly,
-                                      property.managementFee > 0,
-                                      property.managementFee,
-                                    ),
-                                  0,
-                                ) / 12,
-                            )}
-                          </td>
-                        </tr>
-                        <tr className="border-t bg-[#4ECDC4]/10">
-                          <td className="py-3 px-4 text-[#4ECDC4] font-medium">
-                            Revenue Medium
-                          </td>
-                          {Array(12)
-                            .fill(0)
-                            .map((_, i) => {
-                              const revenue = calculateMonthlyRevenue(
-                                "medium",
-                                i,
-                                property.shortTermNightly,
-                                property.managementFee > 0,
-                                property.managementFee,
-                              );
-                              return (
-                                <td
-                                  key={i}
-                                  className="text-right py-3 px-4 whitespace-nowrap"
-                                >
-                                  {formatter.format(revenue)}
-                                </td>
-                              );
-                            })}
-                          <td className="text-right py-3 px-4 border-l font-medium">
-                            {formatter.format(
-                              Array(12)
-                                .fill(0)
-                                .reduce(
-                                  (sum, _, i) =>
-                                    sum +
-                                    calculateMonthlyRevenue(
-                                      "medium",
-                                      i,
-                                      property.shortTermNightly,
-                                      property.managementFee > 0,
-                                      property.managementFee,
-                                    ),
-                                  0,
-                                ),
-                            )}
-                          </td>
-                          <td className="text-right py-3 px-4 font-medium">
-                            {formatter.format(
-                              Array(12)
-                                .fill(0)
-                                .reduce(
-                                  (sum, _, i) =>
-                                    sum +
-                                    calculateMonthlyRevenue(
-                                      "medium",
-                                      i,
-                                      property.shortTermNightly,
-                                      property.managementFee > 0,
-                                      property.managementFee,
-                                    ),
-                                  0,
-                                ) / 12,
-                            )}
-                          </td>
-                        </tr>
-                        <tr className="border-t bg-[#45B7D1]/10">
-                          <td className="py-3 px-4 text-[#45B7D1] font-medium">
-                            Revenue High
-                          </td>
-                          {Array(12)
-                            .fill(0)
-                            .map((_, i) => {
-                              const revenue = calculateMonthlyRevenue(
-                                "high",
-                                i,
-                                property.shortTermNightly,
-                                property.managementFee > 0,
-                                property.managementFee,
-                              );
-                              return (
-                                <td
-                                  key={i}
-                                  className="text-right py-3 px-4 whitespace-nowrap"
-                                >
-                                  {formatter.format(revenue)}
-                                </td>
-                              );
-                            })}
-                          <td className="text-right py-3 px-4 border-l font-medium">
-                            {formatter.format(
-                              Array(12)
-                                .fill(0)
-                                .reduce(
-                                  (sum, _, i) =>
-                                    sum +
-                                    calculateMonthlyRevenue(
-                                      "high",
-                                      i,
-                                      property.shortTermNightly,
-                                      property.managementFee > 0,
-                                      property.managementFee,
-                                    ),
-                                  0,
-                                ),
-                            )}
-                          </td>
-                          <td className="text-right py-3 px-4 font-medium">
-                            {formatter.format(
-                              Array(12)
-                                .fill(0)
-                                .reduce(
-                                  (sum, _, i) =>
-                                    sum +
-                                    calculateMonthlyRevenue(
-                                      "high",
-                                      i,
-                                      property.shortTermNightly,
-                                      property.managementFee > 0,
-                                      property.managementFee,
-                                    ),
-                                  0,
-                                ) / 12,
-                            )}
-                          </td>
-                        </tr>
-                        <tr className="border-t bg-[#FFE66D]/10">
-                          <td className="py-3 px-4 text-[#B8860B] font-medium">
-                            Long Term Rental
-                          </td>
-                          {Array(12)
-                            .fill(0)
-                            .map((_, i) => (
-                              <td
-                                key={i}
-                                className="text-right py-3 px-4 whitespace-nowrap"
-                              >
-                                {formatter.format(property.longTermMonthly)}
-                              </td>
-                            ))}
-                          <td className="text-right py-3 px-4 border-l font-medium">
-                            {formatter.format(
-                              property.longTermMonthly * 12,
-                            )}
-                          </td>
-                          <td className="text-right py-3 px-4 font-medium">
-                            {formatter.format(property.longTermMonthly)}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </ScrollArea>
-          {showUpgradeModal && (
-            <UpgradeModalComponent onClose={() => setShowUpgradeModal(false)} />
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+                        <td className="text-right py-3 px-4 border-l font-medium">
+                          {formatter.format(property.longTermMonthly * 12)}
+                        </td>
+                        <td className="text-right py-3 px-4 font-medium">
+                          {formatter.format(property.longTermMonthly)}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   );
 }
 
