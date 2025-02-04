@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatter } from "@/utils/formatting";
 import { Building2, TrendingUp, BarChart3, MapPin } from "lucide-react";
+import PropertyMap from "./PropertyMap";
 
 interface Property {
   id: number;
