@@ -349,7 +349,7 @@ async function generatePropertyPreviewPDF(
 
   // Add footer elements to all pages
   const totalPages = doc.getNumberOfPages();
-  const margin = 20;
+  const footerMargin = 20;
   const footerPadding = 10;
 
   try {
@@ -365,7 +365,7 @@ async function generatePropertyPreviewPDF(
           const logoHeight = 8;
           const aspectRatio = logo.width / logo.height;
           const logoWidth = logoHeight * aspectRatio;
-          doc.addImage(logo, "PNG", margin, doc.internal.pageSize.getHeight() - margin - logoHeight - footerPadding, logoWidth, logoHeight);
+          doc.addImage(logo, "PNG", footerMargin, doc.internal.pageSize.getHeight() - footerMargin - logoHeight - footerPadding, logoWidth, logoHeight);
 
           // Add page numbers to bottom right
           doc.setFontSize(8);
