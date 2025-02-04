@@ -6,7 +6,15 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip as RechartsTooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -27,7 +35,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import PropertyMap from "./PropertyMap";
 import { Progress } from "@/components/ui/progress"; // Assuming Progress component exists
-import html2canvas from 'html2canvas';
+import html2canvas from "html2canvas";
 
 interface Property {
   id: number;
@@ -54,9 +62,9 @@ interface PropertyPreviewModalProps {
 
 // Function to generate the PDF with comprehensive property details
 async function generatePropertyPreviewPDF(
-  property: Property | null, 
+  property: Property | null,
   includeCompanyBranding: boolean = true,
-  userData?: SelectUser | null
+  userData?: SelectUser | null,
 ) {
   if (!property) return;
 
@@ -84,7 +92,7 @@ async function generatePropertyPreviewPDF(
             margin,
             startY,
             logoWidth,
-            logoHeight
+            logoHeight,
           );
           resolve();
         };
@@ -115,14 +123,14 @@ async function generatePropertyPreviewPDF(
           doc.internal.pageSize.getWidth() - 60,
           startY,
           proplyLogoWidth,
-          proplyLogoHeight
+          proplyLogoHeight,
         );
         doc.setFontSize(8);
         doc.setTextColor(100);
         doc.text(
           "Powered by Proply",
           doc.internal.pageSize.getWidth() - 60,
-          startY + proplyLogoHeight + 5
+          startY + proplyLogoHeight + 5,
         );
         resolve();
       };
@@ -150,9 +158,10 @@ async function generatePropertyPreviewPDF(
   doc.setFontSize(10);
   doc.setTextColor(90);
   const contentWidth = doc.internal.pageSize.getWidth() - 60; // Reduce width by increasing margin
-  const descriptionText = "A comprehensive comparison of short-term and long-term rental strategies for your property, analyzing potential returns, occupancy requirements, and break-even points to help you make an informed investment decision.";
+  const descriptionText =
+    "A comprehensive comparison of short-term and long-term rental strategies for your property, analyzing potential returns, occupancy requirements, and break-even points to help you make an informed investment decision.";
   const lines = doc.splitTextToSize(descriptionText, contentWidth);
-  lines.forEach(line => {
+  lines.forEach((line) => {
     doc.text(line, 20, yPos);
     yPos += 5;
   });
@@ -176,7 +185,7 @@ async function generatePropertyPreviewPDF(
     head: [["Feature", "Value"]],
     body: propertyDetails,
     theme: "grid",
-    styles: { fontSize: 10, halign: 'center' },
+    styles: { fontSize: 10, halign: "center" },
     headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
   });
 
@@ -188,7 +197,8 @@ async function generatePropertyPreviewPDF(
   yPos += 10;
 
   const platformFee = property.managementFee > 0 ? 15 : 3;
-  const feeAdjustedNightlyRate = property.shortTermNightly * (1 - platformFee / 100);
+  const feeAdjustedNightlyRate =
+    property.shortTermNightly * (1 - platformFee / 100);
 
   const shortTermDetails = [
     ["Annual Revenue", formatter.format(property.shortTermAnnual)],
@@ -205,7 +215,7 @@ async function generatePropertyPreviewPDF(
     head: [["Metric", "Value"]],
     body: shortTermDetails,
     theme: "grid",
-    styles: { fontSize: 10, halign: 'center' },
+    styles: { fontSize: 10, halign: "center" },
     headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
   });
 
@@ -226,7 +236,7 @@ async function generatePropertyPreviewPDF(
     head: [["Metric", "Value"]],
     body: longTermDetails,
     theme: "grid",
-    styles: { fontSize: 10, halign: 'center' },
+    styles: { fontSize: 10, halign: "center" },
     headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
   });
 
@@ -247,86 +257,157 @@ async function generatePropertyPreviewPDF(
     head: [["Metric", "Value"]],
     body: breakEvenDetails,
     theme: "grid",
-    styles: { fontSize: 10, halign: 'center' },
+    styles: { fontSize: 10, halign: "center" },
     headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
   });
 
   yPos = (doc as any).lastAutoTable.finalY + 20;
 
-
   // Capture Revenue Chart
-  const revenueChartElement = document.querySelector('.revenue-chart .recharts-wrapper');
+  const revenueChartElement = document.querySelector(
+    ".revenue-chart .recharts-wrapper",
+  );
   if (revenueChartElement) {
     const canvas = await html2canvas(revenueChartElement);
-    const chartImage = canvas.toDataURL('image/png');
+    const chartImage = canvas.toDataURL("image/png");
     const imgWidth = pageWidth - 2 * margin;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
     doc.setFontSize(14);
-    doc.text('Monthly Revenue Projection', margin, yPos);
+    doc.text("Monthly Revenue Projection", margin, yPos);
     yPos += 10;
 
-    doc.addImage(chartImage, 'PNG', margin, yPos, imgWidth, imgHeight);
+    doc.addImage(chartImage, "PNG", margin, yPos, imgWidth, imgHeight);
     yPos += imgHeight + 20;
   }
 
   // Add Monthly Revenue Table
   doc.setFontSize(14);
-  doc.text('Monthly Revenue Breakdown', margin, yPos);
+  doc.text("Monthly Revenue Breakdown", margin, yPos);
   yPos += 10;
 
   const tableHeaders = [
-    'Month',
-    'Nightly Rate',
-    'Fee-Adjusted Rate',
-    'Occupancy Low',
-    'Revenue Low',
-    'Occupancy Med',
-    'Revenue Med',
-    'Occupancy High',
-    'Revenue High',
-    'Long Term'
+    "Month",
+    "Nightly Rate",
+    "Fee-Adjusted Rate",
+    "Occupancy Low",
+    "Revenue Low",
+    "Occupancy Med",
+    "Revenue Med",
+    "Occupancy High",
+    "Revenue High",
+    "Long Term",
   ];
 
-  const tableData = Array(12).fill(0).map((_, i) => [
-    new Date(2024, i).toLocaleString('default', { month: 'short' }),
-    formatter.format(getSeasonalNightlyRate(property.shortTermNightly, i)),
-    formatter.format(getFeeAdjustedRate(getSeasonalNightlyRate(property.shortTermNightly, i), property.managementFee > 0)),
-    `${OCCUPANCY_RATES.low[i]}%`,
-    formatter.format(calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee)),
-    `${OCCUPANCY_RATES.medium[i]}%`,
-    formatter.format(calculateMonthlyRevenue('medium', i, property.shortTermNightly, property.managementFee > 0, property.managementFee)),
-    `${OCCUPANCY_RATES.high[i]}%`,
-    formatter.format(calculateMonthlyRevenue('high', i, property.shortTermNightly, property.managementFee > 0, property.managementFee)),
-    formatter.format(property.longTermMonthly)
-  ]);
+  const tableData = Array(12)
+    .fill(0)
+    .map((_, i) => [
+      new Date(2024, i).toLocaleString("default", { month: "short" }),
+      formatter.format(getSeasonalNightlyRate(property.shortTermNightly, i)),
+      formatter.format(
+        getFeeAdjustedRate(
+          getSeasonalNightlyRate(property.shortTermNightly, i),
+          property.managementFee > 0,
+        ),
+      ),
+      `${OCCUPANCY_RATES.low[i]}%`,
+      formatter.format(
+        calculateMonthlyRevenue(
+          "low",
+          i,
+          property.shortTermNightly,
+          property.managementFee > 0,
+          property.managementFee,
+        ),
+      ),
+      `${OCCUPANCY_RATES.medium[i]}%`,
+      formatter.format(
+        calculateMonthlyRevenue(
+          "medium",
+          i,
+          property.shortTermNightly,
+          property.managementFee > 0,
+          property.managementFee,
+        ),
+      ),
+      `${OCCUPANCY_RATES.high[i]}%`,
+      formatter.format(
+        calculateMonthlyRevenue(
+          "high",
+          i,
+          property.shortTermNightly,
+          property.managementFee > 0,
+          property.managementFee,
+        ),
+      ),
+      formatter.format(property.longTermMonthly),
+    ]);
 
   // Calculate averages for occupancy rates
-  const avgLowOcc = (OCCUPANCY_RATES.low.reduce((a, b) => a + b, 0) / 12).toFixed(1) + '%';
-  const avgMedOcc = (OCCUPANCY_RATES.medium.reduce((a, b) => a + b, 0) / 12).toFixed(1) + '%';
-  const avgHighOcc = (OCCUPANCY_RATES.high.reduce((a, b) => a + b, 0) / 12).toFixed(1) + '%';
+  const avgLowOcc =
+    (OCCUPANCY_RATES.low.reduce((a, b) => a + b, 0) / 12).toFixed(1) + "%";
+  const avgMedOcc =
+    (OCCUPANCY_RATES.medium.reduce((a, b) => a + b, 0) / 12).toFixed(1) + "%";
+  const avgHighOcc =
+    (OCCUPANCY_RATES.high.reduce((a, b) => a + b, 0) / 12).toFixed(1) + "%";
 
   // Calculate totals for revenues
-  const totalLowRevenue = Array(12).fill(0)
-    .reduce((sum, _, i) => sum + calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee), 0);
-  const totalMedRevenue = Array(12).fill(0)
-    .reduce((sum, _, i) => sum + calculateMonthlyRevenue('medium', i, property.shortTermNightly, property.managementFee > 0, property.managementFee), 0);
-  const totalHighRevenue = Array(12).fill(0)
-    .reduce((sum, _, i) => sum + calculateMonthlyRevenue('high', i, property.shortTermNightly, property.managementFee > 0, property.managementFee), 0);
+  const totalLowRevenue = Array(12)
+    .fill(0)
+    .reduce(
+      (sum, _, i) =>
+        sum +
+        calculateMonthlyRevenue(
+          "low",
+          i,
+          property.shortTermNightly,
+          property.managementFee > 0,
+          property.managementFee,
+        ),
+      0,
+    );
+  const totalMedRevenue = Array(12)
+    .fill(0)
+    .reduce(
+      (sum, _, i) =>
+        sum +
+        calculateMonthlyRevenue(
+          "medium",
+          i,
+          property.shortTermNightly,
+          property.managementFee > 0,
+          property.managementFee,
+        ),
+      0,
+    );
+  const totalHighRevenue = Array(12)
+    .fill(0)
+    .reduce(
+      (sum, _, i) =>
+        sum +
+        calculateMonthlyRevenue(
+          "high",
+          i,
+          property.shortTermNightly,
+          property.managementFee > 0,
+          property.managementFee,
+        ),
+      0,
+    );
   const totalLongTerm = property.longTermMonthly * 12;
 
   // Add totals row
   tableData.push([
-    'Averages/Totals',
-    '-',
-    '-',
+    "Averages/Totals",
+    "-",
+    "-",
     avgLowOcc,
     formatter.format(totalLowRevenue),
     avgMedOcc,
     formatter.format(totalMedRevenue),
     avgHighOcc,
     formatter.format(totalHighRevenue),
-    formatter.format(totalLongTerm)
+    formatter.format(totalLongTerm),
   ]);
 
   autoTable(doc, {
@@ -336,13 +417,13 @@ async function generatePropertyPreviewPDF(
     styles: { fontSize: 6.5 },
     headStyles: { fillColor: [27, 163, 255], fontSize: 7 },
     margin: { left: margin },
-    didParseCell: function(data) {
+    didParseCell: function (data) {
       // Make last row (totals) bold
       if (data.row.index === tableData.length - 1) {
-        data.cell.styles.fontStyle = 'bold';
+        data.cell.styles.fontStyle = "bold";
         data.cell.styles.fillColor = [243, 244, 246];
       }
-    }
+    },
   });
 
   yPos = (doc as any).lastAutoTable.finalY + 20;
@@ -355,17 +436,24 @@ async function generatePropertyPreviewPDF(
   try {
     const logo = new Image();
     logo.src = "/proply-logo-1.png";
-    
+
     await new Promise((resolve) => {
       logo.onload = () => {
         for (let i = 1; i <= totalPages; i++) {
           doc.setPage(i);
-          
+
           // Add Proply logo to bottom left
-          const logoHeight = 8;
+          const logoHeight = 6;
           const aspectRatio = logo.width / logo.height;
           const logoWidth = logoHeight * aspectRatio;
-          doc.addImage(logo, "PNG", footerMargin, doc.internal.pageSize.getHeight() - footerPadding - logoHeight, logoWidth, logoHeight);
+          doc.addImage(
+            logo,
+            "PNG",
+            footerMargin,
+            doc.internal.pageSize.getHeight() - footerPadding - logoHeight,
+            logoWidth,
+            logoHeight,
+          );
 
           // Add page numbers to bottom right
           doc.setFontSize(8);
@@ -374,7 +462,7 @@ async function generatePropertyPreviewPDF(
             `Page ${i} of ${totalPages}`,
             doc.internal.pageSize.getWidth() - margin,
             doc.internal.pageSize.getHeight() - footerPadding,
-            { align: 'right' }
+            { align: "right" },
           );
 
           // Add copyright text to center
@@ -383,7 +471,7 @@ async function generatePropertyPreviewPDF(
             `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
             doc.internal.pageSize.getWidth() / 2,
             doc.internal.pageSize.getHeight() - footerPadding,
-            { align: 'center' }
+            { align: "center" },
           );
         }
         resolve(null);
@@ -404,13 +492,13 @@ async function generatePropertyPreviewPDF(
         `Page ${i} of ${totalPages}`,
         doc.internal.pageSize.getWidth() - margin,
         doc.internal.pageSize.getHeight() - footerPadding,
-        { align: 'right' }
+        { align: "right" },
       );
       doc.text(
         `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
         doc.internal.pageSize.getWidth() / 2,
         doc.internal.pageSize.getHeight() - footerPadding,
-        { align: 'center' }
+        { align: "center" },
       );
     }
   }
@@ -437,25 +525,26 @@ async function generatePropertyPreviewPDF(
     "",
     "By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.",
     "",
-    `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`
+    `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
   ];
 
   let yPosition = 60;
-  disclaimerText.forEach(text => {
+  disclaimerText.forEach((text) => {
     if (text === "") {
       yPosition += 5;
       return;
     }
     const lines = doc.splitTextToSize(text, 170);
-    lines.forEach(line => {
+    lines.forEach((line) => {
       doc.text(line, 20, yPosition);
       yPosition += 5;
     });
   });
 
-  doc.save(`Rent Compare for ${property.address.replace(/[^a-zA-Z0-9]/g, " ")}.pdf`);
+  doc.save(
+    `Rent Compare for ${property.address.replace(/[^a-zA-Z0-9]/g, " ")}.pdf`,
+  );
 }
-
 
 export function PropertyPreviewModal({
   property,
@@ -500,14 +589,22 @@ export function PropertyPreviewModal({
                 </DialogHeader>
                 {user?.companyLogo ? (
                   <div className="flex items-center gap-4 mb-4">
-                    <img src={user.companyLogo} alt="Company Logo" className="w-32 h-32 object-contain border rounded-lg" />
+                    <img
+                      src={user.companyLogo}
+                      alt="Company Logo"
+                      className="w-32 h-32 object-contain border rounded-lg"
+                    />
                     <div>
-                      <p className="text-sm text-muted-foreground">Your current company logo</p>
+                      <p className="text-sm text-muted-foreground">
+                        Your current company logo
+                      </p>
                     </div>
                   </div>
                 ) : (
                   <div className="mb-4">
-                    <p className="text-sm text-muted-foreground mb-2">No company logo found. Upload one now:</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      No company logo found. Upload one now:
+                    </p>
                     <Input
                       type="file"
                       accept="image/*"
@@ -518,17 +615,21 @@ export function PropertyPreviewModal({
                           reader.onloadend = async () => {
                             const base64Data = reader.result as string;
                             try {
-                              const response = await fetch('/api/profile', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ companyLogo: base64Data }),
-                                credentials: 'include'
+                              const response = await fetch("/api/profile", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  companyLogo: base64Data,
+                                }),
+                                credentials: "include",
                               });
-                              if (!response.ok) throw new Error(await response.text());
-                              queryClient.invalidateQueries(['user']);
+                              if (!response.ok)
+                                throw new Error(await response.text());
+                              queryClient.invalidateQueries(["user"]);
                               toast({
                                 title: "Success",
-                                description: "Company logo uploaded successfully",
+                                description:
+                                  "Company logo uploaded successfully",
                                 duration: 3000,
                               });
                             } catch (error) {
@@ -547,16 +648,21 @@ export function PropertyPreviewModal({
                   </div>
                 )}
                 <div className="flex justify-end gap-4 mt-4">
-                  <Button variant="outline" onClick={() => {
-                    onOpenChange(false);
-                    generatePropertyPreviewPDF(property, false, user);
-                  }}>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      onOpenChange(false);
+                      generatePropertyPreviewPDF(property, false, user);
+                    }}
+                  >
                     No
                   </Button>
-                  <Button onClick={() => {
-                    onOpenChange(false);
-                    generatePropertyPreviewPDF(property, true, user);
-                  }}>
+                  <Button
+                    onClick={() => {
+                      onOpenChange(false);
+                      generatePropertyPreviewPDF(property, true, user);
+                    }}
+                  >
                     Yes
                   </Button>
                 </div>
@@ -765,29 +871,78 @@ export function PropertyPreviewModal({
             {/* Revenue Comparison Chart */}
             <Card className="col-span-3">
               <CardHeader>
-                <CardTitle className="text-xl font-bold text-slate-800">Revenue Comparison</CardTitle>
+                <CardTitle className="text-xl font-bold text-slate-800">
+                  Revenue Comparison
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       className="revenue-chart"
-                      data={Array(12).fill(0).map((_, i) => ({
-                        month: new Date(2024, i).toLocaleString('default', { month: 'short' }),
-                        low: calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee),
-                        medium: calculateMonthlyRevenue('medium', i, property.shortTermNightly, property.managementFee > 0, property.managementFee),
-                        high: calculateMonthlyRevenue('high', i, property.shortTermNightly, property.managementFee > 0, property.managementFee),
-                        longTerm: property.longTermMonthly,
-                      }))}
+                      data={Array(12)
+                        .fill(0)
+                        .map((_, i) => ({
+                          month: new Date(2024, i).toLocaleString("default", {
+                            month: "short",
+                          }),
+                          low: calculateMonthlyRevenue(
+                            "low",
+                            i,
+                            property.shortTermNightly,
+                            property.managementFee > 0,
+                            property.managementFee,
+                          ),
+                          medium: calculateMonthlyRevenue(
+                            "medium",
+                            i,
+                            property.shortTermNightly,
+                            property.managementFee > 0,
+                            property.managementFee,
+                          ),
+                          high: calculateMonthlyRevenue(
+                            "high",
+                            i,
+                            property.shortTermNightly,
+                            property.managementFee > 0,
+                            property.managementFee,
+                          ),
+                          longTerm: property.longTermMonthly,
+                        }))}
                     >
                       <XAxis dataKey="month" />
-                      <YAxis tickFormatter={(value) => formatter.format(value)} />
-                      <RechartsTooltip formatter={(value) => formatter.format(value as number)} />
+                      <YAxis
+                        tickFormatter={(value) => formatter.format(value)}
+                      />
+                      <RechartsTooltip
+                        formatter={(value) => formatter.format(value as number)}
+                      />
                       <Legend />
-                      <Line type="monotone" dataKey="low" stroke="#FF6B6B" name="Revenue Low" />
-                      <Line type="monotone" dataKey="medium" stroke="#4ECDC4" name="Revenue Medium" />
-                      <Line type="monotone" dataKey="high" stroke="#45B7D1" name="Revenue High" />
-                      <Line type="monotone" dataKey="longTerm" stroke="#FFE66D" strokeDasharray="5 5" name="Long Term Rental" />
+                      <Line
+                        type="monotone"
+                        dataKey="low"
+                        stroke="#FF6B6B"
+                        name="Revenue Low"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="medium"
+                        stroke="#4ECDC4"
+                        name="Revenue Medium"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="high"
+                        stroke="#45B7D1"
+                        name="Revenue High"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="longTerm"
+                        stroke="#FFE66D"
+                        strokeDasharray="5 5"
+                        name="Long Term Rental"
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -797,7 +952,9 @@ export function PropertyPreviewModal({
             {/* Monthly Revenue Table */}
             <Card className="col-span-3">
               <CardHeader>
-                <CardTitle className="text-xl font-bold text-slate-800">Monthly Revenue Breakdown</CardTitle>
+                <CardTitle className="text-xl font-bold text-slate-800">
+                  Monthly Revenue Breakdown
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -805,11 +962,15 @@ export function PropertyPreviewModal({
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="text-left py-3 px-4">Metric</th>
-                        {Array(12).fill(0).map((_, i) => (
-                          <th key={i} className="text-right py-3 px-4">
-                            {new Date(2024, i).toLocaleString('default', { month: 'short' })}
-                          </th>
-                        ))}
+                        {Array(12)
+                          .fill(0)
+                          .map((_, i) => (
+                            <th key={i} className="text-right py-3 px-4">
+                              {new Date(2024, i).toLocaleString("default", {
+                                month: "short",
+                              })}
+                            </th>
+                          ))}
                         <th className="text-right py-3 px-4 border-l">Total</th>
                         <th className="text-right py-3 px-4">Average</th>
                       </tr>
@@ -817,118 +978,296 @@ export function PropertyPreviewModal({
                     <tbody>
                       <tr className="border-t">
                         <td className="py-3 px-4">Nightly Rate</td>
-                        {Array(12).fill(0).map((_, i) => (
-                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">
-                            {formatter.format(getSeasonalNightlyRate(property.shortTermNightly, i))}
-                          </td>
-                        ))}
+                        {Array(12)
+                          .fill(0)
+                          .map((_, i) => (
+                            <td
+                              key={i}
+                              className="text-right py-3 px-4 whitespace-nowrap"
+                            >
+                              {formatter.format(
+                                getSeasonalNightlyRate(
+                                  property.shortTermNightly,
+                                  i,
+                                ),
+                              )}
+                            </td>
+                          ))}
                         <td className="text-right py-3 px-4 border-l"></td>
                         <td className="text-right py-3 px-4"></td>
                       </tr>
                       <tr className="border-t">
                         <td className="py-3 px-4">Fee-Adjusted Rate</td>
-                        {Array(12).fill(0).map((_, i) => (
-                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">
-                            {formatter.format(getFeeAdjustedRate(getSeasonalNightlyRate(property.shortTermNightly, i), property.managementFee > 0))}
-                          </td>
-                        ))}
+                        {Array(12)
+                          .fill(0)
+                          .map((_, i) => (
+                            <td
+                              key={i}
+                              className="text-right py-3 px-4 whitespace-nowrap"
+                            >
+                              {formatter.format(
+                                getFeeAdjustedRate(
+                                  getSeasonalNightlyRate(
+                                    property.shortTermNightly,
+                                    i,
+                                  ),
+                                  property.managementFee > 0,
+                                ),
+                              )}
+                            </td>
+                          ))}
                         <td className="text-right py-3 px-4 border-l"></td>
                         <td className="text-right py-3 px-4"></td>
                       </tr>
                       <tr className="border-t">
                         <td className="py-3 px-4">Occupancy Low</td>
                         {OCCUPANCY_RATES.low.map((rate, i) => (
-                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">{rate}%</td>
+                          <td
+                            key={i}
+                            className="text-right py-3 px-4 whitespace-nowrap"
+                          >
+                            {rate}%
+                          </td>
                         ))}
                         <td className="text-right py-3 px-4 border-l">-</td>
-                        <td className="text-right py-3 px-4">{(OCCUPANCY_RATES.low.reduce((a, b) => a + b, 0) / 12).toFixed(1)}%</td>
+                        <td className="text-right py-3 px-4">
+                          {(
+                            OCCUPANCY_RATES.low.reduce((a, b) => a + b, 0) / 12
+                          ).toFixed(1)}
+                          %
+                        </td>
                       </tr>
                       <tr className="border-t">
                         <td className="py-3 px-4">Occupancy Medium</td>
                         {OCCUPANCY_RATES.medium.map((rate, i) => (
-                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">{rate}%</td>
+                          <td
+                            key={i}
+                            className="text-right py-3 px-4 whitespace-nowrap"
+                          >
+                            {rate}%
+                          </td>
                         ))}
                         <td className="text-right py-3 px-4 border-l">-</td>
-                        <td className="text-right py-3 px-4">{(OCCUPANCY_RATES.medium.reduce((a, b) => a + b, 0) / 12).toFixed(1)}%</td>
+                        <td className="text-right py-3 px-4">
+                          {(
+                            OCCUPANCY_RATES.medium.reduce((a, b) => a + b, 0) /
+                            12
+                          ).toFixed(1)}
+                          %
+                        </td>
                       </tr>
                       <tr className="border-t">
                         <td className="py-3 px-4">Occupancy High</td>
                         {OCCUPANCY_RATES.high.map((rate, i) => (
-                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">{rate}%</td>
+                          <td
+                            key={i}
+                            className="text-right py-3 px-4 whitespace-nowrap"
+                          >
+                            {rate}%
+                          </td>
                         ))}
                         <td className="text-right py-3 px-4 border-l">-</td>
-                        <td className="text-right py-3 px-4">{(OCCUPANCY_RATES.high.reduce((a, b) => a + b, 0) / 12).toFixed(1)}%</td>
+                        <td className="text-right py-3 px-4">
+                          {(
+                            OCCUPANCY_RATES.high.reduce((a, b) => a + b, 0) / 12
+                          ).toFixed(1)}
+                          %
+                        </td>
                       </tr>
                       <tr className="border-t bg-[#FF6B6B]/10">
-                        <td className="py-3 px-4 text-[#FF6B6B] font-medium">Revenue Low</td>
-                        {Array(12).fill(0).map((_, i) => {
-                          const revenue = calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee);
-                          return (
-                            <td key={i} className="text-right py-3 px-4 whitespace-nowrap">
-                              {formatter.format(revenue)}
-                            </td>
-                          );
-                        })}
+                        <td className="py-3 px-4 text-[#FF6B6B] font-medium">
+                          Revenue Low
+                        </td>
+                        {Array(12)
+                          .fill(0)
+                          .map((_, i) => {
+                            const revenue = calculateMonthlyRevenue(
+                              "low",
+                              i,
+                              property.shortTermNightly,
+                              property.managementFee > 0,
+                              property.managementFee,
+                            );
+                            return (
+                              <td
+                                key={i}
+                                className="text-right py-3 px-4 whitespace-nowrap"
+                              >
+                                {formatter.format(revenue)}
+                              </td>
+                            );
+                          })}
                         <td className="text-right py-3 px-4 border-l font-medium">
-                          {formatter.format(Array(12).fill(0).reduce((sum, _, i) => 
-                            sum + calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee), 0
-                          ))}
+                          {formatter.format(
+                            Array(12)
+                              .fill(0)
+                              .reduce(
+                                (sum, _, i) =>
+                                  sum +
+                                  calculateMonthlyRevenue(
+                                    "low",
+                                    i,
+                                    property.shortTermNightly,
+                                    property.managementFee > 0,
+                                    property.managementFee,
+                                  ),
+                                0,
+                              ),
+                          )}
                         </td>
                         <td className="text-right py-3 px-4 font-medium">
-                          {formatter.format(Array(12).fill(0).reduce((sum, _, i) => 
-                            sum + calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee), 0
-                          ) / 12)}
+                          {formatter.format(
+                            Array(12)
+                              .fill(0)
+                              .reduce(
+                                (sum, _, i) =>
+                                  sum +
+                                  calculateMonthlyRevenue(
+                                    "low",
+                                    i,
+                                    property.shortTermNightly,
+                                    property.managementFee > 0,
+                                    property.managementFee,
+                                  ),
+                                0,
+                              ) / 12,
+                          )}
                         </td>
                       </tr>
                       <tr className="border-t bg-[#4ECDC4]/10">
-                        <td className="py-3 px-4 text-[#4ECDC4] font-medium">Revenue Medium</td>
-                        {Array(12).fill(0).map((_, i) => {
-                          const revenue = calculateMonthlyRevenue('medium', i, property.shortTermNightly, property.managementFee > 0, property.managementFee);
-                          return (
-                            <td key={i} className="text-right py-3 px-4 whitespace-nowrap">
-                              {formatter.format(revenue)}
-                            </td>
-                          );
-                        })}
+                        <td className="py-3 px-4 text-[#4ECDC4] font-medium">
+                          Revenue Medium
+                        </td>
+                        {Array(12)
+                          .fill(0)
+                          .map((_, i) => {
+                            const revenue = calculateMonthlyRevenue(
+                              "medium",
+                              i,
+                              property.shortTermNightly,
+                              property.managementFee > 0,
+                              property.managementFee,
+                            );
+                            return (
+                              <td
+                                key={i}
+                                className="text-right py-3 px-4 whitespace-nowrap"
+                              >
+                                {formatter.format(revenue)}
+                              </td>
+                            );
+                          })}
                         <td className="text-right py-3 px-4 border-l font-medium">
-                          {formatter.format(Array(12).fill(0).reduce((sum, _, i) => 
-                            sum + calculateMonthlyRevenue('medium', i, property.shortTermNightly, property.managementFee > 0, property.managementFee), 0
-                          ))}
+                          {formatter.format(
+                            Array(12)
+                              .fill(0)
+                              .reduce(
+                                (sum, _, i) =>
+                                  sum +
+                                  calculateMonthlyRevenue(
+                                    "medium",
+                                    i,
+                                    property.shortTermNightly,
+                                    property.managementFee > 0,
+                                    property.managementFee,
+                                  ),
+                                0,
+                              ),
+                          )}
                         </td>
                         <td className="text-right py-3 px-4 font-medium">
-                          {formatter.format(Array(12).fill(0).reduce((sum, _, i) => 
-                            sum + calculateMonthlyRevenue('medium', i, property.shortTermNightly, property.managementFee > 0, property.managementFee), 0
-                          ) / 12)}
+                          {formatter.format(
+                            Array(12)
+                              .fill(0)
+                              .reduce(
+                                (sum, _, i) =>
+                                  sum +
+                                  calculateMonthlyRevenue(
+                                    "medium",
+                                    i,
+                                    property.shortTermNightly,
+                                    property.managementFee > 0,
+                                    property.managementFee,
+                                  ),
+                                0,
+                              ) / 12,
+                          )}
                         </td>
                       </tr>
                       <tr className="border-t bg-[#45B7D1]/10">
-                        <td className="py-3 px-4 text-[#45B7D1] font-medium">Revenue High</td>
-                        {Array(12).fill(0).map((_, i) => {
-                          const revenue = calculateMonthlyRevenue('high', i, property.shortTermNightly, property.managementFee > 0, property.managementFee);
-                          return (
-                            <td key={i} className="text-right py-3 px-4 whitespace-nowrap">
-                              {formatter.format(revenue)}
-                            </td>
-                          );
-                        })}
+                        <td className="py-3 px-4 text-[#45B7D1] font-medium">
+                          Revenue High
+                        </td>
+                        {Array(12)
+                          .fill(0)
+                          .map((_, i) => {
+                            const revenue = calculateMonthlyRevenue(
+                              "high",
+                              i,
+                              property.shortTermNightly,
+                              property.managementFee > 0,
+                              property.managementFee,
+                            );
+                            return (
+                              <td
+                                key={i}
+                                className="text-right py-3 px-4 whitespace-nowrap"
+                              >
+                                {formatter.format(revenue)}
+                              </td>
+                            );
+                          })}
                         <td className="text-right py-3 px-4 border-l font-medium">
-                          {formatter.format(Array(12).fill(0).reduce((sum, _, i) => 
-                            sum + calculateMonthlyRevenue('high', i, property.shortTermNightly, property.managementFee > 0, property.managementFee), 0
-                          ))}
+                          {formatter.format(
+                            Array(12)
+                              .fill(0)
+                              .reduce(
+                                (sum, _, i) =>
+                                  sum +
+                                  calculateMonthlyRevenue(
+                                    "high",
+                                    i,
+                                    property.shortTermNightly,
+                                    property.managementFee > 0,
+                                    property.managementFee,
+                                  ),
+                                0,
+                              ),
+                          )}
                         </td>
                         <td className="text-right py-3 px-4 font-medium">
-                          {formatter.format(Array(12).fill(0).reduce((sum, _, i) => 
-                            sum + calculateMonthlyRevenue('high', i, property.shortTermNightly, property.managementFee > 0, property.managementFee), 0
-                          ) / 12)}
+                          {formatter.format(
+                            Array(12)
+                              .fill(0)
+                              .reduce(
+                                (sum, _, i) =>
+                                  sum +
+                                  calculateMonthlyRevenue(
+                                    "high",
+                                    i,
+                                    property.shortTermNightly,
+                                    property.managementFee > 0,
+                                    property.managementFee,
+                                  ),
+                                0,
+                              ) / 12,
+                          )}
                         </td>
                       </tr>
                       <tr className="border-t bg-[#FFE66D]/10">
-                        <td className="py-3 px-4 text-[#B8860B] font-medium">Long Term Rental</td>
-                        {Array(12).fill(0).map((_, i) => (
-                          <td key={i} className="text-right py-3 px-4 whitespace-nowrap">
-                            {formatter.format(property.longTermMonthly)}
-                          </td>
-                        ))}
+                        <td className="py-3 px-4 text-[#B8860B] font-medium">
+                          Long Term Rental
+                        </td>
+                        {Array(12)
+                          .fill(0)
+                          .map((_, i) => (
+                            <td
+                              key={i}
+                              className="text-right py-3 px-4 whitespace-nowrap"
+                            >
+                              {formatter.format(property.longTermMonthly)}
+                            </td>
+                          ))}
                         <td className="text-right py-3 px-4 border-l font-medium">
                           {formatter.format(property.longTermMonthly * 12)}
                         </td>
@@ -941,8 +1280,6 @@ export function PropertyPreviewModal({
                 </div>
               </CardContent>
             </Card>
-
-
           </div>
         </ScrollArea>
       </DialogContent>
@@ -954,11 +1291,26 @@ export function PropertyPreviewModal({
 const OCCUPANCY_RATES = {
   low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70],
   medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85],
-  high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
+  high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95],
 };
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const SEASONALITY_FACTORS = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+const SEASONALITY_FACTORS = [
+  2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03,
+];
 
 function getSeasonalMultiplier(month: number): number {
   return SEASONALITY_FACTORS[month];
@@ -970,16 +1322,16 @@ function getSeasonalNightlyRate(baseRate: number, month: number): number {
 
 function getFeeAdjustedRate(rate: number, hasManagementFee: boolean): number {
   return hasManagementFee
-    ? rate * 0.85  // 15% Airbnb fee for professionally managed
+    ? rate * 0.85 // 15% Airbnb fee for professionally managed
     : rate * 0.97; // 3% fee for self-managed
 }
 
 function calculateMonthlyRevenue(
-  scenario: 'low' | 'medium' | 'high',
+  scenario: "low" | "medium" | "high",
   month: number,
   nightly: number,
   hasManagementFee: boolean,
-  managementFeePercent: number
+  managementFeePercent: number,
 ): number {
   const occupancyRate = OCCUPANCY_RATES[scenario][month] / 100;
   const daysInMonth = new Date(2024, month + 1, 0).getDate();
@@ -988,11 +1340,11 @@ function calculateMonthlyRevenue(
   const seasonalRate = getSeasonalNightlyRate(nightly, month);
   const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, hasManagementFee);
 
-  let revenue = Math.abs(feeAdjustedRate * daysInMonth* occupancyRate);
+  let revenue = Math.abs(feeAdjustedRate * daysInMonth * occupancyRate);
 
   // Apply management fee if present
   if (hasManagementFee) {
-    revenue *= (1 - (managementFeePercent / 100));
+    revenue *= 1 - managementFeePercent / 100;
   }
 
   return revenue;
