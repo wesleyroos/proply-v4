@@ -33,6 +33,7 @@ interface Property {
   annualOccupancy: number;
   managementFee: number;
   createdAt: string;
+  parkingSpaces?: string; // Added optional parkingSpaces
 }
 
 interface PropertyPreviewModalProps {
@@ -194,6 +195,16 @@ export function PropertyPreviewModal({
                     <p className="mt-1 text-slate-800">{property.bathrooms}</p>
                   </div>
                 </div>
+                {property.parkingSpaces && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-600">
+                      Parking Spaces
+                    </h3>
+                    <p className="mt-1 text-slate-800">
+                      {property.parkingSpaces}
+                    </p>
+                  </div>
+                )}
                 <div>
                   <h3 className="text-sm font-semibold text-slate-600">
                     Added
