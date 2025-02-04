@@ -256,8 +256,8 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     head: [tableHeaders],
     body: tableData,
     startY: yPos,
-    styles: { fontSize: 8 },
-    headStyles: { fillColor: [27, 163, 255] },
+    styles: { fontSize: 6.5 },
+    headStyles: { fillColor: [27, 163, 255], fontSize: 7 },
     margin: { left: margin }
   });
 
@@ -279,7 +279,7 @@ async function generatePropertyPreviewPDF(property: Property | null) {
 
   // Add new page for disclaimer
   doc.addPage();
-  
+
   // Add disclaimer heading
   doc.setFontSize(12);
   doc.setTextColor(0);
