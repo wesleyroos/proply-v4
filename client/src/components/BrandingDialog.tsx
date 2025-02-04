@@ -145,7 +145,13 @@ export function BrandingDialog({
               Company branding requires a Pro subscription
             </p>
             <div className="flex gap-4">
-              <Button onClick={onShowUpgrade}>
+              <Button 
+                onClick={() => {
+                  onOpenChange(false); // Close branding dialog
+                  onShowUpgrade(); // Open upgrade modal
+                }}
+                className="bg-[#1BA3FF] hover:bg-[#114D9D]"
+              >
                 Upgrade to Pro
               </Button>
               <Button
