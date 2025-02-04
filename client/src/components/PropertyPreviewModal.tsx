@@ -596,6 +596,10 @@ export function PropertyPreviewModal({
                 }}
               />
             </Dialog>
+            <UpgradeModal 
+              open={showUpgradeModal} 
+              onOpenChange={setShowUpgradeModal} 
+            />
           </div>
         </DialogHeader>
         <ScrollArea className="h-[calc(80vh-8rem)]">
