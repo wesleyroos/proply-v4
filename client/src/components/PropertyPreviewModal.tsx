@@ -6,6 +6,7 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { BrandingDialog } from "@/components/BrandingDialog";
 import {
   LineChart,
   Line,
