@@ -61,40 +61,6 @@ async function generatePropertyPreviewPDF(property: Property | null, includeComp
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 20;
 
-  // Add company logo if branding is enabled
-  if (includeCompanyBranding && user?.companyLogo) {
-    try {
-      const logoWidth = 40;
-      await new Promise<void>((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-          const aspectRatio = img.height / img.width;
-          const logoHeight = logoWidth * aspectRatio;
-          doc.addImage(
-            user.companyLogo,
-            "PNG",
-            margin,
-            margin,
-            logoWidth,
-            logoHeight
-          );
-          yPos = Math.max(yPos, margin + logoHeight + 10);
-          resolve();
-        };
-        img.onerror = () => {
-          console.error("Error loading company logo");
-          resolve();
-        };
-        img.crossOrigin = "Anonymous";
-        img.src = user.companyLogo;
-      });
-    } catch (error) {
-      console.error("Error adding company logo:", error);
-    }
-  }
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 20;
-
   // Add Proply logo
   try {
     const proplyLogoWidth = 40;
@@ -425,7 +391,13 @@ export function PropertyPreviewModal({
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Include Company Branding?</DialogTitle>
+                  <div className="flex items-center gap-2">
+                    <DialogTitle>Include Company Branding?</DialogTitle>
+                    <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+                      PRO
+                    </span>
+                    <Sparkles className="h-4 w-4 text-[#1BA3FF]" />
+                  </div>
                   <DialogDescription>
                     Would you like to include your company branding in the PDF?
                   </DialogDescription>
