@@ -16,7 +16,7 @@ import {
   FileText,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import PropertyMap from "./PropertyMap";
 import { Progress } from "@/components/ui/progress"; // Assuming Progress component exists
 
