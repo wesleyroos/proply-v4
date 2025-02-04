@@ -136,9 +136,9 @@ async function generatePropertyPreviewPDF(
     console.error("Error adding Proply logo:", error);
   }
 
-  yPos = startY + maxLogoHeight + 20;
+  yPos = startY + maxLogoHeight + 10;
 
-  yPos = Math.max(yPos + 40, 60);
+  yPos = Math.max(yPos, 50);
 
   // Title and Address
   doc.setFontSize(20);
