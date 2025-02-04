@@ -154,7 +154,13 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                 <FormItem>
                   <FormLabel>Bedrooms</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" min="0" />
+                    <Input 
+                      {...field} 
+                      type="number" 
+                      step="0.5" 
+                      min="0.5" 
+                      onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                    />
                   </FormControl>
                 </FormItem>
               )}
