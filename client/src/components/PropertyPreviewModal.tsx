@@ -43,16 +43,104 @@ interface PropertyPreviewModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Function to generate the PDF.  Implementation will depend on chosen library.
+// Function to generate the PDF with comprehensive property details
 async function generatePropertyPreviewPDF(property: Property | null) {
   if (!property) return;
 
-  // Placeholder - Replace with actual PDF generation logic using a library like jsPDF or pdfmake
-  const doc = new jsPDF(); // Example using jsPDF - Requires installation: npm install jspdf
-  doc.text(property.title, 10, 10);
-  doc.text(property.address, 10, 20);
-  // Add more property details here...
-  doc.save("property_preview.pdf");
+  const doc = new jsPDF();
+  let yPos = 20;
+
+  // Title and Address
+  doc.setFontSize(20);
+  doc.text(property.title, 20, yPos);
+  yPos += 10;
+  doc.setFontSize(12);
+  doc.text(property.address, 20, yPos);
+  yPos += 20;
+
+  // Property Details
+  doc.setFontSize(16);
+  doc.text("Property Details", 20, yPos);
+  yPos += 10;
+
+  const propertyDetails = [
+    ["Bedrooms", property.bedrooms],
+    ["Bathrooms", property.bathrooms],
+    property.parkingSpaces ? ["Parking Spaces", property.parkingSpaces] : null,
+  ].filter(Boolean);
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Feature", "Value"]],
+    body: propertyDetails,
+    theme: "grid",
+    styles: { fontSize: 10 },
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 20;
+
+  // Short-Term Performance
+  doc.setFontSize(16);
+  doc.text("Short-Term Performance", 20, yPos);
+  yPos += 10;
+
+  const shortTermDetails = [
+    ["Annual Revenue", formatter.format(property.shortTermAnnual)],
+    ["Monthly Average", formatter.format(property.shortTermAnnual / 12)],
+    ["Nightly Rate", formatter.format(property.shortTermNightly)],
+    ["Annual Occupancy", `${property.annualOccupancy}%`],
+    ["Management Fee", `${property.managementFee}%`],
+  ];
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Metric", "Value"]],
+    body: shortTermDetails,
+    theme: "grid",
+    styles: { fontSize: 10 },
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 20;
+
+  // Long-Term Performance
+  doc.setFontSize(16);
+  doc.text("Long-Term Performance", 20, yPos);
+  yPos += 10;
+
+  const longTermDetails = [
+    ["Annual Revenue", formatter.format(property.longTermMonthly * 12)],
+    ["Monthly Revenue", formatter.format(property.longTermMonthly)],
+  ];
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Metric", "Value"]],
+    body: longTermDetails,
+    theme: "grid",
+    styles: { fontSize: 10 },
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 20;
+
+  // Breakeven Analysis
+  doc.setFontSize(16);
+  doc.text("Breakeven Analysis", 20, yPos);
+  yPos += 10;
+
+  const breakEvenDetails = [
+    ["Projected Occupancy", `${property.annualOccupancy}%`],
+    ["Break-even Occupancy", `${property.breakEvenOccupancy}%`],
+  ];
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Metric", "Value"]],
+    body: breakEvenDetails,
+    theme: "grid",
+    styles: { fontSize: 10 },
+  });
+
+  doc.save(`${property.title.replace(/[^a-zA-Z0-9]/g, "_")}_preview.pdf`);
 }
 
 
