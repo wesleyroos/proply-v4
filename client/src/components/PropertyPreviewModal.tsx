@@ -53,7 +53,11 @@ interface PropertyPreviewModalProps {
 }
 
 // Function to generate the PDF with comprehensive property details
-async function generatePropertyPreviewPDF(property: Property | null, includeCompanyBranding: boolean = true) {
+async function generatePropertyPreviewPDF(
+  property: Property | null, 
+  includeCompanyBranding: boolean = true,
+  userData?: SelectUser | null
+) {
   if (!property) return;
 
   const doc = new jsPDF();
@@ -62,7 +66,7 @@ async function generatePropertyPreviewPDF(property: Property | null, includeComp
   const margin = 20;
 
   // Add company logo if branding is enabled and logo exists
-  if (includeCompanyBranding && user?.companyLogo) {
+  if (includeCompanyBranding && userData?.companyLogo) {
     try {
       const logoWidth = 40;
       await new Promise<void>((resolve) => {
@@ -71,7 +75,7 @@ async function generatePropertyPreviewPDF(property: Property | null, includeComp
           const aspectRatio = img.height / img.width;
           const logoHeight = logoWidth * aspectRatio;
           doc.addImage(
-            user.companyLogo,
+            userData.companyLogo,
             "PNG",
             margin,
             margin,
@@ -485,13 +489,13 @@ export function PropertyPreviewModal({
                 <div className="flex justify-end gap-4 mt-4">
                   <Button variant="outline" onClick={() => {
                     onOpenChange(false);
-                    generatePropertyPreviewPDF(property, false);
+                    generatePropertyPreviewPDF(property, false, user);
                   }}>
                     No
                   </Button>
                   <Button onClick={() => {
                     onOpenChange(false);
-                    generatePropertyPreviewPDF(property, true);
+                    generatePropertyPreviewPDF(property, true, user);
                   }}>
                     Yes
                   </Button>
