@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatter } from "@/utils/formatting";
 import { Building2, TrendingUp, BarChart3, MapPin } from "lucide-react";
 import PropertyMap from "./PropertyMap";
