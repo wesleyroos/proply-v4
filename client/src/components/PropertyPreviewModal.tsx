@@ -15,7 +15,7 @@ import {
   MapPin,
   FileText,
 } from "lucide-react";
-import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
+// import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService"; //Removed as it's for a different product
 import PropertyMap from "./PropertyMap";
 import { Progress } from "@/components/ui/progress"; // Assuming Progress component exists
 
@@ -41,6 +41,19 @@ interface PropertyPreviewModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+// Function to generate the PDF.  Implementation will depend on chosen library.
+async function generatePropertyPreviewPDF(property: Property | null) {
+  if (!property) return;
+
+  // Placeholder - Replace with actual PDF generation logic using a library like jsPDF or pdfmake
+  const doc = new jsPDF(); // Example using jsPDF - Requires installation: npm install jspdf
+  doc.text(property.title, 10, 10);
+  doc.text(property.address, 10, 20);
+  // Add more property details here...
+  doc.save("property_preview.pdf");
+}
+
 
 export function PropertyPreviewModal({
   property,
@@ -156,12 +169,19 @@ export function PropertyPreviewModal({
                   },
                 };
 
-                generatePDF(pdfData, selections);
+                //generatePDF(pdfData, selections); //Removed as it's for a different product
               }}
               className="mr-6 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
             >
               <FileText className="w-4 h-4 mr-2" />
               Export PDF
+            </Button>
+            <Button
+              onClick={() => generatePropertyPreviewPDF(property)}
+              className="mr-6 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Export Preview
             </Button>
           </div>
         </DialogHeader>
