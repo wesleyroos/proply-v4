@@ -21,6 +21,7 @@ import {
   BarChart3,
   MapPin,
   FileText,
+  Sparkles,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -453,12 +454,15 @@ export function PropertyPreviewModal({
                   <Button onClick={() => {
                     onOpenChange(false);
                     generatePropertyPreviewPDF(property, true);
-                  }} className="flex items-center gap-2">
+                  }}>
                     Yes
+                  </Button>
+                  <div className="absolute -top-1 -right-1 flex items-center gap-1">
                     <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
                       PRO
                     </span>
-                  </Button>
+                    <Sparkles className="h-4 w-4 text-yellow-500" />
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
