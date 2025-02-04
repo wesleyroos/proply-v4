@@ -90,6 +90,9 @@ async function generatePropertyPreviewPDF(property: Property | null) {
   // Title and Address
   doc.setFontSize(20);
   doc.setTextColor(0);
+  doc.text("Rent Compare Analysis", 20, yPos); //Added heading
+  yPos += 10;
+  doc.setFontSize(12);
   doc.text(property.title, 20, yPos);
   yPos += 10;
   doc.setFontSize(12);
@@ -112,7 +115,8 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     head: [["Feature", "Value"]],
     body: propertyDetails,
     theme: "grid",
-    styles: { fontSize: 10 },
+    styles: { fontSize: 10, halign: 'center' },
+    headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
   });
 
   yPos = (doc as any).lastAutoTable.finalY + 20;
@@ -135,7 +139,8 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     head: [["Metric", "Value"]],
     body: shortTermDetails,
     theme: "grid",
-    styles: { fontSize: 10 },
+    styles: { fontSize: 10, halign: 'center' },
+    headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
   });
 
   yPos = (doc as any).lastAutoTable.finalY + 20;
@@ -155,7 +160,8 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     head: [["Metric", "Value"]],
     body: longTermDetails,
     theme: "grid",
-    styles: { fontSize: 10 },
+    styles: { fontSize: 10, halign: 'center' },
+    headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
   });
 
   yPos = (doc as any).lastAutoTable.finalY + 20;
@@ -175,7 +181,8 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     head: [["Metric", "Value"]],
     body: breakEvenDetails,
     theme: "grid",
-    styles: { fontSize: 10 },
+    styles: { fontSize: 10, halign: 'center' },
+    headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
   });
 
   doc.save(`${property.title.replace(/[^a-zA-Z0-9]/g, "_")}_preview.pdf`);
