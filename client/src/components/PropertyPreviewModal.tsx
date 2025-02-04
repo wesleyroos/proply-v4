@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatter } from "@/utils/formatting";
-import { Building2, TrendingUp, BarChart3 } from "lucide-react";
+import { Building2, TrendingUp, BarChart3, MapPin } from "lucide-react";
 
 interface Property {
   id: number;
@@ -139,6 +139,19 @@ export function PropertyPreviewModal({ property, open, onOpenChange }: PropertyP
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Property Map */}
+          <Card className="col-span-3">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-cyan-500" />
+                Location
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PropertyMap address={property.address} />
             </CardContent>
           </Card>
         </div>
