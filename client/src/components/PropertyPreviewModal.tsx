@@ -61,6 +61,38 @@ async function generatePropertyPreviewPDF(property: Property | null, includeComp
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 20;
 
+  // Add company logo if branding is enabled and logo exists
+  if (includeCompanyBranding && user?.companyLogo) {
+    try {
+      const logoWidth = 40;
+      await new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const aspectRatio = img.height / img.width;
+          const logoHeight = logoWidth * aspectRatio;
+          doc.addImage(
+            user.companyLogo,
+            "PNG",
+            margin,
+            margin,
+            logoWidth,
+            logoHeight
+          );
+          yPos = Math.max(yPos, margin + logoHeight + 10);
+          resolve();
+        };
+        img.onerror = () => {
+          console.error("Error loading company logo");
+          resolve();
+        };
+        img.crossOrigin = "Anonymous";
+        img.src = user.companyLogo;
+      });
+    } catch (error) {
+      console.error("Error adding company logo:", error);
+    }
+  }
+
   // Add Proply logo
   try {
     const proplyLogoWidth = 40;
