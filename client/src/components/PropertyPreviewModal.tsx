@@ -46,7 +46,7 @@ interface PropertyPreviewModalProps {
 }
 
 // Function to generate the PDF with comprehensive property details
-async function generatePropertyPreviewPDF(property: Property | null) {
+async function generatePropertyPreviewPDF(property: Property | null, includeCompanyBranding: boolean = true) {
   if (!property) return;
 
   const doc = new jsPDF();
@@ -374,13 +374,30 @@ export function PropertyPreviewModal({
               {property.title}
             </DialogTitle>
 
-            <Button
-              onClick={() => generatePropertyPreviewPDF(property)}
-              className="mr-6 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Export Preview
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="mr-6 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Export Preview
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Include Company Branding?</DialogTitle>
+                  <DialogDescription>
+                    Would you like to include your company branding in the PDF?
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-end gap-4 mt-4">
+                  <Button variant="outline" onClick={() => generatePropertyPreviewPDF(property, false)}>
+                    No
+                  </Button>
+                  <Button onClick={() => generatePropertyPreviewPDF(property, true)}>
+                    Yes
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </DialogHeader>
         <ScrollArea className="h-[calc(80vh-8rem)]">
