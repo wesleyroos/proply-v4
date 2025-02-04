@@ -592,8 +592,7 @@ export function PropertyPreviewModal({
                     Would you like to include your company branding in the PDF?
                   </DialogDescription>
                 </DialogHeader>
-                {hasProAccess ? (
-                {user?.companyLogo ? (
+                {hasProAccess ? user?.companyLogo ? (
                   <div className="flex items-center gap-4 mb-4">
                     <img
                       src={user.companyLogo}
