@@ -651,11 +651,11 @@ function calculateMonthlyRevenue(
   const seasonalRate = getSeasonalNightlyRate(nightly, month);
   const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, hasManagementFee);
   
-  let revenue = feeAdjustedRate * daysInMonth * occupancyRate;
+  let revenue = Math.abs(feeAdjustedRate * daysInMonth * occupancyRate);
   
   // Apply management fee if present
   if (hasManagementFee) {
-    revenue *= (1 - managementFeePercent);
+    revenue *= (1 - (managementFeePercent / 100));
   }
   
   return revenue;
