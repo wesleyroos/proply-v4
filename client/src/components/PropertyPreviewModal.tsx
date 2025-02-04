@@ -594,6 +594,8 @@ export function PropertyPreviewModal({
                             {new Date(2024, i).toLocaleString('default', { month: 'short' })}
                           </th>
                         ))}
+                        <th className="text-right py-3 px-4 border-l">Total</th>
+                        <th className="text-right py-3 px-4">Average</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -604,6 +606,8 @@ export function PropertyPreviewModal({
                             {formatter.format(getSeasonalNightlyRate(property.shortTermNightly, i))}
                           </td>
                         ))}
+                        <td className="text-right py-3 px-4 border-l"></td>
+                        <td className="text-right py-3 px-4"></td>
                       </tr>
                       <tr className="border-t">
                         <td className="py-3 px-4">Fee-Adjusted Rate</td>
@@ -612,24 +616,32 @@ export function PropertyPreviewModal({
                             {formatter.format(getFeeAdjustedRate(getSeasonalNightlyRate(property.shortTermNightly, i), property.managementFee > 0))}
                           </td>
                         ))}
+                        <td className="text-right py-3 px-4 border-l"></td>
+                        <td className="text-right py-3 px-4"></td>
                       </tr>
                       <tr className="border-t">
                         <td className="py-3 px-4">Occupancy Low</td>
                         {OCCUPANCY_RATES.low.map((rate, i) => (
                           <td key={i} className="text-right py-3 px-4 whitespace-nowrap">{rate}%</td>
                         ))}
+                        <td className="text-right py-3 px-4 border-l"></td>
+                        <td className="text-right py-3 px-4"></td>
                       </tr>
                       <tr className="border-t">
                         <td className="py-3 px-4">Occupancy Medium</td>
                         {OCCUPANCY_RATES.medium.map((rate, i) => (
                           <td key={i} className="text-right py-3 px-4 whitespace-nowrap">{rate}%</td>
                         ))}
+                        <td className="text-right py-3 px-4 border-l"></td>
+                        <td className="text-right py-3 px-4"></td>
                       </tr>
                       <tr className="border-t">
                         <td className="py-3 px-4">Occupancy High</td>
                         {OCCUPANCY_RATES.high.map((rate, i) => (
                           <td key={i} className="text-right py-3 px-4 whitespace-nowrap">{rate}%</td>
                         ))}
+                        <td className="text-right py-3 px-4 border-l"></td>
+                        <td className="text-right py-3 px-4"></td>
                       </tr>
                       <tr className="border-t bg-[#FF6B6B]/10">
                         <td className="py-3 px-4 text-[#FF6B6B] font-medium">Revenue Low</td>
@@ -638,6 +650,8 @@ export function PropertyPreviewModal({
                             {formatter.format(calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee))}
                           </td>
                         ))}
+                        <td className="text-right py-3 px-4 border-l"></td>
+                        <td className="text-right py-3 px-4"></td>
                       </tr>
                       <tr className="border-t bg-[#4ECDC4]/10">
                         <td className="py-3 px-4 text-[#4ECDC4] font-medium">Revenue Medium</td>
@@ -646,6 +660,8 @@ export function PropertyPreviewModal({
                             {formatter.format(calculateMonthlyRevenue('medium', i, property.shortTermNightly, property.managementFee > 0, property.managementFee))}
                           </td>
                         ))}
+                        <td className="text-right py-3 px-4 border-l"></td>
+                        <td className="text-right py-3 px-4"></td>
                       </tr>
                       <tr className="border-t bg-[#45B7D1]/10">
                         <td className="py-3 px-4 text-[#45B7D1] font-medium">Revenue High</td>
@@ -654,6 +670,8 @@ export function PropertyPreviewModal({
                             {formatter.format(calculateMonthlyRevenue('high', i, property.shortTermNightly, property.managementFee > 0, property.managementFee))}
                           </td>
                         ))}
+                        <td className="text-right py-3 px-4 border-l"></td>
+                        <td className="text-right py-3 px-4"></td>
                       </tr>
                       <tr className="border-t bg-[#FFE66D]/10">
                         <td className="py-3 px-4 text-[#B8860B] font-medium">Long Term Rental</td>
@@ -662,6 +680,8 @@ export function PropertyPreviewModal({
                             {formatter.format(property.longTermMonthly)}
                           </td>
                         ))}
+                        <td className="text-right py-3 px-4 border-l"></td>
+                        <td className="text-right py-3 px-4"></td>
                       </tr>
                     </tbody>
                   </table>
@@ -715,7 +735,7 @@ function calculateMonthlyRevenue(
   const seasonalRate = getSeasonalNightlyRate(nightly, month);
   const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, hasManagementFee);
 
-  let revenue = Math.abs(feeAdjustedRate * daysInMonth * occupancyRate);
+  let revenue = Math.abs(feeAdjustedRate * daysInMonth* occupancyRate);
 
   // Apply management fee if present
   if (hasManagementFee) {
