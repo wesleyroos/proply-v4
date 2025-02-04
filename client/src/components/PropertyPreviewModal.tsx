@@ -20,6 +20,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import PropertyMap from "./PropertyMap";
 import { Progress } from "@/components/ui/progress"; // Assuming Progress component exists
+import html2canvas from 'html2canvas';
 
 interface Property {
   id: number;
@@ -50,6 +51,8 @@ async function generatePropertyPreviewPDF(property: Property | null) {
 
   const doc = new jsPDF();
   let yPos = 20;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 20;
 
   // Add Proply logo
   try {
@@ -137,7 +140,7 @@ async function generatePropertyPreviewPDF(property: Property | null) {
 
   const platformFee = property.managementFee > 0 ? 15 : 3;
   const feeAdjustedNightlyRate = property.shortTermNightly * (1 - platformFee / 100);
-  
+
   const shortTermDetails = [
     ["Annual Revenue", formatter.format(property.shortTermAnnual)],
     ["Monthly Average", formatter.format(property.shortTermAnnual / 12)],
@@ -198,6 +201,67 @@ async function generatePropertyPreviewPDF(property: Property | null) {
     styles: { fontSize: 10, halign: 'center' },
     headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
   });
+
+  yPos = (doc as any).lastAutoTable.finalY + 20;
+
+
+  // Capture Revenue Chart
+  const revenueChartElement = document.querySelector('.revenue-chart .recharts-wrapper');
+  if (revenueChartElement) {
+    const canvas = await html2canvas(revenueChartElement);
+    const chartImage = canvas.toDataURL('image/png');
+    const imgWidth = pageWidth - 2 * margin;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    doc.setFontSize(14);
+    doc.text('Monthly Revenue Projection', margin, yPos);
+    yPos += 10;
+
+    doc.addImage(chartImage, 'PNG', margin, yPos, imgWidth, imgHeight);
+    yPos += imgHeight + 20;
+  }
+
+  // Add Monthly Revenue Table
+  doc.setFontSize(14);
+  doc.text('Monthly Revenue Breakdown', margin, yPos);
+  yPos += 10;
+
+  const tableHeaders = [
+    'Month',
+    'Nightly Rate',
+    'Fee-Adjusted Rate',
+    'Occupancy Low',
+    'Revenue Low',
+    'Occupancy Med',
+    'Revenue Med',
+    'Occupancy High',
+    'Revenue High',
+    'Long Term'
+  ];
+
+  const tableData = Array(12).fill(0).map((_, i) => [
+    new Date(2024, i).toLocaleString('default', { month: 'short' }),
+    formatter.format(getSeasonalNightlyRate(property.shortTermNightly, i)),
+    formatter.format(getFeeAdjustedRate(getSeasonalNightlyRate(property.shortTermNightly, i), property.managementFee > 0)),
+    `${OCCUPANCY_RATES.low[i]}%`,
+    formatter.format(calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee)),
+    `${OCCUPANCY_RATES.medium[i]}%`,
+    formatter.format(calculateMonthlyRevenue('medium', i, property.shortTermNightly, property.managementFee > 0, property.managementFee)),
+    `${OCCUPANCY_RATES.high[i]}%`,
+    formatter.format(calculateMonthlyRevenue('high', i, property.shortTermNightly, property.managementFee > 0, property.managementFee)),
+    formatter.format(property.longTermMonthly)
+  ]);
+
+  autoTable(doc, {
+    head: [tableHeaders],
+    body: tableData,
+    startY: yPos,
+    styles: { fontSize: 8 },
+    headStyles: { fillColor: [27, 163, 255] },
+    margin: { left: margin }
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 20;
 
   // Add page numbers to all pages
   const totalPages = doc.getNumberOfPages();
@@ -492,6 +556,7 @@ export function PropertyPreviewModal({
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
+                      className="revenue-chart"
                       data={Array(12).fill(0).map((_, i) => ({
                         month: new Date(2024, i).toLocaleString('default', { month: 'short' }),
                         low: calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee),
@@ -605,7 +670,7 @@ export function PropertyPreviewModal({
               </CardContent>
             </Card>
 
-            
+
           </div>
         </ScrollArea>
       </DialogContent>
@@ -646,17 +711,17 @@ function calculateMonthlyRevenue(
 ): number {
   const occupancyRate = OCCUPANCY_RATES[scenario][month] / 100;
   const daysInMonth = new Date(2024, month + 1, 0).getDate();
-  
+
   // Apply seasonal adjustment and platform fee
   const seasonalRate = getSeasonalNightlyRate(nightly, month);
   const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, hasManagementFee);
-  
+
   let revenue = Math.abs(feeAdjustedRate * daysInMonth * occupancyRate);
-  
+
   // Apply management fee if present
   if (hasManagementFee) {
     revenue *= (1 - (managementFeePercent / 100));
   }
-  
+
   return revenue;
 }
