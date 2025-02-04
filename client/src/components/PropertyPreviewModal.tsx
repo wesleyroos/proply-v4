@@ -4,6 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -481,9 +482,124 @@ export function PropertyPreviewModal({
                 <PropertyMap address={property.address} />
               </CardContent>
             </Card>
+
+            {/* Revenue Comparison Chart */}
+            <Card className="col-span-3">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-slate-800">Revenue Comparison</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={Array(12).fill(0).map((_, i) => ({
+                        month: new Date(2024, i).toLocaleString('default', { month: 'short' }),
+                        low: calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee),
+                        medium: calculateMonthlyRevenue('medium', i, property.shortTermNightly, property.managementFee > 0, property.managementFee),
+                        high: calculateMonthlyRevenue('high', i, property.shortTermNightly, property.managementFee > 0, property.managementFee),
+                        longTerm: property.longTermMonthly,
+                      }))}
+                    >
+                      <XAxis dataKey="month" />
+                      <YAxis tickFormatter={(value) => formatter.format(value)} />
+                      <RechartsTooltip formatter={(value) => formatter.format(value as number)} />
+                      <Legend />
+                      <Line type="monotone" dataKey="low" stroke="#FF6B6B" name="Revenue Low" />
+                      <Line type="monotone" dataKey="medium" stroke="#4ECDC4" name="Revenue Medium" />
+                      <Line type="monotone" dataKey="high" stroke="#45B7D1" name="Revenue High" />
+                      <Line type="monotone" dataKey="longTerm" stroke="#FFE66D" strokeDasharray="5 5" name="Long Term Rental" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Monthly Revenue Table */}
+            <Card className="col-span-3">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-slate-800">Monthly Revenue Breakdown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left py-3 px-4">Metric</th>
+                        {Array(12).fill(0).map((_, i) => (
+                          <th key={i} className="text-right py-3 px-4">
+                            {new Date(2024, i).toLocaleString('default', { month: 'short' })}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-t">
+                        <td className="py-3 px-4">Short-Term (Low)</td>
+                        {Array(12).fill(0).map((_, i) => (
+                          <td key={i} className="text-right py-3 px-4">
+                            {formatter.format(calculateMonthlyRevenue('low', i, property.shortTermNightly, property.managementFee > 0, property.managementFee))}
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-t">
+                        <td className="py-3 px-4">Short-Term (Medium)</td>
+                        {Array(12).fill(0).map((_, i) => (
+                          <td key={i} className="text-right py-3 px-4">
+                            {formatter.format(calculateMonthlyRevenue('medium', i, property.shortTermNightly, property.managementFee > 0, property.managementFee))}
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-t">
+                        <td className="py-3 px-4">Short-Term (High)</td>
+                        {Array(12).fill(0).map((_, i) => (
+                          <td key={i} className="text-right py-3 px-4">
+                            {formatter.format(calculateMonthlyRevenue('high', i, property.shortTermNightly, property.managementFee > 0, property.managementFee))}
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-t">
+                        <td className="py-3 px-4">Long-Term</td>
+                        {Array(12).fill(0).map((_, i) => (
+                          <td key={i} className="text-right py-3 px-4">
+                            {formatter.format(property.longTermMonthly)}
+                          </td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </ScrollArea>
       </DialogContent>
     </Dialog>
   );
+}
+
+// Helper functions for calculations
+const OCCUPANCY_RATES = {
+  low: [65, 65, 60, 55, 50, 50, 50, 50, 60, 65, 65, 70],
+  medium: [80, 78, 73, 68, 63, 60, 60, 60, 70, 75, 75, 85],
+  high: [95, 90, 85, 80, 75, 70, 70, 70, 80, 85, 85, 95]
+};
+
+function calculateMonthlyRevenue(
+  scenario: 'low' | 'medium' | 'high',
+  month: number,
+  nightly: number,
+  hasManagementFee: boolean,
+  managementFeePercent: number
+): number {
+  const occupancyRate = OCCUPANCY_RATES[scenario][month] / 100;
+  const daysInMonth = new Date(2024, month + 1, 0).getDate();
+  const platformFee = hasManagementFee ? 0.15 : 0.03;
+  
+  let revenue = nightly * daysInMonth * occupancyRate * (1 - platformFee);
+  
+  if (hasManagementFee) {
+    revenue *= (1 - managementFeePercent);
+  }
+  
+  return revenue;
 }
