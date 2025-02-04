@@ -578,23 +578,28 @@ export function PropertyPreviewModal({
 
             <Dialog>
               <DialogTrigger asChild>
-                <Button 
-                  className="mr-6 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
-                >
+                <Button className="mr-6 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
                   <FileText className="w-4 h-4 mr-2" />
                   Export Preview
                 </Button>
               </DialogTrigger>
-              <BrandingDialog
-                open={showUpgradeModal}
-                onOpenChange={setShowUpgradeModal}
+              <BrandingDialog 
+                open={open}
+                onOpenChange={onOpenChange}
                 onGeneratePDF={(includeBranding) => {
                   generatePropertyPreviewPDF(property, includeBranding, user);
+                  onOpenChange(false);
                 }}
-                onShowUpgrade={() => setShowUpgradeModal(true)}
+                onShowUpgrade={() => {
+                  onOpenChange(false);
+                  setShowUpgradeModal(true);
+                }}
               />
             </Dialog>
-            </Button>
+            <UpgradeModal 
+              open={showUpgradeModal} 
+              onOpenChange={setShowUpgradeModal} 
+            />
           </div>
         </DialogHeader>
         <ScrollArea className="h-[calc(80vh-8rem)]">
