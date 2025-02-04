@@ -609,9 +609,6 @@ export function PropertyPreviewModal({
                       </div>
                     ) : (
                       <div className="mb-4">
-                        <p className="text-sm text-muted-foreground mb-2">
-                          No company logo found. Upload one now:
-                        </p>
                         <Input
                           type="file"
                           accept="image/*"
@@ -662,7 +659,7 @@ export function PropertyPreviewModal({
                           generatePropertyPreviewPDF(property, false, user);
                         }}
                       >
-                        No
+                        Generate Without Branding
                       </Button>
                       <Button
                         onClick={() => {
@@ -670,7 +667,7 @@ export function PropertyPreviewModal({
                           generatePropertyPreviewPDF(property, true, user);
                         }}
                       >
-                        Yes
+                        Include Branding
                       </Button>
                     </div>
                   </>
