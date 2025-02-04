@@ -90,7 +90,7 @@ async function generatePropertyPreviewPDF(
           resolve();
         };
         img.crossOrigin = "Anonymous";
-        img.src = user.companyLogo;
+        img.src = userData.companyLogo;
       });
     } catch (error) {
       console.error("Error adding company logo:", error);
