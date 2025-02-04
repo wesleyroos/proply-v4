@@ -531,7 +531,7 @@ export default function PropertiesPage() {
                       <tr>
                         <td colSpan={7} className="text-center py-8 text-muted-foreground">
                           No properties analyzed yet.{' '}
-                          <Link href="/compare" className="text-primary hover:underline">
+                          <Link href="/dashboard/rent-compare" className="text-primary hover:underline">
                             Compare your first property
                           </Link>
                         </td>
