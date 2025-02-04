@@ -1,8 +1,10 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { formatter } from "@/utils/formatting";
-import { Building2, TrendingUp, BarChart3, MapPin } from "lucide-react";
+import { Building2, TrendingUp, BarChart3, MapPin, FileText } from "lucide-react";
+import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
 import PropertyMap from "./PropertyMap";
 import { Progress } from "@/components/ui/progress"; // Assuming Progress component exists
 
@@ -38,9 +40,112 @@ export function PropertyPreviewModal({ property, open, onOpenChange }: PropertyP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle className="text-3xl font-bold text-slate-800">
-            {property.title}
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-3xl font-bold text-slate-800">
+              {property.title}
+            </DialogTitle>
+            <Button 
+              onClick={() => {
+                const pdfData = {
+                  propertyDetails: {
+                    ...property,
+                    propertyDescription: "",
+                    floorArea: 0,
+                    ratePerSquareMeter: 0,
+                    purchasePrice: 0
+                  },
+                  performance: {
+                    shortTermNightlyRate: property.shortTermNightly,
+                    annualOccupancy: property.annualOccupancy,
+                    shortTermAnnualRevenue: property.shortTermAnnual,
+                    longTermAnnualRevenue: property.longTermMonthly * 12,
+                    shortTermGrossYield: 0,
+                    longTermGrossYield: 0
+                  },
+                  financialMetrics: {
+                    depositAmount: 0,
+                    depositPercentage: 0,
+                    interestRate: 0,
+                    monthlyBondRepayment: 0,
+                    bondRegistration: 0,
+                    transferCosts: 0,
+                    loanTerm: 20,
+                    annualAppreciation: 5
+                  },
+                  expenses: {
+                    managementFee: property.managementFee,
+                    monthlyLevies: 0,
+                    monthlyRatesTaxes: 0,
+                    otherMonthlyExpenses: 0,
+                    maintenancePercent: 0
+                  },
+                  analysis: {
+                    netOperatingIncome: {},
+                    longTermNetOperatingIncome: {},
+                    revenueProjections: { shortTerm: {}, longTerm: {} }
+                  }
+                };
+
+                const selections = {
+                  propertyOverview: {
+                    propertyRatePerSquareMeter: false,
+                    areaRatePerSquareMeter: false,
+                    rateDifference: false
+                  },
+                  financialMetrics: { totalCapitalRequired: false },
+                  operatingExpenses: {
+                    maintenancePercent: false,
+                    managementFee: true
+                  },
+                  rentalPerformance: {
+                    shortTermNightlyRate: true,
+                    shortTermAnnualOccupancy: true,
+                    shortTermAnnualRevenue: true,
+                    shortTermGrossYield: true,
+                    longTermMonthlyRevenue: true,
+                    longTermAnnualRevenue: true,
+                    longTermGrossYield: true,
+                    rentalPerforamceChart: true
+                  },
+                  cashflowMetrics: {
+                    annualRevenue: false,
+                    netOperatingIncome: false,
+                    netOperatingExpense: false,
+                    anualBondPayment: false,
+                    annualCashflow: false,
+                    cumulativeCashflow: false,
+                    cashflowChart: false
+                  },
+                  investmentMetrics: {
+                    grossYield: false,
+                    netYield: false,
+                    returnOnEquity: false,
+                    annualReturn: false,
+                    capRate: false,
+                    cashOnCashReturn: false,
+                    irr: false,
+                    netWorthChange: false
+                  },
+                  assetGrowthAndEquity: {
+                    propertyValue: false,
+                    annualAppreciation: false,
+                    loanBalance: false,
+                    totalInterestPaid: false,
+                    interestToPrincipalRatio: false,
+                    totalEquity: false,
+                    loanRepaymentEquity: false,
+                    assetGrowthAndEquityChart: false
+                  }
+                };
+
+                generatePDF(pdfData, selections);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Export PDF
+            </Button>
+          </div>
         </DialogHeader>
         <ScrollArea className="h-[calc(80vh-8rem)]">
           <div className="grid grid-cols-3 gap-4 py-4">
