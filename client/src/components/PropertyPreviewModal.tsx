@@ -134,10 +134,15 @@ async function generatePropertyPreviewPDF(property: Property | null) {
   doc.text("Short-Term Performance", 20, yPos);
   yPos += 10;
 
+  const platformFee = property.managementFee > 0 ? 15 : 3;
+  const feeAdjustedNightlyRate = property.shortTermNightly * (1 - platformFee / 100);
+  
   const shortTermDetails = [
     ["Annual Revenue", formatter.format(property.shortTermAnnual)],
     ["Monthly Average", formatter.format(property.shortTermAnnual / 12)],
     ["Nightly Rate", formatter.format(property.shortTermNightly)],
+    ["Platform Fee", `${platformFee}%`],
+    ["Fee-adjusted Rate", formatter.format(feeAdjustedNightlyRate)],
     ["Annual Occupancy", `${property.annualOccupancy}%`],
     ["Management Fee", `${property.managementFee}%`],
   ];
