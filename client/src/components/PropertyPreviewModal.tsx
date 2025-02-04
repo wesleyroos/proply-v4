@@ -592,74 +592,69 @@ export function PropertyPreviewModal({
                     Would you like to include your company branding in the PDF?
                   </DialogDescription>
                 </DialogHeader>
-                {user?.companyLogo ? (
-                  <div className="flex items-center gap-4 mb-4">
-                    <img
-                      src={user.companyLogo}
-                      alt="Company Logo"
-                      className="w-32 h-32 object-contain border rounded-lg"
-                    />
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Your current company logo
-                      </p>
-                      {!hasProAccess && (
-                        <p className="text-sm text-yellow-600 mt-2">
-                          Upgrade to Pro to include your branding in PDF exports
+                {hasProAccess ? (
+                  <>
+                    {user?.companyLogo ? (
+                      <div className="flex items-center gap-4 mb-4">
+                        <img
+                          src={user.companyLogo}
+                          alt="Company Logo"
+                          className="w-32 h-32 object-contain border rounded-lg"
+                        />
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Your current company logo
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mb-4">
+                        <p className="text-sm text-muted-foreground mb-2">
+                          No company logo found. Upload one now:
                         </p>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mb-4">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      No company logo found. Upload one now:
-                    </p>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = async () => {
-                            const base64Data = reader.result as string;
-                            try {
-                              const response = await fetch("/api/profile", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({
-                                  companyLogo: base64Data,
-                                }),
-                                credentials: "include",
-                              });
-                              if (!response.ok)
-                                throw new Error(await response.text());
-                              queryClient.invalidateQueries(["user"]);
-                              toast({
-                                title: "Success",
-                                description:
-                                  "Company logo uploaded successfully",
-                                duration: 3000,
-                              });
-                            } catch (error) {
-                              toast({
-                                variant: "destructive",
-                                title: "Error",
-                                description: "Failed to upload company logo",
-                                duration: 5000,
-                              });
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = async () => {
+                                const base64Data = reader.result as string;
+                                try {
+                                  const response = await fetch("/api/profile", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                      companyLogo: base64Data,
+                                    }),
+                                    credentials: "include",
+                                  });
+                                  if (!response.ok)
+                                    throw new Error(await response.text());
+                                  queryClient.invalidateQueries(["user"]);
+                                  toast({
+                                    title: "Success",
+                                    description:
+                                      "Company logo uploaded successfully",
+                                    duration: 3000,
+                                  });
+                                } catch (error) {
+                                  toast({
+                                    variant: "destructive",
+                                    title: "Error",
+                                    description: "Failed to upload company logo",
+                                    duration: 5000,
+                                  });
+                                }
+                              };
+                              reader.readAsDataURL(file);
                             }
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-                  </div>
-                )}
-                <div className="flex justify-end gap-4 mt-4">
-                  {hasProAccess && user?.companyLogo ? (
-                    <>
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div className="flex justify-end gap-4 mt-4">
                       <Button
                         variant="outline"
                         onClick={() => {
@@ -677,8 +672,27 @@ export function PropertyPreviewModal({
                       >
                         Yes
                       </Button>
-                    </>
-                  ) : (
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {user?.companyLogo && (
+                      <div className="flex items-center gap-4 mb-4">
+                        <img
+                          src={user.companyLogo}
+                          alt="Company Logo"
+                          className="w-32 h-32 object-contain border rounded-lg"
+                        />
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Your current company logo
+                          </p>
+                          <p className="text-sm text-yellow-600 mt-2">
+                            Upgrade to Pro to include your branding in PDF exports
+                          </p>
+                        </div>
+                      </div>
+                    )}
                     <div className="flex flex-col items-center gap-4">
                       <p className="text-sm text-muted-foreground text-center">
                         Company branding requires a Pro subscription
@@ -698,8 +712,8 @@ export function PropertyPreviewModal({
                         </Button>
                       </div>
                     </div>
-                  )}
-                </div>
+                  </>
+                )}
               </DialogContent>
               <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
             </Dialog>
@@ -883,7 +897,7 @@ export function PropertyPreviewModal({
                     Your short-term rental needs {property.breakEvenOccupancy}%
                     occupancy to match long-term rental income.
                     {property.annualOccupancy > property.breakEvenOccupancy
-                      ? ` At ${property.annualOccupancy}% projected occupancy, short-term rental is more profitable.`
+                      ? ` At ${property.annualOccupancy}% projected occupancy, short-termrental is more profitable.`
                       : ` At ${property.annualOccupancy}% projected occupancy, long-term rental may be more suitable.`}
                   </p>
                 </div>
