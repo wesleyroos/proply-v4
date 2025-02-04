@@ -61,7 +61,7 @@ export function PropertyPreviewModal({
               {property.title}
             </DialogTitle>
             <Button
-              className="ml-4 bg-sky-500 hover:bg-sky-600 text-white"
+              className="ml-6 bg-blue-400 hover:bg-blue-500 text-white"
               onClick={() => {
                 const pdfData = {
                   propertyDetails: {
