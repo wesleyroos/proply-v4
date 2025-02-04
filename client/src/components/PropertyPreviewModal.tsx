@@ -10,7 +10,11 @@ import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, Resp
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { formatter } from "@/utils/formatting";
+import { useUser } from "@/hooks/use-user";
 import {
   Building2,
   TrendingUp,
@@ -390,12 +394,69 @@ export function PropertyPreviewModal({
                     Would you like to include your company branding in the PDF?
                   </DialogDescription>
                 </DialogHeader>
+                {user?.companyLogo ? (
+                  <div className="flex items-center gap-4 mb-4">
+                    <img src={user.companyLogo} alt="Company Logo" className="w-32 h-32 object-contain border rounded-lg" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Your current company logo</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mb-4">
+                    <p className="text-sm text-muted-foreground mb-2">No company logo found. Upload one now:</p>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = async () => {
+                            const base64Data = reader.result as string;
+                            try {
+                              const response = await fetch('/api/profile', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ companyLogo: base64Data }),
+                                credentials: 'include'
+                              });
+                              if (!response.ok) throw new Error(await response.text());
+                              queryClient.invalidateQueries(['user']);
+                              toast({
+                                title: "Success",
+                                description: "Company logo uploaded successfully",
+                                duration: 3000,
+                              });
+                            } catch (error) {
+                              toast({
+                                variant: "destructive",
+                                title: "Error",
+                                description: "Failed to upload company logo",
+                                duration: 5000,
+                              });
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </div>
+                )}
                 <div className="flex justify-end gap-4 mt-4">
-                  <Button variant="outline" onClick={() => generatePropertyPreviewPDF(property, false)}>
+                  <Button variant="outline" onClick={() => {
+                    onOpenChange(false);
+                    generatePropertyPreviewPDF(property, false);
+                  }}>
                     No
                   </Button>
-                  <Button onClick={() => generatePropertyPreviewPDF(property, true)}>
+                  <Button onClick={() => {
+                    onOpenChange(false);
+                    generatePropertyPreviewPDF(property, true);
+                  }} className="flex items-center gap-2">
                     Yes
+                    <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+                      PRO
+                    </span>
                   </Button>
                 </div>
               </DialogContent>
