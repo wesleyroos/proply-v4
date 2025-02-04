@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 import { InfoIcon, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import MapView from './MapView';
 import { formatter } from '../utils/formatting';
 import {
