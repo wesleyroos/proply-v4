@@ -359,6 +359,15 @@ async function generatePropertyPreviewPDF(
       doc.internal.pageSize.getHeight() - 10,
       { align: 'right' }
     );
+
+    // Add copyright text to center
+    const currentYear = new Date().getFullYear();
+    doc.text(
+      `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
+      doc.internal.pageSize.getWidth() / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    );
   }
 
   // Add new page for disclaimer
@@ -778,7 +787,7 @@ export function PropertyPreviewModal({
                             {formatter.format(getFeeAdjustedRate(getSeasonalNightlyRate(property.shortTermNightly, i), property.managementFee > 0))}
                           </td>
                         ))}
-                        <td className="text-right py-3 px-4 border-l"></td>
+                        <<td className="text-right py-3 px-4 border-l"></td>
                         <td className="text-right py-3 px-4"></td>
                       </tr>
                       <tr className="border-t">
