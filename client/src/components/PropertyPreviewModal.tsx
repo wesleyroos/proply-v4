@@ -365,7 +365,7 @@ async function generatePropertyPreviewPDF(
           const logoHeight = 8;
           const aspectRatio = logo.width / logo.height;
           const logoWidth = logoHeight * aspectRatio;
-          doc.addImage(logo, "PNG", footerMargin, doc.internal.pageSize.getHeight() - footerMargin - logoHeight - footerPadding, logoWidth, logoHeight);
+          doc.addImage(logo, "PNG", footerMargin, doc.internal.pageSize.getHeight() - footerPadding - logoHeight, logoWidth, logoHeight);
 
           // Add page numbers to bottom right
           doc.setFontSize(8);
