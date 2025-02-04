@@ -6,8 +6,19 @@ import { useForm } from "react-hook-form";
 import { useUser } from "../hooks/use-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 
 interface RevenueData {
@@ -36,10 +47,10 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [demoClicks, setDemoClicks] = useState(0);
   const [revenueData, setRevenueData] = useState<{
-    '25': RevenueData;
-    '50': RevenueData;
-    '75': RevenueData;
-    '90': RevenueData;
+    "25": RevenueData;
+    "50": RevenueData;
+    "75": RevenueData;
+    "90": RevenueData;
   } | null>(null);
   const hasProAccess = useProAccess();
 
@@ -64,49 +75,53 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
       const bedrooms = form.getValues("bedrooms");
 
       if (!address || !bedrooms) {
-        alert("Please enter the property address and number of bedrooms first.");
+        alert(
+          "Please enter the property address and number of bedrooms first.",
+        );
         return;
       }
 
-      const response = await fetch(`/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`);
+      const response = await fetch(
+        `/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`,
+      );
 
       const data = await response.json();
 
       if (data.KPIsByBedroomCategory?.[bedrooms]) {
         const result = data.KPIsByBedroomCategory[bedrooms];
         setRevenueData({
-          '25': {
+          "25": {
             adr: result.ADR25PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
-            percentile: 25
+            percentile: 25,
           },
-          '50': {
+          "50": {
             adr: result.ADR50PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
-            percentile: 50
+            percentile: 50,
           },
-          '75': {
+          "75": {
             adr: result.ADR75PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
-            percentile: 75
+            percentile: 75,
           },
-          '90': {
+          "90": {
             adr: result.ADR90PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
-            percentile: 90
-          }
+            percentile: 90,
+          },
         });
         setShowPercentileDialog(true);
       }
     } catch (error) {
-      console.error('Error fetching revenue data:', error);
-      alert('Failed to fetch revenue data. Please try again.');
+      console.error("Error fetching revenue data:", error);
+      alert("Failed to fetch revenue data. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const applyPercentileData = (percentile: '25' | '50' | '75' | '90') => {
+  const applyPercentileData = (percentile: "25" | "50" | "75" | "90") => {
     if (!revenueData) return;
 
     const data = revenueData[percentile];
@@ -153,12 +168,12 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                 <FormItem>
                   <FormLabel>Bedrooms</FormLabel>
                   <FormControl>
-                    <Input 
-                      {...field} 
-                      type="number" 
-                      step="0.5" 
+                    <Input
+                      {...field}
+                      type="number"
+                      step="0.5"
                       min="0.5"
-                      placeholder="use 0,5 for studio" 
+                      placeholder="Use 0,5 for studio"
                       onChange={(e) => field.onChange(e.target.valueAsNumber)}
                     />
                   </FormControl>
@@ -257,7 +272,9 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                       ) : (
                         <>
                           Get Revenue Data
-                          <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">PRO</span>
+                          <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                            PRO
+                          </span>
                         </>
                       )}
                     </Button>
@@ -271,36 +288,48 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
           </div>
 
           <FormField
-              control={form.control}
-              name="managementFee"
-              rules={{ 
-                required: "Management fee percentage is required",
-                min: { value: 0, message: "Management fee cannot be negative" },
-                max: { value: 100, message: "Management fee cannot exceed 100%" }
-              }}
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <div className="flex items-center gap-2">
-                    <FormLabel>Management Fee (%)</FormLabel>
-                    <span className="text-sm text-muted-foreground">
-                      (0% if self-managed)
-                    </span>
-                  </div>
-                  <FormControl>
-                    <Input {...field} type="number" min="0" max="100" placeholder="0" />
-                  </FormControl>
-                  {fieldState.error && (
-                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                  )}
-                  <p className="text-sm text-muted-foreground">
-                    Enter 0 for self-managed properties or the percentage charged by your property manager
+            control={form.control}
+            name="managementFee"
+            rules={{
+              required: "Management fee percentage is required",
+              min: { value: 0, message: "Management fee cannot be negative" },
+              max: { value: 100, message: "Management fee cannot exceed 100%" },
+            }}
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormLabel>Management Fee (%)</FormLabel>
+                  <span className="text-sm text-muted-foreground">
+                    (0% if self-managed)
+                  </span>
+                </div>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="0"
+                  />
+                </FormControl>
+                {fieldState.error && (
+                  <p className="text-sm text-red-500">
+                    {fieldState.error.message}
                   </p>
-                </FormItem>
-              )}
-            />
+                )}
+                <p className="text-sm text-muted-foreground">
+                  Enter 0 for self-managed properties or the percentage charged
+                  by your property manager
+                </p>
+              </FormItem>
+            )}
+          />
 
           <div className="space-y-4">
-            <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]">
+            <Button
+              type="submit"
+              className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
+            >
               Compare Options
             </Button>
           </div>
@@ -311,7 +340,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
       <button
         type="button"
         onClick={() => {
-          setDemoClicks(prev => {
+          setDemoClicks((prev) => {
             if (prev === 2) {
               // Fill demo data after triple click
               form.reset({
@@ -334,9 +363,15 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
         aria-hidden="true"
       />
 
-      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+      />
 
-      <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
+      <Dialog
+        open={showPercentileDialog}
+        onOpenChange={setShowPercentileDialog}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Revenue Performance Data</DialogTitle>
@@ -354,31 +389,38 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                 </tr>
               </thead>
               <tbody>
-                {revenueData && Object.entries(revenueData).map(([percentile, data]) => (
-                  <tr key={percentile} className="border-b">
-                    <td className="py-2 px-4">{percentile}th Percentile</td>
-                    <td className="text-right py-2 px-4">
-                      {new Intl.NumberFormat('en-ZA', {
-                        style: 'currency',
-                        currency: 'ZAR'
-                      }).format(data.adr)}
-                    </td>
-                    <td className="text-right py-2 px-4">
-                      <Button
-                        onClick={() => applyPercentileData(percentile as '25' | '50' | '75' | '90')}
-                        variant="secondary"
-                        size="sm"
-                      >
-                        Select
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                {revenueData &&
+                  Object.entries(revenueData).map(([percentile, data]) => (
+                    <tr key={percentile} className="border-b">
+                      <td className="py-2 px-4">{percentile}th Percentile</td>
+                      <td className="text-right py-2 px-4">
+                        {new Intl.NumberFormat("en-ZA", {
+                          style: "currency",
+                          currency: "ZAR",
+                        }).format(data.adr)}
+                      </td>
+                      <td className="text-right py-2 px-4">
+                        <Button
+                          onClick={() =>
+                            applyPercentileData(
+                              percentile as "25" | "50" | "75" | "90",
+                            )
+                          }
+                          variant="secondary"
+                          size="sm"
+                        >
+                          Select
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
             <div className="mt-4 text-sm text-gray-500">
-              <p>Occupancy: {revenueData?.['50'].occupancy.toFixed(1)}%</p>
-              <p className="mt-1">Number of Listings: {revenueData?.['50'].occupancy}</p>
+              <p>Occupancy: {revenueData?.["50"].occupancy.toFixed(1)}%</p>
+              <p className="mt-1">
+                Number of Listings: {revenueData?.["50"].occupancy}
+              </p>
             </div>
           </div>
         </DialogContent>
