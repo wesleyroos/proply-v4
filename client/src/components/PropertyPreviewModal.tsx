@@ -96,10 +96,14 @@ async function generatePropertyPreviewPDF(property: Property | null) {
   // Add description
   doc.setFontSize(10);
   doc.setTextColor(90);
-  doc.text("A comprehensive comparison of short-term and long-term rental strategies for your property, analyzing potential returns,", 20, yPos);
-  yPos += 5;
-  doc.text("occupancy requirements, and break-even points to help you make an informed investment decision.", 20, yPos);
-  yPos += 15;
+  const contentWidth = doc.internal.pageSize.getWidth() - 60; // Reduce width by increasing margin
+  const descriptionText = "A comprehensive comparison of short-term and long-term rental strategies for your property, analyzing potential returns, occupancy requirements, and break-even points to help you make an informed investment decision.";
+  const lines = doc.splitTextToSize(descriptionText, contentWidth);
+  lines.forEach(line => {
+    doc.text(line, 20, yPos);
+    yPos += 5;
+  });
+  yPos += 10;
   
   // Reset text properties
   doc.setFontSize(12);
