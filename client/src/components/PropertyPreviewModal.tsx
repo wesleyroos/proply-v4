@@ -92,6 +92,18 @@ async function generatePropertyPreviewPDF(property: Property | null) {
   doc.setTextColor(0);
   doc.text("Rent Compare Analysis", 20, yPos); //Added heading
   yPos += 10;
+  
+  // Add description
+  doc.setFontSize(10);
+  doc.setTextColor(90);
+  doc.text("A comprehensive comparison of short-term and long-term rental strategies for your property, analyzing potential returns,", 20, yPos);
+  yPos += 5;
+  doc.text("occupancy requirements, and break-even points to help you make an informed investment decision.", 20, yPos);
+  yPos += 15;
+  
+  // Reset text properties
+  doc.setFontSize(12);
+  doc.setTextColor(0);
   doc.setFontSize(12);
   doc.text(property.title, 20, yPos);
   yPos += 10;
