@@ -50,8 +50,46 @@ async function generatePropertyPreviewPDF(property: Property | null) {
   const doc = new jsPDF();
   let yPos = 20;
 
+  // Add Proply logo
+  try {
+    const proplyLogoWidth = 40;
+    await new Promise<void>((resolve) => {
+      const proplyLogo = new Image();
+      proplyLogo.onload = () => {
+        const aspectRatio = proplyLogo.height / proplyLogo.width;
+        const proplyLogoHeight = proplyLogoWidth * aspectRatio;
+        doc.addImage(
+          "/proply-logo-1.png",
+          "PNG",
+          doc.internal.pageSize.getWidth() - 60,
+          yPos,
+          proplyLogoWidth,
+          proplyLogoHeight
+        );
+        doc.setFontSize(8);
+        doc.setTextColor(100);
+        doc.text(
+          "Powered by Proply",
+          doc.internal.pageSize.getWidth() - 60,
+          yPos + proplyLogoHeight + 5
+        );
+        resolve();
+      };
+      proplyLogo.onerror = () => {
+        console.error("Error loading Proply logo");
+        resolve();
+      };
+      proplyLogo.src = "/proply-logo-1.png";
+    });
+  } catch (error) {
+    console.error("Error adding Proply logo:", error);
+  }
+
+  yPos = Math.max(yPos + 40, 60);
+
   // Title and Address
   doc.setFontSize(20);
+  doc.setTextColor(0);
   doc.text(property.title, 20, yPos);
   yPos += 10;
   doc.setFontSize(12);
