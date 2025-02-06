@@ -49,9 +49,7 @@ export function BrandingDialog({
           Would you like to include your company branding in the PDF?
         </DialogDescription>
       </DialogHeader>
-      
       {hasProAccess ? (
-        // Pro user content
         <div className="flex flex-col gap-4">
           {user?.companyLogo ? (
             <div className="flex items-center gap-4 mb-4">
@@ -124,26 +122,44 @@ export function BrandingDialog({
           </div>
         </div>
       ) : (
-        // Free user content
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-sm text-muted-foreground text-center">
-            Company branding requires a Pro subscription
-          </p>
-          <div className="flex gap-4">
-            <Button onClick={onShowUpgrade}>
-              Upgrade to Pro
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                onOpenChange(false);
-                onGeneratePDF(false);
-              }}
-            >
-              Continue without branding
-            </Button>
+        <>
+          {user?.companyLogo && (
+            <div className="flex items-center gap-4 mb-4">
+              <img
+                src={user.companyLogo}
+                alt="Company Logo"
+                className="w-32 h-32 object-contain border rounded-lg"
+              />
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Your current company logo
+                </p>
+                <p className="text-sm text-yellow-600 mt-2">
+                  Upgrade to Pro to include your branding in PDF exports
+                </p>
+              </div>
+            </div>
+          )}
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-sm text-muted-foreground text-center">
+              Company branding requires a Pro subscription
+            </p>
+            <div className="flex gap-4">
+              <Button onClick={onShowUpgrade}>
+                Upgrade to Pro
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  onOpenChange(false);
+                  onGeneratePDF(false);
+                }}
+              >
+                Continue without branding
+              </Button>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </DialogContent>
   );
