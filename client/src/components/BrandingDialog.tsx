@@ -136,7 +136,12 @@ export function BrandingDialog({
           </>
         ) : (
           <>
-            <Button onClick={onShowUpgrade}>
+            <Button 
+              onClick={() => {
+                onOpenChange(false); // Close branding dialog
+                onShowUpgrade(); // Show upgrade modal
+              }}
+            >
               Upgrade to Pro
             </Button>
             <Button
