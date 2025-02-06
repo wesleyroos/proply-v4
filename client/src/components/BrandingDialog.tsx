@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Sparkles } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import { useProAccess } from "@/hooks/use-pro-access";
+//import { useQueryClient } from "@tanstack/react-query"; // Removed unused import
+//import { useToast } from "@/hooks/use-toast"; // Removed unused import
 
 interface BrandingDialogProps {
   open: boolean;
@@ -86,10 +88,7 @@ export function BrandingDialog({
                 Company branding requires a Pro subscription
               </p>
               <div className="flex gap-4">
-                <Button onClick={() => {
-                  onOpenChange(false);  // Close the branding dialog
-                  onShowUpgrade();      // Show upgrade modal
-                }}>
+                <Button onClick={onShowUpgrade}>
                   Upgrade to Pro
                 </Button>
                 <Button
