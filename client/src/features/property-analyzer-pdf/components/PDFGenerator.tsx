@@ -15,6 +15,8 @@ import {
 import { useProAccess } from "@/hooks/use-pro-access";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { ReportSelections } from "@/types/ReportSelections";
+import { BrandingDialog } from "@/components/BrandingDialog"; // Assuming this import is needed
+
 
 const FULL_TEMPLATE_SELECTIONS: ReportSelections = {
   propertyOverview: {
@@ -59,12 +61,12 @@ const FULL_TEMPLATE_SELECTIONS: ReportSelections = {
     rentalPerforamceChart: true,
   },
   cashflowMetrics: {
-    annualRevenue : true,
-    netOperatingIncome : true,
-    netOperatingExpense : true,
-    anualBondPayment : true,
-    annualCashflow : true,
-    cumulativeCashflow : true,
+    annualRevenue: true,
+    netOperatingIncome: true,
+    netOperatingExpense: true,
+    anualBondPayment: true,
+    annualCashflow: true,
+    cumulativeCashflow: true,
     cashflowChart: true,
   },
   investmentMetrics: {
@@ -88,42 +90,6 @@ const FULL_TEMPLATE_SELECTIONS: ReportSelections = {
     assetGrowthAndEquityChart: true,
   },
 };
-
-
-// Old Basic
-// propertyDetails: {
-//   address: true,
-//   propertyPhoto: true,
-//   bedrooms: true,
-//   bathrooms: true,
-//   floorArea: true,
-//   parkingSpaces: true,
-//   purchasePrice: true,
-//   areaRateM2: false,
-//   currentPropertyRateM2: true,
-//   rateM2Difference: false,
-// },
-// financialMetrics: {
-//   depositAmount: true,
-//   depositPercentage: true,
-//   interestRate: true,
-//   loanTerm: true,
-//   monthlyBondRepayment: true,
-//   bondRegistration: true,
-//   transferCosts: true,
-//   totalCapitalRequired: true,
-// },
-// operatingExpenses: {
-//   monthlyLevies: true,
-//   monthlyRatesTaxes: true,
-// },
-// rentalPerformance: {
-//   shortTermNightlyRate: true,
-//   shortTermAnnualRevenue: true,
-//   longTermAnnualRevenue: true,
-// },
-
-// Commented out ones are by default
 
 const BASIC_TEMPLATE_SELECTIONS: ReportSelections = {
   propertyOverview: {
@@ -159,7 +125,7 @@ const BASIC_TEMPLATE_SELECTIONS: ReportSelections = {
   },
   rentalPerformance: {
     shortTermNightlyRate: false,
-    shortTermAnnualOccupancy:false,
+    shortTermAnnualOccupancy: false,
     shortTermAnnualRevenue: false,
     shortTermGrossYield: false,
     longTermMonthlyRevenue: false,
@@ -168,12 +134,12 @@ const BASIC_TEMPLATE_SELECTIONS: ReportSelections = {
     rentalPerforamceChart: false,
   },
   cashflowMetrics: {
-    annualRevenue : false,
-    netOperatingIncome : false,
-    netOperatingExpense : false,
-    anualBondPayment : false,
-    annualCashflow : false,
-    cumulativeCashflow : false,
+    annualRevenue: false,
+    netOperatingIncome: false,
+    netOperatingExpense: false,
+    anualBondPayment: false,
+    annualCashflow: false,
+    cumulativeCashflow: false,
     cashflowChart: false,
   },
   investmentMetrics: {
@@ -233,6 +199,7 @@ export function PDFGenerator({
   );
   const [progress, setProgress] = useState(0);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [brandingDialogOpen, setBrandingDialogOpen] = useState(false);
   const { hasAccess: hasProAccess } = useProAccess();
 
   const handleTemplateChange = useCallback((template: string) => {
@@ -290,12 +257,17 @@ export function PDFGenerator({
     }
   }, [selections, onGeneratePDF]);
 
+  const handleShowUpgrade = () => {
+    setBrandingDialogOpen(false); 
+    setUpgradeOpen(true); 
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
         {!hasProAccess && (
           <Button
-            onClick={() => setUpgradeOpen(true)}
+            onClick={() => setBrandingDialogOpen(true)} // Open BrandingDialog instead
             className="absolute right-9 top-4 bg-primary hover:bg-primary/90"
           >
             <Sparkles className="h-4 w-4 mr-2" />
@@ -327,7 +299,7 @@ export function PDFGenerator({
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          setUpgradeOpen(true);
+                          setBrandingDialogOpen(true); // Open BrandingDialog
                         }}
                         className="text-xs text-primary underline hover:text-primary/80"
                       >
@@ -345,7 +317,7 @@ export function PDFGenerator({
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          setUpgradeOpen(true);
+                          setBrandingDialogOpen(true); // Open BrandingDialog
                         }}
                         className="text-xs text-primary underline hover:text-primary/80"
                       >
@@ -456,6 +428,12 @@ export function PDFGenerator({
         </div>
         {isGenerating && <Progress value={progress} className="w-full" />}
       </div>
+      <BrandingDialog 
+        open={brandingDialogOpen}
+        onOpenChange={setBrandingDialogOpen}
+        onGeneratePDF={onGeneratePDF}
+        onShowUpgrade={handleShowUpgrade}
+      />
       <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </div>
   );
