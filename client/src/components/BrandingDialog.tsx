@@ -14,8 +14,6 @@ import { useUser } from "@/hooks/use-user";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { SelectUser } from "@/types/user";
-import { Property } from "@/types/property";
 
 interface BrandingDialogProps {
   open: boolean;
@@ -35,6 +33,41 @@ export function BrandingDialog({
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Data = reader.result as string;
+        try {
+          const response = await fetch("/api/profile", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              companyLogo: base64Data,
+            }),
+            credentials: "include",
+          });
+          if (!response.ok) throw new Error(await response.text());
+          queryClient.invalidateQueries(["user"]);
+          toast({
+            title: "Success",
+            description: "Company logo uploaded successfully",
+            duration: 3000,
+          });
+        } catch (error) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to upload company logo",
+            duration: 5000,
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <DialogContent className="sm:max-w-[425px]">
       <DialogHeader>
@@ -49,7 +82,9 @@ export function BrandingDialog({
           Would you like to include your company branding in the PDF?
         </DialogDescription>
       </DialogHeader>
-      {hasProAccess ? (
+
+      <div className="flex flex-col gap-4">
+        {/* Logo Display/Upload Section - Shown to all users */}
         <div className="flex flex-col gap-4">
           {user?.companyLogo ? (
             <div className="flex items-center gap-4 mb-4">
@@ -58,49 +93,29 @@ export function BrandingDialog({
                 alt="Company Logo"
                 className="w-32 h-32 object-contain border rounded-lg"
               />
+              {!hasProAccess && (
+                <p className="text-sm text-yellow-600">
+                  Upgrade to Pro to include your branding in PDF exports
+                </p>
+              )}
             </div>
           ) : (
             <div>
               <Input
                 type="file"
                 accept="image/*"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = async () => {
-                      const base64Data = reader.result as string;
-                      try {
-                        const response = await fetch("/api/profile", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            companyLogo: base64Data,
-                          }),
-                          credentials: "include",
-                        });
-                        if (!response.ok) throw new Error(await response.text());
-                        queryClient.invalidateQueries(["user"]);
-                        toast({
-                          title: "Success",
-                          description: "Company logo uploaded successfully",
-                          duration: 3000,
-                        });
-                      } catch (error) {
-                        toast({
-                          variant: "destructive",
-                          title: "Error",
-                          description: "Failed to upload company logo",
-                          duration: 5000,
-                        });
-                      }
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }}
+                onChange={handleLogoUpload}
+                className="mb-2"
               />
+              <p className="text-sm text-muted-foreground">
+                Upload your company logo first
+              </p>
             </div>
           )}
+        </div>
+
+        {/* Action Buttons - Different for pro and free users */}
+        {hasProAccess ? (
           <div className="flex justify-end gap-4 mt-4">
             <Button
               variant="outline"
@@ -116,34 +131,13 @@ export function BrandingDialog({
                 onOpenChange(false);
                 onGeneratePDF(true);
               }}
+              disabled={!user?.companyLogo}
             >
               Include Branding
             </Button>
           </div>
-        </div>
-      ) : (
-        <>
-          {user?.companyLogo && (
-            <div className="flex items-center gap-4 mb-4">
-              <img
-                src={user.companyLogo}
-                alt="Company Logo"
-                className="w-32 h-32 object-contain border rounded-lg"
-              />
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Your current company logo
-                </p>
-                <p className="text-sm text-yellow-600 mt-2">
-                  Upgrade to Pro to include your branding in PDF exports
-                </p>
-              </div>
-            </div>
-          )}
+        ) : (
           <div className="flex flex-col items-center gap-4">
-            <p className="text-sm text-muted-foreground text-center">
-              Company branding requires a Pro subscription
-            </p>
             <div className="flex gap-4">
               <Button onClick={onShowUpgrade}>
                 Upgrade to Pro
@@ -159,8 +153,8 @@ export function BrandingDialog({
               </Button>
             </div>
           </div>
-        </>
-      )}
+        )}
+      </div>
     </DialogContent>
   );
 }
