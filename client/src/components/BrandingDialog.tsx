@@ -92,7 +92,7 @@ export function BrandingDialog({
     <DialogContent className="sm:max-w-[425px]">
       <DialogHeader>
         <div className="flex items-center gap-2">
-          <DialogTitle>Company Branding</DialogTitle>
+          <DialogTitle>{hasProAccess ? "Include Branding" : "Company Branding"}</DialogTitle>
           {!hasProAccess && (
             <>
               <span className="bg-gradient-to-r from-primary to-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
@@ -104,8 +104,8 @@ export function BrandingDialog({
         </div>
         <DialogDescription>
           {hasProAccess 
-            ? "Would you like to include your company branding in the PDF?"
-            : "Upload your company logo and upgrade to Pro to include it in your reports"}
+            ? "Would you like to include your company branding in this report?"
+            : "Upgrade to Pro to include your company branding in your reports"}
         </DialogDescription>
       </DialogHeader>
 
