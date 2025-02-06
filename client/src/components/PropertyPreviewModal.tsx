@@ -6,6 +6,7 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { BrandingDialog } from "@/components/BrandingDialog";
 import {
   LineChart,
   Line,
@@ -25,6 +26,7 @@ import { formatter } from "@/utils/formatting";
 import { useUser } from "@/hooks/use-user";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { UpgradeModal } from "./UpgradeModal";
+import { useState } from "react";
 import {
   Building2,
   TrendingUp,
@@ -78,6 +80,37 @@ async function generatePropertyPreviewPDF(
   const startY = 20;
   let maxLogoHeight = 0;
 
+  // Add company logo if branding is enabled and logo exists
+  if (includeCompanyBranding && userData?.companyLogo) {
+    try {
+      const logoWidth = 40;
+      await new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const aspectRatio = img.height / img.width;
+          const logoHeight = logoWidth * aspectRatio;
+          maxLogoHeight = Math.max(maxLogoHeight, logoHeight);
+          doc.addImage(
+            userData.companyLogo,
+            "PNG",
+            margin,
+            startY,
+            logoWidth,
+            logoHeight,
+          );
+          resolve();
+        };
+        img.onerror = () => {
+          console.error("Error loading company logo");
+          resolve();
+        };
+        img.crossOrigin = "Anonymous";
+        img.src = userData.companyLogo;
+      });
+    } catch (error) {
+      console.error("Error adding company logo:", error);
+    }
+  }
 
   // Add Proply logo
   try {
@@ -526,6 +559,11 @@ export function PropertyPreviewModal({
 
   const { user } = useUser();
   const { hasProAccess } = useProAccess();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const platformFee = property.managementFee > 0 ? 15 : 3;
+  const feeAdjustedNightlyRate =
+    property.shortTermNightly * (1 - platformFee / 100);
+
   const queryClient = useQueryClient();
   const toast = useToast();
 
@@ -545,9 +583,23 @@ export function PropertyPreviewModal({
                   Export Preview
                 </Button>
               </DialogTrigger>
-              {/* Removed BrandingDialog */}
-              <UpgradeModal open={false} onOpenChange={() => {}} /> {/* Placeholder UpgradeModal */}
+              <BrandingDialog 
+                open={open}
+                onOpenChange={onOpenChange}
+                onGeneratePDF={(includeBranding) => {
+                  generatePropertyPreviewPDF(property, includeBranding, user);
+                  onOpenChange(false);
+                }}
+                onShowUpgrade={() => {
+                  onOpenChange(false);
+                  setShowUpgradeModal(true);
+                }}
+              />
             </Dialog>
+            <UpgradeModal 
+              open={showUpgradeModal} 
+              onOpenChange={setShowUpgradeModal} 
+            />
           </div>
         </DialogHeader>
         <ScrollArea className="h-[calc(80vh-8rem)]">
@@ -906,7 +958,7 @@ export function PropertyPreviewModal({
                         <td className="text-right py-3 px-4"></td>
                       </tr>
                       <tr className="border-t">
-                        <<td className="py-3 px-4">Occupancy Low</td>
+                        <td className="py-3 px-4">Occupancy Low</td>
                         {OCCUPANCY_RATES.low.map((rate, i) => (
                           <td
                             key={i}
