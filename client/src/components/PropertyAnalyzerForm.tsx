@@ -1061,7 +1061,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
                 <FormField
                   control={form.control}
-                  name="managementFee"                  render={({ field }) => (
+                  name="managementFee"
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Management Fee (%)</FormLabel>
                       <FormControl>
@@ -1085,71 +1086,92 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
             {/* Step 4: Revenue Performance */}
             {currentStep === 3 && (
-              <div className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="airbnbNightlyRate"
-                  render={({ field }) => (
+              <div className="space-y-4">
+                <div className="p-4 bg-gray-50 rounded-lg border">
+                  <div className="grid grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="airbnbNightlyRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Short Term Nightly Rate</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(e.target.valueAsNumber)
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="occupancyRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Annual Occupancy (%)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(e.target.valueAsNumber)
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <FormItem>
-                      <FormLabel>Short Term Nightly Rate (R)</FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
-                            placeholder="Enter nightly rate"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                          />
-                        </FormControl>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="flex items-center gap-2 whitespace-nowrap"
-                          onClick={() => {
-                            if (isProAccessLoading) return;
-                            fetchRevenueData();
-                          }}
-                          disabled={isLoading}
-                        >
-                          {isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <>
-                              Get Revenue Data
-                              <div className="ml-2 flex items-center gap-1">
-                                <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
-                                <Sparkles className="h-4 w-4 text-[#3B82F6]" />
-                              </div>
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="occupancyRate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Annual Occupancy Rate (%)</FormLabel>
+                      <FormLabel>Market Data</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder="Enter expected occupancy rate"
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                        />
+                        <div className="space-y-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="flex items-center gap-2 w-full h-10"
+                            onClick={() => {
+                              if (isProAccessLoading) return;
+
+                              if (hasAccess) {
+                                fetchRevenueData();
+                              } else {
+                                setShowUpgradeModal(true);
+                              }
+                            }}
+                            disabled={isLoading || isProAccessLoading}
+                          >
+                            {isLoading ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Getting Data...
+                              </>
+                            ) : (
+                              <>
+                                Get Revenue Data
+                                <div className="ml-2 flex items-center gap-1">
+                                  <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                                  <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                                </div>
+                              </>
+                            )}
+                          </Button>
+                          <p className="text-xs text-muted-foreground">
+                            Get accurate rates from Airbnb listings in your area
+                          </p>
+                        </div>
                       </FormControl>
-                      <FormMessage />
                     </FormItem>
-                  )}
-                />
+                  </div>
+                </div>
 
                 <FormField
                   control={form.control}
@@ -1161,16 +1183,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <FormControl>
                           <Input
                             type="number"
-                            min="0"
                             placeholder="Enter expected monthly rental"
                             {...field}
-                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
                           />
                         </FormControl>
                         <Button
                           type="button"
                           variant="outline"
-                          className="flex items-center gap-2 whitespace-nowrap"
+                          className="flex items-center gap-2"
                           onClick={() => {
                             if (!hasAccess) {
                               setShowUpgradeModal(true);
@@ -1178,7 +1201,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             }
                             toast({
                               title: "Coming Soon",
-                              description: "Long term rental data integration will be available soon.",
+                              description:
+                                "Long term rental data integration will be available soon.",
                               duration: 3000,
                             });
                           }}
@@ -1205,9 +1229,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <Input
                           type="number"
                           min="0"
-                          placeholder="Enter average days between leases"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
