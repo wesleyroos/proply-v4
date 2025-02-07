@@ -33,7 +33,7 @@ export default function PublicHeader() {
           )}
 
           {/* Navigation Links - Hidden on mobile unless menu is open */}
-          <div className={`${isMobile ? (isMenuOpen ? 'absolute top-16 left-0 right-0 bg-white border-b' : 'hidden') : 'flex'} ${isMobile ? 'flex-col p-4 space-y-2' : 'items-center gap-4'}`}>
+          <div className={`${isMobile ? (isMenuOpen ? 'fixed top-16 left-0 right-0 bg-white border-b' : 'hidden') : 'flex'} ${isMobile ? 'flex-col p-4 space-y-2 w-full' : 'items-center gap-4'}`}>
             <Link href="/">
               <Button variant="ghost" className={isMobile ? 'w-full justify-start' : ''}>Home</Button>
             </Link>
