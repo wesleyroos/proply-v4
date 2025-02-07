@@ -436,25 +436,27 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to scrape property data');
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Failed to scrape property data');
       }
 
       setScrapingProgress(50);
       setScrapingStatus("Processing property information...");
 
       const data = await response.json();
-      console.log("Scraped property data:", data); // Added logging
+      console.log("Scraped property data:", data);
       setScrapedData(data);
       setScrapingProgress(100);
       setScrapingStatus("Property data retrieved successfully!");
 
     } catch (error) {
       console.error('Scraping error:', error);
-      setScrapingStatus("Failed to scrape property data");
+      setScrapingStatus(error instanceof Error ? error.message : "Failed to scrape property data");
       toast({
         variant: "destructive",
         title: "Scraping Failed",
-        description: error instanceof Error ? error.message : "Failed to scrape property data",
+        description: error instanceof Error ? error.message : "Failed to scrape property data. Please enter the details manually.",
+        duration: 7000,
       });
     }
   };
@@ -1049,8 +1051,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
+                    </FormItem>                  )}
                 />
               </div>
             )}

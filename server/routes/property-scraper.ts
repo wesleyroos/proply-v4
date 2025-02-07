@@ -1,5 +1,5 @@
 import express from 'express';
-import { scrapePrivateProperty } from '../services/property-scraper';
+import { scrapeProperty24 } from '../services/property-scraper';
 
 const router = express.Router();
 
@@ -11,18 +11,18 @@ router.post('/scrape', async (req, res) => {
     if (!url) {
       return res.status(400).json({ 
         error: 'URL is required',
-        details: 'Please provide a valid Private Property URL'
+        details: 'Please provide a valid Property24 URL'
       });
     }
 
-    if (!url.includes('privateproperty.co.za')) {
+    if (!url.includes('property24.com')) {
       return res.status(400).json({ 
         error: 'Invalid URL',
-        details: 'Only Private Property URLs are supported'
+        details: 'Only Property24 URLs are supported'
       });
     }
 
-    const scrapedData = await scrapePrivateProperty(url);
+    const scrapedData = await scrapeProperty24(url);
     console.log("Scraped property data:", scrapedData);
 
     // Check if we got any meaningful data

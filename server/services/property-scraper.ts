@@ -6,13 +6,17 @@ interface ScrapedProperty {
   price?: number;
 }
 
-export async function scrapePrivateProperty(url: string): Promise<ScrapedProperty> {
+export async function scrapeProperty24(url: string): Promise<ScrapedProperty> {
   try {
     console.log('Starting scraping for URL:', url);
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
       }
     });
 
@@ -28,7 +32,7 @@ export async function scrapePrivateProperty(url: string): Promise<ScrapedPropert
 
     // Check if we got a valid HTML response
     if (html.includes('Access Denied') || html.includes('blocked') || html.includes('captcha')) {
-      throw new Error('Access blocked by Private Property. They may be using anti-scraping protection.');
+      throw new Error('Access blocked by Property24. They may be using anti-scraping protection.');
     }
 
     console.log('HTML length:', html.length);
@@ -37,8 +41,9 @@ export async function scrapePrivateProperty(url: string): Promise<ScrapedPropert
     const $ = load(html);
     const scrapedData: ScrapedProperty = {};
 
+    // Property24 specific selectors
     // Extract price - log the element we're trying to find
-    const priceElement = $('.p24_price');
+    const priceElement = $('[data-testid="listing-price"]');
     console.log('Price element found:', priceElement.length > 0);
 
     const priceText = priceElement.text().trim();
@@ -50,7 +55,7 @@ export async function scrapePrivateProperty(url: string): Promise<ScrapedPropert
     }
 
     // Extract address - log the element we're trying to find
-    const addressElement = $('.p24_location');
+    const addressElement = $('[data-testid="listing-address"]');
     console.log('Address element found:', addressElement.length > 0);
 
     const addressText = addressElement.text().trim();
