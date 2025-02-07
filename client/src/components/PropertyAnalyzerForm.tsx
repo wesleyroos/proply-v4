@@ -318,12 +318,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   };
 
   const fetchRevenueData = async () => {
-    // Check pro access - show upgrade modal for free users, proceed with data fetch for pro users
-    if (!hasAccess) {
-      setShowUpgradeModal(true);
-      return;
-    }
-
     setIsLoading(true);
     try {
       const address = form.getValues("address");
@@ -1152,7 +1146,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             {isLoading ? (
                               <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Getting Data...
+                                Loading...
                               </>
                             ) : (
                               <>
@@ -1195,21 +1189,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           variant="outline"
                           className="flex items-center gap-2"
                           onClick={() => {
-                            if (!hasAccess) {
-                              setShowUpgradeModal(true);
-                              return;
-                            }
                             toast({
-                              title: "Coming Soon",
-                              description:
-                                "Long term rental data integration will be available soon.",
+                              title: "Feature In Development",
+                              description: "Long term rental data integration will be available soon.",
                               duration: 3000,
                             });
                           }}
                         >
                           Get Long term rental data
                           <div className="ml-2 flex items-center gap-1">
-                            <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                            <span className="text-xs font-semibold text-[#3B82F6]">COMING SOON</span>
                             <Sparkles className="h-4 w-4 text-[#3B82F6]" />
                           </div>
                         </Button>
@@ -1306,21 +1295,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           variant="outline"
                           className="flex items-center gap-2"
                           onClick={() => {
-                            if (!hasAccess) {
-                              setShowUpgradeModal(true);
-                              return;
-                            }
                             toast({
-                              title: "Coming Soon",
-                              description:
-                                "Property appreciation data integration will be available soon.",
+                              title: "Feature In Development",
+                              description: "Property appreciation data integration will be available soon.",
                               duration: 3000,
                             });
                           }}
                         >
                           Get Appreciation Data
                           <div className="ml-2 flex items-center gap-1">
-                            <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                            <span className="text-xs font-semibold text-[#3B82F6]">COMING SOON</span>
                             <Sparkles className="h-4 w-4 text-[#3B82F6]" />
                           </div>
                         </Button>
@@ -1356,21 +1340,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           variant="outline"
                           className="flex items-center gap-2"
                           onClick={() => {
-                            if (!hasAccess) {
-                              setShowUpgradeModal(true);
-                              return;
-                            }
                             toast({
-                              title: "Coming Soon",
-                              description:
-                                "Area rate data integration will be available soon.",
+                              title: "Feature In Development",
+                              description: "Area rate data integration will be available soon.",
                               duration: 3000,
                             });
                           }}
                         >
                           Get Area Rate Data
                           <div className="ml-2 flex items-center gap-1">
-                            <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                            <span className="text-xs font-semibold text-[#3B82F6]">COMING SOON</span>
                             <Sparkles className="h-4 w-4 text-[#3B82F6]" />
                           </div>
                         </Button>
