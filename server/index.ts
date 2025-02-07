@@ -8,6 +8,15 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Domain redirect middleware
+app.use((req, res, next) => {
+  const host = req.hostname;
+  if (host === 'proply.replit.app') {
+    return res.redirect(301, `https://app.proply.co.za${req.originalUrl}`);
+  }
+  next();
+});
+
 // Request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
