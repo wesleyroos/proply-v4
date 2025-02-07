@@ -17,22 +17,19 @@ export function MobileNotice() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px] ml-4 text-center max-h-[80vh]">
-        <div className="flex flex-col items-center gap-6 py-8 px-6">
-          <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center">
-            <Laptop className="h-8 w-8 text-blue-600" />
+      <DialogContent className="sm:max-w-[425px] text-center">
+        <div className="flex flex-col items-center gap-4 py-4">
+          <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+            <Laptop className="h-6 w-6 text-blue-600" />
           </div>
-          <div className="space-y-4">
-            <h3 className="font-semibold text-xl">Hey there! 👋</h3>
-            <p className="text-base text-muted-foreground leading-relaxed">
+          <div className="space-y-2">
+            <h3 className="font-semibold text-lg">Hey there! 👋</h3>
+            <p className="text-sm text-muted-foreground">
               While we're working on our mobile experience, Proply works best on desktop. 
               Feel free to create an account now, and dive into the full experience on your computer later!
             </p>
           </div>
-          <Button 
-            onClick={() => setOpen(false)} 
-            className="bg-[#1BA3FF] hover:bg-[#114D9D] w-[80%] py-6 text-lg"
-          >
+          <Button onClick={() => setOpen(false)} className="bg-[#1BA3FF] hover:bg-[#114D9D]">
             Got it, thanks!
           </Button>
         </div>
