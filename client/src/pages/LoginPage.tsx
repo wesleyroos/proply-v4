@@ -58,8 +58,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md mb-8">
+    <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center px-4 py-8 sm:p-4">
+      <div className="w-full max-w-[min(100%,24rem)] mb-8">
         <Link href="/">
           <img
             src="/proply-logo-1.png"
