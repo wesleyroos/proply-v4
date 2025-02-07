@@ -788,13 +788,24 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           <FormLabel>Deposit Amount (R)</FormLabel>
                           <FormControl>
                             <Input
-                              type="text"
+                              type="number"
                               min="0"
                               placeholder="250000,00"
-                              value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                              {...field}
                               onChange={(e) => {
-                                const value = e.target.value.replace(/[^\d]/g, '');
-                                field.onChange(value ? parseInt(value, 10) : '');
+                                const amount = e.target.valueAsNumber;
+                                field.onChange(amount);
+                                // Calculate percentage based on amount
+                                const purchasePrice =
+                                  form.getValues("purchasePrice");
+                                if (purchasePrice && amount) {
+                                  const percentage =
+                                    (amount / purchasePrice) * 100;
+                                  form.setValue(
+                                    "depositPercentage",
+                                    Number(percentage.toFixed(2)),
+                                  );
+                                }
                               }}
                             />
                           </FormControl>
@@ -906,12 +917,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <FormLabel>Monthly Levies (R)</FormLabel>
                       <FormControl>
                         <Input
-                          type="text"
-                          value={field.value ? field.value.toLocaleString('en-ZA') : ''}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/[^\d]/g, '');
-                            field.onChange(value ? parseInt(value, 10) : '');
-                          }}
+                          type="number"
+                          min="0"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -927,12 +938,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <FormLabel>Monthly Rates & Taxes (R)</FormLabel>
                       <FormControl>
                         <Input
-                          type="text"
-                          value={field.value ? field.value.toLocaleString('en-ZA') : ''}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/[^\d]/g, '');
-                            field.onChange(value ? parseInt(value, 10) : '');
-                          }}
+                          type="number"
+                          min="0"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -945,15 +956,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   name="otherMonthlyExpenses"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Other Monthly Expenses (R)</FormLabel>
+                      <FormLabel>Other Monthly Expenses</FormLabel>
                       <FormControl>
                         <Input
-                          type="text"
-                          value={field.value ? field.value.toLocaleString('en-ZA') : ''}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/[^\d]/g, '');
-                            field.onChange(value ? parseInt(value, 10) : '');
-                          }}
+                          type="number"
+                          min="0"
+                          placeholder="WiFi, electricity, subscriptions, etc."
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -1020,15 +1032,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       name="airbnbNightlyRate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Short Term Nightly Rate (R)</FormLabel>
+                          <FormLabel>Short Term Nightly Rate</FormLabel>
                           <FormControl>
                             <Input
-                              type="text"
-                              value={field.value ? field.value.toLocaleString('en-ZA') : ''}
-                              onChange={(e) => {
-                                const value = e.target.value.replace(/[^\d]/g, '');
-                                field.onChange(value ? parseInt(value, 10) : '');
-                              }}
+                              type="number"
+                              min="0"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(e.target.valueAsNumber)
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -1044,7 +1056,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           <FormControl>
                             <Input
                               type="number"
-                              min=""0"
+                              min="0"
                               max="100"
                               {...field}
                               onChange={(e) =>
@@ -1107,12 +1119,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <div className="flex gap-2">
                         <FormControl>
                           <Input
-                            type="text"
-                            value={field.value ? field.value.toLocaleString('en-ZA') : ''}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/[^\d]/g, '');
-                              field.onChange(value ? parseInt(value, 10) : '');
-                            }}
+                            type="number"
+                            placeholder="Enter expected monthly rental"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
                           />
                         </FormControl>
                         <Button
@@ -1255,16 +1267,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   name="cmaRatePerSqm"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Area Rate/m² (R)</FormLabel>
+                      <FormLabel>Area Rate/m²</FormLabel>
                       <div className="flex gap-2">
                         <FormControl>
                           <Input
-                            type="text"
-                            value={field.value ? field.value.toLocaleString('en-ZA') : ''}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/[^\d]/g, '');
-                              field.onChange(value ? parseInt(value, 10) : '');
-                            }}
+                            type="number"
+                            min="0"
+                            placeholder="Enter area rate per square meter"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
                           />
                         </FormControl>
                         <Button
