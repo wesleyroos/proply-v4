@@ -597,7 +597,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           placeholder="Enter URL of the property listing (optional)"
                           {...field}
                         />
-                    </FormControl>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -628,12 +628,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <FormLabel>Purchase Price (R)</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
+                          type="text"
                           placeholder="Enter purchase price"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
+                          value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^\d]/g, '');
+                            field.onChange(value ? parseInt(value, 10) : '');
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -1064,8 +1065,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             />
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
+                        </FormItem>                      )}
                     />
                     <FormItem>
                       <FormLabel>Market Data</FormLabel>
