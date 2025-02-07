@@ -71,7 +71,7 @@ export default function HomePage() {
               professionals
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 px-4">
             <Card>
               <CardContent className="pt-6">
                 <LineChart className="h-12 w-12 text-[#1BA3FF] mb-4" />
@@ -157,7 +157,7 @@ export default function HomePage() {
               Compare long-term vs short-term rental potential for your property
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 px-4">
             <Card>
               <CardContent className="pt-6">
                 <Home className="h-12 w-12 text-[#1BA3FF] mb-4" />
@@ -245,7 +245,7 @@ export default function HomePage() {
               Enterprise-grade property analysis engine for your business
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 px-4">
             <Card>
               <CardContent className="pt-6">
                 <Settings className="h-12 w-12 text-[#1BA3FF] mb-4" />
