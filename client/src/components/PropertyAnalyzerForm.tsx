@@ -593,32 +593,11 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                     <FormItem>
                       <FormLabel>Property URL</FormLabel>
                       <FormControl>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Enter URL of the property listing (optional)"
-                            {...field}
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                              const url = form.getValues("propertyUrl");
-                              if (!url) {
-                                toast({
-                                  title: "Missing URL",
-                                  description:
-                                    "Please enter a property URL first",
-                                  variant: "destructive",
-                                });
-                                return;
-                              }
-                              handleScrapePropertyData(url);
-                            }}
-                          >
-                            Fetch Property Data
-                          </Button>
-                        </div>
-                      </FormControl>
+                        <Input
+                          placeholder="Enter URL of the property listing (optional)"
+                          {...field}
+                        />
+                    </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
