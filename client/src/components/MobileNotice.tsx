@@ -18,13 +18,13 @@ export function MobileNotice() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[425px] mx-4 text-center max-h-[80vh]">
-        <div className="flex flex-col items-center gap-6 py-8">
+        <div className="flex flex-col items-center gap-6 py-8 px-4">
           <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center">
             <Laptop className="h-8 w-8 text-blue-600" />
           </div>
           <div className="space-y-4">
             <h3 className="font-semibold text-xl">Hey there! 👋</h3>
-            <p className="text-base text-muted-foreground leading-relaxed px-4">
+            <p className="text-base text-muted-foreground leading-relaxed">
               While we're working on our mobile experience, Proply works best on desktop. 
               Feel free to create an account now, and dive into the full experience on your computer later!
             </p>
