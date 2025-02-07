@@ -1051,7 +1051,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>                  )}
+                    </FormItem>
+                  )}
                 />
               </div>
             )}
@@ -1149,20 +1150,33 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   name="longTermRental"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Long Term Rental (Monthly)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="0"
-                          placeholder="Monthly long-term rental income"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
-                        />
-                      </FormControl>
+                      <FormLabel>Long Term Rental (Monthly R)</FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Enter expected monthly rental"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            toast({
+                              title: "Coming Soon",
+                              description: "Long term rental data integration will be available soon.",
+                              duration: 3000,
+                            });
+                          }}
+                        >
+                          Get Long term rental data
+                        </Button>
+                      </div>
                       <FormMessage />
-                    </FormItem>)}
+                    </FormItem>
+                  )}
                 />
 
                 <FormField
@@ -1170,16 +1184,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   name="leaseCycleGap"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Lease Cycle Gap (Days)</FormLabel>
+                      <FormLabel>Lease Cycle Gap (days)</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
                           min="0"
-                          placeholder="Average days between lease cycles"
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
+                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         />
                       </FormControl>
                       <FormMessage />
