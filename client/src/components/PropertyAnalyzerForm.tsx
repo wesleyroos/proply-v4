@@ -340,7 +340,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       }
 
       const response = await fetch(
-        `/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`,
+        `/api/revenue-data?address=${encodeURIComponent(
+          address,
+        )}&bedrooms=${bedrooms}`,
       );
 
       if (!response.ok) {
@@ -1183,6 +1185,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           type="button"
                           variant="outline"
                           onClick={() => {
+                            if (!hasAccess) {
+                              setShowUpgradeModal(true);
+                              return;
+                            }
                             toast({
                               title: "Coming Soon",
                               description:
@@ -1191,7 +1197,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             });
                           }}
                         >
-                          Get Long-Term Rental Data
+                          Get Long term rental data
+                          <Sparkles className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
                       <FormMessage />
@@ -1285,14 +1292,20 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           type="button"
                           variant="outline"
                           onClick={() => {
+                            if (!hasAccess) {
+                              setShowUpgradeModal(true);
+                              return;
+                            }
                             toast({
                               title: "Coming Soon",
-                              description: "Property appreciation data integration will be available soon.",
+                              description:
+                                "Property appreciation data integration will be available soon.",
                               duration: 3000,
                             });
                           }}
                         >
                           Get Appreciation Data
+                          <Sparkles className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
                       <FormMessage />
@@ -1310,18 +1323,37 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   name="cmaRatePerSqm"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Area Rate per m²</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="0"
-                          placeholder="Average rate per m² for similar properties"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
-                        />
-                      </FormControl>
+                      <FormLabel>Area Rate/m²</FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            placeholder="Enter area rate per square meter"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            if (!hasAccess) {
+                              setShowUpgradeModal(true);
+                              return;
+                            }
+                            toast({
+                              title: "Coming Soon",
+                              description:
+                                "Area rate data integration will be available soon.",
+                              duration: 3000,
+                            });
+                          }}
+                        >
+                          Get Area Rate Data
+                          <Sparkles className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
