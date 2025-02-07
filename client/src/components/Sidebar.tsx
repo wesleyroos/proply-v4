@@ -65,7 +65,7 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        "h-screen sticky top-0 bg-[#1E293B] transition-all duration-300 border-none",
+        "min-h-screen h-full sticky top-0 bg-[#1E293B] transition-all duration-300 border-none flex-shrink-0",
         expanded ? "w-64" : "w-16"
       )}
     >
