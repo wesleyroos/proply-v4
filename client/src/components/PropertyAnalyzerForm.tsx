@@ -1275,11 +1275,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <div className="flex gap-2">
                         <FormControl>
                           <Input
-                            type="number"
-                            min="0"
+                            type="text"
                             placeholder="Enter area rate per square meter"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                            value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^\d]/g, '');
+                              field.onChange(value ? parseInt(value, 10) : '');
+                            }}
                           />
                         </FormControl>
                         <Button
