@@ -110,7 +110,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="p-8 bg-gray-50">
+    <div className="min-h-screen p-8 bg-gray-50">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Welcome{user?.firstName ? `, ${user.firstName}` : ''}!</h1>
 
