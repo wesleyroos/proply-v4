@@ -602,10 +602,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             type="button"
                             variant="outline"
                             onClick={() => {
-                              if (!hasAccess) {
-                                setShowUpgradeModal(true);
-                                return;
-                              }
                               const url = form.getValues("propertyUrl");
                               if (!url) {
                                 toast({
@@ -620,10 +616,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             }}
                           >
                             Fetch Property Data
-                            <div className="ml-2 flex items-center gap-1">
-                              <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
-                              <Sparkles className="h-4 w-4 text-[#3B82F6]" />
-                            </div>
                           </Button>
                         </div>
                       </FormControl>
