@@ -424,7 +424,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
     try {
       setShowScrapingModal(true);
-      setScrapingStatus("Initializing scraper...");
+      setScrapingStatus("Initializing property data scraper...");
       setScrapingProgress(10);
 
       const response = await fetch('/api/scrape', {
@@ -440,30 +440,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       }
 
       setScrapingProgress(50);
-      setScrapingStatus("Processing property data...");
+      setScrapingStatus("Processing property information...");
 
       const data = await response.json();
       setScrapedData(data);
       setScrapingProgress(100);
-      setScrapingStatus("Data retrieved successfully!");
-
-      // Pre-populate form fields with scraped data
-      if (data) {
-        form.setValue("address", data.address || "");
-        form.setValue("purchasePrice", data.price || 0);
-        form.setValue("floorArea", data.floorArea || 0);
-        form.setValue("bedrooms", data.bedrooms || 0);
-        form.setValue("bathrooms", data.bathrooms || 0);
-        form.setValue("parkingSpaces", data.parkingSpaces || 0);
-        form.setValue("monthlyLevies", data.levies || 0);
-        form.setValue("monthlyRatesTaxes", data.ratesTaxes || 0);
-
-        toast({
-          title: "Property Data Retrieved",
-          description: "Form has been pre-populated with the scraped data.",
-          duration: 5000,
-        });
-      }
+      setScrapingStatus("Property data retrieved successfully!");
 
     } catch (error) {
       console.error('Scraping error:', error);
@@ -472,6 +454,26 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         variant: "destructive",
         title: "Scraping Failed",
         description: error instanceof Error ? error.message : "Failed to scrape property data",
+      });
+    }
+  };
+
+  const handleScrapedDataConfirm = (data: any) => {
+    // Pre-populate form fields with scraped data
+    if (data) {
+      form.setValue("address", data.address || "");
+      form.setValue("purchasePrice", data.price || 0);
+      form.setValue("floorArea", data.floorArea || 0);
+      form.setValue("bedrooms", data.bedrooms || 0);
+      form.setValue("bathrooms", data.bathrooms || 0);
+      form.setValue("parkingSpaces", data.parkingSpaces || 0);
+      form.setValue("monthlyLevies", data.levies || 0);
+      form.setValue("monthlyRatesTaxes", data.ratesTaxes || 0);
+
+      toast({
+        title: "Property Data Populated",
+        description: "Form has been updated with the scraped property data.",
+        duration: 5000,
       });
     }
   };
@@ -1454,6 +1456,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         status={scrapingStatus}
         progress={scrapingProgress}
         data={scrapedData}
+        onConfirm={handleScrapedDataConfirm}
       />
     </div>
   );
