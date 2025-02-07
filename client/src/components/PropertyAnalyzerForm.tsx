@@ -510,13 +510,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="address"
+                  name="propertyUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Property Address</FormLabel>
+                      <FormLabel>Property URL</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter the full property address"
+                          placeholder="Enter URL of the property listing (optional)"
                           {...field}
                         />
                       </FormControl>
@@ -527,13 +527,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
                 <FormField
                   control={form.control}
-                  name="propertyUrl"
+                  name="address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Property URL</FormLabel>
+                      <FormLabel>Property Address</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter URL of the property listing (optional)"
+                          placeholder="Enter the full property address"
                           {...field}
                         />
                       </FormControl>
