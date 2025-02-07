@@ -784,7 +784,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       name="depositAmount"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>R</FormLabel>
+                          <FormLabel>Deposit Amount (R)</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -826,7 +826,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       name="depositPercentage"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>%</FormLabel>
+                          <FormLabel>Deposit Percentage (%)</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
