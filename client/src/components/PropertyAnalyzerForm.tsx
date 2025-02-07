@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Sparkles } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UpgradeModal } from "@/components/UpgradeModal"; // Added import
+import { ScrapingProgressModal } from "./ScrapingProgressModal";
 
 // Hooks
 import { useProAccess } from "@/hooks/use-pro-access";
@@ -158,6 +159,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     "75": RevenueData;
     "90": RevenueData;
   } | null>(null);
+  const [showScrapingModal, setShowScrapingModal] = useState(false);
+  const [scrapingStatus, setScrapingStatus] = useState("");
+  const [scrapingProgress, setScrapingProgress] = useState(0);
+  const [scrapedData, setScrapedData] = useState<any>(null);
 
   // Fix the destructuring to use hasAccess instead of hasProAccess
   const { hasAccess, isLoading: isProAccessLoading } = useProAccess();
@@ -414,6 +419,63 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     },
   });
 
+  const handleScrapePropertyData = async (url: string) => {
+    if (!url) return;
+
+    try {
+      setShowScrapingModal(true);
+      setScrapingStatus("Initializing scraper...");
+      setScrapingProgress(10);
+
+      const response = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to scrape property data');
+      }
+
+      setScrapingProgress(50);
+      setScrapingStatus("Processing property data...");
+
+      const data = await response.json();
+      setScrapedData(data);
+      setScrapingProgress(100);
+      setScrapingStatus("Data retrieved successfully!");
+
+      // Pre-populate form fields with scraped data
+      if (data) {
+        form.setValue("address", data.address || "");
+        form.setValue("purchasePrice", data.price || 0);
+        form.setValue("floorArea", data.floorArea || 0);
+        form.setValue("bedrooms", data.bedrooms || 0);
+        form.setValue("bathrooms", data.bathrooms || 0);
+        form.setValue("parkingSpaces", data.parkingSpaces || 0);
+        form.setValue("monthlyLevies", data.levies || 0);
+        form.setValue("monthlyRatesTaxes", data.ratesTaxes || 0);
+
+        toast({
+          title: "Property Data Retrieved",
+          description: "Form has been pre-populated with the scraped data.",
+          duration: 5000,
+        });
+      }
+
+    } catch (error) {
+      console.error('Scraping error:', error);
+      setScrapingStatus("Failed to scrape property data");
+      toast({
+        variant: "destructive",
+        title: "Scraping Failed",
+        description: error instanceof Error ? error.message : "Failed to scrape property data",
+      });
+    }
+  };
+
   return (
     <div className="space-y-8 max-w-[75%]">
       {/* Step indicator */}
@@ -520,11 +582,11 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             placeholder="Enter URL of the property listing (optional)"
                             {...field}
                           />
-                          <Button 
-                            type="button" 
+                          <Button
+                            type="button"
                             variant="outline"
                             onClick={() => {
-                              const url = field.value;
+                              const url = form.getValues("propertyUrl");
                               if (!url) {
                                 toast({
                                   title: "Missing URL",
@@ -533,11 +595,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                                 });
                                 return;
                               }
-                              // TODO: Implement property data fetching
-                              toast({
-                                title: "Fetching Data",
-                                description: "Getting property details...",
-                              });
+                              handleScrapePropertyData(url);
                             }}
                           >
                             Fetch Property Data
@@ -1389,6 +1447,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         }}
         className="fixed bottom-4 right-4 w-4 h-4 opacity-5 hover:opacity-10 bg-gray-500 rounded-full"
         aria-hidden="true"
+      />
+      <ScrapingProgressModal
+        open={showScrapingModal}
+        onOpenChange={setShowScrapingModal}
+        status={scrapingStatus}
+        progress={scrapingProgress}
+        data={scrapedData}
       />
     </div>
   );

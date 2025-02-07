@@ -20,6 +20,7 @@ import { calculateYields } from "../analysis-engine/calculations";
 import { analyzeSuburb } from "./services/openai";
 import { sql } from "drizzle-orm";
 import { suburbs } from "@db/schema";
+import propertyScraper from './routes/property-scraper';
 
 // Extend Express.User to include our schema
 declare global {
@@ -878,10 +879,10 @@ export function registerRoutes(app: Express): Server {
 
     // For sandbox testing, we'll accept all webhooks
     // In production, verify the signature here
-    const { 
-      subscription_status = 'active',
+    const {
+      subscription_status = "active",
       token = null,
-      user_id
+      user_id,
     } = req.body;
 
     try {
@@ -912,7 +913,8 @@ export function registerRoutes(app: Express): Server {
           payfastToken: token,
           subscriptionStartDate: startDate,
           subscriptionNextBillingDate: nextBillingDate,
-          subscriptionExpiryDate: subscription_status === 'active' ? nextBillingDate : now,
+          subscriptionExpiryDate:
+            subscription_status === "active" ? nextBillingDate : now,
           updatedAt: now,
         })
         .where(eq(users.id, user_id))
@@ -1083,14 +1085,14 @@ export function registerRoutes(app: Express): Server {
       await db
         .update(users)
         .set({
-          reportsGenerated: newUsage
+          reportsGenerated: newUsage,
         })
         .where(eq(users.id, req.user!.id));
 
       console.log("Updated analyzer usage:", {
         email: user.email,
         oldUsage: user?.reportsGenerated,
-        newUsage: newUsage
+        newUsage: newUsage,
       });
 
       res.json(analysisResult);
@@ -1544,6 +1546,10 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
+
+  // Register property scraper routes
+  app.use("/api", propertyScraper);
+
 
   const httpServer = createServer(app);
   return httpServer;
