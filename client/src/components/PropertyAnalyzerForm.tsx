@@ -608,6 +608,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             type="button"
                             variant="outline"
                             onClick={() => {
+                              if (!hasAccess) {
+                                setShowUpgradeModal(true);
+                                return;
+                              }
                               const url = form.getValues("propertyUrl");
                               if (!url) {
                                 toast({
@@ -622,6 +626,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             }}
                           >
                             Fetch Property Data
+                            <Sparkles className="ml-2 h-4 w-4 text-[#3B82F6]" />
                           </Button>
                         </div>
                       </FormControl>
@@ -1198,7 +1203,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           }}
                         >
                           Get Long term rental data
-                          <Sparkles className="ml-2 h-4 w-4" />
+                          <Sparkles className="ml-2 h-4 w-4 text-[#3B82F6]" />
                         </Button>
                       </div>
                       <FormMessage />
@@ -1305,7 +1310,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           }}
                         >
                           Get Appreciation Data
-                          <Sparkles className="ml-2 h-4 w-4" />
+                          <Sparkles className="ml-2 h-4 w-4 text-[#3B82F6]" />
                         </Button>
                       </div>
                       <FormMessage />
@@ -1351,7 +1356,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           }}
                         >
                           Get Area Rate Data
-                          <Sparkles className="ml-2 h-4 w-4" />
+                          <Sparkles className="ml-2 h-4 w-4 text-[#3B82F6]" />
                         </Button>
                       </div>
                       <FormMessage />
