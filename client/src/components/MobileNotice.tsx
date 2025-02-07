@@ -17,7 +17,7 @@ export function MobileNotice() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px] text-center">
+      <DialogContent className="sm:max-w-[425px] mx-4 text-center">
         <div className="flex flex-col items-center gap-4 py-4">
           <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
             <Laptop className="h-6 w-6 text-blue-600" />
