@@ -26,10 +26,26 @@ export async function sendAdminNotification(params: EmailParams): Promise<boolea
 
     const msg = {
       to: params.to || adminEmail,
-      from: verifiedSender, // Must be your verified sender
+      from: {
+        email: verifiedSender,
+        name: 'Proply'
+      },
       subject: params.subject,
       text: params.text || '',
       html: params.html,
+      mailSettings: {
+        sandboxMode: {
+          enable: false
+        }
+      },
+      trackingSettings: {
+        clickTracking: {
+          enable: true
+        },
+        openTracking: {
+          enable: true
+        }
+      }
     };
 
     console.log('Sending email with SendGrid...');
