@@ -47,7 +47,6 @@ interface PropertyAnalyzerFormProps {
   onAnalysisComplete?: (data: PropertyAnalyzerFormValues) => Promise<void>;
 }
 
-
 const formSchema = z.object({
   // Step 1: Property Details
   address: z.string().min(1, "Address is required"),
@@ -76,7 +75,10 @@ const formSchema = z.object({
   loanTerm: z.number().min(1, "Loan term must be at least 1 year"),
 
   // Step 3: Operating Expenses
-  monthlyLevies: z.coerce.number().min(0, "Monthly levies must be positive").default(0),
+  monthlyLevies: z.coerce
+    .number()
+    .min(0, "Monthly levies must be positive")
+    .default(0),
   monthlyRatesTaxes: z.coerce
     .number()
     .min(0, "Monthly rates and taxes must be positive")
@@ -217,7 +219,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         // Escalations
         annualIncomeGrowth: Number(formData.annualIncomeGrowth || 0),
         annualExpenseGrowth: Number(formData.annualExpenseGrowth || 0),
-        annualPropertyAppreciation: Number(formData.annualPropertyAppreciation || 0),
+        annualPropertyAppreciation: Number(
+          formData.annualPropertyAppreciation || 0,
+        ),
 
         // Miscellaneous
         cmaRatePerSqm: Number(formData.cmaRatePerSqm || 0),
@@ -226,16 +230,18 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
       console.log("Submitting complete analysis data:", analysisData);
 
-
       if (props.onAnalysisComplete) {
         await props.onAnalysisComplete(analysisData);
       }
     } catch (error) {
-      console.error('Analysis error:', error);
+      console.error("Analysis error:", error);
       toast({
         variant: "destructive",
         title: "Analysis Failed",
-        description: error instanceof Error ? error.message : "Failed to analyze property data.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to analyze property data.",
         duration: 7000,
       });
     } finally {
@@ -326,13 +332,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       if (!address || !bedrooms) {
         toast({
           title: "Missing Information",
-          description: "Please enter the property address and number of bedrooms first.",
+          description:
+            "Please enter the property address and number of bedrooms first.",
           variant: "destructive",
         });
         return;
       }
 
-      const response = await fetch(`/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`);
+      const response = await fetch(
+        `/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`,
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
@@ -427,17 +436,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       setScrapingStatus("Initializing property data scraper...");
       setScrapingProgress(10);
 
-      const response = await fetch('/api/scrape', {
-        method: 'POST',
+      const response = await fetch("/api/scrape", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ url }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.details || 'Failed to scrape property data');
+        throw new Error(errorData.details || "Failed to scrape property data");
       }
 
       setScrapingProgress(50);
@@ -448,14 +457,20 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       setScrapedData(data);
       setScrapingProgress(100);
       setScrapingStatus("Property data retrieved successfully!");
-
     } catch (error) {
-      console.error('Scraping error:', error);
-      setScrapingStatus(error instanceof Error ? error.message : "Failed to scrape property data");
+      console.error("Scraping error:", error);
+      setScrapingStatus(
+        error instanceof Error
+          ? error.message
+          : "Failed to scrape property data",
+      );
       toast({
         variant: "destructive",
         title: "Scraping Failed",
-        description: error instanceof Error ? error.message : "Failed to scrape property data. Please enter the details manually.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to scrape property data. Please enter the details manually.",
         duration: 7000,
       });
     }
@@ -513,7 +528,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         index < currentStep || isStepComplete
                           ? "bg-[#3B82F6]"
                           : "bg-gray-300"
-                        }`}
+                      }`}
                       style={{ left: "4rem" }}
                     />
                   )}
@@ -553,7 +568,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             : isStepComplete
                               ? "bg-white text-green-500 ring-green-500"
                               : "bg-white text-gray-500 ring-gray-300"
-                          }`}
+                        }`}
                       >
                         {index + 1}
                       </span>
@@ -595,8 +610,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               if (!url) {
                                 toast({
                                   title: "Missing URL",
-                                  description: "Please enter a property URL first",
-                                  variant: "destructive"
+                                  description:
+                                    "Please enter a property URL first",
+                                  variant: "destructive",
                                 });
                                 return;
                               }
@@ -930,7 +946,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           min="1"
                           placeholder="Enter loan term in years"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -1046,8 +1064,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           placeholder="0% if self-managed"
                           {...field}
                           onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
+                            field.onChange(e.target.valueAsNumber)}
                         />
                       </FormControl>
                       <FormMessage />
@@ -1157,7 +1174,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             type="number"
                             placeholder="Enter expected monthly rental"
                             {...field}
-                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
                           />
                         </FormControl>
                         <Button
@@ -1166,12 +1185,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           onClick={() => {
                             toast({
                               title: "Coming Soon",
-                              description: "Long term rental data integration will be available soon.",
+                              description:
+                                "Long term rental data integration will be available soon.",
                               duration: 3000,
                             });
                           }}
                         >
-                          Get Long term rental data
+                          Get Long-Term Rental Data
                         </Button>
                       </div>
                       <FormMessage />
@@ -1190,7 +1210,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           type="number"
                           min="0"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -1212,13 +1234,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <FormControl>
                         <Input
                           type="number"
-                          step="0.1"
                           min="0"
                           max="100"
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
+                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         />
                       </FormControl>
                       <FormMessage />
@@ -1235,13 +1254,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <FormControl>
                         <Input
                           type="number"
-                          step="0.1"
                           min="0"
                           max="100"
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
+                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         />
                       </FormControl>
                       <FormMessage />
@@ -1255,18 +1271,30 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Annual Property Appreciation (%)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          max="100"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
-                        />
-                      </FormControl>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            toast({
+                              title: "Coming Soon",
+                              description: "Property appreciation data integration will be available soon.",
+                              duration: 3000,
+                            });
+                          }}
+                        >
+                          Get Appreciation Data
+                        </Button>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1358,7 +1386,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       </Form>
 
       {/* Upgrade Modal */}
-      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+      />
 
       {/* Percentile Selection Modal */}
       <Dialog
