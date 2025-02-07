@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -23,15 +22,15 @@ export function MobileNotice() {
             <Laptop className="h-10 w-10 text-blue-600" />
           </div>
           <div className="space-y-4">
-            <h3 className="font-semibold text-xl">Oops, you caught us! 🙈</h3>
+            <h3 className="font-semibold text-xl">Mobile app coming soon!</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Our platform works best on bigger screens right now. 
-              But don't worry - you can still create an account here and unleash the full 
-              property analysis powers on your desktop later! 🚀✨
+              Our platform works best on bigger screens right now. But don't
+              worry - you can still create an account or login here and unleash
+              the full property analysis powers on your desktop later! 🚀✨
             </p>
           </div>
-          <Button 
-            onClick={() => setOpen(false)} 
+          <Button
+            onClick={() => setOpen(false)}
             className="bg-[#1BA3FF] hover:bg-[#114D9D] w-full py-6"
           >
             Got it, thanks!
