@@ -626,7 +626,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             }}
                           >
                             Fetch Property Data
-                            <Sparkles className="ml-2 h-4 w-4 text-[#3B82F6]" />
+                            <div className="ml-2 flex items-center gap-1">
+                              <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                              <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                            </div>
                           </Button>
                         </div>
                       </FormControl>
@@ -1134,7 +1137,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           <Button
                             type="button"
                             variant="outline"
-                            className="w-full h-10"
+                            className="flex items-center gap-2 w-full h-10"
                             onClick={() => {
                               if (isProAccessLoading) return;
 
@@ -1154,9 +1157,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             ) : (
                               <>
                                 Get Revenue Data
-                                <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
-                                  PRO
-                                </span>
+                                <div className="ml-2 flex items-center gap-1">
+                                  <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                                  <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                                </div>
                               </>
                             )}
                           </Button>
@@ -1189,6 +1193,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <Button
                           type="button"
                           variant="outline"
+                          className="flex items-center gap-2"
                           onClick={() => {
                             if (!hasAccess) {
                               setShowUpgradeModal(true);
@@ -1203,7 +1208,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           }}
                         >
                           Get Long term rental data
-                          <Sparkles className="ml-2 h-4 w-4 text-[#3B82F6]" />
+                          <div className="ml-2 flex items-center gap-1">
+                            <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                            <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                          </div>
                         </Button>
                       </div>
                       <FormMessage />
@@ -1296,6 +1304,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <Button
                           type="button"
                           variant="outline"
+                          className="flex items-center gap-2"
                           onClick={() => {
                             if (!hasAccess) {
                               setShowUpgradeModal(true);
@@ -1310,7 +1319,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           }}
                         >
                           Get Appreciation Data
-                          <Sparkles className="ml-2 h-4 w-4 text-[#3B82F6]" />
+                          <div className="ml-2 flex items-center gap-1">
+                            <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                            <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                          </div>
                         </Button>
                       </div>
                       <FormMessage />
@@ -1342,6 +1354,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <Button
                           type="button"
                           variant="outline"
+                          className="flex items-center gap-2"
                           onClick={() => {
                             if (!hasAccess) {
                               setShowUpgradeModal(true);
@@ -1356,7 +1369,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           }}
                         >
                           Get Area Rate Data
-                          <Sparkles className="ml-2 h-4 w-4 text-[#3B82F6]" />
+                          <div className="ml-2 flex items-center gap-1">
+                            <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                            <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                          </div>
                         </Button>
                       </div>
                       <FormMessage />
