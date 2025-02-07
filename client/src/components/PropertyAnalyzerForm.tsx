@@ -788,12 +788,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           <FormLabel>Deposit Amount (R)</FormLabel>
                           <FormControl>
                             <Input
-                              type="number"
-                              min="0"
-                              placeholder="250000,00"
-                              {...field}
+                              type="text"
+                              placeholder="250,000.00"
+                              value={field.value ? field.value.toLocaleString('en-ZA') : ''}
                               onChange={(e) => {
-                                const amount = e.target.valueAsNumber;
+                                const value = e.target.value.replace(/[^\d]/g, '');
+                                const amount = value ? parseInt(value, 10) : '';
                                 field.onChange(amount);
                                 // Calculate percentage based on amount
                                 const purchasePrice =
