@@ -62,7 +62,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1">
+      <main className="flex-1 ml-16 md:ml-64">
         <PageTransition>
           <Component />
         </PageTransition>
