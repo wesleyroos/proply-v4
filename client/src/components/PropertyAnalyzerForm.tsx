@@ -961,13 +961,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <FormLabel>Other Monthly Expenses</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
-                          min="0"
+                          type="text"
                           placeholder="WiFi, electricity, subscriptions, etc."
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
+                          value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^\d]/g, '');
+                            field.onChange(value ? parseInt(value, 10) : '');
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
