@@ -151,12 +151,22 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [showPercentileDialog, setShowPercentileDialog] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [demoClicks, setDemoClicks] = useState(0);
+  const [revenueData, setRevenueData] = useState<{
+    "25": RevenueData;
+    "50": RevenueData;
+    "75": RevenueData;
+    "90": RevenueData;
+  } | null>(null);
   const [showScrapingModal, setShowScrapingModal] = useState(false);
   const [scrapingStatus, setScrapingStatus] = useState("");
   const [scrapingProgress, setScrapingProgress] = useState(0);
   const [scrapedData, setScrapedData] = useState<any>(null);
 
+  // Fix the destructuring to use hasAccess instead of hasProAccess
   const { hasAccess, isLoading: isProAccessLoading } = useProAccess();
   const { user, isLoading: isUserLoading } = useUser();
   const { toast } = useToast();
@@ -308,12 +318,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   };
 
   const fetchRevenueData = async () => {
-    // Check pro access - show upgrade modal for free users
-    if (!hasAccess) {
-      setShowUpgradeModal(true);
-      return;
-    }
-
     setIsLoading(true);
     try {
       const address = form.getValues("address");
@@ -598,11 +602,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             type="button"
                             variant="outline"
                             onClick={() => {
+                              if (!hasAccess) {
+                                setShowUpgradeModal(true);
+                                return;
+                              }
                               const url = form.getValues("propertyUrl");
                               if (!url) {
                                 toast({
                                   title: "Missing URL",
-                                  description: "Please enter a property URL first",
+                                  description:
+                                    "Please enter a property URL first",
                                   variant: "destructive",
                                 });
                                 return;
@@ -612,7 +621,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           >
                             Fetch Property Data
                             <div className="ml-2 flex items-center gap-1">
-                              <span className="text-xs font-semibold text-[#3B82F6]">COMING SOON</span>
+                              <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
                               <Sparkles className="h-4 w-4 text-[#3B82F6]" />
                             </div>
                           </Button>
@@ -1059,8 +1068,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           placeholder="0% if self-managed"
                           {...field}
                           onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
+                            field.onChange(e.target.valueAsNumber)}
                         />
                       </FormControl>
                       <FormMessage />
@@ -1126,6 +1134,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             className="flex items-center gap-2 w-full h-10"
                             onClick={() => {
                               if (isProAccessLoading) return;
+
                               if (hasAccess) {
                                 fetchRevenueData();
                               } else {
@@ -1355,10 +1364,11 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   name="comments"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Additional Comments</FormLabel>
+                      <FormLabel>Comments</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Enter any additional notes or comments"
+                          placeholder="Add any description or comments about the property"
+                          className="min-h-[100px]"
                           {...field}
                         />
                       </FormControl>
@@ -1381,22 +1391,28 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               Previous
             </Button>
 
-            {currentStep === STEPS.length - 1 ? (
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  "Complete Analysis"
-                )}
-              </Button>
-            ) : (
-              <Button type="button" onClick={nextStep}>
-                Next
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {currentStep === STEPS.length - 1 && (
+                <>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="min-w-[100px]"
+                  >
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Analyze
+                  </Button>
+                </>
+              )}
+
+              {currentStep < STEPS.length - 1 && (
+                <Button type="button" onClick={nextStep}>
+                  Next
+                </Button>
+              )}
+            </div>
           </div>
         </form>
       </Form>
@@ -1406,6 +1422,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         open={showUpgradeModal}
         onOpenChange={setShowUpgradeModal}
       />
+
       {/* Percentile Selection Modal */}
       <Dialog
         open={showPercentileDialog}
