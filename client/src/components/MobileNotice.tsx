@@ -26,7 +26,7 @@ export function MobileNotice() {
             <h3 className="font-semibold text-xl">Hey there! 👋</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               While we're working on our mobile experience, Proply works best on desktop. 
-              Feel free to create an account now, and dive into the full experience on your computer later!
+              Feel free to create an account or login now, and dive into the full experience on your computer later!
             </p>
           </div>
           <Button 
