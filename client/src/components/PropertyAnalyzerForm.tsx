@@ -770,39 +770,11 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
             {/* Step 2: Financing Details */}
             {currentStep === 1 && (
               <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="depositType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Deposit Type</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex space-x-4"
-                        >
-                          <FormItem className="flex items-center space-x-2">
-                            <FormControl>
-                              <RadioGroupItem value="amount" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Amount (R)
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-2">
-                            <FormControl>
-                              <RadioGroupItem value="percentage" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Percentage (%)
-                            </FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                <input 
+                  type="hidden" 
+                  name="depositType" 
+                  value="percentage"
+                  {...form.register("depositType")}
                 />
 
                 <div className="flex gap-4 items-end">
