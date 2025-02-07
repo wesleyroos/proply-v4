@@ -110,8 +110,8 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="p-4 md:p-8 bg-gray-50">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div className="p-8 bg-gray-50">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Welcome{user?.firstName ? `, ${user.firstName}` : ''}!</h1>
 
         {!hasProAccess && (
@@ -133,7 +133,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Links */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-6">
+      <div className="grid gap-6 md:grid-cols-3 mb-6">
         <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
           <Link href="/dashboard/property-analyzer">
             <CardContent className="pt-6">
@@ -187,7 +187,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Portfolio Metrics */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-6">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-3 mb-6">
         <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
@@ -234,7 +234,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 min-h-[600px]">
+      <div className="grid gap-6 md:grid-cols-2 min-h-[600px]">
         {/* Property Tables */}
         <div className="space-y-6">
           {/* Property Analyzer Properties */}
