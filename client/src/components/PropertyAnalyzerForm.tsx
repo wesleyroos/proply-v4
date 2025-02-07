@@ -917,12 +917,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <FormLabel>Monthly Levies (R)</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
-                          min="0"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
+                          type="text"
+                          placeholder="Enter monthly levies"
+                          value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^\d]/g, '');
+                            field.onChange(value ? parseInt(value, 10) : '');
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -938,12 +939,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <FormLabel>Monthly Rates & Taxes (R)</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
-                          min="0"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
+                          type="text"
+                          placeholder="Enter monthly rates & taxes"
+                          value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^\d]/g, '');
+                            field.onChange(value ? parseInt(value, 10) : '');
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
