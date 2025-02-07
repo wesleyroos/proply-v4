@@ -1143,7 +1143,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             });
                           }}
                         >
-                          Get Long term rental data
+                          Get Long-Term Rental Data
                           <div className="ml-2 flex items-center gap-1">
                             <span className="text-xs font-semibold text-[#3B82F6]">COMING SOON</span>
                             <Sparkles className="h-4 w-4 text-[#3B82F6]" />
