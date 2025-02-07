@@ -23,10 +23,11 @@ export function MobileNotice() {
             <Laptop className="h-10 w-10 text-blue-600" />
           </div>
           <div className="space-y-4">
-            <h3 className="font-semibold text-xl">Hey there! 👋</h3>
+            <h3 className="font-semibold text-xl">Oops, caught you on mobile! 🙈</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              While we're working on our mobile experience, Proply works best on desktop. 
-              Feel free to create an account or login now, and dive into the full experience on your computer later!
+              Our property wizardry works its best magic on bigger screens right now. 
+              But don't worry - you can still create an account here and unleash the full 
+              property analysis powers on your desktop later! 🚀✨
             </p>
           </div>
           <Button 
