@@ -6,7 +6,8 @@ const router = express.Router();
 router.post('/scrape', async (req, res) => {
   try {
     const { url } = req.body;
-    
+    console.log('Received scraping request for URL:', url);
+
     if (!url) {
       return res.status(400).json({ error: 'URL is required' });
     }
@@ -16,6 +17,7 @@ router.post('/scrape', async (req, res) => {
     }
 
     const scrapedData = await scrapePrivateProperty(url);
+    console.log("Scraped property data:", scrapedData); 
     res.json(scrapedData);
   } catch (error) {
     console.error('Scraping error:', error);

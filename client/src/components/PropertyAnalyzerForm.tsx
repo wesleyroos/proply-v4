@@ -443,6 +443,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       setScrapingStatus("Processing property information...");
 
       const data = await response.json();
+      console.log("Scraped property data:", data); // Added logging
       setScrapedData(data);
       setScrapingProgress(100);
       setScrapingStatus("Property data retrieved successfully!");
