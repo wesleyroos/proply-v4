@@ -630,10 +630,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <Input
                           type="text"
                           placeholder="Enter purchase price"
-                          value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                          value={
+                            field.value
+                              ? field.value.toLocaleString("en-ZA")
+                              : ""
+                          }
                           onChange={(e) => {
-                            const value = e.target.value.replace(/[^\d]/g, '');
-                            field.onChange(value ? parseInt(value, 10) : '');
+                            const value = e.target.value.replace(/[^\d]/g, "");
+                            field.onChange(value ? parseInt(value, 10) : "");
                           }}
                         />
                       </FormControl>
@@ -675,7 +679,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             type="number"
                             step="0.5"
                             min="0"
-                            placeholder="0 or 0.5 for studio"
+                            placeholder="0.5 for studio"
                             {...field}
                             onChange={(e) =>
                               field.onChange(e.target.valueAsNumber)
@@ -771,9 +775,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
             {/* Step 2: Financing Details */}
             {currentStep === 1 && (
               <div className="space-y-4">
-                <input 
-                  type="hidden" 
-                  name="depositType" 
+                <input
+                  type="hidden"
+                  name="depositType"
                   value="percentage"
                   {...form.register("depositType")}
                 />
@@ -790,10 +794,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             <Input
                               type="text"
                               placeholder="250,000.00"
-                              value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                              value={
+                                field.value
+                                  ? field.value.toLocaleString("en-ZA")
+                                  : ""
+                              }
                               onChange={(e) => {
-                                const value = e.target.value.replace(/[^\d]/g, '');
-                                const amount = value ? parseInt(value, 10) : '';
+                                const value = e.target.value.replace(
+                                  /[^\d]/g,
+                                  "",
+                                );
+                                const amount = value ? parseInt(value, 10) : "";
                                 field.onChange(amount);
                                 // Calculate percentage based on amount
                                 const purchasePrice =
@@ -919,10 +930,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <Input
                           type="text"
                           placeholder="Enter monthly levies"
-                          value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                          value={
+                            field.value
+                              ? field.value.toLocaleString("en-ZA")
+                              : ""
+                          }
                           onChange={(e) => {
-                            const value = e.target.value.replace(/[^\d]/g, '');
-                            field.onChange(value ? parseInt(value, 10) : '');
+                            const value = e.target.value.replace(/[^\d]/g, "");
+                            field.onChange(value ? parseInt(value, 10) : "");
                           }}
                         />
                       </FormControl>
@@ -941,10 +956,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <Input
                           type="text"
                           placeholder="Enter monthly rates & taxes"
-                          value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                          value={
+                            field.value
+                              ? field.value.toLocaleString("en-ZA")
+                              : ""
+                          }
                           onChange={(e) => {
-                            const value = e.target.value.replace(/[^\d]/g, '');
-                            field.onChange(value ? parseInt(value, 10) : '');
+                            const value = e.target.value.replace(/[^\d]/g, "");
+                            field.onChange(value ? parseInt(value, 10) : "");
                           }}
                         />
                       </FormControl>
@@ -963,10 +982,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <Input
                           type="text"
                           placeholder="WiFi, electricity, subscriptions, etc."
-                          value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                          value={
+                            field.value
+                              ? field.value.toLocaleString("en-ZA")
+                              : ""
+                          }
                           onChange={(e) => {
-                            const value = e.target.value.replace(/[^\d]/g, '');
-                            field.onChange(value ? parseInt(value, 10) : '');
+                            const value = e.target.value.replace(/[^\d]/g, "");
+                            field.onChange(value ? parseInt(value, 10) : "");
                           }}
                         />
                       </FormControl>
@@ -1014,7 +1037,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           placeholder="0% if self-managed"
                           {...field}
                           onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)}
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -1039,10 +1063,19 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             <Input
                               type="text"
                               placeholder="Enter nightly rate"
-                              value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                              value={
+                                field.value
+                                  ? field.value.toLocaleString("en-ZA")
+                                  : ""
+                              }
                               onChange={(e) => {
-                                const value = e.target.value.replace(/[^\d]/g, '');
-                                field.onChange(value ? parseInt(value, 10) : '');
+                                const value = e.target.value.replace(
+                                  /[^\d]/g,
+                                  "",
+                                );
+                                field.onChange(
+                                  value ? parseInt(value, 10) : "",
+                                );
                               }}
                             />
                           </FormControl>
@@ -1068,7 +1101,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             />
                           </FormControl>
                           <FormMessage />
-                        </FormItem>                      )}
+                        </FormItem>
+                      )}
                     />
                     <FormItem>
                       <FormLabel>Market Data</FormLabel>
@@ -1098,7 +1132,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               <>
                                 Get Revenue Data
                                 <div className="ml-2 flex items-center gap-1">
-                                  <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                                  <span className="text-xs font-semibold text-[#3B82F6]">
+                                    PRO
+                                  </span>
                                   <Sparkles className="h-4 w-4 text-[#3B82F6]" />
                                 </div>
                               </>
@@ -1124,10 +1160,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           <Input
                             type="text"
                             placeholder="Enter expected monthly rental"
-                            value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                            value={
+                              field.value
+                                ? field.value.toLocaleString("en-ZA")
+                                : ""
+                            }
                             onChange={(e) => {
-                              const value = e.target.value.replace(/[^\d]/g, '');
-                              field.onChange(value ? parseInt(value, 10) : '');
+                              const value = e.target.value.replace(
+                                /[^\d]/g,
+                                "",
+                              );
+                              field.onChange(value ? parseInt(value, 10) : "");
                             }}
                           />
                         </FormControl>
@@ -1138,14 +1181,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           onClick={() => {
                             toast({
                               title: "Feature In Development",
-                              description: "Long term rental data integration will be available soon.",
+                              description:
+                                "Long term rental data integration will be available soon.",
                               duration: 3000,
                             });
                           }}
                         >
                           Get Long-Term Rental Data
                           <div className="ml-2 flex items-center gap-1">
-                            <span className="text-xs font-semibold text-[#3B82F6]">COMING SOON</span>
+                            <span className="text-xs font-semibold text-[#3B82F6]">
+                              COMING SOON
+                            </span>
                             <Sparkles className="h-4 w-4 text-[#3B82F6]" />
                           </div>
                         </Button>
@@ -1193,7 +1239,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           min="0"
                           max="100"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -1213,7 +1261,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           min="0"
                           max="100"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -1234,7 +1284,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             min="0"
                             max="100"
                             {...field}
-                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
                           />
                         </FormControl>
                         <Button
@@ -1244,14 +1296,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           onClick={() => {
                             toast({
                               title: "Feature In Development",
-                              description: "Property appreciation data integration will be available soon.",
+                              description:
+                                "Property appreciation data integration will be available soon.",
                               duration: 3000,
                             });
                           }}
                         >
                           Get Appreciation Data
                           <div className="ml-2 flex items-center gap-1">
-                            <span className="text-xs font-semibold text-[#3B82F6]">COMING SOON</span>
+                            <span className="text-xs font-semibold text-[#3B82F6]">
+                              COMING SOON
+                            </span>
                             <Sparkles className="h-4 w-4 text-[#3B82F6]" />
                           </div>
                         </Button>
@@ -1277,10 +1332,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           <Input
                             type="text"
                             placeholder="Enter area rate per square meter"
-                            value={field.value ? field.value.toLocaleString('en-ZA') : ''}
+                            value={
+                              field.value
+                                ? field.value.toLocaleString("en-ZA")
+                                : ""
+                            }
                             onChange={(e) => {
-                              const value = e.target.value.replace(/[^\d]/g, '');
-                              field.onChange(value ? parseInt(value, 10) : '');
+                              const value = e.target.value.replace(
+                                /[^\d]/g,
+                                "",
+                              );
+                              field.onChange(value ? parseInt(value, 10) : "");
                             }}
                           />
                         </FormControl>
@@ -1291,14 +1353,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           onClick={() => {
                             toast({
                               title: "Feature In Development",
-                              description: "Area rate data integration will be available soon.",
+                              description:
+                                "Area rate data integration will be available soon.",
                               duration: 3000,
                             });
                           }}
                         >
                           Get Area Rate Data
                           <div className="ml-2 flex items-center gap-1">
-                            <span className="text-xs font-semibold text-[#3B82F6]">COMING SOON</span>
+                            <span className="text-xs font-semibold text-[#3B82F6]">
+                              COMING SOON
+                            </span>
                             <Sparkles className="h-4 w-4 text-[#3B82F6]" />
                           </div>
                         </Button>
