@@ -679,10 +679,17 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             type="text"
                             placeholder="0,5 for studio"
                             {...field}
+                            value={field.value ?? ''}
                             onChange={(e) => {
+                              const input = e.target.value;
+                              // Allow empty input for backspace functionality
+                              if (input === '') {
+                                field.onChange(undefined);
+                                return;
+                              }
                               // Replace comma with period for parsing
-                              const value = e.target.value.replace(',', '.');
-                              const numValue = parseFloat(value);
+                              const normalizedInput = input.replace(',', '.');
+                              const numValue = parseFloat(normalizedInput);
                               // Only update if it's a valid number and non-negative
                               if (!isNaN(numValue) && numValue >= 0) {
                                 field.onChange(numValue);
