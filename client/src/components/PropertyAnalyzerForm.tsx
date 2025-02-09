@@ -674,8 +674,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           <Input
                             type="number"
                             step="0.5"
-                            min="0.5"
-                            placeholder="0.5 for studio"
+                            min="0"
+                            placeholder="0 or 0.5 for studio"
                             {...field}
                             onChange={(e) =>
                               field.onChange(e.target.valueAsNumber)
