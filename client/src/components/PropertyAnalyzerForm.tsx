@@ -681,7 +681,11 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             {...field}
                             onChange={(e) => {
                               const value = e.target.value.replace('.', ',');
-                              field.onChange(value);
+                              const parseValue = value.replace(',', '.');
+                              const numValue = parseFloat(parseValue);
+                              if (!isNaN(numValue)) {
+                                field.onChange(numValue);
+                              }
                             }}
                           />
                         </FormControl>
