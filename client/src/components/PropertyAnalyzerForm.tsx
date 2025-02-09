@@ -679,20 +679,9 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             type="text"
                             placeholder="0,5 for studio"
                             {...field}
-                            value={field.value?.toString().replace('.', ',') || ''}
                             onChange={(e) => {
-                              const value = e.target.value;
-                              // Allow typing numbers, comma, period, and backspace
-                              if (!/^[\d.,]*$/.test(value) && value !== '') {
-                                return;
-                              }
-                              const parseValue = value.replace(',', '.');
-                              const numValue = parseFloat(parseValue);
-                              if (!isNaN(numValue) && numValue >= 0) {
-                                field.onChange(numValue);
-                              } else {
-                                field.onChange(value);
-                              }
+                              const value = e.target.value.replace('.', ',');
+                              field.onChange(value);
                             }}
                           />
                         </FormControl>
