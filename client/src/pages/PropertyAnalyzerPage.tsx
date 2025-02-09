@@ -501,11 +501,13 @@ export default function PropertyAnalyzerPage() {
       }, 500);
     } catch (error) {
       console.error("Save error:", error);
+      console.error("Form data:", formData);
+      
+      // Validate bedrooms before saving
+      const dataToSave = prepareAnalysisDataForSave();
+      console.error("Prepared data:", dataToSave);
+      
       const errorMessage = error instanceof Error ? error.message : "Failed to save property analysis";
-      console.error("Error details:", {
-        formData,
-        error: errorMessage
-      });
       toast({
         variant: "destructive", 
         title: "Error",

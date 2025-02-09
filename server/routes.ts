@@ -1232,12 +1232,23 @@ export function registerRoutes(app: Express): Server {
 
     try {
       console.log("Saving property analysis for user:", req.user.id);
+      console.log("Request body:", req.body);
+
+      // Validate and normalize bedrooms value
+      const bedrooms = typeof req.body.bedrooms === 'string' 
+        ? parseFloat(req.body.bedrooms.replace(',', '.'))
+        : Number(req.body.bedrooms);
+
+      if (isNaN(bedrooms)) {
+        return res.status(400).json({ error: "Invalid bedrooms value" });
+      }
 
       // Insert analysis result without incrementing usage
       const [savedAnalysis] = await db
         .insert(propertyAnalyzerResults)
         .values({
           ...req.body,
+          bedrooms,
           userId: req.user!.id,
           createdAt: new Date(),
         })
