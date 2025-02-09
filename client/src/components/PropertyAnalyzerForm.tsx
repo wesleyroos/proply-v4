@@ -53,7 +53,7 @@ const formSchema = z.object({
   propertyUrl: z.string().url().optional().or(z.literal("")),
   purchasePrice: z.number().min(0, "Purchase price must be positive"),
   floorArea: z.number().min(0, "Floor area must be positive"),
-  bedrooms: z.number().min(0.1, "Minimum 0.1 bedrooms required for studio"),
+  bedrooms: z.number().min(0.5, "Minimum 0.5 bedrooms required"),
   bathrooms: z.number().min(0, "Bathrooms cannot be negative"),
   parkingSpaces: z
     .number()
@@ -667,42 +667,33 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   )}
                 />
 
-                {/* Bedroom field section */}
-                <FormField
-                  control={form.control}
-                  name="bedrooms"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Bedrooms</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="0,5 for studio"
-                          {...field}
-                          value={field.value ?? ''}
-                          onChange={(e) => {
-                            const input = e.target.value;
-                            // Allow empty input for backspace functionality
-                            if (input === '') {
-                              field.onChange(undefined);
-                              return;
-                            }
-                            // Replace comma with period for parsing
-                            const normalizedInput = input.replace(',', '.');
-                            const numValue = parseFloat(normalizedInput);
-                            // Only update if it's a valid number and non-negative
-                            if (!isNaN(numValue) && numValue >= 0) {
-                              field.onChange(numValue);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <div className="grid grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="bedrooms"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Bedrooms</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="0,5 for studio"
+                            {...field}
+                            onChange={(e) => {
+                              const value = e.target.value.replace('.', ',');
+                              const parseValue = value.replace(',', '.');
+                              const numValue = parseFloat(parseValue);
+                              if (!isNaN(numValue) && numValue >= 0) {
+                                field.onChange(numValue);
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <FormField
                     control={form.control}
                     name="bathrooms"
@@ -1034,7 +1025,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   )}
                 />
 
-                {/* Management fee field section - fixing syntax error */}
                 <FormField
                   control={form.control}
                   name="managementFee"
@@ -1044,11 +1034,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <FormControl>
                         <Input
                           type="number"
+                          step="0.1"
+                          min="0"
+                          max="100"
                           placeholder="0% if self-managed"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
                         />
-                                            </FormControl>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
