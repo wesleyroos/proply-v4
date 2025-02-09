@@ -403,7 +403,7 @@ export default function PropertyAnalyzerPage() {
       propertyPhoto: formData.propertyPhoto || "",
       purchasePrice: Number(analysisResult.analysis.purchasePrice),
       floorArea: Number(formData.floorArea),
-      bedrooms: Number(formData.bedrooms),
+      bedrooms: typeof formData.bedrooms === 'string' ? parseFloat(formData.bedrooms.replace(',', '.')) : Number(formData.bedrooms),
       bathrooms: Number(formData.bathrooms),
       parkingSpaces: Number(formData.parkingSpaces || 0),
       depositAmount: Number(analysisResult.deposit),
