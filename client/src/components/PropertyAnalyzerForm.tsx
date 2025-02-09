@@ -683,7 +683,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                               const value = e.target.value.replace('.', ',');
                               const parseValue = value.replace(',', '.');
                               const numValue = parseFloat(parseValue);
-                              if (!isNaN(numValue)) {
+                              if (!isNaN(numValue) && numValue >= 0) {
                                 field.onChange(numValue);
                               }
                             }}
