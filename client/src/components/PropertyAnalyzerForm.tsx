@@ -55,12 +55,14 @@ const formSchema = z.object({
   floorArea: z.number().min(0, "Floor area must be positive"),
   bedrooms: z.string()
     .transform((val) => {
+      if (!val) return undefined;
       const normalized = val.replace(',', '.');
       const num = parseFloat(normalized);
-      if (isNaN(num)) throw new Error('Invalid number');
+      if (isNaN(num)) return undefined;
       return num;
     })
-    .refine((val) => val >= 0.5, "Minimum 0.5 bedrooms required"),
+    .refine((val) => val === undefined || val >= 0.5, "Minimum 0.5 bedrooms required")
+    .optional(),
   bathrooms: z.number().min(0, "Bathrooms cannot be negative"),
   parkingSpaces: z
     .number()
