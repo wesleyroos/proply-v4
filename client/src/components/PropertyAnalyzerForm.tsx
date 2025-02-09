@@ -686,19 +686,20 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                                 return;
                               }
                               
-                              // Replace comma with period
-                              const value = e.target.value.replace(',', '.');
+                              // Replace period with comma
+                              const value = e.target.value.replace('.', ',');
                               
-                              // Allow typing decimal point
-                              if (value.endsWith('.')) {
+                              // Allow typing decimal separator
+                              if (value.endsWith(',')) {
                                 field.onChange(value);
                                 return;
                               }
                               
-                              // Validate number
-                              const numValue = parseFloat(value);
+                              // Validate number (convert comma to period for parsing)
+                              const parseValue = value.replace(',', '.');
+                              const numValue = parseFloat(parseValue);
                               if (!isNaN(numValue) && numValue >= 0) {
-                                field.onChange(numValue);
+                                field.onChange(value);
                               }
                             }}
                           />
