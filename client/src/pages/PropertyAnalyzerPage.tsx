@@ -501,11 +501,15 @@ export default function PropertyAnalyzerPage() {
       }, 500);
     } catch (error) {
       console.error("Save error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to save property analysis";
+      console.error("Error details:", {
+        formData,
+        error: errorMessage
+      });
       toast({
-        variant: "destructive",
+        variant: "destructive", 
         title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to save analysis",
+        description: errorMessage,
         duration: 7000,
       });
     }
