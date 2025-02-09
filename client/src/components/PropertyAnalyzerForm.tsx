@@ -53,16 +53,7 @@ const formSchema = z.object({
   propertyUrl: z.string().url().optional().or(z.literal("")),
   purchasePrice: z.number().min(0, "Purchase price must be positive"),
   floorArea: z.number().min(0, "Floor area must be positive"),
-  bedrooms: z.string()
-    .transform((val) => {
-      if (!val) return undefined;
-      const normalized = val.replace(',', '.');
-      const num = parseFloat(normalized);
-      if (isNaN(num)) return undefined;
-      return num;
-    })
-    .refine((val) => val === undefined || val >= 0.5, "Minimum 0.5 bedrooms required")
-    .optional(),
+  bedrooms: z.number().min(0.5, "Minimum 0.5 bedrooms required"),
   bathrooms: z.number().min(0, "Bathrooms cannot be negative"),
   parkingSpaces: z
     .number()
@@ -689,26 +680,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             placeholder="0.5 or 0,5 for studio"
                             {...field}
                             onChange={(e) => {
-                              // Allow empty input for backspace
-                              if (e.target.value === '') {
-                                field.onChange('');
-                                return;
-                              }
-                              
-                              // Replace period with comma
-                              const value = e.target.value.replace('.', ',');
-                              
-                              // Allow typing decimal separator
-                              if (value.endsWith(',')) {
-                                field.onChange(value);
-                                return;
-                              }
-                              
-                              // Validate number (convert comma to period for parsing)
-                              const parseValue = value.replace(',', '.');
-                              const numValue = parseFloat(parseValue);
+                              const value = e.target.value.replace(',', '.');
+                              const numValue = parseFloat(value);
                               if (!isNaN(numValue) && numValue >= 0) {
-                                field.onChange(value);
+                                field.onChange(numValue);
                               }
                             }}
                           />

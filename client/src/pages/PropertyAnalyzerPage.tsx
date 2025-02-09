@@ -403,7 +403,7 @@ export default function PropertyAnalyzerPage() {
       propertyPhoto: formData.propertyPhoto || "",
       purchasePrice: Number(analysisResult.analysis.purchasePrice),
       floorArea: Number(formData.floorArea),
-      bedrooms: Number(typeof formData.bedrooms === 'string' ? formData.bedrooms.replace(',', '.') : formData.bedrooms),
+      bedrooms: Number(formData.bedrooms),
       bathrooms: Number(formData.bathrooms),
       parkingSpaces: Number(formData.parkingSpaces || 0),
       depositAmount: Number(analysisResult.deposit),
@@ -501,17 +501,11 @@ export default function PropertyAnalyzerPage() {
       }, 500);
     } catch (error) {
       console.error("Save error:", error);
-      console.error("Form data:", formData);
-      
-      // Validate bedrooms before saving
-      const dataToSave = prepareAnalysisDataForSave();
-      console.error("Prepared data:", dataToSave);
-      
-      const errorMessage = error instanceof Error ? error.message : "Failed to save property analysis";
       toast({
-        variant: "destructive", 
+        variant: "destructive",
         title: "Error",
-        description: errorMessage,
+        description:
+          error instanceof Error ? error.message : "Failed to save analysis",
         duration: 7000,
       });
     }
