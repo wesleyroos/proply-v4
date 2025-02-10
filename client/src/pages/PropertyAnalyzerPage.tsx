@@ -465,8 +465,8 @@ export default function PropertyAnalyzerPage() {
     try {
       console.log("Starting save analysis...");
       const dataToSave = prepareAnalysisDataForSave();
-      console.log("Prepared data for save:", dataToSave);
-      
+      console.log("Data prepared for save:", dataToSave);
+
       if (!dataToSave) {
         toast({
           variant: "destructive",
@@ -966,7 +966,7 @@ export default function PropertyAnalyzerPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 rounded-lg bg-blue-50/50">
+                      <div className="p-4 rounded-lg bgblue-50/50">
                         <h3 className="text-sm font-bold text-blue-600 mb-3">
                           Short-Term Rental (Year 1)
                         </h3>
