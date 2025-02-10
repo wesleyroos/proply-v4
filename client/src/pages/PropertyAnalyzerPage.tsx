@@ -489,11 +489,13 @@ export default function PropertyAnalyzerPage() {
         credentials: "include",
       });
 
-      const responseData = await response.json();
-
       if (!response.ok) {
-        throw new Error(responseData.error || "Failed to save analysis");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to save property analysis");
       }
+
+      const responseData = await response.json();
+      console.log("Save response:", responseData);
 
       setAnalysisId(responseData.id);
       setTimeout(() => {
