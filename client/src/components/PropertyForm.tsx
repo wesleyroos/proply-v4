@@ -455,13 +455,13 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
               </tbody>
             </table>
             <div className="mt-4 space-y-2 text-sm text-gray-500">
-              <p>Market Occupancy: {revenueData?.["50"].marketOccupancy.toFixed(1)}%</p>
-              <p>Active Listings: {revenueData?.["50"].totalListings}</p>
-              <p>Seasonality Index: {revenueData?.["50"].seasonalityIndex.toFixed(2)}</p>
+              <p>Market Occupancy: {revenueData?.["50"]?.marketOccupancy?.toFixed(1) ?? 0}%</p>
+              <p>Active Listings: {revenueData?.["50"]?.totalListings ?? 0}</p>
+              <p>Seasonality Index: {revenueData?.["50"]?.seasonalityIndex?.toFixed(2) ?? 0}</p>
               <p>RevPAR: {new Intl.NumberFormat("en-ZA", {
                 style: "currency",
                 currency: "ZAR",
-              }).format(revenueData?.["50"].revPar)}</p>
+              }).format(revenueData?.["50"]?.revPar ?? 0)}</p>
             </div>
           </div>
         </DialogContent>
