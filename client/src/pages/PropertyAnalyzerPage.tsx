@@ -480,6 +480,10 @@ export default function PropertyAnalyzerPage() {
         return;
       }
 
+      // Log the bedroom value specifically
+      console.log("Bedrooms raw value:", formData.bedrooms);
+      console.log("Bedrooms parsed value:", dataToSave.bedrooms);
+
       const response = await fetch("/api/property-analyzer/save", {
         method: "POST",
         headers: {
@@ -489,15 +493,17 @@ export default function PropertyAnalyzerPage() {
         credentials: "include",
       });
 
+      const errorData = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
+        console.error("Save failed with status:", response.status);
+        console.error("Error details:", errorData);
         throw new Error(errorData.error || "Failed to save property analysis");
       }
 
-      const responseData = await response.json();
-      console.log("Save response:", responseData);
+      console.log("Save response:", errorData);
+      setAnalysisId(errorData.id);
 
-      setAnalysisId(responseData.id);
       setTimeout(() => {
         toast({
           variant: "default",
