@@ -523,7 +523,7 @@ export async function generatePDF(
             ]
           : []),
         ...(selections.rentalPerformance.shortTermAnnualOccupancy
-          ? [["Annual Occupancy", formatPercentage(data.performance.annualOccupancy)]]
+          ? [["Annual Occupancy", `${data.performance.annualOccupancy}%`]]
           : []),
         ...(selections.rentalPerformance.shortTermAnnualRevenue
           ? [
