@@ -64,7 +64,7 @@ export default function ComparisonPage() {
     const platformFeeAmount = shortTermAnnual * platformFeeRate;
     const shortTermAfterPlatformFee = shortTermAnnual - platformFeeAmount;
 
-    // Calculate and apply management fee if present (based on post-platform fee revenue)
+    // Calculate management fee based on revenue after platform fees
     const managementFeeAmount =
       managementFee > 0 ? shortTermAfterPlatformFee * managementFee : 0;
     const shortTermAfterFees = shortTermAfterPlatformFee - managementFeeAmount;
