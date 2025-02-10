@@ -463,7 +463,10 @@ export default function PropertyAnalyzerPage() {
 
   const handleSaveAnalysis = async () => {
     try {
+      console.log("Starting save analysis...");
       const dataToSave = prepareAnalysisDataForSave();
+      console.log("Prepared data for save:", dataToSave);
+      
       if (!dataToSave) {
         toast({
           variant: "destructive",

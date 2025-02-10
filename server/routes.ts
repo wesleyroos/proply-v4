@@ -1232,6 +1232,8 @@ export function registerRoutes(app: Express): Server {
 
     try {
       console.log("Saving property analysis for user:", req.user.id);
+      console.log("Request body:", JSON.stringify(req.body, null, 2));
+      console.log("User info:", req.user);
 
       // Insert analysis result without incrementing usage
       const [savedAnalysis] = await db
