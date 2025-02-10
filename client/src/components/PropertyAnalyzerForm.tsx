@@ -685,34 +685,27 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                                 : ""
                             }
                             onChange={(e) => {
-                              // Allow only numbers, comma, and period
-                              const value = e.target.value.replace(
-                                /[^\d.,]/g,
-                                "",
-                              );
-
-                              // Handle the decimal separator (both . and ,)
-                              const lastChar = value.slice(-1);
-                              const hasDecimal =
-                                value.includes(".") || value.includes(",");
-
-                              // If it's a decimal separator and we don't already have one
-                              if (
-                                (lastChar === "." || lastChar === ",") &&
-                                !hasDecimal
-                              ) {
-                                field.onChange(
-                                  parseFloat(value.replace(",", ".")),
-                                );
+                              const input = e.target.value;
+                              
+                              // Allow empty input
+                              if (input === '') {
+                                field.onChange('');
                                 return;
                               }
-
-                              // Convert to number for validation
-                              const numValue = parseFloat(
-                                value.replace(",", "."),
-                              );
-
-                              // Update if it's a valid number
+                              
+                              // Only allow one decimal separator
+                              const normalized = input.replace(',', '.');
+                              if (!/^\d*\.?\d*$/.test(normalized)) {
+                                return;
+                              }
+                              
+                              // Handle partial decimal input
+                              if (normalized.endsWith('.')) {
+                                field.onChange(input);
+                                return;
+                              }
+                              
+                              const numValue = parseFloat(normalized);
                               if (!isNaN(numValue) && numValue >= 0) {
                                 field.onChange(numValue);
                               }
