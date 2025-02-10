@@ -1,5 +1,5 @@
 // Seasonality factors for each month (Jan-Dec)
-export const SEASONALITY_FACTORS = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
+export const SEASONALITY_FACTORS = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
 
 // Occupancy rates for different scenarios
 export const OCCUPANCY_RATES = {
