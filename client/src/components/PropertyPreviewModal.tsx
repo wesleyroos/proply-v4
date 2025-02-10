@@ -7,6 +7,12 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   LineChart,
   Line,
   XAxis,
@@ -575,34 +581,32 @@ export function PropertyPreviewModal({
               {property.title}
             </DialogTitle>
 
-            <div className="flex gap-2">
-              <Button 
-                className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
-                onClick={() => generatePropertyPreviewPDF(property, false, user)}
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                Export Report
-              </Button>
-
-              {hasProAccess ? (
-                <Button 
-                  className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
-                  onClick={() => generatePropertyPreviewPDF(property, true, user)}
-                >
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
                   <FileText className="w-4 h-4 mr-2" />
-                  Export Report (with branding)
+                  Export Report
                 </Button>
-              ) : (
-                <Button
-                  className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
-                  onClick={() => setShowUpgradeModal(true)}
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Export Report (with branding)
-                  <Sparkles className="w-4 h-4 ml-2" />
-                </Button>
-              )}
-            </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(property, false, user)}>
+                  <FileText className="mr-2" />
+                  Basic Report
+                </DropdownMenuItem>
+                {hasProAccess ? (
+                  <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(property, true, user)}>
+                    <FileText className="mr-2" />
+                    Report with Branding
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => setShowUpgradeModal(true)}>
+                    <FileText className="mr-2" />
+                    Report with Branding
+                    <Sparkles className="ml-2" />
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <UpgradeModal
               open={showUpgradeModal}
               onOpenChange={setShowUpgradeModal}
