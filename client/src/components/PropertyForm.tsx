@@ -413,6 +413,9 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Revenue Performance Data</DialogTitle>
+            <DialogDescription>
+              Select revenue performance metrics based on market data for your property analysis.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-gray-500 mb-4">
