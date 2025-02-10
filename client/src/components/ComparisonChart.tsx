@@ -542,19 +542,27 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
                   Revenue Medium{data.managementFee > 0 ? ` (After ${data.managementFee * 100}% Fee)` : ''}
                 </td>
                 {Array(12).fill(0).map((_, i) => {
-                  const revenue = calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee);
-                  const afterFee = data.managementFee > 0 ? revenue * (1 - data.managementFee) : revenue;
-                  return (
-                    <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
-                      {formatter.format(afterFee)}
-                    </td>
-                  );
-                })}
+                    const seasonalRate = getSeasonalNightlyRate(data.shortTermNightly, i);
+                    const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, data.managementFee > 0);
+                    const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                    const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
+                    const revenue = feeAdjustedRate * occupancyRate * daysInMonth;
+                    const afterFee = data.managementFee > 0 ? revenue * (1 - data.managementFee) : revenue;
+                    return (
+                      <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
+                        {formatter.format(afterFee)}
+                      </td>
+                    );
+                  })}
                 <td className="text-right py-3 px-6 border-l font-semibold">
                   {formatter.format(
                     Array(12).fill(0)
                       .reduce((sum, _, i) => {
-                        const revenue = calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee);
+                        const seasonalRate = getSeasonalNightlyRate(data.shortTermNightly, i);
+                        const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, data.managementFee > 0);
+                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
+                        const revenue = feeAdjustedRate * occupancyRate * daysInMonth;
                         return sum + (data.managementFee > 0 ? revenue * (1 - data.managementFee) : revenue);
                       }, 0)
                   )}
@@ -563,7 +571,11 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
                   {formatter.format(
                     Array(12).fill(0)
                       .reduce((sum, _, i) => {
-                        const revenue = calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee);
+                        const seasonalRate = getSeasonalNightlyRate(data.shortTermNightly, i);
+                        const feeAdjustedRate = getFeeAdjustedRate(seasonalRate, data.managementFee > 0);
+                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
+                        const revenue = feeAdjustedRate * occupancyRate * daysInMonth;
                         return sum + (data.managementFee > 0 ? revenue * (1 - data.managementFee) : revenue);
                       }, 0) / 12
                   )}
