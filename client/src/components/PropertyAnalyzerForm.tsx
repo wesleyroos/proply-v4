@@ -681,13 +681,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             {...field}
                             onChange={(e) => {
                               const inputValue = e.target.value;
+                              // Allow empty input for clearing
                               if (inputValue === '') {
                                 field.onChange('');
                                 return;
                               }
-                              // Handle comma to decimal conversion
-                              const normalizedValue = inputValue.replace(',', '.');
-                              const numValue = parseFloat(normalizedValue);
+                              // Only allow numbers and single decimal point
+                              if (!/^\d*\.?\d*$/.test(inputValue)) {
+                                return;
+                              }
+                              const numValue = parseFloat(inputValue);
                               if (!isNaN(numValue) && numValue >= 0) {
                                 field.onChange(numValue);
                               }
