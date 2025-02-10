@@ -1492,7 +1492,7 @@ export async function generatePDF(
                   "Gross Yield",
                   ...years.map((year, index) => {
                     const metric = metrics[index] || {};
-                    return `${(metric.grossYield || 0).toFixed(2)}%`;
+                    return formatPercentage(metric.grossYield || 0);
                   }),
                 ],
               ]
