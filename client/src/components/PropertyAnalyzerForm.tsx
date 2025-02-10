@@ -679,10 +679,40 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             type="text"
                             placeholder="0,5 for studio"
                             {...field}
+                            value={
+                              typeof field.value === "number"
+                                ? field.value.toString().replace(".", ",")
+                                : ""
+                            }
                             onChange={(e) => {
-                              const value = e.target.value.replace('.', ',');
-                              const parseValue = value.replace(',', '.');
-                              const numValue = parseFloat(parseValue);
+                              // Allow only numbers, comma, and period
+                              const value = e.target.value.replace(
+                                /[^\d.,]/g,
+                                "",
+                              );
+
+                              // Handle the decimal separator (both . and ,)
+                              const lastChar = value.slice(-1);
+                              const hasDecimal =
+                                value.includes(".") || value.includes(",");
+
+                              // If it's a decimal separator and we don't already have one
+                              if (
+                                (lastChar === "." || lastChar === ",") &&
+                                !hasDecimal
+                              ) {
+                                field.onChange(
+                                  parseFloat(value.replace(",", ".")),
+                                );
+                                return;
+                              }
+
+                              // Convert to number for validation
+                              const numValue = parseFloat(
+                                value.replace(",", "."),
+                              );
+
+                              // Update if it's a valid number
                               if (!isNaN(numValue) && numValue >= 0) {
                                 field.onChange(numValue);
                               }
