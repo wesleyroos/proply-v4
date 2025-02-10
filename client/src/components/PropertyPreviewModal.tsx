@@ -557,7 +557,7 @@ export function PropertyPreviewModal({
   if (!property) return null;
 
   const { user } = useUser();
-  const { hasProAccess } = useProAccess();
+  const { hasAccess: hasProAccess } = useProAccess();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const platformFee = property.managementFee > 0 ? 15 : 3;
   const feeAdjustedNightlyRate =
