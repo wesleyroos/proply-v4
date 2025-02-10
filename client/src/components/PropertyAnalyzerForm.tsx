@@ -685,34 +685,32 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                                 : ""
                             }
                             onChange={(e) => {
-                              // Allow only numbers, comma, and period
-                              const value = e.target.value.replace(
-                                /[^\d.,]/g,
-                                "",
-                              );
-
-                              // Handle the decimal separator (both . and ,)
-                              const lastChar = value.slice(-1);
-                              const hasDecimal =
-                                value.includes(".") || value.includes(",");
-
-                              // If it's a decimal separator and we don't already have one
-                              if (
-                                (lastChar === "." || lastChar === ",") &&
-                                !hasDecimal
-                              ) {
-                                field.onChange(
-                                  parseFloat(value.replace(",", ".")),
-                                );
+                              let value = e.target.value;
+                              
+                              // Allow empty input
+                              if (value === '') {
+                                field.onChange('');
                                 return;
                               }
-
-                              // Convert to number for validation
-                              const numValue = parseFloat(
-                                value.replace(",", "."),
-                              );
-
-                              // Update if it's a valid number
+                              
+                              // Replace comma with period and clean input
+                              value = value.replace(/,/g, '.');
+                              
+                              // Only allow one decimal point
+                              const parts = value.split('.');
+                              if (parts.length > 2) return;
+                              
+                              // Validate pattern: digits + optional decimal + digits
+                              if (!/^\d*\.?\d*$/.test(value)) return;
+                              
+                              // If just typed decimal point, keep as string
+                              if (value.endsWith('.')) {
+                                field.onChange(value);
+                                return;
+                              }
+                              
+                              // Convert to number and validate
+                              const numValue = parseFloat(value);
                               if (!isNaN(numValue) && numValue >= 0) {
                                 field.onChange(numValue);
                               }
