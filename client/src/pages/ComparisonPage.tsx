@@ -62,11 +62,12 @@ export default function ComparisonPage() {
     // Calculate platform fees (Airbnb/booking fees)
     const platformFeeRate = managementFee > 0 ? 0.15 : 0.03; // 15% if managed, 3% if self-managed
     const platformFeeAmount = shortTermAnnual * platformFeeRate;
+    const shortTermAfterPlatformFee = shortTermAnnual - platformFeeAmount;
 
-    // Calculate and apply management fee if present
+    // Calculate and apply management fee if present (based on post-platform fee revenue)
     const managementFeeAmount =
-      managementFee > 0 ? shortTermAnnual * managementFee : 0;
-    const shortTermAfterFees = shortTermAnnual - managementFeeAmount;
+      managementFee > 0 ? shortTermAfterPlatformFee * managementFee : 0;
+    const shortTermAfterFees = shortTermAfterPlatformFee - managementFeeAmount;
 
     // Calculate break-even occupancy based on net revenue after all fees
     const platformFeeMultiplier = managementFee > 0 ? 0.85 : 0.97; // 15% or 3% platform fee
