@@ -591,18 +591,25 @@ export function PropertyPreviewModal({
               <DropdownMenuContent>
                 <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(property, false, user)}>
                   <FileText className="mr-2" />
-                  Basic Report
+                  Without Branding
                 </DropdownMenuItem>
                 {hasProAccess ? (
                   <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(property, true, user)}>
                     <FileText className="mr-2" />
-                    Report with Branding
+                    With Branding
+                    <div className="ml-2 flex items-center gap-1">
+                      <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                      <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                    </div>
                   </DropdownMenuItem>
                 ) : (
                   <DropdownMenuItem onClick={() => setShowUpgradeModal(true)}>
                     <FileText className="mr-2" />
-                    Report with Branding
-                    <Sparkles className="ml-2" />
+                    With Branding
+                    <div className="ml-2 flex items-center gap-1">
+                      <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                      <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                    </div>
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -889,8 +896,7 @@ export function PropertyPreviewModal({
                         dataKey="longTerm"
                         name="Long Term"
                         stroke="#93c5fd"
-                        strokeWidth={2}
-                        strokeDasharray="5 5"
+                        strokeWidth={2}                        strokeDasharray="5 5"
                       />
                     </LineChart>
                   </ResponsiveContainer>
