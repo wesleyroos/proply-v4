@@ -455,12 +455,12 @@ export async function generatePDF(
         ? [
             [
               "Maintenance Percent",
-              formatCurrency(data.expenses.maintenancePercent),
+              formatPercentage(data.expenses.maintenancePercent),
             ],
           ]
         : []),
       ...(selections.operatingExpenses.managementFee
-        ? [["Management Fee", formatCurrency(data.expenses.managementFee)]]
+        ? [["Management Fee", formatPercentage(data.expenses.managementFee)]]
         : []),
     ];
 
