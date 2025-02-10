@@ -1232,7 +1232,8 @@ export function registerRoutes(app: Express): Server {
 
     try {
       console.log("Saving property analysis for user:", req.user.id);
-      console.log("Request body:", JSON.stringify(req.body, null, 2));
+      console.log("Bedrooms value:", req.body.bedrooms, "Type:", typeof req.body.bedrooms);
+      console.log("Full request body:", JSON.stringify(req.body, null, 2));
       console.log("Database schema expects:", {
         bedrooms: "decimal(3,1)",
         bathrooms: "integer",
