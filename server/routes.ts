@@ -1244,9 +1244,12 @@ export function registerRoutes(app: Express): Server {
 
       const dataToSave = {
         ...req.body,
-        bedrooms: bedroomsValue,
+        bedrooms: parseFloat(req.body.bedrooms),
         bathrooms: parseInt(req.body.bathrooms),
-        parkingSpaces: parseInt(req.body.parkingSpaces || 0)
+        parkingSpaces: parseInt(req.body.parkingSpaces || 0),
+        userId: req.user!.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
 
       // Insert analysis result with properly formatted data
