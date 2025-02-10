@@ -394,6 +394,12 @@ export default function PropertyAnalyzerPage() {
       return null;
     }
 
+    // Ensure bedrooms is always a valid integer
+    const bedroomValue = Number(formData.bedrooms);
+    if (isNaN(bedroomValue) || !Number.isInteger(bedroomValue)) {
+      throw new Error("Bedrooms must be a whole number");
+    }
+
     const data = {
       userId: user.id,
       title: `${analysisResult.address} Analysis`,
@@ -403,7 +409,7 @@ export default function PropertyAnalyzerPage() {
       propertyPhoto: formData.propertyPhoto || "",
       purchasePrice: Number(analysisResult.analysis.purchasePrice),
       floorArea: Number(formData.floorArea),
-      bedrooms: Number(formData.bedrooms),
+      bedrooms: bedroomValue,
       bathrooms: Number(formData.bathrooms),
       parkingSpaces: Number(formData.parkingSpaces || 0),
       depositAmount: Number(analysisResult.deposit),
@@ -418,12 +424,8 @@ export default function PropertyAnalyzerPage() {
       managementFee: Number(formData.managementFee || 0),
       shortTermNightlyRate: Number(analysisResult.shortTermNightlyRate || 0),
       annualOccupancy: Number(analysisResult.annualOccupancy || 0),
-      shortTermAnnualRevenue: Number(
-        analysisResult.analysis.shortTermAnnualRevenue || 0,
-      ),
-      longTermAnnualRevenue: Number(
-        analysisResult.analysis.longTermAnnualRevenue || 0,
-      ),
+      shortTermAnnualRevenue: Number(analysisResult.analysis.shortTermAnnualRevenue || 0),
+      longTermAnnualRevenue: Number(analysisResult.analysis.longTermAnnualRevenue || 0),
       shortTermGrossYield: Number(analysisResult.shortTermGrossYield || 0),
       longTermGrossYield: Number(analysisResult.longTermGrossYield || 0),
       ratePerSquareMeter: Number(formData.cmaRatePerSqm || 0),
@@ -507,8 +509,7 @@ export default function PropertyAnalyzerPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to save analysis",
+        description: error instanceof Error ? error.message : "Failed to save analysis",
         duration: 7000,
       });
     }
