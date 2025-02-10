@@ -681,7 +681,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             min="0.5"
                             placeholder="Enter number of bedrooms"
                             {...field}
-                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                            onChange={(e) => {
+                              const value = e.target.valueAsNumber;
+                              field.onChange(Number(value.toFixed(1))); // Ensure one decimal place
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -1056,7 +1059,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       name="airbnbNightlyRate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Short Term Nightly Rate</FormLabel>
+                          <<FormLabel>Short Term Nightly Rate</FormLabel>
                           <FormControl>
                             <Input
                               type="text"
