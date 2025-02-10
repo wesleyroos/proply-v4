@@ -676,11 +676,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <FormLabel>Bedrooms</FormLabel>
                         <FormControl>
                           <Input
-                            type="text"
-                            placeholder="0,5 for studio"
+                            type="number"
+                            step="0.5"
+                            min="0.5"
+                            placeholder="0.5 for studio"
                             {...field}
                             onChange={(e) => {
-                              const value = e.target.value.replace('.', ',');
+                              const value = parseFloat(e.target.value);
+                              if (!isNaN(value) && value >= 0) {
+                                field.onChange(value);
+                              }
                               const parseValue = value.replace(',', '.');
                               const numValue = parseFloat(parseValue);
                               if (!isNaN(numValue) && numValue >= 0) {
