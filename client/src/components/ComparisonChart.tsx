@@ -476,6 +476,23 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
                 <td className="text-right py-3 px-6 border-l">-</td>
                 <td className="text-right py-3 px-6">81.7%</td>
               </tr>
+              <tr className="border-b hover:bg-gray-50">
+                <td className="py-3 px-6">Days in Month</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">28</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">30</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">30</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">30</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">30</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 border-l">365</td>
+                <td className="text-right py-3 px-6">30.4</td>
+              </tr>
               <tr className="border-b bg-[#FF6B6B]/10 hover:bg-[#FF6B6B]/20">
                 <td className="py-3 px-6 text-[#FF6B6B] font-medium">
                   Revenue Low{data.managementFee > 0 ? ` (After ${data.managementFee * 100}% Fee)` : ''}
