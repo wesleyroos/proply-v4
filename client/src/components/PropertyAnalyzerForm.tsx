@@ -676,13 +676,15 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <FormLabel>Bedrooms</FormLabel>
                         <FormControl>
                           <Input
-                            type="number"
-                            step="0.5"
-                            min="0.5"
+                            type="text"
                             placeholder="0.5 for studio"
                             {...field}
                             onChange={(e) => {
                               const inputValue = e.target.value;
+                              if (inputValue === '') {
+                                field.onChange('');
+                                return;
+                              }
                               // Handle comma to decimal conversion
                               const normalizedValue = inputValue.replace(',', '.');
                               const numValue = parseFloat(normalizedValue);
