@@ -686,11 +686,20 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                                 field.onChange('');
                                 return;
                               }
+                              
+                              // Replace comma with period for decimal
+                              const normalizedValue = inputValue.replace(',', '.');
+                              
                               // Only allow numbers and single decimal point
-                              if (!/^\d*\.?\d*$/.test(inputValue)) {
+                              if (!/^\d*\.?\d*$/.test(normalizedValue)) {
                                 return;
                               }
-                              const numValue = parseFloat(inputValue);
+                              
+                              // Update the field with the string value first
+                              field.onChange(normalizedValue);
+                              
+                              // Convert to number if it's a valid decimal
+                              const numValue = parseFloat(normalizedValue);
                               if (!isNaN(numValue) && numValue >= 0) {
                                 field.onChange(numValue);
                               }
