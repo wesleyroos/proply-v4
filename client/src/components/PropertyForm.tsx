@@ -18,7 +18,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 
@@ -48,30 +47,10 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [demoClicks, setDemoClicks] = useState(0);
   const [revenueData, setRevenueData] = useState<{
-    "25": RevenueData & {
-      revPar: number;
-      totalListings: number;
-      marketOccupancy: number;
-      seasonalityIndex: number;
-    };
-    "50": RevenueData & {
-      revPar: number;
-      totalListings: number;
-      marketOccupancy: number;
-      seasonalityIndex: number;
-    };
-    "75": RevenueData & {
-      revPar: number;
-      totalListings: number;
-      marketOccupancy: number;
-      seasonalityIndex: number;
-    };
-    "90": RevenueData & {
-      revPar: number;
-      totalListings: number;
-      marketOccupancy: number;
-      seasonalityIndex: number;
-    };
+    "25": RevenueData;
+    "50": RevenueData;
+    "75": RevenueData;
+    "90": RevenueData;
   } | null>(null);
   const hasProAccess = useProAccess();
 
@@ -107,8 +86,6 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
       );
 
       const data = await response.json();
-      console.log("API Response:", data);
-      console.log("KPIs for bedrooms:", data.KPIsByBedroomCategory?.[bedrooms]);
 
       if (data.KPIsByBedroomCategory?.[bedrooms]) {
         const result = data.KPIsByBedroomCategory[bedrooms];
@@ -117,37 +94,21 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             adr: result.ADR25PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 25,
-            revPar: result.RevenueMonthlyAvg,
-            totalListings: result.NoOfListings,
-            marketOccupancy: result.AvgAdjustedOccupancy,
-            seasonalityIndex: 1.0, // Default value since not provided in API
           },
           "50": {
             adr: result.ADR50PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 50,
-            revPar: result.RevenueMonthlyAvg,
-            totalListings: result.NoOfListings,
-            marketOccupancy: result.AvgAdjustedOccupancy,
-            seasonalityIndex: 1.0,
           },
           "75": {
             adr: result.ADR75PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 75,
-            revPar: result.RevenueMonthlyAvg,
-            totalListings: result.NoOfListings,
-            marketOccupancy: result.AvgAdjustedOccupancy,
-            seasonalityIndex: 1.0,
           },
           "90": {
             adr: result.ADR90PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 90,
-            revPar: result.RevenueMonthlyAvg,
-            totalListings: result.NoOfListings,
-            marketOccupancy: result.AvgAdjustedOccupancy,
-            seasonalityIndex: 1.0,
           },
         });
         setShowPercentileDialog(true);
@@ -414,9 +375,6 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Revenue Performance Data</DialogTitle>
-            <DialogDescription>
-              Select revenue performance metrics based on market data for your property analysis.
-            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-gray-500 mb-4">
@@ -458,14 +416,11 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                   ))}
               </tbody>
             </table>
-            <div className="mt-4 space-y-2 text-sm text-gray-500">
-              <p>Market Occupancy: {revenueData?.["50"]?.marketOccupancy ? revenueData["50"].marketOccupancy.toFixed(1) : '0'}%</p>
-              <p>Active Listings: {revenueData?.["50"]?.totalListings || '0'}</p>
-              <p>Seasonality Index: {revenueData?.["50"]?.seasonalityIndex ? revenueData["50"].seasonalityIndex.toFixed(2) : '0'}</p>
-              <p>RevPAR: {new Intl.NumberFormat("en-ZA", {
-                style: "currency",
-                currency: "ZAR",
-              }).format(revenueData?.["50"]?.revPar || 0)}</p>
+            <div className="mt-4 text-sm text-gray-500">
+              <p>Occupancy: {revenueData?.["50"].occupancy.toFixed(1)}%</p>
+              <p className="mt-1">
+                Number of Listings: {revenueData?.["50"].occupancy}
+              </p>
             </div>
           </div>
         </DialogContent>
