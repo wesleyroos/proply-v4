@@ -677,29 +677,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <FormControl>
                           <Input
                             type="text"
-                            placeholder="0.5 for studio"
+                            placeholder="0,5 for studio"
                             {...field}
                             onChange={(e) => {
-                              const inputValue = e.target.value;
-                              // Allow empty input for clearing
-                              if (inputValue === '') {
-                                field.onChange('');
-                                return;
-                              }
-                              
-                              // Replace comma with period for decimal
-                              const normalizedValue = inputValue.replace(',', '.');
-                              
-                              // Only allow numbers and single decimal point
-                              if (!/^\d*\.?\d*$/.test(normalizedValue)) {
-                                return;
-                              }
-                              
-                              // Update the field with the string value first
-                              field.onChange(normalizedValue);
-                              
-                              // Convert to number if it's a valid decimal
-                              const numValue = parseFloat(normalizedValue);
+                              const value = e.target.value.replace('.', ',');
+                              const parseValue = value.replace(',', '.');
+                              const numValue = parseFloat(parseValue);
                               if (!isNaN(numValue) && numValue >= 0) {
                                 field.onChange(numValue);
                               }
