@@ -439,7 +439,8 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
                 <td className="text-right py-3 px-6 whitespace-nowrap">65%</td>
                 <td className="text-right py-3 px-6 whitespace-nowrap">65%</td>
                 <td className="text-right py-3 px-6 whitespace-nowrap">70%</td>
-                <td colSpan={2}></td>
+                <td className="text-right py-3 px-6 border-l">-</td>
+                <td className="text-right py-3 px-6">58.8%</td>
               </tr>
               <tr className="border-b hover:bg-gray-50">
                 <td className="py-3 px-6">Occupancy Medium</td>
@@ -455,7 +456,8 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
                 <td className="text-right py-3 px-6 whitespace-nowrap">75%</td>
                 <td className="text-right py-3 px-6 whitespace-nowrap">75%</td>
                 <td className="text-right py-3 px-6 whitespace-nowrap">85%</td>
-                <td colSpan={2}></td>
+                <td className="text-right py-3 px-6 border-l">-</td>
+                <td className="text-right py-3 px-6">70.6%</td>
               </tr>
               <tr className="border-b hover:bg-gray-50">
                 <td className="py-3 px-6">Occupancy High</td>
@@ -471,7 +473,8 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
                 <td className="text-right py-3 px-6 whitespace-nowrap">85%</td>
                 <td className="text-right py-3 px-6 whitespace-nowrap">85%</td>
                 <td className="text-right py-3 px-6 whitespace-nowrap">95%</td>
-                <td colSpan={2}></td>
+                <td className="text-right py-3 px-6 border-l">-</td>
+                <td className="text-right py-3 px-6">81.7%</td>
               </tr>
               <tr className="border-b bg-[#FF6B6B]/10 hover:bg-[#FF6B6B]/20">
                 <td className="py-3 px-6 text-[#FF6B6B] font-medium">Revenue Low</td>
