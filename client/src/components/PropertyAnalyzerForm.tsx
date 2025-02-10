@@ -676,45 +676,12 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                         <FormLabel>Bedrooms</FormLabel>
                         <FormControl>
                           <Input
-                            type="text"
-                            placeholder="0,5 for studio"
+                            type="number"
+                            step="0.5"
+                            min="0.5"
+                            placeholder="Enter number of bedrooms"
                             {...field}
-                            value={
-                              typeof field.value === "number"
-                                ? field.value.toString().replace(".", ",")
-                                : ""
-                            }
-                            onChange={(e) => {
-                              let value = e.target.value;
-                              
-                              // Allow empty input
-                              if (value === '') {
-                                field.onChange('');
-                                return;
-                              }
-                              
-                              // Replace comma with period and clean input
-                              value = value.replace(/,/g, '.');
-                              
-                              // Only allow one decimal point
-                              const parts = value.split('.');
-                              if (parts.length > 2) return;
-                              
-                              // Validate pattern: digits + optional decimal + digits
-                              if (!/^\d*\.?\d*$/.test(value)) return;
-                              
-                              // If just typed decimal point, keep as string
-                              if (value.endsWith('.')) {
-                                field.onChange(value);
-                                return;
-                              }
-                              
-                              // Convert to number and validate
-                              const numValue = parseFloat(value);
-                              if (!isNaN(numValue) && numValue >= 0) {
-                                field.onChange(numValue);
-                              }
-                            }}
+                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
                           />
                         </FormControl>
                         <FormMessage />
