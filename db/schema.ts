@@ -39,7 +39,7 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   reportsGenerated: integer("reports_generated").default(0).notNull(),
-  
+
   pricelabsApiCallsTotal: integer("pricelabs_api_calls_total").default(0),
   pricelabsApiCallsMonth: integer("pricelabs_api_calls_month").default(0),
   pricelabsApiLastReset: timestamp("pricelabs_api_last_reset")
@@ -85,7 +85,7 @@ export const propdataListings = pgTable("propdata_listings", {
   address: text("address").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   propertyType: text("property_type").notNull(),
-  bedrooms: integer("bedrooms").notNull(),
+  bedrooms: decimal("bedrooms", { precision: 3, scale: 1 }).notNull(),
   bathrooms: integer("bathrooms").notNull(),
   parkingSpaces: integer("parking_spaces"),
   floorSize: integer("floor_size"), // in square meters
@@ -222,7 +222,7 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   // Property Details
   purchasePrice: decimal("purchase_price", { precision: 12, scale: 2 }).notNull(),
   floorArea: decimal("floor_area", { precision: 10, scale: 2 }).notNull(),
-  bedrooms: integer("bedrooms").notNull(),
+  bedrooms: decimal("bedrooms", { precision: 3, scale: 1 }).notNull(),
   bathrooms: integer("bathrooms").notNull(),
   parkingSpaces: integer("parking_spaces"),
 
