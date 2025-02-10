@@ -53,7 +53,8 @@ export default function ComparisonChart({
 }: ComparisonChartProps) {
   const [showCalculations, setShowCalculations] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
-  const chartData = [
+  // Original simple chart data
+  const basicChartData = [
     {
       name: "Monthly Income",
       "Long Term": data.longTermMonthly,
@@ -66,7 +67,39 @@ export default function ComparisonChart({
     },
   ];
 
+  // Data-driven monthly breakdown
+  const monthlyChartData = Array(12).fill(0).map((_, i) => {
+    const month = new Date(2024, i).toLocaleString("default", {
+      month: "short",
+    });
+    const daysInMonth = new Date(2024, i + 1, 0).getDate();
+
+    // Base nightly rate adjusted for platform fees
+    const platformFee = data.managementFee > 0 ? 0.15 : 0.03;
+    const feeAdjustedRate = data.shortTermNightly * (1 - platformFee);
+
+    // Calculate revenue based on occupancy scenarios
+    const lowRevenue =
+      feeAdjustedRate * daysInMonth * (OCCUPANCY_RATES.low[i] / 100);
+    const medRevenue =
+      feeAdjustedRate * daysInMonth * (OCCUPANCY_RATES.medium[i] / 100);
+    const highRevenue =
+      feeAdjustedRate * daysInMonth * (OCCUPANCY_RATES.high[i] / 100);
+
+    // Apply management fee if present
+    const managementMultiplier = data.managementFee > 0 ? 1 - data.managementFee : 1;
+
+    return {
+      month,
+      Conservative: lowRevenue * managementMultiplier,
+      Moderate: medRevenue * managementMultiplier,
+      Optimistic: highRevenue * managementMultiplier,
+      "Long Term": data.longTermMonthly,
+    };
+  });
+
   const { toast } = useToast();
+  const [showDetailed, setShowDetailed] = useState(false);
 
   return (
     <TooltipProvider>
@@ -469,72 +502,81 @@ export default function ComparisonChart({
             </p>
           </div>
         </div>
-        <div id="revenue-comparison-chart" className="mt-6 h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={Array(12)
-                .fill(0)
-                .map((_, i) => ({
-                  month: new Date(2024, i).toLocaleString("default", {
-                    month: "short",
-                  }),
-                  low: calculateMonthlyRevenue(
-                    "low",
-                    i,
-                    data.shortTermNightly,
-                    data.managementFee > 0,
-                    data.managementFee,
-                  ),
-                  medium: calculateMonthlyRevenue(
-                    "medium",
-                    i,
-                    data.shortTermNightly,
-                    data.managementFee > 0,
-                    data.managementFee,
-                  ),
-                  high: calculateMonthlyRevenue(
-                    "high",
-                    i,
-                    data.shortTermNightly,
-                    data.managementFee > 0,
-                    data.managementFee,
-                  ),
-                  longTerm: data.longTermMonthly,
-                }))}
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDetailed(!showDetailed)}
             >
-              <XAxis dataKey="month" />
-              <YAxis tickFormatter={(value) => formatter.format(value)} />
-              <RechartsTooltip
-                formatter={(value) => formatter.format(value as number)}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="low"
-                stroke="#FF6B6B"
-                name="Revenue Low"
-              />
-              <Line
-                type="monotone"
-                dataKey="medium"
-                stroke="#4ECDC4"
-                name="Revenue Medium"
-              />
-              <Line
-                type="monotone"
-                dataKey="high"
-                stroke="#45B7D1"
-                name="Revenue High"
-              />
-              <Line
-                type="monotone"
-                dataKey="longTerm"
-                stroke="#FFE66D"
-                strokeDasharray="5 5"
-                name="Long Term Rental"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+              {showDetailed ? "Show Simple View" : "Show Monthly Breakdown"}
+            </Button>
+          </div>
+
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              {showDetailed ? (
+                <LineChart data={monthlyChartData}>
+                  <XAxis dataKey="month" />
+                  <YAxis tickFormatter={(value) => formatter.format(value)} />
+                  <RechartsTooltip
+                    formatter={(value) => formatter.format(value)}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="Conservative"
+                    stroke="#fca5a5"
+                    strokeWidth={2}
+                    name="Conservative (Low Season)"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="Moderate"
+                    stroke="#fdba74"
+                    strokeWidth={2}
+                    name="Moderate (Mid Season)"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="Optimistic"
+                    stroke="#86efac"
+                    strokeWidth={2}
+                    name="Optimistic (High Season)"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="Long Term"
+                    stroke="#93c5fd"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    name="Long Term Rental"
+                  />
+                </LineChart>
+              ) : (
+                <LineChart data={basicChartData}>
+                  <XAxis dataKey="name" />
+                  <YAxis tickFormatter={(value) => formatter.format(value)} />
+                  <RechartsTooltip
+                    formatter={(value) => formatter.format(value)}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="Long Term"
+                    stroke="#93c5fd"
+                    strokeWidth={2}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="Short Term"
+                    stroke="#86efac"
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              )}
+            </ResponsiveContainer>
+          </div>
         </div>
         <div
           id="monthly-revenue-table"
