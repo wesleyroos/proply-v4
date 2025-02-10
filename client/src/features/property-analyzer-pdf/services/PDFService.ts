@@ -537,7 +537,7 @@ export async function generatePDF(
           ? [
               [
                 "Gross Yield",
-                `${formatPercentage(data.performance.shortTermGrossYield)}%`,
+                formatPercentage(data.performance.shortTermGrossYield),
               ],
             ]
           : []),
@@ -589,7 +589,7 @@ export async function generatePDF(
           ? [
               [
                 "Gross Yield",
-                `${formatPercentage(data.performance.longTermGrossYield)}%`,
+                formatPercentage(data.performance.longTermGrossYield),
               ],
             ]
           : []),
