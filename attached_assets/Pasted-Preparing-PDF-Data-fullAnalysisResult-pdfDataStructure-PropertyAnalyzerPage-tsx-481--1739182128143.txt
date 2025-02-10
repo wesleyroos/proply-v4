@@ -1,0 +1,42 @@
+Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPage.tsx:481 
+        
+        
+       POST https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/api/property-analyzer/save 500 (Internal Server Error)
+handleSaveAnalysis @ PropertyAnalyzerPage.tsx:481
+callCallback2 @ chunk-UPELNCPK.js?v=8a8664cf:3674
+invokeGuardedCallbackDev @ chunk-UPELNCPK.js?v=8a8664cf:3699
+invokeGuardedCallback @ chunk-UPELNCPK.js?v=8a8664cf:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-UPELNCPK.js?v=8a8664cf:3736
+executeDispatch @ chunk-UPELNCPK.js?v=8a8664cf:7014
+processDispatchQueueItemsInOrder @ chunk-UPELNCPK.js?v=8a8664cf:7034
+processDispatchQueue @ chunk-UPELNCPK.js?v=8a8664cf:7043
+dispatchEventsForPlugins @ chunk-UPELNCPK.js?v=8a8664cf:7051
+(anonymous) @ chunk-UPELNCPK.js?v=8a8664cf:7174
+batchedUpdates$1 @ chunk-UPELNCPK.js?v=8a8664cf:18913
+batchedUpdates @ chunk-UPELNCPK.js?v=8a8664cf:3579
+dispatchEventForPluginEventSystem @ chunk-UPELNCPK.js?v=8a8664cf:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-UPELNCPK.js?v=8a8664cf:5478
+dispatchEvent @ chunk-UPELNCPK.js?v=8a8664cf:5472
+dispatchDiscreteEvent @ chunk-UPELNCPK.js?v=8a8664cf:5449Understand this errorAI
+PropertyAnalyzerPage.tsx:506 Save error: Error: Failed to save property analysis
+    at handleSaveAnalysis (PropertyAnalyzerPage.tsx:493:15)
+handleSaveAnalysis @ PropertyAnalyzerPage.tsx:506
+await in handleSaveAnalysis
+callCallback2 @ chunk-UPELNCPK.js?v=8a8664cf:3674
+invokeGuardedCallbackDev @ chunk-UPELNCPK.js?v=8a8664cf:3699
+invokeGuardedCallback @ chunk-UPELNCPK.js?v=8a8664cf:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-UPELNCPK.js?v=8a8664cf:3736
+executeDispatch @ chunk-UPELNCPK.js?v=8a8664cf:7014
+processDispatchQueueItemsInOrder @ chunk-UPELNCPK.js?v=8a8664cf:7034
+processDispatchQueue @ chunk-UPELNCPK.js?v=8a8664cf:7043
+dispatchEventsForPlugins @ chunk-UPELNCPK.js?v=8a8664cf:7051
+(anonymous) @ chunk-UPELNCPK.js?v=8a8664cf:7174
+batchedUpdates$1 @ chunk-UPELNCPK.js?v=8a8664cf:18913
+batchedUpdates @ chunk-UPELNCPK.js?v=8a8664cf:3579
+dispatchEventForPluginEventSystem @ chunk-UPELNCPK.js?v=8a8664cf:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-UPELNCPK.js?v=8a8664cf:5478
+dispatchEvent @ chunk-UPELNCPK.js?v=8a8664cf:5472
+dispatchDiscreteEvent @ chunk-UPELNCPK.js?v=8a8664cf:5449Understand this errorAI
+PropertyAnalyzerPage.tsx:246 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
+PropertyAnalyzerPage.tsx:246 Preparing PDF Data: {fullAnalysisResult: {…}, pdfDataStructure: {…}}
