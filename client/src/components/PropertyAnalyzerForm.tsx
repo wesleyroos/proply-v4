@@ -682,12 +682,10 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             placeholder="0.5 for studio"
                             {...field}
                             onChange={(e) => {
-                              const value = parseFloat(e.target.value);
-                              if (!isNaN(value) && value >= 0) {
-                                field.onChange(value);
-                              }
-                              const parseValue = value.replace(',', '.');
-                              const numValue = parseFloat(parseValue);
+                              const inputValue = e.target.value;
+                              // Handle comma to decimal conversion
+                              const normalizedValue = inputValue.replace(',', '.');
+                              const numValue = parseFloat(normalizedValue);
                               if (!isNaN(numValue) && numValue >= 0) {
                                 field.onChange(numValue);
                               }
