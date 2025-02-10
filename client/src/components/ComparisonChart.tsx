@@ -150,7 +150,12 @@ export default function ComparisonChart({
             <div>
               <p className="text-sm text-gray-600">Short-Term Nightly Rate</p>
               <p className="font-medium">
-                {formatter.format(data.shortTermNightly)}
+                {formatter.format(data.shortTermNightly)}{" "}
+                <span className="text-base font-normal text-gray-600">
+                  ({formatter.format(
+                    data.shortTermNightly * (1 - (data.managementFee > 0 ? 0.15 : 0.03)),
+                  )})
+                </span>
               </p>
             </div>
             <div>
@@ -233,7 +238,9 @@ export default function ComparisonChart({
                 </div>
                 <div className="mt-1 mb-4">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm text-gray-600">Monthly Revenue</h3>
+                    <h3 className="text-base font-semibold text-gray-900">
+                      Short Term Nightly Rate (Fee Adjusted)
+                    </h3>
                     <Tooltip>
                       <TooltipTrigger>
                         <InfoIcon className="h-3 w-3 text-gray-400" />
@@ -243,8 +250,13 @@ export default function ComparisonChart({
                       </TooltipContent>
                     </Tooltip>
                   </div>
-                  <p className="text-base text-gray-900">
-                    {formatter.format(data.shortTermMonthly)}
+                  <p className="text-xl font-bold mt-1">
+                    {formatter.format(data.shortTermNightly)}{" "}
+                    <span className="text-base font-normal text-gray-600">
+                      ({formatter.format(
+                        data.shortTermNightly * (1 - (data.managementFee > 0 ? 0.15 : 0.03)),
+                      )})
+                    </span>
                   </p>
                 </div>
                 <div>
