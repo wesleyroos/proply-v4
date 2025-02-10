@@ -6,7 +6,6 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { BrandingDialog } from "@/components/BrandingDialog";
 import {
   LineChart,
   Line,
@@ -576,26 +575,34 @@ export function PropertyPreviewModal({
               {property.title}
             </DialogTitle>
 
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="mr-6 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
+            <div className="flex gap-2">
+              <Button 
+                className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
+                onClick={() => generatePropertyPreviewPDF(property, false, user)}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Export Report
+              </Button>
+
+              {hasProAccess ? (
+                <Button 
+                  className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
+                  onClick={() => generatePropertyPreviewPDF(property, true, user)}
+                >
                   <FileText className="w-4 h-4 mr-2" />
-                  Export Report
+                  Export Report (with branding)
                 </Button>
-              </DialogTrigger>
-              <BrandingDialog
-                open={open}
-                onOpenChange={onOpenChange}
-                onGeneratePDF={(includeBranding) => {
-                  generatePropertyPreviewPDF(property, includeBranding, user);
-                  onOpenChange(false);
-                }}
-                onShowUpgrade={() => {
-                  onOpenChange(false);
-                  setShowUpgradeModal(true);
-                }}
-              />
-            </Dialog>
+              ) : (
+                <Button
+                  className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
+                  onClick={() => setShowUpgradeModal(true)}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Export Report (with branding)
+                  <Sparkles className="w-4 h-4 ml-2" />
+                </Button>
+              )}
+            </div>
             <UpgradeModal
               open={showUpgradeModal}
               onOpenChange={setShowUpgradeModal}
@@ -894,8 +901,7 @@ export function PropertyPreviewModal({
                   Monthly Revenue Breakdown
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
+              <CardContent><div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50">
                       <tr>
