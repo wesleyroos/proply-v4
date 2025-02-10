@@ -1059,7 +1059,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       name="airbnbNightlyRate"
                       render={({ field }) => (
                         <FormItem>
-                          <<FormLabel>Short Term Nightly Rate</FormLabel>
+                          <FormLabel>Short Term Nightly Rate</FormLabel>
                           <FormControl>
                             <Input
                               type="text"
