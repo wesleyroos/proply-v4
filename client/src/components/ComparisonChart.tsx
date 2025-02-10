@@ -288,7 +288,7 @@ export default function ComparisonChart({
                     <p className="text-xl font-bold mt-1 text-red-600">
                       -
                       {formatter.format(
-                        data.shortTermAnnual * data.managementFee,
+                        (data.shortTermAnnual * (1 - (data.managementFee > 0 ? 0.15 : 0.03))) * data.managementFee,
                       )}
                     </p>
                   </div>
@@ -390,7 +390,7 @@ export default function ComparisonChart({
                                   <li>
                                     Management fee amount:{" "}
                                     {formatter.format(
-                                      data.shortTermAnnual * data.managementFee,
+                                      (data.shortTermAnnual * (1 - (data.managementFee > 0 ? 0.15 : 0.03))) * data.managementFee,
                                     )}
                                   </li>
                                   <li>
