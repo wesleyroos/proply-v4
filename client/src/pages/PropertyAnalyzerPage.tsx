@@ -305,7 +305,7 @@ export default function PropertyAnalyzerPage() {
         propertyUrl: formData.propertyUrl,
         purchasePrice: parseFloat(formData.purchasePrice),
         floorArea: parseFloat(formData.floorArea),
-        bedrooms: parseInt(formData.bedrooms),
+        bedrooms: parseFloat(formData.bedrooms), // Changed to parseFloat
         bathrooms: parseInt(formData.bathrooms),
         parkingSpaces: parseInt(formData.parkingSpaces || 0),
         depositType: formData.depositType,
@@ -394,10 +394,10 @@ export default function PropertyAnalyzerPage() {
       return null;
     }
 
-    // Ensure bedrooms is always a valid integer
+    // Ensure bedrooms is a valid number
     const bedroomValue = Number(formData.bedrooms);
-    if (isNaN(bedroomValue) || !Number.isInteger(bedroomValue)) {
-      throw new Error("Bedrooms must be a whole number");
+    if (isNaN(bedroomValue) || bedroomValue < 0) {
+      throw new Error("Bedrooms must be a valid number greater than or equal to 0");
     }
 
     const data = {
