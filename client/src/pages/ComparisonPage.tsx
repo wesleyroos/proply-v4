@@ -99,12 +99,14 @@ export default function ComparisonPage() {
           Proply Rent Compare
         </h1>
 
-        <div className="max-w-4xl space-y-6">
-          <Card>
-            <CardContent className="pt-6">
-              <PropertyForm onSubmit={handleCompare} queryClient={queryClient} /> {/* Pass queryClient */}
-            </CardContent>
-          </Card>
+        <div className="space-y-6">
+          <div className="max-w-4xl">
+            <Card>
+              <CardContent className="pt-6">
+                <PropertyForm onSubmit={handleCompare} queryClient={queryClient} />
+              </CardContent>
+            </Card>
+          </div>
 
           {comparisonData && (
             <Card>
