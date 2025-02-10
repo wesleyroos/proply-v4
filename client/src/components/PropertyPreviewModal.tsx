@@ -898,7 +898,8 @@ export function PropertyPreviewModal({
                         stroke="#93c5fd"
                         strokeWidth={2}                        strokeDasharray="5 5"
                       />
-                    </LineChart                  </ResponsiveContainer>
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
@@ -1261,7 +1262,9 @@ const MONTHS = [
   "Nov",
   "Dec",
 ];
-const SEASONALITY_FACTORS = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+const SEASONALITY_FACTORS = [
+  2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03,
+];
 
 function getSeasonalMultiplier(month: number): number {
   return SEASONALITY_FACTORS[month];
