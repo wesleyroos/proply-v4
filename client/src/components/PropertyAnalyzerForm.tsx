@@ -681,10 +681,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             min="0.5"
                             placeholder="Enter number of bedrooms"
                             {...field}
-                            onChange={(e) => {
-                              const value = e.target.valueAsNumber;
-                              field.onChange(Number(value.toFixed(1))); // Ensure one decimal place
-                            }}
+                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
                           />
                         </FormControl>
                         <FormMessage />
