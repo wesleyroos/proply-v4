@@ -1232,17 +1232,24 @@ export function registerRoutes(app: Express): Server {
 
     try {
       console.log("Saving property analysis for user:", req.user.id);
-      console.log("Bedrooms value:", req.body.bedrooms, "Type:", typeof req.body.bedrooms);
+      console.log("Bedrooms raw value:", req.body.bedrooms);
+      console.log("Bedrooms parsed value:", parseFloat(req.body.bedrooms));
       console.log("Full request body:", JSON.stringify(req.body, null, 2));
-      console.log("Database schema expects:", {
-        bedrooms: "decimal(3,1)",
-        bathrooms: "integer",
-        parkingSpaces: "integer"
-      });
-      console.log("Request body:", JSON.stringify(req.body, null, 2));
-      console.log("User info:", req.user);
 
-      // Insert analysis result without incrementing usage
+      // Ensure bedrooms is a decimal
+      const bedroomsValue = parseFloat(req.body.bedrooms);
+      if (isNaN(bedroomsValue)) {
+        return res.status(400).json({ error: "Invalid bedrooms value" });
+      }
+
+      const dataToSave = {
+        ...req.body,
+        bedrooms: bedroomsValue,
+        bathrooms: parseInt(req.body.bathrooms),
+        parkingSpaces: parseInt(req.body.parkingSpaces || 0)
+      };
+
+      // Insert analysis result with properly formatted data
       const [savedAnalysis] = await db
         .insert(propertyAnalyzerResults)
         .values({
