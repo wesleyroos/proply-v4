@@ -967,81 +967,83 @@ export default function PropertyAnalyzerPage() {
                         <h3 className="text-sm font-bold text-blue-600 mb-3">
                           Short-Term Rental (Year 1)
                         </h3>
-                        <div className="space-y-2">                        <div>
-                          <p className="text-2xl font-bold text-slate-800">
-                            <span>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-2xl font-bold text-slate-800">
+                              <span>
+                                R
+                                {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
+                                  "0"}
+                              </span>
+                            </p>
+                            <p className="text-base text-slate-600">
                               R
-                              {analysisResult.analysis.shortTermAnnualRevenue?.toLocaleString() ||
+                              {Math.round(
+                                (analysisResult.analysis
+                                  .shortTermAnnualRevenue || 0) / 12,
+                              ).toLocaleString()}
+                              /month
+                            </p>
+                          </div>
+                          <p className="text-sm flex items-center gap-2">
+                            <span className="font-semibold text-emerald-600 text-base">
+                              {analysisResult.shortTermGrossYield?.toFixed(2) ||
                                 "0"}
+                              % Gross Yield
                             </span>
                           </p>
-                          <p className="text-base text-slate-600">
-                            R
-                            {Math.round(
-                              (analysisResult.analysis
-                                .shortTermAnnualRevenue || 0) / 12,
-                            ).toLocaleString()}
-                            /month
-                          </p>
-                        </div>
-                        <p className="text-sm flex items-center gap-2">
-                          <span className="font-semibold text-emerald-600 text-base">
-                            {analysisResult.shortTermGrossYield?.toFixed(2) ||
-                              "0"}
-                            % Gross Yield
-                          </span>
-                        </p>
-                        <div className="pt-2 border-t border-blue-100">
-                          <div className="flex justify-between items-center">
-                            <p className="text-sm text-slate-600">
-                              Nightly Rate:
-                            </p>
-                            <p className="text-sm font-medium">
-                              R
-                              {analysisResult.shortTermNightlyRate?.toLocaleString() ||
-                                "0"}
-                            </p>
-                          </div>
-                          <div className="flex justify-between items-center mt-1">
-                            <p className="text-sm text-slate-600">
-                              Fee-adjusted Rate:
-                            </p>
-                            <p className="text-sm font-medium">
-                              R
-                              {analysisResult.shortTermNightlyRate
-                                ? Math.round(
-                                    analysisResult.shortTermNightlyRate *
-                                      (1 -
-                                        (analysisResult.managementFee > 0
-                                          ? 0.15
-                                          : 0.03)),
-                                  ).toLocaleString()
-                                : "0"}
-                            </p>
-                          </div>
-                          <div className="flex justify-between items-center mt-1">
-                            <p className="text-sm text-slate-600">
-                              Platform Fee:
-                            </p>
-                            <p className="text-sm font-medium text-red-600">
-                              {analysisResult.managementFee > 0 ? "15" : "3"}%
-                            </p>
-                          </div>
-                          <div className="flex justify-between items-center mt-1">
-                            <p className="text-sm text-slate-600">
-                              Management Fee:
-                            </p>
-                            <p className="text-sm font-medium">
-                              {analysisResult.managementFee}%
-                            </p>
-                          </div>
-                          <div className="flex justify-between items-center mt-1">
-                            <p className="text-sm text-slate-600">
-                              Occupancy:
-                            </p>
-                            <p className="text-sm font-medium">
-                              {analysisResult.annualOccupancy || "0"}%
-                            </p>
+                          <div className="pt-2 border-t border-blue-100">
+                            <div className="flex justify-between items-center">
+                              <p className="text-sm text-slate-600">
+                                Nightly Rate:
+                              </p>
+                              <p className="text-sm font-medium">
+                                R
+                                {analysisResult.shortTermNightlyRate?.toLocaleString() ||
+                                  "0"}
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">
+                                Fee-adjusted Rate:
+                              </p>
+                              <p className="text-sm font-medium">
+                                R
+                                {analysisResult.shortTermNightlyRate
+                                  ? Math.round(
+                                      analysisResult.shortTermNightlyRate *
+                                        (1 -
+                                          (analysisResult.managementFee > 0
+                                            ? 0.15
+                                            : 0.03)),
+                                    ).toLocaleString()
+                                  : "0"}
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">
+                                Platform Fee:
+                              </p>
+                              <p className="text-sm font-medium text-red-600">
+                                {analysisResult.managementFee > 0 ? "15" : "3"}%
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">
+                                Management Fee:
+                              </p>
+                              <p className="text-sm font-medium">
+                                {analysisResult.managementFee}%
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-sm text-slate-600">
+                                Occupancy:
+                              </p>
+                              <p className="text-sm font-medium">
+                                {analysisResult.annualOccupancy || "0"}%
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
