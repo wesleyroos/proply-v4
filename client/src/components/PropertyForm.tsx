@@ -109,19 +109,15 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
 
       if (data.KPIsByBedroomCategory?.[bedrooms]) {
         const result = data.KPIsByBedroomCategory[bedrooms];
-        const metrics = {
-          marketOccupancy: result.marketOccupancy || result.MarketOccupancy || 0,
-          totalListings: result.totalListings || result.TotalListings || 0,
-          seasonalityIndex: result.seasonalityIndex || result.SeasonalityIndex || 0,
-        };
-        
         setRevenueData({
           "25": {
             adr: result.ADR25PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 25,
             revPar: result.RevPAR25PercentileAvg,
-            ...metrics
+            totalListings: result.TotalListings,
+            marketOccupancy: result.MarketOccupancy,
+            seasonalityIndex: result.SeasonalityIndex,
           },
           "50": {
             adr: result.ADR50PercentileAvg,
