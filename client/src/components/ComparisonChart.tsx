@@ -477,62 +477,98 @@ export default function ComparisonChart({ data, address }: ComparisonChartProps)
                 <td className="text-right py-3 px-6">81.7%</td>
               </tr>
               <tr className="border-b bg-[#FF6B6B]/10 hover:bg-[#FF6B6B]/20">
-                <td className="py-3 px-6 text-[#FF6B6B] font-medium">Revenue Low</td>
-                {Array(12).fill(0).map((_, i) => (
-                  <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
-                    {formatter.format(calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
-                  </td>
-                ))}
+                <td className="py-3 px-6 text-[#FF6B6B] font-medium">
+                  Revenue Low{data.managementFee > 0 ? ` (After ${data.managementFee * 100}% Fee)` : ''}
+                </td>
+                {Array(12).fill(0).map((_, i) => {
+                  const revenue = calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee);
+                  const afterFee = data.managementFee > 0 ? revenue * (1 - data.managementFee) : revenue;
+                  return (
+                    <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
+                      {formatter.format(afterFee)}
+                    </td>
+                  );
+                })}
                 <td className="text-right py-3 px-6 border-l font-semibold">
                   {formatter.format(
                     Array(12).fill(0)
-                      .reduce((sum, _, i) => sum + calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
+                      .reduce((sum, _, i) => {
+                        const revenue = calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee);
+                        return sum + (data.managementFee > 0 ? revenue * (1 - data.managementFee) : revenue);
+                      }, 0)
                   )}
                 </td>
                 <td className="text-right py-3 px-6 font-semibold">
                   {formatter.format(
                     Array(12).fill(0)
-                      .reduce((sum, _, i) => sum + calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0) / 12
+                      .reduce((sum, _, i) => {
+                        const revenue = calculateMonthlyRevenue('low', i, data.shortTermNightly, data.managementFee > 0, data.managementFee);
+                        return sum + (data.managementFee > 0 ? revenue * (1 - data.managementFee) : revenue);
+                      }, 0) / 12
                   )}
                 </td>
               </tr>
               <tr className="border-b bg-[#4ECDC4]/10 hover:bg-[#4ECDC4]/20">
-                <td className="py-3 px-6 text-[#4ECDC4] font-medium">Revenue Medium</td>
-                {Array(12).fill(0).map((_, i) => (
-                  <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
-                    {formatter.format(calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
-                  </td>
-                ))}
+                <td className="py-3 px-6 text-[#4ECDC4] font-medium">
+                  Revenue Medium{data.managementFee > 0 ? ` (After ${data.managementFee * 100}% Fee)` : ''}
+                </td>
+                {Array(12).fill(0).map((_, i) => {
+                  const revenue = calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee);
+                  const afterFee = data.managementFee > 0 ? revenue * (1 - data.managementFee) : revenue;
+                  return (
+                    <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
+                      {formatter.format(afterFee)}
+                    </td>
+                  );
+                })}
                 <td className="text-right py-3 px-6 border-l font-semibold">
                   {formatter.format(
                     Array(12).fill(0)
-                      .reduce((sum, _, i) => sum + calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
+                      .reduce((sum, _, i) => {
+                        const revenue = calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee);
+                        return sum + (data.managementFee > 0 ? revenue * (1 - data.managementFee) : revenue);
+                      }, 0)
                   )}
                 </td>
                 <td className="text-right py-3 px-6 font-semibold">
                   {formatter.format(
                     Array(12).fill(0)
-                      .reduce((sum, _, i) => sum + calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0) / 12
+                      .reduce((sum, _, i) => {
+                        const revenue = calculateMonthlyRevenue('medium', i, data.shortTermNightly, data.managementFee > 0, data.managementFee);
+                        return sum + (data.managementFee > 0 ? revenue * (1 - data.managementFee) : revenue);
+                      }, 0) / 12
                   )}
                 </td>
               </tr>
               <tr className="border-b bg-[#45B7D1]/10 hover:bg-[#45B7D1]/20">
-                <td className="py-3 px-6 text-[#45B7D1] font-medium">Revenue High</td>
-                {Array(12).fill(0).map((_, i) => (
-                  <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
-                    {formatter.format(calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee))}
-                  </td>
-                ))}
+                <td className="py-3 px-6 text-[#45B7D1] font-medium">
+                  Revenue High{data.managementFee > 0 ? ` (After ${data.managementFee * 100}% Fee)` : ''}
+                </td>
+                {Array(12).fill(0).map((_, i) => {
+                  const revenue = calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee);
+                  const afterFee = data.managementFee > 0 ? revenue * (1 - data.managementFee) : revenue;
+                  return (
+                    <td key={i} className="text-right py-3 px-6 whitespace-nowrap">
+                      {formatter.format(afterFee)}
+                    </td>
+                  );
+                })}
                 <td className="text-right py-3 px-6 border-l font-semibold">
                   {formatter.format(
                     Array(12).fill(0)
-                      .reduce((sum, _, i) => sum + calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0)
+                      .reduce((sum, _, i) => {
+                        const revenue = calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee);
+                        return sum + (data.managementFee > 0 ? revenue * (1 - data.managementFee) : revenue);
+                      }, 0)
                   )}
                 </td>
                 <td className="text-right py-3 px-6 font-semibold">
                   {formatter.format(
                     Array(12).fill(0)
-                      .reduce((sum, _, i) => sum + calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee), 0) / 12
+                      .reduce((sum, _, i) => {
+                        const revenue = calculateMonthlyRevenue('high', i, data.shortTermNightly, data.managementFee > 0, data.managementFee);
+                        return sum + (data.managementFee > 0 ? revenue * (1 - data.managementFee) : revenue);
+                      }, 0) / 12
                   )}
                 </td>
               </tr>
