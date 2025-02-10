@@ -685,30 +685,34 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                                 : ""
                             }
                             onChange={(e) => {
-                              const input = e.target.value;
-                              
-                              // Allow empty input
-                              if (input === '') {
-                                field.onChange('');
+                              // Allow only numbers, comma, and period
+                              const value = e.target.value.replace(
+                                /[^\d.,]/g,
+                                "",
+                              );
+
+                              // Handle the decimal separator (both . and ,)
+                              const lastChar = value.slice(-1);
+                              const hasDecimal =
+                                value.includes(".") || value.includes(",");
+
+                              // If it's a decimal separator and we don't already have one
+                              if (
+                                (lastChar === "." || lastChar === ",") &&
+                                !hasDecimal
+                              ) {
+                                field.onChange(
+                                  parseFloat(value.replace(",", ".")),
+                                );
                                 return;
                               }
-                              
-                              // Replace any existing comma with period
-                              const normalized = input.replace(',', '.');
-                              
-                              // Allow numbers and a single decimal point
-                              if (!/^\d*\.?\d*$/.test(normalized)) {
-                                return;
-                              }
-                              
-                              // Keep as string while typing
-                              if (normalized.endsWith('.')) {
-                                field.onChange(normalized);
-                                return;
-                              }
-                              
-                              // Convert to number if valid
-                              const numValue = parseFloat(normalized);
+
+                              // Convert to number for validation
+                              const numValue = parseFloat(
+                                value.replace(",", "."),
+                              );
+
+                              // Update if it's a valid number
                               if (!isNaN(numValue) && numValue >= 0) {
                                 field.onChange(numValue);
                               }
