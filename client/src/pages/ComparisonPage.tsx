@@ -64,9 +64,9 @@ export default function ComparisonPage() {
     const platformFeeAmount = shortTermAnnual * platformFeeRate;
     const shortTermAfterPlatformFee = shortTermAnnual - platformFeeAmount;
 
-    // Calculate and apply management fee if present (based on post-platform fee revenue)
-    const managementFeeAmount =
-      managementFee > 0 ? shortTermAfterPlatformFee * managementFee : 0;
+    // Calculate management fee based on revenue after platform fees
+    const managementFeeAmount = 
+      managementFee > 0 ? (shortTermAnnual - platformFeeAmount) * managementFee : 0;
     const shortTermAfterFees = shortTermAfterPlatformFee - managementFeeAmount;
 
     // Calculate break-even occupancy based on net revenue after all fees
