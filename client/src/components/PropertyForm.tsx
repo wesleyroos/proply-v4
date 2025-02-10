@@ -47,10 +47,30 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [demoClicks, setDemoClicks] = useState(0);
   const [revenueData, setRevenueData] = useState<{
-    "25": RevenueData;
-    "50": RevenueData;
-    "75": RevenueData;
-    "90": RevenueData;
+    "25": RevenueData & {
+      revPar: number;
+      totalListings: number;
+      marketOccupancy: number;
+      seasonalityIndex: number;
+    };
+    "50": RevenueData & {
+      revPar: number;
+      totalListings: number;
+      marketOccupancy: number;
+      seasonalityIndex: number;
+    };
+    "75": RevenueData & {
+      revPar: number;
+      totalListings: number;
+      marketOccupancy: number;
+      seasonalityIndex: number;
+    };
+    "90": RevenueData & {
+      revPar: number;
+      totalListings: number;
+      marketOccupancy: number;
+      seasonalityIndex: number;
+    };
   } | null>(null);
   const hasProAccess = useProAccess();
 
@@ -94,21 +114,37 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             adr: result.ADR25PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 25,
+            revPar: result.RevPAR25PercentileAvg,
+            totalListings: result.TotalListings,
+            marketOccupancy: result.MarketOccupancy,
+            seasonalityIndex: result.SeasonalityIndex,
           },
           "50": {
             adr: result.ADR50PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 50,
+            revPar: result.RevPAR50PercentileAvg,
+            totalListings: result.TotalListings,
+            marketOccupancy: result.MarketOccupancy,
+            seasonalityIndex: result.SeasonalityIndex,
           },
           "75": {
             adr: result.ADR75PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 75,
+            revPar: result.RevPAR75PercentileAvg,
+            totalListings: result.TotalListings,
+            marketOccupancy: result.MarketOccupancy,
+            seasonalityIndex: result.SeasonalityIndex,
           },
           "90": {
             adr: result.ADR90PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 90,
+            revPar: result.RevPAR90PercentileAvg,
+            totalListings: result.TotalListings,
+            marketOccupancy: result.MarketOccupancy,
+            seasonalityIndex: result.SeasonalityIndex,
           },
         });
         setShowPercentileDialog(true);
@@ -416,11 +452,14 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                   ))}
               </tbody>
             </table>
-            <div className="mt-4 text-sm text-gray-500">
-              <p>Occupancy: {revenueData?.["50"].occupancy.toFixed(1)}%</p>
-              <p className="mt-1">
-                Number of Listings: {revenueData?.["50"].occupancy}
-              </p>
+            <div className="mt-4 space-y-2 text-sm text-gray-500">
+              <p>Market Occupancy: {revenueData?.["50"].marketOccupancy.toFixed(1)}%</p>
+              <p>Active Listings: {revenueData?.["50"].totalListings}</p>
+              <p>Seasonality Index: {revenueData?.["50"].seasonalityIndex.toFixed(2)}</p>
+              <p>RevPAR: {new Intl.NumberFormat("en-ZA", {
+                style: "currency",
+                currency: "ZAR",
+              }).format(revenueData?.["50"].revPar || 0)}</p>
             </div>
           </div>
         </DialogContent>
