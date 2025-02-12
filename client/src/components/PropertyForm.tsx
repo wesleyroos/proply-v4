@@ -425,11 +425,25 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                   ))}
               </tbody>
             </table>
-            <div className="mt-4 text-sm text-gray-500">
-              <p>Occupancy: {revenueData?.["50"].occupancy.toFixed(1)}%</p>
-              <p className="mt-1">
-                Number of Listings: {revenueData?.["50"].occupancy}
-              </p>
+            <div className="mt-4 space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm text-gray-500">
+                <div>
+                  <h4 className="font-medium mb-2">Market Stats</h4>
+                  <p>RevPAR: {revenueData?.["50"].revpar ? formatter.format(revenueData["50"].revpar) : '--'}</p>
+                  <p>RevPAM: {revenueData?.["50"].revpam ? formatter.format(revenueData["50"].revpam) : '--'}</p>
+                  <p>Avg Lead Time: {revenueData?.["50"].leadTime || '--'} days</p>
+                  <p>Avg Length of Stay: {revenueData?.["50"].stayLength || '--'} days</p>
+                  <p>Active Listings: {revenueData?.["50"].activeListings || '--'}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2">Market Position</h4>
+                  <p>Rate Position: {revenueData?.["50"].ratePosition || '--'}%</p>
+                  <p>RevPAR Position: {revenueData?.["50"].revparPosition || '--'}%</p>
+                  <p>Seasonality Index: {revenueData?.["50"].seasonalityIndex || '--'}</p>
+                  <p>Demand Score: {revenueData?.["50"].demandScore || '--'}</p>
+                  <p>Occupancy: {revenueData?.["50"].occupancy?.toFixed(1) || '--'}%</p>
+                </div>
+              </div>
             </div>
           </div>
         </DialogContent>
