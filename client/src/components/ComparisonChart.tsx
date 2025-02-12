@@ -66,6 +66,8 @@ export default function ComparisonChart({
   const [showCalculations, setShowCalculations] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [removeSeasonality, setRemoveSeasonality] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false); // Added state for upgrade modal
+  const user = useUser(); // Placeholder for user data
 
   // Calculate annual revenue with or without seasonality
   const calculateAnnualRevenue = () => {
@@ -129,6 +131,13 @@ export default function ComparisonChart({
   });
 
   const { toast } = useToast();
+
+  const generatePropertyPreviewPDF = (data: ComparisonData, includeBranding: boolean, user: any) => {
+    // Placeholder for PDF generation logic
+    console.log("Generating PDF...", data, includeBranding, user);
+    // Actual PDF generation code would go here.  This is a placeholder.
+  };
+
 
   return (
     <TooltipProvider>
