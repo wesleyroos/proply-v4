@@ -740,12 +740,6 @@ export function registerRoutes(app: Express): Server {
           .where(eq(users.id, req.user!.id));
       }
 
-      console.log("PriceLabs API Request:", {
-        address: address,
-        bedrooms: bedrooms,
-        url: `https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(String(address))}&currency=ZAR&bedroom_category=${bedrooms}`
-      });
-
       const response = await fetch(
         `https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(String(address))}&currency=ZAR&bedroom_category=${bedrooms}`,
         {
@@ -756,12 +750,10 @@ export function registerRoutes(app: Express): Server {
       );
 
       if (!response.ok) {
-        console.error("PriceLabs API Error:", response.statusText);
         throw new Error(`PriceLabs API error: ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log("PriceLabs API Response:", data);
       success = true;
 
       // Increment API usage counters
