@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import PropertyForm from "../components/PropertyForm";
 import ComparisonChart from "../components/ComparisonChart";
 import { useUser } from "../hooks/use-user";
-import { useQueryClient } from "@tanstack/react-query"; // Added import
+import { useQueryClient } from "@tanstack/react-query";
 
 
 export default function ComparisonPage() {
@@ -15,8 +15,8 @@ export default function ComparisonPage() {
   const [comparisonData, setComparisonData] = useState<ComparisonData | null>(
     null,
   );
-  const [revenueData, setRevenueData] = useState<any>(null); // Added revenueData state
-  const queryClient = useQueryClient(); // Added useQueryClient hook
+  const [revenueData, setRevenueData] = useState<any>(null);
+  const queryClient = useQueryClient();
 
   interface ComparisonData {
     title: string;
@@ -34,8 +34,7 @@ export default function ComparisonPage() {
   }
 
   const handleCompare = (data: any) => {
-    setAddress(data.address); // Update address when form is submitted
-    // Scroll to results after a brief delay to ensure rendering
+    setAddress(data.address);
     setTimeout(() => {
       const yOffset = -20;
       const element = document.getElementById("comparison-results");
@@ -46,22 +45,17 @@ export default function ComparisonPage() {
       }
     }, 100);
 
-    // Calculate comparison metrics
-    // Long term calculation (simple monthly × 12)
     const longTermMonthly = parseFloat(data.longTermRental);
     const longTermAnnual = longTermMonthly * 12;
 
-    // Short term calculations
     const shortTermNightly = parseFloat(data.shortTermNightly);
     const occupancyRate = parseFloat(data.annualOccupancy) / 100;
     const managementFee = parseFloat(data.managementFee) / 100;
 
-    // Define SEASONALITY_FACTORS constant
     const SEASONALITY_FACTORS = [
       2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03,
     ];
 
-    // Calculate annual revenue with seasonality
     const shortTermAnnual = Array(12).fill(0).reduce((sum, _, month) => {
       const daysInMonth = new Date(2024, month + 1, 0).getDate();
       const seasonalMultiplier = SEASONALITY_FACTORS[month];
@@ -69,17 +63,14 @@ export default function ComparisonPage() {
     }, 0);
     const shortTermMonthly = shortTermAnnual / 12;
 
-    // Calculate platform fees (Airbnb/booking fees)
-    const platformFeeRate = managementFee > 0 ? 0.15 : 0.03; // 15% if managed, 3% if self-managed
+    const platformFeeRate = managementFee > 0 ? 0.15 : 0.03;
     const platformFeeAmount = shortTermAnnual * platformFeeRate;
     const shortTermAfterPlatformFee = shortTermAnnual * (1 - platformFeeRate);
 
-    // Calculate management fee based on revenue after platform fees 
     const managementFeeAmount = managementFee > 0 ? shortTermAfterPlatformFee * managementFee : 0;
     const shortTermAfterFees = shortTermAfterPlatformFee - managementFeeAmount;
 
-    // Calculate break-even occupancy based on net revenue after all fees
-    const platformFeeMultiplier = managementFee > 0 ? 0.85 : 0.97; // 15% or 3% platform fee
+    const platformFeeMultiplier = managementFee > 0 ? 0.85 : 0.97;
     const managementFeeMultiplier = 1 - managementFee;
     const netDailyRateNeeded =
       longTermAnnual / (365 * platformFeeMultiplier * managementFeeMultiplier);
@@ -100,8 +91,7 @@ export default function ComparisonPage() {
       bathrooms: data.bathrooms,
     });
 
-    //Added to fetch revenue data after comparison data is set.  Assumes data.bedrooms is available.
-    fetch(`/api/revenue/${data.bedrooms}`) // Replace with your actual API endpoint
+    fetch(`/api/revenue/${data.bedrooms}`)
       .then(res => res.json())
       .then(data => {
         if (data.KPIsByBedroomCategory?.[data.bedrooms]) {
@@ -183,12 +173,12 @@ export default function ComparisonPage() {
         <div className="max-w-4xl space-y-6">
           <Card>
             <CardContent className="pt-6">
-              <PropertyForm onSubmit={handleCompare} queryClient={queryClient} /> {/* Pass queryClient */}
+              <PropertyForm onSubmit={handleCompare} queryClient={queryClient} />
             </CardContent>
           </Card>
 
           {comparisonData && (
-            <Card id="comparison-results"> {/* Added ID for scrolling */}
+            <Card id="comparison-results">
               <CardContent className="pt-6">
                 <ComparisonChart data={comparisonData} address={address} />
                 {revenueData && (
