@@ -99,7 +99,6 @@ export default function ComparisonChart({
   });
 
   const { toast } = useToast();
-  const [showDetailed, setShowDetailed] = useState(false);
 
   return (
     <TooltipProvider>
@@ -503,78 +502,46 @@ export default function ComparisonChart({
           </div>
         </div>
         <div className="space-y-4">
-          <div className="flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowDetailed(!showDetailed)}
-            >
-              {showDetailed ? "Show Simple View" : "Show Monthly Breakdown"}
-            </Button>
-          </div>
 
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              {showDetailed ? (
-                <LineChart data={monthlyChartData}>
-                  <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => formatter.format(value)} />
-                  <RechartsTooltip
-                    formatter={(value) => formatter.format(value)}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="Conservative"
-                    stroke="#fca5a5"
-                    strokeWidth={2}
-                    name="Conservative (Low Season)"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="Moderate"
-                    stroke="#fdba74"
-                    strokeWidth={2}
-                    name="Moderate (Mid Season)"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="Optimistic"
-                    stroke="#86efac"
-                    strokeWidth={2}
-                    name="Optimistic (High Season)"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="Long Term"
-                    stroke="#93c5fd"
-                    strokeWidth={2}
-                    strokeDasharray="5 5"
-                    name="Long Term Rental"
-                  />
-                </LineChart>
-              ) : (
-                <LineChart data={basicChartData}>
-                  <XAxis dataKey="name" />
-                  <YAxis tickFormatter={(value) => formatter.format(value)} />
-                  <RechartsTooltip
-                    formatter={(value) => formatter.format(value)}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="Long Term"
-                    stroke="#93c5fd"
-                    strokeWidth={2}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="Short Term"
-                    stroke="#86efac"
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              )}
+              <LineChart data={monthlyChartData}>
+                <XAxis dataKey="month" />
+                <YAxis tickFormatter={(value) => formatter.format(value)} />
+                <RechartsTooltip
+                  formatter={(value) => formatter.format(value)}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="Conservative"
+                  stroke="#fca5a5"
+                  strokeWidth={2}
+                  name="Conservative (Low Season)"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Moderate"
+                  stroke="#fdba74"
+                  strokeWidth={2}
+                  name="Moderate (Mid Season)"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Optimistic"
+                  stroke="#86efac"
+                  strokeWidth={2}
+                  name="Optimistic (High Season)"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Long Term"
+                  stroke="#93c5fd"
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  name="Long Term Rental"
+                />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -817,7 +784,7 @@ export default function ComparisonChart({
                         return (
                           sum +
                           (data.managementFee > 0
-                            ? revenue * (1 - data.managementFee)
+                            ? revenue * (1- data.managementFee)
                             : revenue)
                         );
                       }, 0) / 12,
