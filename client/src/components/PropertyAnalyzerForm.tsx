@@ -1440,7 +1440,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
         open={showPercentileDialog}
         onOpenChange={setShowPercentileDialog}
       >
-        <DialogContent className="max-w-3xl">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Revenue Performance Data</DialogTitle>
           </DialogHeader>
