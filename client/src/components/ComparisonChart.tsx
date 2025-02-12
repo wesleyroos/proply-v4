@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ComparisonData {
   title: string;
@@ -53,6 +54,24 @@ export default function ComparisonChart({
 }: ComparisonChartProps) {
   const [showCalculations, setShowCalculations] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [removeSeasonality, setRemoveSeasonality] = useState(false);
+
+  // Calculate annual revenue with or without seasonality
+  const calculateAnnualRevenue = () => {
+    if (removeSeasonality) {
+      // Simple calculation without seasonality
+      const daysInYear = 365;
+      return data.shortTermNightly * daysInYear * (data.annualOccupancy / 100);
+    }
+    return data.shortTermAnnual;
+  };
+
+  const annualRevenue = calculateAnnualRevenue();
+  const platformFeeAmount = annualRevenue * (data.managementFee > 0 ? 0.15 : 0.03);
+  const afterPlatformFee = annualRevenue - platformFeeAmount;
+  const managementFeeAmount = data.managementFee > 0 ? afterPlatformFee * data.managementFee : 0;
+  const finalAnnualRevenue = afterPlatformFee - managementFeeAmount;
+
   // Original simple chart data
   const basicChartData = [
     {
@@ -225,7 +244,9 @@ export default function ComparisonChart({
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Monthly Revenue</span>
-                    <span className="font-medium">{formatter.format(data.longTermMonthly)}</span>
+                    <span className="font-medium">
+                      {formatter.format(data.longTermMonthly)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Months per Year</span>
@@ -259,23 +280,46 @@ export default function ComparisonChart({
                   </Tooltip>
                 </div>
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Annual Revenue</span>
-                    <span className="font-medium">{formatter.format(data.shortTermAnnual)}</span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span>Annual Revenue</span>
+                      <div className="flex items-center gap-1">
+                        <Checkbox
+                          id="removeSeasonality"
+                          checked={removeSeasonality}
+                          onCheckedChange={(checked) =>
+                            setRemoveSeasonality(checked as boolean)
+                          }
+                        />
+                        <label
+                          htmlFor="removeSeasonality"
+                          className="text-sm text-gray-600"
+                        >
+                          Remove Seasonality
+                        </label>
+                      </div>
+                    </div>
+                    <span className="font-medium">
+                      {formatter.format(annualRevenue)}
+                    </span>
                   </div>
                   <div className="flex justify-between text-red-600">
-                    <span>Less Platform Fee ({data.managementFee > 0 ? "15.0%" : "3.0%"})</span>
-                    <span>-{formatter.format(data.shortTermAnnual * (data.managementFee > 0 ? 0.15 : 0.03))}</span>
+                    <span>
+                      Less Platform Fee ({data.managementFee > 0 ? "15.0%" : "3.0%"})
+                    </span>
+                    <span>-{formatter.format(platformFeeAmount)}</span>
                   </div>
                   {data.managementFee > 0 && (
                     <div className="flex justify-between text-red-600">
-                      <span>Less Management Fee ({(data.managementFee * 100).toFixed(1)}%)</span>
-                      <span>-{formatter.format((data.shortTermAnnual * (1 - (data.managementFee > 0 ? 0.15 : 0.03))) * data.managementFee)}</span>
+                      <span>
+                        Less Management Fee ({(data.managementFee * 100).toFixed(1)}%)
+                      </span>
+                      <span>-{formatter.format(managementFeeAmount)}</span>
                     </div>
                   )}
                   <div className="border-t pt-2 flex justify-between font-semibold">
                     <span>Final Annual Revenue</span>
-                    <span>{formatter.format(data.shortTermAfterFees)}</span>
+                    <span>{formatter.format(finalAnnualRevenue)}</span>
                   </div>
                 </div>
               </div>
@@ -330,7 +374,6 @@ export default function ComparisonChart({
           </div>
         </div>
         <div className="space-y-4">
-
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={monthlyChartData}>
@@ -761,7 +804,7 @@ export default function ComparisonChart({
                           feeAdjustedRate * occupancyRate * daysInMonth;
                         return (
                           sum +
-                          (data.managementFee >0
+                          (data.managementFee > 0
                             ? revenue * (1 - data.managementFee)
                             : revenue)
                         );
