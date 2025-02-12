@@ -250,46 +250,65 @@ export default function ComparisonChart({
             </h3>
             <div className="space-y-2">
               <div className="space-y-6">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-base font-semibold text-gray-900">
-                      Annual Revenue
-                    </h3>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <InfoIcon className="h-4 w-4 text-gray-400" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Total annual revenue before fees
-                      </TooltipContent>
-                    </Tooltip>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-base font-semibold text-gray-900">
+                        Revenue Breakdown
+                      </h3>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <InfoIcon className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Annual revenue and fee breakdown
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Annual Revenue</span>
+                        <span className="font-medium">{formatter.format(data.shortTermAnnual)}</span>
+                      </div>
+                      <div className="flex justify-between text-red-600">
+                        <span>Less Platform Fee ({data.managementFee > 0 ? "15.0%" : "3.0%"})</span>
+                        <span>-{formatter.format(data.shortTermAnnual * (data.managementFee > 0 ? 0.15 : 0.03))}</span>
+                      </div>
+                      {data.managementFee > 0 && (
+                        <div className="flex justify-between text-red-600">
+                          <span>Less Management Fee ({(data.managementFee * 100).toFixed(1)}%)</span>
+                          <span>-{formatter.format((data.shortTermAnnual * (1 - (data.managementFee > 0 ? 0.15 : 0.03))) * data.managementFee)}</span>
+                        </div>
+                      )}
+                      <div className="border-t pt-2 flex justify-between font-semibold">
+                        <span>Final Annual Revenue</span>
+                        <span>{formatter.format(data.shortTermAfterFees)}</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-xl font-bold mt-1">
-                    {formatter.format(data.shortTermAnnual)}
-                  </p>
-                </div>
-                <div className="mt-1 mb-4">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-base font-semibold text-gray-900">
-                      Short Term Nightly Rate (Fee Adjusted)
-                    </h3>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <InfoIcon className="h-3 w-3 text-gray-400" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Average monthly income before fees
-                      </TooltipContent>
-                    </Tooltip>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-semibold text-gray-900">
+                        Short Term Nightly Rate
+                      </h3>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <InfoIcon className="h-3 w-3 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Base nightly rate before fees
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <p className="text-xl font-bold mt-1">
+                      {formatter.format(data.shortTermNightly)}{" "}
+                      <span className="text-base font-normal text-gray-600">
+                        ({formatter.format(
+                          data.shortTermNightly * (1 - (data.managementFee > 0 ? 0.15 : 0.03)),
+                        )} after platform fee)
+                      </span>
+                    </p>
                   </div>
-                  <p className="text-xl font-bold mt-1">
-                    {formatter.format(data.shortTermNightly)}{" "}
-                    <span className="text-base font-normal text-gray-600">
-                      ({formatter.format(
-                        data.shortTermNightly * (1 - (data.managementFee > 0 ? 0.15 : 0.03)),
-                      )})
-                    </span>
-                  </p>
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
