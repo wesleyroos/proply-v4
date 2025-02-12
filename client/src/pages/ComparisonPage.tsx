@@ -34,6 +34,7 @@ export default function ComparisonPage() {
   }
 
   const handleCompare = (data: any) => {
+    console.log("Data sent to API:", data); //Added console log
     setAddress(data.address);
     setTimeout(() => {
       const yOffset = -20;
@@ -94,6 +95,7 @@ export default function ComparisonPage() {
     fetch(`/api/revenue/${data.bedrooms}`)
       .then(res => res.json())
       .then(data => {
+        console.log("Revenue data received:", data); //Added console log
         if (data.KPIsByBedroomCategory?.[data.bedrooms]) {
           const result = data.KPIsByBedroomCategory[data.bedrooms];
           setRevenueData({
@@ -155,6 +157,9 @@ export default function ComparisonPage() {
             },
           });
         }
+      })
+      .catch(error => {
+        console.error("Error fetching revenue data:", error);
       });
   };
 
