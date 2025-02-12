@@ -132,10 +132,107 @@ export default function ComparisonChart({
 
   const { toast } = useToast();
 
-  const generatePropertyPreviewPDF = (data: ComparisonData, includeBranding: boolean, user: any) => {
-    // Placeholder for PDF generation logic
-    console.log("Generating PDF...", data, includeBranding, user);
-    // Actual PDF generation code would go here.  This is a placeholder.
+  const generatePropertyPreviewPDF = async (data: ComparisonData, includeBranding: boolean, user: any) => {
+    const doc = new jsPDF();
+    let yPos = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+
+    // Add logos if branding enabled
+    if (includeBranding && user?.companyLogo) {
+      try {
+        const logoWidth = 40;
+        await new Promise<void>((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const aspectRatio = img.height / img.width;
+            const logoHeight = logoWidth * aspectRatio;
+            doc.addImage(user.companyLogo, "PNG", margin, 20, logoWidth, logoHeight);
+            resolve();
+          };
+          img.onerror = () => resolve();
+          img.crossOrigin = "Anonymous";
+          img.src = user.companyLogo;
+        });
+      } catch (error) {
+        console.error("Error adding logo:", error);
+      }
+    }
+
+    // Title
+    doc.setFontSize(20);
+    doc.text("Rental Strategy Comparison", 20, yPos += 20);
+    
+    // Property Details
+    doc.setFontSize(12);
+    doc.text("Property Details", 20, yPos += 20);
+
+    const propertyDetails = [
+      ["Address", address],
+      ["Bedrooms", data.bedrooms || "N/A"],
+      ["Bathrooms", data.bathrooms || "N/A"],
+      ["Short Term Nightly Rate", formatter.format(data.shortTermNightly)],
+      ["Annual Occupancy", data.annualOccupancy + "%"],
+    ];
+
+    autoTable(doc, {
+      startY: yPos += 10,
+      head: [["Feature", "Value"]],
+      body: propertyDetails,
+      theme: "grid",
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [27, 163, 255] },
+    });
+
+    // Revenue Comparison
+    yPos = (doc as any).lastAutoTable.finalY + 20;
+    doc.text("Revenue Comparison", 20, yPos);
+
+    const revenueDetails = [
+      ["Long Term Monthly", formatter.format(data.longTermMonthly)],
+      ["Long Term Annual", formatter.format(data.longTermAnnual)],
+      ["Short Term Monthly", formatter.format(data.shortTermMonthly)],
+      ["Short Term Annual", formatter.format(data.shortTermAnnual)],
+      ["Short Term After Fees", formatter.format(data.shortTermAfterFees)],
+    ];
+
+    autoTable(doc, {
+      startY: yPos += 10,
+      head: [["Metric", "Amount"]],
+      body: revenueDetails,
+      theme: "grid",
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [27, 163, 255] },
+    });
+
+    // Try to capture and add the chart
+    try {
+      const chartElement = document.querySelector(".recharts-wrapper");
+      if (chartElement) {
+        const canvas = await html2canvas(chartElement as HTMLElement);
+        const chartImage = canvas.toDataURL("image/png");
+        const imgWidth = pageWidth - 40;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        doc.addImage(chartImage, "PNG", 20, (doc as any).lastAutoTable.finalY + 20, imgWidth, imgHeight);
+      }
+    } catch (error) {
+      console.error("Error adding chart:", error);
+    }
+
+    // Add footer with page numbers
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.text(
+        `Page ${i} of ${totalPages}`,
+        pageWidth - 20,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: "right" }
+      );
+    }
+
+    doc.save(`Rental Comparison - ${address}.pdf`);
   };
 
 
