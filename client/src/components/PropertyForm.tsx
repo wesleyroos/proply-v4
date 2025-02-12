@@ -25,6 +25,15 @@ interface RevenueData {
   adr: number;
   occupancy: number;
   percentile: number;
+  revpar: number;
+  revpam: number;
+  leadTime: number;
+  stayLength: number;
+  activeListings: number;
+  seasonalityIndex: number;
+  demandScore: number;
+  ratePosition: number;
+  revparPosition: number;
 }
 
 interface PropertyFormProps {
@@ -437,7 +446,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             <div className="mt-4">
               <div className="text-sm text-gray-500">
                 <p>Average Occupancy Rate: {revenueData?.["50"].occupancy?.toFixed(1) || '--'}%</p>
-                <p className="mt-1">Number of Listings: {revenueData?.["50"].NoOfListings || '--'}</p>
+                <p className="mt-1">Number of Listings: {revenueData?.["50"].activeListings || '--'}</p>
               </div>
             </div>
           </div>
