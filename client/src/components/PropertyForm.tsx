@@ -123,19 +123,19 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             adr: result.ADR50PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 50,
-            activeListings: result.ActiveListings
+            activeListings: result.NoOfListings
           },
           "75": {
             adr: result.ADR75PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 75,
-            activeListings: result.ActiveListings
+            activeListings: result.NoOfListings
           },
           "90": {
             adr: result.ADR90PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 90,
-            activeListings: result.ActiveListings
+            activeListings: result.NoOfListings
           },
         };
         console.log("Processed revenue data:", processedData);
