@@ -193,24 +193,84 @@ export default function ComparisonPage() {
                 <ComparisonChart data={comparisonData} address={address} />
                 {revenueData && (
                   <div>
-                    <h2 className="text-xl font-medium mb-4">Percentile Data</h2>
-                    <div className="mt-4 space-y-4">
-                      <div className="grid grid-cols-2 gap-4 text-sm text-gray-500">
-                        <div>
-                          <h4 className="font-medium mb-2">Market Stats</h4>
-                          <p>RevPAR: {formatter.format(revenueData?.["50"].revpar || 0)}</p>
-                          <p>RevPAM: {formatter.format(revenueData?.["50"].revpam || 0)}</p>
-                          <p>Avg Lead Time: {revenueData?.["50"].leadTime || 0} days</p>
-                          <p>Avg Length of Stay: {revenueData?.["50"].stayLength || 0} days</p>
-                          <p>Active Listings: {revenueData?.["50"].activeListings || 0}</p>
+                    <h2 className="text-xl font-medium mb-4">Revenue Performance Data</h2>
+                    <div className="mt-4 space-y-6">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="text-left py-3 px-4">Metric</th>
+                              {["25th", "50th", "75th", "90th"].map(percentile => (
+                                <th key={percentile} className="text-right py-3 px-4">{percentile} Percentile</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr className="border-b">
+                              <td className="py-3 px-4">Average Daily Rate</td>
+                              {["25", "50", "75", "90"].map(percentile => (
+                                <td key={percentile} className="text-right py-3 px-4">{formatter.format(revenueData[percentile].adr)}</td>
+                              ))}
+                            </tr>
+                            <tr className="border-b bg-gray-50">
+                              <td className="py-3 px-4">RevPAR</td>
+                              {["25", "50", "75", "90"].map(percentile => (
+                                <td key={percentile} className="text-right py-3 px-4">{formatter.format(revenueData[percentile].revpar)}</td>
+                              ))}
+                            </tr>
+                            <tr className="border-b">
+                              <td className="py-3 px-4">RevPAM</td>
+                              {["25", "50", "75", "90"].map(percentile => (
+                                <td key={percentile} className="text-right py-3 px-4">{formatter.format(revenueData[percentile].revpam)}</td>
+                              ))}
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Market Performance</h4>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span>Average Lead Time:</span>
+                              <span>{revenueData["50"].leadTime} days</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Average Stay Length:</span>
+                              <span>{revenueData["50"].stayLength} days</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Active Listings:</span>
+                              <span>{revenueData["50"].activeListings}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Average Occupancy:</span>
+                              <span>{revenueData["50"].occupancy.toFixed(1)}%</span>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-medium mb-2">Market Position</h4>
-                          <p>Rate Position: {revenueData?.["50"].ratePosition || 0}%</p>
-                          <p>RevPAR Position: {revenueData?.["50"].revparPosition || 0}%</p>
-                          <p>Seasonality Index: {revenueData?.["50"].seasonalityIndex || 0}</p>
-                          <p>Demand Score: {revenueData?.["50"].demandScore || 0}</p>
-                          <p>Occupancy: {revenueData?.["50"].occupancy.toFixed(1)}%</p>
+
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Market Indicators</h4>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span>Rate Position:</span>
+                              <span>{revenueData["50"].ratePosition}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>RevPAR Position:</span>
+                              <span>{revenueData["50"].revparPosition}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Seasonality Index:</span>
+                              <span>{revenueData["50"].seasonalityIndex}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Demand Score:</span>
+                              <span>{revenueData["50"].demandScore}</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
