@@ -1016,9 +1016,6 @@ export default function ComparisonChart({
           )}
         </div>
       </div>
-    </div>
-        </div>
-      </div>
     </TooltipProvider>
   );
 }
