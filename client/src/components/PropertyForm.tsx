@@ -117,25 +117,25 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             seasonalityIndex: result.MonthlySeasonalityIndex,
             demandScore: result.MonthlyDemandScore,
             ratePosition: result.RatePositionPercentile,
-            revparPosition: result.RevPARPositionPercentile
+            revparPosition: result.RevPARPositionPercentile,
           },
           "50": {
             adr: result.ADR50PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 50,
-            activeListings: result.NoOfListings
+            activeListings: result.NoOfListings,
           },
           "75": {
             adr: result.ADR75PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 75,
-            activeListings: result.NoOfListings
+            activeListings: result.NoOfListings,
           },
           "90": {
             adr: result.ADR90PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 90,
-            activeListings: result.NoOfListings
+            activeListings: result.NoOfListings,
           },
         };
         console.log("Processed revenue data:", processedData);
@@ -408,7 +408,8 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-gray-500 mb-4">
-              Select an ADR percentile to use for the analysis:
+              Select an Average Daily Rate (ADR) percentile to use for the
+              analysis:
             </p>
             <table className="w-full text-sm">
               <thead className="bg-gray-50">
@@ -448,8 +449,14 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             </table>
             <div className="mt-4">
               <div className="text-sm text-gray-500">
-                <p>Average Occupancy Rate: {revenueData?.["50"].occupancy?.toFixed(1) || '--'}%</p>
-                <p className="mt-1">Number of Active Listings: {revenueData?.["50"].activeListings || '--'}</p>
+                <p>
+                  Average Occupancy Rate:{" "}
+                  {revenueData?.["50"].occupancy?.toFixed(1) || "--"}%
+                </p>
+                <p className="mt-1">
+                  Number of Active Listings:{" "}
+                  {revenueData?.["50"].activeListings || "--"}
+                </p>
               </div>
             </div>
           </div>
