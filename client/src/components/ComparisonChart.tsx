@@ -8,6 +8,16 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { FileText, Sparkles } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useUser } from "@/hooks/use-user";
+import { useProAccess } from "@/hooks/use-pro-access";
+import { UpgradeModal } from "./UpgradeModal";
 import { InfoIcon, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MapView from "./MapView";
@@ -176,9 +186,39 @@ export default function ComparisonChart({
             >
               Save Property
             </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              Export Report
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Export Report
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(data, false, user)}>
+                  <FileText className="mr-2" />
+                  Without Branding
+                </DropdownMenuItem>
+                {hasProAccess ? (
+                  <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(data, true, user)}>
+                    <FileText className="mr-2" />
+                    With Branding
+                    <div className="ml-2 flex items-center gap-1">
+                      <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                      <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                    </div>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => setShowUpgradeModal(true)}>
+                    <FileText className="mr-2" />
+                    With Branding
+                    <div className="ml-2 flex items-center gap-1">
+                      <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                      <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                    </div>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         <MapView address={address} />
