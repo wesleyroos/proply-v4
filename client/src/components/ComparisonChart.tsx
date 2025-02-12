@@ -68,35 +68,38 @@ export default function ComparisonChart({
   ];
 
   // Data-driven monthly breakdown
-  const monthlyChartData = Array(12).fill(0).map((_, i) => {
-    const month = new Date(2024, i).toLocaleString("default", {
-      month: "short",
+  const monthlyChartData = Array(12)
+    .fill(0)
+    .map((_, i) => {
+      const month = new Date(2024, i).toLocaleString("default", {
+        month: "short",
+      });
+      const daysInMonth = new Date(2024, i + 1, 0).getDate();
+
+      // Base nightly rate adjusted for platform fees
+      const platformFee = data.managementFee > 0 ? 0.15 : 0.03;
+      const feeAdjustedRate = data.shortTermNightly * (1 - platformFee);
+
+      // Calculate revenue based on occupancy scenarios
+      const lowRevenue =
+        feeAdjustedRate * daysInMonth * (OCCUPANCY_RATES.low[i] / 100);
+      const medRevenue =
+        feeAdjustedRate * daysInMonth * (OCCUPANCY_RATES.medium[i] / 100);
+      const highRevenue =
+        feeAdjustedRate * daysInMonth * (OCCUPANCY_RATES.high[i] / 100);
+
+      // Apply management fee if present
+      const managementMultiplier =
+        data.managementFee > 0 ? 1 - data.managementFee : 1;
+
+      return {
+        month,
+        Conservative: lowRevenue * managementMultiplier,
+        Moderate: medRevenue * managementMultiplier,
+        Optimistic: highRevenue * managementMultiplier,
+        "Long Term": data.longTermMonthly,
+      };
     });
-    const daysInMonth = new Date(2024, i + 1, 0).getDate();
-
-    // Base nightly rate adjusted for platform fees
-    const platformFee = data.managementFee > 0 ? 0.15 : 0.03;
-    const feeAdjustedRate = data.shortTermNightly * (1 - platformFee);
-
-    // Calculate revenue based on occupancy scenarios
-    const lowRevenue =
-      feeAdjustedRate * daysInMonth * (OCCUPANCY_RATES.low[i] / 100);
-    const medRevenue =
-      feeAdjustedRate * daysInMonth * (OCCUPANCY_RATES.medium[i] / 100);
-    const highRevenue =
-      feeAdjustedRate * daysInMonth * (OCCUPANCY_RATES.high[i] / 100);
-
-    // Apply management fee if present
-    const managementMultiplier = data.managementFee > 0 ? 1 - data.managementFee : 1;
-
-    return {
-      month,
-      Conservative: lowRevenue * managementMultiplier,
-      Moderate: medRevenue * managementMultiplier,
-      Optimistic: highRevenue * managementMultiplier,
-      "Long Term": data.longTermMonthly,
-    };
-  });
 
   const { toast } = useToast();
 
@@ -184,9 +187,12 @@ export default function ComparisonChart({
               <p className="font-medium">
                 {formatter.format(data.shortTermNightly)}{" "}
                 <span className="text-base font-normal text-gray-600">
-                  ({formatter.format(
-                    data.shortTermNightly * (1 - (data.managementFee > 0 ? 0.15 : 0.03)),
-                  )})
+                  (
+                  {formatter.format(
+                    data.shortTermNightly *
+                      (1 - (data.managementFee > 0 ? 0.15 : 0.03)),
+                  )}
+                  )
                 </span>
               </p>
             </div>
@@ -225,7 +231,9 @@ export default function ComparisonChart({
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Monthly Revenue</span>
-                    <span className="font-medium">{formatter.format(data.longTermMonthly)}</span>
+                    <span className="font-medium">
+                      {formatter.format(data.longTermMonthly)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Months per Year</span>
@@ -263,16 +271,37 @@ export default function ComparisonChart({
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span>Annual Revenue</span>
-                        <span className="font-medium">{formatter.format(data.shortTermAnnual)}</span>
+                        <span className="font-medium">
+                          {formatter.format(data.shortTermAnnual)}
+                        </span>
                       </div>
                       <div className="flex justify-between text-red-600">
-                        <span>Less Platform Fee ({data.managementFee > 0 ? "15.0%" : "3.0%"})</span>
-                        <span>-{formatter.format(data.shortTermAnnual * (data.managementFee > 0 ? 0.15 : 0.03))}</span>
+                        <span>
+                          Less Platform Fee (
+                          {data.managementFee > 0 ? "15.0%" : "3.0%"})
+                        </span>
+                        <span>
+                          -
+                          {formatter.format(
+                            data.shortTermAnnual *
+                              (data.managementFee > 0 ? 0.15 : 0.03),
+                          )}
+                        </span>
                       </div>
                       {data.managementFee > 0 && (
                         <div className="flex justify-between text-red-600">
-                          <span>Less Management Fee ({(data.managementFee * 100).toFixed(1)}%)</span>
-                          <span>-{formatter.format((data.shortTermAnnual * (1 - (data.managementFee > 0 ? 0.15 : 0.03))) * data.managementFee)}</span>
+                          <span>
+                            Less Management Fee (
+                            {(data.managementFee * 100).toFixed(1)}%)
+                          </span>
+                          <span>
+                            -
+                            {formatter.format(
+                              data.shortTermAnnual *
+                                (1 - (data.managementFee > 0 ? 0.15 : 0.03)) *
+                                data.managementFee,
+                            )}
+                          </span>
                         </div>
                       )}
                       <div className="border-t pt-2 flex justify-between font-semibold">
@@ -298,9 +327,12 @@ export default function ComparisonChart({
                     <p className="text-xl font-bold mt-1">
                       {formatter.format(data.shortTermNightly)}{" "}
                       <span className="text-base font-normal text-gray-600">
-                        ({formatter.format(
-                          data.shortTermNightly * (1 - (data.managementFee > 0 ? 0.15 : 0.03)),
-                        )} after platform fee)
+                        (
+                        {formatter.format(
+                          data.shortTermNightly *
+                            (1 - (data.managementFee > 0 ? 0.15 : 0.03)),
+                        )}{" "}
+                        after platform fee)
                       </span>
                     </p>
                   </div>
@@ -346,7 +378,9 @@ export default function ComparisonChart({
                     <p className="text-xl font-bold mt-1 text-red-600">
                       -
                       {formatter.format(
-                        (data.shortTermAnnual * (1 - (data.managementFee > 0 ? 0.15 : 0.03))) * data.managementFee,
+                        data.shortTermAnnual *
+                          (1 - (data.managementFee > 0 ? 0.15 : 0.03)) *
+                          data.managementFee,
                       )}
                     </p>
                   </div>
@@ -448,7 +482,12 @@ export default function ComparisonChart({
                                   <li>
                                     Management fee amount:{" "}
                                     {formatter.format(
-                                      (data.shortTermAnnual * (1 - (data.managementFee > 0 ? 0.15 : 0.03))) * data.managementFee,
+                                      data.shortTermAnnual *
+                                        (1 -
+                                          (data.managementFee > 0
+                                            ? 0.15
+                                            : 0.03)) *
+                                        data.managementFee,
                                     )}
                                   </li>
                                   <li>
@@ -516,7 +555,6 @@ export default function ComparisonChart({
           </div>
         </div>
         <div className="space-y-4">
-
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={monthlyChartData}>
@@ -798,7 +836,7 @@ export default function ComparisonChart({
                         return (
                           sum +
                           (data.managementFee > 0
-                            ? revenue * (1- data.managementFee)
+                            ? revenue * (1 - data.managementFee)
                             : revenue)
                         );
                       }, 0) / 12,
