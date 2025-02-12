@@ -91,9 +91,11 @@ export default function ComparisonPage() {
       bathrooms: data.bathrooms,
     });
 
+    console.log("Fetching revenue data for bedrooms:", data.bedrooms);
     fetch(`/api/revenue/${data.bedrooms}`)
       .then(res => res.json())
       .then(data => {
+        console.log("Revenue API Response:", data);
         if (data.KPIsByBedroomCategory?.[data.bedrooms]) {
           const result = data.KPIsByBedroomCategory[data.bedrooms];
           setRevenueData({
