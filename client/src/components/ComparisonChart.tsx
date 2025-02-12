@@ -8,6 +8,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import html2canvas from "html2canvas";
 import { FileText, Sparkles } from "lucide-react";
 import {
   DropdownMenu,
