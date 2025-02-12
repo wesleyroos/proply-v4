@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { FileText, Sparkles } from "lucide-react";
+import { useProAccess } from "@/hooks/use-pro-access";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,6 +63,7 @@ export default function ComparisonChart({
   data,
   address,
 }: ComparisonChartProps) {
+  const { hasAccess: hasProAccess } = useProAccess();
   const [showCalculations, setShowCalculations] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [removeSeasonality, setRemoveSeasonality] = useState(false);
