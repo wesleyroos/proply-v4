@@ -94,29 +94,21 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             adr: result.ADR25PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 25,
-            monthlyRevenue: result.Revenue25PercentileSum / 12,
-            annualRevenue: result.Revenue25PercentileSum,
           },
           "50": {
             adr: result.ADR50PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 50,
-            monthlyRevenue: result.Revenue50PercentileSum / 12,
-            annualRevenue: result.Revenue50PercentileSum,
           },
           "75": {
             adr: result.ADR75PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 75,
-            monthlyRevenue: result.Revenue75PercentileSum / 12,
-            annualRevenue: result.Revenue75PercentileSum,
           },
           "90": {
             adr: result.ADR90PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 90,
-            monthlyRevenue: result.Revenue90PercentileSum / 12,
-            annualRevenue: result.Revenue90PercentileSum,
           },
         });
         setShowPercentileDialog(true);
@@ -388,14 +380,12 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             <p className="text-sm text-gray-500 mb-4">
               Select an ADR percentile to use for the analysis:
             </p>
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-600">Percentile</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-600">ADR</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-600">Monthly Revenue</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-600">Annual Revenue</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-600">Action</th>
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left py-2 px-4">Percentile</th>
+                  <th className="text-right py-2 px-4">ADR</th>
+                  <th className="text-right py-2 px-4">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -408,18 +398,6 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                           style: "currency",
                           currency: "ZAR",
                         }).format(data.adr)}
-                      </td>
-                      <td className="text-right py-2 px-4">
-                        {new Intl.NumberFormat("en-ZA", {
-                          style: "currency",
-                          currency: "ZAR",
-                        }).format(data.monthlyRevenue)}
-                      </td>
-                      <td className="text-right py-2 px-4">
-                        {new Intl.NumberFormat("en-ZA", {
-                          style: "currency",
-                          currency: "ZAR",
-                        }).format(data.annualRevenue)}
                       </td>
                       <td className="text-right py-2 px-4">
                         <Button
