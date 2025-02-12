@@ -208,8 +208,9 @@ export default function ComparisonPage() {
                           <h4 className="font-medium mb-2">Market Position</h4>
                           <p>Rate Position: {revenueData?.["50"].ratePosition || 0}%</p>
                           <p>RevPAR Position: {revenueData?.["50"].revparPosition || 0}%</p>
-                          <p>Occupancy: {revenueData?.["50"].occupancy.toFixed(1)}%</p>
+                          <p>Seasonality Index: {revenueData?.["50"].seasonalityIndex || 0}</p>
                           <p>Demand Score: {revenueData?.["50"].demandScore || 0}</p>
+                          <p>Occupancy: {revenueData?.["50"].occupancy.toFixed(1)}%</p>
                         </div>
                       </div>
                     </div>
