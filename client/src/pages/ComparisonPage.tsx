@@ -6,15 +6,15 @@ import PropertyForm from "../components/PropertyForm";
 import ComparisonChart from "../components/ComparisonChart";
 import { useUser } from "../hooks/use-user";
 import { useQueryClient } from "@tanstack/react-query";
-import { Download } from "lucide-react";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
+
 
 export default function ComparisonPage() {
   const [, setLocation] = useLocation();
   const { user } = useUser();
   const [address, setAddress] = useState<string>("");
-  const [comparisonData, setComparisonData] = useState<ComparisonData | null>(null);
+  const [comparisonData, setComparisonData] = useState<ComparisonData | null>(
+    null,
+  );
   const [revenueData, setRevenueData] = useState<any>(null);
   const queryClient = useQueryClient();
 
@@ -168,92 +168,14 @@ export default function ComparisonPage() {
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#262626]">
-            Proply Rent Compare
-          </h1>
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex items-center gap-2">
-              <Download className="h-4 w-4" />
-              Export Report
-            </Button>
-            <Button className="bg-green-600 text-white hover:bg-green-700">
-              Save Property
-            </Button>
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold text-[#262626] mb-6">
+          Proply Rent Compare
+        </h1>
 
         <div className="max-w-4xl space-y-6">
           <Card>
             <CardContent className="pt-6">
               <PropertyForm onSubmit={handleCompare} queryClient={queryClient} />
-              <div className="flex justify-center gap-2 mt-4">
-                <Button
-                  className="w-full bg-[#1BA3FF] text-white"
-                  type="submit"
-                  form="property-form"
-                >
-                  Compare Options
-                </Button>
-                {comparisonData && (
-                  <Button
-                    onClick={async () => {
-                      const doc = new jsPDF();
-                      const element = document.getElementById("comparison-results");
-                      if (!element) return;
-
-                      try {
-                        const canvas = await html2canvas(element);
-                        const imgData = canvas.toDataURL("image/png");
-
-                        doc.setFontSize(20);
-                        doc.text("Rental Comparison Report", 20, 20);
-
-                        doc.setFontSize(12);
-                        doc.text(`Property: ${address}`, 20, 40);
-                        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 50);
-
-                        const imgProps = doc.getImageProperties(imgData);
-                        const pdfWidth = doc.internal.pageSize.getWidth() - 40;
-                        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                        doc.addImage(imgData, "PNG", 20, 60, pdfWidth, pdfHeight);
-
-                        const yOffset = pdfHeight + 80;
-                        doc.setFontSize(14);
-                        doc.text("Comparison Details", 20, yOffset);
-
-                        doc.setFontSize(12);
-                        doc.text(`Long Term Monthly: ${formatter.format(comparisonData.longTermMonthly)}`, 20, yOffset + 20);
-                        doc.text(`Short Term Monthly: ${formatter.format(comparisonData.shortTermMonthly)}`, 20, yOffset + 30);
-                        doc.text(`Long Term Annual: ${formatter.format(comparisonData.longTermAnnual)}`, 20, yOffset + 40);
-                        doc.text(`Short Term Annual: ${formatter.format(comparisonData.shortTermAnnual)}`, 20, yOffset + 50);
-                        doc.text(`Break Even Occupancy: ${comparisonData.breakEvenOccupancy}%`, 20, yOffset + 60);
-
-                        if (revenueData) {
-                          doc.addPage();
-                          doc.setFontSize(14);
-                          doc.text("Market Statistics", 20, 20);
-                          doc.setFontSize(12);
-                          doc.text(`RevPAR: ${formatter.format(revenueData["50"].revpar || 0)}`, 20, 40);
-                          doc.text(`RevPAM: ${formatter.format(revenueData["50"].revpam || 0)}`, 20, 50);
-                          doc.text(`Average Lead Time: ${revenueData["50"].leadTime || 0} days`, 20, 60);
-                          doc.text(`Average Length of Stay: ${revenueData["50"].stayLength || 0} days`, 20, 70);
-                          doc.text(`Active Listings: ${revenueData["50"].activeListings || 0}`, 20, 80);
-                        }
-
-                        doc.save(`rental-comparison-${address.split(',')[0]}.pdf`);
-                      } catch (error) {
-                        console.error("Error generating PDF:", error);
-                      }
-                    }}
-                    variant="outline"
-                    className="flex items-center gap-2 w-full"
-                  >
-                    <Download className="h-4 w-4" />
-                    Export Report
-                  </Button>
-                )}
-              </div>
             </CardContent>
           </Card>
 
