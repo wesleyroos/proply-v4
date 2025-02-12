@@ -16,7 +16,6 @@ import { FileText, Sparkles } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { hasProAccess } from "@/utils/hasProAccess";
 import { generatePropertyPreviewPDF } from "@/utils/generatePropertyPreviewPDF";
-import { useState } from "react";
 
 
 export default function ComparisonPage() {
