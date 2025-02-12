@@ -122,20 +122,17 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
           "50": {
             adr: result.ADR50PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
-            percentile: 50,
-            activeListings: result.ActiveListings,
+            percentile: 50
           },
           "75": {
             adr: result.ADR75PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
-            percentile: 75,
-            activeListings: result.ActiveListings,
+            percentile: 75
           },
           "90": {
             adr: result.ADR90PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
-            percentile: 90,
-            activeListings: result.ActiveListings,
+            percentile: 90
           },
         };
         console.log("Processed revenue data:", processedData);
@@ -449,7 +446,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             <div className="mt-4">
               <div className="text-sm text-gray-500">
                 <p>Average Occupancy Rate: {revenueData?.["50"].occupancy?.toFixed(1) || '--'}%</p>
-                <p className="mt-1">Number of Listings: {revenueData?.["50"].activeListings || '--'}</p>
+                <p className="mt-1">Number of Listings: {revenueData?.["25"].activeListings || '--'}</p>
               </div>
             </div>
           </div>
