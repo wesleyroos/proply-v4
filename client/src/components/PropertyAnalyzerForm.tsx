@@ -347,37 +347,24 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
 
       if (data.KPIsByBedroomCategory?.[bedrooms]) {
         const result = data.KPIsByBedroomCategory[bedrooms];
-        const calculateMonthlyRevenue = (adr: number, occupancy: number) => {
-          const daysInMonth = 30.44; // Average days per month
-          return Math.round(adr * daysInMonth * (occupancy / 100));
-        };
-
         setRevenueData({
           "25": {
             adr: result.ADR25PercentileAvg,
-            monthlyRevenue: calculateMonthlyRevenue(result.ADR25PercentileAvg, result.AvgAdjustedOccupancy),
-            annualRevenue: calculateMonthlyRevenue(result.ADR25PercentileAvg, result.AvgAdjustedOccupancy) * 12,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 25,
           },
           "50": {
             adr: result.ADR50PercentileAvg,
-            monthlyRevenue: calculateMonthlyRevenue(result.ADR50PercentileAvg, result.AvgAdjustedOccupancy),
-            annualRevenue: calculateMonthlyRevenue(result.ADR50PercentileAvg, result.AvgAdjustedOccupancy) * 12,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 50,
           },
           "75": {
             adr: result.ADR75PercentileAvg,
-            monthlyRevenue: calculateMonthlyRevenue(result.ADR75PercentileAvg, result.AvgAdjustedOccupancy),
-            annualRevenue: calculateMonthlyRevenue(result.ADR75PercentileAvg, result.AvgAdjustedOccupancy) * 12,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 75,
           },
           "90": {
             adr: result.ADR90PercentileAvg,
-            monthlyRevenue: calculateMonthlyRevenue(result.ADR90PercentileAvg, result.AvgAdjustedOccupancy),
-            annualRevenue: calculateMonthlyRevenue(result.ADR90PercentileAvg, result.AvgAdjustedOccupancy) * 12,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 90,
           },
