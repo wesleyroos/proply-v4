@@ -710,7 +710,7 @@ export default function ComparisonChart({
                         return (
                           sum +
                           (data.managementFee > 0
-                            ? revenue * (1- data.managementFee)
+                            ? revenue * (1 - data.managementFee)
                             : revenue)
                         );
                       }, 0) / 12,
@@ -769,8 +769,7 @@ export default function ComparisonChart({
                         const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
                         const revenue =
                           feeAdjustedRate * occupancyRate * daysInMonth;
-                        return (
-                          sum +
+                        return (                          sum +
                           (data.managementFee > 0
                             ? revenue * (1 - data.managementFee)
                             : revenue)
