@@ -1,4 +1,5 @@
 import { UpgradeModal } from "@/components/UpgradeModal";
+
 import { useState } from "react";
 import { useProAccess } from "../hooks/use-pro-access";
 import { useForm } from "react-hook-form";
@@ -19,7 +20,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
-import { Sparkles } from "lucide-react";
 
 interface RevenueData {
   adr: number;
@@ -52,8 +52,8 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
     "75": RevenueData;
     "90": RevenueData;
   } | null>(null);
-  const [showRevenueModal, setShowRevenueModal] = useState(false);
   const hasProAccess = useProAccess();
+
   const form = useForm({
     defaultValues: {
       title: "",
@@ -71,18 +71,50 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
   const fetchRevenueData = async () => {
     setIsLoading(true);
     try {
+      const address = form.getValues("address");
       const bedrooms = form.getValues("bedrooms");
 
-      if (!bedrooms) {
-        alert("Please enter the number of bedrooms first.");
+      if (!address || !bedrooms) {
+        alert(
+          "Please enter the property address and number of bedrooms first.",
+        );
         return;
       }
 
-      const response = await fetch(`/api/revenue/${bedrooms}`);
+      const response = await fetch(
+        `/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`,
+      );
+
       const data = await response.json();
-      setShowRevenueModal(true);
+
+      if (data.KPIsByBedroomCategory?.[bedrooms]) {
+        const result = data.KPIsByBedroomCategory[bedrooms];
+        setRevenueData({
+          "25": {
+            adr: result.ADR25PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 25,
+          },
+          "50": {
+            adr: result.ADR50PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 50,
+          },
+          "75": {
+            adr: result.ADR75PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 75,
+          },
+          "90": {
+            adr: result.ADR90PercentileAvg,
+            occupancy: result.AvgAdjustedOccupancy,
+            percentile: 90,
+          },
+        });
+        setShowPercentileDialog(true);
+      }
     } catch (error) {
-      console.error("Failed to fetch revenue data:", error);
+      console.error("Error fetching revenue data:", error);
       alert("Failed to fetch revenue data. Please try again.");
     } finally {
       setIsLoading(false);
@@ -304,11 +336,13 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
         </form>
       </Form>
 
+      {/* Hidden demo data button */}
       <button
         type="button"
         onClick={() => {
           setDemoClicks((prev) => {
             if (prev === 2) {
+              // Fill demo data after triple click
               form.reset({
                 title: "The Sentinel Unit 1209",
                 address: "27 Leeuwen St, Cape Town City Centre, 8001",
@@ -329,9 +363,15 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
         aria-hidden="true"
       />
 
-      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+      />
 
-      <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
+      <Dialog
+        open={showPercentileDialog}
+        onOpenChange={setShowPercentileDialog}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Revenue Performance Data</DialogTitle>
@@ -383,16 +423,6 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
               </p>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showRevenueModal} onOpenChange={setShowRevenueModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Revenue Data</DialogTitle>
-          </DialogHeader>
-          <p>Revenue data will be displayed here.</p>
-          <Button onClick={() => setShowRevenueModal(false)}>Close</Button>
         </DialogContent>
       </Dialog>
     </>
