@@ -168,9 +168,20 @@ export default function ComparisonPage() {
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-[#262626] mb-6">
-          Proply Rent Compare
-        </h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-[#262626]">
+            Proply Rent Compare
+          </h1>
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
+              Export Report
+            </Button>
+            <Button className="bg-green-600 text-white hover:bg-green-700">
+              Save Property
+            </Button>
+          </div>
+        </div>
 
         <div className="max-w-4xl space-y-6">
           <Card>
