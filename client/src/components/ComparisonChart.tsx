@@ -331,6 +331,35 @@ export default function ComparisonChart({
         >
           How do we calculate this?
         </Button>
+
+        <Dialog open={showCalculations} onOpenChange={setShowCalculations}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Calculation Methodology</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 text-sm">
+              <div>
+                <h3 className="font-semibold mb-2">Short-Term Rental Revenue</h3>
+                <p>We calculate revenue using the following formula:</p>
+                <ul className="list-disc pl-5 space-y-2">
+                  <li>Base nightly rate × Days in month × Occupancy rate</li>
+                  <li>Apply seasonal multipliers for each month</li>
+                  <li>Deduct platform fees ({data.managementFee > 0 ? "15%" : "3%"})</li>
+                  {data.managementFee > 0 && <li>Deduct management fees ({(data.managementFee * 100).toFixed(1)}%)</li>}
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Break-even Occupancy</h3>
+                <p>Break-even occupancy is calculated by:</p>
+                <ul className="list-disc pl-5 space-y-2">
+                  <li>Determine required daily revenue to match long-term rental</li>
+                  <li>Account for platform and management fees</li>
+                  <li>Calculate required occupancy as percentage of year</li>
+                </ul>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
         <div id="occupancy-analysis" className="p-4 bg-gray-50 rounded-lg">
           <h3 className="text-lg font-semibold mb-4">Occupancy Analysis</h3>
           <div className="space-y-4">
