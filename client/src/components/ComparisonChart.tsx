@@ -248,161 +248,78 @@ export default function ComparisonChart({
             </div>
           </div>
           <div className="p-4 bg-indigo-50 rounded-lg">
-            <h3 className="text-lg font-semibold text-[#114D9D] mb-2">
+            <h3 className="text-lg font-semibold text-[#114D9D] mb-4">
               Short-Term Rental
             </h3>
-            <div className="space-y-2">
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-base font-semibold text-gray-900">
-                        Revenue Breakdown
-                      </h3>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <InfoIcon className="h-4 w-4 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          Annual revenue and fee breakdown
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Annual Revenue</span>
-                        <span className="font-medium">
-                          {formatter.format(data.shortTermAnnual)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-red-600">
-                        <span>
-                          Less Platform Fee (
-                          {data.managementFee > 0 ? "15.0%" : "3.0%"})
-                        </span>
-                        <span>
-                          -
-                          {formatter.format(
-                            data.shortTermAnnual *
-                              (data.managementFee > 0 ? 0.15 : 0.03),
-                          )}
-                        </span>
-                      </div>
-                      {data.managementFee > 0 && (
-                        <div className="flex justify-between text-red-600">
-                          <span>
-                            Less Management Fee (
-                            {(data.managementFee * 100).toFixed(1)}%)
-                          </span>
-                          <span>
-                            -
-                            {formatter.format(
-                              data.shortTermAnnual *
-                                (1 - (data.managementFee > 0 ? 0.15 : 0.03)) *
-                                data.managementFee,
-                            )}
-                          </span>
-                        </div>
-                      )}
-                      <div className="border-t pt-2 flex justify-between font-semibold">
-                        <span>Final Annual Revenue</span>
-                        <span>{formatter.format(data.shortTermAfterFees)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-base font-semibold text-gray-900">
-                        Short Term Nightly Rate
-                      </h3>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <InfoIcon className="h-3 w-3 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          Base nightly rate before fees
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <p className="text-xl font-bold mt-1">
-                      {formatter.format(data.shortTermNightly)}{" "}
-                      <span className="text-base font-normal text-gray-600">
-                        (
-                        {formatter.format(
-                          data.shortTermNightly *
-                            (1 - (data.managementFee > 0 ? 0.15 : 0.03)),
-                        )}{" "}
-                        after platform fee)
-                      </span>
-                    </p>
-                  </div>
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <h3 className="text-base font-semibold text-gray-900">
+                    Revenue Breakdown
+                  </h3>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Annual revenue and fee breakdown
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-base font-semibold text-gray-900">
-                      Platform Fee ({data.managementFee > 0 ? "15.0%" : "3.0%"})
-                    </h3>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <InfoIcon className="h-4 w-4 text-gray-400" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Platform fee based on management type
-                      </TooltipContent>
-                    </Tooltip>
+                <div className="bg-white p-4 rounded-lg space-y-2">
+                  <div className="flex justify-between">
+                    <span>Annual Revenue</span>
+                    <span className="font-medium">
+                      {formatter.format(data.shortTermAnnual)}
+                    </span>
                   </div>
-                  <p className="text-xl font-bold mt-1 text-red-600">
-                    -
-                    {formatter.format(
-                      data.shortTermAnnual *
-                        (data.managementFee > 0 ? 0.15 : 0.03),
-                    )}
-                  </p>
-                </div>
-                {data.managementFee > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-base font-semibold text-gray-900">
-                        Management Fee ({(data.managementFee * 100).toFixed(1)}
-                        %)
-                      </h3>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <InfoIcon className="h-4 w-4 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          Property management fee amount
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <p className="text-xl font-bold mt-1 text-red-600">
-                      -
-                      {formatter.format(
+                  <div className="flex justify-between text-red-600">
+                    <span>
+                      Less Platform Fee ({data.managementFee > 0 ? "15.0%" : "3.0%"})
+                    </span>
+                    <span>
+                      -{formatter.format(
                         data.shortTermAnnual *
-                          (1 - (data.managementFee > 0 ? 0.15 : 0.03)) *
-                          data.managementFee,
+                          (data.managementFee > 0 ? 0.15 : 0.03),
                       )}
-                    </p>
+                    </span>
                   </div>
-                )}
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-base font-semibold text-gray-900">
-                      Final Annual Revenue
-                    </h3>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <InfoIcon className="h-4 w-4 text-gray-400" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Total annual revenue after all fees and deductions
-                      </TooltipContent>
-                    </Tooltip>
+                  {data.managementFee > 0 && (
+                    <div className="flex justify-between text-red-600">
+                      <span>
+                        Less Management Fee ({(data.managementFee * 100).toFixed(1)}%)
+                      </span>
+                      <span>
+                        -{formatter.format(
+                          data.shortTermAnnual *
+                            (1 - (data.managementFee > 0 ? 0.15 : 0.03)) *
+                            data.managementFee,
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  <div className="border-t pt-2 flex justify-between font-semibold">
+                    <span>Final Annual Revenue</span>
+                    <span>{formatter.format(data.shortTermAfterFees)}</span>
                   </div>
-                  <p className="text-xl font-bold mt-1">
-                    {formatter.format(data.shortTermAfterFees)}
-                  </p>
                 </div>
+              </div>
+              <div className="bg-white p-4 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm text-gray-600">Base Nightly Rate:</span>
+                  <span className="font-semibold">
+                    {formatter.format(data.shortTermNightly)}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    ({formatter.format(
+                      data.shortTermNightly *
+                        (1 - (data.managementFee > 0 ? 0.15 : 0.03)),
+                    )} after platform fee)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
                 <Dialog
                   open={showCalculations}
                   onOpenChange={setShowCalculations}
