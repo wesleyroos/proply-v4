@@ -7,13 +7,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import {
-  formatter,
-  getSeasonalNightlyRate,
-  getFeeAdjustedRate,
-  calculateMonthlyRevenue,
-  OCCUPANCY_RATES,
-} from "../utils/rentalPerformance";
+import { formatter } from "../utils/rentalPerformance";
 
 interface RentalPerformanceProps {
   shortTermNightly: number;
@@ -27,228 +21,121 @@ export default function RentalPerformance({
   managementFee,
 }: RentalPerformanceProps) {
   const MONTHS = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
   ];
+
   const isManaged = managementFee > 0;
+  const platformFeeRate = isManaged ? 0.15 : 0.03;
 
-  const calculateScenarioRevenue = (scenario: 'low' | 'medium' | 'high') => {
-    const monthlyRevenues = MONTHS.map((_, i) => 
-      calculateMonthlyRevenue(scenario, i, shortTermNightly, isManaged)
-    );
-    const total = monthlyRevenues.reduce((sum, rev) => sum + rev, 0);
-    const average = total / 12;
-    return { monthlyRevenues, total, average };
+  const calculateMonthlyBreakdown = (month: number) => {
+    // Base calculations
+    const seasonalRate = shortTermNightly * (1 + (month >= 11 || month <= 1 ? 0.2 : 
+                                               month >= 5 && month <= 7 ? -0.2 : 0));
+    const occupancyRate = 0.65; // Using medium scenario
+    const daysInMonth = new Date(2024, month + 1, 0).getDate();
+
+    // Revenue calculations
+    const grossRevenue = seasonalRate * daysInMonth * occupancyRate;
+    const platformFee = grossRevenue * platformFeeRate;
+    const managementFeeAmount = isManaged ? (grossRevenue - platformFee) * (managementFee / 100) : 0;
+    const netRevenue = grossRevenue - platformFee - managementFeeAmount;
+
+    return {
+      month: MONTHS[month],
+      grossRevenue,
+      platformFee,
+      managementFeeAmount,
+      netRevenue
+    };
   };
 
-  const scenarios = {
-    low: calculateScenarioRevenue('low'),
-    medium: calculateScenarioRevenue('medium'),
-    high: calculateScenarioRevenue('high'),
-  };
+  const annualData = MONTHS.map((_, index) => calculateMonthlyBreakdown(index));
+  const annualTotals = annualData.reduce(
+    (acc, month) => ({
+      grossRevenue: acc.grossRevenue + month.grossRevenue,
+      platformFee: acc.platformFee + month.platformFee,
+      managementFeeAmount: acc.managementFeeAmount + month.managementFeeAmount,
+      netRevenue: acc.netRevenue + month.netRevenue
+    }),
+    { grossRevenue: 0, platformFee: 0, managementFeeAmount: 0, netRevenue: 0 }
+  );
 
   return (
     <div className="space-y-8">
-      {/* Chart */}
+      {/* Revenue Chart */}
       <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             margin={{ left: 25 }}
-            data={Array(12)
-              .fill(0)
-              .map((_, i) => ({
-                month: new Date(2024, i).toLocaleString("default", {
-                  month: "short",
-                }),
-                low: calculateMonthlyRevenue(
-                  "low",
-                  i,
-                  shortTermNightly,
-                  isManaged,
-                ),
-                medium: calculateMonthlyRevenue(
-                  "medium",
-                  i,
-                  shortTermNightly,
-                  isManaged,
-                ),
-                high: calculateMonthlyRevenue(
-                  "high",
-                  i,
-                  shortTermNightly,
-                  isManaged,
-                ),
-                longTerm: longTermMonthly,
-              }))}
+            data={annualData}
           >
             <XAxis dataKey="month" />
             <YAxis tickFormatter={formatter} width={80} />
-            <RechartsTooltip formatter={formatter} />
+            <RechartsTooltip 
+              formatter={(value: number) => formatter(value)}
+              contentStyle={{ 
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px'
+              }}
+            />
             <Legend />
             <Line
               type="monotone"
-              dataKey="low"
-              stroke="#FF6B6B"
-              name="Revenue Low"
-            />
-            <Line
-              type="monotone"
-              dataKey="medium"
+              dataKey="grossRevenue"
               stroke="#4ECDC4"
-              name="Revenue Medium"
+              name="Gross Revenue"
             />
             <Line
               type="monotone"
-              dataKey="high"
+              dataKey="netRevenue"
               stroke="#45B7D1"
-              name="Revenue High"
-            />
-            <Line
-              type="monotone"
-              dataKey="longTerm"
-              stroke="#FFE66D"
-              strokeDasharray="5 5"
-              name="Long Term Rental"
+              name="Net Revenue"
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Detailed Monthly Performance Table */}
+      {/* Revenue Breakdown Table */}
       <div className="mt-6 rounded-lg border border-gray-200">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-gray-50">
-                <th className="text-left py-3 px-4">Metric</th>
-                {MONTHS.map(month => (
-                  <th key={month} className="text-right py-3 px-4">{month}</th>
-                ))}
-                <th className="text-right py-3 px-4 border-l">Annual</th>
-                <th className="text-right py-3 px-4">Monthly Avg</th>
+                <th className="text-left py-3 px-4">Revenue Breakdown</th>
+                <th className="text-right py-3 px-4">Annual Amount</th>
               </tr>
             </thead>
             <tbody>
-              {/* Nightly Rate */}
               <tr className="border-b hover:bg-gray-50">
-                <td className="py-3 px-4 font-medium">Nightly Rate</td>
-                {MONTHS.map((_, i) => (
-                  <td key={i} className="text-right py-3 px-4">
-                    {formatter(getSeasonalNightlyRate(shortTermNightly, i))}
-                  </td>
-                ))}
-                <td className="text-right py-3 px-4 border-l">-</td>
-              </tr>
-
-              {/* Platform Fee */}
-              <tr className="border-b hover:bg-gray-50">
-                <td className="py-3 px-4 font-medium">
-                  Platform Fee ({isManaged ? "15" : "3"}%)
+                <td className="py-3 px-4 font-medium">Annual Revenue</td>
+                <td className="text-right py-3 px-4">
+                  {formatter(annualTotals.grossRevenue)}
                 </td>
-                {MONTHS.map((_, i) => {
-                  const nightlyRate = getSeasonalNightlyRate(shortTermNightly, i);
-                  const platformFeeRate = isManaged ? 0.15 : 0.03;
-                  const platformFeeAmount = nightlyRate * platformFeeRate;
-                  return (
-                    <td key={i} className="text-right py-3 px-4 text-red-600">
-                      {formatter(-platformFeeAmount)}
-                    </td>
-                  );
-                })}
-                <td className="text-right py-3 px-4 border-l">-</td>
               </tr>
-
-              {/* Fee-adjusted Rate */}
               <tr className="border-b hover:bg-gray-50">
-                <td className="py-3 px-4 font-medium">Fee-adjusted Rate</td>
-                {MONTHS.map((_, i) => {
-                  const nightlyRate = getSeasonalNightlyRate(shortTermNightly, i);
-                  const platformFeeRate = isManaged ? 0.15 : 0.03;
-                  const adjustedRate = nightlyRate * (1 - platformFeeRate);
-                  return (
-                    <td key={i} className="text-right py-3 px-4">
-                      {formatter(adjustedRate)}
-                    </td>
-                  );
-                })}
-                <td className="text-right py-3 px-4 border-l">-</td>
+                <td className="py-3 px-4 font-medium text-red-600">
+                  Less Platform Fee ({(platformFeeRate * 100).toFixed(0)}%)
+                </td>
+                <td className="text-right py-3 px-4 text-red-600">
+                  {formatter(-annualTotals.platformFee)}
+                </td>
               </tr>
-
-              {/* Occupancy Rates */}
-              {Object.entries(OCCUPANCY_RATES).map(([scenario, rates]) => (
-                <tr key={`occupancy-${scenario}`} className="border-b hover:bg-gray-50">
-                  <td className="py-3 px-4 font-medium">
-                    Occupancy {scenario.charAt(0).toUpperCase() + scenario.slice(1)}
+              {isManaged && (
+                <tr className="border-b hover:bg-gray-50">
+                  <td className="py-3 px-4 font-medium text-red-600">
+                    Less Management Fee ({managementFee}%)
                   </td>
-                  {rates.map((rate, i) => (
-                    <td key={i} className="text-right py-3 px-4">{rate}%</td>
-                  ))}
-                  <td className="text-right py-3 px-4 border-l">-</td>
-                  <td className="text-right py-3 px-4">
-                    {(rates.reduce((sum, rate) => sum + rate, 0) / 12).toFixed(1)}%
+                  <td className="text-right py-3 px-4 text-red-600">
+                    {formatter(-annualTotals.managementFeeAmount)}
                   </td>
                 </tr>
-              ))}
-
-              {/* Revenue Scenarios */}
-              {(["low", "medium", "high"] as const).map((scenario) => {
-                const monthlyRevenues = MONTHS.map((_, i) => 
-                  calculateMonthlyRevenue(scenario, i, shortTermNightly, isManaged)
-                );
-                const total = monthlyRevenues.reduce((sum, rev) => sum + rev, 0);
-                const average = total / 12;
-                const bgColor = scenario === 'low' ? 'bg-[#FF6B6B]/5' : 
-                               scenario === 'medium' ? 'bg-[#4ECDC4]/5' : 
-                               'bg-[#45B7D1]/5';
-                const textColor = scenario === 'low' ? 'text-[#FF6B6B]' : 
-                                 scenario === 'medium' ? 'text-[#4ECDC4]' : 
-                                 'text-[#45B7D1]';
-
-                return (
-                  <tr key={`revenue-${scenario}`} className={`border-b ${bgColor} hover:bg-opacity-20`}>
-                    <td className={`py-3 px-4 font-medium ${textColor}`}>
-                      Revenue {scenario.charAt(0).toUpperCase() + scenario.slice(1)}
-                    </td>
-                    {monthlyRevenues.map((revenue, i) => (
-                      <td key={i} className="text-right py-3 px-4">
-                        {formatter(revenue)}
-                      </td>
-                    ))}
-                    <td className="text-right py-3 px-4 border-l font-medium">
-                      {formatter(total)}
-                    </td>
-                    <td className="text-right py-3 px-4 font-medium">
-                      {formatter(average)}
-                    </td>
-                  </tr>
-                );
-              })}
-
-              {/* Long Term Rental */}
-              <tr className="border-b bg-[#FFE66D]/5 hover:bg-[#FFE66D]/10">
-                <td className="py-3 px-4 font-medium text-[#B8860B]">
-                  Long Term Rental
-                </td>
-                {MONTHS.map((_, i) => (
-                  <td key={i} className="text-right py-3 px-4">
-                    {formatter(longTermMonthly)}
-                  </td>
-                ))}
-                <td className="text-right py-3 px-4 border-l font-medium">
-                  {formatter(longTermMonthly * 12)}
-                </td>
-                <td className="text-right py-3 px-4 font-medium">
-                  {formatter(longTermMonthly)}
+              )}
+              <tr className="border-b bg-gray-50 font-medium">
+                <td className="py-3 px-4">Final Annual Revenue</td>
+                <td className="text-right py-3 px-4">
+                  {formatter(annualTotals.netRevenue)}
                 </td>
               </tr>
             </tbody>
