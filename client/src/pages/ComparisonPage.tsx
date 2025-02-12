@@ -64,9 +64,15 @@ export default function ComparisonPage() {
     const shortTermAnnual = Array(12).fill(0).reduce((sum, _, month) => {
       const daysInMonth = new Date(2024, month + 1, 0).getDate();
       const seasonalMultiplier = SEASONALITY_FACTORS[month];
-      return sum + (shortTermNightly * seasonalMultiplier * daysInMonth * occupancyRate);
+      const monthlyRevenue = shortTermNightly * seasonalMultiplier * daysInMonth * occupancyRate;
+      return sum + monthlyRevenue;
     }, 0);
-    const shortTermMonthly = shortTermAnnual / 12;
+    
+    // Calculate monthly revenue using current month's seasonality
+    const currentMonth = new Date().getMonth();
+    const daysInCurrentMonth = new Date(2024, currentMonth + 1, 0).getDate();
+    const currentSeasonalMultiplier = SEASONALITY_FACTORS[currentMonth];
+    const shortTermMonthly = shortTermNightly * currentSeasonalMultiplier * daysInCurrentMonth * occupancyRate;
     
     // Calculate platform fees (Airbnb/booking fees)
     const platformFeeRate = managementFee > 0 ? 0.15 : 0.03; // 15% if managed, 3% if self-managed
