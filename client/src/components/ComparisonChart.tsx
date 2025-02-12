@@ -281,6 +281,94 @@ export default function ComparisonChart({
                       </div>
                     </div>
                   </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-semibold text-gray-900">
+                        Short Term Nightly Rate
+                      </h3>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <InfoIcon className="h-3 w-3 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Base nightly rate before fees
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <p className="text-xl font-bold mt-1">
+                      {formatter.format(data.shortTermNightly)}{" "}
+                      <span className="text-base font-normal text-gray-600">
+                        ({formatter.format(
+                          data.shortTermNightly * (1 - (data.managementFee > 0 ? 0.15 : 0.03)),
+                        )} after platform fee)
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-gray-900">
+                      Platform Fee ({data.managementFee > 0 ? "15.0%" : "3.0%"})
+                    </h3>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <InfoIcon className="h-4 w-4 text-gray-400" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Platform fee based on management type
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <p className="text-xl font-bold mt-1 text-red-600">
+                    -
+                    {formatter.format(
+                      data.shortTermAnnual *
+                        (data.managementFee > 0 ? 0.15 : 0.03),
+                    )}
+                  </p>
+                </div>
+                {data.managementFee > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-semibold text-gray-900">
+                        Management Fee ({(data.managementFee * 100).toFixed(1)}
+                        %)
+                      </h3>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <InfoIcon className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Property management fee amount
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <p className="text-xl font-bold mt-1 text-red-600">
+                      -
+                      {formatter.format(
+                        (data.shortTermAnnual * (1 - (data.managementFee > 0 ? 0.15 : 0.03))) * data.managementFee,
+                      )}
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-gray-900">
+                      Final Annual Revenue
+                    </h3>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <InfoIcon className="h-4 w-4 text-gray-400" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Total annual revenue after all fees and deductions
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <p className="text-xl font-bold mt-1">
+                    {formatter.format(data.shortTermAfterFees)}
+                  </p>
+                </div>
                 <Dialog
                   open={showCalculations}
                   onOpenChange={setShowCalculations}
@@ -710,7 +798,7 @@ export default function ComparisonChart({
                         return (
                           sum +
                           (data.managementFee > 0
-                            ? revenue * (1 - data.managementFee)
+                            ? revenue * (1- data.managementFee)
                             : revenue)
                         );
                       }, 0) / 12,
@@ -769,7 +857,8 @@ export default function ComparisonChart({
                         const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
                         const revenue =
                           feeAdjustedRate * occupancyRate * daysInMonth;
-                        return (                          sum +
+                        return (
+                          sum +
                           (data.managementFee > 0
                             ? revenue * (1 - data.managementFee)
                             : revenue)
