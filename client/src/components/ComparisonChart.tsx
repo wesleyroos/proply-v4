@@ -244,138 +244,40 @@ export default function ComparisonChart({
               Short-Term Rental
             </h3>
             <div className="space-y-2">
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-base font-semibold text-gray-900">
-                        Revenue Breakdown
-                      </h3>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <InfoIcon className="h-4 w-4 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          Annual revenue and fee breakdown
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Annual Revenue</span>
-                        <span className="font-medium">{formatter.format(data.shortTermAnnual)}</span>
-                      </div>
-                      <div className="flex justify-between text-red-600">
-                        <span>Less Platform Fee ({data.managementFee > 0 ? "15.0%" : "3.0%"})</span>
-                        <span>-{formatter.format(data.shortTermAnnual * (data.managementFee > 0 ? 0.15 : 0.03))}</span>
-                      </div>
-                      {data.managementFee > 0 && (
-                        <div className="flex justify-between text-red-600">
-                          <span>Less Management Fee ({(data.managementFee * 100).toFixed(1)}%)</span>
-                          <span>-{formatter.format((data.shortTermAnnual * (1 - (data.managementFee > 0 ? 0.15 : 0.03))) * data.managementFee)}</span>
-                        </div>
-                      )}
-                      <div className="border-t pt-2 flex justify-between font-semibold">
-                        <span>Final Annual Revenue</span>
-                        <span>{formatter.format(data.shortTermAfterFees)}</span>
-                      </div>
-                    </div>
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-base font-semibold text-gray-900">
+                    Revenue Breakdown
+                  </h3>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Annual revenue and fee breakdown
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Annual Revenue</span>
+                    <span className="font-medium">{formatter.format(data.shortTermAnnual)}</span>
                   </div>
-                <Dialog
-                  open={showCalculations}
-                  onOpenChange={setShowCalculations}
-                >
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Calculation Details</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-6">
-                      <div>
-                        <h4 className="font-semibold text-[#1BA3FF] mb-3">
-                          Long-Term Rental Calculations
-                        </h4>
-                        <div className="space-y-4">
-                          <div>
-                            <p className="text-sm mb-2">
-                              Simple annual calculation based on monthly rental
-                              income:
-                            </p>
-                            <ul className="list-disc list-inside text-sm space-y-1 text-gray-600">
-                              <li>
-                                Monthly Revenue:{" "}
-                                {formatter.format(data.longTermMonthly)}
-                              </li>
-                              <li>
-                                Annual Revenue = Monthly × 12 ={" "}
-                                {formatter.format(data.longTermAnnual)}
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-[#114D9D] mb-3">
-                          Short-Term Rental Calculations
-                        </h4>
-                        <div className="space-y-4">
-                          <div>
-                            <h5 className="text-sm font-medium mb-2">
-                              Fee Structure:
-                            </h5>
-                            <ul className="list-disc list-inside text-sm space-y-1 text-gray-600">
-                              <li>
-                                Platform Fee:{" "}
-                                {data.managementFee > 0 ? "15%" : "3%"}
-                              </li>
-                              {data.managementFee > 0 && (
-                                <li>
-                                  Management Fee:{" "}
-                                  {(data.managementFee * 100).toFixed(1)}%
-                                </li>
-                              )}
-                            </ul>
-                          </div>
-                          <div>
-                            <h5 className="text-sm font-medium mb-2">
-                              Calculation Steps:
-                            </h5>
-                            <ol className="list-decimal list-inside text-sm space-y-1 text-gray-600">
-                              <li>
-                                Base nightly rate:{" "}
-                                {formatter.format(data.shortTermNightly)}
-                              </li>
-                              <li>
-                                After platform fees:{" "}
-                                {formatter.format(
-                                  data.shortTermNightly *
-                                    (data.managementFee > 0 ? 0.85 : 0.97),
-                                )}
-                              </li>
-                              <li>
-                                Annual revenue:{" "}
-                                {formatter.format(data.shortTermAnnual)}
-                              </li>
-                              {data.managementFee > 0 && (
-                                <>
-                                  <li>
-                                    Management fee amount:{" "}
-                                    {formatter.format(
-                                      (data.shortTermAnnual * (1 - (data.managementFee > 0 ? 0.15 : 0.03))) * data.managementFee,
-                                    )}
-                                  </li>
-                                  <li>
-                                    Final annual revenue:{" "}
-                                    {formatter.format(data.shortTermAfterFees)}
-                                  </li>
-                                </>
-                              )}
-                            </ol>
-                          </div>
-                        </div>
-                      </div>
+                  <div className="flex justify-between text-red-600">
+                    <span>Less Platform Fee ({data.managementFee > 0 ? "15.0%" : "3.0%"})</span>
+                    <span>-{formatter.format(data.shortTermAnnual * (data.managementFee > 0 ? 0.15 : 0.03))}</span>
+                  </div>
+                  {data.managementFee > 0 && (
+                    <div className="flex justify-between text-red-600">
+                      <span>Less Management Fee ({(data.managementFee * 100).toFixed(1)}%)</span>
+                      <span>-{formatter.format((data.shortTermAnnual * (1 - (data.managementFee > 0 ? 0.15 : 0.03))) * data.managementFee)}</span>
                     </div>
-                  </DialogContent>
-                </Dialog>
+                  )}
+                  <div className="border-t pt-2 flex justify-between font-semibold">
+                    <span>Final Annual Revenue</span>
+                    <span>{formatter.format(data.shortTermAfterFees)}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -710,7 +612,7 @@ export default function ComparisonChart({
                         return (
                           sum +
                           (data.managementFee > 0
-                            ? revenue * (1- data.managementFee)
+                            ? revenue * (1 - data.managementFee)
                             : revenue)
                         );
                       }, 0) / 12,
@@ -859,7 +761,7 @@ export default function ComparisonChart({
                           feeAdjustedRate * occupancyRate * daysInMonth;
                         return (
                           sum +
-                          (data.managementFee > 0
+                          (data.managementFee >0
                             ? revenue * (1 - data.managementFee)
                             : revenue)
                         );
