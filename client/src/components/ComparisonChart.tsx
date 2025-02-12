@@ -211,36 +211,31 @@ export default function ComparisonChart({
             </h3>
             <div className="space-y-6">
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mb-2">
                   <h3 className="text-base font-semibold text-gray-900">
-                    Monthly Revenue
+                    Revenue Breakdown
                   </h3>
                   <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon className="h-4 w-4 text-gray-400" />
                     </TooltipTrigger>
-                    <TooltipContent>Monthly rental income</TooltipContent>
+                    <TooltipContent>Annual revenue breakdown</TooltipContent>
                   </Tooltip>
                 </div>
-                <p className="text-xl font-bold mt-1">
-                  {formatter.format(data.longTermMonthly)}
-                </p>
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base font-semibold text-gray-900">
-                    Annual Revenue
-                  </h3>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <InfoIcon className="h-4 w-4 text-gray-400" />
-                    </TooltipTrigger>
-                    <TooltipContent>Annual rental income</TooltipContent>
-                  </Tooltip>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Monthly Revenue</span>
+                    <span className="font-medium">{formatter.format(data.longTermMonthly)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Months per Year</span>
+                    <span className="font-medium">× 12</span>
+                  </div>
+                  <div className="border-t pt-2 flex justify-between font-semibold">
+                    <span>Annual Revenue</span>
+                    <span>{formatter.format(data.longTermAnnual)}</span>
+                  </div>
                 </div>
-                <p className="text-xl font-bold mt-1">
-                  {formatter.format(data.longTermAnnual)}
-                </p>
               </div>
             </div>
           </div>
