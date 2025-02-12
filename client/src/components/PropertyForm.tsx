@@ -74,22 +74,28 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
       const address = form.getValues("address");
       const bedrooms = form.getValues("bedrooms");
 
+      console.log("Fetching revenue data with:", { address, bedrooms });
+
       if (!address || !bedrooms) {
+        console.log("Missing required fields:", { address, bedrooms });
         alert(
           "Please enter the property address and number of bedrooms first.",
         );
         return;
       }
 
+      console.log("Making API request to /api/revenue-data");
       const response = await fetch(
         `/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`,
       );
 
       const data = await response.json();
+      console.log("API Response:", data);
 
       if (data.KPIsByBedroomCategory?.[bedrooms]) {
+        console.log("Processing KPIs for bedrooms:", bedrooms);
         const result = data.KPIsByBedroomCategory[bedrooms];
-        setRevenueData({
+        const processedData = {
           "25": {
             adr: result.ADR25PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
@@ -110,10 +116,13 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 90,
           },
-        });
+        };
+        console.log("Processed revenue data:", processedData);
+        setRevenueData(processedData);
         setShowPercentileDialog(true);
       }
     } catch (error) {
+      console.error("Revenue data fetch error:", error);
       console.error("Error fetching revenue data:", error);
       alert("Failed to fetch revenue data. Please try again.");
     } finally {
