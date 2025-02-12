@@ -25,6 +25,15 @@ interface RevenueData {
   adr: number;
   occupancy: number;
   percentile: number;
+  revpar: number;
+  revpam: number;
+  leadTime: number;
+  stayLength: number;
+  activeListings: number;
+  seasonalityIndex: number;
+  demandScore: number;
+  ratePosition: number;
+  revparPosition: number;
 }
 
 interface PropertyFormProps {
@@ -100,6 +109,15 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             adr: result.ADR25PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 25,
+            revpar: result.RevPARAvg,
+            revpam: result.RevPAMAvg,
+            leadTime: result.BookingLeadTimeDays,
+            stayLength: result.LengthOfStayDays,
+            activeListings: result.ActiveListings,
+            seasonalityIndex: result.MonthlySeasonalityIndex,
+            demandScore: result.MonthlyDemandScore,
+            ratePosition: result.RatePositionPercentile,
+            revparPosition: result.RevPARPositionPercentile
           },
           "50": {
             adr: result.ADR50PercentileAvg,
