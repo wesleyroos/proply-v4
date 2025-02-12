@@ -6,6 +6,17 @@ import PropertyForm from "../components/PropertyForm";
 import ComparisonChart from "../components/ComparisonChart";
 import { useUser } from "../hooks/use-user";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FileText, Sparkles } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
+import { hasProAccess } from "@/utils/hasProAccess";
+import { generatePropertyPreviewPDF } from "@/utils/generatePropertyPreviewPDF";
+import { useState } from "react";
 
 
 export default function ComparisonPage() {
@@ -17,6 +28,7 @@ export default function ComparisonPage() {
   );
   const [revenueData, setRevenueData] = useState<any>(null);
   const queryClient = useQueryClient();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   interface ComparisonData {
     title: string;
@@ -208,6 +220,96 @@ export default function ComparisonPage() {
                     </div>
                   </div>
                 )}
+                <div className="mt-6">
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={async () => {
+                        try {
+                          const response = await fetch("/api/properties", {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            credentials: "include",
+                            body: JSON.stringify({
+                              title: comparisonData.title,
+                              address,
+                              bedrooms: comparisonData.bedrooms || "",
+                              bathrooms: comparisonData.bathrooms || "",
+                              longTermRental: comparisonData.longTermMonthly.toString(),
+                              annualEscalation: "0",
+                              shortTermNightly: comparisonData.shortTermNightly.toString(),
+                              annualOccupancy: comparisonData.annualOccupancy.toString(),
+                              managementFee: (comparisonData.managementFee * 100).toString(),
+                              longTermMonthly: comparisonData.longTermMonthly,
+                              longTermAnnual: comparisonData.longTermAnnual,
+                              shortTermMonthly: comparisonData.shortTermMonthly,
+                              shortTermAnnual: comparisonData.shortTermAnnual,
+                              shortTermAfterFees: comparisonData.shortTermAfterFees,
+                              breakEvenOccupancy: comparisonData.breakEvenOccupancy,
+                            }),
+                          });
+
+                          if (!response.ok) {
+                            throw new Error("Failed to save property");
+                          }
+
+                          toast({
+                            variant: "success",
+                            title: "Success",
+                            description: "Property saved successfully",
+                            duration: 3000,
+                          });
+                        } catch (error) {
+                          console.error("Error saving property:", error);
+                          toast({
+                            variant: "destructive",
+                            title: "Error",
+                            description: "Failed to save property",
+                            duration: 3000,
+                          });
+                        }
+                      }}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Save Property
+                    </Button>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
+                          <FileText className="w-4 h-4 mr-2" />
+                          Export Report
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(comparisonData, false, user)}>
+                          <FileText className="mr-2" />
+                          Without Branding
+                        </DropdownMenuItem>
+                        {hasProAccess ? (
+                          <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(comparisonData, true, user)}>
+                            <FileText className="mr-2" />
+                            With Branding
+                            <div className="ml-2 flex items-center gap-1">
+                              <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                              <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                            </div>
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem onClick={() => setShowUpgradeModal(true)}>
+                            <FileText className="mr-2" />
+                            With Branding
+                            <div className="ml-2 flex items-center gap-1">
+                              <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                              <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                            </div>
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
