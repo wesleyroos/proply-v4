@@ -51,6 +51,14 @@ export default function ComparisonChart({
   data,
   address,
 }: ComparisonChartProps) {
+  if (!data || !address) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-gray-600">No comparison data available</p>
+      </div>
+    );
+  }
+
   const [showCalculations, setShowCalculations] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   // Original simple chart data
