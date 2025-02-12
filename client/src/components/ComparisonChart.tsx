@@ -176,6 +176,9 @@ export default function ComparisonChart({
             >
               Save Property
             </Button>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              Export Report
+            </Button>
           </div>
         </div>
         <MapView address={address} />
