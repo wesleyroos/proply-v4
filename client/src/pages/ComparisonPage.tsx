@@ -15,6 +15,7 @@ export default function ComparisonPage() {
   const [comparisonData, setComparisonData] = useState<ComparisonData | null>(
     null,
   );
+  const [revenueData, setRevenueData] = useState<any>(null); // Added revenueData state
   const queryClient = useQueryClient(); // Added useQueryClient hook
 
   interface ComparisonData {
@@ -67,7 +68,7 @@ export default function ComparisonPage() {
       return sum + (shortTermNightly * seasonalMultiplier * daysInMonth * occupancyRate);
     }, 0);
     const shortTermMonthly = shortTermAnnual / 12;
-    
+
     // Calculate platform fees (Airbnb/booking fees)
     const platformFeeRate = managementFee > 0 ? 0.15 : 0.03; // 15% if managed, 3% if self-managed
     const platformFeeAmount = shortTermAnnual * platformFeeRate;
@@ -98,7 +99,79 @@ export default function ComparisonPage() {
       bedrooms: data.bedrooms,
       bathrooms: data.bathrooms,
     });
+
+    //Added to fetch revenue data after comparison data is set.  Assumes data.bedrooms is available.
+    fetch(`/api/revenue/${data.bedrooms}`) // Replace with your actual API endpoint
+      .then(res => res.json())
+      .then(data => {
+        if (data.KPIsByBedroomCategory?.[data.bedrooms]) {
+          const result = data.KPIsByBedroomCategory[data.bedrooms];
+          setRevenueData({
+            "25": {
+              adr: result.ADR25PercentileAvg,
+              occupancy: result.AvgAdjustedOccupancy,
+              percentile: 25,
+              revpar: result.RevPARAvg,
+              revpam: result.RevPAMAvg,
+              leadTime: result.BookingLeadTimeDays,
+              stayLength: result.LengthOfStayDays,
+              activeListings: result.ActiveListings,
+              seasonalityIndex: result.MonthlySeasonalityIndex,
+              demandScore: result.MonthlyDemandScore,
+              ratePosition: result.RatePositionPercentile,
+              revparPosition: result.RevPARPositionPercentile
+            },
+            "50": {
+              adr: result.ADR50PercentileAvg,
+              occupancy: result.AvgAdjustedOccupancy,
+              percentile: 50,
+              revpar: result.RevPARAvg,
+              revpam: result.RevPAMAvg,
+              leadTime: result.BookingLeadTimeDays,
+              stayLength: result.LengthOfStayDays,
+              activeListings: result.ActiveListings,
+              seasonalityIndex: result.MonthlySeasonalityIndex,
+              demandScore: result.MonthlyDemandScore,
+              ratePosition: result.RatePositionPercentile,
+              revparPosition: result.RevPARPositionPercentile
+            },
+            "75": {
+              adr: result.ADR75PercentileAvg,
+              occupancy: result.AvgAdjustedOccupancy,
+              percentile: 75,
+              revpar: result.RevPARAvg,
+              revpam: result.RevPAMAvg,
+              leadTime: result.BookingLeadTimeDays,
+              stayLength: result.LengthOfStayDays,
+              activeListings: result.ActiveListings,
+              seasonalityIndex: result.MonthlySeasonalityIndex,
+              demandScore: result.MonthlyDemandScore,
+              ratePosition: result.RatePositionPercentile,
+              revparPosition: result.RevPARPositionPercentile
+            },
+            "90": {
+              adr: result.ADR90PercentileAvg,
+              occupancy: result.AvgAdjustedOccupancy,
+              percentile: 90,
+              revpar: result.RevPARAvg,
+              revpam: result.RevPAMAvg,
+              leadTime: result.BookingLeadTimeDays,
+              stayLength: result.LengthOfStayDays,
+              activeListings: result.ActiveListings,
+              seasonalityIndex: result.MonthlySeasonalityIndex,
+              demandScore: result.MonthlyDemandScore,
+              ratePosition: result.RatePositionPercentile,
+              revparPosition: result.RevPARPositionPercentile
+            },
+          });
+        }
+      });
   };
+
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  });
 
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
@@ -115,9 +188,33 @@ export default function ComparisonPage() {
           </Card>
 
           {comparisonData && (
-            <Card>
+            <Card id="comparison-results"> {/* Added ID for scrolling */}
               <CardContent className="pt-6">
                 <ComparisonChart data={comparisonData} address={address} />
+                {revenueData && (
+                  <div>
+                    <h2 className="text-xl font-medium mb-4">Percentile Data</h2>
+                    <div className="mt-4 space-y-4">
+                      <div className="grid grid-cols-2 gap-4 text-sm text-gray-500">
+                        <div>
+                          <h4 className="font-medium mb-2">Market Stats</h4>
+                          <p>RevPAR: {formatter.format(revenueData?.["50"].revpar || 0)}</p>
+                          <p>RevPAM: {formatter.format(revenueData?.["50"].revpam || 0)}</p>
+                          <p>Avg Lead Time: {revenueData?.["50"].leadTime || 0} days</p>
+                          <p>Avg Length of Stay: {revenueData?.["50"].stayLength || 0} days</p>
+                          <p>Active Listings: {revenueData?.["50"].activeListings || 0}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-2">Market Position</h4>
+                          <p>Rate Position: {revenueData?.["50"].ratePosition || 0}%</p>
+                          <p>RevPAR Position: {revenueData?.["50"].revparPosition || 0}%</p>
+                          <p>Occupancy: {revenueData?.["50"].occupancy.toFixed(1)}%</p>
+                          <p>Demand Score: {revenueData?.["50"].demandScore || 0}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
