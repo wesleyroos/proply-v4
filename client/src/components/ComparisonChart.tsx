@@ -280,28 +280,26 @@ export default function ComparisonChart({
                   </Tooltip>
                 </div>
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span>Annual Revenue</span>
-                      <div className="flex items-center gap-1">
-                        <Checkbox
-                          id="removeSeasonality"
-                          checked={removeSeasonality}
-                          onCheckedChange={(checked) =>
-                            setRemoveSeasonality(checked as boolean)
-                          }
-                        />
-                        <label
-                          htmlFor="removeSeasonality"
-                          className="text-sm text-gray-600"
-                        >
-                          Remove Seasonality
-                        </label>
-                      </div>
-                    </div>
+                  <div className="flex justify-between">
+                    <span>Annual Revenue</span>
                     <span className="font-medium">
                       {formatter.format(annualRevenue)}
                     </span>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Checkbox
+                      id="removeSeasonality"
+                      checked={removeSeasonality}
+                      onCheckedChange={(checked) =>
+                        setRemoveSeasonality(checked as boolean)
+                      }
+                    />
+                    <label
+                      htmlFor="removeSeasonality"
+                      className="text-sm text-gray-600"
+                    >
+                      Remove Seasonality
+                    </label>
                   </div>
                   <div className="flex justify-between text-red-600">
                     <span>
