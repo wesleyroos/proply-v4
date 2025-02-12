@@ -40,6 +40,38 @@ export default function ComparisonPage() {
       const element = document.getElementById("comparison-results");
       if (element) {
         const y =
+
+// Market analysis helper functions
+const getMarketPosition = (ratePosition: number): string => {
+  if (ratePosition >= 90) return "Premium";
+  if (ratePosition >= 75) return "High-end";
+  if (ratePosition >= 50) return "Mid-market";
+  if (ratePosition >= 25) return "Value";
+  return "Budget";
+};
+
+const getCompetitionLevel = (activeListings: number): string => {
+  if (activeListings >= 100) return "Very High";
+  if (activeListings >= 50) return "High";
+  if (activeListings >= 25) return "Moderate";
+  if (activeListings >= 10) return "Low";
+  return "Very Low";
+};
+
+const getMarketPhase = (demandScore: number): string => {
+  if (demandScore >= 8) return "Peak";
+  if (demandScore >= 6) return "Growth";
+  if (demandScore >= 4) return "Stable";
+  if (demandScore >= 2) return "Decline";
+  return "Trough";
+};
+
+const generateMarketAnalysis = (data: any): string => {
+  if (!data) return "";
+  
+  return `This property operates in a ${getCompetitionLevel(data.activeListings).toLowerCase()} competition area with ${data.activeListings} active listings. With a rate position in the ${data.ratePosition}th percentile, it targets the ${getMarketPosition(data.ratePosition).toLowerCase()} segment. The market shows ${data.demandScore >= 6 ? 'strong' : 'moderate'} demand (score: ${data.demandScore}/10) with ${data.occupancy.toFixed(1)}% typical occupancy and ${data.leadTime} days average booking lead time.`;
+};
+
           element.getBoundingClientRect().top + window.pageYOffset + yOffset;
         window.scrollTo({ top: y, behavior: "smooth" });
       }
@@ -184,24 +216,45 @@ export default function ComparisonPage() {
                 {revenueData && (
                   <div>
                     <h2 className="text-xl font-medium mb-4">Percentile Data</h2>
-                    <div className="mt-4 space-y-4">
-                      <div className="grid grid-cols-2 gap-4 text-sm text-gray-500">
-                        <div>
-                          <h4 className="font-medium mb-2">Market Stats</h4>
-                          <p>RevPAR: {formatter.format(revenueData?.["50"].revpar || 0)}</p>
-                          <p>RevPAM: {formatter.format(revenueData?.["50"].revpam || 0)}</p>
-                          <p>Avg Lead Time: {revenueData?.["50"].leadTime || 0} days</p>
-                          <p>Avg Length of Stay: {revenueData?.["50"].stayLength || 0} days</p>
-                          <p>Active Listings: {revenueData?.["50"].activeListings || 0}</p>
+                    <div className="mt-4 space-y-6">
+                      <div className="grid grid-cols-3 gap-6 text-sm">
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-gray-900">Revenue Metrics</h4>
+                          <div className="space-y-2 text-gray-600">
+                            <p>ADR: {formatter.format(revenueData?.["50"].adr || 0)}</p>
+                            <p>RevPAR: {formatter.format(revenueData?.["50"].revpar || 0)}</p>
+                            <p>RevPAM: {formatter.format(revenueData?.["50"].revpam || 0)}</p>
+                            <p>Rate Position: {revenueData?.["50"].ratePosition || 0}%</p>
+                            <p>RevPAR Position: {revenueData?.["50"].revparPosition || 0}%</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-medium mb-2">Market Position</h4>
-                          <p>Rate Position: {revenueData?.["50"].ratePosition || 0}%</p>
-                          <p>RevPAR Position: {revenueData?.["50"].revparPosition || 0}%</p>
-                          <p>Seasonality Index: {revenueData?.["50"].seasonalityIndex || 0}</p>
-                          <p>Demand Score: {revenueData?.["50"].demandScore || 0}</p>
-                          <p>Occupancy: {revenueData?.["50"].occupancy.toFixed(1)}%</p>
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-gray-900">Booking Patterns</h4>
+                          <div className="space-y-2 text-gray-600">
+                            <p>Avg Lead Time: {revenueData?.["50"].leadTime || 0} days</p>
+                            <p>Avg Length of Stay: {revenueData?.["50"].stayLength || 0} days</p>
+                            <p>Occupancy: {revenueData?.["50"].occupancy.toFixed(1)}%</p>
+                            <p>Seasonality Index: {revenueData?.["50"].seasonalityIndex || 0}</p>
+                            <p>Demand Score: {revenueData?.["50"].demandScore || 0}</p>
+                          </div>
                         </div>
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-gray-900">Market Context</h4>
+                          <div className="space-y-2 text-gray-600">
+                            <p>Active Listings: {revenueData?.["50"].activeListings || 0}</p>
+                            <p>Market Share: {((1 / (revenueData?.["50"].activeListings || 1)) * 100).toFixed(1)}%</p>
+                            <p>Market Position: {getMarketPosition(revenueData?.["50"].ratePosition || 0)}</p>
+                            <p>Competition Level: {getCompetitionLevel(revenueData?.["50"].activeListings || 0)}</p>
+                            <p>Market Phase: {getMarketPhase(revenueData?.["50"].demandScore || 0)}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-4 border-t">
+                        <h4 className="font-medium text-gray-900 mb-2">Market Analysis</h4>
+                        <p className="text-sm text-gray-600">
+                          {generateMarketAnalysis(revenueData?.["50"])}
+                        </p>
                       </div>
                     </div>
                   </div>
