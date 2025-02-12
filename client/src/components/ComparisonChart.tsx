@@ -9,7 +9,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { FileText, Sparkles } from "lucide-react";
-import { useProAccess } from "@/hooks/use-pro-access";
 import {
   DropdownMenu,
   DropdownMenuContent,
