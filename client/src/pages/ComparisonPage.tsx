@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FileText, Sparkles } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { hasProAccess } from "@/utils/hasProAccess";
 import { generatePropertyPreviewPDF } from "@/utils/generatePropertyPreviewPDF";
 
@@ -253,6 +253,7 @@ export default function ComparisonPage() {
                             throw new Error("Failed to save property");
                           }
 
+                          const { toast } = useToast();
                           toast({
                             variant: "success",
                             title: "Success",
