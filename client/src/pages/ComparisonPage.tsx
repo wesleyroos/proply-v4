@@ -194,7 +194,43 @@ export default function ComparisonPage() {
       const startY = 20;
       let maxLogoHeight = 0;
 
-      // Add company logo if branding is enabled and user has a company logo
+      // Always add Proply logo in top right
+      try {
+        const proplyLogoWidth = 40;
+        await new Promise<void>((resolve) => {
+          const proplyLogo = new Image();
+          proplyLogo.onload = () => {
+            const aspectRatio = proplyLogo.height / proplyLogo.width;
+            const proplyLogoHeight = proplyLogoWidth * aspectRatio;
+            maxLogoHeight = Math.max(maxLogoHeight, proplyLogoHeight);
+            doc.addImage(
+              "/proply-logo-1.png",
+              "PNG",
+              doc.internal.pageSize.getWidth() - 60,
+              startY,
+              proplyLogoWidth,
+              proplyLogoHeight,
+            );
+            doc.setFontSize(8);
+            doc.setTextColor(100);
+            doc.text(
+              "Powered by Proply",
+              doc.internal.pageSize.getWidth() - 60,
+              startY + proplyLogoHeight + 5,
+            );
+            resolve();
+          };
+          proplyLogo.onerror = () => {
+            console.error("Error loading Proply logo");
+            resolve();
+          };
+          proplyLogo.src = "/proply-logo-1.png";
+        });
+      } catch (error) {
+        console.error("Error adding Proply logo:", error);
+      }
+
+      // Add company logo if user has Pro access and a logo
       if (withBranding && user?.companyLogo) {
         try {
           const logoWidth = 40;
@@ -223,44 +259,6 @@ export default function ComparisonPage() {
           });
         } catch (error) {
           console.error("Error adding company logo:", error);
-        }
-      }
-
-      // Add Proply logo if branding is enabled
-      if (withBranding) {
-        try {
-          const proplyLogoWidth = 40;
-          await new Promise<void>((resolve) => {
-            const proplyLogo = new Image();
-            proplyLogo.onload = () => {
-              const aspectRatio = proplyLogo.height / proplyLogo.width;
-              const proplyLogoHeight = proplyLogoWidth * aspectRatio;
-              maxLogoHeight = Math.max(maxLogoHeight, proplyLogoHeight);
-              doc.addImage(
-                "/proply-logo-1.png",
-                "PNG",
-                doc.internal.pageSize.getWidth() - 60,
-                startY,
-                proplyLogoWidth,
-                proplyLogoHeight,
-              );
-              doc.setFontSize(8);
-              doc.setTextColor(100);
-              doc.text(
-                "Powered by Proply",
-                doc.internal.pageSize.getWidth() - 60,
-                startY + proplyLogoHeight + 5,
-              );
-              resolve();
-            };
-            proplyLogo.onerror = () => {
-              console.error("Error loading Proply logo");
-              resolve();
-            };
-            proplyLogo.src = "/proply-logo-1.png";
-          });
-        } catch (error) {
-          console.error("Error adding Proply logo:", error);
         }
       }
 
@@ -506,9 +504,9 @@ export default function ComparisonPage() {
     }
   };
 
-  const formatter = new Intl.NumberFormat('en-US', {
+  const formatter = new Intl.NumberFormat('en-ZA', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'ZAR',
   });
 
   return (
@@ -546,7 +544,7 @@ export default function ComparisonPage() {
                         <DropdownMenuItem onClick={() => handleExportPDF(false)}>
                           Export Report
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => handleExportPDF(true)}
                           className={!hasProAccess ? "text-muted-foreground" : ""}
                         >
