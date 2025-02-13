@@ -82,7 +82,7 @@ export default function ComparisonChart({
         });
         return;
       }
-      
+
       // Convert data to Property type
       const propertyData = {
         id: 0,
@@ -205,7 +205,7 @@ export default function ComparisonChart({
     // Title
     doc.setFontSize(20);
     doc.text("Rental Strategy Comparison", 20, yPos += 20);
-    
+
     // Property Details
     doc.setFontSize(12);
     doc.text("Property Details", 20, yPos += 20);
@@ -282,65 +282,63 @@ export default function ComparisonChart({
   return (
     <TooltipProvider>
       <div id="comparison-results" className="space-y-6">
-        <div className="flex justify-end gap-4">
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={async () => {
-                try {
-                  const response = await fetch("/api/properties", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({
-                      title: data.title,
-                      address,
-                      bedrooms: data.bedrooms || "",
-                      bathrooms: data.bathrooms || "",
-                      longTermRental: data.longTermMonthly.toString(),
-                      annualEscalation: "0",
-                      shortTermNightly: data.shortTermNightly.toString(),
-                      annualOccupancy: data.annualOccupancy.toString(),
-                      managementFee: (data.managementFee * 100).toString(),
-                      longTermMonthly: data.longTermMonthly,
-                      longTermAnnual: data.longTermAnnual,
-                      shortTermMonthly: data.shortTermMonthly,
-                      shortTermAnnual: data.shortTermAnnual,
-                      shortTermAfterFees: data.shortTermAfterFees,
-                      breakEvenOccupancy: data.breakEvenOccupancy,
-                    }),
-                  });
+        <div className="flex justify-end gap-4 mb-6">
+          <Button
+            onClick={async () => {
+              try {
+                const response = await fetch("/api/properties", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  credentials: "include",
+                  body: JSON.stringify({
+                    title: data.title,
+                    address,
+                    bedrooms: data.bedrooms || "",
+                    bathrooms: data.bathrooms || "",
+                    longTermRental: data.longTermMonthly.toString(),
+                    annualEscalation: "0",
+                    shortTermNightly: data.shortTermNightly.toString(),
+                    annualOccupancy: data.annualOccupancy.toString(),
+                    managementFee: (data.managementFee * 100).toString(),
+                    longTermMonthly: data.longTermMonthly,
+                    longTermAnnual: data.longTermAnnual,
+                    shortTermMonthly: data.shortTermMonthly,
+                    shortTermAnnual: data.shortTermAnnual,
+                    shortTermAfterFees: data.shortTermAfterFees,
+                    breakEvenOccupancy: data.breakEvenOccupancy,
+                  }),
+                });
 
-                  if (!response.ok) {
-                    throw new Error("Failed to save property");
-                  }
-
-                  toast({
-                    variant: "success",
-                    title: "Success",
-                    description: "Property saved successfully",
-                    duration: 3000,
-                  });
-                } catch (error) {
-                  console.error("Error saving property:", error);
-                  toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Failed to save property",
-                    duration: 3000,
-                  });
+                if (!response.ok) {
+                  throw new Error("Failed to save property");
                 }
-              }}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              Save Property
-            </Button>
-            <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
-              <FileText className="w-4 h-4 mr-2" />
-              Export Report
-            </Button>
-          </div>
+
+                toast({
+                  variant: "success",
+                  title: "Success",
+                  description: "Property saved successfully",
+                  duration: 3000,
+                });
+              } catch (error) {
+                console.error("Error saving property:", error);
+                toast({
+                  variant: "destructive",
+                  title: "Error",
+                  description: "Failed to save property",
+                  duration: 3000,
+                });
+              }
+            }}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            Save Property
+          </Button>
+          <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
+            <FileText className="w-4 h-4 mr-2" />
+            Export Report
+          </Button>
         </div>
         <MapView address={address} />
         <div className="p-4 bg-gray-50 rounded-lg">
@@ -763,7 +761,7 @@ export default function ComparisonChart({
                 <td className="text-right py-3 px-6 whitespace-nowrap">30</td>
                 <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
                 <td className="text-right py-3 px-6 border-l">365</td>
-                <td className="text-right py-3 px-6">30.4</td>
+                <td<td className="text-right py-3 px-6">30.4</td>
               </tr>
               <tr className="border-b bg-[#FF6B6B]/10 hover:bg-[#FF6B6B]/20">
                 <td className="py-3 px-6 text-[#FF6B6B] font-medium">
