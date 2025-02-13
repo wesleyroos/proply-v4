@@ -1,10 +1,17 @@
-
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/use-user";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 
 export default function PublicHeader() {
   const { user } = useUser();
@@ -43,6 +50,25 @@ export default function PublicHeader() {
             <Link href="/rent-compare">
               <Button variant="ghost" className={isMobile ? 'w-full justify-start' : ''}>Rent Compare</Button>
             </Link>
+
+            {/* Resources Navigation Menu */}
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>Resources</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="p-4 w-[200px]">
+                      <Link href="/airbnb-yield-calculator">
+                        <NavigationMenuLink className="block p-2 hover:bg-accent rounded-md cursor-pointer">
+                          Yield Calculator
+                        </NavigationMenuLink>
+                      </Link>
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+
             <Link href="/blog">
               <Button variant="ghost" className={isMobile ? 'w-full justify-start' : ''}>Blog</Button>
             </Link>

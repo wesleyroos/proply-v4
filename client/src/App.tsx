@@ -34,6 +34,7 @@ import Sidebar from "./components/Sidebar";
 import { ToastDemo } from "./components/ToastDemo";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import NotificationsMenu from "./components/NotificationsMenu";
+import AirbnbYieldCalculator from "./pages/AirbnbYieldCalculator";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -163,7 +164,7 @@ function App() {
                 <ContactPage />
               </PageTransition>
             )} />
-             <Route path="/payment/success" component={() => (
+            <Route path="/payment/success" component={() => (
               <PageTransition>
                 <PaymentSuccessPage />
               </PageTransition>
@@ -179,14 +180,19 @@ function App() {
             <Route path="/dashboard/property-analyzer" component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} />
             <Route path="/dashboard/market-intelligence" component={() => <ProtectedRoute component={MarketIntelligencePage} />} />
             <Route path="/dashboard/rent-compare" component={() => <ProtectedRoute component={ComparisonPage} />} />
-             <Route path="/dashboard/toast-demo" component={() => <ProtectedRoute component={ToastDemo} />} />
+            <Route path="/dashboard/toast-demo" component={() => <ProtectedRoute component={ToastDemo} />} />
             <Route path="/properties" component={() => <ProtectedRoute component={PropertiesPage} />} />
             <Route path="/settings" component={() => <ProtectedRoute component={SettingsPage} />} />
             <Route path="/admin" component={() => <ProtectedRoute component={AdminPage} />} />
             <Route path="/analytics" component={() => <ProtectedRoute component={AnalyticsPage} />} />
             <Route path="/access-codes" component={() => <ProtectedRoute component={AccessCodePage} />} />
             <Route path="/subscription" component={() => <ProtectedRoute component={SubscriptionPage} />} />
-             <Route path="/dashboard/control-panel" component={() => <ProtectedRoute component={ControlPanel} />} />
+            <Route path="/dashboard/control-panel" component={() => <ProtectedRoute component={ControlPanel} />} />
+            <Route path="/airbnb-yield-calculator" component={() => (
+              <PageTransition>
+                <AirbnbYieldCalculator />
+              </PageTransition>
+            )} />
             <Route component={NotFound} />
           </Switch>
         </AnimatePresence>
