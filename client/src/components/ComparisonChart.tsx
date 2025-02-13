@@ -304,12 +304,12 @@ export default function ComparisonChart({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(data, false, user)}>
+                <DropdownMenuItem onClick={() => handleExportPDF(false)}>
                   <FileText className="mr-2" />
                   Without Branding
                 </DropdownMenuItem>
                 {hasProAccess ? (
-                  <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(data, true, user)}>
+                  <DropdownMenuItem onClick={() => handleExportPDF(true)}>
                     <FileText className="mr-2" />
                     With Branding
                     <div className="ml-2 flex items-center gap-1">
