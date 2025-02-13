@@ -1,0 +1,485 @@
+// Function to generate the PDF with comprehensive property details
+async function generatePropertyPreviewPDF(
+  property: Property | null,
+  includeCompanyBranding: boolean = true,
+  userData?: SelectUser | null,
+) {
+  if (!property) return;
+
+  const doc = new jsPDF();
+  let yPos = 20;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 20;
+
+  const startY = 20;
+  let maxLogoHeight = 0;
+
+  // Add company logo if branding is enabled and logo exists
+  if (includeCompanyBranding && userData?.companyLogo) {
+    try {
+      const logoWidth = 40;
+      await new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const aspectRatio = img.height / img.width;
+          const logoHeight = logoWidth * aspectRatio;
+          maxLogoHeight = Math.max(maxLogoHeight, logoHeight);
+          doc.addImage(
+            userData.companyLogo,
+            "PNG",
+            margin,
+            startY,
+            logoWidth,
+            logoHeight,
+          );
+          resolve();
+        };
+        img.onerror = () => {
+          console.error("Error loading company logo");
+          resolve();
+        };
+        img.crossOrigin = "Anonymous";
+        img.src = userData.companyLogo;
+      });
+    } catch (error) {
+      console.error("Error adding company logo:", error);
+    }
+  }
+
+  // Add Proply logo
+  try {
+    const proplyLogoWidth = 40;
+    await new Promise<void>((resolve) => {
+      const proplyLogo = new Image();
+      proplyLogo.onload = () => {
+        const aspectRatio = proplyLogo.height / proplyLogo.width;
+        const proplyLogoHeight = proplyLogoWidth * aspectRatio;
+        maxLogoHeight = Math.max(maxLogoHeight, proplyLogoHeight);
+        doc.addImage(
+          "/proply-logo-1.png",
+          "PNG",
+          doc.internal.pageSize.getWidth() - 60,
+          startY,
+          proplyLogoWidth,
+          proplyLogoHeight,
+        );
+        doc.setFontSize(8);
+        doc.setTextColor(100);
+        doc.text(
+          "Powered by Proply",
+          doc.internal.pageSize.getWidth() - 60,
+          startY + proplyLogoHeight + 5,
+        );
+        resolve();
+      };
+      proplyLogo.onerror = () => {
+        console.error("Error loading Proply logo");
+        resolve();
+      };
+      proplyLogo.src = "/proply-logo-1.png";
+    });
+  } catch (error) {
+    console.error("Error adding Proply logo:", error);
+  }
+
+  yPos = startY + maxLogoHeight + 10;
+
+  yPos = Math.max(yPos, 50);
+
+  // Title and Address
+  doc.setFontSize(20);
+  doc.setTextColor(0);
+  doc.text("Rent Compare Analysis", 20, yPos); //Added heading
+  yPos += 10;
+
+  // Add description
+  doc.setFontSize(10);
+  doc.setTextColor(90);
+  const contentWidth = doc.internal.pageSize.getWidth() - 60; // Reduce width by increasing margin
+  const descriptionText =
+    "A comprehensive comparison of short-term and long-term rental strategies for your property, analyzing potential returns, occupancy requirements, and break-even points to help you make an informed investment decision.";
+  const lines = doc.splitTextToSize(descriptionText, contentWidth);
+  lines.forEach((line) => {
+    doc.text(line, 20, yPos);
+    yPos += 5;
+  });
+  yPos += 15;
+
+  // Property Details section
+  doc.setFontSize(16);
+  doc.text("Property Details", 20, yPos);
+  yPos += 10;
+
+  const propertyDetails = [
+    ["Property Name", property.title],
+    ["Address", property.address],
+    ["Bedrooms", property.bedrooms],
+    ["Bathrooms", property.bathrooms],
+    property.parkingSpaces ? ["Parking Spaces", property.parkingSpaces] : null,
+  ].filter(Boolean);
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Feature", "Value"]],
+    body: propertyDetails,
+    theme: "grid",
+    styles: { fontSize: 10, halign: "center" },
+    headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 20;
+
+  // Short-Term Performance
+  doc.setFontSize(16);
+  doc.text("Short-Term Performance", 20, yPos);
+  yPos += 10;
+
+  const platformFee = property.managementFee > 0 ? 15 : 3;
+  const feeAdjustedNightlyRate =
+    property.shortTermNightly * (1 - platformFee / 100);
+
+  const shortTermDetails = [
+    ["Annual Revenue", formatter.format(property.shortTermAnnual)],
+    ["Monthly Average", formatter.format(property.shortTermAnnual / 12)],
+    ["Nightly Rate", formatter.format(property.shortTermNightly)],
+    ["Platform Fee", `${platformFee}%`],
+    ["Fee-adjusted Rate", formatter.format(feeAdjustedNightlyRate)],
+    ["Annual Occupancy", `${property.annualOccupancy}%`],
+    ["Management Fee", `${property.managementFee}%`],
+  ];
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Metric", "Value"]],
+    body: shortTermDetails,
+    theme: "grid",
+    styles: { fontSize: 10, halign: "center" },
+    headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 20;
+
+  // Long-Term Performance
+  doc.setFontSize(16);
+  doc.text("Long-Term Performance", 20, yPos);
+  yPos += 10;
+
+  const longTermDetails = [
+    ["Annual Revenue", formatter.format(property.longTermMonthly * 12)],
+    ["Monthly Revenue", formatter.format(property.longTermMonthly)],
+  ];
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Metric", "Value"]],
+    body: longTermDetails,
+    theme: "grid",
+    styles: { fontSize: 10, halign: "center" },
+    headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 20;
+
+  // Breakeven Analysis
+  doc.setFontSize(16);
+  doc.text("Breakeven Analysis", 20, yPos);
+  yPos += 10;
+
+  const breakEvenDetails = [
+    ["Projected Occupancy", `${property.annualOccupancy}%`],
+    ["Break-even Occupancy", `${property.breakEvenOccupancy}%`],
+  ];
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Metric", "Value"]],
+    body: breakEvenDetails,
+    theme: "grid",
+    styles: { fontSize: 10, halign: "center" },
+    headStyles: { fillColor: [27, 163, 255], textColor: 255 }, // Proply blue
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 20;
+
+  // Capture Revenue Chart
+  const revenueChartElement = document.querySelector(
+    ".revenue-chart .recharts-wrapper",
+  );
+  if (revenueChartElement) {
+    const canvas = await html2canvas(revenueChartElement);
+    const chartImage = canvas.toDataURL("image/png");
+    const imgWidth = pageWidth - 2 * margin;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    doc.setFontSize(14);
+    doc.text("Monthly Revenue Projection", margin, yPos);
+    yPos += 10;
+
+    doc.addImage(chartImage, "PNG", margin, yPos, imgWidth, imgHeight);
+    yPos += imgHeight + 20;
+  }
+
+  // Add Monthly Revenue Table
+  doc.setFontSize(14);
+  doc.text("Monthly Revenue Breakdown", margin, yPos);
+  yPos += 10;
+
+  const tableHeaders = [
+    "Month",
+    "Nightly Rate",
+    "Fee-Adjusted Rate",
+    "Occupancy Low",
+    "Revenue Low",
+    "Occupancy Med",
+    "Revenue Med",
+    "Occupancy High",
+    "Revenue High",
+    "Long Term",
+  ];
+
+  const tableData = Array(12)
+    .fill(0)
+    .map((_, i) => [
+      new Date(2024, i).toLocaleString("default", { month: "short" }),
+      formatter.format(getSeasonalNightlyRate(property.shortTermNightly, i)),
+      formatter.format(
+        getFeeAdjustedRate(
+          getSeasonalNightlyRate(property.shortTermNightly, i),
+          property.managementFee > 0,
+        ),
+      ),
+      `${OCCUPANCY_RATES.low[i]}%`,
+      formatter.format(
+        calculateMonthlyRevenue(
+          "low",
+          i,
+          property.shortTermNightly,
+          property.managementFee > 0,
+          property.managementFee,
+        ),
+      ),
+      `${OCCUPANCY_RATES.medium[i]}%`,
+      formatter.format(
+        calculateMonthlyRevenue(
+          "medium",
+          i,
+          property.shortTermNightly,
+          property.managementFee > 0,
+          property.managementFee,
+        ),
+      ),
+      `${OCCUPANCY_RATES.high[i]}%`,
+      formatter.format(
+        calculateMonthlyRevenue(
+          "high",
+          i,
+          property.shortTermNightly,
+          property.managementFee > 0,
+          property.managementFee,
+        ),
+      ),
+      formatter.format(property.longTermMonthly),
+    ]);
+
+  // Calculate averages for occupancy rates
+  const avgLowOcc =
+    (OCCUPANCY_RATES.low.reduce((a, b) => a + b, 0) / 12).toFixed(1) + "%";
+  const avgMedOcc =
+    (OCCUPANCY_RATES.medium.reduce((a, b) => a + b, 0) / 12).toFixed(1) + "%";
+  const avgHighOcc =
+    (OCCUPANCY_RATES.high.reduce((a, b) => a + b, 0) / 12).toFixed(1) + "%";
+
+  // Calculate totals for revenues
+  const totalLowRevenue = Array(12)
+    .fill(0)
+    .reduce(
+      (sum, _, i) =>
+        sum +
+        calculateMonthlyRevenue(
+          "low",
+          i,
+          property.shortTermNightly,
+          property.managementFee > 0,
+          property.managementFee,
+        ),
+      0,
+    );
+  const totalMedRevenue = Array(12)
+    .fill(0)
+    .reduce(
+      (sum, _, i) =>
+        sum +
+        calculateMonthlyRevenue(
+          "medium",
+          i,
+          property.shortTermNightly,
+          property.managementFee > 0,
+          property.managementFee,
+        ),
+      0,
+    );
+  const totalHighRevenue = Array(12)
+    .fill(0)
+    .reduce(
+      (sum, _, i) =>
+        sum +
+        calculateMonthlyRevenue(
+          "high",
+          i,
+          property.shortTermNightly,
+          property.managementFee > 0,
+          property.managementFee,
+        ),
+      0,
+    );
+  const totalLongTerm = property.longTermMonthly * 12;
+
+  // Add totals row
+  tableData.push([
+    "Averages/Totals",
+    "-",
+    "-",
+    avgLowOcc,
+    formatter.format(totalLowRevenue),
+    avgMedOcc,
+    formatter.format(totalMedRevenue),
+    avgHighOcc,
+    formatter.format(totalHighRevenue),
+    formatter.format(totalLongTerm),
+  ]);
+
+  autoTable(doc, {
+    head: [tableHeaders],
+    body: tableData,
+    startY: yPos,
+    styles: { fontSize: 6.5 },
+    headStyles: { fillColor: [27, 163, 255], fontSize: 7 },
+    margin: { left: margin },
+    didParseCell: function (data) {
+      // Make last row (totals) bold
+      if (data.row.index === tableData.length - 1) {
+        data.cell.styles.fontStyle = "bold";
+        data.cell.styles.fillColor = [243, 244, 246];
+      }
+    },
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 20;
+
+  // Add footer elements to all pages
+  const totalPages = doc.getNumberOfPages();
+  const footerMargin = 20;
+  const footerPadding = 10;
+
+  try {
+    const logo = new Image();
+    logo.src = "/proply-logo-1.png";
+
+    await new Promise((resolve) => {
+      logo.onload = () => {
+        for (let i = 1; i <= totalPages; i++) {
+          doc.setPage(i);
+
+          // Add Proply logo to bottom left
+          const logoHeight = 6;
+          const aspectRatio = logo.width / logo.height;
+          const logoWidth = logoHeight * aspectRatio;
+          doc.addImage(
+            logo,
+            "PNG",
+            footerMargin,
+            doc.internal.pageSize.getHeight() - footerPadding - logoHeight,
+            logoWidth,
+            logoHeight,
+          );
+
+          // Add page numbers to bottom right
+          doc.setFontSize(8);
+          doc.setTextColor(100);
+          doc.text(
+            `Page ${i} of ${totalPages}`,
+            doc.internal.pageSize.getWidth() - margin,
+            doc.internal.pageSize.getHeight() - footerPadding,
+            { align: "right" },
+          );
+
+          // Add copyright text to center
+          const currentYear = new Date().getFullYear();
+          doc.text(
+            `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
+            doc.internal.pageSize.getWidth() / 2,
+            doc.internal.pageSize.getHeight() - footerPadding,
+            { align: "center" },
+          );
+        }
+        resolve(null);
+      };
+      logo.onerror = () => {
+        console.error("Error loading logo in footer");
+        resolve(null);
+      };
+    });
+  } catch (error) {
+    console.error("Error adding footer elements:", error);
+    // If logo fails, still add page numbers and copyright
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.text(
+        `Page ${i} of ${totalPages}`,
+        doc.internal.pageSize.getWidth() - margin,
+        doc.internal.pageSize.getHeight() - footerPadding,
+        { align: "right" },
+      );
+      doc.text(
+        `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
+        doc.internal.pageSize.getWidth() / 2,
+        doc.internal.pageSize.getHeight() - footerPadding,
+        { align: "center" },
+      );
+    }
+  }
+
+  // Add new page for disclaimer
+  doc.addPage();
+
+  // Add disclaimer heading
+  doc.setFontSize(12);
+  doc.setTextColor(0);
+  doc.text("Important Disclaimers & Legal Notices", 20, 40);
+
+  // Set disclaimer text style
+  doc.setFontSize(7);
+  doc.setTextColor(90);
+
+  const currentYear = new Date().getFullYear();
+  const disclaimerText = [
+    "DISCLAIMER: The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.",
+    "",
+    "This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice. Any decisions made based on this information are solely the responsibility of the user. Property investment carries inherent risks, and market conditions can change rapidly.",
+    "",
+    "Proply Tech (Pty) Ltd and its affiliates expressly disclaim any and all liability for any direct, indirect, incidental, or consequential damages arising from the use of this information. Actual results may vary significantly from the projections and estimates presented.",
+    "",
+    "By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.",
+    "",
+    `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
+  ];
+
+  let yPosition = 60;
+  disclaimerText.forEach((text) => {
+    if (text === "") {
+      yPosition += 5;
+      return;
+    }
+    const lines = doc.splitTextToSize(text, 170);
+    lines.forEach((line) => {
+      doc.text(line, 20, yPosition);
+      yPosition += 5;
+    });
+  });
+
+  doc.save(
+    `Rent Compare for ${property.address.replace(/[^a-zA-Z0-9]/g, " ")}.pdf`,
+  );
+}
