@@ -491,6 +491,12 @@ export default function ComparisonPage() {
     }
   };
 
+  const handleSaveProperty = () => {
+    // Add your save property logic here
+    console.log('Save Property Clicked');
+    //Example setIsSaved(true);
+  };
+
   const formatter = new Intl.NumberFormat('en-ZA', {
     style: 'currency',
     currency: 'ZAR',
@@ -515,12 +521,16 @@ export default function ComparisonPage() {
               <CardContent className="pt-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-medium">Comparison Results</h2>
-                  {isSaved && (
+                  <div className="flex items-center gap-2">
+                    <Button onClick={handleSaveProperty} variant="default" className="bg-primary hover:opacity-90">
+                      Save Property
+                    </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="outline"
                           className="flex items-center gap-2"
+                          disabled={!isSaved}
                         >
                           <Download className="h-4 w-4" />
                           Export Report
@@ -540,7 +550,7 @@ export default function ComparisonPage() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  )}
+                  </div>
                 </div>
                 <ComparisonChart data={comparisonData} address={address} />
                 {revenueData && (
