@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Download, ChevronDown } from "lucide-react";
 import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
 import autoTable from 'jspdf-autotable';
 import PropertyForm from "../components/PropertyForm";
 import ComparisonChart from "../components/ComparisonChart";
@@ -189,7 +188,6 @@ export default function ComparisonPage() {
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const margin = 20;
-      let currentY = margin;
 
       const startY = 20;
       let maxLogoHeight = 0;
@@ -262,7 +260,7 @@ export default function ComparisonPage() {
         }
       }
 
-      currentY = startY + maxLogoHeight + 10;
+      let currentY = startY + maxLogoHeight + 10;
       currentY = Math.max(currentY, 50);
 
       // Title and description
@@ -278,18 +276,18 @@ export default function ComparisonPage() {
       const descriptionText =
         "A comprehensive comparison of short-term and long-term rental strategies for your property, analyzing potential returns, occupancy requirements, and break-even points to help you make an informed investment decision.";
       const lines = doc.splitTextToSize(descriptionText, contentWidth);
-      lines.forEach((line) => {
+      lines.forEach((line: string) => {
         doc.text(line, margin, currentY);
         currentY += 5;
       });
       currentY += 15;
 
       // Property Details section
-      doc.setFontSize(16);
-      doc.text("Property Details", margin, currentY);
-      currentY += 10;
-
       if (comparisonData) {
+        doc.setFontSize(16);
+        doc.text("Property Details", margin, currentY);
+        currentY += 10;
+
         const propertyDetails = [
           ["Property Name", comparisonData.title],
           ["Address", address],
@@ -356,17 +354,6 @@ export default function ComparisonPage() {
         currentY = (doc as any).lastAutoTable.finalY + 20;
       }
 
-      // Capture comparison chart
-      const chartElement = document.querySelector("#comparison-results");
-      if (chartElement) {
-        const canvas = await html2canvas(chartElement as HTMLElement);
-        const imgData = canvas.toDataURL("image/png");
-        const imgWidth = pageWidth - 2 * margin;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        doc.addImage(imgData, "PNG", margin, currentY, imgWidth, imgHeight);
-        currentY += imgHeight + 20;
-      }
 
       // Add footer elements to all pages
       const totalPages = doc.getNumberOfPages();
@@ -483,7 +470,7 @@ export default function ComparisonPage() {
             return;
           }
           const lines = doc.splitTextToSize(text, 170);
-          lines.forEach((line) => {
+          lines.forEach((line: string) => {
             doc.text(line, margin, yPosition);
             yPosition += 5;
           });
