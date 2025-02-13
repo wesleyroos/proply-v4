@@ -1,4 +1,9 @@
 import { useState } from "react";
+import { FileText, Sparkles } from "lucide-react";
+import { generatePropertyPreviewPDF } from "../utils/generatePropertyPreviewPDF";
+import { useUser } from "../hooks/use-user";
+import { useProAccess } from "../hooks/use-pro-access";
+import { UpgradeModal } from "./UpgradeModal";
 import {
   LineChart,
   Line,
@@ -65,6 +70,10 @@ export default function ComparisonChart({
   data,
   address,
 }: ComparisonChartProps) {
+  const [propertySaved, setPropertySaved] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { user } = useUser();
+  const { hasAccess: hasProAccess } = useProAccess();
   const { hasAccess: hasProAccess } = useProAccess();
   const [showCalculations, setShowCalculations] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
@@ -244,58 +253,99 @@ export default function ComparisonChart({
       <div id="comparison-results" className="space-y-6">
         <div className="flex justify-end gap-4">
           <div className="flex items-center gap-4">
-            <Button
-              onClick={async () => {
-                try {
-                  const response = await fetch("/api/properties", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({
-                      title: data.title,
-                      address,
-                      bedrooms: data.bedrooms || "",
-                      bathrooms: data.bathrooms || "",
-                      longTermRental: data.longTermMonthly.toString(),
-                      annualEscalation: "0",
-                      shortTermNightly: data.shortTermNightly.toString(),
-                      annualOccupancy: data.annualOccupancy.toString(),
-                      managementFee: (data.managementFee * 100).toString(),
-                      longTermMonthly: data.longTermMonthly,
-                      longTermAnnual: data.longTermAnnual,
-                      shortTermMonthly: data.shortTermMonthly,
-                      shortTermAnnual: data.shortTermAnnual,
-                      shortTermAfterFees: data.shortTermAfterFees,
-                      breakEvenOccupancy: data.breakEvenOccupancy,
-                    }),
-                  });
+            {/* Save Property Button */}
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={async () => {
+                  try {
+                    const response = await fetch("/api/properties", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      credentials: "include",
+                      body: JSON.stringify({
+                        title: data.title,
+                        address,
+                        bedrooms: data.bedrooms || "",
+                        bathrooms: data.bathrooms || "",
+                        longTermRental: data.longTermMonthly.toString(),
+                        annualEscalation: "0",
+                        shortTermNightly: data.shortTermNightly.toString(),
+                        annualOccupancy: data.annualOccupancy.toString(),
+                        managementFee: (data.managementFee * 100).toString(),
+                        longTermMonthly: data.longTermMonthly,
+                        longTermAnnual: data.longTermAnnual,
+                        shortTermMonthly: data.shortTermMonthly,
+                        shortTermAnnual: data.shortTermAnnual,
+                        shortTermAfterFees: data.shortTermAfterFees,
+                        breakEvenOccupancy: data.breakEvenOccupancy,
+                      }),
+                    });
 
-                  if (!response.ok) {
-                    throw new Error("Failed to save property");
+                    if (!response.ok) {
+                      throw new Error("Failed to save property");
+                    }
+
+                    setPropertySaved(true);
+                    toast({
+                      variant: "success",
+                      title: "Success",
+                      description: "Property saved successfully",
+                      duration: 3000,
+                    });
+                  } catch (error) {
+                    console.error("Error saving property:", error);
+                    toast({
+                      variant: "destructive",
+                      title: "Error",
+                      description: "Failed to save property",
+                      duration: 3000,
+                    });
                   }
+                }}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Save Property
+              </Button>
 
-                  toast({
-                    variant: "success",
-                    title: "Success",
-                    description: "Property saved successfully",
-                    duration: 3000,
-                  });
-                } catch (error) {
-                  console.error("Error saving property:", error);
-                  toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Failed to save property",
-                    duration: 3000,
-                  });
-                }
-              }}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              Save Property
-            </Button>
+              {/* Export Report Button */}
+              {propertySaved && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Export Report
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(data, false, user)}>
+                      <FileText className="mr-2" />
+                      Without Branding
+                    </DropdownMenuItem>
+                    {hasProAccess ? (
+                      <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(data, true, user)}>
+                        <FileText className="mr-2" />
+                        With Branding
+                        <div className="ml-2 flex items-center gap-1">
+                          <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                          <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                        </div>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem onClick={() => setShowUpgradeModal(true)}>
+                        <FileText className="mr-2" />
+                        With Branding
+                        <div className="ml-2 flex items-center gap-1">
+                          <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                          <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                        </div>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
             {/* Temporarily hidden - Export Report functionality
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
