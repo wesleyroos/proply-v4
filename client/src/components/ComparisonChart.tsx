@@ -82,7 +82,26 @@ export default function ComparisonChart({
         });
         return;
       }
-      await generatePropertyPreviewPDF(data, withBranding, user.user);
+      
+      // Convert data to Property type
+      const propertyData = {
+        id: 0,
+        title: data.title,
+        address: address,
+        bedrooms: data.bedrooms,
+        bathrooms: data.bathrooms,
+        longTermMonthly: data.longTermMonthly,
+        shortTermAnnual: data.shortTermAnnual,
+        shortTermAfterFees: data.shortTermAfterFees,
+        breakEvenOccupancy: data.breakEvenOccupancy,
+        shortTermNightly: data.shortTermNightly,
+        annualOccupancy: data.annualOccupancy,
+        managementFee: data.managementFee,
+        parkingSpaces: data.parkingSpaces,
+        createdAt: new Date().toISOString()
+      };
+
+      await generatePropertyPreviewPDF(propertyData, withBranding, user.user);
     } catch (error) {
       console.error("Error generating PDF:", error);
       toast({
