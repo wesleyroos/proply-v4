@@ -296,7 +296,6 @@ export default function ComparisonChart({
             >
               Save Property
             </Button>
-            {/* Temporarily hidden - Export Report functionality
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
@@ -330,7 +329,6 @@ export default function ComparisonChart({
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-            */}
           </div>
         </div>
         <MapView address={address} />
