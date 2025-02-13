@@ -87,8 +87,8 @@ export default function AirbnbYieldCalculator() {
 
           <Card className="mb-8">
             <CardHeader className="flex justify-between items-center">
-              <img src="/proply-logo-1.png" alt="Proply Logo" className="h-8" />
               <CardTitle>Rental Yield Calculator</CardTitle>
+              <img src="/proply-logo-1.png" alt="Proply Logo" className="h-8" />
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
               <Tabs defaultValue="airbnb" className="w-full">
