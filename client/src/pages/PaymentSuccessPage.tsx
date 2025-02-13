@@ -20,7 +20,7 @@ export default function PaymentSuccessPage() {
       try {
         // Get registration/upgrade data from URL params
         const params = new URLSearchParams(window.location.search);
-        const encodedData = params.get('upgrade_data');
+        const encodedData = params.get('upgrade_data') || params.get('custom_str1');
 
         console.log('URL Search params:', window.location.search);
         console.log('Encoded data:', encodedData);
