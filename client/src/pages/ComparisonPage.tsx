@@ -503,31 +503,6 @@ export default function ComparisonPage() {
           <h1 className="text-2xl font-bold text-[#262626]">
             Proply Rent Compare
           </h1>
-          {isSaved && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Export Report
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleExportPDF(false)}>
-                  Export Report
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleExportPDF(true)}
-                  className={!hasProAccess ? "text-muted-foreground" : ""}
-                >
-                  Export with Branding
-                  {!hasProAccess && " (Pro)"}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
         </div>
 
         <div className="max-w-4xl space-y-6">
