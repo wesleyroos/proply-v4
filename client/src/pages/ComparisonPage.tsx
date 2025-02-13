@@ -541,7 +541,11 @@ export default function ComparisonPage() {
             <Card id="comparison-results">
               <CardContent className="pt-6">
                 <h2 className="text-xl font-medium mb-4">Comparison Results</h2>
-                <ComparisonChart data={comparisonData} address={address} />
+                <ComparisonChart
+                  data={comparisonData}
+                  address={address}
+                  handleExportPDF={handleExportPDF}
+                />
                 {revenueData && (
                   <div>
                     <h2 className="text-xl font-medium mb-4">Percentile Data</h2>

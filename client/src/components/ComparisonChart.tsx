@@ -45,11 +45,13 @@ interface ComparisonData {
 interface ComparisonChartProps {
   data: ComparisonData;
   address: string;
+  handleExportPDF: (withBranding: boolean) => Promise<void>;
 }
 
 export default function ComparisonChart({
   data,
   address,
+  handleExportPDF,
 }: ComparisonChartProps) {
   const [showCalculations, setShowCalculations] = useState(false);
   const [removeSeasonality, setRemoveSeasonality] = useState(false);
@@ -82,7 +84,7 @@ export default function ComparisonChart({
     const feeAdjustedRate = data.shortTermNightly * (1 - platformFee);
 
     // Calculate revenue based on occupancy scenarios
-    const lowRevenue = 
+    const lowRevenue =
       feeAdjustedRate * daysInMonth * (OCCUPANCY_RATES.low[i] / 100);
     const medRevenue =
       feeAdjustedRate * daysInMonth * (OCCUPANCY_RATES.medium[i] / 100);
@@ -274,7 +276,9 @@ export default function ComparisonChart({
                   <li>Base nightly rate × Days in month × Occupancy rate</li>
                   <li>Apply seasonal multipliers for each month</li>
                   <li>Deduct platform fees ({data.managementFee > 0 ? "15%" : "3%"})</li>
-                  {data.managementFee > 0 && <li>Deduct management fees ({(data.managementFee * 100).toFixed(1)}%)</li>}
+                  {data.managementFee > 0 && (
+                    <li>Deduct management fees ({(data.managementFee * 100).toFixed(1)}%)</li>
+                  )}
                 </ul>
               </div>
               <div>
