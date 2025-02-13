@@ -580,6 +580,40 @@ export function PropertyPreviewModal({
             <DialogTitle className="text-3xl font-bold text-slate-800">
               {property.title}
             </DialogTitle>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Export Report
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(property, false, user)}>
+                  <FileText className="mr-2" />
+                  Without Branding
+                </DropdownMenuItem>
+                {hasProAccess ? (
+                  <DropdownMenuItem onClick={() => generatePropertyPreviewPDF(property, true, user)}>
+                    <FileText className="mr-2" />
+                    With Branding
+                    <div className="ml-2 flex items-center gap-1">
+                      <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                      <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                    </div>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => setShowUpgradeModal(true)}>
+                    <FileText className="mr-2" />
+                    With Branding
+                    <div className="ml-2 flex items-center gap-1">
+                      <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                      <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                    </div>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <UpgradeModal
               open={showUpgradeModal}
               onOpenChange={setShowUpgradeModal}
