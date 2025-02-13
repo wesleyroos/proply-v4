@@ -499,9 +499,36 @@ export default function ComparisonPage() {
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-[#262626] mb-6">
-          Proply Rent Compare
-        </h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-[#262626]">
+            Proply Rent Compare
+          </h1>
+          {isSaved && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Export Report
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleExportPDF(false)}>
+                  Export Report
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleExportPDF(true)}
+                  className={!hasProAccess ? "text-muted-foreground" : ""}
+                >
+                  Export with Branding
+                  {!hasProAccess && " (Pro)"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
 
         <div className="max-w-4xl space-y-6">
           <Card>
@@ -513,35 +540,7 @@ export default function ComparisonPage() {
           {comparisonData && (
             <Card id="comparison-results">
               <CardContent className="pt-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-medium">Comparison Results</h2>
-                  {isSaved && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="flex items-center gap-2"
-                        >
-                          <Download className="h-4 w-4" />
-                          Export Report
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleExportPDF(false)}>
-                          Export Report
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleExportPDF(true)}
-                          className={!hasProAccess ? "text-muted-foreground" : ""}
-                        >
-                          Export with Branding
-                          {!hasProAccess && " (Pro)"}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
+                <h2 className="text-xl font-medium mb-4">Comparison Results</h2>
                 <ComparisonChart data={comparisonData} address={address} />
                 {revenueData && (
                   <div>
