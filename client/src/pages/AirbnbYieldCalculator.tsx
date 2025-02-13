@@ -45,7 +45,7 @@ export default function AirbnbYieldCalculator() {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden w-full">
+    <div className="min-h-screen bg-gray-50 overflow-hidden">
       <Helmet>
         <title>Free Rental Property Yield Calculator | Compare Airbnb vs Long-term Rental Yields</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -62,7 +62,7 @@ export default function AirbnbYieldCalculator() {
 
       <PublicHeader />
 
-      <main className="relative w-full overflow-x-hidden">
+      <main className="w-full overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 pt-32">
           <nav className="text-sm mb-6 whitespace-nowrap" aria-label="Breadcrumb">
             <ol className="list-none p-0 inline-flex">
