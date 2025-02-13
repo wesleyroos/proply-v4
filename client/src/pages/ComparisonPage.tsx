@@ -11,9 +11,10 @@ import {
 import { Download, ChevronDown } from "lucide-react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import autoTable from 'jspdf-autotable';
 import PropertyForm from "../components/PropertyForm";
 import ComparisonChart from "../components/ComparisonChart";
-import { useUser } from "../hooks/use-user";
+import { useUser } from "@/hooks/use-user";
 import { useQueryClient } from "@tanstack/react-query";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
@@ -190,75 +191,176 @@ export default function ComparisonPage() {
       const margin = 20;
       let currentY = margin;
 
-      // Add Proply branding if selected
-      if (withBranding) {
-        const logo = new Image();
-        logo.src = "/proply-logo-auth.png";
-        await new Promise((resolve) => {
-          logo.onload = () => {
-            const aspectRatio = logo.height / logo.width;
-            const logoWidth = 40;
-            const logoHeight = logoWidth * aspectRatio;
-            doc.addImage(logo, "PNG", margin, currentY, logoWidth, logoHeight);
-            currentY += logoHeight + 10;
-            resolve(null);
-          };
-          logo.onerror = () => {
-            console.error("Error loading Proply logo");
-            resolve(null);
-          };
-        });
+      const startY = 20;
+      let maxLogoHeight = 0;
+
+      // Add company logo if branding is enabled and user has a company logo
+      if (withBranding && user?.companyLogo) {
+        try {
+          const logoWidth = 40;
+          await new Promise<void>((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+              const aspectRatio = img.height / img.width;
+              const logoHeight = logoWidth * aspectRatio;
+              maxLogoHeight = Math.max(maxLogoHeight, logoHeight);
+              doc.addImage(
+                user.companyLogo,
+                "PNG",
+                margin,
+                startY,
+                logoWidth,
+                logoHeight,
+              );
+              resolve();
+            };
+            img.onerror = () => {
+              console.error("Error loading company logo");
+              resolve();
+            };
+            img.crossOrigin = "Anonymous";
+            img.src = user.companyLogo;
+          });
+        } catch (error) {
+          console.error("Error adding company logo:", error);
+        }
       }
 
-      // Add title and date
+      // Add Proply logo if branding is enabled
+      if (withBranding) {
+        try {
+          const proplyLogoWidth = 40;
+          await new Promise<void>((resolve) => {
+            const proplyLogo = new Image();
+            proplyLogo.onload = () => {
+              const aspectRatio = proplyLogo.height / proplyLogo.width;
+              const proplyLogoHeight = proplyLogoWidth * aspectRatio;
+              maxLogoHeight = Math.max(maxLogoHeight, proplyLogoHeight);
+              doc.addImage(
+                "/proply-logo-1.png",
+                "PNG",
+                doc.internal.pageSize.getWidth() - 60,
+                startY,
+                proplyLogoWidth,
+                proplyLogoHeight,
+              );
+              doc.setFontSize(8);
+              doc.setTextColor(100);
+              doc.text(
+                "Powered by Proply",
+                doc.internal.pageSize.getWidth() - 60,
+                startY + proplyLogoHeight + 5,
+              );
+              resolve();
+            };
+            proplyLogo.onerror = () => {
+              console.error("Error loading Proply logo");
+              resolve();
+            };
+            proplyLogo.src = "/proply-logo-1.png";
+          });
+        } catch (error) {
+          console.error("Error adding Proply logo:", error);
+        }
+      }
+
+      currentY = startY + maxLogoHeight + 10;
+      currentY = Math.max(currentY, 50);
+
+      // Title and description
       doc.setFontSize(20);
-      doc.text("Property Comparison Report", margin, currentY);
+      doc.setTextColor(0);
+      doc.text("Rent Compare Analysis", margin, currentY);
+      currentY += 10;
+
+      // Add description
+      doc.setFontSize(10);
+      doc.setTextColor(90);
+      const contentWidth = pageWidth - 2 * margin;
+      const descriptionText =
+        "A comprehensive comparison of short-term and long-term rental strategies for your property, analyzing potential returns, occupancy requirements, and break-even points to help you make an informed investment decision.";
+      const lines = doc.splitTextToSize(descriptionText, contentWidth);
+      lines.forEach((line) => {
+        doc.text(line, margin, currentY);
+        currentY += 5;
+      });
       currentY += 15;
 
-      doc.setFontSize(12);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, currentY);
-      currentY += 20;
+      // Property Details section
+      doc.setFontSize(16);
+      doc.text("Property Details", margin, currentY);
+      currentY += 10;
 
-      // Add property details
       if (comparisonData) {
-        doc.setFontSize(14);
-        doc.text("Property Details", margin, currentY);
+        const propertyDetails = [
+          ["Property Name", comparisonData.title],
+          ["Address", address],
+          ["Bedrooms", comparisonData.bedrooms],
+          ["Bathrooms", comparisonData.bathrooms],
+        ].filter(Boolean);
+
+        autoTable(doc, {
+          startY: currentY,
+          head: [["Feature", "Value"]],
+          body: propertyDetails,
+          theme: "grid",
+          styles: { fontSize: 10, halign: "center" },
+          headStyles: { fillColor: [27, 163, 255], textColor: 255 },
+        });
+
+        currentY = (doc as any).lastAutoTable.finalY + 20;
+
+        // Short-Term Performance
+        doc.setFontSize(16);
+        doc.text("Short-Term Performance", margin, currentY);
         currentY += 10;
 
-        doc.setFontSize(12);
-        doc.text(`Address: ${address}`, margin, currentY);
-        currentY += 8;
-        doc.text(`Bedrooms: ${comparisonData.bedrooms}`, margin, currentY);
-        currentY += 8;
-        doc.text(`Bathrooms: ${comparisonData.bathrooms}`, margin, currentY);
-        currentY += 20;
-
-        // Add comparison results
-        doc.setFontSize(14);
-        doc.text("Comparison Results", margin, currentY);
-        currentY += 10;
-
-        const metrics = [
-          ["Short Term Nightly Rate", formatter.format(comparisonData.shortTermNightly)],
+        const platformFee = comparisonData.managementFee > 0 ? 15 : 3;
+        const shortTermDetails = [
+          ["Annual Revenue", formatter.format(comparisonData.shortTermAnnual)],
+          ["Monthly Average", formatter.format(comparisonData.shortTermMonthly)],
+          ["Nightly Rate", formatter.format(comparisonData.shortTermNightly)],
+          ["Platform Fee", `${platformFee}%`],
           ["Annual Occupancy", `${comparisonData.annualOccupancy}%`],
-          ["Short Term Monthly Average", formatter.format(comparisonData.shortTermMonthly)],
-          ["Long Term Monthly", formatter.format(comparisonData.longTermMonthly)],
-          ["Short Term Annual Revenue", formatter.format(comparisonData.shortTermAnnual)],
-          ["Long Term Annual Revenue", formatter.format(comparisonData.longTermAnnual)],
-          ["Break Even Occupancy", `${comparisonData.breakEvenOccupancy}%`],
+          ["Management Fee", `${comparisonData.managementFee}%`],
         ];
 
-        metrics.forEach(([label, value]) => {
-          doc.setFontSize(12);
-          doc.text(`${label}: ${value}`, margin, currentY);
-          currentY += 8;
+        autoTable(doc, {
+          startY: currentY,
+          head: [["Metric", "Value"]],
+          body: shortTermDetails,
+          theme: "grid",
+          styles: { fontSize: 10, halign: "center" },
+          headStyles: { fillColor: [27, 163, 255], textColor: 255 },
         });
+
+        currentY = (doc as any).lastAutoTable.finalY + 20;
+
+        // Long-Term Performance
+        doc.setFontSize(16);
+        doc.text("Long-Term Performance", margin, currentY);
+        currentY += 10;
+
+        const longTermDetails = [
+          ["Annual Revenue", formatter.format(comparisonData.longTermAnnual)],
+          ["Monthly Revenue", formatter.format(comparisonData.longTermMonthly)],
+        ];
+
+        autoTable(doc, {
+          startY: currentY,
+          head: [["Metric", "Value"]],
+          body: longTermDetails,
+          theme: "grid",
+          styles: { fontSize: 10, halign: "center" },
+          headStyles: { fillColor: [27, 163, 255], textColor: 255 },
+        });
+
+        currentY = (doc as any).lastAutoTable.finalY + 20;
       }
 
-      // Add comparison chart
+      // Capture comparison chart
       const chartElement = document.querySelector("#comparison-results");
       if (chartElement) {
-        currentY += 10;
         const canvas = await html2canvas(chartElement as HTMLElement);
         const imgData = canvas.toDataURL("image/png");
         const imgWidth = pageWidth - 2 * margin;
@@ -268,21 +370,132 @@ export default function ComparisonPage() {
         currentY += imgHeight + 20;
       }
 
-      // Add footer with branding if selected
-      doc.setFontSize(10);
-      doc.setTextColor(100);
-      const footerText = withBranding 
-        ? `Generated by Proply - ${new Date().toLocaleDateString()}`
-        : new Date().toLocaleDateString();
-      doc.text(
-        footerText,
-        pageWidth / 2,
-        pageHeight - 10,
-        { align: "center" }
-      );
+      // Add footer elements to all pages
+      const totalPages = doc.getNumberOfPages();
+      const footerMargin = 20;
+      const footerPadding = 10;
+
+      try {
+        const logo = new Image();
+        logo.src = "/proply-logo-1.png";
+
+        await new Promise((resolve) => {
+          logo.onload = () => {
+            for (let i = 1; i <= totalPages; i++) {
+              doc.setPage(i);
+
+              if (withBranding) {
+                // Add Proply logo to bottom left
+                const logoHeight = 6;
+                const aspectRatio = logo.width / logo.height;
+                const logoWidth = logoHeight * aspectRatio;
+                doc.addImage(
+                  logo,
+                  "PNG",
+                  footerMargin,
+                  pageHeight - footerPadding - logoHeight,
+                  logoWidth,
+                  logoHeight,
+                );
+              }
+
+              // Add page numbers to bottom right
+              doc.setFontSize(8);
+              doc.setTextColor(100);
+              doc.text(
+                `Page ${i} of ${totalPages}`,
+                pageWidth - margin,
+                pageHeight - footerPadding,
+                { align: "right" },
+              );
+
+              // Add copyright text to center if branding is enabled
+              if (withBranding) {
+                const currentYear = new Date().getFullYear();
+                doc.text(
+                  `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
+                  pageWidth / 2,
+                  pageHeight - footerPadding,
+                  { align: "center" },
+                );
+              }
+            }
+            resolve(null);
+          };
+          logo.onerror = () => {
+            console.error("Error loading logo in footer");
+            resolve(null);
+          };
+        });
+      } catch (error) {
+        console.error("Error adding footer elements:", error);
+        // If logo fails, still add page numbers
+        for (let i = 1; i <= totalPages; i++) {
+          doc.setPage(i);
+          doc.setFontSize(8);
+          doc.setTextColor(100);
+          doc.text(
+            `Page ${i} of ${totalPages}`,
+            pageWidth - margin,
+            pageHeight - footerPadding,
+            { align: "right" },
+          );
+          if (withBranding) {
+            const currentYear = new Date().getFullYear();
+            doc.text(
+              `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
+              pageWidth / 2,
+              pageHeight - footerPadding,
+              { align: "center" },
+            );
+          }
+        }
+      }
+
+      // Add disclaimer page if branding is enabled
+      if (withBranding) {
+        doc.addPage();
+
+        // Add disclaimer heading
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.text("Important Disclaimers & Legal Notices", margin, 40);
+
+        // Set disclaimer text style
+        doc.setFontSize(7);
+        doc.setTextColor(90);
+
+        const currentYear = new Date().getFullYear();
+        const disclaimerText = [
+          "DISCLAIMER: The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.",
+          "",
+          "This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice. Any decisions made based on this information are solely the responsibility of the user. Property investment carries inherent risks, and market conditions can change rapidly.",
+          "",
+          "Proply Tech (Pty) Ltd and its affiliates expressly disclaim any and all liability for any direct, indirect, incidental, or consequential damages arising from the use of this information. Actual results may vary significantly from the projections and estimates presented.",
+          "",
+          "By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.",
+          "",
+          `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`,
+        ];
+
+        let yPosition = 60;
+        disclaimerText.forEach((text) => {
+          if (text === "") {
+            yPosition += 5;
+            return;
+          }
+          const lines = doc.splitTextToSize(text, 170);
+          lines.forEach((line) => {
+            doc.text(line, margin, yPosition);
+            yPosition += 5;
+          });
+        });
+      }
 
       // Save the PDF
-      doc.save("property-comparison-report.pdf");
+      doc.save(
+        `Rent Compare Analysis - ${address.replace(/[^a-zA-Z0-9]/g, " ")}.pdf`,
+      );
     } catch (error) {
       console.error("Error generating PDF:", error);
       toast({
@@ -364,7 +577,7 @@ export default function ComparisonPage() {
                           <p>RevPAR Position: {revenueData?.["50"].revparPosition || 0}%</p>
                           <p>Seasonality Index: {revenueData?.["50"].seasonalityIndex || 0}</p>
                           <p>Demand Score: {revenueData?.["50"].demandScore || 0}</p>
-                          <p>Occupancy: {revenueData?.["50"].occupancy.toFixed(1)}%</p>
+                          <p>Occupancy: {revenueData?.["50"].occupancy?.toFixed(1)}%</p>
                         </div>
                       </div>
                     </div>
