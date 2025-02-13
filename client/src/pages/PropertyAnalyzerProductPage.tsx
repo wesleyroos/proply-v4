@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -16,8 +17,49 @@ import PublicHeader from "@/components/PublicHeader";
 import PublicFooter from "@/components/PublicFooter";
 
 export default function PropertyAnalyzerProductPage() {
+  // Structured data for SEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Property Analyzer - Investment Analysis Tool | Proply",
+    "applicationCategory": "BusinessApplication",
+    "description": "Comprehensive property investment analysis tool for real estate professionals. Get detailed financial modeling, market analysis, and ROI calculations.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "provider": {
+      "@type": "Organization",
+      "name": "Proply"
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen overflow-hidden bg-gray-50">
+      <Helmet>
+        <title>Property Analyzer - Investment Analysis Tool | Proply</title>
+        <meta name="description" content="Make data-driven property investment decisions with our comprehensive analysis tools. Get detailed financial modeling, market analysis, and ROI calculations." />
+        <meta name="keywords" content="property analysis, investment calculator, ROI analysis, real estate analytics, property valuation, market analysis" />
+
+        {/* Open Graph tags */}
+        <meta property="og:title" content="Property Analyzer - Investment Analysis Tool" />
+        <meta property="og:description" content="Make smarter property investment decisions with comprehensive analysis tools and market insights." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://proply.com/property-analyzer" />
+        <meta property="og:image" content="/images/property-technology.png" />
+
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Property Analyzer - Investment Analysis Tool" />
+        <meta name="twitter:description" content="Make smarter property investment decisions with comprehensive analysis tools and market insights." />
+        <meta name="twitter:image" content="/images/property-technology.png" />
+
+        {/* Structured data */}
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+      </Helmet>
       <PublicHeader />
 
       {/* Hero Section */}
@@ -30,7 +72,7 @@ export default function PropertyAnalyzerProductPage() {
             <p className="max-w-2xl mx-auto text-xl text-white/90">
               Make data-driven property investment decisions with our comprehensive analysis tools
             </p>
-            <div className="flex justify-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Button size="lg" variant="secondary" asChild>
                 <Link href="/register">Start Free Trial</Link>
               </Button>
@@ -47,89 +89,91 @@ export default function PropertyAnalyzerProductPage() {
         </div>
       </div>
 
-      {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900">
-              Comprehensive Property Analysis Suite
-            </h2>
-            <p className="mt-4 text-xl text-gray-600">
-              Everything you need to evaluate property investments with confidence
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card>
-              <CardContent className="pt-6">
-                <Calculator className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Financial Modeling</h3>
-                <p className="text-gray-600">
-                  Advanced financial calculations including ROI, cash flow projections, and mortgage calculations with adjustable parameters.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <ChartBar className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Market Analysis</h3>
-                <p className="text-gray-600">
-                  Real-time market data integration for accurate property valuations and area analysis.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <Building className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Property Metrics</h3>
-                <p className="text-gray-600">
-                  Comprehensive property metrics including cap rate, GRM, and price per square meter calculations.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* API Integration Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900">
-              Enterprise API Integration
-            </h2>
-            <p className="mt-4 text-xl text-gray-600">
-              Seamlessly integrate our powerful analysis engine into your platform
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-12">
-            <div>
-              <h3 className="text-2xl font-bold mb-6">For Real Estate Platforms</h3>
-              <ul className="space-y-4">
-                <li className="flex items-start gap-3">
-                  <Code className="h-5 w-5 text-[#1BA3FF] mt-1" />
-                  <span>RESTful API with comprehensive documentation</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Database className="h-5 w-5 text-[#1BA3FF] mt-1" />
-                  <span>Scalable infrastructure for high-volume analysis</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Settings className="h-5 w-5 text-[#1BA3FF] mt-1" />
-                  <span>Custom integration support and consulting</span>
-                </li>
-              </ul>
-              <Button className="mt-8" asChild>
-                <Link href="/register">Get API Access</Link>
-              </Button>
+      {/* Main content wrapper with overflow control */}
+      <div className="overflow-hidden">
+        {/* Features Section */}
+        <section className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl font-bold text-gray-900">
+                Comprehensive Property Analysis Suite
+              </h2>
+              <p className="mt-4 text-xl text-gray-600">
+                Everything you need to evaluate property investments with confidence
+              </p>
             </div>
 
-            <div className="bg-gray-900 rounded-lg p-6">
-              <pre className="text-sm text-gray-300">
-                <code>{`// Example API Response
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <Card>
+                <CardContent className="pt-6">
+                  <Calculator className="h-12 w-12 text-[#1BA3FF] mb-4 flex-shrink-0" />
+                  <h3 className="text-lg font-semibold mb-2">Financial Modeling</h3>
+                  <p className="text-gray-600">
+                    Advanced financial calculations including ROI, cash flow projections, and mortgage calculations with adjustable parameters.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <ChartBar className="h-12 w-12 text-[#1BA3FF] mb-4 flex-shrink-0" />
+                  <h3 className="text-lg font-semibold mb-2">Market Analysis</h3>
+                  <p className="text-gray-600">
+                    Real-time market data integration for accurate property valuations and area analysis.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <Building className="h-12 w-12 text-[#1BA3FF] mb-4 flex-shrink-0" />
+                  <h3 className="text-lg font-semibold mb-2">Property Metrics</h3>
+                  <p className="text-gray-600">
+                    Comprehensive property metrics including cap rate, GRM, and price per square meter calculations.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* API Integration Section */}
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl font-bold text-gray-900">
+                Enterprise API Integration
+              </h2>
+              <p className="mt-4 text-xl text-gray-600">
+                Seamlessly integrate our powerful analysis engine into your platform
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              <div>
+                <h3 className="text-2xl font-bold mb-6">For Real Estate Platforms</h3>
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3">
+                    <Code className="h-5 w-5 text-[#1BA3FF] mt-1 flex-shrink-0" />
+                    <span>RESTful API with comprehensive documentation</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Database className="h-5 w-5 text-[#1BA3FF] mt-1 flex-shrink-0" />
+                    <span>Scalable infrastructure for high-volume analysis</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Settings className="h-5 w-5 text-[#1BA3FF] mt-1 flex-shrink-0" />
+                    <span>Custom integration support and consulting</span>
+                  </li>
+                </ul>
+                <Button className="mt-8" asChild>
+                  <Link href="/register">Get API Access</Link>
+                </Button>
+              </div>
+
+              <div className="bg-gray-900 rounded-lg p-6 overflow-x-auto">
+                <pre className="text-sm text-gray-300">
+                  <code>{`// Example API Response
 {
   "property_analysis": {
     "financial_metrics": {
@@ -143,36 +187,37 @@ export default function PropertyAnalyzerProductPage() {
     }
   }
 }`}</code>
-              </pre>
+                </pre>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-[#1BA3FF]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to Make Better Investment Decisions?
-          </h2>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Join thousands of real estate professionals using Proply's analysis tools
-          </p>
-          <div className="flex justify-center gap-4">
-            <Button size="lg" variant="secondary" asChild>
-              <Link href="/register">Start Free Trial</Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="bg-white/10 text-white border-white hover:bg-white/20"
-              asChild
-            >
-              <Link href="/pricing">View Pricing</Link>
-            </Button>
+        {/* CTA Section */}
+        <section className="py-16 bg-[#1BA3FF]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Ready to Make Better Investment Decisions?
+            </h2>
+            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+              Join thousands of real estate professionals using Proply's analysis tools
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Button size="lg" variant="secondary" asChild>
+                <Link href="/register">Start Free Trial</Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-white/10 text-white border-white hover:bg-white/20"
+                asChild
+              >
+                <Link href="/pricing">View Pricing</Link>
+              </Button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <PublicFooter />
     </div>
