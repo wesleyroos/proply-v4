@@ -8,7 +8,23 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { InfoIcon } from "lucide-react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import html2canvas from "html2canvas";
+import { FileText, Sparkles } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useUser } from "@/hooks/use-user";
+import { useProAccess } from "@/hooks/use-pro-access";
+import { UpgradeModal } from "./UpgradeModal";
+import { InfoIcon, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import MapView from "./MapView";
+import { formatter } from "../utils/formatting";
 import {
   Tooltip,
   TooltipContent,
@@ -24,8 +40,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
-import { formatter } from "../utils/formatting";
-import MapView from "./MapView";
 
 interface ComparisonData {
   title: string;
@@ -45,16 +59,18 @@ interface ComparisonData {
 interface ComparisonChartProps {
   data: ComparisonData;
   address: string;
-  handleExportPDF: (withBranding: boolean) => Promise<void>;
 }
 
 export default function ComparisonChart({
   data,
   address,
-  handleExportPDF,
 }: ComparisonChartProps) {
+  const { hasAccess: hasProAccess } = useProAccess();
   const [showCalculations, setShowCalculations] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [removeSeasonality, setRemoveSeasonality] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false); // Added state for upgrade modal
+  const user = useUser(); // Placeholder for user data
 
   // Calculate annual revenue with or without seasonality
   const calculateAnnualRevenue = () => {
@@ -71,6 +87,20 @@ export default function ComparisonChart({
   const afterPlatformFee = annualRevenue - platformFeeAmount;
   const managementFeeAmount = data.managementFee > 0 ? afterPlatformFee * data.managementFee : 0;
   const finalAnnualRevenue = afterPlatformFee - managementFeeAmount;
+
+  // Original simple chart data
+  const basicChartData = [
+    {
+      name: "Monthly Income",
+      "Long Term": data.longTermMonthly,
+      "Short Term": data.shortTermMonthly,
+    },
+    {
+      name: "Annual Income",
+      "Long Term": data.longTermAnnual,
+      "Short Term": data.shortTermAnnual,
+    },
+  ];
 
   // Data-driven monthly breakdown
   const monthlyChartData = Array(12).fill(0).map((_, i) => {
@@ -103,9 +133,204 @@ export default function ComparisonChart({
     };
   });
 
+  const { toast } = useToast();
+
+  const generatePropertyPreviewPDF = async (data: ComparisonData, includeBranding: boolean, user: any) => {
+    const doc = new jsPDF();
+    let yPos = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+
+    // Add logos if branding enabled
+    if (includeBranding && user?.companyLogo) {
+      try {
+        const logoWidth = 40;
+        await new Promise<void>((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const aspectRatio = img.height / img.width;
+            const logoHeight = logoWidth * aspectRatio;
+            doc.addImage(user.companyLogo, "PNG", margin, 20, logoWidth, logoHeight);
+            resolve();
+          };
+          img.onerror = () => resolve();
+          img.crossOrigin = "Anonymous";
+          img.src = user.companyLogo;
+        });
+      } catch (error) {
+        console.error("Error adding logo:", error);
+      }
+    }
+
+    // Title
+    doc.setFontSize(20);
+    doc.text("Rental Strategy Comparison", 20, yPos += 20);
+    
+    // Property Details
+    doc.setFontSize(12);
+    doc.text("Property Details", 20, yPos += 20);
+
+    const propertyDetails = [
+      ["Address", address],
+      ["Bedrooms", data.bedrooms || "N/A"],
+      ["Bathrooms", data.bathrooms || "N/A"],
+      ["Short Term Nightly Rate", formatter.format(data.shortTermNightly)],
+      ["Annual Occupancy", data.annualOccupancy + "%"],
+    ];
+
+    autoTable(doc, {
+      startY: yPos += 10,
+      head: [["Feature", "Value"]],
+      body: propertyDetails,
+      theme: "grid",
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [27, 163, 255] },
+    });
+
+    // Revenue Comparison
+    yPos = (doc as any).lastAutoTable.finalY + 20;
+    doc.text("Revenue Comparison", 20, yPos);
+
+    const revenueDetails = [
+      ["Long Term Monthly", formatter.format(data.longTermMonthly)],
+      ["Long Term Annual", formatter.format(data.longTermAnnual)],
+      ["Short Term Monthly", formatter.format(data.shortTermMonthly)],
+      ["Short Term Annual", formatter.format(data.shortTermAnnual)],
+      ["Short Term After Fees", formatter.format(data.shortTermAfterFees)],
+    ];
+
+    autoTable(doc, {
+      startY: yPos += 10,
+      head: [["Metric", "Amount"]],
+      body: revenueDetails,
+      theme: "grid",
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [27, 163, 255] },
+    });
+
+    // Try to capture and add the chart
+    try {
+      const chartElement = document.querySelector(".recharts-wrapper");
+      if (chartElement) {
+        const canvas = await html2canvas(chartElement as HTMLElement);
+        const chartImage = canvas.toDataURL("image/png");
+        const imgWidth = pageWidth - 40;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        doc.addImage(chartImage, "PNG", 20, (doc as any).lastAutoTable.finalY + 20, imgWidth, imgHeight);
+      }
+    } catch (error) {
+      console.error("Error adding chart:", error);
+    }
+
+    // Add footer with page numbers
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.text(
+        `Page ${i} of ${totalPages}`,
+        pageWidth - 20,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: "right" }
+      );
+    }
+
+    doc.save(`Rental Comparison - ${address}.pdf`);
+  };
+
+
   return (
     <TooltipProvider>
       <div id="comparison-results" className="space-y-6">
+        <div className="flex justify-end gap-4">
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={async () => {
+                try {
+                  const response = await fetch("/api/properties", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                      title: data.title,
+                      address,
+                      bedrooms: data.bedrooms || "",
+                      bathrooms: data.bathrooms || "",
+                      longTermRental: data.longTermMonthly.toString(),
+                      annualEscalation: "0",
+                      shortTermNightly: data.shortTermNightly.toString(),
+                      annualOccupancy: data.annualOccupancy.toString(),
+                      managementFee: (data.managementFee * 100).toString(),
+                      longTermMonthly: data.longTermMonthly,
+                      longTermAnnual: data.longTermAnnual,
+                      shortTermMonthly: data.shortTermMonthly,
+                      shortTermAnnual: data.shortTermAnnual,
+                      shortTermAfterFees: data.shortTermAfterFees,
+                      breakEvenOccupancy: data.breakEvenOccupancy,
+                    }),
+                  });
+
+                  if (!response.ok) {
+                    throw new Error("Failed to save property");
+                  }
+
+                  toast({
+                    variant: "success",
+                    title: "Success",
+                    description: "Property saved successfully",
+                    duration: 3000,
+                  });
+                } catch (error) {
+                  console.error("Error saving property:", error);
+                  toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "Failed to save property",
+                    duration: 3000,
+                  });
+                }
+              }}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Save Property
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Export Report
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExportPDF(false)}>
+                  <FileText className="mr-2" />
+                  Without Branding
+                </DropdownMenuItem>
+                {hasProAccess ? (
+                  <DropdownMenuItem onClick={() => handleExportPDF(true)}>
+                    <FileText className="mr-2" />
+                    With Branding
+                    <div className="ml-2 flex items-center gap-1">
+                      <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                      <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                    </div>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => setShowUpgradeModal(true)}>
+                    <FileText className="mr-2" />
+                    With Branding
+                    <div className="ml-2 flex items-center gap-1">
+                      <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
+                      <Sparkles className="h-4 w-4 text-[#3B82F6]" />
+                    </div>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
         <MapView address={address} />
         <div className="p-4 bg-gray-50 rounded-lg">
           <h3 className="text-lg font-semibold mb-4">Property Details</h3>
@@ -151,7 +376,6 @@ export default function ComparisonChart({
             )}
           </div>
         </div>
-
         <div className="grid grid-cols-2 gap-8">
           <div className="p-4 bg-blue-50 rounded-lg">
             <h3 className="text-lg font-semibold text-[#1BA3FF] mb-2">
@@ -189,7 +413,6 @@ export default function ComparisonChart({
               </div>
             </div>
           </div>
-
           <div className="p-4 bg-indigo-50 rounded-lg">
             <h3 className="text-lg font-semibold text-[#114D9D] mb-2">
               Short-Term Rental
@@ -254,7 +477,6 @@ export default function ComparisonChart({
             </div>
           </div>
         </div>
-
         <Button
           variant="link"
           className="text-sm text-gray-600 hover:text-gray-900 underline decoration-gray-600 hover:decoration-gray-900 -mt-2 mb-4"
@@ -276,9 +498,7 @@ export default function ComparisonChart({
                   <li>Base nightly rate × Days in month × Occupancy rate</li>
                   <li>Apply seasonal multipliers for each month</li>
                   <li>Deduct platform fees ({data.managementFee > 0 ? "15%" : "3%"})</li>
-                  {data.managementFee > 0 && (
-                    <li>Deduct management fees ({(data.managementFee * 100).toFixed(1)}%)</li>
-                  )}
+                  {data.managementFee > 0 && <li>Deduct management fees ({(data.managementFee * 100).toFixed(1)}%)</li>}
                 </ul>
               </div>
               <div>
@@ -293,7 +513,6 @@ export default function ComparisonChart({
             </div>
           </DialogContent>
         </Dialog>
-
         <div id="occupancy-analysis" className="p-4 bg-gray-50 rounded-lg">
           <h3 className="text-lg font-semibold mb-4">Occupancy Analysis</h3>
           <div className="space-y-4">
@@ -334,7 +553,6 @@ export default function ComparisonChart({
             </p>
           </div>
         </div>
-
         <div className="space-y-4">
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -377,6 +595,499 @@ export default function ComparisonChart({
               </LineChart>
             </ResponsiveContainer>
           </div>
+        </div>
+        <div
+          id="monthly-revenue-table"
+          className="overflow-x-auto border rounded-lg shadow-sm"
+        >
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 sticky top-0">
+              <tr className="border-b">
+                <th className="text-left py-3 px-6 min-w-[120px] bg-gray-50">
+                  Metric
+                </th>
+                <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">
+                  Jan
+                </th>
+                <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">
+                  Feb
+                </th>
+                <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">
+                  Mar
+                </th>
+                <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">
+                  Apr
+                </th>
+                <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">
+                  May
+                </th>
+                <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">
+                  Jun
+                </th>
+                <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">
+                  Jul
+                </th>
+                <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">
+                  Aug
+                </th>
+                <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">
+                  Sep
+                </th>
+                <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">
+                  Oct
+                </th>
+                <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">
+                  Nov
+                </th>
+                <th className="text-right py-3 px-6 min-w-[100px] bg-gray-50">
+                  Dec
+                </th>
+                <th className="text-right py-3 px-6 min-w-[120px] bg-gray-50 border-l">
+                  Total
+                </th>
+                <th className="text-right py-3 px-6 min-w-[120px] bg-gray-50">
+                  Monthly Avg
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b hover:bg-gray-50">
+                <td className="py-3 px-6">Nightly Rate</td>
+                {Array(12)
+                  .fill(0)
+                  .map((_, i) => (
+                    <td
+                      key={i}
+                      className="text-right py-3 px-6 whitespace-nowrap"
+                    >
+                      {formatter.format(
+                        getSeasonalNightlyRate(data.shortTermNightly, i),
+                      )}
+                    </td>
+                  ))}
+                <td colSpan={2}></td>
+              </tr>
+              <tr className="border-b hover:bg-gray-50">
+                <td className="py-3 px-6">Fee-Adjusted Rate</td>
+                {Array(12)
+                  .fill(0)
+                  .map((_, i) => (
+                    <td
+                      key={i}
+                      className="text-right py-3 px-6 whitespace-nowrap"
+                    >
+                      {formatter.format(
+                        getFeeAdjustedRate(
+                          getSeasonalNightlyRate(data.shortTermNightly, i),
+                          data.managementFee > 0,
+                        ),
+                      )}
+                    </td>
+                  ))}
+                <td colSpan={2}></td>
+              </tr>
+              <tr className="border-b hover:bg-gray-50">
+                <td className="py-3 px-6">Occupancy Low</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">65%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">65%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">60%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">55%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">50%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">50%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">50%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">50%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">60%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">65%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">65%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">70%</td>
+                <td className="text-right py-3 px-6 border-l">-</td>
+                <td className="text-right py-3 px-6">58.8%</td>
+              </tr>
+              <tr className="border-b hover:bg-gray-50">
+                <td className="py-3 px-6">Occupancy Medium</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">80%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">78%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">73%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">68%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">63%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">60%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">60%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">60%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">70%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">75%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">75%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">85%</td>
+                <td className="text-right py-3 px-6 border-l">-</td>
+                <td className="text-right py-3 px-6">70.6%</td>
+              </tr>
+              <tr className="border-b hover:bg-gray-50">
+                <td className="py-3 px-6">Occupancy High</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">95%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">90%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">85%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">80%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">75%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">70%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">70%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">70%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">80%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">85%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">85%</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">95%</td>
+                <td className="text-right py-3 px-6 border-l">-</td>
+                <td className="text-right py-3 px-6">81.7%</td>
+              </tr>
+              <tr className="border-b hover:bg-gray-50">
+                <td className="py-3 px-6">Days in Month</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">28</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">30</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">30</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">30</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">30</td>
+                <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
+                <td className="text-right py-3 px-6 border-l">365</td>
+                <td className="text-right py-3 px-6">30.4</td>
+              </tr>
+              <tr className="border-b bg-[#FF6B6B]/10 hover:bg-[#FF6B6B]/20">
+                <td className="py-3 px-6 text-[#FF6B6B] font-medium">
+                  Revenue Low
+                  {data.managementFee > 0
+                    ? ` (After ${data.managementFee * 100}% Fee)`
+                    : ""}
+                </td>
+                {Array(12)
+                  .fill(0)
+                  .map((_, i) => {
+                    const seasonalRate = getSeasonalNightlyRate(
+                      data.shortTermNightly,
+                      i,
+                    );
+                    const feeAdjustedRate = getFeeAdjustedRate(
+                      seasonalRate,
+                      data.managementFee > 0,
+                    );
+                    const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                    const occupancyRate = OCCUPANCY_RATES.low[i] / 100;
+                    const revenue =
+                      feeAdjustedRate * occupancyRate * daysInMonth;
+                    const afterFee =
+                      data.managementFee > 0
+                        ? revenue * (1 - data.managementFee)
+                        : revenue;
+                    return (
+                      <td
+                        key={i}
+                        className="text-right py-3 px-6 whitespace-nowrap"
+                      >
+                        {formatter.format(afterFee)}
+                      </td>
+                    );
+                  })}
+                <td className="text-right py-3 px-6 border-l font-semibold">
+                  {formatter.format(
+                    Array(12)
+                      .fill(0)
+                      .reduce((sum, _, i) => {
+                        const seasonalRate = getSeasonalNightlyRate(
+                          data.shortTermNightly,
+                          i,
+                        );
+                        const feeAdjustedRate = getFeeAdjustedRate(
+                          seasonalRate,
+                          data.managementFee > 0,
+                        );
+                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const occupancyRate = OCCUPANCY_RATES.low[i] / 100;
+                        const revenue =
+                          feeAdjustedRate * occupancyRate * daysInMonth;
+                        return (
+                          sum +
+                          (data.managementFee > 0
+                            ? revenue * (1 - data.managementFee)
+                            : revenue)
+                        );
+                      }, 0),
+                  )}
+                </td>
+                <td className="text-right py-3 px-6 font-semibold">
+                  {formatter.format(
+                    Array(12)
+                      .fill(0)
+                      .reduce((sum, _, i) => {
+                        const seasonalRate = getSeasonalNightlyRate(
+                          data.shortTermNightly,
+                          i,
+                        );
+                        const feeAdjustedRate = getFeeAdjustedRate(
+                          seasonalRate,
+                          data.managementFee > 0,
+                        );
+                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const occupancyRate = OCCUPANCY_RATES.low[i] / 100;
+                        const revenue =
+                          feeAdjustedRate * occupancyRate * daysInMonth;
+                        return (
+                          sum +
+                          (data.managementFee > 0
+                            ? revenue * (1 - data.managementFee)
+                            : revenue)
+                        );
+                      }, 0) / 12,
+                  )}
+                </td>
+              </tr>
+              <tr className="border-b bg-[#4ECDC4]/10 hover:bg-[#4ECDC4]/20">
+                <td className="py-3 px-6 text-[#4ECDC4] font-medium">
+                  Revenue Medium
+                  {data.managementFee > 0
+                    ? ` (After ${data.managementFee * 100}% Fee)`
+                    : ""}
+                </td>
+                {Array(12)
+                  .fill(0)
+                  .map((_, i) => {
+                    const seasonalRate = getSeasonalNightlyRate(
+                      data.shortTermNightly,
+                      i,
+                    );
+                    const feeAdjustedRate = getFeeAdjustedRate(
+                      seasonalRate,
+                      data.managementFee > 0,
+                    );
+                    const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                    const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
+                    const revenue =
+                      feeAdjustedRate * occupancyRate * daysInMonth;
+                    const afterFee =
+                      data.managementFee > 0
+                        ? revenue * (1 - data.managementFee)
+                        : revenue;
+                    return (
+                      <td
+                        key={i}
+                        className="text-right py-3 px-6 whitespace-nowrap"
+                      >
+                        {formatter.format(afterFee)}
+                      </td>
+                    );
+                  })}
+                <td className="text-right py-3 px-6 border-l font-semibold">
+                  {formatter.format(
+                    Array(12)
+                      .fill(0)
+                      .reduce((sum, _, i) => {
+                        const seasonalRate = getSeasonalNightlyRate(
+                          data.shortTermNightly,
+                          i,
+                        );
+                        const feeAdjustedRate = getFeeAdjustedRate(
+                          seasonalRate,
+                          data.managementFee > 0,
+                        );
+                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
+                        const revenue =
+                          feeAdjustedRate * occupancyRate * daysInMonth;
+                        return (
+                          sum +
+                          (data.managementFee > 0
+                            ? revenue * (1 - data.managementFee)
+                            : revenue)
+                        );
+                      }, 0),
+                  )}
+                </td>
+                <td className="text-right py-3 px-6 font-semibold">
+                  {formatter.format(
+                    Array(12)
+                      .fill(0)
+                      .reduce((sum, _, i) => {
+                        const seasonalRate = getSeasonalNightlyRate(
+                          data.shortTermNightly,
+                          i,
+                        );
+                        const feeAdjustedRate = getFeeAdjustedRate(
+                          seasonalRate,
+                          data.managementFee > 0,
+                        );
+                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
+                        const revenue =
+                          feeAdjustedRate * occupancyRate * daysInMonth;
+                        return (
+                          sum +
+                          (data.managementFee > 0
+                            ? revenue * (1 - data.managementFee)
+                            : revenue)
+                        );
+                      }, 0) / 12,
+                  )}
+                </td>
+              </tr>
+              <tr className="border-b bg-[#45B7D1]/10 hover:bg-[#45B7D1]/20">
+                <td className="py-3 px-6 text-[#45B7D1] font-medium">
+                  Revenue High
+                  {data.managementFee > 0
+                    ? ` (After ${data.managementFee * 100}% Fee)`
+                    : ""}
+                </td>
+                {Array(12)
+                  .fill(0)
+                  .map((_, i) => {
+                    const seasonalRate = getSeasonalNightlyRate(
+                      data.shortTermNightly,
+                      i,
+                    );
+                    const feeAdjustedRate = getFeeAdjustedRate(
+                      seasonalRate,
+                      data.managementFee > 0,
+                    );
+                    const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                    const occupancyRate = OCCUPANCY_RATES.high[i] / 100;
+                    const revenue =
+                      feeAdjustedRate * occupancyRate * daysInMonth;
+                    const afterFee =
+                      data.managementFee > 0
+                        ? revenue * (1 - data.managementFee)
+                        : revenue;
+                    return (
+                      <td
+                        key={i}
+                        className="text-right py-3 px-6 whitespace-nowrap"
+                      >
+                        {formatter.format(afterFee)}
+                      </td>
+                    );
+                  })}
+                <td className="text-right py-3 px-6 border-l font-semibold">
+                  {formatter.format(
+                    Array(12)
+                      .fill(0)
+                      .reduce((sum, _, i) => {
+                        const seasonalRate = getSeasonalNightlyRate(
+                          data.shortTermNightly,
+                          i,
+                        );
+                        const feeAdjustedRate = getFeeAdjustedRate(
+                          seasonalRate,
+                          data.managementFee > 0,
+                        );
+                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const occupancyRate = OCCUPANCY_RATES.high[i] / 100;
+                        const revenue =
+                          feeAdjustedRate * occupancyRate * daysInMonth;
+                        return (
+                          sum +
+                          (data.managementFee > 0
+                            ? revenue * (1 - data.managementFee)
+                            : revenue)
+                        );
+                      }, 0),
+                  )}
+                </td>
+                <td className="text-right py-3 px-6 font-semibold">
+                  {formatter.format(
+                    Array(12)
+                      .fill(0)
+                      .reduce((sum, _, i) => {
+                        const seasonalRate = getSeasonalNightlyRate(
+                          data.shortTermNightly,
+                          i,
+                        );
+                        const feeAdjustedRate = getFeeAdjustedRate(
+                          seasonalRate,
+                          data.managementFee > 0,
+                        );
+                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const occupancyRate = OCCUPANCY_RATES.high[i] / 100;
+                        const revenue =
+                          feeAdjustedRate * occupancyRate * daysInMonth;
+                        return (
+                          sum +
+                          (data.managementFee > 0
+                            ? revenue * (1 - data.managementFee)
+                            : revenue)
+                        );
+                      }, 0) / 12,
+                  )}
+                </td>
+              </tr>
+              <tr className="border-b bg-[#FFE66D]/10 hover:bg-[#FFE66D]/20">
+                <td className="py-3 px-6 text-[#B8860B] font-medium">
+                  Long Term Rental
+                </td>
+                {Array(12)
+                  .fill(0)
+                  .map((_, i) => (
+                    <td
+                      key={i}
+                      className="text-right py-3 px-6 whitespace-nowrap"
+                    >
+                      {formatter.format(data.longTermMonthly)}
+                    </td>
+                  ))}
+                <td className="text-right py-3 px-6 border-l font-semibold">
+                  {formatter.format(data.longTermAnnual)}
+                </td>
+                <td className="text-right py-3 px-6 font-semibold">
+                  {formatter.format(data.longTermMonthly)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="performance-metrics-table" className="mt-6">
+          <Button
+            variant="link"
+            className="text-sm text-gray-600 hover:text-gray-900 mt-8 w-full text-left"
+            onClick={() => setShowDisclaimer(!showDisclaimer)}
+          >
+            {showDisclaimer ? "Hide Disclaimer ▴" : "Show Disclaimer ▾"}
+          </Button>
+          {showDisclaimer && (
+            <div className="mt-4 text-sm text-gray-600 space-y-4">
+              <p>
+                The information contained in this report is provided by Proply
+                Tech (Pty) Ltd for informational purposes only. While we make
+                best efforts to ensure the accuracy and reliability of all data
+                presented, including sourcing information from trusted
+                third-party providers, we cannot guarantee its absolute accuracy
+                or completeness.
+              </p>
+              <p>
+                This report is intended to serve as a general guide and should
+                not be considered as financial, investment, legal, or
+                professional advice. Property rental strategy decisions should
+                be made after careful consideration of all relevant factors,
+                including but not limited to local market conditions,
+                regulations, and personal circumstances.
+              </p>
+              <p>
+                Proply Tech (Pty) Ltd and its affiliates expressly disclaim any
+                and all liability for any direct, indirect, incidental, or
+                consequential damages arising from the use of this information.
+                Actual rental income, occupancy rates, and management costs may
+                vary significantly from the projections and estimates presented.
+              </p>
+              <p>
+                By using this report, you acknowledge that the calculations and
+                projections are indicative only and based on the information
+                available at the time of generation. Factors beyond our control,
+                including but not limited to seasonal demand, regulatory
+                changes, platform policies, and economic conditions, may impact
+                actual outcomes.
+              </p>
+              <p className="text-xs mt-4">
+                © Proply Tech (Pty) Ltd. All rights reserved.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </TooltipProvider>
