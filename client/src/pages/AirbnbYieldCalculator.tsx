@@ -35,7 +35,7 @@ export default function AirbnbYieldCalculator() {
   return (
     <div className="min-h-screen">
       <PublicHeader />
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="max-w-4xl mx-auto px-4 py-12 pt-32">
         {/* SEO-optimized header section */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
@@ -90,7 +90,7 @@ export default function AirbnbYieldCalculator() {
                     type="number"
                   />
                 </div>
-                <Button 
+                <Button
                   onClick={calculateAirbnbYield}
                   disabled={!nightlyRate || !occupancyRate || !purchasePrice}
                 >
@@ -104,7 +104,7 @@ export default function AirbnbYieldCalculator() {
                       Gross Yield: {propertyYield}%
                     </p>
                     <p className="text-sm text-blue-600 mt-2">
-                      Note: This is a basic calculation of gross yield. Actual returns may vary based on expenses, 
+                      Note: This is a basic calculation of gross yield. Actual returns may vary based on expenses,
                       seasonality, and market conditions.
                     </p>
                   </div>
@@ -132,7 +132,7 @@ export default function AirbnbYieldCalculator() {
                     type="number"
                   />
                 </div>
-                <Button 
+                <Button
                   onClick={calculateLongTermYield}
                   disabled={!monthlyRent || !longTermPurchasePrice}
                 >
@@ -162,7 +162,7 @@ export default function AirbnbYieldCalculator() {
             Need a More Comprehensive Analysis?
           </h2>
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            While these calculators provide quick estimates, successful property investing requires deeper insights. 
+            While these calculators provide quick estimates, successful property investing requires deeper insights.
             Get access to our full suite of tools including:
           </p>
           <div className="grid md:grid-cols-3 gap-6 mb-8 text-left">
@@ -195,15 +195,15 @@ export default function AirbnbYieldCalculator() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Short-term vs Long-term Rentals</h3>
               <p className="mb-4">
-                Both rental strategies have their advantages. Short-term rentals often generate higher gross yields 
-                but require more active management. Long-term rentals typically offer more stable income with less 
+                Both rental strategies have their advantages. Short-term rentals often generate higher gross yields
+                but require more active management. Long-term rentals typically offer more stable income with less
                 day-to-day involvement.
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Why Calculate Rental Yield?</h3>
               <p className="mb-4">
-                Understanding your potential yield helps make informed investment decisions and compare 
+                Understanding your potential yield helps make informed investment decisions and compare
                 different rental strategies. It's a crucial metric for evaluating property investments.
               </p>
             </div>
