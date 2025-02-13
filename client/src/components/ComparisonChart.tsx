@@ -72,6 +72,27 @@ export default function ComparisonChart({
   const [showUpgradeModal, setShowUpgradeModal] = useState(false); // Added state for upgrade modal
   const user = useUser(); // Placeholder for user data
 
+  const handleExportPDF = async (withBranding: boolean = false) => {
+    try {
+      if (withBranding && !hasProAccess) {
+        toast({
+          title: "Pro Feature",
+          description: "Branded reports are only available to Pro users. Upgrade to access this feature.",
+          variant: "destructive",
+        });
+        return;
+      }
+      await generatePropertyPreviewPDF(data, withBranding, user.user);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF report",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Calculate annual revenue with or without seasonality
   const calculateAnnualRevenue = () => {
     if (removeSeasonality) {
