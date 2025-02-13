@@ -761,7 +761,7 @@ export default function ComparisonChart({
                 <td className="text-right py-3 px-6 whitespace-nowrap">30</td>
                 <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
                 <td className="text-right py-3 px-6 border-l">365</td>
-                <td<td className="text-right py-3 px-6">30.4</td>
+                <td className="text-right py-3 px-6">30.4</td>
               </tr>
               <tr className="border-b bg-[#FF6B6B]/10 hover:bg-[#FF6B6B]/20">
                 <td className="py-3 px-6 text-[#FF6B6B] font-medium">
