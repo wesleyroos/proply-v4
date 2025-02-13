@@ -337,7 +337,7 @@ export default function ComparisonChart({
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
+              <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white invisible">
                 <FileText className="w-4 h-4 mr-2" />
                 Export Report
               </Button>
