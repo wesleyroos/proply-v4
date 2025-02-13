@@ -337,7 +337,7 @@ export default function ComparisonChart({
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white invisible">
+              <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
                 <FileText className="w-4 h-4 mr-2" />
                 Export Report
               </Button>
@@ -775,7 +775,8 @@ export default function ComparisonChart({
                 <td className="text-right py-3 px-6 border-l">-</td>
                 <td className="text-right py-3 px-6">81.7%</td>
               </tr>
-              <tr className="border-b hover:bg-gray-50"><td className="py-3 px-6">Days in Month</td>
+              <tr className="border-b hover:bg-gray-50">
+                <td className="py-3 px-6">Days in Month</td>
                 <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
                 <td className="text-right py-3 px-6 whitespace-nowrap">28</td>
                 <td className="text-right py-3 px-6 whitespace-nowrap">31</td>
