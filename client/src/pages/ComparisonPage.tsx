@@ -17,12 +17,6 @@ import { useUser } from "@/hooks/use-user";
 import { useQueryClient } from "@tanstack/react-query";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Sparkles } from 'lucide-react'; // Assuming these imports are needed
-
-
-const generateRentComparePDF = async (comparisonData: any, withBranding: boolean, user: any) => {
-  await handleExportPDF(withBranding);
-};
 
 export default function ComparisonPage() {
   const [, setLocation] = useLocation();
@@ -33,7 +27,6 @@ export default function ComparisonPage() {
   const [comparisonData, setComparisonData] = useState<ComparisonData | null>(null);
   const [revenueData, setRevenueData] = useState<any>(null);
   const [isSaved, setIsSaved] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false); // Added state for modal
   const queryClient = useQueryClient();
 
   interface ComparisonData {
@@ -510,39 +503,6 @@ export default function ComparisonPage() {
           <h1 className="text-2xl font-bold text-[#262626]">
             Proply Rent Compare
           </h1>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
-                <FileText className="w-4 h-4 mr-2" />
-                Export Report
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => generateRentComparePDF(comparisonData, false, user)}>
-                <FileText className="mr-2" />
-                Without Branding
-              </DropdownMenuItem>
-              {hasProAccess ? (
-                <DropdownMenuItem onClick={() => generateRentComparePDF(comparisonData, true, user)}>
-                  <FileText className="mr-2" />
-                  With Branding
-                  <div className="ml-2 flex items-center gap-1">
-                    <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
-                    <Sparkles className="h-4 w-4 text-[#3B82F6]" />
-                  </div>
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem onClick={() => setShowUpgradeModal(true)}>
-                  <FileText className="mr-2" />
-                  With Branding
-                  <div className="ml-2 flex items-center gap-1">
-                    <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
-                    <Sparkles className="h-4 w-4 text-[#3B82F6]" />
-                  </div>
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
         <div className="max-w-4xl space-y-6">
