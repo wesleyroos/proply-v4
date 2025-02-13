@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import PublicHeader from "@/components/PublicHeader";
 import PublicFooter from "@/components/PublicFooter";
+import { Link } from "wouter";
 
 export default function AirbnbYieldCalculator() {
   const [nightlyRate, setNightlyRate] = useState("");
@@ -21,7 +23,17 @@ export default function AirbnbYieldCalculator() {
   return (
     <div className="min-h-screen">
       <PublicHeader />
-      <div className="max-w-4xl mx-auto px-4 py-12 mt-12">
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        {/* SEO-optimized header section */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            Free Airbnb Yield Calculator for Property Investors
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Calculate the potential yield of your short-term rental property in seconds. Perfect for property investors and Airbnb hosts looking to evaluate investment opportunities.
+          </p>
+        </div>
+
         <Card>
           <CardHeader>
             <CardTitle>Airbnb Yield Calculator</CardTitle>
@@ -82,6 +94,59 @@ export default function AirbnbYieldCalculator() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Call-to-action section */}
+        <div className="mt-12 bg-blue-50 rounded-lg p-8 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Need a More Comprehensive Analysis?
+          </h2>
+          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+            While this calculator provides a quick estimate, successful Airbnb investing requires deeper insights. 
+            Get access to our full suite of tools including:
+          </p>
+          <div className="grid md:grid-cols-3 gap-6 mb-8 text-left">
+            <div className="bg-white p-4 rounded shadow-sm">
+              <h3 className="font-semibold text-gray-900 mb-2">Market Analysis</h3>
+              <p className="text-sm text-gray-600">Real-time data on occupancy rates and pricing in your area</p>
+            </div>
+            <div className="bg-white p-4 rounded shadow-sm">
+              <h3 className="font-semibold text-gray-900 mb-2">Revenue Forecasting</h3>
+              <p className="text-sm text-gray-600">Seasonal adjustments and detailed financial projections</p>
+            </div>
+            <div className="bg-white p-4 rounded shadow-sm">
+              <h3 className="font-semibold text-gray-900 mb-2">Expense Tracking</h3>
+              <p className="text-sm text-gray-600">Complete expense analysis and ROI calculations</p>
+            </div>
+          </div>
+          <Link href="/pricing">
+            <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90">
+              Explore Pro Features
+            </Button>
+          </Link>
+        </div>
+
+        {/* SEO content section */}
+        <div className="mt-12 prose max-w-none">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Understanding Airbnb Property Yields
+          </h2>
+          <div className="grid md:grid-cols-2 gap-8 text-gray-600">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is Gross Yield?</h3>
+              <p className="mb-4">
+                Gross yield is the annual rental income as a percentage of the property's purchase price, 
+                before expenses. It's a quick way to compare different investment opportunities.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Why Calculate Airbnb Yield?</h3>
+              <p className="mb-4">
+                Understanding your potential yield helps make informed investment decisions and compare 
+                short-term rentals with traditional long-term letting options.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
       <PublicFooter />
     </div>
