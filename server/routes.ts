@@ -1027,7 +1027,9 @@ export function registerRoutes(app: Express): Server {
       console.log("Current User Data:", {
         id: user?.id,
         email: user?.email,
-        currentAnalysisCount: user?.analysisCount || 0
+        currentAnalysisCount: user?.analysisCount || 0,
+        hasUser: !!user,
+        userData: user
       });
       console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
 
