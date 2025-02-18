@@ -1076,33 +1076,34 @@ export function registerRoutes(app: Express): Server {
         JSON.stringify(analysisResult, null, 2),
       );
 
-      // Get current user data first
-      // const [currentUser] = await db
-      //   .select({
-      //     propertyAnalyzerUsage: users.propertyAnalyzerUsage
-      //   })
-      //   .from(users)
-      //   .where(eq(users.id, req.user!.id))
-      //   .limit(1);
+      // Increment the user's analysis count in a transaction
+      const [updatedUser] = await db.transaction(async (tx) => {
+        // Get latest user data
+        const [currentUser] = await tx
+          .select()
+          .from(users)
+          .where(eq(users.id, req.user!.id))
+          .limit(1);
 
-      // const newUsage = (user?.propertyAnalyzerUsage || 0) + 1;
-      const newCount = (user?.analysisCount || 0) + 1;
+        const newCount = (currentUser?.analysisCount || 0) + 1;
 
-      console.log("Before incrementing analysis count:", {
-        userId: user?.id,
-        email: user?.email,
-        currentCount: user?.analysisCount || 0
+        console.log("Before incrementing analysis count:", {
+          userId: currentUser?.id,
+          email: currentUser?.email,
+          currentCount: currentUser?.analysisCount || 0,
+          newCount
+        });
+
+        // Update with specific new count
+        return await tx
+          .update(users)
+          .set({
+            analysisCount: newCount,
+            updatedAt: new Date()
+          })
+          .where(eq(users.id, req.user!.id))
+          .returning();
       });
-
-      // Increment the user's analysis count
-      const [updatedUser] = await db
-        .update(users)
-        .set({
-          analysisCount: sql`COALESCE(${users.analysisCount}, 0) + 1`,
-          updatedAt: new Date()
-        })
-        .where(eq(users.id, req.user!.id))
-        .returning();
 
       console.log("Analysis count update details:", {
         initialUser: {
