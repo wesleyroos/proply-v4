@@ -1104,12 +1104,19 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user!.id))
         .returning();
 
-      console.log("After incrementing analysis count:", {
-        userId: updatedUser.id,
-        email: updatedUser.email,
-        previousCount: user?.analysisCount || 0,
-        newCount: updatedUser.analysisCount,
-        change: (updatedUser.analysisCount || 0) - (user?.analysisCount || 0)
+      console.log("Analysis count details:", {
+        initialUser: {
+          id: user?.id,
+          email: user?.email,
+          previousCount: user?.analysisCount || 0
+        },
+        updatedUser: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          newCount: updatedUser.analysisCount
+        },
+        change: (updatedUser.analysisCount || 0) - (user?.analysisCount || 0),
+        timestamp: new Date().toISOString()
       });
 
       res.json(analysisResult);
