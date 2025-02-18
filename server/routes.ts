@@ -1016,7 +1016,7 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Get user info first
+      // Get current user data first
       const [user] = await db
         .select()
         .from(users)
@@ -1024,6 +1024,11 @@ export function registerRoutes(app: Express): Server {
         .limit(1);
 
       console.log("\n=== Starting Property Analysis ===");
+      console.log("Current User:", {
+        id: user?.id,
+        email: user?.email,
+        currentAnalysisCount: user?.analysisCount
+      });
       console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
 
       const propertyData = {
