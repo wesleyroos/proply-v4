@@ -1104,16 +1104,22 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user!.id))
         .returning();
 
-      console.log("Analysis count details:", {
+      console.log("Analysis count update details:", {
         initialUser: {
           id: user?.id,
           email: user?.email,
-          previousCount: user?.analysisCount || 0
+          previousCount: user?.analysisCount || 0,
+          userFound: !!user
+        },
+        updateQuery: {
+          sql: `COALESCE(${users.analysisCount}, 0) + 1`,
+          userId: req.user!.id
         },
         updatedUser: {
           id: updatedUser.id,
           email: updatedUser.email,
-          newCount: updatedUser.analysisCount
+          newCount: updatedUser.analysisCount,
+          updateSuccess: !!updatedUser
         },
         change: (updatedUser.analysisCount || 0) - (user?.analysisCount || 0),
         timestamp: new Date().toISOString()
