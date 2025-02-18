@@ -1086,19 +1086,26 @@ export function registerRoutes(app: Express): Server {
       // const newUsage = (user?.propertyAnalyzerUsage || 0) + 1;
       const newCount = (user?.analysisCount || 0) + 1;
 
+      console.log("Before incrementing analysis count:", {
+        userId: user?.id,
+        email: user?.email,
+        currentCount: user?.analysisCount || 0
+      });
+
       // Increment the user's analysis count
-      await db
+      const [updatedUser] = await db
         .update(users)
         .set({
           analysisCount: sql`COALESCE(${users.analysisCount}, 0) + 1`,
           updatedAt: new Date()
         })
-        .where(eq(users.id, req.user!.id));
+        .where(eq(users.id, req.user!.id))
+        .returning();
 
-      console.log("Updated analysis count:", {
-        email: user.email,
-        oldCount: user?.analysisCount,
-        newCount: newCount,
+      console.log("After incrementing analysis count:", {
+        userId: updatedUser.id,
+        email: updatedUser.email,
+        newCount: updatedUser.analysisCount
       });
 
       res.json(analysisResult);
