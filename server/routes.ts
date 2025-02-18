@@ -1105,7 +1105,9 @@ export function registerRoutes(app: Express): Server {
       console.log("After incrementing analysis count:", {
         userId: updatedUser.id,
         email: updatedUser.email,
-        newCount: updatedUser.analysisCount
+        previousCount: user?.analysisCount || 0,
+        newCount: updatedUser.analysisCount,
+        change: (updatedUser.analysisCount || 0) - (user?.analysisCount || 0)
       });
 
       res.json(analysisResult);
