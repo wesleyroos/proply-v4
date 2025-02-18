@@ -1009,67 +1009,125 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Property analysis route
+  // Property analysis endpoint
   app.post("/api/analyze", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
     }
 
     try {
-      const formData = req.body;
-      console.log("Received analysis data:", formData);
+      // Get current user data first
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
 
-      // Transform the data to match the expected schema
-      const analysisData = {
-        purchasePrice: parseFloat(formData.purchasePrice),
-        deposit: formData.depositType === "amount"
-          ? parseFloat(formData.depositAmount)
-          : (parseFloat(formData.purchasePrice) * parseFloat(formData.depositPercentage)) / 100,
-        interestRate: parseFloat(formData.interestRate),
-        loanTerm: parseInt(formData.loanTerm),
-        floorArea: parseFloat(formData.floorArea),
-        ratePerSquareMeter: parseFloat(formData.cmaRatePerSqm),
-        shortTermNightlyRate: formData.airbnbNightlyRate ? parseFloat(formData.airbnbNightlyRate) : null,
-        annualOccupancy: formData.occupancyRate ? parseFloat(formData.occupancyRate) : null,
-        longTermRental: formData.longTermRental ? parseFloat(formData.longTermRental) : null,
-        leaseCycleGap: formData.leaseCycleGap ? parseInt(formData.leaseCycleGap) : null,
-        incomeGrowthRate: parseFloat(formData.annualIncomeGrowth),
-        expenseGrowthRate: parseFloat(formData.annualExpenseGrowth),
-        monthlyLevies: parseFloat(formData.monthlyLevies),
-        monthlyRatesTaxes: parseFloat(formData.monthlyRatesTaxes),
-        otherMonthlyExpenses: parseFloat(formData.otherMonthlyExpenses),
-        maintenancePercent: parseFloat(formData.maintenancePercent),
-        managementFee: parseFloat(formData.managementFee),
-        address: formData.address,
-        propertyDescription: formData.comments
+      // Do analysis
+      console.log("\n=== Starting Property Analysis ===");
+      console.log("Current User Data:", {
+        id: user?.id,
+        email: user?.email,
+        currentAnalysisCount: user?.analysisCount || 0,
+        hasUser: !!user
+      });
+
+      const propertyData = {
+        purchasePrice: parseFloat(req.body.purchasePrice),
+        shortTermNightlyRate: req.body.shortTermNightlyRate
+          ? parseFloat(req.body.shortTermNightlyRate)
+          : null,
+        annualOccupancy: req.body.annualOccupancy
+          ? parseFloat(req.body.annualOccupancy)
+          : null,
+        longTermRental: req.body.longTermRental
+          ? parseFloat(req.body.longTermRental)
+          : null,
+        leaseCycleGap: req.body.leaseCycleGap
+          ? parseInt(req.body.leaseCycleGap)
+          : null,
+        propertyDescription: req.body.propertyDescription || null,
+        address: req.body.address,
+        deposit:
+          req.body.depositType === "amount"
+            ? parseFloat(req.body.deposit)
+            : (parseFloat(req.body.purchasePrice) *
+                parseFloat(req.body.depositPercentage)) /
+              100,
+        interestRate: parseFloat(req.body.interestRate),
+        loanTerm: parseInt(req.body.loanTerm),
+        floorArea: parseFloat(req.body.floorArea),
+        ratePerSquareMeter: parseFloat(
+          req.body.ratePerSquareMeter || req.body.cmaRatePerSqm || 0,
+        ),
+        incomeGrowthRate: parseFloat(req.body.annualIncomeGrowth || 8),
+        expenseGrowthRate: parseFloat(req.body.annualExpenseGrowth || 6),
+        monthlyLevies: parseFloat(req.body.monthlyLevies || 0),
+        monthlyRatesTaxes: parseFloat(req.body.monthlyRatesTaxes || 0),
+        otherMonthlyExpenses: parseFloat(req.body.otherMonthlyExpenses || 0),
+        maintenancePercent: parseFloat(req.body.maintenancePercent || 0),
+        managementFee: parseFloat(req.body.managementFee || 0),
       };
 
-      // Process the analysis using the calculation engine
-      const results = calculateYields(analysisData);
+      const analysisResult = calculateYields(propertyData);
+      console.log(
+        "Analysis complete. Result:",
+        JSON.stringify(analysisResult, null, 2),
+      );
 
-      // Increment the reports generated count
+      // Get current user data first
+      // const [currentUser] = await db
+      //   .select({
+      //     propertyAnalyzerUsage: users.propertyAnalyzerUsage
+      //   })
+      //   .from(users)
+      //   .where(eq(users.id, req.user!.id))
+      //   .limit(1);
+
+      // const newUsage = (user?.propertyAnalyzerUsage || 0) + 1;
+      const newCount = (user?.analysisCount || 0) + 1;
+
+      console.log("Before incrementing analysis count:", {
+        userId: user?.id,
+        email: user?.email,
+        currentCount: user?.analysisCount || 0
+      });
+
+      // Increment the user's analysis count
       const [updatedUser] = await db
         .update(users)
         .set({
-          reportsGenerated: sql`COALESCE(${users.reportsGenerated}, 0) + 1`,
-          updatedAt: new Date(),
+          analysisCount: sql`CASE 
+            WHEN ${users.analysisCount} IS NULL THEN 1 
+            ELSE ${users.analysisCount} + 1 
+          END`,
+          updatedAt: new Date()
         })
         .where(eq(users.id, req.user!.id))
         .returning();
 
-      console.log("Updated user analysis count:", {
-        userId: updatedUser.id,
-        reportsGenerated: updatedUser.reportsGenerated,
-      });
+      const analysisResponse = {
+        ...analysisResult,
+        previousCount: user?.analysisCount || 0,
+        newCount: updatedUser.analysisCount || 0,
+        change: (updatedUser.analysisCount || 0) - (user?.analysisCount || 0)
+      };
 
-      res.json({
-        ...results,
-        reportsGenerated: updatedUser.reportsGenerated,
-      });
+      console.log("Analysis response:", analysisResponse);
+
+      res.json(analysisResponse);
     } catch (error) {
-      console.error("Analysis error:", error);
+      console.error("=== Analysis Error ===");
+      console.error("Error details:", error);
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to analyze property data";
+      console.error("Sending error response:", { error: errorMessage });
+
       res.status(500).json({
-        error: "Failed to complete analysis",
+        error: errorMessage,
         details: error instanceof Error ? error.message : undefined,
       });
     }

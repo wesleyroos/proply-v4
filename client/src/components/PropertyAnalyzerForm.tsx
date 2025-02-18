@@ -185,6 +185,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
     setIsSubmitting(true);
     try {
       // Clean and prepare the analysis data
+      // Ensure all form fields are included and properly typed
       const analysisData = {
         // Property Details
         address: formData.address,
@@ -228,23 +229,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       };
 
       console.log("Submitting complete analysis data:", analysisData);
-
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(analysisData)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Analysis failed: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-
-      // Update analysis count in UI through queryClient invalidation
-      queryClient.invalidateQueries(['user']);
 
       if (props.onAnalysisComplete) {
         await props.onAnalysisComplete(analysisData);
