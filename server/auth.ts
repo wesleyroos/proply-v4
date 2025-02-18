@@ -5,9 +5,9 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
-import { users, insertUserSchema, accessCodes } from "@db/schema";
+import { users, insertUserSchema, accessCodes, type SelectUser } from "@db/schema";
 import { db } from "@db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { sendNewUserNotification } from "./services/email";
 
 const scryptAsync = promisify(scrypt);
@@ -89,6 +89,12 @@ export function setupAuth(app: Express) {
           return done(null, false, { message: "Incorrect password." });
         }
 
+        // Update last login timestamp
+        await db
+          .update(users)
+          .set({ lastLoginAt: new Date() })
+          .where(eq(users.id, user.id));
+
         console.log("Login successful for user:", user.id);
         return done(null, user);
       } catch (err) {
@@ -110,7 +116,7 @@ export function setupAuth(app: Express) {
         .where(eq(users.id, id))
         .limit(1);
 
-    done(null, user);
+      done(null, user);
     } catch (err) {
       done(err);
     }

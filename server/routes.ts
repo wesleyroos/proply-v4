@@ -224,14 +224,16 @@ export function registerRoutes(app: Express): Server {
           })
           .where(eq(users.id, req.user!.id));
 
-        // Record subscription history
-        await tx.insert(subscriptionHistory).values({
-          userId: req.user!.id,
-          action: "pause",
-          payfastToken: user.payfastToken,
-          pauseDuration: cycles,
-          success: true,
-        });
+        // Record subscription history with non-null values
+        if (user?.payfastToken) {
+          await tx.insert(subscriptionHistory).values({
+            userId: req.user!.id,
+            action: "pause",
+            payfastToken: user.payfastToken,
+            pauseDuration: cycles,
+            success: true,
+          });
+        }
       });
 
       res.json({
@@ -298,13 +300,15 @@ export function registerRoutes(app: Express): Server {
           })
           .where(eq(users.id, req.user!.id));
 
-        // Record subscription history
-        await tx.insert(subscriptionHistory).values({
-          userId: req.user!.id,
-          action: "resume",
-          payfastToken: user.payfastToken,
-          success: true,
-        });
+        // Record subscription history with non-null values
+        if (user?.payfastToken) {
+          await tx.insert(subscriptionHistory).values({
+            userId: req.user!.id,
+            action: "resume",
+            payfastToken: user.payfastToken,
+            success: true,
+          });
+        }
       });
 
       res.json({ message: "Subscription resumed successfully" });
@@ -483,7 +487,7 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Modified query to get reports count directly from propertyAnalyzerResults
+      // Modified query to include lastLoginAt
       const allUsers = await db
         .select({
           id: users.id,
@@ -500,6 +504,7 @@ export function registerRoutes(app: Express): Server {
           accessCodeUsedAt: accessCodes.usedAt,
           pricelabsApiCallsTotal: users.pricelabsApiCallsTotal,
           pricelabsApiCallsMonth: users.pricelabsApiCallsMonth,
+          lastLoginAt: users.lastLoginAt, // Added lastLoginAt field
           reportsGenerated: sql`(
             SELECT COUNT(*)::integer 
             FROM ${propertyAnalyzerResults} 
@@ -976,7 +981,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Change password
-  app.post("/api/change-password", async (req, res) => {
+  app.post("/api/api/change-password", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
     }

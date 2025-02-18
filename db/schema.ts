@@ -40,6 +40,7 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   reportsGenerated: integer("reports_generated").default(0).notNull(),
   analysisCount: integer("analysis_count").default(0).notNull(),
+  lastLoginAt: timestamp("last_login_at"), // Added new column for tracking last login
 
   pricelabsApiCallsTotal: integer("pricelabs_api_calls_total").default(0),
   pricelabsApiCallsMonth: integer("pricelabs_api_calls_month").default(0),
