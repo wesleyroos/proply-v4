@@ -1024,10 +1024,10 @@ export function registerRoutes(app: Express): Server {
         .limit(1);
 
       console.log("\n=== Starting Property Analysis ===");
-      console.log("Current User:", {
+      console.log("Current User Data:", {
         id: user?.id,
         email: user?.email,
-        currentAnalysisCount: user?.analysisCount
+        currentAnalysisCount: user?.analysisCount || 0
       });
       console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
 
