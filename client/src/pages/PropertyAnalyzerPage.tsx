@@ -531,12 +531,14 @@ export default function PropertyAnalyzerPage() {
           <p className="text-muted-foreground mt-1">
             Enter property details to generate analysis
           </p>
+          {!hasProAccess && (
+            <p className="text-sm text-[#1BA3FF] font-medium mt-2">
+              Analyses used: {user?.reportsGenerated || 0}/3
+            </p>
+          )}
         </div>
         {!hasProAccess && (
           <div className="bg-[#1BA3FF]/10 px-4 py-2 rounded-lg border border-[#1BA3FF]/20">
-            <p className="text-sm text-[#1BA3FF] font-medium">
-              Analyses used: {user?.reportsGenerated || 0}
-            </p>
             <Button 
               onClick={() => setShowUpgradeModal(true)}
               className="w-full mt-2 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
