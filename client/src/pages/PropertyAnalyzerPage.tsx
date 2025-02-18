@@ -216,6 +216,7 @@ interface AnalysisResult {
   } | null;
   address: string;
   propertyPhotoUrl?: string;
+  newCount: number; // Added newCount to AnalysisResult
 }
 
 export default function PropertyAnalyzerPage() {
@@ -348,10 +349,10 @@ export default function PropertyAnalyzerPage() {
 
       const data = await response.json();
       console.log("Analysis response:", data);
-      
+
       // Wait for user data to be refreshed
       await queryClient.invalidateQueries({ queryKey: ['user'] });
-      
+
       // Get fresh user data
       const freshUserData = queryClient.getQueryData(['user']);
       console.log("Analysis count after update:", {
@@ -366,6 +367,7 @@ export default function PropertyAnalyzerPage() {
         annualOccupancy: requestBody.annualOccupancy,
         managementFee: requestBody.managementFee,
         loanTerm: requestBody.loanTerm,
+        newCount: freshUserData?.analysisCount || 0 //Added newCount to the state
       });
 
       setTimeout(() => {

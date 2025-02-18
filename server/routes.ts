@@ -1023,15 +1023,14 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user!.id))
         .limit(1);
 
+      // Do analysis
       console.log("\n=== Starting Property Analysis ===");
       console.log("Current User Data:", {
         id: user?.id,
         email: user?.email,
         currentAnalysisCount: user?.analysisCount || 0,
-        hasUser: !!user,
-        userData: user
+        hasUser: !!user
       });
-      console.log("Raw Input Data:", JSON.stringify(req.body, null, 2));
 
       const propertyData = {
         purchasePrice: parseFloat(req.body.purchasePrice),
@@ -1104,28 +1103,16 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user!.id))
         .returning();
 
-      console.log("Analysis count update details:", {
-        initialUser: {
-          id: user?.id,
-          email: user?.email,
-          previousCount: user?.analysisCount || 0,
-          userFound: !!user
-        },
-        updateQuery: {
-          sql: `COALESCE(${users.analysisCount}, 0) + 1`,
-          userId: req.user!.id
-        },
-        updatedUser: {
-          id: updatedUser.id,
-          email: updatedUser.email,
-          newCount: updatedUser.analysisCount,
-          updateSuccess: !!updatedUser
-        },
-        change: (updatedUser.analysisCount || 0) - (user?.analysisCount || 0),
-        timestamp: new Date().toISOString()
-      });
+      const analysisResponse = {
+        ...analysisResult,
+        previousCount: user?.analysisCount || 0,
+        newCount: updatedUser.analysisCount || 0,
+        change: (updatedUser.analysisCount || 0) - (user?.analysisCount || 0)
+      };
 
-      res.json(analysisResult);
+      console.log("Analysis response:", analysisResponse);
+
+      res.json(analysisResponse);
     } catch (error) {
       console.error("=== Analysis Error ===");
       console.error("Error details:", error);
