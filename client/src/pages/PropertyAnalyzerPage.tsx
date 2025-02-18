@@ -527,7 +527,7 @@ export default function PropertyAnalyzerPage() {
     <div className="px-4 py-6">
       <div className="fixed top-4 right-4 z-50">
         <div className="bg-white shadow-md rounded-lg px-3 py-2 border border-[#1BA3FF]/20">
-          <span className="text-sm text-[#1BA3FF] font-medium">Analysis count: 3</span>
+          <span className="text-sm text-[#1BA3FF] font-medium">Analysis count: {user?.analysisCount || 0}</span>
           {!hasProAccess && (
             <div className="mt-2 text-sm text-[#1BA3FF] font-medium px-3 py-1 bg-[#1BA3FF]/10 rounded-full">
               Analyses used: {user?.analysisCount || 0}/3
