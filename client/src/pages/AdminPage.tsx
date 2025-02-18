@@ -246,7 +246,7 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="p-8 bg-gray-50">
+    <div className="container mx-auto px-0 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">User Management</h1>
         {user?.isAdmin && <NotificationsMenu />}
