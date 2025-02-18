@@ -66,6 +66,7 @@ interface AdminUser extends SelectUser {
   pricelabsApiCallsTotal: number;
   pricelabsApiCallsMonth: number;
   reportsGenerated: number;
+  lastLoginAt: string | null;
 }
 
 interface UserStats {
@@ -387,6 +388,9 @@ export default function AdminPage() {
                     <TableHead onClick={() => handleSort('reportsGenerated')} className="cursor-pointer">
                       Reports <SortIndicator column="reportsGenerated" />
                     </TableHead>
+                    <TableHead onClick={() => handleSort('lastLoginAt')} className="cursor-pointer">
+                      Last Login <SortIndicator column="lastLoginAt" />
+                    </TableHead>
                     <TableHead>Status Details</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -438,6 +442,11 @@ export default function AdminPage() {
                         <span className="text-xs font-medium">
                           {userData.reportsGenerated || 0} reports
                         </span>
+                      </TableCell>
+                      <TableCell>
+                        {userData.lastLoginAt
+                          ? new Date(userData.lastLoginAt).toLocaleString()
+                          : "Never"}
                       </TableCell>
                       <TableCell>
                         {userData.subscriptionStatus === "pro" &&
