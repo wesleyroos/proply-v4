@@ -359,55 +359,55 @@ export default function AdminPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto border rounded-lg">
             {usersLoading ? (
-              <p className="text-muted-foreground">Loading users...</p>
+              <p className="text-muted-foreground p-4">Loading users...</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead onClick={() => handleSort('id')} className="cursor-pointer">
+                    <TableHead onClick={() => handleSort('id')} className="cursor-pointer whitespace-nowrap min-w-[80px]">
                       ID <SortIndicator column="id" />
                     </TableHead>
-                    <TableHead onClick={() => handleSort('email')} className="cursor-pointer">
+                    <TableHead onClick={() => handleSort('email')} className="cursor-pointer whitespace-nowrap min-w-[200px]">
                       Email <SortIndicator column="email" />
                     </TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead onClick={() => handleSort('userType')} className="cursor-pointer">
+                    <TableHead className="whitespace-nowrap min-w-[200px]">Name</TableHead>
+                    <TableHead onClick={() => handleSort('userType')} className="cursor-pointer whitespace-nowrap min-w-[120px]">
                       User Type <SortIndicator column="userType" />
                     </TableHead>
-                    <TableHead>Company</TableHead>
-                    <TableHead onClick={() => handleSort('subscriptionStatus')} className="cursor-pointer">
+                    <TableHead className="whitespace-nowrap min-w-[150px]">Company</TableHead>
+                    <TableHead onClick={() => handleSort('subscriptionStatus')} className="cursor-pointer whitespace-nowrap min-w-[100px]">
                       Plan <SortIndicator column="subscriptionStatus" />
                     </TableHead>
-                    <TableHead>Access Code</TableHead>
-                    <TableHead>Redeemed At</TableHead>
-                    <TableHead onClick={() => handleSort('pricelabsApiCallsTotal')} className="cursor-pointer">
+                    <TableHead className="whitespace-nowrap min-w-[120px]">Access Code</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[120px]">Redeemed At</TableHead>
+                    <TableHead onClick={() => handleSort('pricelabsApiCallsTotal')} className="cursor-pointer whitespace-nowrap min-w-[150px]">
                       API Usage <SortIndicator column="pricelabsApiCallsTotal" />
                     </TableHead>
-                    <TableHead onClick={() => handleSort('reportsGenerated')} className="cursor-pointer">
+                    <TableHead onClick={() => handleSort('reportsGenerated')} className="cursor-pointer whitespace-nowrap min-w-[120px]">
                       Reports <SortIndicator column="reportsGenerated" />
                     </TableHead>
-                    <TableHead onClick={() => handleSort('lastLoginAt')} className="cursor-pointer">
+                    <TableHead onClick={() => handleSort('lastLoginAt')} className="cursor-pointer whitespace-nowrap min-w-[150px]">
                       Last Login <SortIndicator column="lastLoginAt" />
                     </TableHead>
-                    <TableHead>Status Details</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[200px]">Status Details</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[100px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filterAndSortData(users || []).map((userData) => (
                     <TableRow key={userData.id}>
-                      <TableCell>{userData.id}</TableCell>
-                      <TableCell>{userData.email}</TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">{userData.id}</TableCell>
+                      <TableCell className="whitespace-nowrap">{userData.email}</TableCell>
+                      <TableCell className="whitespace-nowrap">
                         {userData.firstName} {userData.lastName}
                       </TableCell>
-                      <TableCell className="capitalize">
+                      <TableCell className="capitalize whitespace-nowrap">
                         {userData.userType}
                       </TableCell>
-                      <TableCell>{userData.company || "-"}</TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">{userData.company || "-"}</TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <span
                           className={cn(
                             "px-2 py-1 rounded-full text-xs font-medium",
@@ -423,32 +423,32 @@ export default function AdminPage() {
                             : "Free"}
                         </span>
                       </TableCell>
-                      <TableCell>{userData.accessCode || "-"}</TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">{userData.accessCode || "-"}</TableCell>
+                      <TableCell className="whitespace-nowrap">
                         {userData.accessCodeUsedAt
                           ? new Date(
                               userData.accessCodeUsedAt,
                             ).toLocaleDateString()
                           : "-"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <span className="text-xs">
                           {userData.pricelabsApiCallsMonth} calls this month
                           <br />
                           {userData.pricelabsApiCallsTotal} total calls
                         </span>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <span className="text-xs font-medium">
                           {userData.reportsGenerated || 0} reports
                         </span>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         {userData.lastLoginAt
                           ? new Date(userData.lastLoginAt).toLocaleString()
                           : "Never"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         {userData.subscriptionStatus === "pro" &&
                           userData.subscriptionExpiryDate && (
                             <span className="block text-xs">
@@ -471,7 +471,7 @@ export default function AdminPage() {
                             </span>
                           )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm">
