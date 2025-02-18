@@ -527,12 +527,12 @@ export default function PropertyAnalyzerPage() {
     <div className="px-4 py-6">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <div>
+          <div className="flex items-center gap-4">
             <h1 className="text-3xl font-bold">Property Analysis</h1>
             {!hasProAccess && (
-              <p className="text-sm text-[#1BA3FF] font-medium mt-2">
-                You have used {user?.reportsGenerated || 0} of 3 free analyses
-              </p>
+              <span className="text-sm text-[#1BA3FF] font-medium px-3 py-1 bg-[#1BA3FF]/10 rounded-full">
+                Analyses used: {user?.reportsGenerated || 0}/3
+              </span>
             )}
           </div>
           <p className="text-muted-foreground mt-1">
