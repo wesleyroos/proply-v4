@@ -525,17 +525,19 @@ export default function PropertyAnalyzerPage() {
 
   return (
     <div className="px-4 py-6">
+      <div className="fixed top-4 right-4 z-50">
+        <div className="bg-white shadow-md rounded-lg px-3 py-2 border border-[#1BA3FF]/20">
+          <span className="text-sm text-[#1BA3FF] font-medium">Analysis count: 3</span>
+          {!hasProAccess && (
+            <div className="mt-2 text-sm text-[#1BA3FF] font-medium px-3 py-1 bg-[#1BA3FF]/10 rounded-full">
+              Analyses used: {user?.reportsGenerated || 0}/3
+            </div>
+          )}
+        </div>
+      </div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <div className="flex items-center gap-4">
-            <h1 className="text-3xl font-bold">Property Analysis</h1>
-            <span className="text-sm text-[#1BA3FF] font-medium">Analysis count: 3</span>
-            {!hasProAccess && (
-              <span className="text-sm text-[#1BA3FF] font-medium px-3 py-1 bg-[#1BA3FF]/10 rounded-full">
-                Analyses used: {user?.reportsGenerated || 0}/3
-              </span>
-            )}
-          </div>
+          <h1 className="text-3xl font-bold">Property Analysis</h1>
           <p className="text-muted-foreground mt-1">
             Enter property details to generate analysis
           </p>
