@@ -83,8 +83,8 @@ interface UserStats {
 }
 
 type SortConfig = {
-  key: keyof AdminUser | '';
-  direction: 'asc' | 'desc';
+  key: keyof AdminUser | "";
+  direction: "asc" | "desc";
 };
 
 export default function AdminPage() {
@@ -92,19 +92,27 @@ export default function AdminPage() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
-    key: 'reportsGenerated',
-    direction: 'desc'
+    key: "reportsGenerated",
+    direction: "desc",
   });
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: users, isLoading: usersLoading, refetch: refetchUsers } = useQuery<AdminUser[]>({
+  const {
+    data: users,
+    isLoading: usersLoading,
+    refetch: refetchUsers,
+  } = useQuery<AdminUser[]>({
     queryKey: ["/api/admin/users"],
     enabled: !!user?.isAdmin,
   });
 
-  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery<UserStats>({
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    refetch: refetchStats,
+  } = useQuery<UserStats>({
     queryKey: ["/api/admin/stats"],
     enabled: !!user?.isAdmin,
   });
@@ -189,25 +197,26 @@ export default function AdminPage() {
     let filteredData = data;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filteredData = data.filter(user =>
-        user.email?.toLowerCase().includes(query) ||
-        `${user.firstName} ${user.lastName}`.toLowerCase().includes(query) ||
-        user.company?.toLowerCase().includes(query) ||
-        user.userType?.toLowerCase().includes(query)
+      filteredData = data.filter(
+        (user) =>
+          user.email?.toLowerCase().includes(query) ||
+          `${user.firstName} ${user.lastName}`.toLowerCase().includes(query) ||
+          user.company?.toLowerCase().includes(query) ||
+          user.userType?.toLowerCase().includes(query),
       );
     }
 
     if (!sortConfig.key) return filteredData;
 
     return [...filteredData].sort((a, b) => {
-      if (sortConfig.key === '') return 0;
+      if (sortConfig.key === "") return 0;
 
-      const aValue = a[sortConfig.key] ?? '';
-      const bValue = b[sortConfig.key] ?? '';
+      const aValue = a[sortConfig.key] ?? "";
+      const bValue = b[sortConfig.key] ?? "";
 
       if (aValue === bValue) return 0;
 
-      if (sortConfig.direction === 'asc') {
+      if (sortConfig.direction === "asc") {
         return aValue < bValue ? -1 : 1;
       } else {
         return aValue > bValue ? -1 : 1;
@@ -220,22 +229,24 @@ export default function AdminPage() {
       if (current.key === key) {
         return {
           key,
-          direction: current.direction === 'asc' ? 'desc' : 'asc'
+          direction: current.direction === "asc" ? "desc" : "asc",
         };
       }
-      return { key, direction: 'desc' };
+      return { key, direction: "desc" };
     });
   };
 
   const SortIndicator = ({ column }: { column: keyof AdminUser }) => {
     if (sortConfig.key !== column) return null;
-    return sortConfig.direction === 'asc' ?
-      <ChevronUp className="inline h-4 w-4 ml-1" /> :
-      <ChevronDown className="inline h-4 w-4 ml-1" />;
+    return sortConfig.direction === "asc" ? (
+      <ChevronUp className="inline h-4 w-4 ml-1" />
+    ) : (
+      <ChevronDown className="inline h-4 w-4 ml-1" />
+    );
   };
 
   return (
-    <div className="container mx-auto max-w-[1200px] p-8">
+    <div className="container mx-auto p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">User Management</h1>
         {user?.isAdmin && <NotificationsMenu />}
@@ -305,7 +316,9 @@ export default function AdminPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Report Generation</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Report Generation
+            </CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -322,7 +335,9 @@ export default function AdminPage() {
                 <div className="text-2xl font-bold">
                   {statsLoading ? "..." : stats?.totalReportsGenerated || 0}
                 </div>
-                <div className="text-xs text-muted-foreground">Total reports</div>
+                <div className="text-xs text-muted-foreground">
+                  Total reports
+                </div>
               </div>
             </div>
           </CardContent>
@@ -349,7 +364,7 @@ export default function AdminPage() {
                 }}
                 className={cn(
                   "transition-transform",
-                  (usersLoading || statsLoading) && "animate-spin"
+                  (usersLoading || statsLoading) && "animate-spin",
                 )}
               >
                 <RefreshCcw className="h-4 w-4" />
@@ -363,58 +378,98 @@ export default function AdminPage() {
             {usersLoading ? (
               <p className="text-muted-foreground p-4">Loading users...</p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="border rounded-lg overflow-x-auto">
                 <div className="min-w-[1500px]">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead onClick={() => handleSort('id')} className="cursor-pointer whitespace-nowrap min-w-[80px]">
+                        <TableHead
+                          onClick={() => handleSort("id")}
+                          className="cursor-pointer whitespace-nowrap min-w-[80px]"
+                        >
                           ID <SortIndicator column="id" />
                         </TableHead>
-                        <TableHead onClick={() => handleSort('email')} className="cursor-pointer whitespace-nowrap min-w-[200px]">
+                        <TableHead
+                          onClick={() => handleSort("email")}
+                          className="cursor-pointer whitespace-nowrap min-w-[200px]"
+                        >
                           Email <SortIndicator column="email" />
                         </TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[200px]">Name</TableHead>
-                        <TableHead onClick={() => handleSort('userType')} className="cursor-pointer whitespace-nowrap min-w-[120px]">
+                        <TableHead className="whitespace-nowrap min-w-[200px]">
+                          Name
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("userType")}
+                          className="cursor-pointer whitespace-nowrap min-w-[120px]"
+                        >
                           User Type <SortIndicator column="userType" />
                         </TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[150px]">Company</TableHead>
-                        <TableHead onClick={() => handleSort('subscriptionStatus')} className="cursor-pointer whitespace-nowrap min-w-[100px]">
+                        <TableHead className="whitespace-nowrap min-w-[150px]">
+                          Company
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("subscriptionStatus")}
+                          className="cursor-pointer whitespace-nowrap min-w-[100px]"
+                        >
                           Plan <SortIndicator column="subscriptionStatus" />
                         </TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[120px]">Access Code</TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[120px]">Redeemed At</TableHead>
-                        <TableHead onClick={() => handleSort('pricelabsApiCallsTotal')} className="cursor-pointer whitespace-nowrap min-w-[150px]">
-                          API Usage <SortIndicator column="pricelabsApiCallsTotal" />
+                        <TableHead className="whitespace-nowrap min-w-[120px]">
+                          Access Code
                         </TableHead>
-                        <TableHead onClick={() => handleSort('reportsGenerated')} className="cursor-pointer whitespace-nowrap min-w-[120px]">
+                        <TableHead className="whitespace-nowrap min-w-[120px]">
+                          Redeemed At
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("pricelabsApiCallsTotal")}
+                          className="cursor-pointer whitespace-nowrap min-w-[150px]"
+                        >
+                          API Usage{" "}
+                          <SortIndicator column="pricelabsApiCallsTotal" />
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("reportsGenerated")}
+                          className="cursor-pointer whitespace-nowrap min-w-[120px]"
+                        >
                           Reports <SortIndicator column="reportsGenerated" />
                         </TableHead>
-                        <TableHead onClick={() => handleSort('lastLoginAt')} className="cursor-pointer whitespace-nowrap min-w-[150px]">
+                        <TableHead
+                          onClick={() => handleSort("lastLoginAt")}
+                          className="cursor-pointer whitespace-nowrap min-w-[150px]"
+                        >
                           Last Login <SortIndicator column="lastLoginAt" />
                         </TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[200px]">Status Details</TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[100px]">Actions</TableHead>
+                        <TableHead className="whitespace-nowrap min-w-[200px]">
+                          Status Details
+                        </TableHead>
+                        <TableHead className="whitespace-nowrap min-w-[100px]">
+                          Actions
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filterAndSortData(users || []).map((userData) => (
                         <TableRow key={userData.id}>
-                          <TableCell className="whitespace-nowrap">{userData.id}</TableCell>
-                          <TableCell className="whitespace-nowrap">{userData.email}</TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {userData.id}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {userData.email}
+                          </TableCell>
                           <TableCell className="whitespace-nowrap">
                             {userData.firstName} {userData.lastName}
                           </TableCell>
                           <TableCell className="capitalize whitespace-nowrap">
                             {userData.userType}
                           </TableCell>
-                          <TableCell className="whitespace-nowrap">{userData.company || "-"}</TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {userData.company || "-"}
+                          </TableCell>
                           <TableCell className="whitespace-nowrap">
                             <span
                               className={cn(
                                 "px-2 py-1 rounded-full text-xs font-medium",
                                 userData.isAdmin ||
-                                userData.subscriptionStatus === "pro"
+                                  userData.subscriptionStatus === "pro"
                                   ? "bg-green-100 text-green-800"
                                   : "bg-gray-100 text-gray-800",
                               )}
@@ -425,7 +480,9 @@ export default function AdminPage() {
                                 : "Free"}
                             </span>
                           </TableCell>
-                          <TableCell className="whitespace-nowrap">{userData.accessCode || "-"}</TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {userData.accessCode || "-"}
+                          </TableCell>
                           <TableCell className="whitespace-nowrap">
                             {userData.accessCodeUsedAt
                               ? new Date(
@@ -524,7 +581,8 @@ export default function AdminPage() {
                                     userActionMutation.mutate({
                                       userId: userData.id,
                                       action:
-                                        userData.subscriptionStatus === "suspended"
+                                        userData.subscriptionStatus ===
+                                        "suspended"
                                           ? "unsuspend"
                                           : "suspend",
                                     })
@@ -548,7 +606,8 @@ export default function AdminPage() {
                                     <DropdownMenuItem
                                       onSelect={(e) => e.preventDefault()}
                                       disabled={
-                                        userData.isAdmin || userData.id === user?.id
+                                        userData.isAdmin ||
+                                        userData.id === user?.id
                                       }
                                       className="text-destructive"
                                     >
@@ -563,12 +622,14 @@ export default function AdminPage() {
                                       </AlertDialogTitle>
                                       <AlertDialogDescription>
                                         This action cannot be undone. This will
-                                        permanently delete the user account and all
-                                        associated data.
+                                        permanently delete the user account and
+                                        all associated data.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogCancel>
+                                        Cancel
+                                      </AlertDialogCancel>
                                       <AlertDialogAction
                                         onClick={() =>
                                           deleteMutation.mutate(userData.id)
