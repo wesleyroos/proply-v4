@@ -530,7 +530,7 @@ export default function PropertyAnalyzerPage() {
           <span className="text-sm text-[#1BA3FF] font-medium">Analysis count: 3</span>
           {!hasProAccess && (
             <div className="mt-2 text-sm text-[#1BA3FF] font-medium px-3 py-1 bg-[#1BA3FF]/10 rounded-full">
-              Analyses used: {user?.reportsGenerated || 0}/3
+              Analyses used: {user?.analysisCount || 0}/3
             </div>
           )}
         </div>

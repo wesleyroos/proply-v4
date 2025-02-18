@@ -1079,20 +1079,20 @@ export function registerRoutes(app: Express): Server {
       //   .limit(1);
 
       // const newUsage = (user?.propertyAnalyzerUsage || 0) + 1;
-      const newUsage = (user?.reportsGenerated || 0) + 1;
+      const newCount = (user?.analysisCount || 0) + 1;
 
-      // Increment the user's property analyzer usage count
+      // Increment the user's analysis count
       await db
         .update(users)
         .set({
-          reportsGenerated: newUsage,
+          analysisCount: newCount,
         })
         .where(eq(users.id, req.user!.id));
 
-      console.log("Updated analyzer usage:", {
+      console.log("Updated analysis count:", {
         email: user.email,
-        oldUsage: user?.reportsGenerated,
-        newUsage: newUsage,
+        oldCount: user?.analysisCount,
+        newCount: newCount,
       });
 
       res.json(analysisResult);
