@@ -348,10 +348,17 @@ export default function PropertyAnalyzerPage() {
 
       const data = await response.json();
       console.log("Analysis response:", data);
-      console.log("Current analysis count:", user?.analysisCount); // Added logging for analysis count
-
-      // Invalidate the user query to refresh the counter
-      queryClient.invalidateQueries({ queryKey: ['user'] });
+      
+      // Wait for user data to be refreshed
+      await queryClient.invalidateQueries({ queryKey: ['user'] });
+      
+      // Get fresh user data
+      const freshUserData = queryClient.getQueryData(['user']);
+      console.log("Analysis count after update:", {
+        previousCount: user?.analysisCount || 0,
+        newCount: freshUserData?.analysisCount || 0,
+        change: (freshUserData?.analysisCount || 0) - (user?.analysisCount || 0)
+      });
 
       setAnalysisResult({
         ...data,
