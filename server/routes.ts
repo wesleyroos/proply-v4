@@ -1016,8 +1016,33 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      const analysisData = req.body;
-      console.log("Received analysis data:", analysisData);
+      const formData = req.body;
+      console.log("Received analysis data:", formData);
+
+      // Transform the data to match the expected schema
+      const analysisData = {
+        purchasePrice: parseFloat(formData.purchasePrice),
+        deposit: formData.depositType === "amount"
+          ? parseFloat(formData.depositAmount)
+          : (parseFloat(formData.purchasePrice) * parseFloat(formData.depositPercentage)) / 100,
+        interestRate: parseFloat(formData.interestRate),
+        loanTerm: parseInt(formData.loanTerm),
+        floorArea: parseFloat(formData.floorArea),
+        ratePerSquareMeter: parseFloat(formData.cmaRatePerSqm),
+        shortTermNightlyRate: formData.airbnbNightlyRate ? parseFloat(formData.airbnbNightlyRate) : null,
+        annualOccupancy: formData.occupancyRate ? parseFloat(formData.occupancyRate) : null,
+        longTermRental: formData.longTermRental ? parseFloat(formData.longTermRental) : null,
+        leaseCycleGap: formData.leaseCycleGap ? parseInt(formData.leaseCycleGap) : null,
+        incomeGrowthRate: parseFloat(formData.annualIncomeGrowth),
+        expenseGrowthRate: parseFloat(formData.annualExpenseGrowth),
+        monthlyLevies: parseFloat(formData.monthlyLevies),
+        monthlyRatesTaxes: parseFloat(formData.monthlyRatesTaxes),
+        otherMonthlyExpenses: parseFloat(formData.otherMonthlyExpenses),
+        maintenancePercent: parseFloat(formData.maintenancePercent),
+        managementFee: parseFloat(formData.managementFee),
+        address: formData.address,
+        propertyDescription: formData.comments
+      };
 
       // Process the analysis using the calculation engine
       const results = calculateYields(analysisData);
