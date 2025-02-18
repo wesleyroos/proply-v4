@@ -531,7 +531,7 @@ export default function PropertyAnalyzerPage() {
             <h1 className="text-3xl font-bold">Property Analysis</h1>
             {!hasProAccess && (
               <span className="text-sm text-[#1BA3FF] font-medium px-3 py-1 bg-[#1BA3FF]/10 rounded-full">
-                Free Plan (3 analyses)
+                Analyses used: {user?.reportsGenerated || 0}/3
               </span>
             )}
           </div>
