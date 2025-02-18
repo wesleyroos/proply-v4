@@ -1085,7 +1085,7 @@ export function registerRoutes(app: Express): Server {
       await db
         .update(users)
         .set({
-          analysisCount: sql`${users.analysisCount} + 1`,
+          analysisCount: sql`COALESCE(${users.analysisCount}, 0) + 1`,
           updatedAt: new Date()
         })
         .where(eq(users.id, req.user!.id));
