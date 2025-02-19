@@ -47,7 +47,6 @@ import {
   Building2,
   Crown,
   MoreHorizontal,
-  ShieldAlert,
   Shield,
   Settings,
   FileText,
@@ -62,11 +61,11 @@ import NotificationsMenu from "@/components/NotificationsMenu";
 interface AdminUser extends SelectUser {
   isAdmin: boolean;
   accessCode: string | null;
-  accessCodeUsedAt: string | null;
+  accessCodeUsedAt: Date | null;
   pricelabsApiCallsTotal: number;
   pricelabsApiCallsMonth: number;
   reportsGenerated: number;
-  lastLoginAt: string | null;
+  lastLoginAt: Date | null;
 }
 
 interface UserStats {
@@ -136,7 +135,7 @@ export default function AdminPage() {
       if (!response.ok) throw new Error(await response.text());
       return response.json();
     },
-    onSuccess: (data, { action }) => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
         title: "Success",
@@ -146,8 +145,7 @@ export default function AdminPage() {
     onError: (error) => {
       toast({
         title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to update user",
+        description: error instanceof Error ? error.message : "Failed to update user",
         variant: "destructive",
       });
     },
@@ -172,8 +170,7 @@ export default function AdminPage() {
     onError: (error) => {
       toast({
         title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to delete user",
+        description: error instanceof Error ? error.message : "Failed to delete user",
         variant: "destructive",
       });
     },
@@ -181,7 +178,7 @@ export default function AdminPage() {
 
   if (!user?.isAdmin) {
     return (
-      <div className="container py-6">
+      <div className="container mx-auto p-6">
         <Card>
           <CardContent className="pt-6">
             <p className="text-destructive">
@@ -202,7 +199,7 @@ export default function AdminPage() {
           user.email?.toLowerCase().includes(query) ||
           `${user.firstName} ${user.lastName}`.toLowerCase().includes(query) ||
           user.company?.toLowerCase().includes(query) ||
-          user.userType?.toLowerCase().includes(query),
+          user.userType?.toLowerCase().includes(query)
       );
     }
 
@@ -246,314 +243,245 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="flex-1 p-8 overflow-hidden">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">User Management</h1>
-        {user?.isAdmin && <NotificationsMenu />}
-      </div>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">User Management</h1>
+          {user?.isAdmin && <NotificationsMenu />}
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {statsLoading ? "..." : stats?.totalUsers}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {statsLoading
-                ? "..."
-                : `${stats?.proUsers} Pro • ${stats?.freeUsers} Free`}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">User Types</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {statsLoading
-                ? "..."
-                : (stats?.corporateUsers ?? 0) + (stats?.individualUsers ?? 0)}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {statsLoading
-                ? "..."
-                : `${stats?.corporateUsers} Corporate • ${stats?.individualUsers} Individual`}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">API Usage</CardTitle>
-            <Crown className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-2xl font-bold">
-                  {statsLoading ? "..." : stats?.monthlyApiCalls}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Calls this month
-                </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {statsLoading ? "..." : stats?.totalUsers}
               </div>
-              <div>
-                <div className="text-2xl font-bold">
-                  {statsLoading ? "..." : stats?.totalApiCalls}
-                </div>
-                <div className="text-xs text-muted-foreground">Total calls</div>
+              <p className="text-xs text-muted-foreground">
+                {statsLoading
+                  ? "..."
+                  : `${stats?.proUsers} Pro • ${stats?.freeUsers} Free`}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">User Types</CardTitle>
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {statsLoading
+                  ? "..."
+                  : (stats?.corporateUsers ?? 0) + (stats?.individualUsers ?? 0)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {statsLoading
+                  ? "..."
+                  : `${stats?.corporateUsers} Corporate • ${stats?.individualUsers} Individual`}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">API Usage</CardTitle>
+              <Crown className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {statsLoading ? "..." : stats?.monthlyApiCalls}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {`${statsLoading ? "..." : stats?.totalApiCalls} total calls`}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Reports</CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {statsLoading ? "..." : stats?.monthlyReportsGenerated}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {`${statsLoading ? "..." : stats?.totalReportsGenerated} total reports`}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Users Table Card */}
+        <Card className="mt-8">
+          <CardHeader className="p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <CardTitle>All Users</CardTitle>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Input
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="max-w-xs"
+                />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                      Actions <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        Promise.all([refetchUsers(), refetchStats()]);
+                      }}
+                    >
+                      <RefreshCcw className="mr-2 h-4 w-4" />
+                      Refresh Data
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        if (window.confirm('This will log out all users. Are you sure?')) {
+                          clearCache();
+                        }
+                      }}
+                      className="text-destructive"
+                    >
+                      <Ban className="mr-2 h-4 w-4" />
+                      Clear Cache
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Report Generation
-            </CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-2xl font-bold">
-                  {statsLoading ? "..." : stats?.monthlyReportsGenerated}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Reports this month
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">
-                  {statsLoading ? "..." : stats?.totalReportsGenerated || 0}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Total reports
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>All Users</CardTitle>
-            <div className="flex items-center gap-2">
-              <Input
-                placeholder="Search users..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="max-w-sm"
-              />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    Actions <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      Promise.all([refetchUsers(), refetchStats()]);
-                    }}
-                    className={cn((usersLoading || statsLoading) && "animate-spin")}
-                  >
-                    <RefreshCcw className="mr-2 h-4 w-4" />
-                    Refresh Data
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => {
-                      if (window.confirm('This will log out all users. Are you sure?')) {
-                        clearCache();
-                      }
-                    }}
-                    className="text-destructive"
-                  >
-                    <Ban className="mr-2 h-4 w-4" />
-                    Clear Cache
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="border rounded-lg">
-            {usersLoading ? (
-              <p className="text-muted-foreground p-4">Loading users...</p>
-            ) : (
-              <div className="border rounded-lg">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
+          <div className="relative overflow-hidden">
+            <div className="overflow-x-auto border-t">
+              <div className="inline-block min-w-full align-middle">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead
+                        onClick={() => handleSort("id")}
+                        className="cursor-pointer bg-muted/50"
+                      >
+                        ID <SortIndicator column="id" />
+                      </TableHead>
+                      <TableHead
+                        onClick={() => handleSort("email")}
+                        className="cursor-pointer bg-muted/50"
+                      >
+                        Email <SortIndicator column="email" />
+                      </TableHead>
+                      <TableHead className="bg-muted/50">Name</TableHead>
+                      <TableHead className="bg-muted/50">User Type</TableHead>
+                      <TableHead className="bg-muted/50">Company</TableHead>
+                      <TableHead
+                        onClick={() => handleSort("subscriptionStatus")}
+                        className="cursor-pointer bg-muted/50"
+                      >
+                        Plan <SortIndicator column="subscriptionStatus" />
+                      </TableHead>
+                      <TableHead className="bg-muted/50">Access Code</TableHead>
+                      <TableHead className="bg-muted/50">Redeemed At</TableHead>
+                      <TableHead
+                        onClick={() => handleSort("pricelabsApiCallsTotal")}
+                        className="cursor-pointer bg-muted/50 text-right"
+                      >
+                        API Usage <SortIndicator column="pricelabsApiCallsTotal" />
+                      </TableHead>
+                      <TableHead
+                        onClick={() => handleSort("reportsGenerated")}
+                        className="cursor-pointer bg-muted/50 text-right"
+                      >
+                        Reports <SortIndicator column="reportsGenerated" />
+                      </TableHead>
+                      <TableHead
+                        onClick={() => handleSort("lastLoginAt")}
+                        className="cursor-pointer bg-muted/50"
+                      >
+                        Last Login <SortIndicator column="lastLoginAt" />
+                      </TableHead>
+                      <TableHead className="bg-muted/50">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {usersLoading ? (
                       <TableRow>
-                        <TableHead
-                          onClick={() => handleSort("id")}
-                          className="cursor-pointer whitespace-nowrap min-w-[80px]"
+                        <TableCell
+                          colSpan={12}
+                          className="h-24 text-center"
                         >
-                          ID <SortIndicator column="id" />
-                        </TableHead>
-                        <TableHead
-                          onClick={() => handleSort("email")}
-                          className="cursor-pointer whitespace-nowrap min-w-[200px]"
-                        >
-                          Email <SortIndicator column="email" />
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[200px]">
-                          Name
-                        </TableHead>
-                        <TableHead
-                          onClick={() => handleSort("userType")}
-                          className="cursor-pointer whitespace-nowrap min-w-[120px]"
-                        >
-                          User Type <SortIndicator column="userType" />
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[150px]">
-                          Company
-                        </TableHead>
-                        <TableHead
-                          onClick={() => handleSort("subscriptionStatus")}
-                          className="cursor-pointer whitespace-nowrap min-w-[100px]"
-                        >
-                          Plan <SortIndicator column="subscriptionStatus" />
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[120px]">
-                          Access Code
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[120px]">
-                          Redeemed At
-                        </TableHead>
-                        <TableHead
-                          onClick={() => handleSort("pricelabsApiCallsTotal")}
-                          className="cursor-pointer whitespace-nowrap min-w-[150px]"
-                        >
-                          API Usage{" "}
-                          <SortIndicator column="pricelabsApiCallsTotal" />
-                        </TableHead>
-                        <TableHead
-                          onClick={() => handleSort("reportsGenerated")}
-                          className="cursor-pointer whitespace-nowrap min-w-[120px]"
-                        >
-                          Reports <SortIndicator column="reportsGenerated" />
-                        </TableHead>
-                        <TableHead
-                          onClick={() => handleSort("lastLoginAt")}
-                          className="cursor-pointer whitespace-nowrap min-w-[150px]"
-                        >
-                          Last Login <SortIndicator column="lastLoginAt" />
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[200px]">
-                          Status Details
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[100px]">
-                          Actions
-                        </TableHead>
+                          Loading users...
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filterAndSortData(users || []).map((userData) => (
+                    ) : (
+                      filterAndSortData(users || []).map((userData) => (
                         <TableRow key={userData.id}>
-                          <TableCell className="whitespace-nowrap">
-                            {userData.id}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
+                          <TableCell>{userData.id}</TableCell>
+                          <TableCell className="max-w-[200px] truncate">
                             {userData.email}
                           </TableCell>
-                          <TableCell className="whitespace-nowrap">
+                          <TableCell>
                             {userData.firstName} {userData.lastName}
                           </TableCell>
-                          <TableCell className="capitalize whitespace-nowrap">
+                          <TableCell className="capitalize">
                             {userData.userType}
                           </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {userData.company || "-"}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
+                          <TableCell>{userData.company || "-"}</TableCell>
+                          <TableCell>
                             <span
                               className={cn(
                                 "px-2 py-1 rounded-full text-xs font-medium",
-                                userData.isAdmin ||
-                                  userData.subscriptionStatus === "pro"
+                                userData.subscriptionStatus === "pro"
                                   ? "bg-green-100 text-green-800"
-                                  : "bg-gray-100 text-gray-800",
+                                  : "bg-gray-100 text-gray-800"
                               )}
                             >
-                              {userData.isAdmin ||
-                              userData.subscriptionStatus === "pro"
-                                ? "Pro"
-                                : "Free"}
+                              {userData.subscriptionStatus === "pro" ? "Pro" : "Free"}
                             </span>
                           </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {userData.accessCode || "-"}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
+                          <TableCell>{userData.accessCode || "-"}</TableCell>
+                          <TableCell>
                             {userData.accessCodeUsedAt
-                              ? new Date(
-                                  userData.accessCodeUsedAt,
-                                ).toLocaleDateString()
+                              ? new Date(userData.accessCodeUsedAt).toLocaleDateString()
                               : "-"}
                           </TableCell>
-                          <TableCell className="whitespace-nowrap">
+                          <TableCell className="text-right">
                             <span className="text-xs">
-                              {userData.pricelabsApiCallsMonth} calls this month
+                              {userData.pricelabsApiCallsMonth} / mo
                               <br />
-                              {userData.pricelabsApiCallsTotal} total calls
+                              {userData.pricelabsApiCallsTotal} total
                             </span>
                           </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            <span className="text-xs font-medium">
-                              {userData.reportsGenerated || 0} reports
-                            </span>
+                          <TableCell className="text-right">
+                            {userData.reportsGenerated || 0}
                           </TableCell>
-                          <TableCell className="whitespace-nowrap">
+                          <TableCell>
                             {userData.lastLoginAt
                               ? new Date(userData.lastLoginAt).toLocaleString()
                               : "Never"}
                           </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {userData.subscriptionStatus === "pro" &&
-                              userData.subscriptionExpiryDate && (
-                                <span className="block text-xs">
-                                  Subscription expires:{" "}
-                                  {new Date(
-                                    userData.subscriptionExpiryDate,
-                                  ).toLocaleDateString()}
-                                </span>
-                              )}
-                            {userData.isAdmin && (
-                              <span className="block text-xs text-blue-600 font-medium">
-                                Full admin access
-                              </span>
-                            )}
-                            {!userData.isAdmin &&
-                              userData.subscriptionStatus !== "pro" &&
-                              !userData.accessCode && (
-                                <span className="block text-xs text-gray-500">
-                                  Free plan
-                                </span>
-                              )}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
+                          <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
+                                <Button
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0"
+                                >
                                   <MoreHorizontal className="h-4 w-4" />
-                                  <span className="sr-only">Open menu</span>
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
+                              <DropdownMenuContent align="end" className="w-[200px]">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -564,13 +492,9 @@ export default function AdminPage() {
                                       plan: "pro",
                                     })
                                   }
-                                  disabled={
-                                    userData.isAdmin ||
-                                    userData.id === user?.id ||
-                                    userData.subscriptionStatus === "pro"
-                                  }
+                                  disabled={userData.subscriptionStatus === "pro"}
                                 >
-                                  <Shield className="h-4 w-4 mr-2" />
+                                  <Shield className="mr-2 h-4 w-4" />
                                   Upgrade to Pro
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
@@ -581,52 +505,19 @@ export default function AdminPage() {
                                       plan: "free",
                                     })
                                   }
-                                  disabled={
-                                    userData.isAdmin ||
-                                    userData.id === user?.id ||
-                                    userData.subscriptionStatus === "free"
-                                  }
+                                  disabled={userData.subscriptionStatus !== "pro"}
                                 >
-                                  <Settings className="h-4 w-4 mr-2" />
+                                  <Settings className="mr-2 h-4 w-4" />
                                   Downgrade to Free
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    userActionMutation.mutate({
-                                      userId: userData.id,
-                                      action:
-                                        userData.subscriptionStatus ===
-                                        "suspended"
-                                          ? "unsuspend"
-                                          : "suspend",
-                                    })
-                                  }
-                                  disabled={
-                                    userData.isAdmin || userData.id === user?.id
-                                  }
-                                  className={
-                                    userData.subscriptionStatus === "suspended"
-                                      ? "text-green-600"
-                                      : "text-yellow-600"
-                                  }
-                                >
-                                  <Ban className="h-4 w-4 mr-2" />
-                                  {userData.subscriptionStatus === "suspended"
-                                    ? "Unsuspend"
-                                    : "Suspend"}
-                                </DropdownMenuItem>
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <DropdownMenuItem
                                       onSelect={(e) => e.preventDefault()}
-                                      disabled={
-                                        userData.isAdmin ||
-                                        userData.id === user?.id
-                                      }
                                       className="text-destructive"
                                     >
-                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      <Trash2 className="mr-2 h-4 w-4" />
                                       Delete User
                                     </DropdownMenuItem>
                                   </AlertDialogTrigger>
@@ -637,14 +528,12 @@ export default function AdminPage() {
                                       </AlertDialogTitle>
                                       <AlertDialogDescription>
                                         This action cannot be undone. This will
-                                        permanently delete the user account and
-                                        all associated data.
+                                        permanently delete the user account and all
+                                        associated data.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                      <AlertDialogCancel>
-                                        Cancel
-                                      </AlertDialogCancel>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
                                       <AlertDialogAction
                                         onClick={() =>
                                           deleteMutation.mutate(userData.id)
@@ -660,15 +549,15 @@ export default function AdminPage() {
                             </DropdownMenu>
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </div>
-            )}
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }
