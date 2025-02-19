@@ -355,34 +355,36 @@ export default function AdminPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="max-w-sm"
               />
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    // Refetch both queries concurrently
-                    Promise.all([refetchUsers(), refetchStats()]);
-                  }}
-                  className={cn(
-                    "transition-transform",
-                    (usersLoading || statsLoading) && "animate-spin",
-                  )}
-                >
-                  <RefreshCcw className="h-4 w-4" />
-                  <span className="sr-only">Refresh data</span>
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => {
-                    if (window.confirm('This will log out all users. Are you sure?')) {
-                      clearCache();
-                    }
-                  }}
-                >
-                  Clear Cache
-                </Button>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    Actions <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      Promise.all([refetchUsers(), refetchStats()]);
+                    }}
+                    className={cn((usersLoading || statsLoading) && "animate-spin")}
+                  >
+                    <RefreshCcw className="mr-2 h-4 w-4" />
+                    Refresh Data
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (window.confirm('This will log out all users. Are you sure?')) {
+                        clearCache();
+                      }
+                    }}
+                    className="text-destructive"
+                  >
+                    <Ban className="mr-2 h-4 w-4" />
+                    Clear Cache
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </CardHeader>
