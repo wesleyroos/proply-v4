@@ -154,6 +154,13 @@ export default function AdminPage() {
     refetch: refetchStats,
   } = useQuery<UserStats>({
     queryKey: ["/api/admin/stats"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/stats", {
+        credentials: "include"
+      });
+      if (!response.ok) throw new Error("Failed to fetch stats");
+      return response.json();
+    },
     enabled: !!user?.isAdmin,
   });
 
