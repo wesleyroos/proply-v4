@@ -675,20 +675,25 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Upsert the setting
-      await db
-        .insert(systemSettings)
-        .values({
-          key: "payfast_sandbox_mode",
+      // First try to update existing record
+      const result = await db
+        .update(systemSettings)
+        .set({
           value: sandbox.toString(),
+          updatedAt: new Date(),
         })
-        .onConflictDoUpdate({
-          target: systemSettings.key,
-          set: {
+        .where(eq(systemSettings.key, "payfast_sandbox_mode"))
+        .returning();
+
+      // If no record was updated, insert a new one
+      if (result.length === 0) {
+        await db
+          .insert(systemSettings)
+          .values({
+            key: "payfast_sandbox_mode",
             value: sandbox.toString(),
-            updatedAt: new Date(),
-          },
-        });
+          });
+      }
 
       console.log("Updated PayFast mode:", { sandbox });
       res.json({ success: true, sandbox });
