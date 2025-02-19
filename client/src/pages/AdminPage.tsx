@@ -69,6 +69,7 @@ import {
 
 // Utils
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 
 // Types
 interface AdminUser extends SelectUser {
@@ -131,6 +132,7 @@ export default function AdminPage() {
   const { user, clearCache } = useUser();
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [useSandbox, setUseSandbox] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: "reportsGenerated",
     direction: "desc",
@@ -138,6 +140,15 @@ export default function AdminPage() {
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Add query for PayFast mode
+  const { data: payfastMode } = useQuery({
+    queryKey: ['/api/admin/payfast-mode'],
+    enabled: !!user?.isAdmin,
+    onSuccess: (data) => {
+      setUseSandbox(data.sandbox);
+    },
+  });
 
   const {
     data: users,
@@ -279,6 +290,65 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold">User Management</h1>
           {user?.isAdmin && <NotificationsMenu />}
         </div>
+
+        {/* PayFast Settings Card */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>PayFast Settings</CardTitle>
+            <CardDescription>
+              Configure payment processing environment
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <h3 className="text-base font-medium">Sandbox Mode</h3>
+                <p className="text-sm text-muted-foreground">
+                  Toggle between PayFast sandbox and live environments
+                </p>
+              </div>
+              <Switch
+                checked={useSandbox}
+                onCheckedChange={async (checked) => {
+                  try {
+                    const response = await fetch('/api/admin/payfast-mode', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ sandbox: checked }),
+                      credentials: 'include',
+                    });
+
+                    if (!response.ok) {
+                      throw new Error('Failed to update PayFast mode');
+                    }
+
+                    setUseSandbox(checked);
+                    toast({
+                      title: "Success",
+                      description: `Switched to ${checked ? 'sandbox' : 'live'} mode`,
+                    });
+                  } catch (error) {
+                    console.error('Failed to update PayFast mode:', error);
+                    toast({
+                      variant: "destructive",
+                      title: "Error",
+                      description: "Failed to update PayFast mode",
+                    });
+                  }
+                }}
+              />
+            </div>
+            {useSandbox && (
+              <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
+                <p className="text-yellow-800 text-sm">
+                  🔔 Sandbox mode is active. All payments will be processed in the test environment.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -12,6 +12,7 @@ import {
   type InsertUser,
   apiUsage,
   subscriptionHistory, // Added import for subscription history table
+  systemSettings, // Added import for system settings table
 } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -643,7 +644,61 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Add this new endpoint after the existing admin endpoints
+  // Add these endpoints after the existing admin endpoints
+  app.get("/api/admin/payfast-mode", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    try {
+      const [setting] = await db
+        .select()
+        .from(systemSettings)
+        .where(eq(systemSettings.key, "payfast_sandbox_mode"))
+        .limit(1);
+
+      res.json({ sandbox: setting?.value === "true" });
+    } catch (error) {
+      console.error("Error fetching PayFast mode:", error);
+      res.status(500).json({ error: "Failed to fetch PayFast mode" });
+    }
+  });
+
+  app.post("/api/admin/payfast-mode", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    const { sandbox } = req.body;
+    if (typeof sandbox !== "boolean") {
+      return res.status(400).json({ error: "Invalid sandbox mode value" });
+    }
+
+    try {
+      // Upsert the setting
+      await db
+        .insert(systemSettings)
+        .values({
+          key: "payfast_sandbox_mode",
+          value: sandbox.toString(),
+        })
+        .onConflictDoUpdate({
+          target: systemSettings.key,
+          set: {
+            value: sandbox.toString(),
+            updatedAt: new Date(),
+          },
+        });
+
+      console.log("Updated PayFast mode:", { sandbox });
+      res.json({ success: true, sandbox });
+    } catch (error) {
+      console.error("Error updating PayFast mode:", error);
+      res.status(500).json({ error: "Failed to update PayFast mode" });
+    }
+  });
+
+
   app.get("/api/admin/stats", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
       return res.status(403).send("Not authorized");
@@ -878,12 +933,20 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Inside the payment webhook route, update the implementation:
+  // Update the payment webhook to check sandbox mode
   app.post("/api/payment-webhook", async (req, res) => {
-    console.log("Received sandbox webhook payload:", req.body);
+    // Get current PayFast mode
+    const [setting] = await db
+      .select()
+      .from(systemSettings)
+      .where(eq(systemSettings.key, "payfast_sandbox_mode"))
+      .limit(1);
 
-    // For sandbox testing, we'll accept all webhooks
-    // In production, verify the signature here
+    const isSandbox = setting?.value === "true";
+    console.log("Processing payment webhook in", isSandbox ? "sandbox" : "live", "mode");
+
+    console.log("Received webhook payload:", req.body);
+
     const {
       subscription_status = "active",
       token = null,
@@ -906,11 +969,10 @@ export function registerRoutes(app: Express): Server {
       const now = new Date();
       // If this is a first-time subscription, set start date to now
       const startDate = user.subscriptionStartDate || now;
-      // Calculate next billing date (30 days from start date)
-      const nextBillingDate = new Date(startDate);
+      // Calculate next billing date (30 days from start date)      const nextBillingDate = new Date(startDate);
       nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
-      // Update user with sandbox subscription data
+      // Update user with subscription data
       const [updatedUser] = await db
         .update(users)
         .set({
@@ -925,7 +987,7 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, user_id))
         .returning();
 
-      console.log("Sandbox: Updated subscription data:", {
+      console.log(`${isSandbox ? '[SANDBOX]' : '[LIVE]'} Updated subscription data:`, {
         userId: updatedUser.id,
         status: updatedUser.subscriptionStatus,
         token: updatedUser.payfastToken,
@@ -935,8 +997,8 @@ export function registerRoutes(app: Express): Server {
 
       res.json({ success: true });
     } catch (error) {
-      console.error("Sandbox webhook error:", error);
-      res.status(500).json({ error: "Failed to process sandbox webhook" });
+      console.error(`${isSandbox ? '[SANDBOX]' : '[LIVE]'} webhook error:`, error);
+      res.status(500).json({ error: "Failed to process webhook" });
     }
   });
 
