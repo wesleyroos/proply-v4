@@ -30,6 +30,9 @@ declare global {
   }
 }
 
+const PAYFAST_SANDBOX_MERCHANT_ID = "10000100";
+const PAYFAST_LIVE_MERCHANT_ID = process.env.VITE_PAYFAST_MERCHANT_ID;
+
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
   setupAuth(app);
@@ -106,10 +109,26 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
+      // Get current PayFast mode
+      const [setting] = await db
+        .select()
+        .from(systemSettings)
+        .where(eq(systemSettings.key, "payfast_sandbox_mode"))
+        .limit(1);
+
+      const isSandbox = setting?.value === "true";
+      const merchantId = isSandbox ? PAYFAST_SANDBOX_MERCHANT_ID : PAYFAST_LIVE_MERCHANT_ID;
+
+      if (!merchantId) {
+        console.error("PayFast merchant ID not configured");
+        return res.status(500).json({ error: "Payment system not properly configured" });
+      }
+
       console.log("Processing subscription upgrade:", {
         userId,
         subscriptionStatus,
         requestedBy: req.user?.id,
+        environment: isSandbox ? "sandbox" : "live",
       });
 
       // Verify the user exists
@@ -147,6 +166,7 @@ export function registerRoutes(app: Express): Server {
         newStatus: updatedUser.subscriptionStatus,
         startDate: updatedUser.subscriptionStartDate,
         nextBillingDate: updatedUser.subscriptionNextBillingDate,
+        environment: isSandbox ? "sandbox" : "live",
       });
 
       res.json({
@@ -185,7 +205,21 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ error: "No active subscription found" });
       }
 
-      const merchantId = process.env.VITE_PAYFAST_MERCHANT_ID;
+      // Get current PayFast mode
+      const [setting] = await db
+        .select()
+        .from(systemSettings)
+        .where(eq(systemSettings.key, "payfast_sandbox_mode"))
+        .limit(1);
+
+      const isSandbox = setting?.value === "true";
+      const merchantId = isSandbox ? PAYFAST_SANDBOX_MERCHANT_ID : PAYFAST_LIVE_MERCHANT_ID;
+
+      if (!merchantId) {
+        console.error("PayFast merchant ID not configured");
+        return res.status(500).json({ error: "Payment system not properly configured" });
+      }
+
       const version = "v1";
       const timestamp = new Date().toISOString();
       const signature = ""; // TODO: Implement signature generation
