@@ -1,0 +1,30 @@
+1:29:44 PM [express] serving on port 5000
+1:29:51 PM [express] GET /api/user 401 in 2ms
+1:30:27 PM [express] GET /api/user 401 in 1ms
+1:30:27 PM [express] GET /api/user 401 in 1ms
+Login attempt with email: wesley@proply.co.za
+Login successful for user: 2
+1:30:31 PM [express] POST /api/login 200 in 334ms :: {"id":2,"email":"wesley@proply.co.za","firstNam…
+Sending user data with analyzer usage: { email: 'wesley@proply.co.za' }
+1:30:32 PM [express] GET /api/user 304 in 48ms :: {"id":2,"email":"wesley@proply.co.za","firstName":…
+Error fetching admin stats: ReferenceError: startOfMonth is not defined
+    at <anonymous> (/home/runner/workspace/server/routes.ts:669:82)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+1:30:32 PM [express] GET /api/admin/stats 500 in 96ms :: {"error":"Failed to fetch admin statistics"…
+1:30:32 PM [express] GET /api/admin/users 200 in 271ms :: [{"id":63,"username":"kyle@revo.co.za","em…
+Sending user data with analyzer usage: { email: 'wesley@proply.co.za' }
+1:30:39 PM [express] GET /api/user 304 in 47ms :: {"id":2,"email":"wesley@proply.co.za","firstName":…
+1:31:33 PM [vite] hmr update /src/pages/AdminPage.tsx, /src/index.css
+Sending user data with analyzer usage: { email: 'wesley@proply.co.za' }
+1:31:35 PM [express] GET /api/user 304 in 46ms :: {"id":2,"email":"wesley@proply.co.za","firstName":…
+Error fetching admin stats: ReferenceError: startOfMonth is not defined
+    at <anonymous> (/home/runner/workspace/server/routes.ts:669:82)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+1:31:36 PM [express] GET /api/admin/stats 500 in 91ms :: {"error":"Failed to fetch admin statistics"…
+1:31:42 PM [vite] hmr update /src/pages/AdminPage.tsx, /src/index.css (x2)
+Sending user data with analyzer usage: { email: 'wesley@proply.co.za' }
+1:31:44 PM [express] GET /api/user 304 in 85ms :: {"id":2,"email":"wesley@proply.co.za","firstName":…
+Error fetching admin stats: ReferenceError: startOfMonth is not defined
+    at <anonymous> (/home/runner/workspace/server/routes.ts:669:82)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+1:31:44 PM [express] GET /api/admin/stats 500 in 131ms :: {"error":"Failed to fetch admin statistics…
