@@ -1,0 +1,21 @@
+I recently met with a company called GeoSmart. Below is some context from the meeting: 
+
+The integration of Geo Smart's API into Proply could enhance the platform by providing detailed terrain and flood hazard data for residential properties. This would allow Proply to offer a more comprehensive analysis of properties, particularly in terms of risk assessment related to flooding.
+
+The discussion about creating a product for the insurance industry centered on the potential to incorporate the Flood Hazard Index (FHI) into Proply's offerings. This would enable Proply to provide insights into the insurability of properties based on their flood risk, which is increasingly relevant due to climate change and rising insurance needs. By integrating this data, Proply could enhance its reports with flood probability statistics, thereby adding value for clients in the insurance sector and property investment analysis.
+
+GeoSmart is a spin-off company from Sanibus University specializing in terrain modeling and the development of an API for sharing data. They create terrain derivatives from aerial and satellite imagery, providing raw data for applications in engineering, construction, hydrological modeling, and real estate investment. Their offerings include high-resolution elevation models, flood hazard indices, and various ground surface layers that represent the physical characteristics of the Earth's surface. They focus on delivering accurate and detailed data to assist in decision-making across different sectors, including agriculture and urban development.
+
+Then they emailed today with the following: 
+
+Hi Wesley,
+
+I wanted to check in and see how things are progressing at Proply. When we last spoke, you mentioned new hires and restructuring, and we discussed the possibility of collaborating in March. We're still very interested in providing terrain data and flood hazard information as an optional additional product for your reports. Additionally, we'd like to explore developing a more interactive comfort index or risk of purchase based on terrain conditions. This could involve incorporating our soil suitability, stormflow & drainage rates, and clay percentage layers, along with our flood hazard index and elevation models.
+
+To move this forward, I'd suggest scheduling another meeting to discuss the specific products you're interested in and a potential start date for the joint venture.
+
+Please let me know if you're still interested in pursuing this collaboration and if you'd be available for a meeting later this week or early next week.
+
+Thank you for your time and consideration.
+
+Knowing what you know about Proply, and using both naval raikants principals and biblical strategies, how could I create an product for the insurance industry? What would the product look like? What would it do? Keep it practical. 
