@@ -669,12 +669,16 @@ export function registerRoutes(app: Express): Server {
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
+      // Get last 30 days period
+      const last30Days = new Date();
+      last30Days.setDate(last30Days.getDate() - 30);
+
       const apiStats = await db
         .select({
-          monthlyApiCalls: sql`count(*)`,
+          monthlyApiCalls: sql`count(*) filter (where ${apiUsage.timestamp} >= ${startOfMonth})`,
+          last30DaysCalls: sql`count(*) filter (where ${apiUsage.timestamp} >= ${last30Days})`,
         })
         .from(apiUsage)
-        .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
         .then((rows) => rows[0]);
 
       // Separate query for reports, now counting both total and monthly reports directly from propertyAnalyzerResults
@@ -689,6 +693,7 @@ export function registerRoutes(app: Express): Server {
       res.json({
         ...userStats,
         monthlyApiCalls: apiStats.monthlyApiCalls,
+        last30DaysCalls: apiStats.last30DaysCalls,
         monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
         totalReportsGenerated: reportStats.totalReportsGenerated || 0,
       });
@@ -966,8 +971,7 @@ export function registerRoutes(app: Express): Server {
         .returning();
 
       console.log("Profile updated successfully:", {
-        userId: updatedUser.id,
-        hasLogo: !!updatedUser.companyLogo,
+        userId: updatedUser.id,        hasLogo: !!updatedUser.companyLogo,
       });
 
       res.json(updatedUser);
@@ -1445,12 +1449,16 @@ export function registerRoutes(app: Express): Server {
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
+      // Get last 30 days period
+      const last30Days = new Date();
+      last30Days.setDate(last30Days.getDate() - 30);
+
       const apiStats = await db
         .select({
-          monthlyApiCalls: sql`count(*)`,
+          monthlyApiCalls: sql`count(*) filter (where ${apiUsage.timestamp} >= ${startOfMonth})`,
+          last30DaysCalls: sql`count(*) filter (where ${apiUsage.timestamp} >= ${last30Days})`,
         })
         .from(apiUsage)
-        .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
         .then((rows) => rows[0]);
 
       // Get reports generated
@@ -1480,6 +1488,7 @@ export function registerRoutes(app: Express): Server {
       res.json({
         ...userStats,
         monthlyApiCalls: apiStats.monthlyApiCalls,
+        last30DaysCalls: apiStats.last30DaysCalls,
         monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
         totalReportsGenerated: reportStats.totalReportsGenerated || 0,
         dailyAnalytics,
@@ -1552,7 +1561,7 @@ export function registerRoutes(app: Express): Server {
       if (req.sessionStore) {
         req.sessionStore.clear();
       }
-      
+
       // Log out current user
       req.logout((err) => {
         if (err) {
