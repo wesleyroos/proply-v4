@@ -273,7 +273,7 @@ export default function AdminPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <div className="flex-1 space-y-6 container p-8">
+      <div className="flex-1 space-y-6 p-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">User Management</h1>
@@ -323,7 +323,7 @@ export default function AdminPage() {
         </div>
 
         {/* Users Table Card */}
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden w-full">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>All Users</CardTitle>
