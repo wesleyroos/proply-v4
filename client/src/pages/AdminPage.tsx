@@ -411,7 +411,7 @@ export default function AdminPage() {
                           <TableHead>Redeemed At</TableHead>
                           <TableHead
                             onClick={() => handleSort("pricelabsApiCallsTotal")}
-                            className="cursor-pointer"
+                            className="cursor-pointer min-w-[200px]"
                           >
                             API Usage{" "}
                             <SortIndicator column="pricelabsApiCallsTotal" />
@@ -499,7 +499,7 @@ export default function AdminPage() {
                                   ).toLocaleDateString()
                                 : "-"}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="min-w-[200px]">
                               <span className="text-xs">
                                 {userData.pricelabsApiCallsMonth} calls this month
                                 <br />
