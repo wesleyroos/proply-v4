@@ -659,22 +659,17 @@ export function registerRoutes(app: Express): Server {
           freeUsers: sql`sum(case when ${users.subscriptionStatus} = 'free' then 1 else 0 end)`,
           corporateUsers: sql`sum(case when ${users.userType} = 'corporate' then 1 else 0 end)`,
           individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`,
-          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`,
         })
         .from(users)
         .then((rows) => rows[0]);
 
-      // Get API usage for current month (keeping this as it was)
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
-
+      // Get API usage stats
       const apiStats = await db
         .select({
-          monthlyApiCalls: sql`count(*)`,
+          monthlyApiCalls: sql`count(*) filter (where ${apiUsage.timestamp} >= ${startOfMonth})`,
+          totalApiCalls: sql`count(*)`,
         })
         .from(apiUsage)
-        .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
         .then((rows) => rows[0]);
 
       // Separate query for reports, now counting both total and monthly reports directly from propertyAnalyzerResults
@@ -689,6 +684,7 @@ export function registerRoutes(app: Express): Server {
       res.json({
         ...userStats,
         monthlyApiCalls: apiStats.monthlyApiCalls,
+        totalApiCalls: apiStats.totalApiCalls,
         monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
         totalReportsGenerated: reportStats.totalReportsGenerated || 0,
       });
@@ -1435,7 +1431,6 @@ export function registerRoutes(app: Express): Server {
           freeUsers: sql`sum(case when ${users.subscriptionStatus} = 'free' then 1 else 0 end)`,
           corporateUsers: sql`sum(case when ${users.userType} = 'corporate' then 1 else 0 end)`,
           individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`,
-          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`,
         })
         .from(users)
         .then((rows) => rows[0]);
@@ -1447,10 +1442,10 @@ export function registerRoutes(app: Express): Server {
 
       const apiStats = await db
         .select({
-          monthlyApiCalls: sql`count(*)`,
+          monthlyApiCalls: sql`count(*) filter (where ${apiUsage.timestamp} >= ${startOfMonth})`,
+          totalApiCalls: sql`count(*)`,
         })
         .from(apiUsage)
-        .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
         .then((rows) => rows[0]);
 
       // Get reports generated
@@ -1480,6 +1475,7 @@ export function registerRoutes(app: Express): Server {
       res.json({
         ...userStats,
         monthlyApiCalls: apiStats.monthlyApiCalls,
+        totalApiCalls: apiStats.totalApiCalls,
         monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
         totalReportsGenerated: reportStats.totalReportsGenerated || 0,
         dailyAnalytics,
@@ -1552,7 +1548,7 @@ export function registerRoutes(app: Express): Server {
       if (req.sessionStore) {
         req.sessionStore.clear();
       }
-      
+
       // Log out current user
       req.logout((err) => {
         if (err) {
