@@ -2,7 +2,6 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { startOfMonth } from "date-fns"; // Add missing import
 import {
   properties,
   propertyAnalyzerResults,
@@ -12,8 +11,7 @@ import {
   type SelectUser,
   type InsertUser,
   apiUsage,
-  subscriptionHistory,
-  suburbs,
+  subscriptionHistory, // Added import for subscription history table
 } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -21,6 +19,8 @@ import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
 import { analyzeSuburb } from "./services/openai";
 import { sql } from "drizzle-orm";
+import { suburbs } from "@db/schema";
+import propertyScraper from './routes/property-scraper';
 
 // Extend Express.User to include our schema
 declare global {
@@ -650,8 +650,6 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      const startOfMonthDate = startOfMonth(new Date()); // Calculate startOfMonth here
-
       // Get basic user stats
       const userStats = await db
         .select({
@@ -661,23 +659,28 @@ export function registerRoutes(app: Express): Server {
           freeUsers: sql`sum(case when ${users.subscriptionStatus} = 'free' then 1 else 0 end)`,
           corporateUsers: sql`sum(case when ${users.userType} = 'corporate' then 1 else 0 end)`,
           individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`,
+          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`,
         })
         .from(users)
         .then((rows) => rows[0]);
 
-      // Get API usage stats
+      // Get API usage for current month (keeping this as it was)
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
       const apiStats = await db
         .select({
-          monthlyApiCalls: sql`count(*) filter (where ${apiUsage.timestamp} >= ${startOfMonthDate})`,
-          totalApiCalls: sql`count(*)`,
+          monthlyApiCalls: sql`count(*)`,
         })
         .from(apiUsage)
+        .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
         .then((rows) => rows[0]);
 
       // Separate query for reports, now counting both total and monthly reports directly from propertyAnalyzerResults
       const reportStats = await db
         .select({
-          monthlyReportsGenerated: sql`count(*) filter (where ${propertyAnalyzerResults.createdAt} >= ${startOfMonthDate})`,
+          monthlyReportsGenerated: sql`count(*) filter (where ${propertyAnalyzerResults.createdAt} >= ${startOfMonth})`,
           totalReportsGenerated: sql`count(*)`,
         })
         .from(propertyAnalyzerResults)
@@ -686,7 +689,6 @@ export function registerRoutes(app: Express): Server {
       res.json({
         ...userStats,
         monthlyApiCalls: apiStats.monthlyApiCalls,
-        totalApiCalls: apiStats.totalApiCalls,
         monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
         totalReportsGenerated: reportStats.totalReportsGenerated || 0,
       });
@@ -981,7 +983,7 @@ export function registerRoutes(app: Express): Server {
   // Change password
   app.post("/api/api/change-password", async (req, res) => {
     if (!req.isAuthenticated()) {
-      returnres.status(401).send("Not authenticated");
+      return res.status(401).send("Not authenticated");
     }
 
     const { currentPassword, newPassword } = req.body;
@@ -1003,19 +1005,12 @@ export function registerRoutes(app: Express): Server {
       const hashedPassword = await crypto.hash(newPassword);
       await db
         .update(users)
-        .set({
-          password: hashedPassword,
-          updatedAt: new Date(),
-        })
+        .set({ password: hashedPassword })
         .where(eq(users.id, req.user!.id));
 
-      res.json({ message: "Password changed successfully" });
+      res.json({ message: "Password updated successfully" });
     } catch (error) {
-      console.error("Error changing password:", error);
-      res.status(500).json({
-        error: "Failed to change password",
-        details: error instanceof Error ? error.message : undefined,
-      });
+      res.status(500).json({ error: "Failed to change password" });
     }
   });
 
@@ -1440,6 +1435,7 @@ export function registerRoutes(app: Express): Server {
           freeUsers: sql`sum(case when ${users.subscriptionStatus} = 'free' then 1 else 0 end)`,
           corporateUsers: sql`sum(case when ${users.userType} = 'corporate' then 1 else 0 end)`,
           individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`,
+          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`,
         })
         .from(users)
         .then((rows) => rows[0]);
@@ -1451,10 +1447,10 @@ export function registerRoutes(app: Express): Server {
 
       const apiStats = await db
         .select({
-          monthlyApiCalls: sql`count(*) filter (where ${apiUsage.timestamp} >= ${startOfMonth})`,
-          totalApiCalls: sql`count(*)`,
+          monthlyApiCalls: sql`count(*)`,
         })
         .from(apiUsage)
+        .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
         .then((rows) => rows[0]);
 
       // Get reports generated
@@ -1484,7 +1480,6 @@ export function registerRoutes(app: Express): Server {
       res.json({
         ...userStats,
         monthlyApiCalls: apiStats.monthlyApiCalls,
-        totalApiCalls: apiStats.totalApiCalls,
         monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
         totalReportsGenerated: reportStats.totalReportsGenerated || 0,
         dailyAnalytics,
@@ -1557,7 +1552,7 @@ export function registerRoutes(app: Express): Server {
       if (req.sessionStore) {
         req.sessionStore.clear();
       }
-
+      
       // Log out current user
       req.logout((err) => {
         if (err) {
@@ -1621,6 +1616,9 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
+
+  // Register property scraper routes
+  app.use("/api", propertyScraper);
 
 
   const httpServer = createServer(app);
