@@ -1436,9 +1436,11 @@ export function registerRoutes(app: Express): Server {
         .then((rows) => rows[0]);
 
       // Get API usage for current month
+      // Get first day of current month
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
+      startOfMonth.setMinutes(0, 0, 0);
 
       const apiStats = await db
         .select({
