@@ -273,7 +273,7 @@ export default function AdminPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <div className="flex-1 space-y-6 container pl-8 pt-8 pb-8">
+      <div className="flex-1 space-y-6 container p-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">User Management</h1>
@@ -309,8 +309,8 @@ export default function AdminPage() {
           <StatCard
             title="API Usage"
             icon={Crown}
-            mainValue={statsLoading ? "..." : `${stats?.monthlyApiCalls} calls`}
-            subValue={`${statsLoading ? "..." : stats?.totalApiCalls} total calls (all time)`}
+            mainValue={statsLoading ? "..." : stats?.monthlyApiCalls}
+            subValue={`${statsLoading ? "..." : stats?.totalApiCalls} total calls`}
           />
           <StatCard
             title="Report Generation"
