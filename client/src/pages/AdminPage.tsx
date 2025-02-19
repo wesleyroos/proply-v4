@@ -1,20 +1,39 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
-  AlertDialogTitle, AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,8 +41,19 @@ import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import { useLocation } from "wouter";
 import {
-  Ban, Trash2, Users, Building2, Crown, MoreHorizontal,
-  Shield, Settings, FileText, ChevronUp, ChevronDown, RefreshCcw,
+  Ban,
+  Trash2,
+  Users,
+  Building2,
+  Crown,
+  MoreHorizontal,
+  ShieldAlert,
+  Shield,
+  Settings,
+  FileText,
+  ChevronUp,
+  ChevronDown,
+  RefreshCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SelectUser } from "@db/schema";
@@ -116,7 +146,8 @@ export default function AdminPage() {
     onError: (error) => {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update user",
+        description:
+          error instanceof Error ? error.message : "Failed to update user",
         variant: "destructive",
       });
     },
@@ -141,7 +172,8 @@ export default function AdminPage() {
     onError: (error) => {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete user",
+        description:
+          error instanceof Error ? error.message : "Failed to delete user",
         variant: "destructive",
       });
     },
@@ -149,10 +181,12 @@ export default function AdminPage() {
 
   if (!user?.isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-screen p-4">
-        <Card className="w-full max-w-md">
+      <div className="container py-6">
+        <Card>
           <CardContent className="pt-6">
-            <p className="text-destructive">You do not have access to this page.</p>
+            <p className="text-destructive">
+              You do not have access to this page.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -212,381 +246,429 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-background">
-      <div className="h-full flex flex-col">
-        <div className="p-6 flex-shrink-0 border-b">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">User Management</h1>
-            <div className="flex items-center gap-4">
-              <NotificationsMenu />
+    <div className="flex-1 p-8 overflow-hidden">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">User Management</h1>
+        {user?.isAdmin && <NotificationsMenu />}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {statsLoading ? "..." : stats?.totalUsers}
             </div>
-          </div>
-        </div>
+            <div className="text-xs text-muted-foreground">
+              {statsLoading
+                ? "..."
+                : `${stats?.proUsers} Pro • ${stats?.freeUsers} Free`}
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="p-6 flex-shrink-0">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">User Types</CardTitle>
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {statsLoading
+                ? "..."
+                : (stats?.corporateUsers ?? 0) + (stats?.individualUsers ?? 0)}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {statsLoading
+                ? "..."
+                : `${stats?.corporateUsers} Corporate • ${stats?.individualUsers} Individual`}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">API Usage</CardTitle>
+            <Crown className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <div className="text-2xl font-bold">
-                  {statsLoading ? "..." : stats?.totalUsers}
+                  {statsLoading ? "..." : stats?.monthlyApiCalls}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {statsLoading
-                    ? "..."
-                    : `${stats?.proUsers} Pro • ${stats?.freeUsers} Free`}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">User Types</CardTitle>
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {statsLoading
-                    ? "..."
-                    : (stats?.corporateUsers ?? 0) + (stats?.individualUsers ?? 0)}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {statsLoading
-                    ? "..."
-                    : `${stats?.corporateUsers} Corporate • ${stats?.individualUsers} Individual`}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">API Usage</CardTitle>
-                <Crown className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-2xl font-bold">
-                      {statsLoading ? "..." : stats?.monthlyApiCalls}
-                    </div>
-                    <div className="text-xs text-muted-foreground">This month</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">
-                      {statsLoading ? "..." : stats?.totalApiCalls}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Total</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Reports</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-2xl font-bold">
-                      {statsLoading ? "..." : stats?.monthlyReportsGenerated}
-                    </div>
-                    <div className="text-xs text-muted-foreground">This month</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">
-                      {statsLoading ? "..." : stats?.totalReportsGenerated}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Total</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        <div className="flex-1 px-6 pb-6 overflow-hidden">
-          <Card className="h-full">
-            <CardHeader className="border-b">
-              <div className="flex items-center justify-between">
-                <CardTitle>All Users</CardTitle>
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="Search users..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="max-w-sm"
-                  />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        Actions <ChevronDown className="ml-2 h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          Promise.all([refetchUsers(), refetchStats()]);
-                        }}
-                        className={cn(
-                          (usersLoading || statsLoading) && "animate-spin"
-                        )}
-                      >
-                        <RefreshCcw className="mr-2 h-4 w-4" />
-                        Refresh Data
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "This will log out all users. Are you sure?"
-                            )
-                          ) {
-                            clearCache();
-                          }
-                        }}
-                        className="text-destructive"
-                      >
-                        <Ban className="mr-2 h-4 w-4" />
-                        Clear Cache
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  Calls this month
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="p-0 overflow-auto">
-              {usersLoading ? (
-                <p className="text-muted-foreground p-4">Loading users...</p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead onClick={() => handleSort("id")} className="sticky top-0 bg-background cursor-pointer">
-                        ID <SortIndicator column="id" />
-                      </TableHead>
-                      <TableHead onClick={() => handleSort("email")} className="sticky top-0 bg-background cursor-pointer">
-                        Email <SortIndicator column="email" />
-                      </TableHead>
-                      <TableHead className="sticky top-0 bg-background">Name</TableHead>
-                      <TableHead onClick={() => handleSort("userType")} className="sticky top-0 bg-background cursor-pointer">
-                        Type <SortIndicator column="userType" />
-                      </TableHead>
-                      <TableHead className="sticky top-0 bg-background">Company</TableHead>
-                      <TableHead onClick={() => handleSort("subscriptionStatus")} className="sticky top-0 bg-background cursor-pointer">
-                        Plan <SortIndicator column="subscriptionStatus" />
-                      </TableHead>
-                      <TableHead className="sticky top-0 bg-background">Access Code</TableHead>
-                      <TableHead className="sticky top-0 bg-background">Redeemed At</TableHead>
-                      <TableHead onClick={() => handleSort("pricelabsApiCallsTotal")} className="sticky top-0 bg-background cursor-pointer">
-                        API Usage <SortIndicator column="pricelabsApiCallsTotal" />
-                      </TableHead>
-                      <TableHead onClick={() => handleSort("reportsGenerated")} className="sticky top-0 bg-background cursor-pointer">
-                        Reports <SortIndicator column="reportsGenerated" />
-                      </TableHead>
-                      <TableHead onClick={() => handleSort("lastLoginAt")} className="sticky top-0 bg-background cursor-pointer">
-                        Last Login <SortIndicator column="lastLoginAt" />
-                      </TableHead>
-                      <TableHead className="sticky top-0 bg-background">Status</TableHead>
-                      <TableHead className="sticky top-0 bg-background">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filterAndSortData(users || []).map((userData) => (
-                      <TableRow key={userData.id}>
-                        <TableCell>{userData.id}</TableCell>
-                        <TableCell>{userData.email}</TableCell>
-                        <TableCell>
-                          {userData.firstName} {userData.lastName}
-                        </TableCell>
-                        <TableCell className="capitalize">
-                          {userData.userType}
-                        </TableCell>
-                        <TableCell>{userData.company || "-"}</TableCell>
-                        <TableCell>
-                          <span
-                            className={cn(
-                              "px-2 py-1 rounded-full text-xs font-medium",
-                              userData.isAdmin ||
-                                userData.subscriptionStatus === "pro"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
-                            )}
-                          >
-                            {userData.isAdmin ||
-                            userData.subscriptionStatus === "pro"
-                              ? "Pro"
-                              : "Free"}
-                          </span>
-                        </TableCell>
-                        <TableCell>{userData.accessCode || "-"}</TableCell>
-                        <TableCell>
-                          {userData.accessCodeUsedAt
-                            ? new Date(userData.accessCodeUsedAt).toLocaleDateString()
-                            : "-"}
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-xs">
-                            {userData.pricelabsApiCallsMonth} this month
-                            <br />
-                            {userData.pricelabsApiCallsTotal} total
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-xs font-medium">
-                            {userData.reportsGenerated || 0}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {userData.lastLoginAt
-                            ? new Date(userData.lastLoginAt).toLocaleString()
-                            : "Never"}
-                        </TableCell>
-                        <TableCell>
-                          {userData.subscriptionStatus === "pro" &&
-                            userData.subscriptionExpiryDate && (
-                              <span className="block text-xs">
-                                Expires:{" "}
-                                {new Date(
-                                  userData.subscriptionExpiryDate
-                                ).toLocaleDateString()}
-                              </span>
-                            )}
-                          {userData.isAdmin && (
-                            <span className="block text-xs text-blue-600 font-medium">
-                              Admin
-                            </span>
-                          )}
-                          {!userData.isAdmin &&
-                            userData.subscriptionStatus !== "pro" &&
-                            !userData.accessCode && (
-                              <span className="block text-xs text-gray-500">
-                                Free
-                              </span>
-                            )}
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Actions</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  userActionMutation.mutate({
-                                    userId: userData.id,
-                                    action: "change-plan",
-                                    plan: "pro",
-                                  })
-                                }
-                                disabled={
-                                  userData.isAdmin ||
-                                  userData.id === user?.id ||
-                                  userData.subscriptionStatus === "pro"
-                                }
-                              >
-                                <Shield className="h-4 w-4 mr-2" />
-                                Upgrade to Pro
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  userActionMutation.mutate({
-                                    userId: userData.id,
-                                    action: "change-plan",
-                                    plan: "free",
-                                  })
-                                }
-                                disabled={
-                                  userData.isAdmin ||
-                                  userData.id === user?.id ||
-                                  userData.subscriptionStatus === "free"
-                                }
-                              >
-                                <Settings className="h-4 w-4 mr-2" />
-                                Downgrade to Free
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  userActionMutation.mutate({
-                                    userId: userData.id,
-                                    action:
-                                      userData.subscriptionStatus === "suspended"
-                                        ? "unsuspend"
-                                        : "suspend",
-                                  })
-                                }
-                                disabled={userData.isAdmin || userData.id === user?.id}
-                                className={
-                                  userData.subscriptionStatus === "suspended"
-                                    ? "text-green-600"
-                                    : "text-yellow-600"
-                                }
-                              >
-                                <Ban className="h-4 w-4 mr-2" />
-                                {userData.subscriptionStatus === "suspended"
-                                  ? "Unsuspend"
-                                  : "Suspend"}
-                              </DropdownMenuItem>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <DropdownMenuItem
-                                    onSelect={(e) => e.preventDefault()}
-                                    disabled={
-                                      userData.isAdmin || userData.id === user?.id
-                                    }
-                                    className="text-destructive"
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete User
-                                  </DropdownMenuItem>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                      Are you sure?
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      This action cannot be undone. This will
-                                      permanently delete the user account and all
-                                      associated data.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() =>
-                                        deleteMutation.mutate(userData.id)
-                                      }
-                                      className="bg-destructive hover:bg-destructive/90"
-                                    >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              <div>
+                <div className="text-2xl font-bold">
+                  {statsLoading ? "..." : stats?.totalApiCalls}
+                </div>
+                <div className="text-xs text-muted-foreground">Total calls</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Report Generation
+            </CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-2xl font-bold">
+                  {statsLoading ? "..." : stats?.monthlyReportsGenerated}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Reports this month
+                </div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold">
+                  {statsLoading ? "..." : stats?.totalReportsGenerated || 0}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Total reports
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>All Users</CardTitle>
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Search users..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="max-w-sm"
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    Actions <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      Promise.all([refetchUsers(), refetchStats()]);
+                    }}
+                    className={cn((usersLoading || statsLoading) && "animate-spin")}
+                  >
+                    <RefreshCcw className="mr-2 h-4 w-4" />
+                    Refresh Data
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (window.confirm('This will log out all users. Are you sure?')) {
+                        clearCache();
+                      }
+                    }}
+                    className="text-destructive"
+                  >
+                    <Ban className="mr-2 h-4 w-4" />
+                    Clear Cache
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="border rounded-lg">
+            {usersLoading ? (
+              <p className="text-muted-foreground p-4">Loading users...</p>
+            ) : (
+              <div className="border rounded-lg">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead
+                          onClick={() => handleSort("id")}
+                          className="cursor-pointer whitespace-nowrap min-w-[80px]"
+                        >
+                          ID <SortIndicator column="id" />
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("email")}
+                          className="cursor-pointer whitespace-nowrap min-w-[200px]"
+                        >
+                          Email <SortIndicator column="email" />
+                        </TableHead>
+                        <TableHead className="whitespace-nowrap min-w-[200px]">
+                          Name
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("userType")}
+                          className="cursor-pointer whitespace-nowrap min-w-[120px]"
+                        >
+                          User Type <SortIndicator column="userType" />
+                        </TableHead>
+                        <TableHead className="whitespace-nowrap min-w-[150px]">
+                          Company
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("subscriptionStatus")}
+                          className="cursor-pointer whitespace-nowrap min-w-[100px]"
+                        >
+                          Plan <SortIndicator column="subscriptionStatus" />
+                        </TableHead>
+                        <TableHead className="whitespace-nowrap min-w-[120px]">
+                          Access Code
+                        </TableHead>
+                        <TableHead className="whitespace-nowrap min-w-[120px]">
+                          Redeemed At
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("pricelabsApiCallsTotal")}
+                          className="cursor-pointer whitespace-nowrap min-w-[150px]"
+                        >
+                          API Usage{" "}
+                          <SortIndicator column="pricelabsApiCallsTotal" />
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("reportsGenerated")}
+                          className="cursor-pointer whitespace-nowrap min-w-[120px]"
+                        >
+                          Reports <SortIndicator column="reportsGenerated" />
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("lastLoginAt")}
+                          className="cursor-pointer whitespace-nowrap min-w-[150px]"
+                        >
+                          Last Login <SortIndicator column="lastLoginAt" />
+                        </TableHead>
+                        <TableHead className="whitespace-nowrap min-w-[200px]">
+                          Status Details
+                        </TableHead>
+                        <TableHead className="whitespace-nowrap min-w-[100px]">
+                          Actions
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filterAndSortData(users || []).map((userData) => (
+                        <TableRow key={userData.id}>
+                          <TableCell className="whitespace-nowrap">
+                            {userData.id}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {userData.email}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {userData.firstName} {userData.lastName}
+                          </TableCell>
+                          <TableCell className="capitalize whitespace-nowrap">
+                            {userData.userType}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {userData.company || "-"}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <span
+                              className={cn(
+                                "px-2 py-1 rounded-full text-xs font-medium",
+                                userData.isAdmin ||
+                                  userData.subscriptionStatus === "pro"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-gray-100 text-gray-800",
+                              )}
+                            >
+                              {userData.isAdmin ||
+                              userData.subscriptionStatus === "pro"
+                                ? "Pro"
+                                : "Free"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {userData.accessCode || "-"}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {userData.accessCodeUsedAt
+                              ? new Date(
+                                  userData.accessCodeUsedAt,
+                                ).toLocaleDateString()
+                              : "-"}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <span className="text-xs">
+                              {userData.pricelabsApiCallsMonth} calls this month
+                              <br />
+                              {userData.pricelabsApiCallsTotal} total calls
+                            </span>
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <span className="text-xs font-medium">
+                              {userData.reportsGenerated || 0} reports
+                            </span>
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {userData.lastLoginAt
+                              ? new Date(userData.lastLoginAt).toLocaleString()
+                              : "Never"}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {userData.subscriptionStatus === "pro" &&
+                              userData.subscriptionExpiryDate && (
+                                <span className="block text-xs">
+                                  Subscription expires:{" "}
+                                  {new Date(
+                                    userData.subscriptionExpiryDate,
+                                  ).toLocaleDateString()}
+                                </span>
+                              )}
+                            {userData.isAdmin && (
+                              <span className="block text-xs text-blue-600 font-medium">
+                                Full admin access
+                              </span>
+                            )}
+                            {!userData.isAdmin &&
+                              userData.subscriptionStatus !== "pro" &&
+                              !userData.accessCode && (
+                                <span className="block text-xs text-gray-500">
+                                  Free plan
+                                </span>
+                              )}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Open menu</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    userActionMutation.mutate({
+                                      userId: userData.id,
+                                      action: "change-plan",
+                                      plan: "pro",
+                                    })
+                                  }
+                                  disabled={
+                                    userData.isAdmin ||
+                                    userData.id === user?.id ||
+                                    userData.subscriptionStatus === "pro"
+                                  }
+                                >
+                                  <Shield className="h-4 w-4 mr-2" />
+                                  Upgrade to Pro
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    userActionMutation.mutate({
+                                      userId: userData.id,
+                                      action: "change-plan",
+                                      plan: "free",
+                                    })
+                                  }
+                                  disabled={
+                                    userData.isAdmin ||
+                                    userData.id === user?.id ||
+                                    userData.subscriptionStatus === "free"
+                                  }
+                                >
+                                  <Settings className="h-4 w-4 mr-2" />
+                                  Downgrade to Free
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    userActionMutation.mutate({
+                                      userId: userData.id,
+                                      action:
+                                        userData.subscriptionStatus ===
+                                        "suspended"
+                                          ? "unsuspend"
+                                          : "suspend",
+                                    })
+                                  }
+                                  disabled={
+                                    userData.isAdmin || userData.id === user?.id
+                                  }
+                                  className={
+                                    userData.subscriptionStatus === "suspended"
+                                      ? "text-green-600"
+                                      : "text-yellow-600"
+                                  }
+                                >
+                                  <Ban className="h-4 w-4 mr-2" />
+                                  {userData.subscriptionStatus === "suspended"
+                                    ? "Unsuspend"
+                                    : "Suspend"}
+                                </DropdownMenuItem>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem
+                                      onSelect={(e) => e.preventDefault()}
+                                      disabled={
+                                        userData.isAdmin ||
+                                        userData.id === user?.id
+                                      }
+                                      className="text-destructive"
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Delete User
+                                    </DropdownMenuItem>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        Are you sure?
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This action cannot be undone. This will
+                                        permanently delete the user account and
+                                        all associated data.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>
+                                        Cancel
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() =>
+                                          deleteMutation.mutate(userData.id)
+                                        }
+                                        className="bg-destructive hover:bg-destructive/90"
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
