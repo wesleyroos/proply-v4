@@ -273,7 +273,7 @@ export default function AdminPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <div className="flex-1 space-y-6 w-full max-w-[95vw] mx-auto p-8">
+      <div className="flex-1 space-y-6 container p-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">User Management</h1>
