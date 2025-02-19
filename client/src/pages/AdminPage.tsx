@@ -246,7 +246,7 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="flex-1 p-8 w-full">
+    <div className="flex-1 p-8 overflow-hidden">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">User Management</h1>
         {user?.isAdmin && <NotificationsMenu />}
@@ -393,8 +393,8 @@ export default function AdminPage() {
             {usersLoading ? (
               <p className="text-muted-foreground p-4">Loading users...</p>
             ) : (
-              <div className="border rounded-lg overflow-x-auto">
-                <div className="min-w-[1500px]">
+              <div className="border rounded-lg">
+                <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
