@@ -192,6 +192,25 @@ export function useUser() {
     },
   });
 
+  const clearCacheMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/admin/clear-cache', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to clear cache');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.clear(); // Clear React Query cache
+      window.location.href = '/login'; // Force redirect to login
+    }
+  });
+
   return {
     user,
     isLoading,
@@ -200,5 +219,6 @@ export function useUser() {
     logout: logoutMutation.mutateAsync,
     register: registerMutation.mutateAsync,
     cancelDowngrade: cancelDowngradeMutation.mutateAsync,
+    clearCache: clearCacheMutation.mutateAsync
   };
 }

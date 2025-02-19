@@ -1541,6 +1541,32 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Force clear all sessions and cache
+  app.post("/api/admin/clear-cache", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    try {
+      // Clear all sessions from MemoryStore
+      if (req.sessionStore) {
+        req.sessionStore.clear();
+      }
+      
+      // Log out current user
+      req.logout((err) => {
+        if (err) {
+          console.error("Logout error:", err);
+        }
+      });
+
+      res.json({ message: "Cache cleared successfully" });
+    } catch (error) {
+      console.error("Error clearing cache:", error);
+      res.status(500).json({ error: "Failed to clear cache" });
+    }
+  });
+
   // Add new endpoint after the existing signup analytics endpoint
   app.get("/api/analytics/reports", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {

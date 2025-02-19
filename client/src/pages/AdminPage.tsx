@@ -355,21 +355,34 @@ export default function AdminPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="max-w-sm"
               />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  // Refetch both queries concurrently
-                  Promise.all([refetchUsers(), refetchStats()]);
-                }}
-                className={cn(
-                  "transition-transform",
-                  (usersLoading || statsLoading) && "animate-spin",
-                )}
-              >
-                <RefreshCcw className="h-4 w-4" />
-                <span className="sr-only">Refresh data</span>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    // Refetch both queries concurrently
+                    Promise.all([refetchUsers(), refetchStats()]);
+                  }}
+                  className={cn(
+                    "transition-transform",
+                    (usersLoading || statsLoading) && "animate-spin",
+                  )}
+                >
+                  <RefreshCcw className="h-4 w-4" />
+                  <span className="sr-only">Refresh data</span>
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    if (window.confirm('This will log out all users. Are you sure?')) {
+                      clearCache();
+                    }
+                  }}
+                >
+                  Clear Cache
+                </Button>
+              </div>
             </div>
           </div>
         </CardHeader>
