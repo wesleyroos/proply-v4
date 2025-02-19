@@ -311,7 +311,7 @@ export default function AdminPage() {
                 <AlertDialogTrigger asChild>
                   <Switch 
                     checked={useSandbox} 
-                    className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted" 
+                    className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-rose-500 h-7 w-14 scale-110" 
                   />
                 </AlertDialogTrigger>
                 <AlertDialogContent>
