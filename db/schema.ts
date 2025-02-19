@@ -163,15 +163,6 @@ export const subscriptionHistory = pgTable("subscription_history", {
   errorMessage: text("error_message"),
 });
 
-// Add after the subscriptionHistory table definition
-export const systemSettings = pgTable("system_settings", {
-  id: serial("id").primaryKey(),
-  key: text("key").unique().notNull(),
-  value: text("value").notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
 // Property analyzer schema with simplified validation
 const propertyAnalyzerSchema = z.object({
   userId: z.number(),
@@ -358,10 +349,6 @@ export const selectApiUsageSchema = createSelectSchema(apiUsage);
 export const insertSubscriptionHistorySchema = createInsertSchema(subscriptionHistory);
 export const selectSubscriptionHistorySchema = createSelectSchema(subscriptionHistory);
 
-// Add to exports section
-export const insertSystemSettingsSchema = createInsertSchema(systemSettings);
-export const selectSystemSettingsSchema = createSelectSchema(systemSettings);
-
 // Types
 export type InsertAccessCode = typeof accessCodes.$inferInsert;
 export type SelectAccessCode = typeof accessCodes.$inferSelect;
@@ -384,6 +371,3 @@ export type InsertApiUsage = typeof apiUsage.$inferInsert;
 export type SelectApiUsage = typeof apiUsage.$inferSelect;
 export type InsertSubscriptionHistory = typeof subscriptionHistory.$inferInsert;
 export type SelectSubscriptionHistory = typeof subscriptionHistory.$inferSelect;
-
-export type InsertSystemSettings = typeof systemSettings.$inferInsert;
-export type SelectSystemSettings = typeof systemSettings.$inferSelect;

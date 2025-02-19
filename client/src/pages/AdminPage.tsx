@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import type { SelectUser } from "@db/schema";
 import NotificationsMenu from "@/components/NotificationsMenu";
+
 // Components imports
 import {
   Table,
@@ -49,6 +50,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
 // Icons
 import {
   Ban,
@@ -63,11 +65,10 @@ import {
   ChevronUp,
   ChevronDown,
   RefreshCcw,
-  AlertTriangle,
 } from "lucide-react";
+
 // Utils
 import { cn } from "@/lib/utils";
-import { Switch } from "@/components/ui/switch";
 
 // Types
 interface AdminUser extends SelectUser {
@@ -130,7 +131,6 @@ export default function AdminPage() {
   const { user, clearCache } = useUser();
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [useSandbox, setUseSandbox] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: "reportsGenerated",
     direction: "desc",
@@ -138,15 +138,6 @@ export default function AdminPage() {
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  // Add query for PayFast mode
-  const { data: payfastMode } = useQuery({
-    queryKey: ['/api/admin/payfast-mode'],
-    enabled: !!user?.isAdmin,
-    onSuccess: (data) => {
-      setUseSandbox(data.sandbox);
-    },
-  });
 
   const {
     data: users,
@@ -182,20 +173,8 @@ export default function AdminPage() {
         body: plan ? JSON.stringify({ plan }) : undefined,
         credentials: "include",
       });
-
-      const data = await response.text();
-      let parsedData;
-      try {
-        parsedData = JSON.parse(data);
-      } catch (e) {
-        throw new Error(data || "An error occurred while processing the request");
-      }
-
-      if (!response.ok) {
-        throw new Error(parsedData.error || parsedData.details || "Failed to update user");
-      }
-
-      return parsedData;
+      if (!response.ok) throw new Error(await response.text());
+      return response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
@@ -205,7 +184,6 @@ export default function AdminPage() {
       });
     },
     onError: (error) => {
-      console.error("Subscription update error:", error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to update user",
@@ -301,106 +279,6 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold">User Management</h1>
           {user?.isAdmin && <NotificationsMenu />}
         </div>
-
-        {/* PayFast Settings Card */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>PayFast Settings</CardTitle>
-            <CardDescription>
-              Configure payment processing environment
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <h3 className="text-base font-medium">Sandbox Mode</h3>
-                <p className="text-sm text-muted-foreground">
-                  Toggle between PayFast sandbox and live environments
-                </p>
-              </div>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Switch
-                    checked={useSandbox}
-                    className={cn(
-                      "data-[state=checked]:bg-primary",
-                      "data-[state=unchecked]:bg-muted",
-                      "h-6 w-11",
-                      "focus-visible:ring-2",
-                      "focus-visible:ring-primary",
-                      "focus-visible:ring-offset-2"
-                    )}
-                  />
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Change PayFast Environment</AlertDialogTitle>
-                    <AlertDialogDescription className="space-y-2">
-                      <p>
-                        Are you sure you want to switch to {useSandbox ? 'live' : 'sandbox'} mode?
-                      </p>
-                      <p className="font-medium text-muted-foreground">
-                        {useSandbox
-                          ? 'This will process real payments in the production environment.'
-                          : 'This will only process test payments in the sandbox environment.'}
-                      </p>
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={async () => {
-                        try {
-                          const response = await fetch('/api/admin/payfast-mode', {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ sandbox: !useSandbox }),
-                            credentials: 'include',
-                          });
-
-                          if (!response.ok) {
-                            const error = await response.json();
-                            throw new Error(error.details || error.error || 'Failed to update PayFast mode');
-                          }
-
-                          const result = await response.json();
-                          setUseSandbox(result.sandbox);
-                          toast({
-                            title: "Success",
-                            description: `Switched to ${result.sandbox ? 'sandbox' : 'live'} mode`,
-                          });
-                        } catch (error) {
-                          console.error('Failed to update PayFast mode:', error);
-                          toast({
-                            variant: "destructive",
-                            title: "Error",
-                            description: error instanceof Error ? error.message : "Failed to update PayFast mode",
-                          });
-                        }
-                      }}
-                      className={cn(
-                        "bg-primary hover:bg-primary/90",
-                        useSandbox ? "bg-primary" : "bg-destructive hover:bg-destructive/90"
-                      )}
-                    >
-                      Continue
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-            {useSandbox && (
-              <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-950 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                <p className="text-yellow-800 dark:text-yellow-200 text-sm flex items-center">
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  Sandbox mode is active. All payments will be processed in the test environment.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

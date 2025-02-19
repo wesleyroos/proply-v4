@@ -3,54 +3,94 @@ import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
 import {
-  users,
-  systemSettings,
   properties,
   propertyAnalyzerResults,
+  users,
+  accessCodes,
+  agencySettings,
+  type SelectUser,
+  type InsertUser,
   apiUsage,
-  suburbs
+  subscriptionHistory, // Added import for subscription history table
 } from "@db/schema";
 import { eq } from "drizzle-orm";
+import fetch from "node-fetch";
+import { crypto } from "./auth";
+import { calculateYields } from "../analysis-engine/calculations";
+import { analyzeSuburb } from "./services/openai";
 import { sql } from "drizzle-orm";
+import { suburbs } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
 
-// PayFast Configuration
-const PAYFAST_CONFIG = {
-  sandbox: {
-    merchantId: "10000100",
-    merchantKey: "46f0cd694581a",
-    passphrase: "payfast",
-  },
-  live: {
-    merchantId: process.env.VITE_PAYFAST_MERCHANT_ID,
-    merchantKey: process.env.VITE_PAYFAST_MERCHANT_KEY,
-    passphrase: process.env.VITE_PAYFAST_PASSPHRASE,
+// Extend Express.User to include our schema
+declare global {
+  namespace Express {
+    interface User extends SelectUser {}
   }
-};
-
-// Validate PayFast configuration
-function validatePayFastConfig(isSandbox: boolean): { 
-  valid: boolean; 
-  config: typeof PAYFAST_CONFIG.sandbox | typeof PAYFAST_CONFIG.live;
-  error?: string;
-} {
-  const config = isSandbox ? PAYFAST_CONFIG.sandbox : PAYFAST_CONFIG.live;
-
-  if (!config.merchantId || !config.merchantKey) {
-    console.error(`PayFast ${isSandbox ? 'sandbox' : 'live'} configuration missing required fields`);
-    return { 
-      valid: false, 
-      config,
-      error: `PayFast ${isSandbox ? 'sandbox' : 'live'} mode not properly configured`
-    };
-  }
-
-  return { valid: true, config };
 }
 
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
   setupAuth(app);
+
+  // Require authentication for all /api routes except login/register
+  app.use("/api", (req, res, next) => {
+    if (
+      req.path === "/login" ||
+      req.path === "/register" ||
+      req.path === "/user"
+    ) {
+      return next();
+    }
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+    next();
+  });
+
+  // Add to the /api/user route or create it if it doesn't exist (after the auth middleware setup)
+  app.get("/api/user", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [user] = await db
+        .select({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          subscriptionStatus: users.subscriptionStatus,
+          subscriptionStartDate: users.subscriptionStartDate,
+          subscriptionNextBillingDate: users.subscriptionNextBillingDate,
+          subscriptionExpiryDate: users.subscriptionExpiryDate,
+          isAdmin: users.isAdmin,
+          userType: users.userType,
+          companyLogo: users.companyLogo,
+          payfastSubscriptionStatus: users.payfastSubscriptionStatus,
+          subscriptionPausedUntil: users.subscriptionPausedUntil,
+          pendingDowngrade: users.pendingDowngrade,
+          reportsGenerated: users.reportsGenerated,
+        })
+        .from(users)
+        .where(eq(users.id, req.user.id))
+        .limit(1);
+
+      console.log("Fetched user data:", {
+        id: user.id,
+        subscriptionStatus: user.subscriptionStatus,
+        startDate: user.subscriptionStartDate,
+        nextBilling: user.subscriptionNextBillingDate,
+      });
+
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ error: "Failed to fetch user data" });
+    }
+  });
 
   // Subscription upgrade endpoint
   app.post("/api/subscription/upgrade", async (req, res) => {
@@ -61,34 +101,14 @@ export function registerRoutes(app: Express): Server {
     const { userId, subscriptionStatus } = req.body;
 
     if (!userId || !subscriptionStatus) {
-      return res.status(400).json({ error: "Missing required fields" });
+      return res.status(400).send("Missing required fields");
     }
 
     try {
-      // Get current PayFast mode
-      const [setting] = await db
-        .select()
-        .from(systemSettings)
-        .where(eq(systemSettings.key, "payfast_sandbox_mode"))
-        .limit(1);
-
-      const isSandbox = setting?.value === "true";
-      const { valid, config, error } = validatePayFastConfig(isSandbox);
-
-      if (!valid) {
-        console.error("PayFast configuration error:", error);
-        return res.status(500).json({ 
-          error: "Payment system configuration error", 
-          details: error 
-        });
-      }
-
       console.log("Processing subscription upgrade:", {
         userId,
         subscriptionStatus,
         requestedBy: req.user?.id,
-        environment: isSandbox ? "sandbox" : "live",
-        merchantId: config.merchantId,
       });
 
       // Verify the user exists
@@ -100,7 +120,7 @@ export function registerRoutes(app: Express): Server {
 
       if (!user) {
         console.error("User not found:", userId);
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).send("User not found");
       }
 
       // Calculate start date and next billing date
@@ -126,7 +146,6 @@ export function registerRoutes(app: Express): Server {
         newStatus: updatedUser.subscriptionStatus,
         startDate: updatedUser.subscriptionStartDate,
         nextBillingDate: updatedUser.subscriptionNextBillingDate,
-        environment: isSandbox ? "sandbox" : "live",
       });
 
       res.json({
@@ -147,27 +166,724 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Update the payment webhook to check sandbox mode
-  app.post("/api/payment-webhook", async (req, res) => {
-    // Get current PayFast mode
-    const [setting] = await db
-      .select()
-      .from(systemSettings)
-      .where(eq(systemSettings.key, "payfast_sandbox_mode"))
-      .limit(1);
-
-    const isSandbox = setting?.value === "true";
-    const { valid, config, error } = validatePayFastConfig(isSandbox);
-
-    if (!valid) {
-        console.error("PayFast configuration error:", error);
-        return res.status(500).json({ error: "Payment system configuration error", details: error });
+  // Add these new endpoints after the existing subscription endpoints
+  app.post("/api/subscription/pause", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
     }
 
-    console.log("Processing payment webhook in", isSandbox ? "sandbox" : "live", "mode");
+    try {
+      const { cycles = 1 } = req.body;
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
 
-    console.log("Received webhook payload:", req.body);
+      if (!user?.payfastToken) {
+        return res.status(400).json({ error: "No active subscription found" });
+      }
 
+      const merchantId = process.env.VITE_PAYFAST_MERCHANT_ID;
+      const version = "v1";
+      const timestamp = new Date().toISOString();
+      const signature = ""; // TODO: Implement signature generation
+
+      // Call PayFast API to pause subscription
+      const response = await fetch(
+        `https://api.payfast.co.za/subscriptions/${user.payfastToken}/pause`,
+        {
+          method: "PUT",
+          headers: {
+            "merchant-id": merchantId,
+            version,
+            timestamp,
+            signature,
+          },
+          body: JSON.stringify({ cycles }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`PayFast API error: ${response.statusText}`);
+      }
+
+      // Calculate pause end date
+      const pauseEndDate = new Date();
+      pauseEndDate.setMonth(pauseEndDate.getMonth() + cycles);
+
+      // Update user subscription status
+      await db.transaction(async (tx) => {
+        // Update user record
+        await tx
+          .update(users)
+          .set({
+            payfastSubscriptionStatus: "paused",
+            subscriptionPausedUntil: pauseEndDate,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, req.user!.id));
+
+        // Record subscription history with non-null values
+        if (user?.payfastToken) {
+          await tx.insert(subscriptionHistory).values({
+            userId: req.user!.id,
+            action: "pause",
+            payfastToken: user.payfastToken,
+            pauseDuration: cycles,
+            success: true,
+          });
+        }
+      });
+
+      res.json({
+        message: "Subscription paused successfully",
+        resumeDate: pauseEndDate,
+      });
+    } catch (error) {
+      console.error("Error pausing subscription:", error);
+      res.status(500).json({
+        error: "Failed to pause subscription",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
+  app.post("/api/subscription/resume", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
+
+      if (!user?.payfastToken) {
+        return res.status(400).json({ error: "No subscription found" });
+      }
+
+      const merchantId = process.env.VITE_PAYFAST_MERCHANT_ID;
+      const version = "v1";
+      const timestamp = new Date().toISOString();
+      const signature = ""; // TODO: Implement signature generation
+
+      // Call PayFast API to unpause subscription
+      const response = await fetch(
+        `https://api.payfast.co.za/subscriptions/${user.payfastToken}/unpause`,
+        {
+          method: "PUT",
+          headers: {
+            "merchant-id": merchantId,
+            version,
+            timestamp,
+            signature,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`PayFast API error: ${response.statusText}`);
+      }
+
+      // Update user subscription status
+      await db.transaction(async (tx) => {
+        // Update user record
+        await tx
+          .update(users)
+          .set({
+            payfastSubscriptionStatus: "active",
+            subscriptionPausedUntil: null,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, req.user!.id));
+
+        // Record subscription history with non-null values
+        if (user?.payfastToken) {
+          await tx.insert(subscriptionHistory).values({
+            userId: req.user!.id,
+            action: "resume",
+            payfastToken: user.payfastToken,
+            success: true,
+          });
+        }
+      });
+
+      res.json({ message: "Subscription resumed successfully" });
+    } catch (error) {
+      console.error("Error resuming subscription:", error);
+      res.status(500).json({
+        error: "Failed to resume subscription",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
+  // Update the existing cancel endpoint to use PayFast API
+  app.post("/api/subscription/cancel", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Set pending downgrade flag instead of immediate downgrade
+      // Calculate next billing date as expiry date
+      const nextBillingDate =
+        user.subscriptionNextBillingDate ||
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          pendingDowngrade: true,
+          subscriptionExpiryDate: nextBillingDate,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning();
+
+      console.log("Scheduled downgrade for user:", {
+        userId: updatedUser.id,
+        currentPlan: updatedUser.subscriptionStatus,
+        nextBillingDate: updatedUser.subscriptionNextBillingDate,
+        pendingDowngrade: updatedUser.pendingDowngrade,
+      });
+
+      res.json({
+        message: "Subscription downgrade scheduled",
+        nextBillingDate: updatedUser.subscriptionNextBillingDate,
+      });
+    } catch (error) {
+      console.error("Error scheduling subscription downgrade:", error);
+      res.status(500).json({
+        error: "Failed to schedule subscription downgrade",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
+  // Add new endpoint to cancel pending downgrade
+  app.post("/api/subscription/cancel-downgrade", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      if (!user.pendingDowngrade) {
+        return res
+          .status(400)
+          .json({ error: "No pending downgrade to cancel" });
+      }
+
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          pendingDowngrade: false,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning();
+
+      console.log("Cancelled pending downgrade for user:", {
+        userId: updatedUser.id,
+        currentPlan: updatedUser.subscriptionStatus,
+      });
+
+      res.json({ message: "Pending downgrade cancelled successfully" });
+    } catch (error) {
+      console.error("Error cancelling pending downgrade:", error);
+      res.status(500).json({
+        error: "Failed to cancel pending downgrade",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
+  // Access code routes
+  app.get("/api/access-codes", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    try {
+      const codes = await db
+        .select()
+        .from(accessCodes)
+        .orderBy(accessCodes.createdAt);
+
+      res.json(codes);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch access codes" });
+    }
+  });
+
+  app.post("/api/access-codes", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    try {
+      const { expiryDays } = req.body;
+
+      if (!expiryDays || isNaN(parseInt(expiryDays))) {
+        return res.status(400).json({ error: "Valid expiry days required" });
+      }
+
+      // Generate a random 8-character code
+      const code = Array.from({ length: 8 }, () =>
+        Math.random().toString(36).charAt(2),
+      )
+        .join("")
+        .toUpperCase();
+
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + parseInt(expiryDays));
+
+      // Insert the new access code
+      const [accessCode] = await db
+        .insert(accessCodes)
+        .values({
+          code,
+          isUsed: false,
+          createdBy: req.user.id,
+          expiresAt,
+          createdAt: new Date(),
+        })
+        .returning();
+
+      res.json(accessCode);
+    } catch (error) {
+      console.error("Error generating access code:", error);
+      res.status(500).json({ error: "Failed to generate access code" });
+    }
+  });
+
+  // Admin routes
+  app.get("/api/admin/users", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    try {
+      // Modified query to include lastLoginAt
+      const allUsers = await db
+        .select({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          userType: users.userType,
+          company: users.company,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          subscriptionStatus: users.subscriptionStatus,
+          subscriptionExpiryDate: users.subscriptionExpiryDate,
+          isAdmin: users.isAdmin,
+          accessCode: accessCodes.code,
+          accessCodeUsedAt: accessCodes.usedAt,
+          pricelabsApiCallsTotal: users.pricelabsApiCallsTotal,
+          pricelabsApiCallsMonth: users.pricelabsApiCallsMonth,
+          lastLoginAt: users.lastLoginAt, // Added lastLoginAt field
+          reportsGenerated: sql`(
+            SELECT COUNT(*)::integer 
+            FROM ${propertyAnalyzerResults} 
+            WHERE ${propertyAnalyzerResults.userId} = ${users.id}
+          )`,
+        })
+        .from(users)
+        .leftJoin(accessCodes, eq(users.accessCodeId, accessCodes.id));
+
+      res.json(allUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.post(
+    "/api/admin/users/:id/:action(suspend|unsuspend|change-plan)",
+    async (req, res) => {
+      if (!req.isAuthenticated() || !req.user?.isAdmin) {
+        return res.status(403).send("Not authorized");
+      }
+
+      const userId = parseInt(req.params.id);
+
+      try {
+        const [targetUser] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+
+        if (!targetUser) {
+          return res.status(404).send("User not found");
+        }
+
+        if (targetUser.isAdmin) {
+          return res.status(400).send("Cannot suspend admin users");
+        }
+
+        if (targetUser.id === req.user.id) {
+          return res.status(400).send("Cannot suspend yourself");
+        }
+
+        const action = req.params.action as
+          | "suspend"
+          | "unsuspend"
+          | "change-plan";
+
+        if (action === "change-plan") {
+          const { plan } = req.body;
+          if (!plan || !["free", "pro"].includes(plan)) {
+            return res.status(400).send("Invalid plan specified");
+          }
+
+          await db
+            .update(users)
+            .set({
+              subscriptionStatus: plan,
+              subscriptionExpiryDate:
+                plan === "pro"
+                  ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+                  : null,
+            })
+            .where(eq(users.id, userId));
+
+          res.json({ message: `User plan updated to ${plan} successfully` });
+        } else {
+          await db
+            .update(users)
+            .set({
+              subscriptionStatus: action === "suspend" ? "suspended" : "free",
+            })
+            .where(eq(users.id, userId));
+
+          res.json({ message: `User ${action}ed successfully` });
+        }
+      } catch (error) {
+        res.status(500).json({ error: "Failed to suspend user" });
+      }
+    },
+  );
+
+  app.delete("/api/admin/users/:id", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    const userId = parseInt(req.params.id);
+
+    try {
+      const [targetUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      if (!targetUser) {
+        return res.status(404).send("User not found");
+      }
+
+      if (targetUser.isAdmin) {
+        return res.status(400).send("Cannot delete admin users");
+      }
+
+      if (targetUser.id === req.user.id) {
+        return res.status(400).send("Cannot delete yourself");
+      }
+
+      try {
+        // First, remove the access code reference from the user
+        await db
+          .update(users)
+          .set({ accessCodeId: null })
+          .where(eq(users.id, userId));
+
+        // Then delete any associated access codes
+        await db.delete(accessCodes).where(eq(accessCodes.usedBy, userId));
+
+        // Delete any properties owned by the user
+        await db.delete(properties).where(eq(properties.userId, userId));
+
+        // Finally, delete the user
+        await db.delete(users).where(eq(users.id, userId));
+
+        res.json({ message: "User deleted successfully" });
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        res
+          .status(500)
+          .json({ error: "Failed to delete user and associated data" });
+      }
+    } catch (error) {
+      console.error("User deletion error:", error);
+      res.status(500).json({ error: "Failed to delete user" });
+    }
+  });
+
+  // Add this new endpoint after the existing admin endpoints
+  app.get("/api/admin/stats", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    try {
+      // Get basic user stats
+      const userStats = await db
+        .select({
+          totalUsers: sql`count(*)`,
+          adminUsers: sql`sum(case when ${users.isAdmin} then 1 else 0 end)`,
+          proUsers: sql`sum(case when ${users.subscriptionStatus} = 'pro' then 1 else 0 end)`,
+          freeUsers: sql`sum(case when ${users.subscriptionStatus} = 'free' then 1 else 0 end)`,
+          corporateUsers: sql`sum(case when ${users.userType} = 'corporate' then 1 else 0 end)`,
+          individualUsers: sql`sum(case when ${users.userType} = 'individual' then 1 else 0 end)`,
+          totalApiCalls: sql`sum(COALESCE(${users.pricelabsApiCallsTotal}, 0))`,
+        })
+        .from(users)
+        .then((rows) => rows[0]);
+
+      // Get API usage for current month (keeping this as it was)
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const apiStats = await db
+        .select({
+          monthlyApiCalls: sql`count(*)`,
+        })
+        .from(apiUsage)
+        .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
+        .then((rows) => rows[0]);
+
+      // Separate query for reports, now counting both total and monthly reports directly from propertyAnalyzerResults
+      const reportStats = await db
+        .select({
+          monthlyReportsGenerated: sql`count(*) filter (where ${propertyAnalyzerResults.createdAt} >= ${startOfMonth})`,
+          totalReportsGenerated: sql`count(*)`,
+        })
+        .from(propertyAnalyzerResults)
+        .then((rows) => rows[0]);
+
+      res.json({
+        ...userStats,
+        monthlyApiCalls: apiStats.monthlyApiCalls,
+        monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
+        totalReportsGenerated: reportStats.totalReportsGenerated || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({
+        error: "Failed to fetch admin statistics",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
+  // PriceLabs API proxy endpoint
+  app.get("/api/revenue-data", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const { address, bedrooms } = req.query;
+
+    if (!address || !bedrooms) {
+      return res
+        .status(400)
+        .json({ error: "Address and bedrooms are required" });
+    }
+
+    const startTime = Date.now();
+    let success = false;
+
+    try {
+      // Check if we need to reset monthly counter
+      const [currentUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user!.id))
+        .limit(1);
+
+      const now = new Date();
+      const lastReset = currentUser.pricelabsApiLastReset;
+      const shouldResetMonthly =
+        !lastReset ||
+        lastReset.getMonth() !== now.getMonth() ||
+        lastReset.getFullYear() !== now.getFullYear();
+
+      // Reset monthly counter if needed
+      if (shouldResetMonthly) {
+        console.log("Resetting monthly API counter for user:", req.user!.id);
+        await db
+          .update(users)
+          .set({
+            pricelabsApiCallsMonth: 0,
+            pricelabsApiLastReset: now,
+          })
+          .where(eq(users.id, req.user!.id));
+      }
+
+      const response = await fetch(
+        `https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(String(address))}&currency=ZAR&bedroom_category=${bedrooms}`,
+        {
+          headers: {
+            "X-API-Key": "sNYmBNptl4gcLSlDl5GXuUtkGVVGIxiMcUjQI1MV",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`PriceLabs API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      success = true;
+
+      // Increment API usage counters
+      console.log("Incrementing API counters for user:", req.user!.id);
+      await db
+        .update(users)
+        .set({
+          pricelabsApiCallsTotal: sql`COALESCE(${users.pricelabsApiCallsTotal}, 0) + 1`,
+          pricelabsApiCallsMonth: sql`COALESCE(${users.pricelabsApiCallsMonth}, 0) + 1`,
+        })
+        .where(eq(users.id, req.user!.id))
+        .returning()
+        .then(([updated]) => {
+          console.log("Updated counters:", {
+            total: updated.pricelabsApiCallsTotal,
+            monthly: updated.pricelabsApiCallsMonth,
+          });
+        });
+
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching from PriceLabs:", error);
+      res.status(500).json({ error: "Failed to fetch revenue data" });
+    } finally {
+      // Track API usage in the general tracking table
+      try {
+        await db.insert(apiUsage).values({
+          userId: req.user!.id,
+          endpoint: "/api/revenue-data",
+          responseTime: Date.now() - startTime,
+          success,
+          timestamp: new Date(),
+        });
+      } catch (error) {
+        console.error("Error logging API usage:", error);
+      }
+    }
+  });
+
+  // Property comparison routes
+  app.post("/api/properties", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const property = await db
+        .insert(properties)
+        .values({
+          ...req.body,
+          userId: req.user!.id,
+        })
+        .returning();
+      res.json(property[0]);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid property data" });
+    }
+  });
+
+  // Get all rent compare properties for the current user.
+  app.get("/api/properties", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.id) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      console.log("Fetching properties for user:", req.user.id);
+
+      const userProperties = await db
+        .select()
+        .from(properties)
+        .where(eq(properties.userId, req.user.id))
+        .orderBy(properties.createdAt);
+
+      res.json(userProperties);
+    } catch (error) {
+      console.error("Error fetching properties:", error);
+      res.status(500).json({
+        error: "Failed to fetch properties",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
+  app.delete("/api/properties/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const propertyId = parseInt(req.params.id);
+    if (isNaN(propertyId)) {
+      return res.status(400).send("Invalid property ID");
+    }
+
+    try {
+      // First check if the property exists and belongs to the user
+      const [property] = await db
+        .select()
+        .from(properties)
+        .where(eq(properties.id, propertyId));
+
+      if (!property) {
+        return res.status(404).send("Property not found");
+      }
+
+      if (property.userId !== req.user!.id) {
+        return res.status(403).send("Not authorized to delete this property");
+      }
+
+      // Delete the property
+      await db.delete(properties).where(eq(properties.id, propertyId));
+
+      res.json({ message: "Property deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting property:", error);
+      res.status(500).json({ error: "Failed to delete property" });
+    }
+  });
+
+  // Inside the payment webhook route, update the implementation:
+  app.post("/api/payment-webhook", async (req, res) => {
+    console.log("Received sandbox webhook payload:", req.body);
+
+    // For sandbox testing, we'll accept all webhooks
+    // In production, verify the signature here
     const {
       subscription_status = "active",
       token = null,
@@ -190,10 +906,11 @@ export function registerRoutes(app: Express): Server {
       const now = new Date();
       // If this is a first-time subscription, set start date to now
       const startDate = user.subscriptionStartDate || now;
-      // Calculate next billing date (30 days from start date)      const nextBillingDate = new Date(startDate);
+      // Calculate next billing date (30 days from start date)
+      const nextBillingDate = new Date(startDate);
       nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
-      // Update user with subscription data
+      // Update user with sandbox subscription data
       const [updatedUser] = await db
         .update(users)
         .set({
@@ -208,7 +925,7 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, user_id))
         .returning();
 
-      console.log(`${isSandbox ? '[SANDBOX]' : '[LIVE]'} Updated subscription data:`, {
+      console.log("Sandbox: Updated subscription data:", {
         userId: updatedUser.id,
         status: updatedUser.subscriptionStatus,
         token: updatedUser.payfastToken,
@@ -218,80 +935,8 @@ export function registerRoutes(app: Express): Server {
 
       res.json({ success: true });
     } catch (error) {
-      console.error(`${isSandbox ? '[SANDBOX]' : '[LIVE]'} webhook error:`, error);
-      res.status(500).json({ error: "Failed to process webhook" });
-    }
-  });
-
-  // PayFast mode endpoints
-  app.get("/api/admin/payfast-mode", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user?.isAdmin) {
-      return res.status(403).send("Not authorized");
-    }
-
-    try {
-      const [setting] = await db
-        .select()
-        .from(systemSettings)
-        .where(eq(systemSettings.key, "payfast_sandbox_mode"))
-        .limit(1);
-
-      res.json({ sandbox: setting?.value === "true" });
-    } catch (error) {
-      console.error("Error fetching PayFast mode:", error);
-      res.status(500).json({ error: "Failed to fetch PayFast mode" });
-    }
-  });
-
-  app.post("/api/admin/payfast-mode", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user?.isAdmin) {
-      return res.status(403).send("Not authorized");
-    }
-
-    const { sandbox } = req.body;
-    if (typeof sandbox !== "boolean") {
-      return res.status(400).json({ error: "Invalid sandbox mode value" });
-    }
-
-    try {
-      // Validate the configuration for the requested mode first
-      const { valid, error } = validatePayFastConfig(sandbox);
-      if (!valid) {
-        return res.status(500).json({ 
-          error: "Cannot switch PayFast mode", 
-          details: error 
-        });
-      }
-
-      // Update or insert the setting
-      const result = await db
-        .update(systemSettings)
-        .set({
-          value: sandbox.toString(),
-          updatedAt: new Date(),
-        })
-        .where(eq(systemSettings.key, "payfast_sandbox_mode"))
-        .returning();
-
-      if (result.length === 0) {
-        await db.insert(systemSettings).values({
-          key: "payfast_sandbox_mode",
-          value: sandbox.toString(),
-        });
-      }
-
-      console.log("Updated PayFast mode:", { 
-        sandbox,
-        merchantId: sandbox ? PAYFAST_CONFIG.sandbox.merchantId : PAYFAST_CONFIG.live.merchantId 
-      });
-
-      res.json({ success: true, sandbox });
-    } catch (error) {
-      console.error("Error updating PayFast mode:", error);
-      res.status(500).json({ 
-        error: "Failed to update PayFast mode",
-        details: error instanceof Error ? error.message : undefined
-      });
+      console.error("Sandbox webhook error:", error);
+      res.status(500).json({ error: "Failed to process sandbox webhook" });
     }
   });
 
@@ -435,7 +1080,16 @@ export function registerRoutes(app: Express): Server {
         JSON.stringify(analysisResult, null, 2),
       );
 
+      // Get current user data first
+      // const [currentUser] = await db
+      //   .select({
+      //     propertyAnalyzerUsage: users.propertyAnalyzerUsage
+      //   })
+      //   .from(users)
+      //   .where(eq(users.id, req.user!.id))
+      //   .limit(1);
 
+      // const newUsage = (user?.propertyAnalyzerUsage || 0) + 1;
       const newCount = (user?.analysisCount || 0) + 1;
 
       console.log("Before incrementing analysis count:", {
