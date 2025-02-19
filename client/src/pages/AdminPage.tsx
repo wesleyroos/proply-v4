@@ -309,7 +309,10 @@ export default function AdminPage() {
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Switch checked={useSandbox} className="data-[state=checked]:bg-primary-foreground data-[state=unchecked]:bg-input" />
+                  <Switch 
+                    checked={useSandbox} 
+                    className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted" 
+                  />
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>

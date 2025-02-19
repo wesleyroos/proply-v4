@@ -687,12 +687,10 @@ export function registerRoutes(app: Express): Server {
 
       // If no record was updated, insert a new one
       if (result.length === 0) {
-        await db
-          .insert(systemSettings)
-          .values({
-            key: "payfast_sandbox_mode",
-            value: sandbox.toString(),
-          });
+        await db.insert(systemSettings).values({
+          key: "payfast_sandbox_mode",
+          value: sandbox.toString(),
+        });
       }
 
       console.log("Updated PayFast mode:", { sandbox });
