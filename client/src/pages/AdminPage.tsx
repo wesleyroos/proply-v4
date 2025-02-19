@@ -307,38 +307,60 @@ export default function AdminPage() {
                   Toggle between PayFast sandbox and live environments
                 </p>
               </div>
-              <Switch
-                checked={useSandbox}
-                onCheckedChange={async (checked) => {
-                  try {
-                    const response = await fetch('/api/admin/payfast-mode', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ sandbox: checked }),
-                      credentials: 'include',
-                    });
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Switch checked={useSandbox} />
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Change PayFast Environment</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to switch to {useSandbox ? 'live' : 'sandbox'} mode?
+                      {useSandbox
+                        ? ' This will process real payments in the production environment.'
+                        : ' This will only process test payments in the sandbox environment.'}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/admin/payfast-mode', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ sandbox: !useSandbox }),
+                            credentials: 'include',
+                          });
 
-                    if (!response.ok) {
-                      throw new Error('Failed to update PayFast mode');
-                    }
+                          if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.error || 'Failed to update PayFast mode');
+                          }
 
-                    setUseSandbox(checked);
-                    toast({
-                      title: "Success",
-                      description: `Switched to ${checked ? 'sandbox' : 'live'} mode`,
-                    });
-                  } catch (error) {
-                    console.error('Failed to update PayFast mode:', error);
-                    toast({
-                      variant: "destructive",
-                      title: "Error",
-                      description: "Failed to update PayFast mode",
-                    });
-                  }
-                }}
-              />
+                          const result = await response.json();
+                          setUseSandbox(result.sandbox);
+                          toast({
+                            title: "Success",
+                            description: `Switched to ${result.sandbox ? 'sandbox' : 'live'} mode`,
+                          });
+                        } catch (error) {
+                          console.error('Failed to update PayFast mode:', error);
+                          toast({
+                            variant: "destructive",
+                            title: "Error",
+                            description: error instanceof Error ? error.message : "Failed to update PayFast mode",
+                          });
+                        }
+                      }}
+                    >
+                      Continue
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
             {useSandbox && (
               <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
