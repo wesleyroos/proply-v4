@@ -378,67 +378,102 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
 
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Subscription Management</h3>
-        {user?.subscriptionStatus === "free" ? (
-          <div className="space-y-4">
-            <div className="bg-primary/5 p-4 rounded-lg">
-              <h4 className="font-medium mb-2">Upgrade to Pro</h4>
-              <p className="text-sm text-muted-foreground mb-4">
-                Get unlimited property analyses, advanced metrics, and priority support
-              </p>
-              <Button
-                onClick={() => setShowUpgradeModal(true)}
-                className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
-              >
-                Upgrade Now - R2,000/month
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {user?.userType === 'admin' && (
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md mb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-medium text-yellow-800">PayFast Sandbox Mode</h3>
-                    <p className="text-sm text-yellow-700 mt-1">
-                      Toggle sandbox mode for testing payment flows
-                    </p>
-                  </div>
-                  <Switch
-                    checked={import.meta.env.DEV}
-                    onCheckedChange={async (checked) => {
-                      try {
-                        const response = await fetch('/api/admin/toggle-sandbox', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ enabled: checked }),
-                          credentials: 'include'
-                        });
-
-                        if (!response.ok) {
-                          throw new Error(await response.text());
-                        }
-
-                        // Force reload to update environment
-                        window.location.reload();
-                      } catch (error) {
-                        console.error('Error toggling sandbox mode:', error);
-                        toast({
-                          variant: "destructive",
-                          title: "Error",
-                          description: "Failed to toggle sandbox mode",
-                          duration: 5000,
-                        });
-                      }
-                    }}
-                  />
-                </div>
+        <div className="space-y-4">
+          {user?.subscriptionStatus === "free" ? (
+            <div className="space-y-4">
+              <div className="bg-primary/5 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">Upgrade to Pro</h4>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Get unlimited property analyses, advanced metrics, and priority support
+                </p>
+                <Button
+                  onClick={() => setShowUpgradeModal(true)}
+                  className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
+                >
+                  Upgrade Now - R2,000/month
+                </Button>
               </div>
-            )}
-          </div>
-        )}
-        <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {user?.userType === 'admin' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Admin Controls</CardTitle>
+                    <CardDescription>Special controls for administrators</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-sm font-medium text-yellow-800">PayFast Sandbox Mode</h3>
+                          <p className="text-sm text-yellow-700 mt-1">
+                            Toggle sandbox mode for testing payment flows
+                          </p>
+                        </div>
+                        <Switch
+                          checked={import.meta.env.DEV}
+                          onCheckedChange={async (checked) => {
+                            try {
+                              const response = await fetch('/api/admin/toggle-sandbox', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ enabled: checked }),
+                                credentials: 'include'
+                              });
+
+                              if (!response.ok) {
+                                throw new Error(await response.text());
+                              }
+
+                              // Force reload to update environment
+                              window.location.reload();
+                            } catch (error) {
+                              console.error('Error toggling sandbox mode:', error);
+                              toast({
+                                variant: "destructive",
+                                title: "Error",
+                                description: "Failed to toggle sandbox mode",
+                                duration: 5000,
+                              });
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Subscription Management</CardTitle>
+                  <CardDescription>Manage your subscription and billing preferences</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {user?.pendingDowngrade && (
+                    <div className="mb-6">
+                      <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-md">
+                        <div>
+                          <div className="flex items-center gap-2 text-orange-800 font-medium">
+                            <AlertTriangle className="h-4 w-4 text-orange-400" />
+                            Subscription Change Scheduled
+                          </div>
+                          <div className="mt-2 flex items-center gap-2 text-orange-700">
+                            <CalendarDays className="h-4 w-4 text-orange-400" />
+                            Your account will downgrade to Free on {user.subscriptionNextBillingDate ? new Date(user.subscriptionNextBillingDate).toLocaleDateString() : 'next billing date'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+        </div>
       </div>
     </div>
   );
@@ -812,27 +847,86 @@ export default function SettingsPage() {
             <TabsContent value="billing">
               <Card>
                 <CardHeader>
-                  <CardTitle>Subscription Management</CardTitle>
-                  <CardDescription>Manage your subscription and billing preferences</CardDescription>
+                  <CardTitle>Billing Information</CardTitle>
+                  <CardDescription>Manage your billing and subscription details</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {user?.pendingDowngrade && (
-                    <div className="mb-6">
-                      <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-md">
-                        <div>
-                          <div className="flex items-center gap-2 text-orange-800 font-medium">
-                            <AlertTriangle className="h-4 w-4 text-orange-400" />
-                            Subscription Change Scheduled
+                  <div className="space-y-4">
+                    {user?.userType === 'admin' && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Admin Controls</CardTitle>
+                          <CardDescription>Special controls for administrators</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h3 className="text-sm font-medium text-yellow-800">PayFast Sandbox Mode</h3>
+                                <p className="text-sm text-yellow-700 mt-1">
+                                  Toggle sandbox mode for testing payment flows
+                                </p>
+                              </div>
+                              <Switch
+                                checked={import.meta.env.DEV}
+                                onCheckedChange={async (checked) => {
+                                  try {
+                                    const response = await fetch('/api/admin/toggle-sandbox', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ enabled: checked }),
+                                      credentials: 'include'
+                                    });
+
+                                    if (!response.ok) {
+                                      throw new Error(await response.text());
+                                    }
+
+                                    // Force reload to update environment
+                                    window.location.reload();
+                                  } catch (error) {
+                                    console.error('Error toggling sandbox mode:', error);
+                                    toast({
+                                      variant: "destructive",
+                                      title: "Error",
+                                      description: "Failed to toggle sandbox mode",
+                                      duration: 5000,
+                                    });
+                                  }
+                                }}
+                              />
+                            </div>
                           </div>
-                          <div className="mt-2 flex items-center gap-2 text-orange-700">
-                            <CalendarDays className="h-4 w-4 text-orange-400" />
-                            Your account will downgrade to Free on {user.subscriptionNextBillingDate ? new Date(user.subscriptionNextBillingDate).toLocaleDateString() : 'next billing date'}
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Subscription Management</CardTitle>
+                        <CardDescription>Manage your subscription and billing preferences</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {user?.pendingDowngrade && (
+                          <div className="mb-6">
+                            <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-md">
+                              <div>
+                                <div className="flex items-center gap-2 text-orange-800 font-medium">
+                                  <AlertTriangle className="h-4 w-4 text-orange-400" />
+                                  Subscription Change Scheduled
+                                </div>
+                                <div className="mt-2 flex items-center gap-2 text-orange-700">
+                                  <CalendarDays className="h-4 w-4 text-orange-400" />
+                                  Your account will downgrade to Free on {user.subscriptionNextBillingDate ? new Date(user.subscriptionNextBillingDate).toLocaleDateString() : 'next billing date'}
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
+                        )}
+                        <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
+                      </CardContent>
+                    </Card>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
