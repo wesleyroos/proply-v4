@@ -309,7 +309,7 @@ export default function AdminPage() {
           <StatCard
             title="API Usage"
             icon={Crown}
-            mainValue={statsLoading ? "..." : `${stats?.monthlyApiCalls} calls`}
+            mainValue={statsLoading ? "..." : `${stats?.monthlyApiCalls} calls (${new Date().toLocaleString('default', { month: 'long' })})`}
             subValue={`${statsLoading ? "..." : stats?.totalApiCalls} total calls (all time)`}
           />
           <StatCard
