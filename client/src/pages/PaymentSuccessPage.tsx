@@ -18,57 +18,53 @@ export default function PaymentSuccessPage() {
   useEffect(() => {
     const processPaymentSuccess = async () => {
       try {
+        // Get registration/upgrade data from URL params
         const params = new URLSearchParams(window.location.search);
         const encodedData = params.get('upgrade_data') || params.get('custom_str1');
 
-        console.log('Processing payment success:', {
-          searchParams: window.location.search,
-          encodedData: encodedData ? 'present' : 'missing',
-          timestamp: new Date().toISOString()
-        });
+        console.log('URL Search params:', window.location.search);
+        console.log('Encoded data:', encodedData);
 
         if (!encodedData) {
-          throw new Error('Payment data not found in URL parameters. Please contact support if the issue persists.');
+          throw new Error('Registration/upgrade data not found in URL parameters');
         }
 
-        let decodedData;
+        let compressed;
         try {
-          decodedData = JSON.parse(decodeURIComponent(encodedData));
-          console.log('Decoded payment data:', {
-            ...decodedData,
-            p: decodedData.p ? '[REDACTED]' : undefined,
-            timestamp: new Date().toISOString()
-          });
+          compressed = JSON.parse(decodeURIComponent(encodedData));
         } catch (e) {
-          console.error('Error parsing payment data:', e);
-          throw new Error('Invalid payment data format. Please contact support.');
+          console.error('Error parsing data:', e);
+          throw new Error('Failed to parse registration/upgrade data');
         }
 
-        // Handle existing user upgrade
-        if (decodedData.uid) {
-          console.log('Processing upgrade for existing user:', {
-            userId: decodedData.uid,
-            timestamp: new Date().toISOString()
-          });
+        console.log('Decoded data:', {
+          ...compressed,
+          p: '[REDACTED]'
+        });
+
+        // If this is an upgrade (has uid), handle differently than new registration
+        if (compressed.uid) {
+          console.log('Processing upgrade for existing user:', compressed.uid);
 
           const response = await fetch('/api/subscription/upgrade', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
-              userId: decodedData.uid,
+              userId: compressed.uid,
               subscriptionStatus: 'pro',
-              subscriptionStartDate: new Date(),
-              subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+              subscriptionStartDate: new Date().toISOString(),
+              subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
             }),
             credentials: 'include'
           });
 
           if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Upgrade API error:', errorText);
-            throw new Error(errorText);
+            throw new Error(await response.text());
           }
 
+          // Update user data in React Query cache
           queryClient.invalidateQueries({ queryKey: ['user'] });
 
           setIsProcessing(false);
@@ -77,44 +73,46 @@ export default function PaymentSuccessPage() {
             description: "Your account has been upgraded to Pro!",
           });
 
+          // Redirect back to settings
           setLocation('/settings');
           return;
         }
 
-        // Handle new user registration
-        if (!decodedData.e || !decodedData.p) {
-          console.error('Missing required registration data');
-          throw new Error('Invalid registration data. Please contact support.');
+        // Handle new user registration with subscription
+        if (!compressed.e || !compressed.p) {
+          throw new Error('Invalid registration data format');
         }
 
         const registrationData = {
-          username: decodedData.e,
-          email: decodedData.e,
-          password: decodedData.p,
-          firstName: decodedData.f || null,
-          lastName: decodedData.l || null,
-          userType: decodedData.t || 'individual',
-          subscriptionStatus: 'pro',
-          subscriptionStartDate: new Date(),
-          subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          username: compressed.e,
+          email: compressed.e,
+          password: compressed.p,
+          firstName: compressed.f,
+          lastName: compressed.l,
+          userType: compressed.t || 'individual',
+          subscriptionStatus: 'pro', // Always pro since payment was successful
+          subscriptionStartDate: new Date().toISOString(),
+          subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
         };
 
-        console.log('Registering new user:', {
-          email: registrationData.email,
-          userType: registrationData.userType,
+        console.log('Registering new user with data:', {
+          ...registrationData,
+          password: '[REDACTED]',
           subscriptionStatus: registrationData.subscriptionStatus,
-          timestamp: new Date().toISOString()
+          originalPlan: compressed.s
         });
 
         await register(registrationData);
 
+        // Login the user
         await login({
-          username: decodedData.e,
-          email: decodedData.e,
-          password: decodedData.p,
-          userType: decodedData.t || 'individual'
+          username: compressed.e,
+          password: compressed.p,
+          email: compressed.e,
+          userType: compressed.t || 'individual'
         });
 
+        // Update UI state
         setIsProcessing(false);
         queryClient.invalidateQueries({ queryKey: ['user'] });
 

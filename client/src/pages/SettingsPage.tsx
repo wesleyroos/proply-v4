@@ -31,8 +31,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CalendarDays, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { env } from "@/lib/env";
 
 interface ProfileFormData {
   firstName: string;
@@ -378,102 +376,28 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
 
 
       <div className="space-y-4">
-        <div className="space-y-4">
-          {user?.subscriptionStatus === "free" ? (
-            <div className="space-y-4">
-              <div className="bg-primary/5 p-4 rounded-lg">
-                <h4 className="font-medium mb-2">Upgrade to Pro</h4>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Get unlimited property analyses, advanced metrics, and priority support
-                </p>
-                <Button
-                  onClick={() => setShowUpgradeModal(true)}
-                  className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
-                >
-                  Upgrade Now - R2,000/month
-                </Button>
-              </div>
+        <h3 className="text-lg font-semibold">Subscription Management</h3>
+        {user?.subscriptionStatus === "free" ? (
+          <div className="space-y-4">
+            <div className="bg-primary/5 p-4 rounded-lg">
+              <h4 className="font-medium mb-2">Upgrade to Pro</h4>
+              <p className="text-sm text-muted-foreground mb-4">
+                Get unlimited property analyses, advanced metrics, and priority support
+              </p>
+              <Button
+                onClick={() => setShowUpgradeModal(true)}
+                className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
+              >
+                Upgrade Now - R2,000/month
+              </Button>
             </div>
+          </div>
           ) : (
             <div className="space-y-4">
-              {user?.userType === 'admin' && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Admin Controls</CardTitle>
-                    <CardDescription>Special controls for administrators</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-sm font-medium text-yellow-800">PayFast Sandbox Mode</h3>
-                          <p className="text-sm text-yellow-700 mt-1">
-                            Toggle sandbox mode for testing payment flows
-                          </p>
-                        </div>
-                        <Switch
-                          checked={import.meta.env.DEV}
-                          onCheckedChange={async (checked) => {
-                            try {
-                              const response = await fetch('/api/admin/toggle-sandbox', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ enabled: checked }),
-                                credentials: 'include'
-                              });
 
-                              if (!response.ok) {
-                                throw new Error(await response.text());
-                              }
-
-                              // Force reload to update environment
-                              window.location.reload();
-                            } catch (error) {
-                              console.error('Error toggling sandbox mode:', error);
-                              toast({
-                                variant: "destructive",
-                                title: "Error",
-                                description: "Failed to toggle sandbox mode",
-                                duration: 5000,
-                              });
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Subscription Management</CardTitle>
-                  <CardDescription>Manage your subscription and billing preferences</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {user?.pendingDowngrade && (
-                    <div className="mb-6">
-                      <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-md">
-                        <div>
-                          <div className="flex items-center gap-2 text-orange-800 font-medium">
-                            <AlertTriangle className="h-4 w-4 text-orange-400" />
-                            Subscription Change Scheduled
-                          </div>
-                          <div className="mt-2 flex items-center gap-2 text-orange-700">
-                            <CalendarDays className="h-4 w-4 text-orange-400" />
-                            Your account will downgrade to Free on {user.subscriptionNextBillingDate ? new Date(user.subscriptionNextBillingDate).toLocaleDateString() : 'next billing date'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
-                </CardContent>
-              </Card>
             </div>
           )}
           <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
-        </div>
       </div>
     </div>
   );
@@ -588,7 +512,7 @@ export default function SettingsPage() {
   };
 
   const initiateProUpgrade = () => {
-    console.log('Initiating Pro upgrade payment flow');
+    console.log('Initiating Pro upgrade payment flow (Sandbox Mode)');
 
     // Get merchant credentials from environment
     const merchantId = import.meta.env.DEV 
@@ -632,8 +556,7 @@ export default function SettingsPage() {
     console.log('Processing upgrade for user:', {
       ...upgradeData,
       email: user.email,
-      currentPlan: user.subscriptionStatus,
-      sandboxMode: import.meta.env.DEV ? 'enabled' : 'disabled'
+      currentPlan: user.subscriptionStatus
     });
 
     const encodedData = encodeURIComponent(JSON.stringify(upgradeData));
@@ -652,8 +575,7 @@ export default function SettingsPage() {
       billing_date: new Date().toISOString().split('T')[0],
       recurring_amount: "2000.00",
       frequency: "3",
-      cycles: "0",
-      custom_str1: encodedData // Add upgrade data to custom string for webhook verification
+      cycles: "0"
     };
 
     try {
@@ -662,6 +584,15 @@ export default function SettingsPage() {
       form.action = import.meta.env.DEV 
         ? "https://sandbox.payfast.co.za/eng/process"
         : "https://www.payfast.co.za/eng/process";
+
+      // Add required merchant details for sandbox
+      const merchantData = {
+        merchant_id: import.meta.env.DEV ? "10000100" : import.meta.env.VITE_PAYFAST_MERCHANT_ID,
+        merchant_key: import.meta.env.DEV ? "46f0cd694581a" : import.meta.env.VITE_PAYFAST_MERCHANT_KEY,
+        return_url: window.location.origin + "/payment-success",
+        cancel_url: window.location.origin + "/payment-failure",
+        notify_url: window.location.origin + "/api/payment-webhook",
+      };
 
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value !== undefined) {
@@ -674,8 +605,7 @@ export default function SettingsPage() {
       });
 
       document.body.appendChild(form);
-      console.log('Submitting payment form to PayFast', 
-        import.meta.env.DEV ? '(Sandbox Mode)' : '(Production Mode)');
+      console.log('Submitting upgrade payment form to PayFast sandbox...');
       form.submit();
     } catch (error) {
       console.error('Error submitting payment form:', error);
@@ -847,86 +777,27 @@ export default function SettingsPage() {
             <TabsContent value="billing">
               <Card>
                 <CardHeader>
-                  <CardTitle>Billing Information</CardTitle>
-                  <CardDescription>Manage your billing and subscription details</CardDescription>
+                  <CardTitle>Subscription Management</CardTitle>
+                  <CardDescription>Manage your subscription and billing preferences</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {user?.userType === 'admin' && (
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Admin Controls</CardTitle>
-                          <CardDescription>Special controls for administrators</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h3 className="text-sm font-medium text-yellow-800">PayFast Sandbox Mode</h3>
-                                <p className="text-sm text-yellow-700 mt-1">
-                                  Toggle sandbox mode for testing payment flows
-                                </p>
-                              </div>
-                              <Switch
-                                checked={import.meta.env.DEV}
-                                onCheckedChange={async (checked) => {
-                                  try {
-                                    const response = await fetch('/api/admin/toggle-sandbox', {
-                                      method: 'POST',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ enabled: checked }),
-                                      credentials: 'include'
-                                    });
-
-                                    if (!response.ok) {
-                                      throw new Error(await response.text());
-                                    }
-
-                                    // Force reload to update environment
-                                    window.location.reload();
-                                  } catch (error) {
-                                    console.error('Error toggling sandbox mode:', error);
-                                    toast({
-                                      variant: "destructive",
-                                      title: "Error",
-                                      description: "Failed to toggle sandbox mode",
-                                      duration: 5000,
-                                    });
-                                  }
-                                }}
-                              />
-                            </div>
+                  {user?.pendingDowngrade && (
+                    <div className="mb-6">
+                      <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-md">
+                        <div>
+                          <div className="flex items-center gap-2 text-orange-800 font-medium">
+                            <AlertTriangle className="h-4 w-4 text-orange-400" />
+                            Subscription Change Scheduled
                           </div>
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Subscription Management</CardTitle>
-                        <CardDescription>Manage your subscription and billing preferences</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        {user?.pendingDowngrade && (
-                          <div className="mb-6">
-                            <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-md">
-                              <div>
-                                <div className="flex items-center gap-2 text-orange-800 font-medium">
-                                  <AlertTriangle className="h-4 w-4 text-orange-400" />
-                                  Subscription Change Scheduled
-                                </div>
-                                <div className="mt-2 flex items-center gap-2 text-orange-700">
-                                  <CalendarDays className="h-4 w-4 text-orange-400" />
-                                  Your account will downgrade to Free on {user.subscriptionNextBillingDate ? new Date(user.subscriptionNextBillingDate).toLocaleDateString() : 'next billing date'}
-                                </div>
-                              </div>
-                            </div>
+                          <div className="mt-2 flex items-center gap-2 text-orange-700">
+                            <CalendarDays className="h-4 w-4 text-orange-400" />
+                            Your account will downgrade to Free on {user.subscriptionNextBillingDate ? new Date(user.subscriptionNextBillingDate).toLocaleDateString() : 'next billing date'}
                           </div>
-                        )}
-                        <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
-                      </CardContent>
-                    </Card>
-                  </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
                 </CardContent>
               </Card>
             </TabsContent>
