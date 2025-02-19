@@ -88,7 +88,7 @@ type SortConfig = {
 };
 
 export default function AdminPage() {
-  const { user } = useUser();
+  const { user, clearCache } = useUser();
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
