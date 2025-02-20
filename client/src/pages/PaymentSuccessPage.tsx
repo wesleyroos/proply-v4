@@ -7,6 +7,15 @@ import { useUser } from "@/hooks/use-user";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
+// Secure type for registration data
+type SecureRegistrationData = {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  userType: string;
+  subscriptionStatus: string;
+};
+
 export default function PaymentSuccessPage() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -20,26 +29,26 @@ export default function PaymentSuccessPage() {
       try {
         // Get registration/upgrade data from URL params
         const params = new URLSearchParams(window.location.search);
-        const encodedData = params.get('upgrade_data') || params.get('custom_str1');
-
-        console.log('URL Search params:', window.location.search);
-        console.log('Encoded data:', encodedData);
+        const encodedData = params.get('custom_str1');
 
         if (!encodedData) {
-          throw new Error('Registration/upgrade data not found in URL parameters');
+          throw new Error('Registration data not found in URL parameters');
         }
 
         let compressed;
         try {
           compressed = JSON.parse(decodeURIComponent(encodedData));
         } catch (e) {
-          console.error('Error parsing data:', e);
-          throw new Error('Failed to parse registration/upgrade data');
+          console.error('Error parsing data');
+          throw new Error('Failed to parse registration data');
         }
 
-        console.log('Decoded data:', {
-          ...compressed,
-          p: '[REDACTED]'
+        // Log only non-sensitive data
+        console.log('Processing registration for:', {
+          email: compressed.e,
+          userType: compressed.t || 'individual',
+          firstName: compressed.f || '',
+          lastName: compressed.l || ''
         });
 
         // If this is an upgrade (has uid), handle differently than new registration
@@ -65,54 +74,61 @@ export default function PaymentSuccessPage() {
             throw new Error(errorText || 'Failed to upgrade subscription');
           }
 
-          // Update user data in React Query cache
           queryClient.invalidateQueries({ queryKey: ['user'] });
-
           setIsProcessing(false);
           toast({
             title: "Success",
             description: "Your account has been upgraded to Pro!",
           });
 
-          // Redirect back to settings
           setTimeout(() => setLocation('/settings'), 2000);
           return;
         }
 
-        // Handle new user registration with subscription
-        if (!compressed.e || !compressed.p) {
+        // Handle new user registration
+        if (!compressed.e) {
           throw new Error('Invalid registration data format');
         }
 
-        // Create new user
         try {
-          await register({
-            username: compressed.e,
+          // Create registration data without sensitive information in logs
+          const registrationData: SecureRegistrationData = {
             email: compressed.e,
-            password: compressed.p,
             firstName: compressed.f || '',
             lastName: compressed.l || '',
             userType: compressed.t || 'individual',
             subscriptionStatus: 'pro'
+          };
+
+          // Register using a secure token from PayFast response
+          const registerResponse = await fetch('/api/register/payment-success', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              email: compressed.e,
+              token: params.get('token') || '',
+              registrationData
+            }),
+            credentials: 'include'
           });
 
-          // After successful registration, attempt login
-          await login({
-            email: compressed.e,
-            password: compressed.p
-          });
+          if (!registerResponse.ok) {
+            throw new Error(await registerResponse.text());
+          }
 
           setIsProcessing(false);
           queryClient.invalidateQueries({ queryKey: ['user'] });
 
         } catch (error) {
-          console.error('Registration/Login error:', error);
+          console.error('Registration error occurred');
           setError(error instanceof Error ? error.message : 'Failed to complete registration');
           setIsProcessing(false);
         }
 
       } catch (error) {
-        console.error('Payment success processing error:', error);
+        console.error('Payment success processing error');
         setError(error instanceof Error ? error.message : "Failed to complete registration/upgrade");
         setIsProcessing(false);
 
