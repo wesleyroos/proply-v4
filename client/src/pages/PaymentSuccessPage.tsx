@@ -86,21 +86,13 @@ export default function PaymentSuccessPage() {
 
         // Create new user
         try {
-          await register({
-            username: compressed.e,
-            email: compressed.e,
-            password: compressed.p,
-            firstName: compressed.f || '',
-            lastName: compressed.l || '',
-            userType: compressed.t || 'individual',
-            subscriptionStatus: 'pro'
+          // Redirect to login page since we can't securely handle credentials here
+          toast({
+            title: "Registration Complete",
+            description: "Please log in with your credentials to continue",
           });
-
-          // After successful registration, attempt login
-          await login({
-            email: compressed.e,
-            password: compressed.p
-          });
+          setTimeout(() => setLocation('/login'), 2000);
+          return;
 
           setIsProcessing(false);
           queryClient.invalidateQueries({ queryKey: ['user'] });
