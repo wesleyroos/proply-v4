@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -48,9 +49,7 @@ export default function PaymentSuccessPage() {
             },
             body: JSON.stringify({
               userId: compressed.uid,
-              subscriptionStatus: 'pro',
-              subscriptionStartDate: new Date(),
-              subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+              subscriptionStatus: 'pro'
             }),
             credentials: 'include'
           });
@@ -74,16 +73,18 @@ export default function PaymentSuccessPage() {
         const passwordKey = compressed.k;
         const password = localStorage.getItem(passwordKey);
         
-        // Check if user is already logged in
-        const currentUser = await fetch('/api/user', {
-          credentials: 'include'
-        }).then(r => r.json()).catch(() => null);
+        // Only check for existing user during upgrade flow
+        if (!passwordKey) {
+          const currentUser = await fetch('/api/user', {
+            credentials: 'include'
+          }).then(r => r.json()).catch(() => null);
 
-        if (currentUser) {
-          console.log('User already logged in, redirecting to dashboard');
-          setIsProcessing(false);
-          setTimeout(() => setLocation('/dashboard'), 1000);
-          return;
+          if (currentUser) {
+            console.log('User already logged in, redirecting to dashboard');
+            setIsProcessing(false);
+            setTimeout(() => setLocation('/dashboard'), 1000);
+            return;
+          }
         }
 
         // Verify we have all required registration data
@@ -103,9 +104,7 @@ export default function PaymentSuccessPage() {
           firstName: compressed.f || '',
           lastName: compressed.l || '',
           userType: compressed.t || 'individual',
-          subscriptionStatus: 'pro',
-          subscriptionStartDate: new Date(),
-          subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          subscriptionStatus: 'pro'
         });
 
         localStorage.removeItem('temp_registration_password');
