@@ -372,10 +372,6 @@ export default function RegisterPage() {
                             autoComplete="new-password"
                             disabled={isLoading}
                             required
-                            className={field.value && form.getValues("confirmPassword") ?
-                              field.value === form.getValues("confirmPassword") ?
-                                "border-green-500 focus-visible:ring-green-500" :
-                                "border-red-500 focus-visible:ring-red-500" : ""}
                           />
                         </FormControl>
                         <button
