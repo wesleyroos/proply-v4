@@ -83,6 +83,7 @@ export default function RegisterPage() {
 
     const registrationData = {
       e: formData.email,
+      p: formData.password,
       f: formData.firstName,
       l: formData.lastName,
       t: formData.userType,

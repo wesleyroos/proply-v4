@@ -80,8 +80,8 @@ export default function PaymentSuccessPage() {
         }
 
         // Handle new user registration with subscription
-        if (!compressed.e || !compressed.p) {
-          throw new Error('Invalid registration data format');
+        if (!compressed.e) {
+          throw new Error('Invalid registration data format: missing email');
         }
 
         // Create new user
