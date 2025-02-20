@@ -96,7 +96,11 @@ export default function PaymentSuccessPage() {
         // Clean up stored password after retrieving it
         localStorage.removeItem(passwordKey);
 
-        await register({
+        const startDate = new Date();
+        const nextBillingDate = new Date(startDate);
+        nextBillingDate.setDate(nextBillingDate.getDate() + 30);
+
+        const registerResult = await register({
           username: compressed.e,
           email: compressed.e,
           password: password,
@@ -104,9 +108,13 @@ export default function PaymentSuccessPage() {
           lastName: compressed.l || '',
           userType: compressed.t || 'individual',
           subscriptionStatus: 'pro',
-          subscriptionStartDate: new Date(),
-          subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          subscriptionStartDate: startDate.toISOString(),
+          subscriptionNextBillingDate: nextBillingDate.toISOString()
         });
+
+        if (!registerResult?.id) {
+          throw new Error('Registration failed');
+        }
 
         localStorage.removeItem('temp_registration_password');
 
