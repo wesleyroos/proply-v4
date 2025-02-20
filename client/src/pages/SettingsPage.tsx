@@ -627,6 +627,10 @@ export default function SettingsPage() {
                   <CardDescription>Update your personal information</CardDescription>
                 </CardHeader>
                 <CardContent>
+                  <div className="mb-6">
+                    <p className="text-sm font-medium text-muted-foreground">Email</p>
+                    <p className="text-sm">{user?.email}</p>
+                  </div>
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleProfileUpdate)} className="space-y-6">
                       <div className="grid grid-cols-2 gap-4">
