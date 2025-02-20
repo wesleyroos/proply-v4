@@ -74,34 +74,19 @@ export default function PaymentSuccessPage() {
         const passwordKey = compressed.k;
         const password = localStorage.getItem(passwordKey);
         
-        // For new registrations, we must have both email and password
-        if (!compressed.e) {
-          throw new Error('Registration email not found');
+        // Check if user is already logged in
+        const currentUser = await fetch('/api/user', {
+          credentials: 'include'
+        }).then(r => r.json()).catch(() => null);
+
+        if (currentUser) {
+          console.log('User already logged in, redirecting to dashboard');
+          setIsProcessing(false);
+          setTimeout(() => setLocation('/dashboard'), 1000);
+          return;
         }
 
-        // Only check password for new registrations (when we have a key)
-        if (passwordKey) {
-          if (!password) {
-            throw new Error('Registration password not found - please try registering again');
-          }
-          console.log('Processing new registration...');
-        }
-
-        // If no password key, this is an upgrade flow
-        if (!passwordKey) {
-          const currentUser = await fetch('/api/user', {
-            credentials: 'include'
-          }).then(r => r.json()).catch(() => null);
-
-          if (currentUser) {
-            console.log('User already logged in, redirecting to dashboard');
-            setIsProcessing(false);
-            setTimeout(() => setLocation('/dashboard'), 1000);
-            return;
-          }
-        }
-
-        // Verify we have all required registration data for new registrations
+        // Verify we have all required registration data
         if (!compressed.e || !password) {
           throw new Error('Registration data or password not found');
         }
