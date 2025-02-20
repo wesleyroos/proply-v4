@@ -370,6 +370,10 @@ export default function RegisterPage() {
                           autoComplete="new-password"
                           disabled={isLoading}
                           required
+                          className={field.value && form.getValues("confirmPassword") ? 
+                            field.value === form.getValues("confirmPassword") ? 
+                            "border-green-500 focus-visible:ring-green-500" : 
+                            "border-red-500 focus-visible:ring-red-500" : ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -383,15 +387,29 @@ export default function RegisterPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="password"
-                          autoComplete="new-password"
-                          disabled={isLoading}
-                          required
-                        />
-                      </FormControl>
+                      <div className="relative">
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="password"
+                            autoComplete="new-password"
+                            disabled={isLoading}
+                            required
+                            className={field.value && form.getValues("password") ? 
+                              field.value === form.getValues("password") ? 
+                              "border-green-500 focus-visible:ring-green-500" : 
+                              "border-red-500 focus-visible:ring-red-500" : ""}
+                          />
+                        </FormControl>
+                        {field.value && form.getValues("password") && (
+                          <div className={`absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium ${
+                            field.value === form.getValues("password") ? 
+                            "text-green-500" : "text-red-500"
+                          }`}>
+                            {field.value === form.getValues("password") ? "✓" : "✗"}
+                          </div>
+                        )}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
