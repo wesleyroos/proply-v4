@@ -21,7 +21,7 @@ export default function PaymentSuccessPage() {
         // Get registration/upgrade data from URL params
         const params = new URLSearchParams(window.location.search);
         const encodedData = params.get('custom_str1');
-        
+
         console.log('URL Search params:', window.location.search);
         console.log('Encoded data:', encodedData);
 
@@ -39,15 +39,8 @@ export default function PaymentSuccessPage() {
           throw new Error('Failed to parse registration/upgrade data');
         }
 
-        console.log('Decoded data:', {
-          ...compressed,
-          p: '[REDACTED]'
-        });
-
         // If this is an upgrade (has uid), handle differently than new registration
         if (compressed.uid) {
-          console.log('Processing upgrade for existing user:', compressed.uid);
-
           const response = await fetch('/api/subscription/upgrade', {
             method: 'POST',
             headers: {
@@ -67,76 +60,56 @@ export default function PaymentSuccessPage() {
             throw new Error(errorText || 'Failed to upgrade subscription');
           }
 
-          // Update user data in React Query cache
           queryClient.invalidateQueries({ queryKey: ['user'] });
-
           setIsProcessing(false);
           toast({
             title: "Success",
             description: "Your account has been upgraded to Pro!",
           });
-
-          // Redirect back to settings
           setTimeout(() => setLocation('/settings'), 2000);
           return;
         }
 
-        // Handle new user registration with subscription
-        if (!compressed.e) {
-          throw new Error('Invalid registration data format: missing email');
+        // Handle new user registration
+        const passwordKey = compressed.k;
+        const password = localStorage.getItem(passwordKey);
+
+        if (!password) {
+          const currentUser = await fetch('/api/user', {
+            credentials: 'include'
+          }).then(r => r.json()).catch(() => null);
+
+          if (currentUser) {
+            setIsProcessing(false);
+            setTimeout(() => setLocation('/dashboard'), 1000);
+            return;
+          }
+          throw new Error('Registration data not found');
         }
 
-        // Create new user
-        try {
-          const passwordKey = compressed.k;
-          const password = localStorage.getItem(passwordKey);
-          
-          try {
-            if (!password) {
-              // Check if user is already logged in
-              const currentUser = await fetch('/api/user', {
-                credentials: 'include'
-              }).then(r => r.json()).catch(() => null);
-              
-              if (currentUser) {
-                setIsProcessing(false);
-                setTimeout(() => setLocation('/dashboard'), 1000);
-                return;
-              }
-              throw new Error('Registration data not found');
-            }
+        // Clean up stored password
+        localStorage.removeItem(passwordKey);
 
-            // Clean up stored password immediately
-            localStorage.removeItem(passwordKey);
+        await register({
+          username: compressed.e,
+          email: compressed.e,
+          password: password,
+          firstName: compressed.f || '',
+          lastName: compressed.l || '',
+          userType: compressed.t || 'individual',
+          subscriptionStatus: 'pro'
+        });
 
-            await register({
-              username: compressed.e,
-              email: compressed.e,
-              password: password,
-              firstName: compressed.f || '',
-              lastName: compressed.l || '',
-              userType: compressed.t || 'individual',
-              subscriptionStatus: 'pro'
-            });
+        localStorage.removeItem('temp_registration_password');
 
-            // Clean up
-            localStorage.removeItem('temp_registration_password');
+        await login({
+          email: compressed.e,
+          password: password
+        });
 
-            // After successful registration, attempt login
-            await login({
-              email: compressed.e,
-              password: password
-            });
-
-          setIsProcessing(false);
-          queryClient.invalidateQueries({ queryKey: ['user'] });
-          setTimeout(() => setLocation('/dashboard'), 2000);
-
-        } catch (error) {
-          console.error('Registration/Login error:', error);
-          setError(error instanceof Error ? error.message : 'Failed to complete registration');
-          setIsProcessing(false);
-        }
+        setIsProcessing(false);
+        queryClient.invalidateQueries({ queryKey: ['user'] });
+        setTimeout(() => setLocation('/dashboard'), 2000);
 
       } catch (error) {
         console.error('Payment success processing error:', error);
