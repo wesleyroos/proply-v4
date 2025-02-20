@@ -74,6 +74,7 @@ export function registerRoutes(app: Express): Server {
       const isDevelopment = process.env.NODE_ENV !== 'production';
       const merchantId = process.env.VITE_PAYFAST_MERCHANT_ID;
       const merchantKey = process.env.VITE_PAYFAST_MERCHANT_KEY;
+      const passPhrase = process.env.VITE_PAYFAST_PASSPHRASE;
 
       if (!merchantId || !merchantKey) {
         console.error('PayFast merchant credentials missing');
@@ -82,23 +83,25 @@ export function registerRoutes(app: Express): Server {
 
       const baseUrl = process.env.VITE_APP_URL || req.headers.origin;
       const timestamp = new Date().toISOString().split('T')[0];
+      const m_payment_id = `PRO_${Date.now()}_${token.substring(0, 8)}`;
 
       // Create payment data object in the exact order PayFast expects
       const paymentData = {
+        amount: "2000.00",
+        billing_date: timestamp,
+        cancel_url: `${baseUrl}/payment/failure`,
+        cycles: "0",
+        email_address: email,
+        frequency: "3",
+        item_name: "Proply Pro Subscription",
+        m_payment_id,
         merchant_id: merchantId,
         merchant_key: merchantKey,
-        return_url: `${baseUrl}/payment/success?token=${token}`,
-        cancel_url: `${baseUrl}/payment/failure`,
-        notify_url: `${baseUrl}/api/payment-webhook`,
         name_first: firstName || '',
-        email_address: email,
-        amount: "2000.00",
-        item_name: "Proply Pro Subscription",
-        subscription_type: "1",
-        billing_date: timestamp,
+        notify_url: `${baseUrl}/api/payment-webhook`,
         recurring_amount: "2000.00",
-        frequency: "3",
-        cycles: "0"
+        return_url: `${baseUrl}/payment/success?token=${token}`,
+        subscription_type: "1"
       };
 
       // Generate signature string by concatenating values in the correct order
@@ -107,20 +110,26 @@ export function registerRoutes(app: Express): Server {
         .map(([_, value]) => value)
         .join('');
 
+      // Add passphrase to signature if provided
+      const signatureData = passPhrase 
+        ? signatureString + passPhrase
+        : signatureString;
+
       // Generate PayFast signature
       const signature = createHmac('md5', merchantKey)
-        .update(signatureString)
+        .update(signatureData)
         .digest('hex');
+
+      console.log('Payment Data:', {
+        ...paymentData,
+        signature,
+        passphrase: passPhrase ? 'present' : 'not present'
+      });
 
       // Return payment data with signature
       res.json({
-        paymentToken: token,
         paymentData,
-        signature,
-        merchantData: {
-          merchant_id: merchantId,
-          merchant_key: merchantKey
-        }
+        signature
       });
     } catch (error) {
       console.error("Error creating payment session:", error);

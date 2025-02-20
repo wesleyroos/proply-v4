@@ -91,7 +91,7 @@ export default function RegisterPage() {
         ? "https://sandbox.payfast.co.za/eng/process"
         : "https://www.payfast.co.za/eng/process";
 
-      // Submit form with payment data in the correct order
+      // Add payment data fields in alphabetical order
       Object.entries(paymentData)
         .sort(([a], [b]) => a.localeCompare(b))
         .forEach(([key, value]) => {
@@ -108,6 +108,12 @@ export default function RegisterPage() {
       signatureInput.name = "signature";
       signatureInput.value = signature;
       form.appendChild(signatureInput);
+
+      // For debugging
+      console.log('Submitting payment form with data:', {
+        ...paymentData,
+        signature
+      });
 
       document.body.appendChild(form);
       form.submit();
