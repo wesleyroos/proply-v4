@@ -103,7 +103,9 @@ export default function PaymentSuccessPage() {
           firstName: compressed.f || '',
           lastName: compressed.l || '',
           userType: compressed.t || 'individual',
-          subscriptionStatus: 'pro'
+          subscriptionStatus: 'pro',
+          subscriptionStartDate: new Date(),
+          subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
         });
 
         localStorage.removeItem('temp_registration_password');
