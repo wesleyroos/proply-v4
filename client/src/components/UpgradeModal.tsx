@@ -30,8 +30,8 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
       const paymentData = {
         merchant_id: isSandboxMode ? "10000100" : import.meta.env.VITE_PAYFAST_MERCHANT_ID,
         merchant_key: isSandboxMode ? "46f0cd694581a" : import.meta.env.VITE_PAYFAST_MERCHANT_KEY,
-        return_url: `${window.location.origin}/settings?payment=success`,
-        cancel_url: `${window.location.origin}/settings?payment=cancelled`,
+        return_url: `${window.location.origin}/payment/success`,
+        cancel_url: `${window.location.origin}/settings`,
         notify_url: `${window.location.origin}/api/payment-webhook`,
         name_first: user?.firstName || "",
         email_address: user?.email || "",
