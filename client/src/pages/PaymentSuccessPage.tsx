@@ -55,13 +55,14 @@ export default function PaymentSuccessPage() {
               userId: compressed.uid,
               subscriptionStatus: 'pro',
               subscriptionStartDate: new Date(),
-              subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+              subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
             }),
             credentials: 'include'
           });
 
           if (!response.ok) {
-            throw new Error(await response.text());
+            const errorText = await response.text();
+            throw new Error(errorText || 'Failed to upgrade subscription');
           }
 
           // Update user data in React Query cache
@@ -74,7 +75,7 @@ export default function PaymentSuccessPage() {
           });
 
           // Redirect back to settings
-          setLocation('/settings');
+          setTimeout(() => setLocation('/settings'), 2000);
           return;
         }
 
@@ -83,39 +84,32 @@ export default function PaymentSuccessPage() {
           throw new Error('Invalid registration data format');
         }
 
-        const registrationData = {
-          username: compressed.e,
-          email: compressed.e,
-          password: compressed.p,
-          firstName: compressed.f,
-          lastName: compressed.l,
-          userType: compressed.t || 'individual',
-          subscriptionStatus: 'pro', // Always pro since payment was successful
-          subscriptionStartDate: new Date(),
-          subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
-        };
+        // Create new user
+        try {
+          await register({
+            username: compressed.e,
+            email: compressed.e,
+            password: compressed.p,
+            firstName: compressed.f || '',
+            lastName: compressed.l || '',
+            userType: compressed.t || 'individual',
+            subscriptionStatus: 'pro'
+          });
 
-        console.log('Registering new user with data:', {
-          ...registrationData,
-          password: '[REDACTED]',
-          subscriptionStatus: registrationData.subscriptionStatus,
-          originalPlan: compressed.s
-        });
+          // After successful registration, attempt login
+          await login({
+            email: compressed.e,
+            password: compressed.p
+          });
 
-        // Register the new user
-        await register(registrationData);
+          setIsProcessing(false);
+          queryClient.invalidateQueries({ queryKey: ['user'] });
 
-        // Login the user
-        await login({
-          username: compressed.e,
-          password: compressed.p,
-          email: compressed.e,
-          userType: compressed.t || 'individual'
-        });
-
-        // Update UI state
-        setIsProcessing(false);
-        queryClient.invalidateQueries({ queryKey: ['user'] });
+        } catch (error) {
+          console.error('Registration/Login error:', error);
+          setError(error instanceof Error ? error.message : 'Failed to complete registration');
+          setIsProcessing(false);
+        }
 
       } catch (error) {
         console.error('Payment success processing error:', error);
@@ -207,16 +201,10 @@ export default function PaymentSuccessPage() {
           </div>
           <div className="flex flex-col gap-3">
             <Button
-              onClick={() => setLocation('/dashboard')}
+              onClick={() => setLocation('/login')}
               className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
             >
-              Go to Dashboard
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setLocation('/analyzer')}
-            >
-              Start Analyzing Properties
+              Continue to Login
             </Button>
           </div>
         </CardContent>
