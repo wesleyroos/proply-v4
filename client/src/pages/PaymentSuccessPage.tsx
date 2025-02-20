@@ -86,10 +86,13 @@ export default function PaymentSuccessPage() {
 
         // Create new user
         try {
-          const password = localStorage.getItem('temp_registration_password');
+          const passwordKey = compressed.k;
+          const password = localStorage.getItem(passwordKey);
           if (!password) {
             throw new Error('Registration data not found');
           }
+          // Clean up stored password immediately
+          localStorage.removeItem(passwordKey);
 
           await register({
             username: compressed.e,

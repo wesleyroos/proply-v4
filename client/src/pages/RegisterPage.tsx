@@ -84,12 +84,17 @@ export default function RegisterPage() {
     // Store password temporarily in localStorage for registration completion
     localStorage.setItem('temp_registration_password', formData.password);
     
+    // Store password separately and securely
+    const tempPasswordKey = `temp_reg_${Date.now()}`;
+    localStorage.setItem(tempPasswordKey, formData.password);
+    
     const registrationData = {
       e: formData.email,
       f: formData.firstName,
       l: formData.lastName,
       t: formData.userType,
-      s: selectedPlan
+      s: selectedPlan,
+      k: tempPasswordKey // Send only the key reference
     };
 
     const encodedData = encodeURIComponent(JSON.stringify(registrationData));
