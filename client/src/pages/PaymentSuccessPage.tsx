@@ -74,12 +74,17 @@ export default function PaymentSuccessPage() {
         const passwordKey = compressed.k;
         const password = localStorage.getItem(passwordKey);
         
-        console.log('Checking password key:', passwordKey);
-        console.log('Retrieved password:', password ? 'exists' : 'not found');
+        // For new registrations, we must have both email and password
+        if (!compressed.e) {
+          throw new Error('Registration email not found');
+        }
 
-        // This is a new registration if we have a password key
-        if (passwordKey && !password) {
-          throw new Error('Password not found in storage');
+        // Only check password for new registrations (when we have a key)
+        if (passwordKey) {
+          if (!password) {
+            throw new Error('Registration password not found - please try registering again');
+          }
+          console.log('Processing new registration...');
         }
 
         // If no password key, this is an upgrade flow
