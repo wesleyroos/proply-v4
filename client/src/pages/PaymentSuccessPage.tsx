@@ -74,8 +74,16 @@ export default function PaymentSuccessPage() {
         const passwordKey = compressed.k;
         const password = localStorage.getItem(passwordKey);
         
-        // Only check for existing user during upgrade flow, skip for new registrations
-        if (!compressed.k) { // No password key means this is an upgrade
+        console.log('Checking password key:', passwordKey);
+        console.log('Retrieved password:', password ? 'exists' : 'not found');
+
+        // This is a new registration if we have a password key
+        if (passwordKey && !password) {
+          throw new Error('Password not found in storage');
+        }
+
+        // If no password key, this is an upgrade flow
+        if (!passwordKey) {
           const currentUser = await fetch('/api/user', {
             credentials: 'include'
           }).then(r => r.json()).catch(() => null);
@@ -88,7 +96,7 @@ export default function PaymentSuccessPage() {
           }
         }
 
-        // Verify we have all required registration data
+        // Verify we have all required registration data for new registrations
         if (!compressed.e || !password) {
           throw new Error('Registration data or password not found');
         }
