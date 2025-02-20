@@ -265,13 +265,21 @@ export default function AdminPage() {
   };
 
   const handleSandboxToggle = (checked: boolean) => {
-    localStorage.setItem('payfast_sandbox_mode', checked.toString());
-    setIsSandboxMode(checked);
-    toast({
-      title: "PayFast Mode Changed",
-      description: `Switched to ${checked ? 'Sandbox' : 'Live'} mode`,
-      duration: 3000,
-    });
+    const newMode = checked ? 'Sandbox' : 'Live';
+    const currentMode = isSandboxMode ? 'Sandbox' : 'Live';
+    
+    if (window.confirm(`Are you sure you want to switch from ${currentMode} to ${newMode} mode? This will affect how payments are processed.`)) {
+      localStorage.setItem('payfast_sandbox_mode', checked.toString());
+      setIsSandboxMode(checked);
+      toast({
+        title: "PayFast Mode Changed",
+        description: `Switched to ${newMode} mode`,
+        duration: 3000,
+      });
+    } else {
+      // Reset the switch to its previous state if user cancels
+      setIsSandboxMode(!checked);
+    }
   };
 
   if (!user?.isAdmin) {
