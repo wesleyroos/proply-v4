@@ -100,6 +100,10 @@ export default function PaymentSuccessPage() {
         const nextBillingDate = new Date(startDate);
         nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
+        // Format dates in UTC to avoid timezone issues
+        const startDateISO = startDate.toISOString().split('T')[0];
+        const nextBillingDateISO = nextBillingDate.toISOString().split('T')[0];
+
         const registerResult = await register({
           username: compressed.e,
           email: compressed.e,
@@ -108,8 +112,8 @@ export default function PaymentSuccessPage() {
           lastName: compressed.l || '',
           userType: compressed.t || 'individual',
           subscriptionStatus: 'pro',
-          subscriptionStartDate: startDate.toISOString(),
-          subscriptionNextBillingDate: nextBillingDate.toISOString()
+          subscriptionStartDate: startDateISO,
+          subscriptionNextBillingDate: nextBillingDateISO
         });
 
         if (!registerResult?.id) {
