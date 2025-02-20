@@ -1,0 +1,92 @@
+URL Search params: ?custom_str1=%7B%22e%22%3A%22wesley%40grodigital.co.za%22%2C%22f%22%3A%22Wesley%22%2C%22l%22%3A%22Roos%22%2C%22t%22%3A%22individual%22%2C%22s%22%3A%22pro%22%2C%22k%22%3A%22temp_reg_1740052656283%22%7D
+PaymentSuccessPage.tsx:26 Encoded data: {"e":"wesley@grodigital.co.za","f":"Wesley","l":"Roos","t":"individual","s":"pro","k":"temp_reg_1740052656283"}
+PaymentSuccessPage.tsx:25 URL Search params: ?custom_str1=%7B%22e%22%3A%22wesley%40grodigital.co.za%22%2C%22f%22%3A%22Wesley%22%2C%22l%22%3A%22Roos%22%2C%22t%22%3A%22individual%22%2C%22s%22%3A%22pro%22%2C%22k%22%3A%22temp_reg_1740052656283%22%7D
+PaymentSuccessPage.tsx:26 Encoded data: {"e":"wesley@grodigital.co.za","f":"Wesley","l":"Roos","t":"individual","s":"pro","k":"temp_reg_1740052656283"}
+use-user.ts:41 
+        
+        
+       GET https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/api/user 401 (Unauthorized)
+fetchUser @ use-user.ts:41
+fetchFn @ @tanstack_react-query.js?v=0804f56a:840
+run @ @tanstack_react-query.js?v=0804f56a:494
+start @ @tanstack_react-query.js?v=0804f56a:536
+fetch @ @tanstack_react-query.js?v=0804f56a:926
+executeFetch_fn @ @tanstack_react-query.js?v=0804f56a:2211
+onSubscribe @ @tanstack_react-query.js?v=0804f56a:1898
+subscribe @ @tanstack_react-query.js?v=0804f56a:24
+(anonymous) @ @tanstack_react-query.js?v=0804f56a:3022
+subscribeToStore @ chunk-UPELNCPK.js?v=0804f56a:11984
+commitHookEffectListMount @ chunk-UPELNCPK.js?v=0804f56a:16915
+commitPassiveMountOnFiber @ chunk-UPELNCPK.js?v=0804f56a:18156
+commitPassiveMountEffects_complete @ chunk-UPELNCPK.js?v=0804f56a:18129
+commitPassiveMountEffects_begin @ chunk-UPELNCPK.js?v=0804f56a:18119
+commitPassiveMountEffects @ chunk-UPELNCPK.js?v=0804f56a:18109
+flushPassiveEffectsImpl @ chunk-UPELNCPK.js?v=0804f56a:19490
+flushPassiveEffects @ chunk-UPELNCPK.js?v=0804f56a:19447
+performSyncWorkOnRoot @ chunk-UPELNCPK.js?v=0804f56a:18868
+flushSyncCallbacks @ chunk-UPELNCPK.js?v=0804f56a:9119
+commitRootImpl @ chunk-UPELNCPK.js?v=0804f56a:19432
+commitRoot @ chunk-UPELNCPK.js?v=0804f56a:19277
+finishConcurrentRender @ chunk-UPELNCPK.js?v=0804f56a:18805
+performConcurrentWorkOnRoot @ chunk-UPELNCPK.js?v=0804f56a:18718
+workLoop @ chunk-UPELNCPK.js?v=0804f56a:197
+flushWork @ chunk-UPELNCPK.js?v=0804f56a:176
+performWorkUntilDeadline @ chunk-UPELNCPK.js?v=0804f56a:384Understand this errorAI
+PaymentSuccessPage.tsx:79 
+        
+        
+       GET https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/api/user 401 (Unauthorized)
+processPaymentSuccess @ PaymentSuccessPage.tsx:79
+(anonymous) @ PaymentSuccessPage.tsx:134
+commitHookEffectListMount @ chunk-UPELNCPK.js?v=0804f56a:16915
+invokePassiveEffectMountInDEV @ chunk-UPELNCPK.js?v=0804f56a:18324
+invokeEffectsInDev @ chunk-UPELNCPK.js?v=0804f56a:19701
+commitDoubleInvokeEffectsInDEV @ chunk-UPELNCPK.js?v=0804f56a:19686
+flushPassiveEffectsImpl @ chunk-UPELNCPK.js?v=0804f56a:19503
+flushPassiveEffects @ chunk-UPELNCPK.js?v=0804f56a:19447
+performSyncWorkOnRoot @ chunk-UPELNCPK.js?v=0804f56a:18868
+flushSyncCallbacks @ chunk-UPELNCPK.js?v=0804f56a:9119
+commitRootImpl @ chunk-UPELNCPK.js?v=0804f56a:19432
+commitRoot @ chunk-UPELNCPK.js?v=0804f56a:19277
+finishConcurrentRender @ chunk-UPELNCPK.js?v=0804f56a:18805
+performConcurrentWorkOnRoot @ chunk-UPELNCPK.js?v=0804f56a:18718
+workLoop @ chunk-UPELNCPK.js?v=0804f56a:197
+flushWork @ chunk-UPELNCPK.js?v=0804f56a:176
+performWorkUntilDeadline @ chunk-UPELNCPK.js?v=0804f56a:384Understand this errorAI
+PaymentSuccessPage.tsx:91 Processing new registration...
+use-user.ts:135 
+        
+        
+       POST https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/api/register 400 (Bad Request)
+mutationFn @ use-user.ts:135
+fn @ @tanstack_react-query.js?v=0804f56a:1189
+run @ @tanstack_react-query.js?v=0804f56a:494
+start @ @tanstack_react-query.js?v=0804f56a:536
+execute @ @tanstack_react-query.js?v=0804f56a:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=0804f56a:2630
+processPaymentSuccess @ PaymentSuccessPage.tsx:100
+await in processPaymentSuccess
+(anonymous) @ PaymentSuccessPage.tsx:134
+commitHookEffectListMount @ chunk-UPELNCPK.js?v=0804f56a:16915
+invokePassiveEffectMountInDEV @ chunk-UPELNCPK.js?v=0804f56a:18324
+invokeEffectsInDev @ chunk-UPELNCPK.js?v=0804f56a:19701
+commitDoubleInvokeEffectsInDEV @ chunk-UPELNCPK.js?v=0804f56a:19686
+flushPassiveEffectsImpl @ chunk-UPELNCPK.js?v=0804f56a:19503
+flushPassiveEffects @ chunk-UPELNCPK.js?v=0804f56a:19447
+performSyncWorkOnRoot @ chunk-UPELNCPK.js?v=0804f56a:18868
+flushSyncCallbacks @ chunk-UPELNCPK.js?v=0804f56a:9119
+commitRootImpl @ chunk-UPELNCPK.js?v=0804f56a:19432
+commitRoot @ chunk-UPELNCPK.js?v=0804f56a:19277
+finishConcurrentRender @ chunk-UPELNCPK.js?v=0804f56a:18805
+performConcurrentWorkOnRoot @ chunk-UPELNCPK.js?v=0804f56a:18718
+workLoop @ chunk-UPELNCPK.js?v=0804f56a:197
+flushWork @ chunk-UPELNCPK.js?v=0804f56a:176
+performWorkUntilDeadline @ chunk-UPELNCPK.js?v=0804f56a:384Understand this errorAI
+PaymentSuccessPage.tsx:122 Payment success processing error: Error: Email and password are required
+    at Object.mutationFn (use-user.ts:81:15)
+    at Object.fn (@tanstack_react-query.js?v=0804f56a:1189:29)
+    at run (@tanstack_react-query.js?v=0804f56a:494:49)
+    at Object.start (@tanstack_react-query.js?v=0804f56a:536:9)
+    at _a6.execute (@tanstack_react-query.js?v=0804f56a:1225:56)
+    at async processPaymentSuccess (PaymentSuccessPage.tsx:112:9)
