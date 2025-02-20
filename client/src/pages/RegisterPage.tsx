@@ -45,6 +45,7 @@ export default function RegisterPage() {
   const [searchParams] = useState(new URLSearchParams(window.location.search));
   const [selectedPlan, setSelectedPlan] = useState(searchParams.get('plan') || 'free');
   const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false); // Moved here
 
   const form = useForm<ProfileFormData>({
     defaultValues: {
@@ -84,11 +85,11 @@ export default function RegisterPage() {
 
     // Store password temporarily in localStorage for registration completion
     localStorage.setItem('temp_registration_password', formData.password);
-    
+
     // Store password separately and securely
     const tempPasswordKey = `temp_reg_${Date.now()}`;
     localStorage.setItem(tempPasswordKey, formData.password);
-    
+
     const registrationData = {
       e: formData.email,
       f: formData.firstName,
@@ -360,83 +361,77 @@ export default function RegisterPage() {
                 <FormField
                   control={form.control}
                   name="password"
-                  render={({ field }) => {
-                    const [showPassword, setShowPassword] = useState(false);
-                    return (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <div className="relative">
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type={showPassword ? "text" : "password"}
-                              autoComplete="new-password"
-                              disabled={isLoading}
-                              required
-                              className={field.value && form.getValues("confirmPassword") ? 
-                                field.value === form.getValues("confirmPassword") ? 
-                                "border-green-500 focus-visible:ring-green-500" : 
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <div className="relative">
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type={showPassword ? "text" : "password"}
+                            autoComplete="new-password"
+                            disabled={isLoading}
+                            required
+                            className={field.value && form.getValues("confirmPassword") ?
+                              field.value === form.getValues("confirmPassword") ?
+                                "border-green-500 focus-visible:ring-green-500" :
                                 "border-red-500 focus-visible:ring-red-500" : ""}
-                            />
-                          </FormControl>
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                          >
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
+                          />
+                        </FormControl>
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
                 <FormField
                   control={form.control}
                   name="confirmPassword"
-                  render={({ field }) => {
-                    const [showPassword, setShowPassword] = useState(false);
-                    return (
-                      <FormItem>
-                        <FormLabel>Confirm Password</FormLabel>
-                        <div className="relative">
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type={showPassword ? "text" : "password"}
-                              autoComplete="new-password"
-                              disabled={isLoading}
-                              required
-                              className={field.value && form.getValues("password") ? 
-                                field.value === form.getValues("password") ? 
-                                "border-green-500 focus-visible:ring-green-500" : 
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <div className="relative">
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type={showPassword ? "text" : "password"}
+                            autoComplete="new-password"
+                            disabled={isLoading}
+                            required
+                            className={field.value && form.getValues("password") ?
+                              field.value === form.getValues("password") ?
+                                "border-green-500 focus-visible:ring-green-500" :
                                 "border-red-500 focus-visible:ring-red-500" : ""}
-                            />
-                          </FormControl>
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                            {field.value && form.getValues("password") && (
-                              <span className={`text-sm font-medium ${
-                                field.value === form.getValues("password") ? 
+                          />
+                        </FormControl>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                          {field.value && form.getValues("password") && (
+                            <span className={`text-sm font-medium ${
+                              field.value === form.getValues("password") ?
                                 "text-green-500" : "text-red-500"
-                              }`}>
-                                {field.value === form.getValues("password") ? "✓" : "✗"}
-                              </span>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="text-gray-500 hover:text-gray-700"
-                            >
-                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </button>
-                          </div>
+                            }`}>
+                              {field.value === form.getValues("password") ? "✓" : "✗"}
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
                         </div>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
                 <Button
