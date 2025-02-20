@@ -91,52 +91,51 @@ export default function PaymentSuccessPage() {
           const passwordKey = compressed.k;
           const password = localStorage.getItem(passwordKey);
           
-          try {
-            if (!password) {
-              // Check if user is already logged in
-              const currentUser = await fetch('/api/user', {
-                credentials: 'include'
-              }).then(r => r.json()).catch(() => null);
-              
-              if (currentUser) {
-                setIsProcessing(false);
-                setTimeout(() => setLocation('/dashboard'), 1000);
-                return;
-              }
-              throw new Error('Registration data not found');
+          if (!password) {
+            // Check if user is already logged in
+            const currentUser = await fetch('/api/user', {
+              credentials: 'include'
+            }).then(r => r.json()).catch(() => null);
+            
+            if (currentUser) {
+              setIsProcessing(false);
+              setTimeout(() => setLocation('/dashboard'), 1000);
+              return;
             }
-
-            // Clean up stored password immediately
-            localStorage.removeItem(passwordKey);
-
-            await register({
-              username: compressed.e,
-              email: compressed.e,
-              password: password,
-              firstName: compressed.f || '',
-              lastName: compressed.l || '',
-              userType: compressed.t || 'individual',
-              subscriptionStatus: 'pro'
-            });
-
-            // Clean up
-            localStorage.removeItem('temp_registration_password');
-
-            // After successful registration, attempt login
-            await login({
-              email: compressed.e,
-              password: password
-            });
-
-            setIsProcessing(false);
-            queryClient.invalidateQueries({ queryKey: ['user'] });
-            setTimeout(() => setLocation('/dashboard'), 2000);
-
-          } catch (error) {
-            console.error('Registration/Login error:', error);
-            setError(error instanceof Error ? error.message : 'Failed to complete registration');
-            setIsProcessing(false);
+            throw new Error('Registration data not found');
           }
+
+          // Clean up stored password immediately
+          localStorage.removeItem(passwordKey);
+
+          await register({
+            username: compressed.e,
+            email: compressed.e,
+            password: password,
+            firstName: compressed.f || '',
+            lastName: compressed.l || '',
+            userType: compressed.t || 'individual',
+            subscriptionStatus: 'pro'
+          });
+
+          // Clean up
+          localStorage.removeItem('temp_registration_password');
+
+          // After successful registration, attempt login
+          await login({
+            email: compressed.e,
+            password: password
+          });
+
+          setIsProcessing(false);
+          queryClient.invalidateQueries({ queryKey: ['user'] });
+          setTimeout(() => setLocation('/dashboard'), 2000);
+
+        } catch (error) {
+          console.error('Registration/Login error:', error);
+          setError(error instanceof Error ? error.message : 'Failed to complete registration');
+          setIsProcessing(false);
+        }
 
       } catch (error) {
         console.error('Payment success processing error:', error);
