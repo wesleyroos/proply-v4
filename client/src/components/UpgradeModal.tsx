@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/dialog";
 import { Sparkles } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
-import { useToast } from "@/hooks/use-toast";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -18,7 +17,6 @@ interface UpgradeModalProps {
 
 export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
   const { user } = useUser();
-  const { toast } = useToast();
 
   const handlePayment = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -26,39 +24,14 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
       console.log('Initiating payment flow...');
       const isSandboxMode = localStorage.getItem('payfast_sandbox_mode') === 'true';
 
-      // First, get a secure payment token from our backend
-      const tokenResponse = await fetch('/api/payments/create-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          userId: user?.id,
-          email: user?.email,
-          firstName: user?.firstName,
-          subscriptionType: 'pro'
-        }),
-        credentials: 'include'
-      });
-
-      if (!tokenResponse.ok) {
-        throw new Error('Failed to initialize payment session');
-      }
-
-      const { paymentToken, merchantData } = await tokenResponse.json();
-
-      // Create PayFast form with secure token
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = isSandboxMode
-        ? "https://sandbox.payfast.co.za/eng/process"
-        : "https://www.payfast.co.za/eng/process";
+      // Add a small delay to ensure proper form setup
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const paymentData = {
-        merchant_id: merchantData.merchant_id,
-        merchant_key: merchantData.merchant_key,
-        return_url: `${window.location.origin}/payment/success?token=${paymentToken}`,
-        cancel_url: `${window.location.origin}/payment/failure`,
+        merchant_id: isSandboxMode ? "10000100" : import.meta.env.VITE_PAYFAST_MERCHANT_ID,
+        merchant_key: isSandboxMode ? "46f0cd694581a" : import.meta.env.VITE_PAYFAST_MERCHANT_KEY,
+        return_url: `${window.location.origin}/settings?payment=success`,
+        cancel_url: `${window.location.origin}/settings?payment=cancelled`,
         notify_url: `${window.location.origin}/api/payment-webhook`,
         name_first: user?.firstName || "",
         email_address: user?.email || "",
@@ -69,8 +42,17 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
         recurring_amount: "2000.00",
         frequency: "3",
         cycles: "0",
-        payment_token: paymentToken
+        custom_str1: JSON.stringify({
+          userId: user?.id,
+          subscriptionStatus: "pro",
+        }),
       };
+
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = isSandboxMode
+        ? "https://sandbox.payfast.co.za/eng/process"
+        : "https://www.payfast.co.za/eng/process";
 
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value !== undefined) {
@@ -85,17 +67,12 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
       document.body.appendChild(form);
       console.log('Submitting payment form to PayFast:', {
         mode: isSandboxMode ? 'sandbox' : 'live',
+        merchantId: paymentData.merchant_id,
         email: paymentData.email_address
       });
       form.submit();
     } catch (error) {
-      console.error('Payment initialization error:', error);
-      toast({
-        variant: "destructive",
-        title: "Payment Error",
-        description: "Failed to initialize payment. Please try again.",
-        duration: 5000
-      });
+      console.error('Payment form submission error:', error);
       // Remove any lingering form elements
       const existingForms = document.querySelectorAll('form[action*="payfast"]');
       existingForms.forEach(form => form.remove());

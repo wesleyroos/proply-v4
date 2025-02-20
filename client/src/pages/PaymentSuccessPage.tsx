@@ -3,21 +3,14 @@ import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import { useUser } from "@/hooks/use-user";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-
-// Secure type for registration data
-type SecureRegistrationData = {
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  userType: string;
-  subscriptionStatus: string;
-};
 
 export default function PaymentSuccessPage() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { register, login } = useUser();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,52 +18,114 @@ export default function PaymentSuccessPage() {
   useEffect(() => {
     const processPaymentSuccess = async () => {
       try {
+        // Get registration/upgrade data from URL params
         const params = new URLSearchParams(window.location.search);
-        const token = params.get('token');
+        const encodedData = params.get('upgrade_data') || params.get('custom_str1');
 
-        if (!token) {
-          throw new Error('Payment token not found in URL parameters');
+        console.log('URL Search params:', window.location.search);
+        console.log('Encoded data:', encodedData);
+
+        if (!encodedData) {
+          throw new Error('Registration/upgrade data not found in URL parameters');
         }
 
-        // Complete registration using the secure token
-        const response = await fetch('/api/register/payment-success', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ token }),
-          credentials: 'include'
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || 'Failed to complete registration');
+        let compressed;
+        try {
+          compressed = JSON.parse(decodeURIComponent(encodedData));
+        } catch (e) {
+          console.error('Error parsing data:', e);
+          throw new Error('Failed to parse registration/upgrade data');
         }
 
-        // Update React Query cache and show success message
-        setIsProcessing(false);
-        queryClient.invalidateQueries({ queryKey: ['user'] });
-
-        toast({
-          title: "Success",
-          description: "Your registration is complete! You can now log in.",
+        console.log('Decoded data:', {
+          ...compressed,
+          p: '[REDACTED]'
         });
+
+        // If this is an upgrade (has uid), handle differently than new registration
+        if (compressed.uid) {
+          console.log('Processing upgrade for existing user:', compressed.uid);
+
+          const response = await fetch('/api/subscription/upgrade', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              userId: compressed.uid,
+              subscriptionStatus: 'pro',
+              subscriptionStartDate: new Date(),
+              subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            }),
+            credentials: 'include'
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || 'Failed to upgrade subscription');
+          }
+
+          // Update user data in React Query cache
+          queryClient.invalidateQueries({ queryKey: ['user'] });
+
+          setIsProcessing(false);
+          toast({
+            title: "Success",
+            description: "Your account has been upgraded to Pro!",
+          });
+
+          // Redirect back to settings
+          setTimeout(() => setLocation('/settings'), 2000);
+          return;
+        }
+
+        // Handle new user registration with subscription
+        if (!compressed.e || !compressed.p) {
+          throw new Error('Invalid registration data format');
+        }
+
+        // Create new user
+        try {
+          await register({
+            username: compressed.e,
+            email: compressed.e,
+            password: compressed.p,
+            firstName: compressed.f || '',
+            lastName: compressed.l || '',
+            userType: compressed.t || 'individual',
+            subscriptionStatus: 'pro'
+          });
+
+          // After successful registration, attempt login
+          await login({
+            email: compressed.e,
+            password: compressed.p
+          });
+
+          setIsProcessing(false);
+          queryClient.invalidateQueries({ queryKey: ['user'] });
+
+        } catch (error) {
+          console.error('Registration/Login error:', error);
+          setError(error instanceof Error ? error.message : 'Failed to complete registration');
+          setIsProcessing(false);
+        }
 
       } catch (error) {
-        console.error('Registration error:', error);
-        setError(error instanceof Error ? error.message : "Failed to complete registration");
+        console.error('Payment success processing error:', error);
+        setError(error instanceof Error ? error.message : "Failed to complete registration/upgrade");
         setIsProcessing(false);
 
         toast({
           variant: "destructive",
           title: "Error",
-          description: error instanceof Error ? error.message : "Failed to complete registration"
+          description: error instanceof Error ? error.message : "Failed to complete registration/upgrade"
         });
       }
     };
 
     processPaymentSuccess();
-  }, [queryClient, toast, setLocation]);
+  }, [register, login, queryClient, toast, setLocation]);
 
   if (isProcessing) {
     return (
@@ -79,7 +134,7 @@ export default function PaymentSuccessPage() {
           <CardContent className="pt-6 text-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
             <p className="text-lg text-gray-600">
-              Processing your registration...
+              Processing your subscription...
             </p>
           </CardContent>
         </Card>
@@ -105,16 +160,16 @@ export default function PaymentSuccessPage() {
             </p>
             <div className="flex flex-col gap-3">
               <Button
-                onClick={() => setLocation('/contact')}
+                onClick={() => setLocation('/settings')}
                 className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
               >
-                Contact Support
+                Return to Settings
               </Button>
               <Button
                 variant="outline"
-                onClick={() => setLocation('/register')}
+                onClick={() => setLocation('/contact')}
               >
-                Return to Registration
+                Contact Support
               </Button>
             </div>
           </CardContent>
@@ -129,7 +184,7 @@ export default function PaymentSuccessPage() {
         <CardHeader className="text-center">
           <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
           <CardTitle className="text-2xl font-bold text-green-700">
-            Registration Successful!
+            Payment Successful!
           </CardTitle>
           <CardDescription className="text-gray-600">
             Thank you for subscribing to Proply Pro

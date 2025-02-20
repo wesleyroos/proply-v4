@@ -11,7 +11,7 @@ import {
   type SelectUser,
   type InsertUser,
   apiUsage,
-  subscriptionHistory,
+  subscriptionHistory, // Added import for subscription history table
 } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -21,179 +21,24 @@ import { analyzeSuburb } from "./services/openai";
 import { sql } from "drizzle-orm";
 import { suburbs } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
-import { randomBytes } from "crypto";
-import { createHmac } from 'crypto';
 
-const paymentSessions = new Map<string, {
-  email: string;
-  password?: string;
-  firstName?: string;
-  lastName?: string;
-  userType: string;
-  subscriptionType: string;
-  createdAt: Date;
-}>();
-
-// Clean up expired sessions every hour
-setInterval(() => {
-  const now = new Date();
-  for (const [token, session] of paymentSessions.entries()) {
-    if (now.getTime() - session.createdAt.getTime() > 3600000) { // 1 hour
-      paymentSessions.delete(token);
-    }
+// Extend Express.User to include our schema
+declare global {
+  namespace Express {
+    interface User extends SelectUser {}
   }
-}, 3600000);
+}
 
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
   setupAuth(app);
-
-  // Add these new routes before the authentication middleware
-  app.post("/api/payments/create-session", async (req, res) => {
-    try {
-      const { email, password, firstName, lastName, userType = "individual", subscriptionType } = req.body;
-
-      if (!email || !subscriptionType) {
-        return res.status(400).json({ error: "Missing required fields" });
-      }
-
-      // Generate a secure random token
-      const token = randomBytes(32).toString('hex');
-
-      // Store session data
-      paymentSessions.set(token, {
-        email,
-        password,
-        firstName,
-        lastName,
-        userType,
-        subscriptionType,
-        createdAt: new Date()
-      });
-
-      const isDevelopment = process.env.NODE_ENV !== 'production';
-      const merchantId = process.env.VITE_PAYFAST_MERCHANT_ID;
-      const merchantKey = process.env.VITE_PAYFAST_MERCHANT_KEY;
-      const passPhrase = process.env.VITE_PAYFAST_PASSPHRASE;
-
-      if (!merchantId || !merchantKey) {
-        console.error('PayFast merchant credentials missing');
-        return res.status(500).json({ error: "Payment configuration error" });
-      }
-
-      const baseUrl = process.env.VITE_APP_URL || req.headers.origin;
-      const timestamp = new Date().toISOString().split('T')[0];
-      const m_payment_id = `PRO_${Date.now()}_${token.substring(0, 8)}`;
-
-      // Create payment data object in the exact order PayFast expects
-      const paymentData = {
-        amount: "2000.00",
-        billing_date: timestamp,
-        cancel_url: `${baseUrl}/payment/failure`,
-        cycles: "0",
-        email_address: email,
-        frequency: "3",
-        item_name: "Proply Pro Subscription",
-        m_payment_id,
-        merchant_id: merchantId,
-        merchant_key: merchantKey,
-        name_first: firstName || '',
-        notify_url: `${baseUrl}/api/payment-webhook`,
-        recurring_amount: "2000.00",
-        return_url: `${baseUrl}/payment/success?token=${token}`,
-        subscription_type: "1"
-      };
-
-      // Generate signature string by concatenating values in the correct order
-      const signatureString = Object.entries(paymentData)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([_, value]) => value)
-        .join('');
-
-      // Add passphrase to signature if provided
-      const signatureData = passPhrase 
-        ? signatureString + passPhrase
-        : signatureString;
-
-      // Generate PayFast signature
-      const signature = createHmac('md5', merchantKey)
-        .update(signatureData)
-        .digest('hex');
-
-      console.log('Payment Data:', {
-        ...paymentData,
-        signature,
-        passphrase: passPhrase ? 'present' : 'not present'
-      });
-
-      // Return payment data with signature
-      res.json({
-        paymentData,
-        signature
-      });
-    } catch (error) {
-      console.error("Error creating payment session:", error);
-      res.status(500).json({ error: "Failed to create payment session" });
-    }
-  });
-
-  app.post("/api/register/payment-success", async (req, res) => {
-    try {
-      const { token } = req.body;
-
-      if (!token) {
-        return res.status(400).json({ error: "Payment token is required" });
-      }
-
-      const sessionData = paymentSessions.get(token);
-      if (!sessionData) {
-        return res.status(404).json({ error: "Invalid or expired payment token" });
-      }
-
-      // Clear the session immediately to prevent reuse
-      paymentSessions.delete(token);
-
-      // Register the new user
-      const [user] = await db
-        .insert(users)
-        .values({
-          username: sessionData.email,
-          email: sessionData.email,
-          password: await crypto.hash(sessionData.password || randomBytes(12).toString('hex')),
-          firstName: sessionData.firstName || "",
-          lastName: sessionData.lastName || "",
-          userType: sessionData.userType,
-          subscriptionStatus: sessionData.subscriptionType,
-          subscriptionStartDate: new Date(),
-          subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          createdAt: new Date(),
-          updatedAt: new Date()
-        })
-        .returning();
-
-      // Log user in automatically
-      req.login(user, (err) => {
-        if (err) {
-          console.error("Auto-login error:", err);
-          return res.status(500).json({ error: "Failed to automatically log in" });
-        }
-        res.json({ success: true, user });
-      });
-
-    } catch (error) {
-      console.error("Error processing payment success:", error);
-      res.status(500).json({ error: "Failed to complete registration" });
-    }
-  });
 
   // Require authentication for all /api routes except login/register
   app.use("/api", (req, res, next) => {
     if (
       req.path === "/login" ||
       req.path === "/register" ||
-      req.path === "/user" ||
-      req.path === "/payments/create-session" || // Added exception for new payment endpoint
-      req.path === "/register/payment-success"    // Added exception for new payment endpoint
+      req.path === "/user"
     ) {
       return next();
     }
@@ -973,7 +818,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get all rentcompare properties for the current user.
+  // Get all rent compare properties for the current user.
   app.get("/api/properties", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.id) {
       return res.status(401).send("Not authenticated");
@@ -1707,7 +1552,7 @@ export function registerRoutes(app: Express): Server {
       if (req.sessionStore) {
         req.sessionStore.clear();
       }
-
+      
       // Log out current user
       req.logout((err) => {
         if (err) {
@@ -1722,7 +1567,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Add this new endpoint after the existing signup analytics endpoint
+  // Add new endpoint after the existing signup analytics endpoint
   app.get("/api/analytics/reports", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
       return res.status(403).send("Not authorized");
