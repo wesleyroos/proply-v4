@@ -128,15 +128,15 @@ export default function PaymentSuccessPage() {
               password: password
             });
 
-          setIsProcessing(false);
-          queryClient.invalidateQueries({ queryKey: ['user'] });
-          setTimeout(() => setLocation('/dashboard'), 2000);
+            setIsProcessing(false);
+            queryClient.invalidateQueries({ queryKey: ['user'] });
+            setTimeout(() => setLocation('/dashboard'), 2000);
 
-        } catch (error) {
-          console.error('Registration/Login error:', error);
-          setError(error instanceof Error ? error.message : 'Failed to complete registration');
-          setIsProcessing(false);
-        }
+          } catch (error) {
+            console.error('Registration/Login error:', error);
+            setError(error instanceof Error ? error.message : 'Failed to complete registration');
+            setIsProcessing(false);
+          }
 
       } catch (error) {
         console.error('Payment success processing error:', error);
