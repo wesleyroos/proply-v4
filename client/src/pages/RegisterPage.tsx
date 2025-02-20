@@ -29,6 +29,7 @@ interface ProfileFormData {
   firstName: string;
   lastName: string;
   password: string;
+  confirmPassword: string;
   email: string;
   userType: string;
   company?: string;
@@ -151,6 +152,10 @@ export default function RegisterPage() {
 
   const handleRegister = async (data: ProfileFormData) => {
     try {
+      if (data.password !== data.confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
       setIsLoading(true);
       setError(null);
 
@@ -358,6 +363,26 @@ export default function RegisterPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="password"
+                          autoComplete="new-password"
+                          disabled={isLoading}
+                          required
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
