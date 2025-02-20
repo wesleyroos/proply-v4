@@ -22,6 +22,7 @@ import { sql } from "drizzle-orm";
 import { suburbs } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
 import { randomBytes } from "crypto";
+import { createHmac } from 'crypto';
 
 const paymentSessions = new Map<string, {
   email: string;
@@ -70,12 +71,55 @@ export function registerRoutes(app: Express): Server {
         createdAt: new Date()
       });
 
-      // Return non-sensitive merchant data and token
+      const isDevelopment = process.env.NODE_ENV !== 'production';
+      const merchantId = import.meta.env.VITE_PAYFAST_MERCHANT_ID;
+      const merchantKey = import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
+
+      if (!merchantId || !merchantKey) {
+        console.error('PayFast merchant credentials missing');
+        return res.status(500).json({ error: "Payment configuration error" });
+      }
+
+      const baseUrl = process.env.VITE_APP_URL || req.headers.origin;
+      const timestamp = new Date().toISOString().split('T')[0];
+
+      // Create payment data object in the exact order PayFast expects
+      const paymentData = {
+        merchant_id: merchantId,
+        merchant_key: merchantKey,
+        return_url: `${baseUrl}/payment/success?token=${token}`,
+        cancel_url: `${baseUrl}/payment/failure`,
+        notify_url: `${baseUrl}/api/payment-webhook`,
+        name_first: firstName || '',
+        email_address: email,
+        amount: "2000.00",
+        item_name: "Proply Pro Subscription",
+        subscription_type: "1",
+        billing_date: timestamp,
+        recurring_amount: "2000.00",
+        frequency: "3",
+        cycles: "0"
+      };
+
+      // Generate signature string by concatenating values in the correct order
+      const signatureString = Object.entries(paymentData)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([_, value]) => value)
+        .join('');
+
+      // Generate PayFast signature
+      const signature = createHmac('md5', merchantKey)
+        .update(signatureString)
+        .digest('hex');
+
+      // Return payment data with signature
       res.json({
         paymentToken: token,
+        paymentData,
+        signature,
         merchantData: {
-          merchant_id: process.env.VITE_PAYFAST_MERCHANT_ID || "10000100",
-          merchant_key: process.env.VITE_PAYFAST_MERCHANT_KEY || "46f0cd694581a"
+          merchant_id: merchantId,
+          merchant_key: merchantKey
         }
       });
     } catch (error) {
