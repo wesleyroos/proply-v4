@@ -90,30 +90,43 @@ export default function PaymentSuccessPage() {
         try {
           const passwordKey = compressed.k;
           const password = localStorage.getItem(passwordKey);
-          if (!password) {
-            throw new Error('Registration data not found');
-          }
-          // Clean up stored password immediately
-          localStorage.removeItem(passwordKey);
+          
+          try {
+            if (!password) {
+              // Check if user is already logged in
+              const currentUser = await fetch('/api/user', {
+                credentials: 'include'
+              }).then(r => r.json()).catch(() => null);
+              
+              if (currentUser) {
+                setIsProcessing(false);
+                setTimeout(() => setLocation('/dashboard'), 1000);
+                return;
+              }
+              throw new Error('Registration data not found');
+            }
 
-          await register({
-            username: compressed.e,
-            email: compressed.e,
-            password: password,
-            firstName: compressed.f || '',
-            lastName: compressed.l || '',
-            userType: compressed.t || 'individual',
-            subscriptionStatus: 'pro'
-          });
+            // Clean up stored password immediately
+            localStorage.removeItem(passwordKey);
 
-          // Clean up
-          localStorage.removeItem('temp_registration_password');
+            await register({
+              username: compressed.e,
+              email: compressed.e,
+              password: password,
+              firstName: compressed.f || '',
+              lastName: compressed.l || '',
+              userType: compressed.t || 'individual',
+              subscriptionStatus: 'pro'
+            });
 
-          // After successful registration, attempt login
-          await login({
-            email: compressed.e,
-            password: password
-          });
+            // Clean up
+            localStorage.removeItem('temp_registration_password');
+
+            // After successful registration, attempt login
+            await login({
+              email: compressed.e,
+              password: password
+            });
 
           setIsProcessing(false);
           queryClient.invalidateQueries({ queryKey: ['user'] });
