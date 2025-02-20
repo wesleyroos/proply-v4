@@ -75,16 +75,23 @@ export default function PaymentSuccessPage() {
         const password = localStorage.getItem(passwordKey);
 
         if (!password) {
+          // Check if user is already logged in
           const currentUser = await fetch('/api/user', {
             credentials: 'include'
           }).then(r => r.json()).catch(() => null);
 
           if (currentUser) {
+            console.log('User already logged in, redirecting to dashboard');
             setIsProcessing(false);
             setTimeout(() => setLocation('/dashboard'), 1000);
             return;
           }
-          throw new Error('Registration data not found');
+
+          // Only throw error if we're not already logged in
+          console.log('Processing new registration...');
+          if (!compressed.e) {
+            throw new Error('Registration data not found');
+          }
         }
 
         // Clean up stored password
