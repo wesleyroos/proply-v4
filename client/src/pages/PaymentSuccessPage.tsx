@@ -72,17 +72,19 @@ export default function PaymentSuccessPage() {
 
         // Handle new user registration
         const passwordKey = compressed.k;
-        if (!passwordKey) {
-          throw new Error('Missing registration key');
-        }
-
         const password = localStorage.getItem(passwordKey);
-        if (!password) {
-          throw new Error('Registration password not found');
-        }
+        
+        // Check if user is already logged in
+        const currentUser = await fetch('/api/user', {
+          credentials: 'include'
+        }).then(r => r.json()).catch(() => null);
 
-        // Clean up stored password after retrieving it
-        localStorage.removeItem(passwordKey);
+        if (currentUser) {
+          console.log('User already logged in, redirecting to dashboard');
+          setIsProcessing(false);
+          setTimeout(() => setLocation('/dashboard'), 1000);
+          return;
+        }
 
         // Verify we have all required registration data
         if (!compressed.e || !password) {
@@ -94,30 +96,15 @@ export default function PaymentSuccessPage() {
         // Clean up stored password after retrieving it
         localStorage.removeItem(passwordKey);
 
-        const startDate = new Date();
-        const nextBillingDate = new Date(startDate);
-        nextBillingDate.setDate(nextBillingDate.getDate() + 30);
-
-        // Format dates in UTC to avoid timezone issues
-        // Ensure dates are properly formatted for the API
-        const startDateStr = startDate.toISOString();
-        const nextBillingDateStr = nextBillingDate.toISOString();
-
-        const registerResult = await register({
+        await register({
           username: compressed.e,
           email: compressed.e,
           password: password,
           firstName: compressed.f || '',
           lastName: compressed.l || '',
           userType: compressed.t || 'individual',
-          subscriptionStatus: 'pro',
-          subscriptionStartDate: startDateStr,
-          subscriptionNextBillingDate: nextBillingDateStr
+          subscriptionStatus: 'pro'
         });
-
-        if (!registerResult?.id) {
-          throw new Error('Registration failed');
-        }
 
         localStorage.removeItem('temp_registration_password');
 
