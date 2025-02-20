@@ -1,0 +1,41 @@
+URL Search params: 
+PaymentSuccessPage.tsx:26 Encoded data: null
+PaymentSuccessPage.tsx:29 Missing registration data. Redirecting to registration page.
+processPaymentSuccess @ PaymentSuccessPage.tsx:29
+(anonymous) @ PaymentSuccessPage.tsx:133
+commitHookEffectListMount @ chunk-UPELNCPK.js?v=0804f56a:16915
+commitPassiveMountOnFiber @ chunk-UPELNCPK.js?v=0804f56a:18156
+commitPassiveMountEffects_complete @ chunk-UPELNCPK.js?v=0804f56a:18129
+commitPassiveMountEffects_begin @ chunk-UPELNCPK.js?v=0804f56a:18119
+commitPassiveMountEffects @ chunk-UPELNCPK.js?v=0804f56a:18109
+flushPassiveEffectsImpl @ chunk-UPELNCPK.js?v=0804f56a:19490
+flushPassiveEffects @ chunk-UPELNCPK.js?v=0804f56a:19447
+performSyncWorkOnRoot @ chunk-UPELNCPK.js?v=0804f56a:18868
+flushSyncCallbacks @ chunk-UPELNCPK.js?v=0804f56a:9119
+commitRootImpl @ chunk-UPELNCPK.js?v=0804f56a:19432
+commitRoot @ chunk-UPELNCPK.js?v=0804f56a:19277
+finishConcurrentRender @ chunk-UPELNCPK.js?v=0804f56a:18805
+performConcurrentWorkOnRoot @ chunk-UPELNCPK.js?v=0804f56a:18718
+workLoop @ chunk-UPELNCPK.js?v=0804f56a:197
+flushWork @ chunk-UPELNCPK.js?v=0804f56a:176
+performWorkUntilDeadline @ chunk-UPELNCPK.js?v=0804f56a:384Understand this errorAI
+PaymentSuccessPage.tsx:25 URL Search params: 
+PaymentSuccessPage.tsx:26 Encoded data: null
+PaymentSuccessPage.tsx:29 Missing registration data. Redirecting to registration page.
+processPaymentSuccess @ PaymentSuccessPage.tsx:29
+(anonymous) @ PaymentSuccessPage.tsx:133
+commitHookEffectListMount @ chunk-UPELNCPK.js?v=0804f56a:16915
+invokePassiveEffectMountInDEV @ chunk-UPELNCPK.js?v=0804f56a:18324
+invokeEffectsInDev @ chunk-UPELNCPK.js?v=0804f56a:19701
+commitDoubleInvokeEffectsInDEV @ chunk-UPELNCPK.js?v=0804f56a:19686
+flushPassiveEffectsImpl @ chunk-UPELNCPK.js?v=0804f56a:19503
+flushPassiveEffects @ chunk-UPELNCPK.js?v=0804f56a:19447
+performSyncWorkOnRoot @ chunk-UPELNCPK.js?v=0804f56a:18868
+flushSyncCallbacks @ chunk-UPELNCPK.js?v=0804f56a:9119
+commitRootImpl @ chunk-UPELNCPK.js?v=0804f56a:19432
+commitRoot @ chunk-UPELNCPK.js?v=0804f56a:19277
+finishConcurrentRender @ chunk-UPELNCPK.js?v=0804f56a:18805
+performConcurrentWorkOnRoot @ chunk-UPELNCPK.js?v=0804f56a:18718
+workLoop @ chunk-UPELNCPK.js?v=0804f56a:197
+flushWork @ chunk-UPELNCPK.js?v=0804f56a:176
+performWorkUntilDeadline @ chunk-UPELNCPK.js?v=0804f56a:384Understand this errorAI
