@@ -11,7 +11,7 @@ import {
   type SelectUser,
   type InsertUser,
   apiUsage,
-  subscriptionHistory, // Added import for subscription history table
+  subscriptionHistory,
 } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -72,8 +72,8 @@ export function registerRoutes(app: Express): Server {
       });
 
       const isDevelopment = process.env.NODE_ENV !== 'production';
-      const merchantId = import.meta.env.VITE_PAYFAST_MERCHANT_ID;
-      const merchantKey = import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
+      const merchantId = process.env.VITE_PAYFAST_MERCHANT_ID;
+      const merchantKey = process.env.VITE_PAYFAST_MERCHANT_KEY;
 
       if (!merchantId || !merchantKey) {
         console.error('PayFast merchant credentials missing');
@@ -964,7 +964,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get all rent compare properties for the current user.
+  // Get all rentcompare properties for the current user.
   app.get("/api/properties", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.id) {
       return res.status(401).send("Not authenticated");
@@ -1698,7 +1698,7 @@ export function registerRoutes(app: Express): Server {
       if (req.sessionStore) {
         req.sessionStore.clear();
       }
-      
+
       // Log out current user
       req.logout((err) => {
         if (err) {
@@ -1713,7 +1713,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Add new endpoint after the existing signup analytics endpoint
+  // Add this new endpoint after the existing signup analytics endpoint
   app.get("/api/analytics/reports", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
       return res.status(403).send("Not authorized");
