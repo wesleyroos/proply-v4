@@ -64,12 +64,13 @@ export default function RegisterPage() {
     const isSandboxMode = localStorage.getItem('payfast_sandbox_mode') === 'true';
     console.log('Initiating PayFast payment in', isSandboxMode ? 'sandbox' : 'production', 'mode');
 
+    // Always check localStorage for sandbox mode
     const merchantId = isSandboxMode 
-      ? "10000100" // PayFast sandbox merchant ID
+      ? "10000100" 
       : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
 
     const merchantKey = isSandboxMode
-      ? "46f0cd694581a" // PayFast sandbox merchant key
+      ? "46f0cd694581a" 
       : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
 
     if (!merchantId || !merchantKey) {
@@ -129,7 +130,9 @@ export default function RegisterPage() {
     try {
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = isSandboxMode
+      // Get fresh sandbox mode value to ensure consistency
+      const currentSandboxMode = localStorage.getItem('payfast_sandbox_mode') === 'true';
+      form.action = currentSandboxMode
         ? "https://sandbox.payfast.co.za/eng/process"
         : "https://www.payfast.co.za/eng/process";
 
