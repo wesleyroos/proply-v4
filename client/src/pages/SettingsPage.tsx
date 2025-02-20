@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CalendarDays, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+
 
 interface ProfileFormData {
   firstName: string;
@@ -51,9 +51,6 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [isSandboxMode, setIsSandboxMode] = useState(() => {
-    return localStorage.getItem('payfast_sandbox_mode') === 'true';
-  });
 
   const formatDate = (date: string | Date | null | undefined) => {
     if (!date) return 'Not available';
@@ -98,39 +95,9 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
     ]
   };
 
-  const handleSandboxToggle = (checked: boolean) => {
-    localStorage.setItem('payfast_sandbox_mode', checked.toString());
-    setIsSandboxMode(checked);
-    toast({
-      title: "PayFast Mode Changed",
-      description: `Switched to ${checked ? 'Sandbox' : 'Live'} mode`,
-      duration: 3000,
-    });
-  };
 
   return (
     <div className="space-y-6">
-      {user?.userType === 'admin' && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-yellow-800">PayFast Test Mode</h3>
-              <p className="text-sm text-yellow-700 mt-1">
-                Toggle between sandbox and live PayFast environments
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-yellow-700">
-                {isSandboxMode ? 'Sandbox' : 'Live'}
-              </span>
-              <Switch
-                checked={isSandboxMode}
-                onCheckedChange={handleSandboxToggle}
-              />
-            </div>
-          </div>
-        </div>
-      )}
       {user?.pendingDowngrade && user?.subscriptionExpiryDate && (
         <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
           <div className="flex items-center">

@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import type { SelectUser } from "@db/schema";
 import NotificationsMenu from "@/components/NotificationsMenu";
+import { Switch } from "@/components/ui/switch";
 
 // Components imports
 import {
@@ -65,6 +66,7 @@ import {
   ChevronUp,
   ChevronDown,
   RefreshCcw,
+  CreditCard,
 } from "lucide-react";
 
 // Utils
@@ -134,6 +136,9 @@ export default function AdminPage() {
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: "reportsGenerated",
     direction: "desc",
+  });
+  const [isSandboxMode, setIsSandboxMode] = useState(() => {
+    return localStorage.getItem('payfast_sandbox_mode') === 'true';
   });
 
   const { toast } = useToast();
@@ -259,6 +264,16 @@ export default function AdminPage() {
     );
   };
 
+  const handleSandboxToggle = (checked: boolean) => {
+    localStorage.setItem('payfast_sandbox_mode', checked.toString());
+    setIsSandboxMode(checked);
+    toast({
+      title: "PayFast Mode Changed",
+      description: `Switched to ${checked ? 'Sandbox' : 'Live'} mode`,
+      duration: 3000,
+    });
+  };
+
   if (!user?.isAdmin) {
     return (
       <div className="container py-6">
@@ -279,6 +294,37 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold">User Management</h1>
           {user?.isAdmin && <NotificationsMenu />}
         </div>
+
+        {/* PayFast Sandbox Toggle Card */}
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-yellow-800">PayFast Payment Mode</CardTitle>
+                <CardDescription className="text-yellow-700">
+                  Toggle between sandbox and live payment environments
+                </CardDescription>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className={cn(
+                  "text-sm font-medium",
+                  isSandboxMode ? "text-yellow-600" : "text-green-600"
+                )}>
+                  {isSandboxMode ? 'Sandbox Mode' : 'Live Mode'}
+                </span>
+                <Switch
+                  checked={isSandboxMode}
+                  onCheckedChange={handleSandboxToggle}
+                  className="data-[state=checked]:bg-yellow-600"
+                />
+                <CreditCard className={cn(
+                  "h-5 w-5",
+                  isSandboxMode ? "text-yellow-600" : "text-green-600"
+                )} />
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
