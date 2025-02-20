@@ -91,6 +91,10 @@ export default function RegisterPage() {
         ? "https://sandbox.payfast.co.za/eng/process"
         : "https://www.payfast.co.za/eng/process";
 
+      // Format amounts properly for PayFast (no decimals in string)
+      const amount = "2000.00";
+      const recurringAmount = "2000.00";
+
       const paymentData = {
         merchant_id: merchantData.merchant_id,
         merchant_key: merchantData.merchant_key,
@@ -99,21 +103,40 @@ export default function RegisterPage() {
         notify_url: `${window.location.origin}/api/payment-webhook`,
         name_first: formData.firstName,
         email_address: formData.email,
-        amount: "2000.00",
+        amount,
         item_name: "Proply Pro Subscription",
         subscription_type: "1",
         billing_date: new Date().toISOString().split('T')[0],
-        recurring_amount: "2000.00",
+        recurring_amount: recurringAmount,
         frequency: "3",
         cycles: "0"
       };
 
-      Object.entries(paymentData).forEach(([key, value]) => {
-        if (value !== undefined) {
+      // Add form fields in a specific order
+      const requiredFields = [
+        'merchant_id',
+        'merchant_key',
+        'return_url',
+        'cancel_url',
+        'notify_url',
+        'name_first',
+        'email_address',
+        'amount',
+        'item_name',
+        'subscription_type',
+        'billing_date',
+        'recurring_amount',
+        'frequency',
+        'cycles'
+      ];
+
+      // Add fields in specific order
+      requiredFields.forEach(fieldName => {
+        if (fieldName in paymentData) {
           const input = document.createElement("input");
           input.type = "hidden";
-          input.name = key;
-          input.value = value.toString();
+          input.name = fieldName;
+          input.value = paymentData[fieldName as keyof typeof paymentData].toString();
           form.appendChild(input);
         }
       });
