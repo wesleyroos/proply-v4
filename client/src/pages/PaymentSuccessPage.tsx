@@ -73,28 +73,27 @@ export default function PaymentSuccessPage() {
         // Handle new user registration
         const passwordKey = compressed.k;
         const password = localStorage.getItem(passwordKey);
+        
+        // Check if user is already logged in
+        const currentUser = await fetch('/api/user', {
+          credentials: 'include'
+        }).then(r => r.json()).catch(() => null);
 
-        if (!password) {
-          // Check if user is already logged in
-          const currentUser = await fetch('/api/user', {
-            credentials: 'include'
-          }).then(r => r.json()).catch(() => null);
-
-          if (currentUser) {
-            console.log('User already logged in, redirecting to dashboard');
-            setIsProcessing(false);
-            setTimeout(() => setLocation('/dashboard'), 1000);
-            return;
-          }
-
-          // Only throw error if we're not already logged in
-          console.log('Processing new registration...');
-          if (!compressed.e) {
-            throw new Error('Registration data not found');
-          }
+        if (currentUser) {
+          console.log('User already logged in, redirecting to dashboard');
+          setIsProcessing(false);
+          setTimeout(() => setLocation('/dashboard'), 1000);
+          return;
         }
 
-        // Clean up stored password
+        // Verify we have all required registration data
+        if (!compressed.e || !password) {
+          throw new Error('Registration data or password not found');
+        }
+
+        console.log('Processing new registration...');
+        
+        // Clean up stored password after retrieving it
         localStorage.removeItem(passwordKey);
 
         await register({
