@@ -74,18 +74,16 @@ export default function PaymentSuccessPage() {
         const passwordKey = compressed.k;
         const password = localStorage.getItem(passwordKey);
         
-        // Only check for existing user during upgrade flow, not during registration
-        if (!password) { // If no password, this is an upgrade flow
-          const currentUser = await fetch('/api/user', {
-            credentials: 'include'
-          }).then(r => r.json()).catch(() => null);
+        // Check if user is already logged in
+        const currentUser = await fetch('/api/user', {
+          credentials: 'include'
+        }).then(r => r.json()).catch(() => null);
 
-          if (currentUser) {
-            console.log('User already logged in, redirecting to dashboard');
-            setIsProcessing(false);
-            setTimeout(() => setLocation('/dashboard'), 1000);
-            return;
-          }
+        if (currentUser) {
+          console.log('User already logged in, redirecting to dashboard');
+          setIsProcessing(false);
+          setTimeout(() => setLocation('/dashboard'), 1000);
+          return;
         }
 
         // Verify we have all required registration data
