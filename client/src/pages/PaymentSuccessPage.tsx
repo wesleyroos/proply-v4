@@ -91,16 +91,6 @@ export default function PaymentSuccessPage() {
           const passwordKey = compressed.k;
           const password = localStorage.getItem(passwordKey);
           if (!password) {
-            // If no password found but user is logged in, skip error
-            const currentUser = await fetch('/api/user', {
-              credentials: 'include'
-            }).then(r => r.json()).catch(() => null);
-            
-            if (currentUser) {
-              setIsProcessing(false);
-              setTimeout(() => setLocation('/dashboard'), 2000);
-              return;
-            }
             throw new Error('Registration data not found');
           }
           // Clean up stored password immediately
