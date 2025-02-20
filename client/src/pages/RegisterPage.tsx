@@ -102,7 +102,7 @@ export default function RegisterPage() {
     const paymentData = {
       merchant_id: merchantId,
       merchant_key: merchantKey,
-      return_url: `${window.location.origin}/payment/success`,
+      return_url: `${window.location.origin}/payment/success?custom_str1=${encodedData}`,
       cancel_url: `${window.location.origin}/payment/failure`,
       notify_url: `${window.location.origin}/api/payment-webhook`,
       name_first: formData.firstName,

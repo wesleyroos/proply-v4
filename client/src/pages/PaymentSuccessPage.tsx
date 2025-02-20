@@ -20,13 +20,15 @@ export default function PaymentSuccessPage() {
       try {
         // Get registration/upgrade data from URL params
         const params = new URLSearchParams(window.location.search);
-        const encodedData = params.get('upgrade_data') || params.get('custom_str1');
-
+        const encodedData = params.get('custom_str1');
+        
         console.log('URL Search params:', window.location.search);
         console.log('Encoded data:', encodedData);
 
         if (!encodedData) {
-          throw new Error('Registration/upgrade data not found in URL parameters');
+          console.error('Missing registration data. Redirecting to registration page.');
+          setLocation('/register');
+          return;
         }
 
         let compressed;
