@@ -86,16 +86,33 @@ export default function PaymentSuccessPage() {
 
         // Create new user
         try {
-          // Redirect to login page since we can't securely handle credentials here
-          toast({
-            title: "Registration Complete",
-            description: "Please log in with your credentials to continue",
+          const password = localStorage.getItem('temp_registration_password');
+          if (!password) {
+            throw new Error('Registration data not found');
+          }
+
+          await register({
+            username: compressed.e,
+            email: compressed.e,
+            password: password,
+            firstName: compressed.f || '',
+            lastName: compressed.l || '',
+            userType: compressed.t || 'individual',
+            subscriptionStatus: 'pro'
           });
-          setTimeout(() => setLocation('/login'), 2000);
-          return;
+
+          // Clean up
+          localStorage.removeItem('temp_registration_password');
+
+          // After successful registration, attempt login
+          await login({
+            email: compressed.e,
+            password: password
+          });
 
           setIsProcessing(false);
           queryClient.invalidateQueries({ queryKey: ['user'] });
+          setTimeout(() => setLocation('/dashboard'), 2000);
 
         } catch (error) {
           console.error('Registration/Login error:', error);

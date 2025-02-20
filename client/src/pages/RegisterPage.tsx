@@ -81,9 +81,11 @@ export default function RegisterPage() {
       return;
     }
 
+    // Store password temporarily in localStorage for registration completion
+    localStorage.setItem('temp_registration_password', formData.password);
+    
     const registrationData = {
       e: formData.email,
-      p: formData.password,
       f: formData.firstName,
       l: formData.lastName,
       t: formData.userType,
