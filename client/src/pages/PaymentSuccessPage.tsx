@@ -54,8 +54,8 @@ export default function PaymentSuccessPage() {
             body: JSON.stringify({
               userId: compressed.uid,
               subscriptionStatus: 'pro',
-              subscriptionStartDate: new Date().toISOString(),
-              subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+              subscriptionStartDate: new Date(),
+              subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
             }),
             credentials: 'include'
           });
@@ -91,8 +91,8 @@ export default function PaymentSuccessPage() {
           lastName: compressed.l,
           userType: compressed.t || 'individual',
           subscriptionStatus: 'pro', // Always pro since payment was successful
-          subscriptionStartDate: new Date().toISOString(),
-          subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+          subscriptionStartDate: new Date(),
+          subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
         };
 
         console.log('Registering new user with data:', {
@@ -102,6 +102,7 @@ export default function PaymentSuccessPage() {
           originalPlan: compressed.s
         });
 
+        // Register the new user
         await register(registrationData);
 
         // Login the user
