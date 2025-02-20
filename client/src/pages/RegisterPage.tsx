@@ -23,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useUser } from "../hooks/use-user";
 
 interface ProfileFormData {
   firstName: string;
@@ -37,7 +36,6 @@ interface ProfileFormData {
 }
 
 export default function RegisterPage() {
-  const { login, register } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [, setLocation] = useLocation();
@@ -58,69 +56,57 @@ export default function RegisterPage() {
     },
   });
 
-  const initiatePayFastPayment = (formData: ProfileFormData) => {
-    const isDevelopment = import.meta.env.DEV;
-    console.log('Initiating PayFast payment in', isDevelopment ? 'sandbox' : 'production', 'mode');
-
-    const merchantId = isDevelopment
-      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
-      : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
-
-    const merchantKey = isDevelopment
-      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY
-      : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
-
-    if (!merchantId || !merchantKey) {
-      console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
-      toast({
-        variant: "destructive",
-        title: "Payment Setup Error",
-        description: "Unable to process payment at this time. Please try again later or contact support.",
-        duration: 5000,
-      });
-      return;
-    }
-
-    const registrationData = {
-      e: formData.email,
-      p: formData.password,
-      f: formData.firstName,
-      l: formData.lastName,
-      t: formData.userType,
-      s: selectedPlan
-    };
-
-    const encodedData = encodeURIComponent(JSON.stringify(registrationData));
-
-    const paymentData = {
-      merchant_id: merchantId,
-      merchant_key: merchantKey,
-      return_url: `${window.location.origin}/payment/success?custom_str1=${encodedData}`,
-      cancel_url: `${window.location.origin}/payment/failure`,
-      notify_url: `${window.location.origin}/api/payment-webhook`,
-      name_first: formData.firstName,
-      email_address: formData.email,
-      amount: "2000.00",
-      item_name: "Proply Pro Subscription",
-      subscription_type: "1",
-      billing_date: new Date().toISOString().split('T')[0],
-      recurring_amount: "2000.00",
-      frequency: "3",
-      cycles: "0"
-    };
-
-    console.log('Payment data:', {
-      ...paymentData,
-      merchant_id: '[REDACTED]',
-      merchant_key: '[REDACTED]'
-    });
-
+  const initiatePaymentFlow = async (formData: ProfileFormData) => {
     try {
+      setIsLoading(true);
+      setError(null);
+
+      // Create payment session with registration data
+      const response = await fetch('/api/payments/create-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          userType: formData.userType,
+          subscriptionType: selectedPlan
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to initialize payment');
+      }
+
+      const { paymentToken, merchantData } = await response.json();
+
+      const isDevelopment = import.meta.env.DEV;
       const form = document.createElement("form");
       form.method = "POST";
       form.action = isDevelopment
         ? "https://sandbox.payfast.co.za/eng/process"
         : "https://www.payfast.co.za/eng/process";
+
+      const paymentData = {
+        merchant_id: merchantData.merchant_id,
+        merchant_key: merchantData.merchant_key,
+        return_url: `${window.location.origin}/payment/success?token=${paymentToken}`,
+        cancel_url: `${window.location.origin}/payment/failure`,
+        notify_url: `${window.location.origin}/api/payment-webhook`,
+        name_first: formData.firstName,
+        email_address: formData.email,
+        amount: "2000.00",
+        item_name: "Proply Pro Subscription",
+        subscription_type: "1",
+        billing_date: new Date().toISOString().split('T')[0],
+        recurring_amount: "2000.00",
+        frequency: "3",
+        cycles: "0"
+      };
 
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value !== undefined) {
@@ -135,8 +121,16 @@ export default function RegisterPage() {
       document.body.appendChild(form);
       form.submit();
     } catch (error) {
-      console.error('Error submitting payment form:', error);
-      setError(error instanceof Error ? error.message : "Failed to initiate payment");
+      console.error('Payment initialization error:', error);
+      setError(error instanceof Error ? error.message : "Failed to initialize payment");
+      setIsLoading(false);
+
+      toast({
+        variant: "destructive",
+        title: "Payment Error",
+        description: "Failed to initialize payment. Please try again.",
+        duration: 5000
+      });
     }
   };
 
@@ -146,35 +140,42 @@ export default function RegisterPage() {
       setError(null);
 
       if (selectedPlan === 'pro' && !data.accessCode) {
-        initiatePayFastPayment(data);
+        await initiatePaymentFlow(data);
         return;
       }
 
-      const registrationData = {
-        username: data.email,
-        email: data.email,
-        password: data.password,
-        userType: data.userType,
-        company: data.company,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        accessCode: data.accessCode,
-        subscriptionStatus: selectedPlan
-      };
-
-      await register(registrationData);
-      await login({
-        username: data.email,
-        email: data.email,
-        password: data.password,
-        userType: data.userType
+      // Handle free plan registration
+      const registerResponse = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: data.email,
+          email: data.email,
+          password: data.password,
+          userType: data.userType,
+          company: data.company,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          accessCode: data.accessCode,
+          subscriptionStatus: selectedPlan
+        })
       });
 
-      setLocation('/dashboard');
+      if (!registerResponse.ok) {
+        const errorText = await registerResponse.text();
+        throw new Error(errorText || 'Registration failed');
+      }
+
+      setLocation('/login');
+      toast({
+        title: "Success",
+        description: "Registration successful! Please log in.",
+      });
     } catch (error) {
       console.error('Registration error:', error);
       setError(error instanceof Error ? error.message : "An unexpected error occurred");
-    } finally {
       setIsLoading(false);
     }
   };
