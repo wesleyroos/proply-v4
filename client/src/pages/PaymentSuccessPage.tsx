@@ -116,6 +116,8 @@ export default function PaymentSuccessPage() {
           lastName: compressed.l || "",
           userType: compressed.t || "individual",
           subscriptionStatus: "pro",
+          subscriptionStartDate: new Date(),
+          subscriptionNextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         });
 
         localStorage.removeItem("temp_registration_password");
