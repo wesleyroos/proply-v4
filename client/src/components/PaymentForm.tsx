@@ -21,8 +21,16 @@ export default function PaymentForm({ registrationData = null }) {
   }
 
   const onSubmit = (data: PaymentFormData) => {
-    const merchantId = import.meta.env.VITE_PAYFAST_MERCHANT_ID;
-    const merchantKey = import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
+    const isSandboxMode = localStorage.getItem('payfast_sandbox_mode') === 'true';
+
+    // Use sandbox credentials if in sandbox mode
+    const merchantId = isSandboxMode 
+      ? "10000100" // PayFast sandbox merchant ID
+      : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
+
+    const merchantKey = isSandboxMode
+      ? "46f0cd694581a" // PayFast sandbox merchant key
+      : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
 
     if (!merchantId || !merchantKey) {
       console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
@@ -35,7 +43,11 @@ export default function PaymentForm({ registrationData = null }) {
       return;
     }
 
-    console.log('Initiating PayFast payment for:', { name: data.name, email: data.email });
+    console.log('Initiating PayFast payment for:', { 
+      name: data.name, 
+      email: data.email,
+      mode: isSandboxMode ? 'sandbox' : 'live'
+    });
 
     const paymentData = {
       merchant_id: merchantId,
@@ -66,7 +78,9 @@ export default function PaymentForm({ registrationData = null }) {
     try {
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = "https://www.payfast.co.za/eng/process";
+      form.action = isSandboxMode
+        ? "https://sandbox.payfast.co.za/eng/process"
+        : "https://www.payfast.co.za/eng/process";
 
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value !== undefined) {

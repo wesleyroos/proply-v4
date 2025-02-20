@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CalendarDays, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 interface ProfileFormData {
   firstName: string;
@@ -50,6 +51,9 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isSandboxMode, setIsSandboxMode] = useState(() => {
+    return localStorage.getItem('payfast_sandbox_mode') === 'true';
+  });
 
   const formatDate = (date: string | Date | null | undefined) => {
     if (!date) return 'Not available';
@@ -64,7 +68,6 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
     }
   };
 
-  // Determine subscription dates display
   const subscriptionDates = user ? {
     nextBilling: user.subscriptionNextBillingDate ? formatDate(new Date(user.subscriptionNextBillingDate)) : 'Not available',
     activationDate: user.subscriptionStartDate ? formatDate(new Date(user.subscriptionStartDate)) : 'Not available'
@@ -73,7 +76,6 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
     activationDate: 'Not available'
   };
 
-  // For debugging
   console.log('User subscription data:', {
     startDate: user?.subscriptionStartDate,
     nextBilling: user?.subscriptionNextBillingDate,
@@ -96,8 +98,39 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
     ]
   };
 
+  const handleSandboxToggle = (checked: boolean) => {
+    localStorage.setItem('payfast_sandbox_mode', checked.toString());
+    setIsSandboxMode(checked);
+    toast({
+      title: "PayFast Mode Changed",
+      description: `Switched to ${checked ? 'Sandbox' : 'Live'} mode`,
+      duration: 3000,
+    });
+  };
+
   return (
     <div className="space-y-6">
+      {user?.userType === 'admin' && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-yellow-800">PayFast Test Mode</h3>
+              <p className="text-sm text-yellow-700 mt-1">
+                Toggle between sandbox and live PayFast environments
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-yellow-700">
+                {isSandboxMode ? 'Sandbox' : 'Live'}
+              </span>
+              <Switch
+                checked={isSandboxMode}
+                onCheckedChange={handleSandboxToggle}
+              />
+            </div>
+          </div>
+        </div>
+      )}
       {user?.pendingDowngrade && user?.subscriptionExpiryDate && (
         <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
           <div className="flex items-center">
@@ -213,7 +246,6 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
                 </AlertDialogContent>
               </AlertDialog>
 
-              {/* Add Downgrade Button */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
@@ -392,12 +424,12 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
               </Button>
             </div>
           </div>
-          ) : (
-            <div className="space-y-4">
+        ) : (
+          <div className="space-y-4">
 
-            </div>
-          )}
-          <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+          </div>
+        )}
+        <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
       </div>
     </div>
   );
@@ -514,7 +546,6 @@ export default function SettingsPage() {
   const initiateProUpgrade = () => {
     console.log('Initiating Pro upgrade payment flow (Sandbox Mode)');
 
-    // Get merchant credentials from environment
     const merchantId = import.meta.env.DEV 
       ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
       : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
@@ -584,15 +615,6 @@ export default function SettingsPage() {
       form.action = import.meta.env.DEV 
         ? "https://sandbox.payfast.co.za/eng/process"
         : "https://www.payfast.co.za/eng/process";
-
-      // Add required merchant details for sandbox
-      const merchantData = {
-        merchant_id: import.meta.env.DEV ? "10000100" : import.meta.env.VITE_PAYFAST_MERCHANT_ID,
-        merchant_key: import.meta.env.DEV ? "46f0cd694581a" : import.meta.env.VITE_PAYFAST_MERCHANT_KEY,
-        return_url: window.location.origin + "/payment-success",
-        cancel_url: window.location.origin + "/payment-failure",
-        notify_url: window.location.origin + "/api/payment-webhook",
-      };
 
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value !== undefined) {
