@@ -27,10 +27,22 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
       // Add a small delay to ensure proper form setup
       await new Promise(resolve => setTimeout(resolve, 100));
 
+      // Prepare upgrade data to match registration flow format
+      const upgradeData = {
+        uid: user?.id,
+        e: user?.email,
+        f: user?.firstName,
+        l: user?.lastName,
+        t: user?.userType || 'individual',
+        s: 'pro'
+      };
+      
+      const encodedData = encodeURIComponent(JSON.stringify(upgradeData));
+
       const paymentData = {
         merchant_id: isSandboxMode ? "10000100" : import.meta.env.VITE_PAYFAST_MERCHANT_ID,
         merchant_key: isSandboxMode ? "46f0cd694581a" : import.meta.env.VITE_PAYFAST_MERCHANT_KEY,
-        return_url: `${window.location.origin}/payment/success`,
+        return_url: `${window.location.origin}/payment/success?custom_str1=${encodedData}`,
         cancel_url: `${window.location.origin}/settings`,
         notify_url: `${window.location.origin}/api/payment-webhook`,
         name_first: user?.firstName || "",
