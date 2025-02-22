@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -31,7 +31,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CalendarDays, AlertTriangle, CheckCircle2 } from "lucide-react";
-
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { Download } from "lucide-react";
 
 interface ProfileFormData {
   firstName: string;
@@ -39,12 +41,122 @@ interface ProfileFormData {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
-  companyLogo?: string; 
+  companyLogo?: string;
 }
 
 interface BillingDetailsProps {
   user: SelectUser;
   onUpgrade: () => void;
+}
+
+interface Invoice {
+  id: number;
+  invoiceNumber: string;
+  amount: number;
+  status: string;
+  periodStart: string;
+  periodEnd: string;
+  pdfUrl: string | null;
+  generatedAt: string;
+  paidAt: string | null;
+}
+
+function InvoiceList() {
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      try {
+        const response = await fetch('/api/invoices', {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch invoices');
+        }
+
+        const data = await response.json();
+        setInvoices(data);
+      } catch (error) {
+        console.error('Error fetching invoices:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load invoices. Please try again later.",
+          duration: 5000,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInvoices();
+  }, [toast]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-12 bg-gray-100 rounded animate-pulse" />
+        <div className="h-12 bg-gray-100 rounded animate-pulse" />
+        <div className="h-12 bg-gray-100 rounded animate-pulse" />
+      </div>
+    );
+  }
+
+  if (invoices.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">No invoices found</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {invoices.map((invoice) => (
+        <div
+          key={invoice.id}
+          className="flex items-center justify-between p-4 rounded-lg border"
+        >
+          <div>
+            <p className="font-medium">Invoice #{invoice.invoiceNumber}</p>
+            <p className="text-sm text-muted-foreground">
+              Period: {format(new Date(invoice.periodStart), 'MMM d, yyyy')} - {format(new Date(invoice.periodEnd), 'MMM d, yyyy')}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Generated: {format(new Date(invoice.generatedAt), 'MMM d, yyyy')}
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <p className="font-medium">R{invoice.amount.toFixed(2)}</p>
+            <div className="flex items-center gap-2">
+              {invoice.pdfUrl && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(invoice.pdfUrl, '_blank')}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+              )}
+              <div className={`px-2 py-1 rounded-full text-xs ${
+                invoice.status === 'paid'
+                  ? 'bg-green-100 text-green-800'
+                  : invoice.status === 'pending'
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
@@ -442,7 +554,7 @@ export default function SettingsPage() {
         body: JSON.stringify({
           firstName: data.firstName,
           lastName: data.lastName,
-          companyLogo: data.companyLogo || previewLogo 
+          companyLogo: data.companyLogo || previewLogo
         }),
         credentials: 'include'
       });
@@ -513,7 +625,7 @@ export default function SettingsPage() {
   const initiateProUpgrade = () => {
     console.log('Initiating Pro upgrade payment flow (Sandbox Mode)');
 
-    const merchantId = import.meta.env.DEV 
+    const merchantId = import.meta.env.DEV
       ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
       : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
     const merchantKey = import.meta.env.DEV
@@ -579,7 +691,7 @@ export default function SettingsPage() {
     try {
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = import.meta.env.DEV 
+      form.action = import.meta.env.DEV
         ? "https://sandbox.payfast.co.za/eng/process"
         : "https://www.payfast.co.za/eng/process";
 
@@ -618,6 +730,7 @@ export default function SettingsPage() {
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="security">Security</TabsTrigger>
               <TabsTrigger value="billing">Billing</TabsTrigger>
+              <TabsTrigger value="invoices">Invoices</TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile">
@@ -682,7 +795,7 @@ export default function SettingsPage() {
                             <Input
                               type="file"
                               accept="image/*"
-                              onChange={handleLogoUpload} 
+                              onChange={handleLogoUpload}
                               className="mb-2"
                             />
                             <p className="text-sm text-gray-500">
@@ -791,6 +904,18 @@ export default function SettingsPage() {
                     </div>
                   )}
                   <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="invoices">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Invoices</CardTitle>
+                  <CardDescription>View and download your subscription invoices</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <InvoiceList />
                 </CardContent>
               </Card>
             </TabsContent>

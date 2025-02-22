@@ -21,6 +21,7 @@ import { analyzeSuburb } from "./services/openai";
 import { sql } from "drizzle-orm";
 import { suburbs } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
+import { generateInvoice, getUserInvoices } from "./services/invoiceService"; // Added imports for invoice service
 
 // Extend Express.User to include our schema
 declare global {
@@ -878,6 +879,25 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Add invoice endpoints here
+  app.get("/api/invoices", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const userInvoices = await getUserInvoices(req.user!.id);
+      res.json(userInvoices);
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+      res.status(500).json({
+        error: "Failed to fetch invoices",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
+
   // Inside the payment webhook route, update the implementation:
   app.post("/api/payment-webhook", async (req, res) => {
     console.log("Received sandbox webhook payload:", req.body);
@@ -888,6 +908,8 @@ export function registerRoutes(app: Express): Server {
       subscription_status = "active",
       token = null,
       user_id,
+      payment_id,
+      amount = 2000 // Default to R2000 for Pro subscription
     } = req.body;
 
     try {
@@ -909,6 +931,17 @@ export function registerRoutes(app: Express): Server {
       // Calculate next billing date (30 days from start date)
       const nextBillingDate = new Date(startDate);
       nextBillingDate.setDate(nextBillingDate.getDate() + 30);
+
+      // Generate invoice for successful payment
+      if (subscription_status === "active") {
+        try {
+          await generateInvoice(user_id, amount, payment_id);
+          console.log("Generated invoice for payment:", payment_id);
+        } catch (error) {
+          console.error("Error generating invoice:", error);
+          // Don't fail the webhook if invoice generation fails
+        }
+      }
 
       // Update user with sandbox subscription data
       const [updatedUser] = await db
