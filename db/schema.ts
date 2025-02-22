@@ -140,36 +140,6 @@ export const reportTracking = pgTable("report_tracking", {
   errorMessage: text("error_message"),
 });
 
-// Add new tables for invoicing system
-export const invoiceSettings = pgTable("invoice_settings", {
-  id: serial("id").primaryKey(),
-  companyName: text("company_name").notNull(),
-  vatNumber: text("vat_number"),
-  companyAddress: text("company_address").notNull(),
-  bankName: text("bank_name").notNull(),
-  bankAccount: text("bank_account").notNull(),
-  bankBranch: text("bank_branch").notNull(),
-  branchCode: text("branch_code").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull()
-});
-
-export const invoices = pgTable("invoices", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  invoiceNumber: text("invoice_number").unique().notNull(),
-  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
-  status: text("status").notNull(), // pending, paid, cancelled
-  periodStart: timestamp("period_start").notNull(),
-  periodEnd: timestamp("period_end").notNull(),
-  pdfUrl: text("pdf_url"),
-  payfastPaymentId: text("payfast_payment_id"),
-  generatedAt: timestamp("generated_at").defaultNow().notNull(),
-  paidAt: timestamp("paid_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull()
-});
-
 // Add this new table after the existing tables but before the relations
 export const apiUsage = pgTable("api_usage", {
   id: serial("id").primaryKey(),
@@ -341,14 +311,6 @@ export const reportTrackingRelations = relations(reportTracking, ({ one }) => ({
 }));
 
 
-// Add relations for invoices
-export const invoicesRelations = relations(invoices, ({ one }) => ({
-  user: one(users, {
-    fields: [invoices.userId],
-    references: [users.id],
-  }),
-}));
-
 // Add this to the relations section
 export const apiUsageRelations = relations(apiUsage, ({ one }) => ({
   user: one(users, {
@@ -387,12 +349,6 @@ export const selectApiUsageSchema = createSelectSchema(apiUsage);
 export const insertSubscriptionHistorySchema = createInsertSchema(subscriptionHistory);
 export const selectSubscriptionHistorySchema = createSelectSchema(subscriptionHistory);
 
-// Add schemas for the new tables
-export const insertInvoiceSettingsSchema = createInsertSchema(invoiceSettings);
-export const selectInvoiceSettingsSchema = createSelectSchema(invoiceSettings);
-export const insertInvoiceSchema = createInsertSchema(invoices);
-export const selectInvoiceSchema = createSelectSchema(invoices);
-
 // Types
 export type InsertAccessCode = typeof accessCodes.$inferInsert;
 export type SelectAccessCode = typeof accessCodes.$inferSelect;
@@ -415,9 +371,3 @@ export type InsertApiUsage = typeof apiUsage.$inferInsert;
 export type SelectApiUsage = typeof apiUsage.$inferSelect;
 export type InsertSubscriptionHistory = typeof subscriptionHistory.$inferInsert;
 export type SelectSubscriptionHistory = typeof subscriptionHistory.$inferSelect;
-
-// Add types for the new tables
-export type InsertInvoiceSettings = typeof invoiceSettings.$inferInsert;
-export type SelectInvoiceSettings = typeof invoiceSettings.$inferSelect;
-export type InsertInvoice = typeof invoices.$inferInsert;
-export type SelectInvoice = typeof invoices.$inferSelect;
