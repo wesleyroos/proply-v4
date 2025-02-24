@@ -108,6 +108,14 @@ export async function downloadInvoice(invoice: {
     `AMOUNT DUE ZAR: R0.00`
   ], 120, finalY);
 
+  // Add registered office footer
+  doc.setFontSize(8);
+  doc.setTextColor(100);
+  doc.text(
+    'Registered Office: Darter Studios, Darter Road, Longkloof, Gardens, Cape Town, 8001, Cape Town, Western Cape, 8001, South Africa.',
+    20,
+    doc.internal.pageSize.getHeight() - 20
+  );
 
   // Save the PDF
   doc.save(`${invoice.invoiceNumber}.pdf`);
