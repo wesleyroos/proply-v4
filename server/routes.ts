@@ -30,6 +30,14 @@ declare global {
   }
 }
 
+// Add this helper function at the top of the file after imports
+function normalizeUserField(value: string | null): string | null {
+  if (!value || value === 'NA' || value === 'null') {
+    return null;
+  }
+  return value;
+}
+
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
   setupAuth(app);
@@ -49,7 +57,7 @@ export function registerRoutes(app: Express): Server {
     next();
   });
 
-  // Add to the /api/user route or create it if it doesn't exist (after the auth middleware setup)
+  // Update the GET /api/user route
   app.get("/api/user", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
@@ -70,6 +78,10 @@ export function registerRoutes(app: Express): Server {
           isAdmin: users.isAdmin,
           userType: users.userType,
           companyLogo: users.companyLogo,
+          company: users.company,
+          vatNumber: users.vatNumber,
+          registrationNumber: users.registrationNumber,
+          businessAddress: users.businessAddress,
           payfastSubscriptionStatus: users.payfastSubscriptionStatus,
           subscriptionPausedUntil: users.subscriptionPausedUntil,
           pendingDowngrade: users.pendingDowngrade,
@@ -79,14 +91,24 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user.id))
         .limit(1);
 
+      // Normalize the company-related fields
+      const normalizedUser = {
+        ...user,
+        company: normalizeUserField(user.company),
+        vatNumber: normalizeUserField(user.vatNumber),
+        registrationNumber: normalizeUserField(user.registrationNumber),
+        businessAddress: normalizeUserField(user.businessAddress),
+      };
+
       console.log("Fetched user data:", {
-        id: user.id,
-        subscriptionStatus: user.subscriptionStatus,
-        startDate: user.subscriptionStartDate,
-        nextBilling: user.subscriptionNextBillingDate,
+        id: normalizedUser.id,
+        company: normalizedUser.company,
+        vatNumber: normalizedUser.vatNumber,
+        registrationNumber: normalizedUser.registrationNumber,
+        businessAddress: normalizedUser.businessAddress
       });
 
-      res.json(user);
+      res.json(normalizedUser);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ error: "Failed to fetch user data" });
@@ -954,7 +976,7 @@ export function registerRoutes(app: Express): Server {
       nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
       // Update user with sandbox subscription data
-      const [updatedUser] = await db
+      const [updatedUser] = awaitdb
         .update(users)
         .set({
           subscriptionStatus: subscription_status,
