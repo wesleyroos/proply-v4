@@ -100,6 +100,8 @@ function ProfileSection() {
 
   const handleProfileUpdate = async (data: ProfileFormData) => {
     setIsProfileUpdating(true);
+    console.log("Sending profile update with data:", data); // Debug log
+
     try {
       const response = await fetch('/api/profile', {
         method: 'POST',
@@ -121,6 +123,9 @@ function ProfileSection() {
       }
 
       const updatedUser = await response.json();
+      console.log("Received updated user data:", updatedUser); // Debug log
+
+      // Update React Query cache with the new user data
       queryClient.setQueryData(['user'], updatedUser);
       setShowEditModal(false);
 
@@ -141,13 +146,6 @@ function ProfileSection() {
     } finally {
       setIsProfileUpdating(false);
     }
-  };
-
-  const formatDisplayValue = (value: string | null, fieldName?: string): string => {
-    if (fieldName === 'vatNumber' && value === 'NA') {
-      return 'NA';
-    }
-    return value || "Not provided";
   };
 
   return (
@@ -338,19 +336,19 @@ function ProfileSection() {
               )}
               <div>
                 <span className="font-medium">Company Name: </span>
-                <span>{formatDisplayValue(user?.company)}</span>
+                <span>{user?.company || "Not provided"}</span>
               </div>
               <div>
                 <span className="font-medium">VAT Number: </span>
-                <span>{formatDisplayValue(user?.vatNumber, 'vatNumber')}</span>
+                <span>{user?.vatNumber || "Not provided"}</span>
               </div>
               <div>
                 <span className="font-medium">Registration Number: </span>
-                <span>{formatDisplayValue(user?.registrationNumber)}</span>
+                <span>{user?.registrationNumber || "Not provided"}</span>
               </div>
               <div>
                 <span className="font-medium">Business Address: </span>
-                <span>{formatDisplayValue(user?.businessAddress)}</span>
+                <span>{user?.businessAddress || "Not provided"}</span>
               </div>
             </div>
           </div>
@@ -1007,8 +1005,7 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Resume Subscription</AlertDialogTitle>
+                <AlertDialogHeader                <AlertDialogTitle>Resume Subscription</AlertDialogTitle>Resume Subscription</AlertDialogTitle>
                   <AlertDialogDescription>
                     Your subscription will be resumed immediately. Billing will continue according to yourregular schedule.
                   </AlertDialogDescription>
