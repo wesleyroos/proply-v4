@@ -44,6 +44,10 @@ export async function downloadInvoice(invoice: Invoice) {
     new Date(invoice.createdAt).toLocaleDateString(),
   ], 20, 50);
 
+  // Parse amount as number for calculations
+  const amount = Number(invoice.amount);
+  const unitPrice = amount / 1.15;
+  
   // Add invoice table
   autoTable(doc, {
     startY: 120,
@@ -51,9 +55,9 @@ export async function downloadInvoice(invoice: Invoice) {
     body: [[
       invoice.description,
       '1.00',
-      (invoice.amount / 1.15).toFixed(2),
+      unitPrice.toFixed(2),
       '15%',
-      invoice.amount.toFixed(2)
+      amount.toFixed(2)
     ]],
   });
 
