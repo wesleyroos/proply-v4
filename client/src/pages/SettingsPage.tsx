@@ -99,31 +99,40 @@ function ProfileSection() {
   };
 
   const handleProfileUpdate = async (data: ProfileFormData) => {
+    console.log("Starting profile update with data:", data);
     setIsProfileUpdating(true);
     try {
-      const response = await fetch('/api/profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName: data.firstName,
-          lastName: data.lastName,
-          companyLogo: data.companyLogo || previewLogo,
-          company: data.companyName,
-          vatNumber: data.vatNumber,
-          registrationNumber: data.registrationNumber,
-          businessAddress: data.businessAddress
-        }),
-        credentials: 'include'
+      const profileData = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        companyLogo: data.companyLogo || previewLogo,
+        company: data.companyName,
+        vatNumber: data.vatNumber,
+        registrationNumber: data.registrationNumber,
+        businessAddress: data.businessAddress,
+      };
+
+      console.log("Sending profile update request with:", profileData);
+
+      const response = await fetch("/api/profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(profileData),
+        credentials: "include",
       });
 
       if (!response.ok) {
+        console.error("Profile update failed:", await response.text());
         throw new Error(await response.text());
       }
 
       const updatedUser = await response.json();
-      queryClient.setQueryData(['user'], updatedUser);
-      setShowEditModal(false);
+      console.log("Profile update successful:", updatedUser);
 
+      queryClient.setQueryData(["user"], updatedUser);
+      setShowEditModal(false);
       toast({
         title: "Success",
         description: "Profile updated successfully",
