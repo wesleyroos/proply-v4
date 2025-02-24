@@ -85,30 +85,39 @@ export async function downloadInvoice(invoice: {
   autoTable(doc, {
     startY: 120,
     head: tableHeaders,
-    body: [[
-      invoice.description,
-      '1.00',
-      unitPrice.toFixed(2),
-      '15%',
-      amount.toFixed(2)
-    ]],
+    body: [
+      [
+        invoice.description,
+        '1.00',
+        unitPrice.toFixed(2),
+        '15%',
+        amount.toFixed(2)
+      ],
+      ['', '', '', 'Subtotal:', `R${unitPrice.toFixed(2)}`],
+      ['', '', '', 'TOTAL VAT:', `R${vat.toFixed(2)}`],
+      ['', '', '', 'TOTAL ZAR:', `R${amount.toFixed(2)}`],
+      ['', '', '', 'Less Amount Paid:', `R${amount.toFixed(2)}`],
+      ['', '', '', 'AMOUNT DUE ZAR:', 'R0.00']
+    ],
     headStyles: {
       fontSize: 12,
       fontStyle: 'bold',
       fillColor: [255, 255, 255],
       textColor: [0, 0, 0]
+    },
+    styles: {
+      cellPadding: 2
+    },
+    columnStyles: {
+      4: { halign: 'right' }
+    },
+    didParseCell: function(data) {
+      // Make the "AMOUNT DUE" row bold
+      if (data.row.index === 5) {
+        data.cell.styles.fontStyle = 'bold';
+      }
     }
   });
-
-  // Add totals
-  const finalY = (doc as any).lastAutoTable.finalY + 10;
-  doc.text([
-    `Subtotal: R${unitPrice.toFixed(2)}`,
-    `TOTAL VAT: R${vat.toFixed(2)}`,
-    `TOTAL ZAR: R${amount.toFixed(2)}`,
-    `Less Amount Paid: R${amount.toFixed(2)}`,
-    `AMOUNT DUE ZAR: R0.00`
-  ], 120, finalY);
 
   // Add registered office footer
   doc.setFontSize(8);
