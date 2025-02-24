@@ -1,19 +1,13 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-interface Invoice {
-  id: number;
-  userId: number;
-  amount: number;
-  description: string;
-  status: string;
+export async function downloadInvoice(invoice: {
   invoiceNumber: string;
-  paidAt: string;
   createdAt: string;
-}
-
-export async function downloadInvoice(invoice: Invoice) {
+  description: string;
+  amount: number;
+  status: string;
+}) {
   const doc = new jsPDF();
 
   // Add Proply logo from public directory
@@ -23,35 +17,46 @@ export async function downloadInvoice(invoice: Invoice) {
   doc.setFontSize(24);
   doc.text('TAX INVOICE', 20, 30);
 
-  // Fetch user details for the invoice
-  const userResponse = await fetch('/api/user', {
-    credentials: 'include'
-  });
-  const user = await userResponse.json();
-
-  // Add invoice details
+  // Add client details
   doc.setFontSize(10);
   doc.text([
-    'Invoice To:',
-    `${user.firstName} ${user.lastName}`,
-    user.company || '',
-    user.email,
-    '',
-    'Invoice Number:',
-    invoice.invoiceNumber,
-    '',
-    'Date:',
-    new Date(invoice.createdAt).toLocaleDateString(),
+    'Brennan Wright',
+    'Attention: Long Run Capital (Pty) Ltd',
+    'VAT#: 4330315526',
+    'Spilo Business Park',
+    'Cnr Drommedaris and Skoenmaker Str Paarl',
+    'CAPE TOWN WESTERN CAPE 7646',
+    'SOUTH AFRICA'
   ], 20, 50);
 
-  // Parse amount as number for calculations
+  // Add company details
+  doc.text([
+    'Proply Tech (Pty) Ltd',
+    'Darter Studios, Darter Road,',
+    'Longkloof, Gardens,',
+    'Cape Town, 8001',
+    'CAPE TOWN WESTERN',
+    'CAPE 8001',
+    'SOUTH AFRICA'
+  ], 120, 50);
+
+  // Add invoice details
+  doc.text([
+    `Invoice Date: ${new Date(invoice.createdAt).toLocaleDateString()}`,
+    `Invoice Number: ${invoice.invoiceNumber}`
+  ], 120, 30);
+
+  // Calculate amounts
+  const unitPrice = invoice.amount / 1.15; // Remove VAT
+  const vat = invoice.amount - unitPrice;
+
+  // Parse amount as number first
   const amount = Number(invoice.amount);
-  const unitPrice = amount / 1.15;
   
   // Add invoice table
   autoTable(doc, {
     startY: 120,
-    head: [['Description', 'Quantity', 'Unit Price', 'VAT', 'Amount']],
+    head: [['Description', 'Quantity', 'Unit Price', 'VAT', 'Amount ZAR']],
     body: [[
       invoice.description,
       '1.00',
@@ -61,14 +66,8 @@ export async function downloadInvoice(invoice: Invoice) {
     ]],
   });
 
-  const finalY = (doc as any).lastAutoTable.finalY || 150;
-
-  // Calculate VAT
-  const amount = Number(invoice.amount);
-  const unitPrice = amount / 1.15;
-  const vat = amount - unitPrice;
-
   // Add totals
+  const finalY = (doc as any).lastAutoTable.finalY + 10;
   doc.text([
     `Subtotal: R${unitPrice.toFixed(2)}`,
     `TOTAL VAT: R${vat.toFixed(2)}`,
@@ -77,9 +76,10 @@ export async function downloadInvoice(invoice: Invoice) {
     `AMOUNT DUE ZAR: R0.00`
   ], 120, finalY);
 
-  // Footer
-  doc.setFontSize(8);
-  doc.text('Proply (Pty) Ltd | Registration: 2023/960570/07 | VAT: 4270294952', 20, 280);
+  // Add due date
+  const dueDate = new Date(invoice.createdAt);
+  dueDate.setDate(dueDate.getDate() + 30);
+  doc.text(`Due Date: ${dueDate.toLocaleDateString()}`, 20, finalY);
 
   // Save the PDF
   doc.save(`${invoice.invoiceNumber}.pdf`);
