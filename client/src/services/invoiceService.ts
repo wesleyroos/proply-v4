@@ -132,15 +132,6 @@ export async function downloadInvoice(invoice: {
         doc.line(cell.x, cell.y + cell.height, cell.x + cell.width, cell.y + cell.height);
       }
     }
-        doc.line(cell.x, cell.y + cell.height, cell.x + cell.width, cell.y + cell.height);
-      }
-    },
-    didParseCell: function(data) {
-      // Make the "AMOUNT DUE" row bold
-      if (data.row.index === 5) {
-        data.cell.styles.fontStyle = 'bold';
-      }
-    }
   });
 
   // Add registered office footer
