@@ -123,6 +123,9 @@ export async function downloadInvoice(invoice: {
       if (data.row.index === 5) {
         data.cell.styles.fontStyle = 'bold';
       }
+      if (data.row.index === 0) {
+        data.cell.styles.fillColor = [255, 255, 255];
+      }
     },
     didDrawCell: function(data) {
       if (data.row.index === 0) {
