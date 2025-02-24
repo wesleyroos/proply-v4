@@ -91,6 +91,11 @@ export async function downloadInvoice(invoice: {
       '15%',
       amount.toFixed(2)
     ]],
+    headStyles: {
+          fillColor: [255, 255, 255],
+          textColor: 0,
+          fontSize: 7,
+        },
   });
 
   // Add totals
