@@ -389,7 +389,6 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
       )}
 
 
-
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Subscription Management</h3>
         {user?.subscriptionStatus === "free" ? (
@@ -477,38 +476,39 @@ export default function SettingsPage() {
     }
   };
 
-  const onSubmit = async (data: ProfileFormData) => {
-    try {
-      const response = await fetch("/api/profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: data.firstName,
-          lastName: data.lastName,
-          companyLogo: data.companyLogo,
-          companyName: data.companyName,
-          vatNumber: data.vatNumber,
-          registrationNumber: data.registrationNumber,
-          businessAddress: data.businessAddress
-        }),
-        credentials: "include"
-      });
+  //This function is removed because it's redundant and the improved handleProfileUpdate function takes care of it.
+  // const onSubmit = async (data: ProfileFormData) => {
+  //   try {
+  //     const response = await fetch("/api/profile", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         firstName: data.firstName,
+  //         lastName: data.lastName,
+  //         companyLogo: data.companyLogo,
+  //         companyName: data.companyName,
+  //         vatNumber: data.vatNumber,
+  //         registrationNumber: data.registrationNumber,
+  //         businessAddress: data.businessAddress
+  //       }),
+  //       credentials: "include"
+  //     });
 
-      if (!response.ok) throw new Error("Failed to update profile");
+  //     if (!response.ok) throw new Error("Failed to update profile");
       
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      toast({
-        title: "Success",
-        description: "Profile updated successfully"
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update profile"
-      });
-    }
-  };
+  //     queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+  //     toast({
+  //       title: "Success",
+  //       description: "Profile updated successfully"
+  //     });
+  //   } catch (error) {
+  //     toast({
+  //       variant: "destructive",
+  //       title: "Error",
+  //       description: "Failed to update profile"
+  //     });
+  //   }
+  // };
 
   const handleProfileUpdate = async (data: ProfileFormData) => {
     setIsProfileUpdating(true);
@@ -520,7 +520,7 @@ export default function SettingsPage() {
           firstName: data.firstName,
           lastName: data.lastName,
           companyLogo: data.companyLogo || previewLogo,
-          companyName: data.companyName,
+          company: data.companyName,  // Fixed: changed from companyName to company to match DB field
           vatNumber: data.vatNumber,
           registrationNumber: data.registrationNumber,
           businessAddress: data.businessAddress
@@ -537,13 +537,11 @@ export default function SettingsPage() {
 
       // Reset form with new values
       form.reset({
+        ...form.getValues(),
         firstName: updatedUser.firstName || '',
         lastName: updatedUser.lastName || '',
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-        companyLogo: updatedUser.companyLogo,
-        companyName: updatedUser.company || '',
+        companyLogo: updatedUser.companyLogo || '',
+        companyName: updatedUser.company || '',  // Fixed: use company field from response
         vatNumber: updatedUser.vatNumber || '',
         registrationNumber: updatedUser.registrationNumber || '',
         businessAddress: updatedUser.businessAddress || ''
