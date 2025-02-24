@@ -50,11 +50,15 @@ export async function downloadInvoice(invoice: {
 
   // Add client details
   doc.setFontSize(10);
-  doc.text([
-    `${user.firstName} ${user.lastName}`,
-    user.company ? `Company: ${user.company}` : '',
+  const clientDetails = [
+    user.company || `${user.firstName} ${user.lastName}`,
+    user.vatNumber ? `VAT: ${user.vatNumber}` : '',
+    user.registrationNumber ? `Reg: ${user.registrationNumber}` : '',
+    user.businessAddress || '',
     user.email,
-  ].filter(Boolean), 20, 50);
+  ].filter(Boolean);
+  
+  doc.text(clientDetails, 20, 50);
 
   // Add company details
   doc.text([
