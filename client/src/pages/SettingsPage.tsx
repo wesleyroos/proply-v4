@@ -415,6 +415,7 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [, setLocation] = useLocation();
 
   const form = useForm<ProfileFormData>({
