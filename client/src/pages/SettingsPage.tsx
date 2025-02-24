@@ -16,7 +16,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
-import type { SelectUser } from "@db/schema";
+import type { SelectUser, SelectInvoice } from "@db/schema"; 
 import { useQueryClient } from "@tanstack/react-query";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import {
@@ -40,6 +40,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import cn from 'classnames';
 
 interface ProfileFormData {
   firstName: string;
@@ -51,7 +52,7 @@ interface ProfileFormData {
 }
 
 interface BillingDetailsProps {
-  user: SelectUser;
+  user: SelectUser | null;
   onUpgrade: () => void;
 }
 
@@ -226,7 +227,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
                   <Button
                     variant="outline"
                     className="w-full text-destructive hover:text-destructive"
-                    disabled={user?.pendingDowngrade}
+                    disabled={user?.pendingDowngrade ?? false}
                   >
                     {user?.pendingDowngrade ? 'Downgrade Scheduled' : 'Downgrade to Free'}
                   </Button>
@@ -382,6 +383,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
       )}
 
 
+
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Subscription Management</h3>
         {user?.subscriptionStatus === "free" ? (
@@ -415,8 +417,8 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
-  const [isProfileUpdating, setIsProfileUpdating] = useState(false); // Added state for profile update loading
-  const [isSecurityUpdating, setIsSecurityUpdating] = useState(false); // Added state for password update loading
+  const [isProfileUpdating, setIsProfileUpdating] = useState(false); 
+  const [isSecurityUpdating, setIsSecurityUpdating] = useState(false); 
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { data: invoices, isLoading: invoicesLoading } = useQuery({
@@ -458,7 +460,7 @@ export default function SettingsPage() {
   };
 
   const handleProfileUpdate = async (data: ProfileFormData) => {
-    setIsProfileUpdating(true); // Updated to use isProfileUpdating
+    setIsProfileUpdating(true); 
     try {
       const response = await fetch('/api/profile', {
         method: 'POST',
@@ -493,7 +495,7 @@ export default function SettingsPage() {
         duration: 5000,
       });
     } finally {
-      setIsProfileUpdating(false); // Updated to use isProfileUpdating
+      setIsProfileUpdating(false); 
     }
   };
 
@@ -503,7 +505,7 @@ export default function SettingsPage() {
       return;
     }
 
-    setIsSecurityUpdating(true); // Updated to use isSecurityUpdating
+    setIsSecurityUpdating(true); 
     try {
       const response = await fetch('/api/change-password', {
         method: 'POST',
@@ -530,7 +532,7 @@ export default function SettingsPage() {
     } catch (error) {
       console.error("Error changing password:", error);
     } finally {
-      setIsSecurityUpdating(false); // Updated to use isSecurityUpdating
+      setIsSecurityUpdating(false); 
     }
   };
 
@@ -693,7 +695,7 @@ export default function SettingsPage() {
                           <div>
                             {previewLogo || user?.companyLogo ? (
                               <img
-                                src={previewLogo || user?.companyLogo}
+                                src={previewLogo || user?.companyLogo || undefined}
                                 alt="Company Logo Preview"
                                 className="w-32 h-32 object-contain border rounded-lg"
                               />
@@ -848,61 +850,52 @@ export default function SettingsPage() {
                         <p className="text-sm text-muted-foreground mt-2">Loading invoices...</p>
                       </div>
                     ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Invoice Number</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Description</TableHead>
-                          <TableHead className="text-right">Amount</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {invoices?.map((invoice) => (
-                          <TableRow key={invoice.id}>
-                            <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
-                            <TableCell>{new Date(invoice.createdAt).toLocaleDateString()}</TableCell>
-                            <TableCell>{invoice.description}</TableCell>
-                            <TableCell className="text-right">
-                              R{invoice.amount.toFixed(2)}
-                            </TableCell>
-                            <TableCell>
-                              <span className={cn(
-                                "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
-                                invoice.status === "paid" ? "bg-green-50 text-green-700" : 
-                                invoice.status === "pending" ? "bg-yellow-50 text-yellow-700" :
-                                "bg-red-50 text-red-700"
-                              )}>
-                                {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                                onClick={() => {
-                                  console.log("Downloading invoice...");
-                                  // Add actual download logic here
-                                }}
-                              >
-                                <Download className="h-4 w-4" />
-                                <span className="sr-only">Download invoice</span>
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        {(!invoices || invoices.length === 0) && (
+                      <Table>
+                        <TableHeader>
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center text-muted-foreground">
-                              No invoices found
-                            </TableCell>
+                            <TableHead>Invoice Number</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {invoices?.map((invoice: SelectInvoice) => (
+                            <TableRow key={invoice.id}>
+                              <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
+                              <TableCell>{new Date(invoice.createdAt).toLocaleDateString()}</TableCell>
+                              <TableCell>{invoice.description}</TableCell>
+                              <TableCell className="text-right">
+                                R{typeof invoice.amount === 'string' ? 
+                                  parseFloat(invoice.amount).toFixed(2) : 
+                                  invoice.amount.toFixed(2)}
+                              </TableCell>
+                              <TableCell className="capitalize">{invoice.status}</TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => {
+                                    console.log('Downloading invoice:', invoice.invoiceNumber);
+                                  }}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {(!invoices || invoices.length === 0) && (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center text-muted-foreground">
+                                No invoices found
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
                     )
                   ) : (
                     <div className="text-center py-6">
