@@ -73,20 +73,50 @@ export function registerRoutes(app: Express): Server {
 
     try {
       const [user] = await db
-        .select()  // Select ALL fields instead of specifying them individually
+        .select({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          subscriptionStatus: users.subscriptionStatus,
+          subscriptionStartDate: users.subscriptionStartDate,
+          subscriptionNextBillingDate: users.subscriptionNextBillingDate,
+          subscriptionExpiryDate: users.subscriptionExpiryDate,
+          isAdmin: users.isAdmin,
+          userType: users.userType,
+          companyLogo: users.companyLogo,
+          company: users.company,
+          vatNumber: users.vatNumber,
+          registrationNumber: users.registrationNumber,
+          businessAddress: users.businessAddress,
+          payfastSubscriptionStatus: users.payfastSubscriptionStatus,
+          subscriptionPausedUntil: users.subscriptionPausedUntil,
+          pendingDowngrade: users.pendingDowngrade,
+          reportsGenerated: users.reportsGenerated,
+        })
         .from(users)
         .where(eq(users.id, req.user.id))
         .limit(1);
 
+      // Normalize the company-related fields
+      const normalizedUser = {
+        ...user,
+        company: normalizeUserField(user.company),
+        vatNumber: normalizeUserField(user.vatNumber, 'vatNumber'),
+        registrationNumber: normalizeUserField(user.registrationNumber),
+        businessAddress: normalizeUserField(user.businessAddress),
+      };
+
       console.log("Fetched user data:", {
-        id: user.id,
-        company: user.company,
-        vatNumber: user.vatNumber,
-        registrationNumber: user.registrationNumber,
-        businessAddress: user.businessAddress
+        id: normalizedUser.id,
+        company: normalizedUser.company,
+        vatNumber: normalizedUser.vatNumber,
+        registrationNumber: normalizedUser.registrationNumber,
+        businessAddress: normalizedUser.businessAddress
       });
 
-      res.json(user);
+      res.json(normalizedUser);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ error: "Failed to fetch user data" });

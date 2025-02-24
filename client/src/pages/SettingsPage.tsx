@@ -100,8 +100,6 @@ function ProfileSection() {
 
   const handleProfileUpdate = async (data: ProfileFormData) => {
     setIsProfileUpdating(true);
-    console.log("Sending profile update with data:", data); // Debug log
-
     try {
       const response = await fetch('/api/profile', {
         method: 'POST',
@@ -123,9 +121,6 @@ function ProfileSection() {
       }
 
       const updatedUser = await response.json();
-      console.log("Received updated user data:", updatedUser); // Debug log
-
-      // Update React Query cache with the new user data
       queryClient.setQueryData(['user'], updatedUser);
       setShowEditModal(false);
 
@@ -1005,7 +1000,8 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
-                <AlertDialogHeader                <AlertDialogTitle>Resume Subscription</AlertDialogTitle>Resume Subscription</AlertDialogTitle>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Resume Subscription</AlertDialogTitle>
                   <AlertDialogDescription>
                     Your subscription will be resumed immediately. Billing will continue according to yourregular schedule.
                   </AlertDialogDescription>
