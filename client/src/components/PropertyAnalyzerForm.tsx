@@ -184,49 +184,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
   const onSubmit = async (formData: PropertyAnalyzerFormValues) => {
     setIsSubmitting(true);
     try {
-      // Validate all required fields are present and have valid values
-      const requiredFields = {
-        purchasePrice: "Purchase Price",
-        floorArea: "Floor Area",
-        bedrooms: "Number of Bedrooms",
-        bathrooms: "Number of Bathrooms",
-        depositAmount: "Deposit Amount",
-        interestRate: "Interest Rate",
-        monthlyLevies: "Monthly Levies",
-        monthlyRatesTaxes: "Monthly Rates & Taxes"
-      };
-
-      const missingFields = Object.entries(requiredFields)
-        .filter(([key]) => !formData[key])
-        .map(([, label]) => label);
-
-      if (missingFields.length > 0) {
-        toast({
-          variant: "destructive",
-          title: "Missing Required Fields",
-          description: `Please fill in: ${missingFields.join(", ")}`,
-          duration: 5000,
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Validate numeric fields have valid values
-      const numericFields = Object.entries(formData)
-        .filter(([, value]) => typeof value === "number" && (isNaN(value) || value < 0))
-        .map(([key]) => key);
-
-      if (numericFields.length > 0) {
-        toast({
-          variant: "destructive",
-          title: "Invalid Values",
-          description: `Please enter valid numbers for: ${numericFields.join(", ")}`,
-          duration: 5000,
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
       // Clean and prepare the analysis data
       // Ensure all form fields are included and properly typed
       const analysisData = {
@@ -278,26 +235,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       }
     } catch (error) {
       console.error("Analysis error:", error);
-      let errorMessage = "Failed to analyze property data.";
-      
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (error && typeof error === 'object' && 'response' in error) {
-        // Handle API error responses
-        const response = error.response as Response;
-        if (response?.status === 401) {
-          errorMessage = "Your session has expired. Please log in again.";
-        } else if (response?.status === 403) {
-          errorMessage = "You don't have permission to perform this analysis.";
-        } else if (response?.status === 429) {
-          errorMessage = "You've reached your analysis limit. Please upgrade your plan.";
-        }
-      }
-
       toast({
         variant: "destructive",
         title: "Analysis Failed",
-        description: errorMessage,
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to analyze property data.",
         duration: 7000,
       });
     } finally {
