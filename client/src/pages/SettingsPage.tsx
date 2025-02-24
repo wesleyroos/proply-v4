@@ -17,10 +17,10 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Table,
@@ -37,6 +37,17 @@ import { useUser } from "@/hooks/use-user";
 import type { SelectUser, SelectInvoice } from "@db/schema";
 import { useQueryClient } from "@tanstack/react-query";
 import { Pencil, AlertTriangle, CheckCircle2, Download, CalendarDays } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 
 // Profile form data interface
