@@ -331,19 +331,19 @@ function ProfileSection() {
               )}
               <div>
                 <span className="font-medium">Company Name: </span>
-                <span>{user?.company || "Not provided"}</span>
+                <span>{user?.company}</span>
               </div>
               <div>
                 <span className="font-medium">VAT Number: </span>
-                <span>{user?.vatNumber || "Not provided"}</span>
+                <span>{user?.vatNumber}</span>
               </div>
               <div>
                 <span className="font-medium">Registration Number: </span>
-                <span>{user?.registrationNumber || "Not provided"}</span>
+                <span>{user?.registrationNumber}</span>
               </div>
               <div>
                 <span className="font-medium">Business Address: </span>
-                <span>{user?.businessAddress || "Not provided"}</span>
+                <span>{user?.businessAddress}</span>
               </div>
             </div>
           </div>
