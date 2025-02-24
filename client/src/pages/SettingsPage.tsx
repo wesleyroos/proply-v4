@@ -855,11 +855,12 @@ export default function SettingsPage() {
                         Upgrade to Pro to view your invoice history
                       </p>
                       <Button
-                        onClick={initiateProUpgrade}
+                        onClick={() => setShowUpgradeModal(true)}
                         className="mt-4 bg-[#1BA3FF] hover:bg-[#114D9D]"
                       >
                         Upgrade to Pro
                       </Button>
+                      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
                     </div>
                   )}
                 </CardContent>
