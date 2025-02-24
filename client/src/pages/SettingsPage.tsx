@@ -143,6 +143,13 @@ function ProfileSection() {
     }
   };
 
+  const formatDisplayValue = (value: string | null, fieldName?: string): string => {
+    if (fieldName === 'vatNumber' && value === 'NA') {
+      return 'NA';
+    }
+    return value || "Not provided";
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -331,19 +338,19 @@ function ProfileSection() {
               )}
               <div>
                 <span className="font-medium">Company Name: </span>
-                <span>{user?.company || "Not provided"}</span>
+                <span>{formatDisplayValue(user?.company)}</span>
               </div>
               <div>
                 <span className="font-medium">VAT Number: </span>
-                <span>{user?.vatNumber || "Not provided"}</span>
+                <span>{formatDisplayValue(user?.vatNumber, 'vatNumber')}</span>
               </div>
               <div>
                 <span className="font-medium">Registration Number: </span>
-                <span>{user?.registrationNumber || "Not provided"}</span>
+                <span>{formatDisplayValue(user?.registrationNumber)}</span>
               </div>
               <div>
                 <span className="font-medium">Business Address: </span>
-                <span>{user?.businessAddress || "Not provided"}</span>
+                <span>{formatDisplayValue(user?.businessAddress)}</span>
               </div>
             </div>
           </div>
