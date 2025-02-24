@@ -340,15 +340,15 @@ function ProfileSection() {
               </div>
               <div>
                 <span className="font-medium">VAT Number: </span>
-                <span>{user?.vatNumber || "Not provided"}</span>
+                <span>{user?.profile?.vatNumber || user?.vatNumber || "Not provided"}</span>
               </div>
               <div>
                 <span className="font-medium">Registration Number: </span>
-                <span>{user?.registrationNumber || "Not provided"}</span>
+                <span>{user?.profile?.registrationNumber || user?.registrationNumber || "Not provided"}</span>
               </div>
               <div>
                 <span className="font-medium">Business Address: </span>
-                <span>{user?.businessAddress || "Not provided"}</span>
+                <span>{user?.profile?.businessAddress || user?.businessAddress || "Not provided"}</span>
               </div>
             </div>
           </div>
