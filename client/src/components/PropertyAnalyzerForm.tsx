@@ -518,6 +518,16 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
               return (
                 <li key={step} className="relative flex flex-col items-center">
                   {/* Connecting line */}
+                  {index !== STEPS.length - 1 && (
+                    <div
+                      className={`absolute top-5 w-[calc(200%_-_2.5rem)] h-[2px] ${
+                        index < currentStep || isStepComplete
+                          ? "bg-[#3B82F6]"
+                          : "bg-gray-300"
+                      }`}
+                      style={{ left: "4rem" }}
+                    />
+                  )}
 
                   <div className="relative flex flex-col items-center">
                     {/* Checkmark for completed steps */}
@@ -1062,7 +1072,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                                   "",
                                 );
                                 field.onChange(
-                                  value ? parseIntvalue, 10) : "",
+                                  value ? parseInt(value, 10) : "",
                                 );
                               }}
                             />
