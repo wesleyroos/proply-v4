@@ -31,8 +31,16 @@ declare global {
 }
 
 // Add this helper function at the top of the file after imports
-function normalizeUserField(value: string | null): string | null {
-  if (!value || value === 'NA' || value === 'null') {
+function normalizeUserField(value: string | null, fieldName?: string): string | null {
+  if (!value || value === 'null') {
+    return null;
+  }
+  // Special case for VAT number where 'NA' is a valid value
+  if (fieldName === 'vatNumber' && value === 'NA') {
+    return value;
+  }
+  // For other fields, treat 'NA' as null
+  if (value === 'NA') {
     return null;
   }
   return value;
@@ -95,7 +103,7 @@ export function registerRoutes(app: Express): Server {
       const normalizedUser = {
         ...user,
         company: normalizeUserField(user.company),
-        vatNumber: normalizeUserField(user.vatNumber),
+        vatNumber: normalizeUserField(user.vatNumber, 'vatNumber'),
         registrationNumber: normalizeUserField(user.registrationNumber),
         businessAddress: normalizeUserField(user.businessAddress),
       };
@@ -976,7 +984,7 @@ export function registerRoutes(app: Express): Server {
       nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
       // Update user with sandbox subscription data
-      const [updatedUser] = awaitdb
+      const [updatedUser] = await db
         .update(users)
         .set({
           subscriptionStatus: subscription_status,
