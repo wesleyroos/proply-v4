@@ -17,7 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
-import type { SelectUser, SelectInvoice } from "@db/schema"; 
+import type { SelectUser, SelectInvoice } from "@db/schema";
 import { useQueryClient } from "@tanstack/react-query";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import {
@@ -49,7 +49,11 @@ interface ProfileFormData {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
-  companyLogo?: string; 
+  companyLogo?: string;
+  companyName: string;
+  vatNumber: string;
+  registrationNumber: string;
+  businessAddress: string;
 }
 
 interface BillingDetailsProps {
@@ -418,8 +422,8 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
-  const [isProfileUpdating, setIsProfileUpdating] = useState(false); 
-  const [isSecurityUpdating, setIsSecurityUpdating] = useState(false); 
+  const [isProfileUpdating, setIsProfileUpdating] = useState(false);
+  const [isSecurityUpdating, setIsSecurityUpdating] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { data: invoices, isLoading: invoicesLoading } = useQuery({
@@ -444,6 +448,11 @@ export default function SettingsPage() {
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
+      companyLogo: user?.companyLogo,
+      companyName: user?.company || '',
+      vatNumber: user?.vatNumber || '',
+      registrationNumber: user?.registrationNumber || '',
+      businessAddress: user?.businessAddress || ''
     },
   });
 
@@ -461,7 +470,7 @@ export default function SettingsPage() {
   };
 
   const handleProfileUpdate = async (data: ProfileFormData) => {
-    setIsProfileUpdating(true); 
+    setIsProfileUpdating(true);
     try {
       const response = await fetch('/api/profile', {
         method: 'POST',
@@ -469,7 +478,11 @@ export default function SettingsPage() {
         body: JSON.stringify({
           firstName: data.firstName,
           lastName: data.lastName,
-          companyLogo: data.companyLogo || previewLogo 
+          companyLogo: data.companyLogo || previewLogo,
+          companyName: data.companyName,
+          vatNumber: data.vatNumber,
+          registrationNumber: data.registrationNumber,
+          businessAddress: data.businessAddress
         }),
         credentials: 'include'
       });
@@ -496,7 +509,7 @@ export default function SettingsPage() {
         duration: 5000,
       });
     } finally {
-      setIsProfileUpdating(false); 
+      setIsProfileUpdating(false);
     }
   };
 
@@ -506,7 +519,7 @@ export default function SettingsPage() {
       return;
     }
 
-    setIsSecurityUpdating(true); 
+    setIsSecurityUpdating(true);
     try {
       const response = await fetch('/api/change-password', {
         method: 'POST',
@@ -533,14 +546,14 @@ export default function SettingsPage() {
     } catch (error) {
       console.error("Error changing password:", error);
     } finally {
-      setIsSecurityUpdating(false); 
+      setIsSecurityUpdating(false);
     }
   };
 
   const initiateProUpgrade = () => {
     console.log('Initiating Pro upgrade payment flow (Sandbox Mode)');
 
-    const merchantId = import.meta.env.DEV 
+    const merchantId = import.meta.env.DEV
       ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
       : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
     const merchantKey = import.meta.env.DEV
@@ -606,7 +619,7 @@ export default function SettingsPage() {
     try {
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = import.meta.env.DEV 
+      form.action = import.meta.env.DEV
         ? "https://sandbox.payfast.co.za/eng/process"
         : "https://www.payfast.co.za/eng/process";
 
@@ -710,7 +723,7 @@ export default function SettingsPage() {
                             <Input
                               type="file"
                               accept="image/*"
-                              onChange={handleLogoUpload} 
+                              onChange={handleLogoUpload}
                               className="mb-2"
                             />
                             <p className="text-sm text-gray-500">
@@ -719,6 +732,64 @@ export default function SettingsPage() {
                           </div>
                         </div>
                       </FormItem>
+
+                      <div className="border-t pt-6 mt-6">
+                        <h3 className="text-lg font-semibold mb-4">Company Details</h3>
+                        <div className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name="companyName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Company Name</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="Your Company Ltd" defaultValue={user?.company || ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="vatNumber"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>VAT Number</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="4XXXXXXXXX" defaultValue={user?.vatNumber || ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="registrationNumber"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Business Registration Number</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="XXXX/XXXXXX/XX" defaultValue={user?.registrationNumber || ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="businessAddress"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Business Address</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="123 Business Street, City" defaultValue={user?.businessAddress || ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
 
                       <Button
                         type="submit"
@@ -869,8 +940,8 @@ export default function SettingsPage() {
                               <TableCell>{new Date(invoice.createdAt).toLocaleDateString()}</TableCell>
                               <TableCell>{invoice.description}</TableCell>
                               <TableCell className="text-right">
-                                R{typeof invoice.amount === 'string' ? 
-                                  parseFloat(invoice.amount).toFixed(2) : 
+                                R{typeof invoice.amount === 'string' ?
+                                  parseFloat(invoice.amount).toFixed(2) :
                                   invoice.amount.toFixed(2)}
                               </TableCell>
                               <TableCell className="capitalize">{invoice.status}</TableCell>
