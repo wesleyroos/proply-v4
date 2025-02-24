@@ -1014,10 +1014,10 @@ export function registerRoutes(app: Express): Server {
           firstName,
           lastName,
           companyLogo,
-          company: companyName,
-          vatNumber,
-          registrationNumber,
-          businessAddress,
+          company: companyName || null,
+          vatNumber: vatNumber || null,
+          registrationNumber: registrationNumber || null,
+          businessAddress: businessAddress || null,
           updatedAt: new Date(),
         })
         .where(eq(users.id, req.user!.id))
