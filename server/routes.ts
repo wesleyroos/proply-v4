@@ -421,6 +421,29 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get user invoices endpoint
+  app.get("/api/invoices", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const userInvoices = await db
+        .select()
+        .from(invoices)
+        .where(eq(invoices.userId, req.user!.id))
+        .orderBy(invoices.createdAt, "desc");
+
+      res.json(userInvoices);
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+      res.status(500).json({
+        error: "Failed to fetch invoices",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
   // Access code routes
   app.get("/api/access-codes", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.isAdmin) {
