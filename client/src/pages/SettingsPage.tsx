@@ -30,8 +30,15 @@ import {
   AlertDialogAction
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CalendarDays, AlertTriangle, CheckCircle2 } from "lucide-react";
-
+import { CalendarDays, AlertTriangle, CheckCircle2, Download } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface ProfileFormData {
   firstName: string;
@@ -618,6 +625,7 @@ export default function SettingsPage() {
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="security">Security</TabsTrigger>
               <TabsTrigger value="billing">Billing</TabsTrigger>
+              <TabsTrigger value="invoices">Invoices</TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile">
@@ -794,6 +802,70 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="invoices">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Invoices</CardTitle>
+                  <CardDescription>View and download your billing history</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {user?.subscriptionStatus === "pro" ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Amount</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Invoice</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {user?.subscriptionStartDate && (
+                          <TableRow>
+                            <TableCell>
+                              {new Date(user.subscriptionStartDate).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>R2,000.00</TableCell>
+                            <TableCell>
+                              <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-50 text-green-700">
+                                Paid
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => {
+                                  // Add download functionality here
+                                  console.log("Downloading invoice...");
+                                }}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="text-center py-6">
+                      <p className="text-sm text-gray-500">
+                        Upgrade to Pro to view your invoice history
+                      </p>
+                      <Button
+                        onClick={initiateProUpgrade}
+                        className="mt-4 bg-[#1BA3FF] hover:bg-[#114D9D]"
+                      >
+                        Upgrade to Pro
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
           </Tabs>
         </div>
       </div>
