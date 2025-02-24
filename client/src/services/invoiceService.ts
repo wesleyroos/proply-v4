@@ -50,11 +50,18 @@ export async function downloadInvoice(invoice: {
 
   // Add client details
   doc.setFontSize(10);
+  
+  // Format business address to wrap
+  const maxWidth = 80;
+  const businessAddress = user.businessAddress || '';
+  const wrappedAddress = doc.splitTextToSize(businessAddress, maxWidth);
+  
   const clientDetails = [
-    user.company || `${user.firstName} ${user.lastName}`,
+    `${user.firstName} ${user.lastName}`,
+    user.company || '',
     user.vatNumber ? `VAT: ${user.vatNumber}` : '',
     user.registrationNumber ? `Reg: ${user.registrationNumber}` : '',
-    user.businessAddress || '',
+    ...wrappedAddress,
     user.email,
   ].filter(Boolean);
   
