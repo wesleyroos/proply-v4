@@ -997,13 +997,24 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ error: "Invalid logo format" });
       }
 
+      // Log the update data
+      console.log("Updating profile with data:", {
+        firstName,
+        lastName,
+        hasLogo: !!companyLogo,
+        companyName,
+        vatNumber,
+        registrationNumber,
+        businessAddress
+      });
+
       const [updatedUser] = await db
         .update(users)
         .set({
           firstName,
           lastName,
           companyLogo,
-          company: companyName,
+          company: companyName, // Ensure this matches the column name in schema
           vatNumber,
           registrationNumber,
           businessAddress,
