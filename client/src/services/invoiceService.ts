@@ -10,7 +10,33 @@ export async function downloadInvoice(invoice: {
 }) {
   const doc = new jsPDF();
 
-  // Add Proply logo from public directory
+  // Add Proply logo from public directory with preserved aspect ratio
+  const proplyLogoWidth = 40;
+  try {
+    await new Promise<void>((resolve) => {
+      const proplyLogo = new Image();
+      proplyLogo.onload = () => {
+        const aspectRatio = proplyLogo.height / proplyLogo.width;
+        const proplyLogoHeight = proplyLogoWidth * aspectRatio;
+        doc.addImage(
+          "/proply-logo-1.png",
+          "PNG",
+          doc.internal.pageSize.getWidth() - proplyLogoWidth - 20,
+          20,
+          proplyLogoWidth,
+          proplyLogoHeight
+        );
+        resolve();
+      };
+      proplyLogo.onerror = () => {
+        console.error("Error loading Proply logo");
+        resolve();
+      };
+      proplyLogo.src = "/proply-logo-1.png";
+    });
+  } catch (error) {
+    console.error("Error adding Proply logo:", error);
+  }
   doc.addImage('/proply-logo-1.png', 'PNG', 140, 15, 50, 25);
 
   // Add TAX INVOICE heading
