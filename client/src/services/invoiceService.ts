@@ -109,8 +109,21 @@ export async function downloadInvoice(invoice: {
       cellPadding: 2
     },
     columnStyles: {
+      0: { fillColor: [255, 255, 255] },
+      1: { fillColor: [255, 255, 255] },
+      2: { fillColor: [255, 255, 255] },
       4: { halign: 'right' }
     },
+    didParseCell: function(data) {
+      // Add borders to amount cells and make amount due row bold
+      if (data.row.index > 0 && data.column === 4) {
+        data.cell.styles.lineWidth = 0.1;
+        data.cell.styles.lineColor = [0, 0, 0];
+      }
+      if (data.row.index === 5) {
+        data.cell.styles.fontStyle = 'bold';
+      }
+    }
     didDrawCell: function(data) {
       if (data.row.index === 0) {
         const cell = data.cell;
