@@ -71,7 +71,7 @@ export async function downloadInvoice(invoice: {
   doc.text([
     `Invoice Date: ${new Date(invoice.createdAt).toLocaleDateString()}`,
     `Invoice Number: ${invoice.invoiceNumber}`
-  ], 120, 30);
+  ], 120, 85);
 
   // Calculate amounts
   const unitPrice = invoice.amount / 1.15; // Remove VAT
