@@ -12,6 +12,7 @@ import {
   type InsertUser,
   apiUsage,
   subscriptionHistory, // Added import for subscription history table
+  invoices, // Added import for invoices table
 } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -128,20 +129,39 @@ export function registerRoutes(app: Express): Server {
       const nextBillingDate = new Date(startDate);
       nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
-      // Update user's subscription status and billing dates
-      const [updatedUser] = await db
-        .update(users)
-        .set({
-          subscriptionStatus,
-          subscriptionStartDate: startDate,
-          subscriptionNextBillingDate: nextBillingDate,
-          pendingDowngrade: false,
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, userId))
-        .returning();
+      // Create invoice in transaction with user update
+      const [updatedUser] = await db.transaction(async (tx) => {
+        // Update user subscription
+        const [user] = await tx
+          .update(users)
+          .set({
+            subscriptionStatus,
+            subscriptionStartDate: startDate,
+            subscriptionNextBillingDate: nextBillingDate,
+            pendingDowngrade: false,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, userId))
+          .returning();
 
-      console.log("Subscription updated successfully:", {
+        // Generate invoice number (format: INV-{userId}-{timestamp})
+        const invoiceNumber = `INV-${userId}-${Date.now()}`;
+
+        // Create invoice record
+        await tx.insert(invoices).values({
+          userId,
+          amount: 2000.00, // R2,000.00 subscription fee
+          description: "Proply Pro Subscription",
+          status: "paid",
+          invoiceNumber,
+          paidAt: new Date(),
+          createdAt: new Date()
+        });
+
+        return [user];
+      });
+
+      console.log("Subscription and invoice created successfully:", {
         userId: updatedUser.id,
         newStatus: updatedUser.subscriptionStatus,
         startDate: updatedUser.subscriptionStartDate,
@@ -1575,7 +1595,7 @@ export function registerRoutes(app: Express): Server {
       if (req.sessionStore) {
         req.sessionStore.clear();
       }
-      
+
       // Log out current user
       req.logout((err) => {
         if (err) {
