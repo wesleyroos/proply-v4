@@ -330,29 +330,25 @@ function ProfileSection() {
             <h3 className="text-sm font-medium text-muted-foreground">Company Information</h3>
             <div className="mt-2 space-y-2">
               {user?.companyLogo && (
-                <div className="mb-4">
-                  <img
-                    src={user.companyLogo}
-                    alt="Company Logo"
-                    className="w-32 h-32 object-contain"
-                  />
+                <div className="w-24 h-24 rounded overflow-hidden mb-4">
+                  <img src={user.companyLogo} alt="Company Logo" className="w-full h-full object-contain" />
                 </div>
               )}
               <div>
                 <span className="font-medium">Company Name: </span>
-                <span>{user?.company}</span>
+                <span>{user?.company || "Not provided"}</span>
               </div>
               <div>
                 <span className="font-medium">VAT Number: </span>
-                <span>{user?.vatNumber}</span>
+                <span>{user?.vatNumber || "Not provided"}</span>
               </div>
               <div>
                 <span className="font-medium">Registration Number: </span>
-                <span>{user?.registrationNumber}</span>
+                <span>{user?.registrationNumber || "Not provided"}</span>
               </div>
               <div>
                 <span className="font-medium">Business Address: </span>
-                <span>{user?.businessAddress}</span>
+                <span>{user?.businessAddress || "Not provided"}</span>
               </div>
             </div>
           </div>
@@ -1014,43 +1010,42 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                   <AlertDialogDescription>
                     Your subscription will be resumed immediately. Billing will continue according to yourregular schedule.
                   </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={async () => {
-                      try {
-                        const response = await fetch('/api/subscription/resume', {
-                          method: 'POST',
-                          credentials: 'include'
-                        });
+                </AlertDialogHeader><AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/subscription/resume', {
+                            method: 'POST',
+                            credentials: 'include'
+                          });
 
-                        if (!response.ok) {
-                          throw new Error(await response.text());
+                          if (!response.ok) {
+                            throw new Error(await response.text());
+                          }
+
+                          queryClient.invalidateQueries({ queryKey: ['user'] });
+
+                          toast({
+                            title: "Success",
+                            description: "Your subscription has been resumed",
+                            duration: 5000,
+                          });
+
+                        } catch (error) {
+                          console.error('Error resuming subscription:', error);
+                          toast({
+                            variant: "destructive",
+                            title: "Error",
+                            description: error instanceof Error ? error.message : "Failed to resume subscription",
+                            duration: 5000,
+                          });
                         }
-
-                        queryClient.invalidateQueries({ queryKey: ['user'] });
-
-                        toast({
-                          title: "Success",
-                          description: "Your subscription has been resumed",
-                          duration: 5000,
-                        });
-
-                      } catch (error) {
-                        console.error('Error resuming subscription:', error);
-                        toast({
-                          variant: "destructive",
-                          title: "Error",
-                          description: error instanceof Error ? error.message : "Failed to resume subscription",
-                          duration: 5000,
-                        });
-                      }
-                    }}
-                  >
-                    Confirm Resume
-                  </AlertDialogAction>
-                </AlertDialogFooter>
+                      }}
+                    >
+                      Confirm Resume
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           )}
