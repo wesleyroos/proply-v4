@@ -318,7 +318,10 @@ export function setupAuth(app: Express) {
         isAdmin: user.isAdmin,
         pendingDowngrade: user.pendingDowngrade,
         subscriptionStartDate: user.subscriptionStartDate,
-        subscriptionNextBillingDate: user.subscriptionNextBillingDate
+        subscriptionNextBillingDate: user.subscriptionNextBillingDate,
+        vatNumber: user.vatNumber,
+        registrationNumber: user.registrationNumber,
+        businessAddress: user.businessAddress
       };
       console.log('Sending user data with analyzer usage:', {
         email: userData.email
