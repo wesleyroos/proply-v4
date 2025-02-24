@@ -81,9 +81,10 @@ export async function downloadInvoice(invoice: {
   const amount = Number(invoice.amount);
 
   // Add invoice table
+  const tableHeaders = [['Description', 'Quantity', 'Unit Price', 'VAT', 'Amount ZAR']];
   autoTable(doc, {
     startY: 120,
-    head: [['Description', 'Quantity', 'Unit Price', 'VAT', 'Amount ZAR']],
+    head: tableHeaders,
     body: [[
       invoice.description,
       '1.00',
@@ -92,10 +93,9 @@ export async function downloadInvoice(invoice: {
       amount.toFixed(2)
     ]],
     headStyles: {
-          fillColor: [255, 255, 255],
-          textColor: 0,
-          fontSize: 7,
-        },
+      fontSize: 12,
+      fontStyle: 'bold'
+    }
   });
 
   // Add totals
@@ -108,10 +108,6 @@ export async function downloadInvoice(invoice: {
     `AMOUNT DUE ZAR: R0.00`
   ], 120, finalY);
 
-  // Add due date
-  const dueDate = new Date(invoice.createdAt);
-  dueDate.setDate(dueDate.getDate() + 30);
-  doc.text(`Due Date: ${dueDate.toLocaleDateString()}`, 20, finalY);
 
   // Save the PDF
   doc.save(`${invoice.invoiceNumber}.pdf`);
