@@ -14,55 +14,677 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import type { SelectUser, SelectInvoice } from "@db/schema";
 import { useQueryClient } from "@tanstack/react-query";
-import { UpgradeModal } from "@/components/UpgradeModal";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction
-} from "@/components/ui/alert-dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CalendarDays, AlertTriangle, CheckCircle2, Download } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import cn from 'classnames';
+import { Pencil, AlertTriangle, CheckCircle2, Download, CalendarDays } from "lucide-react";
 
-// Fixed the ProfileFormData interface
+
+// Profile form data interface
 interface ProfileFormData {
   firstName: string;
   lastName: string;
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-  companyLogo?: string;
   companyName: string;
   vatNumber: string;
   registrationNumber: string;
   businessAddress: string;
+  companyLogo?: string;
 }
 
-interface BillingDetailsProps {
-  user: SelectUser | null;
-  onUpgrade: () => void;
+function ProfileSection() {
+  const { user } = useUser();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isProfileUpdating, setIsProfileUpdating] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [previewLogo, setPreviewLogo] = useState<string | null>(null);
+
+  const form = useForm<ProfileFormData>({
+    defaultValues: {
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      companyName: user?.company || "",
+      vatNumber: user?.vatNumber || "",
+      registrationNumber: user?.registrationNumber || "",
+      businessAddress: user?.businessAddress || "",
+      companyLogo: user?.companyLogo || "",
+    },
+  });
+
+  // Update form when user data changes
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        companyName: user.company || "",
+        vatNumber: user.vatNumber || "",
+        registrationNumber: user.registrationNumber || "",
+        businessAddress: user.businessAddress || "",
+        companyLogo: user.companyLogo || "",
+      });
+    }
+  }, [user, form]);
+
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Data = reader.result as string;
+        setPreviewLogo(base64Data);
+        form.setValue("companyLogo", base64Data);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleProfileUpdate = async (data: ProfileFormData) => {
+    setIsProfileUpdating(true);
+    try {
+      const response = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          companyLogo: data.companyLogo || previewLogo,
+          company: data.companyName,
+          vatNumber: data.vatNumber,
+          registrationNumber: data.registrationNumber,
+          businessAddress: data.businessAddress
+        }),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const updatedUser = await response.json();
+      queryClient.setQueryData(['user'], updatedUser);
+      setShowEditModal(false);
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+        duration: 3000,
+      });
+
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update profile",
+        duration: 5000,
+      });
+    } finally {
+      setIsProfileUpdating(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div>
+          <CardTitle>Profile Information</CardTitle>
+          <CardDescription>Your personal and company information</CardDescription>
+        </div>
+        <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Edit Profile</DialogTitle>
+              <DialogDescription>
+                Make changes to your profile information here
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleProfileUpdate)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="John" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Doe" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormItem>
+                  <FormLabel>Company Logo</FormLabel>
+                  <div className="flex items-start space-x-4">
+                    <div>
+                      {(previewLogo || user?.companyLogo) ? (
+                        <img
+                          src={previewLogo || user?.companyLogo}
+                          alt="Company Logo Preview"
+                          className="w-32 h-32 object-contain border rounded-lg"
+                        />
+                      ) : (
+                        <div className="w-32 h-32 border rounded-lg flex items-center justify-center bg-gray-50">
+                          <p className="text-sm text-gray-500">No logo uploaded</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="mb-2"
+                      />
+                      <p className="text-sm text-gray-500">
+                        Upload your company logo. Recommended size: 400x400px.
+                      </p>
+                    </div>
+                  </div>
+                </FormItem>
+
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="companyName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Company Name</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Your Company Ltd" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="vatNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>VAT Number</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="4XXXXXXXXX" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="registrationNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Registration Number</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="XXXX/XXXXXX/XX" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="businessAddress"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Address</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="123 Business Street, City" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowEditModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-[#1BA3FF] hover:bg-[#114D9D]"
+                    disabled={isProfileUpdating}
+                  >
+                    {isProfileUpdating ? "Updating..." : "Save Changes"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      </CardHeader>
+
+      <CardContent>
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground">Personal Information</h3>
+            <div className="mt-2 space-y-2">
+              <div>
+                <span className="font-medium">Email: </span>
+                <span>{user?.email}</span>
+              </div>
+              <div>
+                <span className="font-medium">Name: </span>
+                <span>{user?.firstName} {user?.lastName}</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground">Company Information</h3>
+            <div className="mt-2 space-y-2">
+              {user?.companyLogo && (
+                <div className="mb-4">
+                  <img
+                    src={user.companyLogo}
+                    alt="Company Logo"
+                    className="w-32 h-32 object-contain"
+                  />
+                </div>
+              )}
+              <div>
+                <span className="font-medium">Company Name: </span>
+                <span>{user?.company || "Not provided"}</span>
+              </div>
+              <div>
+                <span className="font-medium">VAT Number: </span>
+                <span>{user?.vatNumber || "Not provided"}</span>
+              </div>
+              <div>
+                <span className="font-medium">Registration Number: </span>
+                <span>{user?.registrationNumber || "Not provided"}</span>
+              </div>
+              <div>
+                <span className="font-medium">Business Address: </span>
+                <span>{user?.businessAddress || "Not provided"}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
-function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
+export default function SettingsPage() {
+  const { user } = useUser();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isSecurityUpdating, setIsSecurityUpdating] = useState(false);
+
+
+  const handlePasswordChange = async (data: ProfileFormData) => {
+    if (data.newPassword !== data.confirmPassword) {
+      console.error("New passwords do not match");
+      return;
+    }
+
+    setIsSecurityUpdating(true);
+    try {
+      const response = await fetch('/api/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword
+        }),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      console.log("Password Changed Successfully");
+
+      form.reset({
+        ...form.getValues(),
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+    } catch (error) {
+      console.error("Error changing password:", error);
+    } finally {
+      setIsSecurityUpdating(false);
+    }
+  };
+
+  const initiateProUpgrade = () => {
+    console.log('Initiating Pro upgrade payment flow (Sandbox Mode)');
+
+    const merchantId = import.meta.env.DEV
+      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
+      : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
+    const merchantKey = import.meta.env.DEV
+      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY
+      : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
+
+    if (!merchantId || !merchantKey) {
+      console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
+      toast({
+        variant: "destructive",
+        title: "Payment Setup Error",
+        description: "Unable to process payment at this time. Please try again later or contact support.",
+        duration: 5000,
+      });
+      return;
+    }
+
+    if (!user) {
+      console.error("User session not found");
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "Please log in to upgrade your account.",
+        duration: 5000,
+      });
+      return;
+    }
+
+    const upgradeData = {
+      uid: user.id,
+      e: user.email,
+      f: user.firstName || '',
+      l: user.lastName || '',
+      t: user.userType || 'individual',
+      s: 'pro'
+    };
+
+    console.log('Processing upgrade for user:', {
+      ...upgradeData,
+      email: user.email,
+      currentPlan: user.subscriptionStatus
+    });
+
+    const encodedData = encodeURIComponent(JSON.stringify(upgradeData));
+
+    const paymentData = {
+      merchant_id: merchantId,
+      merchant_key: merchantKey,
+      return_url: `${window.location.origin}/payment/success?upgrade_data=${encodedData}`,
+      cancel_url: `${window.location.origin}/settings`,
+      notify_url: `${window.location.origin}/api/payment-webhook`,
+      name_first: user.firstName || user.email,
+      email_address: user.email,
+      amount: "2000.00",
+      item_name: "Proply Pro Subscription Upgrade",
+      subscription_type: "1",
+      billing_date: new Date().toISOString().split('T')[0],
+      recurring_amount: "2000.00",
+      frequency: "3",
+      cycles: "0"
+    };
+
+    try {
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = import.meta.env.DEV
+        ? "https://sandbox.payfast.co.za/eng/process"
+        : "https://www.payfast.co.za/eng/process";
+
+      Object.entries(paymentData).forEach(([key, value]) => {
+        if (value !== undefined) {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = value.toString();
+          form.appendChild(input);
+        }
+      });
+
+      document.body.appendChild(form);
+      console.log('Submitting upgrade payment form to PayFast sandbox...');
+      form.submit();
+    } catch (error) {
+      console.error('Error submitting payment form:', error);
+      toast({
+        variant: "destructive",
+        title: "Payment Error",
+        description: "Failed to initiate payment. Please try again.",
+        duration: 5000,
+      });
+    }
+  };
+
+  const { data: invoices, isLoading: invoicesLoading } = useQuery({
+    queryKey: ['/api/invoices'],
+    queryFn: async () => {
+      const response = await fetch('/api/invoices', {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch invoices');
+      }
+      return response.json();
+    },
+    enabled: user?.subscriptionStatus === "pro"
+  });
+  const [, setLocation] = useLocation();
+
+
+  return (
+    <div className="min-h-screen bg-[#FFFFFF]">
+      <div className="p-6">
+        <h1 className="text-2xl font-bold text-[#262626] mb-6">Settings</h1>
+        <div className="max-w-4xl">
+          <Tabs defaultValue="profile" className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
+              <TabsTrigger value="billing">Billing</TabsTrigger>
+              <TabsTrigger value="invoices">Invoices</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="profile">
+              <ProfileSection />
+            </TabsContent>
+
+            <TabsContent value="security">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Change Password</CardTitle>
+                  <CardDescription>Update your password</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(handlePasswordChange)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="currentPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Current Password</FormLabel>
+                            <FormControl>
+                              <Input type="password" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="newPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>New Password</FormLabel>
+                            <FormControl>
+                              <Input type="password" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Confirm New Password</FormLabel>
+                            <FormControl>
+                              <Input type="password" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="submit"
+                        variant="outline"
+                        className="w-full"
+                        disabled={isSecurityUpdating}
+                      >
+                        {isSecurityUpdating ? (
+                          <>
+                            <span className="loading loading-spinner loading-sm mr-2"></span>
+                            Updating...
+                          </>
+                        ) : (
+                          "Change Password"
+                        )}
+                      </Button>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="billing">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Subscription Management</CardTitle>
+                  <CardDescription>Manage your subscription and billing preferences</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="invoices">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Invoices</CardTitle>
+                  <CardDescription>View and download your billing history</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {user?.subscriptionStatus === "pro" ? (
+                    invoicesLoading ? (
+                      <div className="text-center py-4">
+                        <span className="loading loading-spinner loading-md"></span>
+                        <p className="text-sm text-muted-foreground mt-2">Loading invoices...</p>
+                      </div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Invoice Number</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {invoices?.map((invoice: SelectInvoice) => (
+                            <TableRow key={invoice.id}>
+                              <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
+                              <TableCell>{new Date(invoice.createdAt).toLocaleDateString()}</TableCell>
+                              <TableCell>{invoice.description}</TableCell>
+                              <TableCell className="text-right">
+                                R{typeof invoice.amount === 'string' ?
+                                  parseFloat(invoice.amount).toFixed(2) :
+                                  invoice.amount.toFixed(2)}
+                              </TableCell>
+                              <TableCell className="capitalize">{invoice.status}</TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => downloadInvoice(invoice)}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {(!invoices || invoices.length === 0) && (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center text-muted-foreground">
+                                No invoices found
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    )
+                  ) : (
+                    <div className="text-center py-6">
+                      <p className="text-sm text-gray-500">
+                        Upgrade to Pro to view your invoice history
+                      </p>
+                      <Button
+                        onClick={() => setShowUpgradeModal(true)}
+                        className="mt-4 bg-[#1BA3FF] hover:bg-[#114D9D]"
+                      >
+                        Upgrade to Pro
+                      </Button>
+                      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+          </Tabs>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrade: () => void }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -371,7 +993,7 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
                       } catch (error) {
                         console.error('Error resuming subscription:', error);
                         toast({
-                          variant: "destructive",
+                                                    variant: "destructive",
                           title: "Error",
                           description: error instanceof Error ? error.message : "Failed to resume subscription",
                           duration: 5000,
@@ -388,7 +1010,6 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
         </div>
       )}
 
-
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Subscription Management</h3>
         {user?.subscriptionStatus === "free" ? (
@@ -404,9 +1025,9 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
               >
                 Upgrade to Pro
               </Button>
-              <UpgradeModal 
-                open={showUpgradeModal} 
-                onOpenChange={setShowUpgradeModal} 
+              <UpgradeModal
+                open={showUpgradeModal}
+                onOpenChange={setShowUpgradeModal}
               />
             </div>
           </div>
@@ -415,647 +1036,6 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
 
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-export default function SettingsPage() {
-  const { user } = useUser();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [isProfileUpdating, setIsProfileUpdating] = useState(false);
-  const [isSecurityUpdating, setIsSecurityUpdating] = useState(false);
-  const [previewLogo, setPreviewLogo] = useState<string | null>(null);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-
-  // Initialize form with user data
-  const form = useForm<ProfileFormData>({
-    defaultValues: {
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-      companyLogo: user?.companyLogo || "",
-      companyName: user?.company || "",
-      vatNumber: user?.vatNumber || "",
-      registrationNumber: user?.registrationNumber || "",
-      businessAddress: user?.businessAddress || ""
-    },
-  });
-
-  // Update form values when user data changes
-  useEffect(() => {
-    if (user) {
-      form.reset({
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-        companyLogo: user.companyLogo || "",
-        companyName: user.company || "",
-        vatNumber: user.vatNumber || "",
-        registrationNumber: user.registrationNumber || "",
-        businessAddress: user.businessAddress || ""
-      });
-    }
-  }, [user]);
-
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64Data = reader.result as string;
-        setPreviewLogo(base64Data);
-        form.setValue("companyLogo", base64Data);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  //This function is removed because it's redundant and the improved handleProfileUpdate function takes care of it.
-  // const onSubmit = async (data: ProfileFormData) => {
-  //   try {
-  //     const response = await fetch("/api/profile", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         firstName: data.firstName,
-  //         lastName: data.lastName,
-  //         companyLogo: data.companyLogo,
-  //         companyName: data.companyName,
-  //         vatNumber: data.vatNumber,
-  //         registrationNumber: data.registrationNumber,
-  //         businessAddress: data.businessAddress
-  //       }),
-  //       credentials: "include"
-  //     });
-
-  //     if (!response.ok) throw new Error("Failed to update profile");
-      
-  //     queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-  //     toast({
-  //       title: "Success",
-  //       description: "Profile updated successfully"
-  //     });
-  //   } catch (error) {
-  //     toast({
-  //       variant: "destructive",
-  //       title: "Error",
-  //       description: "Failed to update profile"
-  //     });
-  //   }
-  // };
-
-  const handleProfileUpdate = async (data: ProfileFormData) => {
-    setIsProfileUpdating(true);
-    try {
-      const response = await fetch('/api/profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName: data.firstName,
-          lastName: data.lastName,
-          companyLogo: data.companyLogo || previewLogo,
-          company: data.companyName,  // Fixed: changed from companyName to company to match DB field
-          vatNumber: data.vatNumber,
-          registrationNumber: data.registrationNumber,
-          businessAddress: data.businessAddress
-        }),
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-
-      const updatedUser = await response.json();
-      queryClient.setQueryData(['user'], updatedUser);
-
-      // Reset form with new values
-      form.reset({
-        ...form.getValues(),
-        firstName: updatedUser.firstName || '',
-        lastName: updatedUser.lastName || '',
-        companyLogo: updatedUser.companyLogo || '',
-        companyName: updatedUser.company || '',  // Fixed: use company field from response
-        vatNumber: updatedUser.vatNumber || '',
-        registrationNumber: updatedUser.registrationNumber || '',
-        businessAddress: updatedUser.businessAddress || ''
-      });
-
-      toast({
-        title: "Success",
-        description: "Profile updated successfully",
-        duration: 3000,
-      });
-
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update profile",
-        duration: 5000,
-      });
-    } finally {
-      setIsProfileUpdating(false);
-    }
-  };
-
-  const handlePasswordChange = async (data: ProfileFormData) => {
-    if (data.newPassword !== data.confirmPassword) {
-      console.error("New passwords do not match");
-      return;
-    }
-
-    setIsSecurityUpdating(true);
-    try {
-      const response = await fetch('/api/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          currentPassword: data.currentPassword,
-          newPassword: data.newPassword
-        }),
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-
-      console.log("Password Changed Successfully");
-
-      form.reset({
-        ...form.getValues(),
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: ""
-      });
-    } catch (error) {
-      console.error("Error changing password:", error);
-    } finally {
-      setIsSecurityUpdating(false);
-    }
-  };
-
-  const initiateProUpgrade = () => {
-    console.log('Initiating Pro upgrade payment flow (Sandbox Mode)');
-
-    const merchantId = import.meta.env.DEV
-      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
-      : import.meta.env.VITE_PAYFAST_MERCHANT_ID;
-    const merchantKey = import.meta.env.DEV
-      ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_KEY
-      : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
-
-    if (!merchantId || !merchantKey) {
-      console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
-      toast({
-        variant: "destructive",
-        title: "Payment Setup Error",
-        description: "Unable to process payment at this time. Please try again later or contact support.",
-        duration: 5000,
-      });
-      return;
-    }
-
-    if (!user) {
-      console.error("User session not found");
-      toast({
-        variant: "destructive",
-        title: "Authentication Required",
-        description: "Please log in to upgrade your account.",
-        duration: 5000,
-      });
-      return;
-    }
-
-    const upgradeData = {
-      uid: user.id,
-      e: user.email,
-      f: user.firstName || '',
-      l: user.lastName || '',
-      t: user.userType || 'individual',
-      s: 'pro'
-    };
-
-    console.log('Processing upgrade for user:', {
-      ...upgradeData,
-      email: user.email,
-      currentPlan: user.subscriptionStatus
-    });
-
-    const encodedData = encodeURIComponent(JSON.stringify(upgradeData));
-
-    const paymentData = {
-      merchant_id: merchantId,
-      merchant_key: merchantKey,
-      return_url: `${window.location.origin}/payment/success?upgrade_data=${encodedData}`,
-      cancel_url: `${window.location.origin}/settings`,
-      notify_url: `${window.location.origin}/api/payment-webhook`,
-      name_first: user.firstName || user.email,
-      email_address: user.email,
-      amount: "2000.00",
-      item_name: "Proply Pro Subscription Upgrade",
-      subscription_type: "1",
-      billing_date: new Date().toISOString().split('T')[0],
-      recurring_amount: "2000.00",
-      frequency: "3",
-      cycles: "0"
-    };
-
-    try {
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = import.meta.env.DEV
-        ? "https://sandbox.payfast.co.za/eng/process"
-        : "https://www.payfast.co.za/eng/process";
-
-      Object.entries(paymentData).forEach(([key, value]) => {
-        if (value !== undefined) {
-          const input = document.createElement("input");
-          input.type = "hidden";
-          input.name = key;
-          input.value = value.toString();
-          form.appendChild(input);
-        }
-      });
-
-      document.body.appendChild(form);
-      console.log('Submitting upgrade payment form to PayFast sandbox...');
-      form.submit();
-    } catch (error) {
-      console.error('Error submitting payment form:', error);
-      toast({
-        variant: "destructive",
-        title: "Payment Error",
-        description: "Failed to initiate payment. Please try again.",
-        duration: 5000,
-      });
-    }
-  };
-
-  const { data: invoices, isLoading: invoicesLoading } = useQuery({
-    queryKey: ['/api/invoices'],
-    queryFn: async () => {
-      const response = await fetch('/api/invoices', {
-        credentials: 'include'
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch invoices');
-      }
-      return response.json();
-    },
-    enabled: user?.subscriptionStatus === "pro"
-  });
-  const [, setLocation] = useLocation();
-
-
-  return (
-    <div className="min-h-screen bg-[#FFFFFF]">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-[#262626] mb-6">Settings</h1>
-
-        <div className="max-w-4xl">
-          <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList>
-              <TabsTrigger value="profile">Profile</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
-              <TabsTrigger value="billing">Billing</TabsTrigger>
-              <TabsTrigger value="invoices">Invoices</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="profile">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Profile Information</CardTitle>
-                  <CardDescription>Update your personal information</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-6">
-                    <p className="text-sm font-medium text-muted-foreground">Email</p>
-                    <p className="text-sm">{user?.email}</p>
-                  </div>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleProfileUpdate)} className="space-y-6">
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="firstName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>First Name</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="John" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="lastName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Last Name</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="Doe" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <FormItem>
-                        <FormLabel>Company Logo</FormLabel>
-                        <div className="flex items-start space-x-4">
-                          <div>
-                            {previewLogo || user?.companyLogo ? (
-                              <img
-                                src={previewLogo || user?.companyLogo || undefined}
-                                alt="Company Logo Preview"
-                                className="w-32 h-32 object-contain border rounded-lg"
-                              />
-                            ) : (
-                              <div className="w-32 h-32 border rounded-lg flex items-center justify-center bg-gray-50">
-                                <p className="text-sm text-gray-500">No logo uploaded</p>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleLogoUpload}
-                              className="mb-2"
-                            />
-                            <p className="text-sm text-gray-500">
-                              Upload your company logo. Recommended size: 400x400px.
-                            </p>
-                          </div>
-                        </div>
-                      </FormItem>
-
-                      <div className="border-t pt-6 mt-6">
-                        <h3 className="text-lg font-semibold mb-4">Company Details</h3>
-                        <div className="space-y-4">
-                          <FormField
-                            control={form.control}
-                            name="companyName"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Company Name</FormLabel>
-                                <FormControl>
-                                  <Input {...field} placeholder="Your Company Ltd" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="vatNumber"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>VAT Number</FormLabel>
-                                <FormControl>
-                                  <Input {...field} placeholder="4XXXXXXXXX" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="registrationNumber"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Business Registration Number</FormLabel>
-                                <FormControl>
-                                  <Input {...field} placeholder="XXXX/XXXXXX/XX" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="businessAddress"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Business Address</FormLabel>
-                                <FormControl>
-                                  <Input {...field} placeholder="123 Business Street, City" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-
-                      <Button
-                        type="submit"
-                        className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
-                        disabled={isProfileUpdating}
-                      >
-                        {isProfileUpdating ? (
-                          <>
-                            <span className="loading loading-spinner loading-sm mr-2"></span>
-                            Updating...
-                          </>
-                        ) : (
-                          "Update Profile"
-                        )}
-                      </Button>
-                    </form>
-                  </Form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="security">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Change Password</CardTitle>
-                  <CardDescription>Update your password</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handlePasswordChange)} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="currentPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Current Password</FormLabel>
-                            <FormControl>
-                              <Input type="password" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="newPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>New Password</FormLabel>
-                            <FormControl>
-                              <Input type="password" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Confirm New Password</FormLabel>
-                            <FormControl>
-                              <Input type="password" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button
-                        type="submit"
-                        variant="outline"
-                        className="w-full"
-                        disabled={isSecurityUpdating}
-                      >
-                        {isSecurityUpdating ? (
-                          <>
-                            <span className="loading loading-spinner loading-sm mr-2"></span>
-                            Updating...
-                          </>
-                        ) : (
-                          "Change Password"
-                        )}
-                      </Button>
-                    </form>
-                  </Form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="billing">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Subscription Management</CardTitle>
-                  <CardDescription>Manage your subscription and billing preferences</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {user?.pendingDowngrade && (
-                    <div className="mb-6">
-                      <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-md">
-                        <div>
-                          <div className="flex items-center gap-2 text-orange-800 font-medium">
-                            <AlertTriangle className="h-4 w-4 text-orange-400" />
-                            Subscription Change Scheduled
-                          </div>
-                          <div className="mt-2 flex items-center gap-2 text-orange-700">
-                            <CalendarDays className="h-4 w-4 text-orange-400" />
-                            Your account will downgrade to Free on {user.subscriptionNextBillingDate ? new Date(user.subscriptionNextBillingDate).toLocaleDateString() : 'next billing date'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="invoices">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Invoices</CardTitle>
-                  <CardDescription>View and download your billing history</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {user?.subscriptionStatus === "pro" ? (
-                    invoicesLoading ? (
-                      <div className="text-center py-4">
-                        <span className="loading loading-spinner loading-md"></span>
-                        <p className="text-sm text-muted-foreground mt-2">Loading invoices...</p>
-                      </div>
-                    ) : (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Invoice Number</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead className="text-right">Amount</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {invoices?.map((invoice: SelectInvoice) => (
-                            <TableRow key={invoice.id}>
-                              <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
-                              <TableCell>{new Date(invoice.createdAt).toLocaleDateString()}</TableCell>
-                              <TableCell>{invoice.description}</TableCell>
-                              <TableCell className="text-right">
-                                R{typeof invoice.amount === 'string' ?
-                                  parseFloat(invoice.amount).toFixed(2) :
-                                  invoice.amount.toFixed(2)}
-                              </TableCell>
-                              <TableCell className="capitalize">{invoice.status}</TableCell>
-                              <TableCell className="text-right">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => downloadInvoice(invoice)}
-                                >
-                                  <Download className="h-4 w-4" />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                          {(!invoices || invoices.length === 0) && (
-                            <TableRow>
-                              <TableCell colSpan={6} className="text-center text-muted-foreground">
-                                No invoices found
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    )
-                  ) : (
-                    <div className="text-center py-6">
-                      <p className="text-sm text-gray-500">
-                        Upgrade to Pro to view your invoice history
-                      </p>
-                      <Button
-                        onClick={() => setShowUpgradeModal(true)}
-                        className="mt-4 bg-[#1BA3FF] hover:bg-[#114D9D]"
-                      >
-                        Upgrade to Pro
-                      </Button>
-                      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-          </Tabs>
-        </div>
       </div>
     </div>
   );
