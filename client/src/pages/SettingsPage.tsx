@@ -812,44 +812,86 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                   {user?.subscriptionStatus === "pro" ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Invoice</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {user?.subscriptionStartDate && (
-                          <TableRow>
-                            <TableCell>
-                              {new Date(user.subscriptionStartDate).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell>R2,000.00</TableCell>
-                            <TableCell>
-                              <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-50 text-green-700">
-                                Paid
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                                onClick={() => {
-                                  // Add download functionality here
-                                  console.log("Downloading invoice...");
-                                }}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
+                    <>
+                      {/* Invoices data fetch */}
+                      <Query 
+                        query={"/api/invoices"}
+                        render={({ data: invoices, isLoading }) => (
+                          isLoading ? (
+                            <div className="flex items-center justify-center py-4">
+                              <Loader2 className="h-6 w-6 animate-spin" />
+                            </div>
+                          ) : invoices?.length > 0 ? (
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Date</TableHead>
+                                  <TableHead>Invoice Number</TableHead>
+                                  <TableHead>Description</TableHead>
+                                  <TableHead>Amount</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Invoice</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {invoices.map((invoice) => (
+                                  <TableRow key={invoice.id}>
+                                    <TableCell>
+                                      {new Date(invoice.createdAt).toLocaleDateString()}
+                                    </TableCell>
+                                    <TableCell>{invoice.invoiceNumber}</TableCell>
+                                    <TableCell>{invoice.description}</TableCell>
+                                    <TableCell>R{invoice.amount.toFixed(2)}</TableCell>
+                                    <TableCell>
+                                      <span className={cn(
+                                        "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
+                                        invoice.status === "paid" ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"
+                                      )}>
+                                        {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                      </span>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        onClick={async () => {
+                                          try {
+                                            const response = await fetch(`/api/invoices/${invoice.id}/download`);
+                                            if (!response.ok) throw new Error('Download failed');
+                                            const blob = await response.blob();
+                                            const url = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = url;
+                                            a.download = `invoice-${invoice.invoiceNumber}.pdf`;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            window.URL.revokeObjectURL(url);
+                                            document.body.removeChild(a);
+                                          } catch (error) {
+                                            toast({
+                                              title: "Error",
+                                              description: "Failed to download invoice",
+                                              variant: "destructive"
+                                            });
+                                          }
+                                        }}
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          ) : (
+                            <div className="text-center py-6 text-muted-foreground">
+                              No invoices found
+                            </div>
+                          )
                         )}
-                      </TableBody>
-                    </Table>
+                      />
+                    </>
                   ) : (
                     <div className="text-center py-6">
                       <p className="text-sm text-gray-500">
