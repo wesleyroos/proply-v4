@@ -123,12 +123,15 @@ export async function downloadInvoice(invoice: {
       if (data.row.index === 5) {
         data.cell.styles.fontStyle = 'bold';
       }
-    }
+    },
     didDrawCell: function(data) {
       if (data.row.index === 0) {
         const cell = data.cell;
         doc.setDrawColor(0);
         doc.setLineWidth(0.5);
+        doc.line(cell.x, cell.y + cell.height, cell.x + cell.width, cell.y + cell.height);
+      }
+    }
         doc.line(cell.x, cell.y + cell.height, cell.x + cell.width, cell.y + cell.height);
       }
     },
