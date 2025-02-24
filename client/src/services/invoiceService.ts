@@ -37,7 +37,6 @@ export async function downloadInvoice(invoice: {
   } catch (error) {
     console.error("Error adding Proply logo:", error);
   }
-  doc.addImage('/proply-logo-1.png', 'PNG', 140, 15, 50, 25);
 
   // Add TAX INVOICE heading
   doc.setFontSize(24);
@@ -80,7 +79,7 @@ export async function downloadInvoice(invoice: {
 
   // Parse amount as number first
   const amount = Number(invoice.amount);
-  
+
   // Add invoice table
   autoTable(doc, {
     startY: 120,
