@@ -989,7 +989,7 @@ export function registerRoutes(app: Express): Server {
       return res.status(401).send("Not authenticated");
     }
 
-    const { firstName, lastName, companyLogo } = req.body;
+    const { firstName, lastName, companyLogo, companyName, vatNumber, registrationNumber, businessAddress } = req.body;
 
     try {
       // Validate the logo data if present
@@ -1003,6 +1003,10 @@ export function registerRoutes(app: Express): Server {
           firstName,
           lastName,
           companyLogo,
+          company: companyName,
+          vatNumber,
+          registrationNumber,
+          businessAddress,
           updatedAt: new Date(),
         })
         .where(eq(users.id, req.user!.id))

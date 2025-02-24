@@ -477,6 +477,39 @@ export default function SettingsPage() {
     }
   };
 
+  const onSubmit = async (data: ProfileFormData) => {
+    try {
+      const response = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          companyLogo: data.companyLogo,
+          companyName: data.companyName,
+          vatNumber: data.vatNumber,
+          registrationNumber: data.registrationNumber,
+          businessAddress: data.businessAddress
+        }),
+        credentials: "include"
+      });
+
+      if (!response.ok) throw new Error("Failed to update profile");
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      toast({
+        title: "Success",
+        description: "Profile updated successfully"
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update profile"
+      });
+    }
+  };
+
   const handleProfileUpdate = async (data: ProfileFormData) => {
     setIsProfileUpdating(true);
     try {
