@@ -855,7 +855,10 @@ export default function SettingsPage() {
                                 variant="ghost"
                                 size="sm"
                                 className="h-8 w-8 p-0"
-                                onClick={() => handleDownloadInvoice(invoice)}
+                                onClick={() => {
+                                  console.log("Downloading invoice...");
+                                  // Add actual download logic here
+                                }}
                               >
                                 <Download className="h-4 w-4" />
                                 <span className="sr-only">Download invoice</span>
@@ -867,16 +870,6 @@ export default function SettingsPage() {
                           <TableRow>
                             <TableCell colSpan={6} className="text-center text-muted-foreground">
                               No invoices found
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                                  console.log("Downloading invoice...");
-                                }}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
                             </TableCell>
                           </TableRow>
                         )}
