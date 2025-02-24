@@ -415,6 +415,8 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isProfileUpdating, setIsProfileUpdating] = useState(false); // Added state for profile update loading
+  const [isSecurityUpdating, setIsSecurityUpdating] = useState(false); // Added state for password update loading
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { data: invoices, isLoading: invoicesLoading } = useQuery({
@@ -456,7 +458,7 @@ export default function SettingsPage() {
   };
 
   const handleProfileUpdate = async (data: ProfileFormData) => {
-    setIsUpdating(true);
+    setIsProfileUpdating(true); // Updated to use isProfileUpdating
     try {
       const response = await fetch('/api/profile', {
         method: 'POST',
@@ -491,7 +493,7 @@ export default function SettingsPage() {
         duration: 5000,
       });
     } finally {
-      setIsUpdating(false);
+      setIsProfileUpdating(false); // Updated to use isProfileUpdating
     }
   };
 
@@ -501,7 +503,7 @@ export default function SettingsPage() {
       return;
     }
 
-    setIsUpdating(true);
+    setIsSecurityUpdating(true); // Updated to use isSecurityUpdating
     try {
       const response = await fetch('/api/change-password', {
         method: 'POST',
@@ -528,7 +530,7 @@ export default function SettingsPage() {
     } catch (error) {
       console.error("Error changing password:", error);
     } finally {
-      setIsUpdating(false);
+      setIsSecurityUpdating(false); // Updated to use isSecurityUpdating
     }
   };
 
@@ -718,9 +720,16 @@ export default function SettingsPage() {
                       <Button
                         type="submit"
                         className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
-                        disabled={isUpdating}
+                        disabled={isProfileUpdating}
                       >
-                        {isUpdating ? "Updating..." : "Update Profile"}
+                        {isProfileUpdating ? (
+                          <>
+                            <span className="loading loading-spinner loading-sm mr-2"></span>
+                            Updating...
+                          </>
+                        ) : (
+                          "Update Profile"
+                        )}
                       </Button>
                     </form>
                   </Form>
@@ -780,9 +789,16 @@ export default function SettingsPage() {
                         type="submit"
                         variant="outline"
                         className="w-full"
-                        disabled={isUpdating}
+                        disabled={isSecurityUpdating}
                       >
-                        {isUpdating ? "Updating..." : "Change Password"}
+                        {isSecurityUpdating ? (
+                          <>
+                            <span className="loading loading-spinner loading-sm mr-2"></span>
+                            Updating...
+                          </>
+                        ) : (
+                          "Change Password"
+                        )}
                       </Button>
                     </form>
                   </Form>
