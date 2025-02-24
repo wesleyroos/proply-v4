@@ -1014,7 +1014,7 @@ export function registerRoutes(app: Express): Server {
           firstName,
           lastName,
           companyLogo,
-          company: companyName, // Ensure this matches the column name in schema
+          company: companyName,
           vatNumber,
           registrationNumber,
           businessAddress,
