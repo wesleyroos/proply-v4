@@ -50,6 +50,9 @@ export async function downloadInvoice(invoice: {
   const unitPrice = invoice.amount / 1.15; // Remove VAT
   const vat = invoice.amount - unitPrice;
 
+  // Parse amount as number first
+  const amount = Number(invoice.amount);
+  
   // Add invoice table
   autoTable(doc, {
     startY: 120,
@@ -59,7 +62,7 @@ export async function downloadInvoice(invoice: {
       '1.00',
       unitPrice.toFixed(2),
       '15%',
-      invoice.amount.toFixed(2)
+      amount.toFixed(2)
     ]],
   });
 
@@ -68,8 +71,8 @@ export async function downloadInvoice(invoice: {
   doc.text([
     `Subtotal: R${unitPrice.toFixed(2)}`,
     `TOTAL VAT: R${vat.toFixed(2)}`,
-    `TOTAL ZAR: R${invoice.amount.toFixed(2)}`,
-    `Less Amount Paid: R${invoice.amount.toFixed(2)}`,
+    `TOTAL ZAR: R${amount.toFixed(2)}`,
+    `Less Amount Paid: R${amount.toFixed(2)}`,
     `AMOUNT DUE ZAR: R0.00`
   ], 120, finalY);
 
