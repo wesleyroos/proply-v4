@@ -150,6 +150,26 @@ export const apiUsage = pgTable("api_usage", {
   success: boolean("success").default(true).notNull(),
 });
 
+// Add invoices table
+export const invoices = pgTable("invoices", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  status: text("status").notNull(), // paid, pending, failed
+  invoiceNumber: text("invoice_number").unique().notNull(),
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Add relations for invoices
+export const invoicesRelations = relations(invoices, ({ one }) => ({
+  user: one(users, {
+    fields: [invoices.userId],
+    references: [users.id],
+  }),
+}));
+
 // Add new table for subscription history
 export const subscriptionHistory = pgTable("subscription_history", {
   id: serial("id").primaryKey(),
@@ -371,3 +391,8 @@ export type InsertApiUsage = typeof apiUsage.$inferInsert;
 export type SelectApiUsage = typeof apiUsage.$inferSelect;
 export type InsertSubscriptionHistory = typeof subscriptionHistory.$inferInsert;
 export type SelectSubscriptionHistory = typeof subscriptionHistory.$inferSelect;
+export type InsertInvoice = typeof invoices.$inferInsert;
+export type SelectInvoice = typeof invoices.$inferSelect;
+
+export const insertInvoiceSchema = createInsertSchema(invoices);
+export const selectInvoiceSchema = createSelectSchema(invoices);
