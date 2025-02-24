@@ -989,20 +989,15 @@ export function registerRoutes(app: Express): Server {
       return res.status(401).send("Not authenticated");
     }
 
-    const { firstName, lastName, companyLogo, companyName, vatNumber, registrationNumber, businessAddress } = req.body;
+    const { firstName, lastName, companyLogo, company, vatNumber, registrationNumber, businessAddress } = req.body;
 
     try {
-      // Validate the logo data if present
-      if (companyLogo && !companyLogo.startsWith("data:image")) {
-        return res.status(400).json({ error: "Invalid logo format" });
-      }
-
-      // Log the update data
       console.log("Updating profile with data:", {
+        userId: req.user!.id,
         firstName,
         lastName,
         hasLogo: !!companyLogo,
-        companyName,
+        company,
         vatNumber,
         registrationNumber,
         businessAddress
@@ -1014,10 +1009,10 @@ export function registerRoutes(app: Express): Server {
           firstName,
           lastName,
           companyLogo,
-          company: companyName || null,
-          vatNumber: vatNumber || null,
-          registrationNumber: registrationNumber || null,
-          businessAddress: businessAddress || null,
+          company,
+          vatNumber,
+          registrationNumber,
+          businessAddress,
           updatedAt: new Date(),
         })
         .where(eq(users.id, req.user!.id))
@@ -1026,6 +1021,10 @@ export function registerRoutes(app: Express): Server {
       console.log("Profile updated successfully:", {
         userId: updatedUser.id,
         hasLogo: !!updatedUser.companyLogo,
+        company: updatedUser.company,
+        vatNumber: updatedUser.vatNumber,
+        registrationNumber: updatedUser.registrationNumber,
+        businessAddress: updatedUser.businessAddress
       });
 
       res.json(updatedUser);
