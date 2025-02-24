@@ -416,6 +416,14 @@ export default function SettingsPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [invoices, setInvoices] = useState<Array<{
+    id: number;
+    invoiceNumber: string;
+    amount: number;
+    description: string;
+    status: string;
+    createdAt: string;
+  }>>([]);
   const [, setLocation] = useLocation();
 
   const form = useForm<ProfileFormData>({
@@ -815,27 +823,55 @@ export default function SettingsPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>Invoice Number</TableHead>
                           <TableHead>Date</TableHead>
-                          <TableHead>Amount</TableHead>
+                          <TableHead>Description</TableHead>
+                          <TableHead className="text-right">Amount</TableHead>
                           <TableHead>Status</TableHead>
-                          <TableHead>Invoice</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {user?.subscriptionStartDate && (
-                          <TableRow>
-                            <TableCell>
-                              {new Date(user.subscriptionStartDate).toLocaleDateString()}
+                        {invoices?.map((invoice) => (
+                          <TableRow key={invoice.id}>
+                            <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
+                            <TableCell>{new Date(invoice.createdAt).toLocaleDateString()}</TableCell>
+                            <TableCell>{invoice.description}</TableCell>
+                            <TableCell className="text-right">
+                              R{invoice.amount.toFixed(2)}
                             </TableCell>
-                            <TableCell>R2,000.00</TableCell>
                             <TableCell>
-                              <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-50 text-green-700">
-                                Paid
+                              <span className={cn(
+                                "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
+                                invoice.status === "paid" ? "bg-green-50 text-green-700" : 
+                                invoice.status === "pending" ? "bg-yellow-50 text-yellow-700" :
+                                "bg-red-50 text-red-700"
+                              )}>
+                                {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
                               </span>
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="text-right">
                               <Button
                                 variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => handleDownloadInvoice(invoice)}
+                              >
+                                <Download className="h-4 w-4" />
+                                <span className="sr-only">Download invoice</span>
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {(!invoices || invoices.length === 0) && (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center text-muted-foreground">
+                              No invoices found
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
                                 size="sm"
                                 className="h-8 w-8 p-0"
                                 onClick={() => {
