@@ -1006,13 +1006,13 @@ export function registerRoutes(app: Express): Server {
       const [updatedUser] = await db
         .update(users)
         .set({
-          firstName,
-          lastName,
-          companyLogo,
-          company,
-          vatNumber,
-          registrationNumber,
-          businessAddress,
+          firstName: firstName || null,
+          lastName: lastName || null,
+          companyLogo: companyLogo || null,
+          company: company || null,
+          vatNumber: vatNumber || null,
+          registrationNumber: registrationNumber || null,
+          businessAddress: businessAddress || null,
           updatedAt: new Date(),
         })
         .where(eq(users.id, req.user!.id))
