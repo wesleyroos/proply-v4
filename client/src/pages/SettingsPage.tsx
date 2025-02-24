@@ -872,10 +872,6 @@ export default function SettingsPage() {
                         )}
                       </TableBody>
                     </Table>
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                                onClick={() => {
-                                  // Add download functionality here
                                   console.log("Downloading invoice...");
                                 }}
                               >
