@@ -344,6 +344,12 @@ function ProfileSection() {
   );
 }
 
+interface SecurityFormData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export default function SettingsPage() {
   const { user } = useUser();
   const { toast } = useToast();
@@ -351,10 +357,23 @@ export default function SettingsPage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isSecurityUpdating, setIsSecurityUpdating] = useState(false);
 
+  const securityForm = useForm<SecurityFormData>({
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
 
-  const handlePasswordChange = async (data: ProfileFormData) => {
+  const handlePasswordChange = async (data: SecurityFormData) => {
     if (data.newPassword !== data.confirmPassword) {
       console.error("New passwords do not match");
+      toast({
+        title: "Error",
+        description: "New passwords do not match",
+        variant: "destructive",
+        duration: 3000
+      })
       return;
     }
 
@@ -376,14 +395,25 @@ export default function SettingsPage() {
 
       console.log("Password Changed Successfully");
 
-      form.reset({
-        ...form.getValues(),
+      securityForm.reset({
         currentPassword: "",
         newPassword: "",
         confirmPassword: ""
       });
+
+      toast({
+        title: "Success",
+        description: "Password updated successfully",
+        duration: 3000,
+      });
     } catch (error) {
       console.error("Error changing password:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update password",
+        duration: 5000,
+      });
     } finally {
       setIsSecurityUpdating(false);
     }
@@ -526,10 +556,10 @@ export default function SettingsPage() {
                   <CardDescription>Update your password</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handlePasswordChange)} className="space-y-4">
+                  <Form {...securityForm}>
+                    <form onSubmit={securityForm.handleSubmit(handlePasswordChange)} className="space-y-4">
                       <FormField
-                        control={form.control}
+                        control={securityForm.control}
                         name="currentPassword"
                         render={({ field }) => (
                           <FormItem>
@@ -542,7 +572,7 @@ export default function SettingsPage() {
                         )}
                       />
                       <FormField
-                        control={form.control}
+                        control={securityForm.control}
                         name="newPassword"
                         render={({ field }) => (
                           <FormItem>
@@ -555,7 +585,7 @@ export default function SettingsPage() {
                         )}
                       />
                       <FormField
-                        control={form.control}
+                        control={securityForm.control}
                         name="confirmPassword"
                         render={({ field }) => (
                           <FormItem>
@@ -670,7 +700,6 @@ export default function SettingsPage() {
                       >
                         Upgrade to Pro
                       </Button>
-                      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
                     </div>
                   )}
                 </CardContent>
@@ -965,7 +994,7 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                 <AlertDialogHeader>
                   <AlertDialogTitle>Resume Subscription</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Your subscription will be resumed immediately. Billing will continue according to your regular schedule.
+                    Your subscription will be resumed immediately. Billing will continue according to yourregular schedule.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -993,7 +1022,7 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                       } catch (error) {
                         console.error('Error resuming subscription:', error);
                         toast({
-                                                    variant: "destructive",
+                          variant: "destructive",
                           title: "Error",
                           description: error instanceof Error ? error.message : "Failed to resume subscription",
                           duration: 5000,
