@@ -416,14 +416,19 @@ export default function SettingsPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [invoices, setInvoices] = useState<Array<{
-    id: number;
-    invoiceNumber: string;
-    amount: number;
-    description: string;
-    status: string;
-    createdAt: string;
-  }>>([]);
+  const { data: invoices, isLoading: invoicesLoading } = useQuery({
+    queryKey: ['/api/invoices'],
+    queryFn: async () => {
+      const response = await fetch('/api/invoices', {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch invoices');
+      }
+      return response.json();
+    },
+    enabled: user?.subscriptionStatus === "pro"
+  });
   const [, setLocation] = useLocation();
 
   const form = useForm<ProfileFormData>({
@@ -820,6 +825,12 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                   {user?.subscriptionStatus === "pro" ? (
+                    invoicesLoading ? (
+                      <div className="text-center py-4">
+                        <span className="loading loading-spinner loading-md"></span>
+                        <p className="text-sm text-muted-foreground mt-2">Loading invoices...</p>
+                      </div>
+                    ) : (
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -875,6 +886,7 @@ export default function SettingsPage() {
                         )}
                       </TableBody>
                     </Table>
+                    )
                   ) : (
                     <div className="text-center py-6">
                       <p className="text-sm text-gray-500">
