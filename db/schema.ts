@@ -25,6 +25,9 @@ export const users = pgTable("users", {
   firstName: text("first_name"),
   lastName: text("last_name"),
   companyLogo: text("company_logo"),
+  vatNumber: text("vat_number"),
+  registrationNumber: text("registration_number"),
+  businessAddress: text("business_address"),
   subscriptionStatus: text("subscription_status").default("free").notNull(),
   subscriptionExpiryDate: timestamp("subscription_expiry_date"),
   subscriptionStartDate: timestamp("subscription_start_date"),
@@ -40,8 +43,7 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   reportsGenerated: integer("reports_generated").default(0).notNull(),
   analysisCount: integer("analysis_count").default(0).notNull(),
-  lastLoginAt: timestamp("last_login_at"), // Added new column for tracking last login
-
+  lastLoginAt: timestamp("last_login_at"),
   pricelabsApiCallsTotal: integer("pricelabs_api_calls_total").default(0),
   pricelabsApiCallsMonth: integer("pricelabs_api_calls_month").default(0),
   pricelabsApiLastReset: timestamp("pricelabs_api_last_reset")
