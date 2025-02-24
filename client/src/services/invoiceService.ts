@@ -17,17 +17,19 @@ export async function downloadInvoice(invoice: {
   doc.setFontSize(24);
   doc.text('TAX INVOICE', 20, 30);
 
+  // Fetch user details
+  const userResponse = await fetch('/api/user', {
+    credentials: 'include'
+  });
+  const user = await userResponse.json();
+
   // Add client details
   doc.setFontSize(10);
   doc.text([
-    'Brennan Wright',
-    'Attention: Long Run Capital (Pty) Ltd',
-    'VAT#: 4330315526',
-    'Spilo Business Park',
-    'Cnr Drommedaris and Skoenmaker Str Paarl',
-    'CAPE TOWN WESTERN CAPE 7646',
-    'SOUTH AFRICA'
-  ], 20, 50);
+    `${user.firstName} ${user.lastName}`,
+    user.company ? `Company: ${user.company}` : '',
+    user.email,
+  ].filter(Boolean), 20, 50);
 
   // Add company details
   doc.text([
