@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { downloadInvoice } from "@/services/invoiceService";
 import { useQuery } from "@tanstack/react-query";
@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/table";
 import cn from 'classnames';
 
+// Fixed the ProfileFormData interface
 interface ProfileFormData {
   firstName: string;
   lastName: string;
@@ -402,8 +403,12 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
                 onClick={() => setShowUpgradeModal(true)}
                 className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
               >
-                Upgrade Now - R2,000/month
+                Upgrade to Pro
               </Button>
+              <UpgradeModal 
+                open={showUpgradeModal} 
+                onOpenChange={setShowUpgradeModal} 
+              />
             </div>
           </div>
         ) : (
@@ -411,7 +416,6 @@ function BillingDetails({ user, onUpgrade }: BillingDetailsProps) {
 
           </div>
         )}
-        <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
       </div>
     </div>
   );
@@ -421,40 +425,44 @@ export default function SettingsPage() {
   const { user } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isUpdating, setIsUpdating] = useState(false);
   const [isProfileUpdating, setIsProfileUpdating] = useState(false);
   const [isSecurityUpdating, setIsSecurityUpdating] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const { data: invoices, isLoading: invoicesLoading } = useQuery({
-    queryKey: ['/api/invoices'],
-    queryFn: async () => {
-      const response = await fetch('/api/invoices', {
-        credentials: 'include'
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch invoices');
-      }
-      return response.json();
-    },
-    enabled: user?.subscriptionStatus === "pro"
-  });
-  const [, setLocation] = useLocation();
 
+  // Initialize form with user data
   const form = useForm<ProfileFormData>({
     defaultValues: {
-      firstName: user?.firstName ?? "",
-      lastName: user?.lastName ?? "",
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
-      companyLogo: user?.companyLogo,
-      companyName: user?.company || '',
-      vatNumber: user?.vatNumber || '',
-      registrationNumber: user?.registrationNumber || '',
-      businessAddress: user?.businessAddress || ''
+      companyLogo: user?.companyLogo || "",
+      companyName: user?.company || "",
+      vatNumber: user?.vatNumber || "",
+      registrationNumber: user?.registrationNumber || "",
+      businessAddress: user?.businessAddress || ""
     },
   });
+
+  // Update form values when user data changes
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+        companyLogo: user.companyLogo || "",
+        companyName: user.company || "",
+        vatNumber: user.vatNumber || "",
+        registrationNumber: user.registrationNumber || "",
+        businessAddress: user.businessAddress || ""
+      });
+    }
+  }, [user]);
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -493,6 +501,20 @@ export default function SettingsPage() {
 
       const updatedUser = await response.json();
       queryClient.setQueryData(['user'], updatedUser);
+
+      // Reset form with new values
+      form.reset({
+        firstName: updatedUser.firstName || '',
+        lastName: updatedUser.lastName || '',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+        companyLogo: updatedUser.companyLogo,
+        companyName: updatedUser.company || '',
+        vatNumber: updatedUser.vatNumber || '',
+        registrationNumber: updatedUser.registrationNumber || '',
+        businessAddress: updatedUser.businessAddress || ''
+      });
 
       toast({
         title: "Success",
@@ -647,6 +669,22 @@ export default function SettingsPage() {
     }
   };
 
+  const { data: invoices, isLoading: invoicesLoading } = useQuery({
+    queryKey: ['/api/invoices'],
+    queryFn: async () => {
+      const response = await fetch('/api/invoices', {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch invoices');
+      }
+      return response.json();
+    },
+    enabled: user?.subscriptionStatus === "pro"
+  });
+  const [, setLocation] = useLocation();
+
+
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
       <div className="p-6">
@@ -743,7 +781,7 @@ export default function SettingsPage() {
                               <FormItem>
                                 <FormLabel>Company Name</FormLabel>
                                 <FormControl>
-                                  <Input {...field} placeholder="Your Company Ltd" defaultValue={user?.company || ''} />
+                                  <Input {...field} placeholder="Your Company Ltd" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -756,7 +794,7 @@ export default function SettingsPage() {
                               <FormItem>
                                 <FormLabel>VAT Number</FormLabel>
                                 <FormControl>
-                                  <Input {...field} placeholder="4XXXXXXXXX" defaultValue={user?.vatNumber || ''} />
+                                  <Input {...field} placeholder="4XXXXXXXXX" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -769,7 +807,7 @@ export default function SettingsPage() {
                               <FormItem>
                                 <FormLabel>Business Registration Number</FormLabel>
                                 <FormControl>
-                                  <Input {...field} placeholder="XXXX/XXXXXX/XX" defaultValue={user?.registrationNumber || ''} />
+                                  <Input {...field} placeholder="XXXX/XXXXXX/XX" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -782,7 +820,7 @@ export default function SettingsPage() {
                               <FormItem>
                                 <FormLabel>Business Address</FormLabel>
                                 <FormControl>
-                                  <Input {...field} placeholder="123 Business Street, City" defaultValue={user?.businessAddress || ''} />
+                                  <Input {...field} placeholder="123 Business Street, City" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
