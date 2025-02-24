@@ -94,7 +94,9 @@ export async function downloadInvoice(invoice: {
     ]],
     headStyles: {
       fontSize: 12,
-      fontStyle: 'bold'
+      fontStyle: 'bold',
+      fillColor: [255, 255, 255],
+      textColor: [0, 0, 0]
     }
   });
 
