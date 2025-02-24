@@ -878,9 +878,7 @@ export default function SettingsPage() {
                                   variant="ghost"
                                   size="sm"
                                   className="h-8 w-8 p-0"
-                                  onClick={() => {
-                                    console.log('Downloading invoice:', invoice.invoiceNumber);
-                                  }}
+                                  onClick={() => downloadInvoice(invoice)}
                                 >
                                   <Download className="h-4 w-4" />
                                 </Button>
