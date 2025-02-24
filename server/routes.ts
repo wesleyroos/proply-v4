@@ -99,13 +99,13 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user.id))
         .limit(1);
 
-      // Normalize the company-related fields
+      // Return raw user data without normalization
       const normalizedUser = {
         ...user,
-        company: normalizeUserField(user.company),
-        vatNumber: normalizeUserField(user.vatNumber, 'vatNumber'),
-        registrationNumber: normalizeUserField(user.registrationNumber),
-        businessAddress: normalizeUserField(user.businessAddress),
+        company: user.company,
+        vatNumber: user.vatNumber,
+        registrationNumber: user.registrationNumber,
+        businessAddress: user.businessAddress,
       };
 
       console.log("Fetched user data:", {
