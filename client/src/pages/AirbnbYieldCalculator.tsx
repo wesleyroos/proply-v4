@@ -180,18 +180,8 @@ export default function AirbnbYieldCalculator() {
 
       <PublicHeader />
 
-      <main className="w-full pt-16 lg:pt-20 relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-gray-50">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(#1BA3FF 0.5px, transparent 0.5px), radial-gradient(#1BA3FF 0.5px, transparent 0.5px)`,
-            backgroundSize: '20px 20px',
-            backgroundPosition: '0 0, 10px 10px',
-            opacity: 0.05
-          }} />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center relative">
+      <main className="w-full pt-16 lg:pt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <div className="space-y-4 sm:space-y-6 lg:pr-12">
             <div className="space-y-2">
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight">
@@ -239,7 +229,7 @@ export default function AirbnbYieldCalculator() {
           </div>
 
           <div className="lg:pl-12">
-            <Card className="shadow-xl border-0 relative bg-white/80 backdrop-blur-sm">
+            <Card className="shadow-xl border-0">
               <CardHeader className="space-y-1 p-4 sm:p-6">
                 <CardTitle className="text-xl sm:text-2xl font-bold">Rental Yield Calculator</CardTitle>
                 <p className="text-gray-500">Compare short-term and long-term rental strategies</p>
