@@ -158,14 +158,21 @@ export default function AirbnbYieldCalculator() {
                 <TabsContent value="airbnb" className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="nightlyRate">{`Nightly Rate (${getSymbol()})`}</Label>
-                    <Input
-                      id="nightlyRate"
-                      placeholder="e.g. 2500"
-                      value={nightlyRate}
-                      onChange={(e) => setNightlyRate(e.target.value)}
-                      type="number"
-                      className="w-full"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="nightlyRate"
+                        placeholder="e.g. 2500"
+                        value={nightlyRate}
+                        onChange={(e) => setNightlyRate(e.target.value)}
+                        type="number"
+                        className="w-full"
+                      />
+                      {selectedCurrency !== 'ZAR' && nightlyRate && (
+                        <div className="text-sm text-muted-foreground mt-1">
+                          ≈ R{(parseFloat(nightlyRate) * exchangeRates[selectedCurrency]).toFixed(2)}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="occupancyRate">Occupancy Rate (%)</Label>
@@ -182,14 +189,21 @@ export default function AirbnbYieldCalculator() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="purchasePrice">{`Purchase Price (${getSymbol()})`}</Label>
-                    <Input
-                      id="purchasePrice"
-                      placeholder="e.g. 3500000"
-                      value={purchasePrice}
-                      onChange={(e) => setPurchasePrice(e.target.value)}
-                      type="number"
-                      className="w-full"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="purchasePrice"
+                        placeholder="e.g. 3500000"
+                        value={purchasePrice}
+                        onChange={(e) => setPurchasePrice(e.target.value)}
+                        type="number"
+                        className="w-full"
+                      />
+                      {selectedCurrency !== 'ZAR' && purchasePrice && (
+                        <div className="text-sm text-muted-foreground mt-1">
+                          ≈ R{(parseFloat(purchasePrice) * exchangeRates[selectedCurrency]).toFixed(2)}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <Button
                     onClick={calculateAirbnbYield}
