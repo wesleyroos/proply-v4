@@ -241,7 +241,7 @@ export default function AirbnbYieldCalculator() {
                       />
                       {selectedCurrency !== 'ZAR' && monthlyRent && (
                         <div className="text-sm text-muted-foreground mt-1">
-                          ≈ R{(parseFloat(monthlyRent) * exchangeRates[selectedCurrency]).toFixed(2)}
+                          ≈ R{(parseFloat(monthlyRent) * exchangeRates[selectedCurrency]).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       )}
                     </div>
@@ -259,7 +259,7 @@ export default function AirbnbYieldCalculator() {
                       />
                       {selectedCurrency !== 'ZAR' && longTermPurchasePrice && (
                         <div className="text-sm text-muted-foreground mt-1">
-                          ≈ R{(parseFloat(longTermPurchasePrice) * exchangeRates[selectedCurrency]).toFixed(2)}
+                          ≈ R{(parseFloat(longTermPurchasePrice) * exchangeRates[selectedCurrency]).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       )}
                     </div>
