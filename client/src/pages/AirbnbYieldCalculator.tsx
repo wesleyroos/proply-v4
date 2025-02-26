@@ -196,23 +196,15 @@ export default function AirbnbYieldCalculator() {
               Make data-driven property investment decisions with our comprehensive yield calculator. Compare short-term and long-term rental strategies instantly.
             </p>
 
-            <div className="sm:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b p-4 mt-16">
-              <Link href="/register" className="block">
-                <Button className="w-full bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-base px-6 py-5">
-                  Start Calculating
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-            </div>
-            <div className="hidden sm:flex flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link href="/register">
-                <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-lg px-8 py-6">
+                <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6">
                   Start Calculating
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link href="/property-analyzer">
-                <Button variant="outline" className="text-lg px-8 py-6">
+                <Button variant="outline" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6">
                   Learn More
                 </Button>
               </Link>
