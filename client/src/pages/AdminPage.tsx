@@ -86,6 +86,7 @@ interface AdminUser extends SelectUser {
   paReports: number;
   rcApiCalls: number;
   paApiCalls: number;
+  propertyCount: number; // Add this line
 }
 
 interface UserStats {
@@ -514,6 +515,12 @@ export default function AdminPage() {
                           >
                             PA API <SortIndicator column="paApiCalls" />
                           </TableHead>
+                          <TableHead
+                            onClick={() => handleSort("propertyCount")}
+                            className="cursor-pointer whitespace-nowrap"
+                          >
+                            PA Properties <SortIndicator column="propertyCount" />
+                          </TableHead>
                           <TableHead>Actions</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -609,6 +616,9 @@ export default function AdminPage() {
                             </TableCell>
                             <TableCell className="whitespace-nowrap">
                               {userData.paApiCalls || 0}
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap">
+                              {userData.propertyCount || 0}
                             </TableCell>
                             <TableCell>
                               <DropdownMenu>

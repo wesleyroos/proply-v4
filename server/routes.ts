@@ -11,8 +11,8 @@ import {
   type SelectUser,
   type InsertUser,
   apiUsage,
-  subscriptionHistory, // Added import for subscription history table
-  invoices, // Added import for invoices table
+  subscriptionHistory,
+  invoices,
 } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -605,7 +605,7 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Modified query to include lastLoginAt
+      // Modified query to include property count
       const allUsers = await db
         .select({
           id: users.id,
@@ -622,11 +622,16 @@ export function registerRoutes(app: Express): Server {
           accessCodeUsedAt: accessCodes.usedAt,
           pricelabsApiCallsTotal: users.pricelabsApiCallsTotal,
           pricelabsApiCallsMonth: users.pricelabsApiCallsMonth,
-          lastLoginAt: users.lastLoginAt, // Added lastLoginAt field
+          lastLoginAt: users.lastLoginAt,
           reportsGenerated: sql`(
             SELECT COUNT(*)::integer 
             FROM ${propertyAnalyzerResults} 
             WHERE ${propertyAnalyzerResults.userId} = ${users.id}
+          )`,
+          propertyCount: sql`(
+            SELECT COUNT(*)::integer 
+            FROM ${properties} 
+            WHERE ${properties.userId} = ${users.id}
           )`,
         })
         .from(users)
