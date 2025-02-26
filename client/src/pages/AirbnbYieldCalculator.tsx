@@ -197,13 +197,17 @@ export default function AirbnbYieldCalculator() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6">
-                Start Calculating
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button variant="outline" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6">
-                Learn More
-              </Button>
+              <Link href="/register">
+                <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6">
+                  Start Calculating
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/property-analyzer">
+                <Button variant="outline" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6">
+                  Learn More
+                </Button>
+              </Link>
             </div>
 
             <div className="pt-6 sm:pt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
