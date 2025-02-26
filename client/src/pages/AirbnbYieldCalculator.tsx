@@ -31,7 +31,8 @@ export default function AirbnbYieldCalculator() {
     ZAR: 1,
     USD: 0,
     EUR: 0,
-    GBP: 0
+    GBP: 0,
+    AED: 0
   });
 
   useEffect(() => {
@@ -68,7 +69,8 @@ export default function AirbnbYieldCalculator() {
     ZAR: "R",
     USD: "$",
     EUR: "€",
-    GBP: "£"
+    GBP: "£",
+    AED: "د.إ"
   };
 
   const getSymbol = () => currencySymbol[selectedCurrency as keyof typeof currencySymbol] || "R";
@@ -267,6 +269,7 @@ export default function AirbnbYieldCalculator() {
                       <SelectItem value="USD">US Dollar ($) - R{exchangeRates.USD.toFixed(2)}</SelectItem>
                       <SelectItem value="EUR">Euro (€) - R{exchangeRates.EUR.toFixed(2)}</SelectItem>
                       <SelectItem value="GBP">British Pound (£) - R{exchangeRates.GBP.toFixed(2)}</SelectItem>
+                      <SelectItem value="AED">UAE Dirham (د.إ) - R{exchangeRates.AED.toFixed(2)}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
