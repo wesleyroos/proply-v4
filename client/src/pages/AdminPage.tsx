@@ -86,7 +86,8 @@ interface AdminUser extends SelectUser {
   paReports: number;
   rcApiCalls: number;
   paApiCalls: number;
-  propertyCount: number; // Add this line
+  propertyCount: number;
+  rentCompareCount: number; // Add this line
 }
 
 interface UserStats {
@@ -268,7 +269,7 @@ export default function AdminPage() {
   const handleSandboxToggle = (checked: boolean) => {
     const newMode = checked ? 'Sandbox' : 'Live';
     const currentMode = isSandboxMode ? 'Sandbox' : 'Live';
-    
+
     if (window.confirm(`Are you sure you want to switch from ${currentMode} to ${newMode} mode? This will affect how payments are processed.`)) {
       localStorage.setItem('payfast_sandbox_mode', checked.toString());
       setIsSandboxMode(checked);
@@ -521,6 +522,12 @@ export default function AdminPage() {
                           >
                             PA Properties <SortIndicator column="propertyCount" />
                           </TableHead>
+                          <TableHead
+                            onClick={() => handleSort("rentCompareCount")}
+                            className="cursor-pointer whitespace-nowrap"
+                          >
+                            RC Properties <SortIndicator column="rentCompareCount" />
+                          </TableHead>
                           <TableHead>Actions</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -619,6 +626,9 @@ export default function AdminPage() {
                             </TableCell>
                             <TableCell className="whitespace-nowrap">
                               {userData.propertyCount || 0}
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap">
+                              {userData.rentCompareCount || 0}
                             </TableCell>
                             <TableCell>
                               <DropdownMenu>

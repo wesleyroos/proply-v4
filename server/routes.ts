@@ -605,7 +605,7 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      // Modified query to include property count
+      // Modified query to include both PA and RC property counts
       const allUsers = await db
         .select({
           id: users.id,
@@ -632,6 +632,13 @@ export function registerRoutes(app: Express): Server {
             SELECT COUNT(*)::integer 
             FROM ${properties} 
             WHERE ${properties.userId} = ${users.id}
+            AND ${properties.type} = 'property_analyzer'
+          )`,
+          rentCompareCount: sql`(
+            SELECT COUNT(*)::integer 
+            FROM ${properties} 
+            WHERE ${properties.userId} = ${users.id}
+            AND ${properties.type} = 'rent_compare'
           )`,
         })
         .from(users)
