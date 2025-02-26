@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PublicHeader from "@/components/PublicHeader";
+import { useEffect } from "react";
 import PublicFooter from "@/components/PublicFooter";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
