@@ -939,99 +939,50 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
             </ul>
           </div>
         </div>
-      </div>
 
-      {user?.subscriptionStatus === 'pro' && (
-        <div className="space-y-4">
-          {user?.payfastSubscriptionStatus !== "paused" ? (
-            <>
-              <Dialog open={showPauseDialog} onOpenChange={setShowPauseDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full">
-                    Pause Subscription
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Pause Subscription</DialogTitle>
-                    <DialogDescription>
-                      Your subscription will be paused for one billing cycle. Please let us know why you're pausing:
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="py-4">
-                    <Textarea
-                      value={downgradePauseReason}
-                      onChange={(e) => setDowngradePauseReason(e.target.value)}
-                      placeholder="Please tell us why you're pausing your subscription..."
-                      className="min-h-[100px]"
-                    />
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowPauseDialog(false)}>
-                      Cancel
+        {user?.subscriptionStatus === 'pro' && (
+          <div className="mt-6 space-y-4">
+            {user?.payfastSubscriptionStatus !== "paused" ? (
+              <>
+                <Dialog open={showPauseDialog} onOpenChange={setShowPauseDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                      Pause Subscription
                     </Button>
-                    <Button onClick={handlePause}>
-                      Confirm Pause
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Pause Subscription</DialogTitle>
+                      <DialogDescription>
+                        Your subscription will be paused for one billing cycle. Please let us know why you're pausing:
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                      <Textarea
+                        value={downgradePauseReason}
+                        onChange={(e) => setDowngradePauseReason(e.target.value)}
+                        placeholder="Please tell us why you're pausing your subscription..."
+                        className="min-h-[100px]"
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setShowPauseDialog(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handlePause}>
+                        Confirm Pause
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
 
-              <Dialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full text-red-500 hover:text-red-600">
-                    Cancel Subscription
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Cancel Subscription</DialogTitle>
-                    <DialogDescription>
-                      Your subscription will be downgraded to the free plan at the end of your current billing period. Please let us know why you're cancelling:
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="py-4">
-                    <Textarea
-                      value={downgradePauseReason}
-                      onChange={(e) => setDowngradePauseReason(e.target.value)}
-                      placeholder="Please tell us why you're cancelling your subscription..."
-                      className="min-h-[100px]"
-                    />
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowDowngradeDialog(false)}>
-                      Keep Subscription
-                    </Button>
-                    <Button variant="destructive" onClick={handleDowngrade}>
-                      Confirm Cancellation
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </>
-          ) : (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full bg-[#1BA3FF] hover:bg-[#114D9D] text-white"
-                >
-                  Resume Subscription
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Resume Subscription</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Your subscription will be resumed immediately. Billing will continue according to yourregular schedule.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
+                {user.pendingDowngrade ? (
+                  <Button
+                    variant="outline"
+                    className="w-full"
                     onClick={async () => {
                       try {
-                        const response = await fetch('/api/subscription/resume', {
+                        const response = await fetch('/api/subscription/cancel-downgrade', {
                           method: 'POST',
                           credentials: 'include'
                         });
@@ -1044,54 +995,110 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
 
                         toast({
                           title: "Success",
-                          description: "Your subscription has been resumed",
+                          description: "Your Pro subscription will continue without interruption.",
                           duration: 5000,
                         });
 
                       } catch (error) {
-                        console.error('Error resuming subscription:', error);
+                        console.error('Error cancelling downgrade:', error);
                         toast({
                           variant: "destructive",
                           title: "Error",
-                          description: error instanceof Error ? error.message : "Failed to resume subscription",
+                          description: error instanceof Error ? error.message : "Failed to cancel plan downgrade",
                           duration: 5000,
                         });
                       }
                     }}
                   >
-                    Confirm Resume
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-        </div>
-      )}
+                    Cancel Downgrade
+                  </Button>
+                ) : (
+                  <Dialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-full text-red-500 hover:text-red-600">
+                        Cancel Subscription
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Cancel Subscription</DialogTitle>
+                        <DialogDescription>
+                          Your subscription will be downgraded to the free plan at the end of your current billing period. Please let us know why you're cancelling:
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="py-4">
+                        <Textarea
+                          value={downgradePauseReason}
+                          onChange={(e) => setDowngradePauseReason(e.target.value)}
+                          placeholder="Please tell us why you're cancelling your subscription..."
+                          className="min-h-[100px]"
+                        />
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowDowngradeDialog(false)}>
+                          Keep Subscription
+                        </Button>
+                        <Button variant="destructive" onClick={handleDowngrade}>
+                          Confirm Cancellation
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </>
+            ) : (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="w-full">
+                    Resume Subscription
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Resume Subscription</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Your subscription will be resumed immediately. Billing will continue according to your regular schedule.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/subscription/resume', {
+                            method: 'POST',
+                            credentials: 'include'
+                          });
 
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Subscription Management</h3>
-        {user?.subscriptionStatus === "free" ? (
-          <div className="space-y-4">
-            <div className="bg-primary/5 p-4 rounded-lg">
-              <h4 className="font-medium mb-2">Upgrade to Pro</h4>
-              <p className="text-sm text-muted-foreground mb-4">
-                Get unlimited property analyses, advanced metrics, and priority support
-              </p>
-              <Button
-                onClick={() => setShowUpgradeModal(true)}
-                className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
-              >
-                Upgrade to Pro
-              </Button>
-              <UpgradeModal
-                open={showUpgradeModal}
-                onOpenChange={setShowUpgradeModal}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
+                          if (!response.ok) {
+                            throw new Error(await response.text());
+                          }
 
+                          queryClient.invalidateQueries({ queryKey: ['user'] });
+
+                          toast({
+                            title: "Success",
+                            description: "Your subscription has been resumed",
+                            duration: 5000,
+                          });
+
+                        } catch (error) {
+                          console.error('Error resuming subscription:', error);
+                          toast({
+                            variant: "destructive",
+                            title: "Error",
+                            description: error instanceof Error ? error.message : "Failed to resume subscription",
+                            duration: 5000,
+                          });
+                        }
+                      }}
+                    >
+                      Confirm Resume
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         )}
       </div>
