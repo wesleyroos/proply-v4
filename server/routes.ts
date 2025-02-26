@@ -798,8 +798,8 @@ export function registerRoutes(app: Express): Server {
       const propertyStats = await db
         .select({
           totalProperties: sql`count(*)::integer`,
-          paProperties: sql`count(*) filter (where type = 'property_analyzer')::integer`,
-          rcProperties: sql`count(*) filter (where type = 'rent_compare')::integer`
+          paProperties: sql`count(*) filter (where property_type = 'property_analyzer')::integer`,
+          rcProperties: sql`count(*) filter (where property_type = 'rent_compare')::integer`
         })
         .from(properties)
         .then((rows) => {
@@ -956,8 +956,7 @@ export function registerRoutes(app: Express): Server {
         .values({
           ...req.body,
           userId: req.user!.id,
-        })
-        .returning();
+        })        .returning();
       res.json(property[0]);} catch (error) {
       res.status(400).json({ error: "Invalid property data" });
     }
