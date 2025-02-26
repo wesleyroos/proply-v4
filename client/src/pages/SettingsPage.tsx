@@ -1019,10 +1019,9 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                       Cancel Subscription
                     </Button>
                   </DialogTrigger>
-              )}
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Cancel Subscription</DialogTitle>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Cancel Subscription</DialogTitle>
                     <DialogDescription>
                       Your subscription will be downgraded to the free plan at the end of your current billing period. Please let us know why you're cancelling:
                     </DialogDescription>
