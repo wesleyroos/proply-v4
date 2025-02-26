@@ -145,7 +145,7 @@ export default function AirbnbYieldCalculator() {
                     <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                       <h3 className="text-lg font-semibold text-blue-900">Results</h3>
                       <p className="text-blue-800">
-                        Gross Yield: {propertyYield}% ({localStorage.getItem('calculatorCurrency') || 'ZAR'})
+                        Gross Yield: {propertyYield}%
                       </p>
                       <p className="text-sm text-blue-600 mt-2">
                         Note: This is a basic calculation of gross yield. Actual returns may vary based on expenses,
@@ -190,7 +190,7 @@ export default function AirbnbYieldCalculator() {
                     <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                       <h3 className="text-lg font-semibold text-blue-900">Results</h3>
                       <p className="text-blue-800">
-                        Gross Yield: {longTermYield}% ({localStorage.getItem('calculatorCurrency') || 'ZAR'})
+                        Gross Yield: {longTermYield}%
                       </p>
                       <p className="text-sm text-blue-600 mt-2">
                         Note: This is a basic calculation of gross yield. Actual returns may vary based on expenses,
