@@ -230,25 +230,39 @@ export default function AirbnbYieldCalculator() {
                 <TabsContent value="longterm" className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="monthlyRent">{`Monthly Rent (${getSymbol()})`}</Label>
-                    <Input
-                      id="monthlyRent"
-                      placeholder="e.g. 15000"
-                      value={monthlyRent}
-                      onChange={(e) => setMonthlyRent(e.target.value)}
-                      type="number"
-                      className="w-full"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="monthlyRent"
+                        placeholder="e.g. 15000"
+                        value={monthlyRent}
+                        onChange={(e) => setMonthlyRent(e.target.value)}
+                        type="number"
+                        className="w-full"
+                      />
+                      {selectedCurrency !== 'ZAR' && monthlyRent && (
+                        <div className="text-sm text-muted-foreground mt-1">
+                          ≈ R{(parseFloat(monthlyRent) * exchangeRates[selectedCurrency]).toFixed(2)}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="longTermPurchasePrice">{`Purchase Price (${getSymbol()})`}</Label>
-                    <Input
-                      id="longTermPurchasePrice"
-                      placeholder="e.g. 3500000"
-                      value={longTermPurchasePrice}
-                      onChange={(e) => setLongTermPurchasePrice(e.target.value)}
-                      type="number"
-                      className="w-full"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="longTermPurchasePrice"
+                        placeholder="e.g. 3500000"
+                        value={longTermPurchasePrice}
+                        onChange={(e) => setLongTermPurchasePrice(e.target.value)}
+                        type="number"
+                        className="w-full"
+                      />
+                      {selectedCurrency !== 'ZAR' && longTermPurchasePrice && (
+                        <div className="text-sm text-muted-foreground mt-1">
+                          ≈ R{(parseFloat(longTermPurchasePrice) * exchangeRates[selectedCurrency]).toFixed(2)}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <Button
                     onClick={calculateLongTermYield}
