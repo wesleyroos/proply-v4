@@ -181,7 +181,7 @@ export default function AirbnbYieldCalculator() {
       <PublicHeader />
 
       <main className="w-full pt-16 lg:pt-20 overflow-x-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 lg:gap-12 items-center">
+        <div id="yield-calculator-form" className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 lg:gap-12 items-center">
           <div className="space-y-4 sm:space-y-6 lg:pr-12">
             <div className="space-y-2">
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight">
@@ -197,12 +197,22 @@ export default function AirbnbYieldCalculator() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Link href="/register">
-                <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6">
-                  Start Calculating
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
+              <Button 
+                className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6"
+                onClick={(e) => {
+                  const isMobile = window.innerWidth < 640;
+                  if (isMobile) {
+                    e.preventDefault();
+                    const form = document.querySelector('#yield-calculator-form');
+                    form?.scrollIntoView({ behavior: 'smooth' });
+                  } else {
+                    window.location.href = '/register';
+                  }
+                }}
+              >
+                Start Calculating
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
               <Link href="/property-analyzer">
                 <Button variant="outline" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6">
                   Learn More
