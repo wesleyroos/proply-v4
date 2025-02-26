@@ -261,9 +261,12 @@ export default function AirbnbYieldCalculator() {
                       <Input
                         id="longTermPurchasePrice"
                         placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '3,500,000' : selectedCurrency === 'USD' ? '185,000' : selectedCurrency === 'EUR' ? '170,000' : '150,000'}`}
-                        value={longTermPurchasePrice}
-                        onChange={(e) => setLongTermPurchasePrice(e.target.value)}
-                        type="number"
+                        value={longTermPurchasePrice ? Number(longTermPurchasePrice).toLocaleString() : ''}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^\d]/g, '');
+                          setLongTermPurchasePrice(value);
+                        }}
+                        type="text"
                         className="w-full"
                       />
                       {selectedCurrency !== 'ZAR' && longTermPurchasePrice && (
