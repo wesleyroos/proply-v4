@@ -49,6 +49,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 
 // Profile form data interface
@@ -743,6 +744,9 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [downgradePauseReason, setDowngradePauseReason] = useState("");
+  const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
+  const [showPauseDialog, setShowPauseDialog] = useState(false);
 
   const formatDate = (date: string | Date | null | undefined) => {
     if (!date) return 'Not available';
@@ -787,6 +791,101 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
     ]
   };
 
+
+  const handleDowngrade = async () => {
+    if (!downgradePauseReason.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please provide a reason for downgrading",
+        duration: 3000,
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/subscription/cancel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ reason: downgradePauseReason })
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      setShowDowngradeDialog(false);
+      setDowngradePauseReason("");
+
+      toast({
+        title: "Success",
+        description: "Your subscription downgrade has been scheduled",
+        duration: 5000,
+      });
+
+    } catch (error) {
+      console.error('Error downgrading subscription:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to downgrade subscription",
+        duration: 5000,
+      });
+    }
+  };
+
+  const handlePause = async () => {
+    if (!downgradePauseReason.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please provide a reason for pausing",
+        duration: 3000,
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/subscription/pause', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          cycles: 1,
+          reason: downgradePauseReason
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      setShowPauseDialog(false);
+      setDowngradePauseReason("");
+
+      toast({
+        title: "Success",
+        description: "Your subscription has been paused",
+        duration: 5000,
+      });
+
+    } catch (error) {
+      console.error('Error pausing subscription:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to pause subscription",
+        duration: 5000,
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -846,165 +945,69 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
         <div className="space-y-4">
           {user?.payfastSubscriptionStatus !== "paused" ? (
             <>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
+              <Dialog open={showPauseDialog} onOpenChange={setShowPauseDialog}>
+                <DialogTrigger asChild>
                   <Button variant="outline" className="w-full">
                     Pause Subscription
                   </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Pause Subscription</AlertDialogTitle>
-                    <AlertDialogDescription className="space-y-2">
-                      <p>
-                        Your subscription will be paused for one billing cycle. During this time:
-                      </p>
-                      <ul className="list-disc pl-4 space-y-1">
-                        <li>You'll maintain access to Pro features until the end of your current billing period</li>
-                        <li>No charges will be made for the next month</li>
-                        <li>Your subscription will automatically resume after the pause period</li>
-                      </ul>
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={async () => {
-                        try {
-                          const response = await fetch('/api/subscription/pause', {
-                            method: 'POST',
-                            credentials: 'include'
-                          });
-
-                          if (!response.ok) {
-                            throw new Error(await response.text());
-                          }
-
-                          queryClient.invalidateQueries({ queryKey: ['user'] });
-
-                          toast({
-                            title: "Success",
-                            description: "Your subscription has been paused",
-                            duration: 5000,
-                          });
-
-                        } catch (error) {
-                          console.error('Error pausing subscription:', error);
-                          toast({
-                            variant: "destructive",
-                            title: "Error",
-                            description: error instanceof Error ? error.message : "Failed to pause subscription",
-                            duration: 5000,
-                          });
-                        }
-                      }}
-                    >
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Pause Subscription</DialogTitle>
+                    <DialogDescription>
+                      Your subscription will be paused for one billing cycle. Please let us know why you're pausing:
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <Textarea
+                      value={downgradePauseReason}
+                      onChange={(e) => setDowngradePauseReason(e.target.value)}
+                      placeholder="Please tell us why you're pausing your subscription..."
+                      className="min-h-[100px]"
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowPauseDialog(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handlePause}>
                       Confirm Pause
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full text-destructive hover:text-destructive"
-                    disabled={user?.pendingDowngrade ?? false}
-                  >
-                    {user?.pendingDowngrade ? 'Downgrade Scheduled' : 'Downgrade to Free'}
+              <Dialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="w-full text-red-500 hover:text-red-600">
+                    Cancel Subscription
                   </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Downgrade Confirmation</AlertDialogTitle>
-                    <AlertDialogDescription className="space-y-2">
-                      <p>Before you downgrade, please note:</p>
-                      <ul className="list-disc pl-4 space-y-1">
-                        <li>Your Pro features will remain active until the end of your current billing cycle</li>
-                        <li>After downgrade, you'll be limited to 3 analyses per month</li>
-                        <li>Custom reports and market insights will no longer be available</li>
-                        <li>You can upgrade back to Pro at any time</li>
-                      </ul>
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={async () => {
-                        try {
-                          const response = await fetch('/api/subscription/cancel', {
-                            method: 'POST',
-                            credentials: 'include'
-                          });
-
-                          if (!response.ok) {
-                            throw new Error(await response.text());
-                          }
-
-                          queryClient.invalidateQueries({ queryKey: ['user'] });
-
-                          toast({
-                            title: "Downgrade Scheduled",
-                            description: "Your subscription will be downgraded at the end of your current billing cycle",
-                            duration: 5000,
-                          });
-
-                        } catch (error) {
-                          console.error('Error cancelling subscription:', error);
-                          toast({
-                            variant: "destructive",
-                            title: "Error",
-                            description: error instanceof Error ? error.message : "Failed to schedule downgrade",
-                            duration: 5000,
-                          });
-                        }
-                      }}
-                      className="bg-destructive hover:bg-destructive/90"
-                    >
-                      Confirm Downgrade
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-
-              {user?.pendingDowngrade && (
-                <Button
-                  variant="outline"
-                  className="w-full mt-4"
-                  onClick={async () => {
-                    try {
-                      const response = await fetch('/api/subscription/cancel-downgrade', {
-                        method: 'POST',
-                        credentials: 'include'
-                      });
-
-                      if (!response.ok) {
-                        throw new Error(await response.text());
-                      }
-
-                      queryClient.invalidateQueries({ queryKey: ['user'] });
-
-                      toast({
-                        title: "Success",
-                        description: "Your Pro subscription will continue without interruption.",
-                        duration: 5000,
-                      });
-
-                    } catch (error) {
-                      console.error('Error cancelling downgrade:', error);
-                      toast({
-                        variant: "destructive",
-                        title: "Error",
-                        description: error instanceof Error ? error.message : "Failed to cancel plan downgrade",
-                        duration: 5000,
-                      });
-                    }
-                  }}
-                >
-                  Cancel Downgrade
-                </Button>
-              )}
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Cancel Subscription</DialogTitle>
+                    <DialogDescription>
+                      Your subscription will be downgraded to the free plan at the end of your current billing period. Please let us know why you're cancelling:
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <Textarea
+                      value={downgradePauseReason}
+                      onChange={(e) => setDowngradePauseReason(e.target.value)}
+                      placeholder="Please tell us why you're cancelling your subscription..."
+                      className="min-h-[100px]"
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowDowngradeDialog(false)}>
+                      Keep Subscription
+                    </Button>
+                    <Button variant="destructive" onClick={handleDowngrade}>
+                      Confirm Cancellation
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </>
           ) : (
             <AlertDialog>
@@ -1022,42 +1025,43 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                   <AlertDialogDescription>
                     Your subscription will be resumed immediately. Billing will continue according to yourregular schedule.
                   </AlertDialogDescription>
-                </AlertDialogHeader><AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={async () => {
-                        try {
-                          const response = await fetch('/api/subscription/resume', {
-                            method: 'POST',
-                            credentials: 'include'
-                          });
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={async () => {
+                      try {
+                        const response = await fetch('/api/subscription/resume', {
+                          method: 'POST',
+                          credentials: 'include'
+                        });
 
-                          if (!response.ok) {
-                            throw new Error(await response.text());
-                          }
-
-                          queryClient.invalidateQueries({ queryKey: ['user'] });
-
-                          toast({
-                            title: "Success",
-                            description: "Your subscription has been resumed",
-                            duration: 5000,
-                          });
-
-                        } catch (error) {
-                          console.error('Error resuming subscription:', error);
-                          toast({
-                            variant: "destructive",
-                            title: "Error",
-                            description: error instanceof Error ? error.message : "Failed to resume subscription",
-                            duration: 5000,
-                          });
+                        if (!response.ok) {
+                          throw new Error(await response.text());
                         }
-                      }}
-                    >
-                      Confirm Resume
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
+
+                        queryClient.invalidateQueries({ queryKey: ['user'] });
+
+                        toast({
+                          title: "Success",
+                          description: "Your subscription has been resumed",
+                          duration: 5000,
+                        });
+
+                      } catch (error) {
+                        console.error('Error resuming subscription:', error);
+                        toast({
+                          variant: "destructive",
+                          title: "Error",
+                          description: error instanceof Error ? error.message : "Failed to resume subscription",
+                          duration: 5000,
+                        });
+                      }
+                    }}
+                  >
+                    Confirm Resume
+                  </AlertDialogAction>
+                </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           )}
