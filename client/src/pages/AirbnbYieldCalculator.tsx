@@ -76,27 +76,104 @@ export default function AirbnbYieldCalculator() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Helmet>
-        <title>Free Rental Property Yield Calculator | Compare Airbnb vs Long-term Rental Yields</title>
+        <title>Rental Property Yield Calculator | Compare Airbnb vs Long-term Rental Returns | Proply</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        <meta name="description" content="Calculate and compare rental property yields instantly. Free calculator for both Airbnb and long-term rental strategies. Make smarter property investment decisions." />
-        <meta name="keywords" content="rental yield calculator, property yield calculator, Airbnb yield calculator, rental property calculator, investment property calculator, real estate yield calculator, property investment tools" />
-        <meta property="og:title" content="Free Rental Property Yield Calculator | Compare Airbnb vs Long-term Rental Yields" />
-        <meta property="og:description" content="Calculate and compare rental property yields instantly. Free calculator for both Airbnb and long-term rental strategies. Make smarter property investment decisions." />
+        <meta name="description" content="Calculate and compare rental property yields instantly. Free calculator for Airbnb and long-term rental strategies. Make data-driven property investment decisions with real-time yield projections." />
+        <meta name="keywords" content="rental yield calculator, Airbnb yield calculator, property investment calculator, rental return calculator, property ROI calculator, rental property calculator, investment property calculator, Airbnb investment calculator, short term rental calculator, long term rental calculator, South Africa property calculator" />
+
+        {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://proply.app/rental-yield-calculator" />
+        <meta property="og:title" content="Free Rental Property Yield Calculator | Compare Airbnb vs Long-term Returns" />
+        <meta property="og:description" content="Calculate and compare rental property yields instantly. Make data-driven property investment decisions with our free calculator. Compare Airbnb and long-term rental strategies." />
+        <meta property="og:image" content="https://proply.app/calculator-preview.jpg" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content="https://proply.app/rental-yield-calculator" />
+        <meta name="twitter:title" content="Free Rental Property Yield Calculator | Compare Rental Strategies" />
+        <meta name="twitter:description" content="Calculate and compare rental property yields instantly. Make data-driven property investment decisions with our free calculator." />
+        <meta name="twitter:image" content="https://proply.app/calculator-preview.jpg" />
+
+        {/* Additional SEO Meta Tags */}
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="Proply" />
+        <meta name="language" content="English" />
         <link rel="canonical" href="https://proply.app/rental-yield-calculator" />
+
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebApplication",
-            "name": "Free Rental Property Yield Calculator",
+            "name": "Proply Rental Yield Calculator",
             "description": "Calculate and compare yields for both short-term (Airbnb) and long-term rental strategies. Make data-driven property investment decisions with our free calculator.",
-            "applicationCategory": "Calculator",
+            "applicationCategory": "Business Calculator",
             "operatingSystem": "Any",
+            "url": "https://proply.app/rental-yield-calculator",
+            "provider": {
+              "@type": "Organization",
+              "name": "Proply",
+              "url": "https://proply.app"
+            },
             "offers": {
               "@type": "Offer",
               "price": "0",
               "priceCurrency": "ZAR"
             }
+          })}
+        </script>
+
+        {/* Breadcrumb Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [{
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://proply.app"
+            }, {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Tools",
+              "item": "https://proply.app/tools"
+            }, {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Rental Yield Calculator",
+              "item": "https://proply.app/rental-yield-calculator"
+            }]
+          })}
+        </script>
+
+        {/* FAQ Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [{
+              "@type": "Question",
+              "name": "What is a good rental yield?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "In South Africa, rental yields typically range from 4% to 12%. A yield above 7% is generally considered good, but this can vary significantly by location and property type."
+              }
+            }, {
+              "@type": "Question",
+              "name": "How accurate are these calculations?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "This calculator provides a basic gross yield calculation. For more accurate predictions, consider using our full suite of tools which account for expenses, vacancy rates, and market conditions."
+              }
+            }, {
+              "@type": "Question",
+              "name": "How do I calculate rental yield?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "For Airbnb calculations, enter your expected nightly rate, estimated occupancy rate, and the property's purchase price. For long-term rentals, input your expected monthly rental income and the property's purchase price. The calculator will instantly show your potential gross yield."
+              }
+            }]
           })}
         </script>
       </Helmet>
