@@ -22,6 +22,7 @@ import { analyzeSuburb } from "./services/openai";
 import { sql } from "drizzle-orm";
 import { suburbs } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
+import sgMail from '@sendgrid/mail';
 
 // Extend Express.User to include our schema
 declare global {
@@ -45,6 +46,8 @@ function normalizeUserField(value: string | null, fieldName?: string): string | 
   }
   return value;
 }
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
@@ -216,14 +219,14 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Add these new endpoints after the existing subscription endpoints
+  // Subscription pause endpoint
   app.post("/api/subscription/pause", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
     }
 
     try {
-      const { cycles = 1 } = req.body;
+      const { cycles = 1, reason } = req.body;
       const [user] = await db
         .select()
         .from(users)
@@ -262,6 +265,30 @@ export function registerRoutes(app: Express): Server {
       const pauseEndDate = new Date();
       pauseEndDate.setMonth(pauseEndDate.getMonth() + cycles);
 
+      // Send email notification to admin
+      try {
+        await sgMail.send({
+          to: 'wesley@proply.co.za',
+          from: 'notifications@proply.co.za', // Update this to your verified sender
+          subject: 'Subscription Pause Notice',
+          html: `
+            <h2>Subscription Pause Notice</h2>
+            <p>A user has paused their subscription:</p>
+            <ul>
+              <li><strong>User:</strong> ${user.email}</li>
+              <li><strong>Company:</strong> ${user.company || 'N/A'}</li>
+              <li><strong>Current Plan:</strong> ${user.subscriptionStatus}</li>
+              <li><strong>Pause Duration:</strong> ${cycles} month(s)</li>
+              <li><strong>Resume Date:</strong> ${pauseEndDate.toLocaleDateString()}</li>
+              <li><strong>Reason:</strong> ${reason || 'No reason provided'}</li>
+            </ul>
+          `,
+        });
+      } catch (emailError) {
+        console.error('Error sending pause notification email:', emailError);
+        // Don't fail the request if email fails
+      }
+
       // Update user subscription status
       await db.transaction(async (tx) => {
         // Update user record
@@ -274,7 +301,7 @@ export function registerRoutes(app: Express): Server {
           })
           .where(eq(users.id, req.user!.id));
 
-        // Record subscription history with non-null values
+        // Record subscription history
         if (user?.payfastToken) {
           await tx.insert(subscriptionHistory).values({
             userId: req.user!.id,
@@ -299,6 +326,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Add these new endpoints after the existing subscription endpoints
   app.post("/api/subscription/resume", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
@@ -377,6 +405,8 @@ export function registerRoutes(app: Express): Server {
       return res.status(401).send("Not authenticated");
     }
 
+    const { reason } = req.body;
+
     try {
       const [user] = await db
         .select()
@@ -388,7 +418,6 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ error: "User not found" });
       }
 
-      // Set pending downgrade flag instead of immediate downgrade
       // Calculate next billing date as expiry date
       const nextBillingDate =
         user.subscriptionNextBillingDate ||
@@ -404,12 +433,28 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user!.id))
         .returning();
 
-      console.log("Scheduled downgrade for user:", {
-        userId: updatedUser.id,
-        currentPlan: updatedUser.subscriptionStatus,
-        nextBillingDate: updatedUser.subscriptionNextBillingDate,
-        pendingDowngrade: updatedUser.pendingDowngrade,
-      });
+      // Send email notification to admin
+      try {
+        await sgMail.send({
+          to: 'wesley@proply.co.za',
+          from: 'notifications@proply.co.za', // Update this to your verified sender
+          subject: 'Subscription Downgrade Notice',
+          html: `
+            <h2>Subscription Downgrade Notice</h2>
+            <p>A user has requested to downgrade their subscription:</p>
+            <ul>
+              <li><strong>User:</strong> ${user.email}</li>
+              <li><strong>Company:</strong> ${user.company || 'N/A'}</li>
+              <li><strong>Current Plan:</strong> ${user.subscriptionStatus}</li>
+              <li><strong>Downgrade Effective:</strong> ${nextBillingDate.toLocaleDateString()}</li>
+              <li><strong>Reason:</strong> ${reason || 'No reason provided'}</li>
+            </ul>
+          `,
+        });
+      } catch (emailError) {
+        console.error('Error sending downgrade notification email:', emailError);
+        // Don't fail the request if email fails
+      }
 
       res.json({
         message: "Subscription downgrade scheduled",
