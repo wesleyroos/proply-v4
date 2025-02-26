@@ -336,6 +336,105 @@ export default function AirbnbYieldCalculator() {
           </div>
         </div>
       </main>
+
+      {/* Marketing and Information Section */}
+      <section className="bg-gray-50 py-12 sm:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="mt-8 sm:mt-12 bg-blue-50 rounded-lg p-4 sm:p-8 text-center">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+              Need a More Comprehensive Analysis?
+            </h2>
+            <p className="text-gray-600 mb-6 max-w-2xl mx-auto text-sm sm:text-base">
+              While these calculators provide quick estimates, successful property investing requires deeper insights.
+              Get access to our full suite of tools including:
+            </p>
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-8 text-left">
+              <div className="bg-white p-4 rounded shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-2">Market Analysis</h3>
+                <p className="text-sm text-gray-600">Compare short-term and long-term rental performance in your area</p>
+              </div>
+              <div className="bg-white p-4 rounded shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-2">Revenue Forecasting</h3>
+                <p className="text-sm text-gray-600">Detailed financial projections for both rental strategies</p>
+              </div>
+              <div className="bg-white p-4 rounded shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-2">Expense Tracking</h3>
+                <p className="text-sm text-gray-600">Complete expense analysis and ROI calculations</p>
+              </div>
+            </div>
+            <Link href="/pricing">
+              <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-lg px-8 py-6">
+                Explore Pro Features
+              </Button>
+            </Link>
+          </div>
+
+          <section className="mt-16 max-w-4xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8">
+              Understanding Rental Property Yields
+            </h2>
+            <div className="grid sm:grid-cols-2 gap-8 mb-16">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Short-term vs Long-term Rentals</h3>
+                <p className="text-gray-600">
+                  Both rental strategies have their unique advantages in the South African property market. Short-term rentals
+                  through platforms like Airbnb often generate higher gross yields but require more active management.
+                  Long-term rentals typically offer more stable income with less day-to-day involvement, making them
+                  attractive to passive investors.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Why Calculate Rental Yield?</h3>
+                <p className="text-gray-600">
+                  Rental yield is a crucial metric for property investors to evaluate potential returns on investment.
+                  It helps compare different properties and rental strategies objectively. Our calculator provides instant
+                  insights into both short-term and long-term rental potential, helping you make informed investment decisions.
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">How to Use This Calculator</h3>
+              <div className="space-y-4 text-gray-600">
+                <p className="flex items-start gap-2">
+                  <span className="font-semibold text-blue-600">1.</span>
+                  For Airbnb calculations: Enter your expected nightly rate, estimated occupancy rate, and the property's
+                  purchase price. The calculator will instantly show your potential gross yield.
+                </p>
+                <p className="flex items-start gap-2">
+                  <span className="font-semibold text-blue-600">2.</span>
+                  For long-term rental calculations: Input your expected monthly rental income and the property's
+                  purchase price to see the projected annual yield.
+                </p>
+                <p className="flex items-start gap-2">
+                  <span className="font-semibold text-blue-600">3.</span>
+                  Compare both strategies to determine which approach might work better for your investment goals.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Frequently Asked Questions</h3>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-2">What is a good rental yield?</h4>
+                  <p className="text-gray-600">
+                    In South Africa, rental yields typically range from 4% to 12%. A yield above 7% is generally
+                    considered good, but this can vary significantly by location and property type.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-2">How accurate are these calculations?</h4>
+                  <p className="text-gray-600">
+                    This calculator provides a basic gross yield calculation. For more accurate predictions, consider
+                    using our full suite of tools which account for expenses, vacancy rates, and market conditions.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
       <PublicFooter />
     </div>
   );
