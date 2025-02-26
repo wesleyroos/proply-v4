@@ -102,6 +102,8 @@ interface UserStats {
   totalReportsGenerated: number;
   monthlyReportsGenerated: number;
   totalProperties: number;
+  paProperties: number;
+  rcProperties: number;
   activePayfastSubscriptions: number;
   manuallyUpgradedPro: number;
 }
@@ -391,7 +393,9 @@ export default function AdminPage() {
             title="Total Properties"
             icon={Building2}
             mainValue={statsLoading ? "..." : stats?.totalProperties}
-            subValue="Total properties across all users"
+            subValue={statsLoading 
+              ? "..." 
+              : `${stats?.paProperties || 0} PA • ${stats?.rcProperties || 0} RC`}
           />
         </div>
 

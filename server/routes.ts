@@ -794,13 +794,18 @@ export function registerRoutes(app: Express): Server {
         .from(users)
         .then((rows) => rows[0]);
 
-      // Get total properties count
+      // Get total properties count with logging
       const propertyStats = await db
         .select({
           totalProperties: sql`count(*)::integer`,
+          paProperties: sql`count(*) filter (where type = 'property_analyzer')::integer`,
+          rcProperties: sql`count(*) filter (where type = 'rent_compare')::integer`
         })
         .from(properties)
-        .then((rows) => rows[0]);
+        .then((rows) => {
+          console.log("Property counts:", rows[0]); // Add logging
+          return rows[0];
+        });
 
       // Get API usage for current month
       const startOfMonth = new Date();
@@ -830,6 +835,8 @@ export function registerRoutes(app: Express): Server {
         monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
         totalReportsGenerated: reportStats.totalReportsGenerated || 0,
         totalProperties: propertyStats.totalProperties || 0,
+        paProperties: propertyStats.paProperties || 0,
+        rcProperties: propertyStats.rcProperties || 0
       });
     } catch (error) {
       console.error("Error fetching admin stats:", error);
@@ -951,8 +958,7 @@ export function registerRoutes(app: Express): Server {
           userId: req.user!.id,
         })
         .returning();
-      res.json(property[0]);
-    } catch (error) {
+      res.json(property[0]);} catch (error) {
       res.status(400).json({ error: "Invalid property data" });
     }
   });
