@@ -233,7 +233,7 @@ export default function AirbnbYieldCalculator() {
                     <div className="relative">
                       <Input
                         id="monthlyRent"
-                        placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '25000' : selectedCurrency === 'USD' ? '1500' : selectedCurrency === 'EUR' ? '1300' : '1200'}`}
+                        placeholder="e.g. 15000"
                         value={monthlyRent}
                         onChange={(e) => setMonthlyRent(e.target.value)}
                         type="number"
