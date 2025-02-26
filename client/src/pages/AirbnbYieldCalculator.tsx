@@ -8,6 +8,13 @@ import PublicHeader from "@/components/PublicHeader";
 import PublicFooter from "@/components/PublicFooter";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function AirbnbYieldCalculator() {
   const [nightlyRate, setNightlyRate] = useState("");
