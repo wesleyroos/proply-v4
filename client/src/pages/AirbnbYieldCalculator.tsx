@@ -91,6 +91,23 @@ export default function AirbnbYieldCalculator() {
               <img src="/proply-logo-1.png" alt="Proply Logo" className="h-8" />
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
+              <div className="mb-4">
+                <Label htmlFor="currency">Select Currency</Label>
+                <Select onValueChange={(value) => {
+                  localStorage.setItem('calculatorCurrency', value);
+                  window.location.reload();
+                }}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select Currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ZAR">South African Rand (R)</SelectItem>
+                    <SelectItem value="USD">US Dollar ($)</SelectItem>
+                    <SelectItem value="EUR">Euro (€)</SelectItem>
+                    <SelectItem value="GBP">British Pound (£)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Tabs defaultValue="airbnb" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="airbnb">Airbnb</TabsTrigger>
