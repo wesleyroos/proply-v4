@@ -83,14 +83,14 @@ export default function AirbnbYieldCalculator() {
 
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://proply.app/rental-yield-calculator" />
+        <meta property="og:url" content="https://app.proply.co.za/airbnb-yield-calculator" />
         <meta property="og:title" content="Free Rental Property Yield Calculator | Compare Airbnb vs Long-term Returns" />
         <meta property="og:description" content="Calculate and compare rental property yields instantly. Make data-driven property investment decisions with our free calculator. Compare Airbnb and long-term rental strategies." />
-        <meta property="og:image" content="https://proply.app/images/Yield Calculator Thumbnail.jpg" />
+        <meta property="og:image" content="/images/Yield Calculator Thumbnail.jpg" />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content="https://proply.app/rental-yield-calculator" />
+        <meta name="twitter:url" content="https://app.proply.co.za/airbnb-yield-calculator" />
         <meta name="twitter:title" content="Free Rental Property Yield Calculator | Compare Rental Strategies" />
         <meta name="twitter:description" content="Calculate and compare rental property yields instantly. Make data-driven property investment decisions with our free calculator." />
         <meta name="twitter:image" content="https://proply.app/images/Yield Calculator Thumbnail.jpg" />
@@ -99,7 +99,7 @@ export default function AirbnbYieldCalculator() {
         <meta name="robots" content="index, follow" />
         <meta name="author" content="Proply" />
         <meta name="language" content="English" />
-        <link rel="canonical" href="https://proply.app/rental-yield-calculator" />
+        <link rel="canonical" href="https://app.proply.co.za/airbnb-yield-calculator" />
 
         <script type="application/ld+json">
           {JSON.stringify({
@@ -109,7 +109,7 @@ export default function AirbnbYieldCalculator() {
             "description": "Calculate and compare yields for both short-term (Airbnb) and long-term rental strategies. Make data-driven property investment decisions with our free calculator.",
             "applicationCategory": "Business Calculator",
             "operatingSystem": "Any",
-            "url": "https://proply.app/rental-yield-calculator",
+            "url": "https://app.proply.co.za/airbnb-yield-calculator",
             "provider": {
               "@type": "Organization",
               "name": "Proply",
@@ -142,7 +142,7 @@ export default function AirbnbYieldCalculator() {
               "@type": "ListItem",
               "position": 3,
               "name": "Rental Yield Calculator",
-              "item": "https://proply.app/rental-yield-calculator"
+              "item": "https://app.proply.co.za/airbnb-yield-calculator"
             }]
           })}
         </script>
