@@ -103,49 +103,49 @@ export default function AirbnbYieldCalculator() {
 
       <PublicHeader />
 
-      <main className="w-full pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6 lg:pr-12">
+      <main className="w-full pt-16 lg:pt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div className="space-y-4 sm:space-y-6 lg:pr-12">
             <div className="space-y-2">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight">
                 Quickly calculate
               </h1>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800">
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-gray-800">
                 the yield of any rental property
               </h2>
             </div>
 
-            <p className="text-xl text-gray-600 max-w-2xl">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl">
               Make data-driven property investment decisions with our comprehensive yield calculator. Compare short-term and long-term rental strategies instantly.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-lg px-8 py-6">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6">
                 Start Calculating
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button variant="outline" className="text-lg px-8 py-6">
+              <Button variant="outline" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6">
                 Learn More
               </Button>
             </div>
 
-            <div className="pt-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="pt-6 sm:pt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="flex items-start gap-4">
-                <div className="rounded-full p-2 bg-blue-100">
-                  <Calculator className="h-6 w-6 text-blue-600" />
+                <div className="rounded-full p-2 bg-blue-100 shrink-0">
+                  <Calculator className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Real-time Calculations</h3>
-                  <p className="text-gray-600">Instant yield projections based on your inputs</p>
+                  <p className="text-sm sm:text-base text-gray-600">Instant yield projections based on your inputs</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <div className="rounded-full p-2 bg-green-100">
-                  <Calculator className="h-6 w-6 text-green-600" />
+                <div className="rounded-full p-2 bg-green-100 shrink-0">
+                  <Calculator className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Multiple Currencies</h3>
-                  <p className="text-gray-600">Support for ZAR, USD, EUR, and GBP</p>
+                  <p className="text-sm sm:text-base text-gray-600">Support for ZAR, USD, EUR, and GBP</p>
                 </div>
               </div>
             </div>
@@ -153,11 +153,11 @@ export default function AirbnbYieldCalculator() {
 
           <div className="lg:pl-12">
             <Card className="shadow-xl border-0">
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl font-bold">Rental Yield Calculator</CardTitle>
+              <CardHeader className="space-y-1 p-4 sm:p-6">
+                <CardTitle className="text-xl sm:text-2xl font-bold">Rental Yield Calculator</CardTitle>
                 <p className="text-gray-500">Compare short-term and long-term rental strategies</p>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="mb-6">
                   <Label htmlFor="currency" className="text-gray-700">Select Currency</Label>
                   <Select onValueChange={setSelectedCurrency} value={selectedCurrency}>
@@ -338,45 +338,45 @@ export default function AirbnbYieldCalculator() {
       </main>
 
       {/* Marketing and Information Section */}
-      <section className="bg-gray-50 py-12 sm:py-16">
+      <section className="bg-gray-50 py-8 sm:py-12 lg:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="mt-8 sm:mt-12 bg-blue-50 rounded-lg p-4 sm:p-8 text-center">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
               Need a More Comprehensive Analysis?
             </h2>
             <p className="text-gray-600 mb-6 max-w-2xl mx-auto text-sm sm:text-base">
               While these calculators provide quick estimates, successful property investing requires deeper insights.
               Get access to our full suite of tools including:
             </p>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-8 text-left">
-              <div className="bg-white p-4 rounded shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-2">Market Analysis</h3>
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8 text-left">
+              <div className="bg-white p-3 sm:p-4 rounded shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2">Market Analysis</h3>
                 <p className="text-sm text-gray-600">Compare short-term and long-term rental performance in your area</p>
               </div>
-              <div className="bg-white p-4 rounded shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-2">Revenue Forecasting</h3>
+              <div className="bg-white p-3 sm:p-4 rounded shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2">Revenue Forecasting</h3>
                 <p className="text-sm text-gray-600">Detailed financial projections for both rental strategies</p>
               </div>
-              <div className="bg-white p-4 rounded shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-2">Expense Tracking</h3>
+              <div className="bg-white p-3 sm:p-4 rounded shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2">Expense Tracking</h3>
                 <p className="text-sm text-gray-600">Complete expense analysis and ROI calculations</p>
               </div>
             </div>
             <Link href="/pricing">
-              <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-lg px-8 py-6">
+              <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6">
                 Explore Pro Features
               </Button>
             </Link>
           </div>
 
-          <section className="mt-16 max-w-4xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8">
+          <section className="mt-12 sm:mt-16 max-w-4xl mx-auto">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">
               Understanding Rental Property Yields
             </h2>
-            <div className="grid sm:grid-cols-2 gap-8 mb-16">
+            <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 mb-12 sm:mb-16">
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Short-term vs Long-term Rentals</h3>
-                <p className="text-gray-600">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Short-term vs Long-term Rentals</h3>
+                <p className="text-sm sm:text-base text-gray-600">
                   Both rental strategies have their unique advantages in the South African property market. Short-term rentals
                   through platforms like Airbnb often generate higher gross yields but require more active management.
                   Long-term rentals typically offer more stable income with less day-to-day involvement, making them
@@ -384,8 +384,8 @@ export default function AirbnbYieldCalculator() {
                 </p>
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Why Calculate Rental Yield?</h3>
-                <p className="text-gray-600">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Why Calculate Rental Yield?</h3>
+                <p className="text-sm sm:text-base text-gray-600">
                   Rental yield is a crucial metric for property investors to evaluate potential returns on investment.
                   It helps compare different properties and rental strategies objectively. Our calculator provides instant
                   insights into both short-term and long-term rental potential, helping you make informed investment decisions.
@@ -393,9 +393,9 @@ export default function AirbnbYieldCalculator() {
               </div>
             </div>
 
-            <div className="mb-16">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">How to Use This Calculator</h3>
-              <div className="space-y-4 text-gray-600">
+            <div className="mb-12 sm:mb-16">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">How to Use This Calculator</h3>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-600">
                 <p className="flex items-start gap-2">
                   <span className="font-semibold text-blue-600">1.</span>
                   For Airbnb calculations: Enter your expected nightly rate, estimated occupancy rate, and the property's
@@ -414,18 +414,18 @@ export default function AirbnbYieldCalculator() {
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Frequently Asked Questions</h3>
-              <div className="space-y-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Frequently Asked Questions</h3>
+              <div className="space-y-4 sm:space-y-6">
                 <div>
                   <h4 className="font-semibold text-gray-800 mb-2">What is a good rental yield?</h4>
-                  <p className="text-gray-600">
+                  <p className="text-sm sm:text-base text-gray-600">
                     In South Africa, rental yields typically range from 4% to 12%. A yield above 7% is generally
                     considered good, but this can vary significantly by location and property type.
                   </p>
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-800 mb-2">How accurate are these calculations?</h4>
-                  <p className="text-gray-600">
+                  <p className="text-sm sm:text-base text-gray-600">
                     This calculator provides a basic gross yield calculation. For more accurate predictions, consider
                     using our full suite of tools which account for expenses, vacancy rates, and market conditions.
                   </p>
