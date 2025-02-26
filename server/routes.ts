@@ -632,14 +632,12 @@ export function registerRoutes(app: Express): Server {
             SELECT COUNT(*)::integer 
             FROM ${properties} 
             WHERE ${properties.userId} = ${users.id}
-            AND ${properties.type} = 'property_analyzer'
           )`,
           rentCompareCount: sql`(
             SELECT COUNT(*)::integer 
             FROM ${properties} 
             WHERE ${properties.userId} = ${users.id}
-            AND ${properties.type} = 'rent_compare'
-          )`,
+          )`
         })
         .from(users)
         .leftJoin(accessCodes, eq(users.accessCodeId, accessCodes.id));
