@@ -86,14 +86,14 @@ export default function AirbnbYieldCalculator() {
         <meta property="og:url" content="https://proply.app/rental-yield-calculator" />
         <meta property="og:title" content="Free Rental Property Yield Calculator | Compare Airbnb vs Long-term Returns" />
         <meta property="og:description" content="Calculate and compare rental property yields instantly. Make data-driven property investment decisions with our free calculator. Compare Airbnb and long-term rental strategies." />
-        <meta property="og:image" content="https://proply.app/calculator-preview.jpg" />
+        <meta property="og:image" content="https://proply.app/images/Yield Calculator Thumbnail.jpg" />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content="https://proply.app/rental-yield-calculator" />
         <meta name="twitter:title" content="Free Rental Property Yield Calculator | Compare Rental Strategies" />
         <meta name="twitter:description" content="Calculate and compare rental property yields instantly. Make data-driven property investment decisions with our free calculator." />
-        <meta name="twitter:image" content="https://proply.app/calculator-preview.jpg" />
+        <meta name="twitter:image" content="https://proply.app/images/Yield Calculator Thumbnail.jpg" />
 
         {/* Additional SEO Meta Tags */}
         <meta name="robots" content="index, follow" />
