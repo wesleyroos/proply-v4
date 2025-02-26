@@ -7,14 +7,10 @@ export function cn(...inputs: ClassValue[]) {
 
 export const formatter = new Intl.NumberFormat('en-ZA', {
   style: 'currency',
-  currency: localStorage.getItem('selectedCurrency') || 'ZAR',
+  currency: 'ZAR',
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 });
-
-export const getCurrencySymbol = () => {
-  return localStorage.getItem('currencySymbol') || 'R';
-};
 
 export const formatCurrency = (value: number | undefined | null): string => {
   if (value === undefined || value === null) {

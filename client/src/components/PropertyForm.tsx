@@ -355,29 +355,6 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             )}
           />
 
-          <div className="mb-4">
-            <Select onValueChange={(value) => {
-              const symbols = {
-                ZAR: 'R',
-                USD: '$',
-                EUR: '€',
-                GBP: '£'
-              };
-              localStorage.setItem('selectedCurrency', value);
-              localStorage.setItem('currencySymbol', symbols[value as keyof typeof symbols]);
-              window.location.reload();
-            }}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select Currency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ZAR">South African Rand (R)</SelectItem>
-                <SelectItem value="USD">US Dollar ($)</SelectItem>
-                <SelectItem value="EUR">Euro (€)</SelectItem>
-                <SelectItem value="GBP">British Pound (£)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
           <div className="space-y-4">
             <Button
               type="submit"
