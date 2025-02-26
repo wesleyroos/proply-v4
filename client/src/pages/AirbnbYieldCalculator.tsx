@@ -204,10 +204,14 @@ export default function AirbnbYieldCalculator() {
                   if (isMobile) {
                     e.preventDefault();
                     const calculatorTitle = document.querySelector('.card-title-scroll');
-                    calculatorTitle?.scrollIntoView({ 
-                      behavior: 'smooth',
-                      block: 'start'
-                    });
+                    if (calculatorTitle) {
+                      const elementPosition = calculatorTitle.getBoundingClientRect().top + window.scrollY;
+                      const offset = window.innerHeight * 0.05; // 5% of viewport height
+                      window.scrollTo({
+                        top: elementPosition - offset,
+                        behavior: 'smooth'
+                      });
+                    }
                   } else {
                     window.location.href = '/register';
                   }
