@@ -72,14 +72,16 @@ export default function Sidebar() {
       <div className="flex flex-col h-full">
         {/* Header with logo */}
         <div className="p-4 flex justify-between items-center">
-          <img
-            src={expanded ? "/proply-logo.png" : "/proply-favicon.png"}
-            alt="Proply"
-            className={cn(
-              "transition-all duration-300",
-              expanded ? "w-24" : "w-8"
-            )}
-          />
+          <Link href="/">
+            <img
+              src={expanded ? "/proply-logo.png" : "/proply-favicon.png"}
+              alt="Proply"
+              className={cn(
+                "transition-all duration-300 cursor-pointer",
+                expanded ? "w-24" : "w-8"
+              )}
+            />
+          </Link>
           <Button
             variant="ghost"
             size="icon"
