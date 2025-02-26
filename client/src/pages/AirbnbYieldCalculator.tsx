@@ -180,7 +180,7 @@ export default function AirbnbYieldCalculator() {
 
       <PublicHeader />
 
-      <main className="w-full min-w-[320px] pt-16 lg:pt-20 overflow-x-hidden">
+      <main className="w-full min-w-0 pt-16 lg:pt-20 overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 lg:gap-12 items-center min-w-[320px]">
           <div className="space-y-4 sm:space-y-6 lg:pr-12">
             <div className="space-y-2">
