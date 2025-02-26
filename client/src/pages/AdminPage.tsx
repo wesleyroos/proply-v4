@@ -376,6 +376,14 @@ export default function AdminPage() {
               statsLoading ? "..." : stats?.totalReportsGenerated
             } total reports`}
           />
+          <StatCard
+            title="Pro Subscriptions"
+            icon={CreditCard}
+            mainValue={statsLoading ? "..." : stats?.activePayfastSubscriptions}
+            subValue={`${
+              statsLoading ? "..." : stats?.manuallyUpgradedPro
+            } manually upgraded`}
+          />
         </div>
 
         {/* Users Table Card */}
