@@ -203,8 +203,11 @@ export default function AirbnbYieldCalculator() {
                   const isMobile = window.innerWidth < 640;
                   if (isMobile) {
                     e.preventDefault();
-                    const form = document.querySelector('#yield-calculator-form');
-                    form?.scrollIntoView({ behavior: 'smooth' });
+                    const calculatorTitle = document.querySelector('.card-title-scroll');
+                    calculatorTitle?.scrollIntoView({ 
+                      behavior: 'smooth',
+                      block: 'start'
+                    });
                   } else {
                     window.location.href = '/register';
                   }
@@ -245,7 +248,7 @@ export default function AirbnbYieldCalculator() {
           <div className="lg:pl-12">
             <Card className="shadow-xl border-0">
               <CardHeader className="space-y-1 p-4 sm:p-6">
-                <CardTitle className="text-xl sm:text-2xl font-bold">Rental Yield Calculator</CardTitle>
+                <CardTitle className="text-xl sm:text-2xl font-bold card-title-scroll">Rental Yield Calculator</CardTitle>
                 <p className="text-gray-500">Compare short-term and long-term rental strategies</p>
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
