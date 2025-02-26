@@ -16,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowUpRight, CheckCircle } from "lucide-react"; // Added imports
 
 export default function AirbnbYieldCalculator() {
   const [nightlyRate, setNightlyRate] = useState("");
