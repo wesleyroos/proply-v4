@@ -1045,11 +1045,54 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full bg-[#1BA3FF] hover:bg-[#114D9D] text-white"
+              {user?.pendingDowngrade ? (
+                <Button 
+                  variant="outline" 
+                  className="w-full text-green-500 hover:text-green-600"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/subscription/cancel-downgrade', {
+                        method: 'POST',
+                        credentials: 'include',
+                      });
+
+                      if (!response.ok) {
+                        throw new Error(await response.text());
+                      }
+
+                      queryClient.invalidateQueries({ queryKey: ['user'] });
+                      toast({
+                        title: "Success",
+                        description: "Subscription downgrade cancelled",
+                        duration: 5000,
+                      });
+
+                    } catch (error) {
+                      console.error('Error cancelling downgrade:', error);
+                      toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: error instanceof Error ? error.message : "Failed to cancel downgrade",
+                        duration: 5000,
+                      });
+                    }
+                  }}
+                >
+                  Cancel Downgrade
+                </Button>
+              ) : (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full text-red-500 hover:text-red-600"
+                    >
+                      Cancel Subscription
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Cancel Subscription</AlertDialogTitle>
                 >
                   Resume Subscription
                 </Button>
