@@ -871,19 +871,10 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                     <AlertDialogAction
                       onClick={async () => {
                         try {
-                          const [showCancelDialog, setShowCancelDialog] = useState(false);
-const [cancelType, setCancelType] = useState<'pause' | 'downgrade'>('pause');
-
-const handleSubscriptionAction = async (type: 'pause' | 'downgrade', reason: string) => {
-  const endpoint = type === 'pause' ? '/api/subscription/pause' : '/api/subscription/cancel';
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    credentials: 'include',
-    body: JSON.stringify({ reason })
-  });
+                          const response = await fetch('/api/subscription/pause', {
+                            method: 'POST',
+                            credentials: 'include'
+                          });
 
                           if (!response.ok) {
                             throw new Error(await response.text());

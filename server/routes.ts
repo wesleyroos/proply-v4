@@ -223,17 +223,7 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      const { cycles = 1, reason = '' } = req.body;
-      
-      // Send notification email
-      await sendNewUserNotification({
-        email: req.user?.email || '',
-        firstName: req.user?.firstName || '',
-        lastName: req.user?.lastName || '',
-        userType: 'subscription_pause',
-        subscriptionStatus: 'paused',
-        message: `Reason for pause: ${reason}`
-      });
+      const { cycles = 1 } = req.body;
       const [user] = await db
         .select()
         .from(users)
@@ -388,18 +378,7 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      const { reason = '' } = req.body;
       const [user] = await db
-      
-      // Send notification email
-      await sendNewUserNotification({
-        email: req.user?.email || '',
-        firstName: req.user?.firstName || '',
-        lastName: req.user?.lastName || '',
-        userType: 'subscription_downgrade',
-        subscriptionStatus: 'downgrading',
-        message: `Reason for downgrade: ${reason}`
-      });
         .select()
         .from(users)
         .where(eq(users.id, req.user!.id))
