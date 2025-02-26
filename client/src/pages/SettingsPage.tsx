@@ -1045,10 +1045,8 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-            </>
-          ) : (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
                 <Button
                   variant="outline"
                   className="w-full bg-[#1BA3FF] hover:bg-[#114D9D] text-white"
