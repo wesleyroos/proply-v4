@@ -24,6 +24,7 @@ export default function AirbnbYieldCalculator() {
   const [monthlyRent, setMonthlyRent] = useState("");
   const [longTermPurchasePrice, setLongTermPurchasePrice] = useState("");
   const [longTermYield, setLongTermYield] = useState<number | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState("ZAR"); // Initialize with ZAR
 
   const calculateAirbnbYield = () => {
     const annualRevenue = parseFloat(nightlyRate) * (parseFloat(occupancyRate) / 100) * 365;
@@ -50,6 +51,16 @@ export default function AirbnbYieldCalculator() {
       "priceCurrency": "ZAR"
     }
   };
+
+  const currencySymbol = {
+    ZAR: "R",
+    USD: "$",
+    EUR: "€",
+    GBP: "£"
+  };
+
+  const getSymbol = () => currencySymbol[selectedCurrency] || "R"; //Default to R if currency not found
+
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-hidden">
@@ -100,12 +111,9 @@ export default function AirbnbYieldCalculator() {
             <CardContent className="p-4 sm:p-6">
               <div className="mb-4">
                 <Label htmlFor="currency">Select Currency</Label>
-                <Select onValueChange={(value) => {
-                  localStorage.setItem('calculatorCurrency', value);
-                  window.location.reload();
-                }}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select Currency" />
+                <Select onValueChange={setSelectedCurrency} value={selectedCurrency}>
+                  <SelectTrigger id="currency">
+                    <SelectValue placeholder="Select currency" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ZAR">South African Rand (R)</SelectItem>
@@ -123,7 +131,7 @@ export default function AirbnbYieldCalculator() {
 
                 <TabsContent value="airbnb" className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="nightlyRate">Nightly Rate (R)</Label>
+                    <Label htmlFor="nightlyRate">{`Nightly Rate (${getSymbol()})`}</Label>
                     <Input
                       id="nightlyRate"
                       placeholder="e.g. 2500"
@@ -147,7 +155,7 @@ export default function AirbnbYieldCalculator() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="purchasePrice">Purchase Price (R)</Label>
+                    <Label htmlFor="purchasePrice">{`Purchase Price (${getSymbol()})`}</Label>
                     <Input
                       id="purchasePrice"
                       placeholder="e.g. 3500000"
@@ -181,7 +189,7 @@ export default function AirbnbYieldCalculator() {
 
                 <TabsContent value="longterm" className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="monthlyRent">Monthly Rent (R)</Label>
+                    <Label htmlFor="monthlyRent">{`Monthly Rent (${getSymbol()})`}</Label>
                     <Input
                       id="monthlyRent"
                       placeholder="e.g. 15000"
@@ -192,7 +200,7 @@ export default function AirbnbYieldCalculator() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="longTermPurchasePrice">Purchase Price (R)</Label>
+                    <Label htmlFor="longTermPurchasePrice">{`Purchase Price (${getSymbol()})`}</Label>
                     <Input
                       id="longTermPurchasePrice"
                       placeholder="e.g. 3500000"
