@@ -161,10 +161,13 @@ export default function AirbnbYieldCalculator() {
                     <div className="relative">
                       <Input
                         id="nightlyRate"
-                        placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '2500' : selectedCurrency === 'USD' ? '135' : selectedCurrency === 'EUR' ? '125' : '110'}`}
-                        value={nightlyRate}
-                        onChange={(e) => setNightlyRate(e.target.value)}
-                        type="number"
+                        placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '2,500' : selectedCurrency === 'USD' ? '135' : selectedCurrency === 'EUR' ? '125' : '110'}`}
+                        value={nightlyRate ? Number(nightlyRate).toLocaleString() : ''}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^\d]/g, '');
+                          setNightlyRate(value);
+                        }}
+                        type="text"
                         className="w-full"
                       />
                       {selectedCurrency !== 'ZAR' && nightlyRate && (
@@ -193,9 +196,12 @@ export default function AirbnbYieldCalculator() {
                       <Input
                         id="purchasePrice"
                         placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '3,500,000' : selectedCurrency === 'USD' ? '185,000' : selectedCurrency === 'EUR' ? '170,000' : '150,000'}`}
-                        value={purchasePrice}
-                        onChange={(e) => setPurchasePrice(e.target.value)}
-                        type="number"
+                        value={purchasePrice ? Number(purchasePrice).toLocaleString() : ''}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^\d]/g, '');
+                          setPurchasePrice(value);
+                        }}
+                        type="text"
                         className="w-full"
                       />
                       {selectedCurrency !== 'ZAR' && purchasePrice && (
