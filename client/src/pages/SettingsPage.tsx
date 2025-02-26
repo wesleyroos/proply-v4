@@ -887,15 +887,55 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
     }
   };
 
+  const handleCancelDowngrade = async () => {
+    try {
+      const response = await fetch('/api/subscription/cancel-downgrade', {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      toast({
+        title: "Success",
+        description: "Your Pro subscription will continue without interruption.",
+        duration: 5000,
+      });
+
+    } catch (error) {
+      console.error('Error cancelling downgrade:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to cancel plan downgrade",
+        duration: 5000,
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {user?.pendingDowngrade && user?.subscriptionExpiryDate && (
         <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
-          <div className="flex items-center">
-            <AlertTriangle className="h-5 w-5 text-red-400 mr-2" />
-            <p className="text-sm font-medium text-red-800">
-              Your account will downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
-            </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <AlertTriangle className="h-5 w-5 text-red-400 mr-2" />
+              <p className="text-sm font-medium text-red-800">
+                Your account will downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCancelDowngrade}
+              className="ml-4"
+            >
+              Keep Pro Subscription
+            </Button>
           </div>
         </div>
       )}
@@ -977,8 +1017,7 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                 </DialogContent>
               </Dialog>
 
-              <Dialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
-                <DialogTrigger asChild>
+              <Dialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>                <DialogTrigger asChild>
                   <Button variant="outline" className="w-full text-red-500 hover:text-red-600">
                     Cancel Subscription
                   </Button>
