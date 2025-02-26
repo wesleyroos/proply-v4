@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ArrowRight, Calculator } from "lucide-react";
 
 export default function AirbnbYieldCalculator() {
   const [nightlyRate, setNightlyRate] = useState("");
@@ -33,7 +34,6 @@ export default function AirbnbYieldCalculator() {
     GBP: 0
   });
 
-  // Fetch exchange rates on component mount
   useEffect(() => {
     const fetchRates = async () => {
       try {
@@ -64,20 +64,6 @@ export default function AirbnbYieldCalculator() {
     setLongTermYield(parseFloat(yieldPercentage.toFixed(2)));
   };
 
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Free Rental Property Yield Calculator",
-    "description": "Calculate and compare yields for both short-term (Airbnb) and long-term rental strategies. Make data-driven property investment decisions with our free calculator.",
-    "applicationCategory": "Calculator",
-    "operatingSystem": "Any",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "ZAR"
-    }
-  };
-
   const currencySymbol = {
     ZAR: "R",
     USD: "$",
@@ -85,11 +71,10 @@ export default function AirbnbYieldCalculator() {
     GBP: "£"
   };
 
-  const getSymbol = () => currencySymbol[selectedCurrency] || "R"; //Default to R if currency not found
-
+  const getSymbol = () => currencySymbol[selectedCurrency as keyof typeof currencySymbol] || "R";
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-hidden">
+    <div className="min-h-screen bg-gray-50">
       <Helmet>
         <title>Free Rental Property Yield Calculator | Compare Airbnb vs Long-term Rental Yields</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -100,297 +85,255 @@ export default function AirbnbYieldCalculator() {
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://proply.app/rental-yield-calculator" />
         <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Free Rental Property Yield Calculator",
+            "description": "Calculate and compare yields for both short-term (Airbnb) and long-term rental strategies. Make data-driven property investment decisions with our free calculator.",
+            "applicationCategory": "Calculator",
+            "operatingSystem": "Any",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "ZAR"
+            }
+          })}
         </script>
       </Helmet>
 
       <PublicHeader />
 
-      <main className="w-full overflow-hidden">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 pt-32">
-          <nav className="text-sm mb-6 whitespace-nowrap" aria-label="Breadcrumb">
-            <ol className="list-none p-0 inline-flex">
-              <li className="flex items-center">
-                <Link href="/" className="text-gray-500 hover:text-gray-700">Home</Link>
-                <span className="mx-2 text-gray-500">/</span>
-              </li>
-              <li className="flex items-center">
-                <span className="text-gray-900" aria-current="page">Rental Yield Calculator</span>
-              </li>
-            </ol>
-          </nav>
+      <main className="w-full pt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6 lg:pr-12">
+            <div className="space-y-2">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight">
+                Quickly calculate
+              </h1>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800">
+                the yield of any rental property
+              </h2>
+            </div>
 
-          <header className="text-center mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-              Free Rental Property Yield Calculator
-            </h1>
-            <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
-              Calculate and compare yields for both short-term (Airbnb) and long-term rental strategies. Make data-driven decisions for your property investments with our free calculator tool.
+            <p className="text-xl text-gray-600 max-w-2xl">
+              Make data-driven property investment decisions with our comprehensive yield calculator. Compare short-term and long-term rental strategies instantly.
             </p>
-          </header>
 
-          <Card className="mb-8">
-            <CardHeader className="flex flex-row justify-between items-center">
-              <CardTitle>Rental Yield Calculator</CardTitle>
-              <img src="/proply-logo-1.png" alt="Proply Logo" className="h-8" />
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <div className="mb-4">
-                <Label htmlFor="currency">Select Currency</Label>
-                <Select onValueChange={setSelectedCurrency} value={selectedCurrency}>
-                  <SelectTrigger id="currency">
-                    <SelectValue placeholder="Select currency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ZAR">South African Rand (R) - Base Rate</SelectItem>
-                    <SelectItem value="USD">US Dollar ($) - R{exchangeRates.USD.toFixed(2)}</SelectItem>
-                    <SelectItem value="EUR">Euro (€) - R{exchangeRates.EUR.toFixed(2)}</SelectItem>
-                    <SelectItem value="GBP">British Pound (£) - R{exchangeRates.GBP.toFixed(2)}</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-lg px-8 py-6">
+                Start Calculating
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button variant="outline" className="text-lg px-8 py-6">
+                Learn More
+              </Button>
+            </div>
+
+            <div className="pt-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="flex items-start gap-4">
+                <div className="rounded-full p-2 bg-blue-100">
+                  <Calculator className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Real-time Calculations</h3>
+                  <p className="text-gray-600">Instant yield projections based on your inputs</p>
+                </div>
               </div>
-              <Tabs defaultValue="airbnb" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="airbnb">Airbnb</TabsTrigger>
-                  <TabsTrigger value="longterm">Long Term</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="airbnb" className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="nightlyRate">{`Nightly Rate (${getSymbol()})`}</Label>
-                    <div className="relative">
-                      <Input
-                        id="nightlyRate"
-                        placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '2,500' : selectedCurrency === 'USD' ? '135' : selectedCurrency === 'EUR' ? '125' : '110'}`}
-                        value={nightlyRate ? Number(nightlyRate).toLocaleString() : ''}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/[^\d]/g, '');
-                          setNightlyRate(value);
-                        }}
-                        type="text"
-                        className="w-full"
-                      />
-                      {selectedCurrency !== 'ZAR' && nightlyRate && (
-                        <div className="text-sm text-muted-foreground mt-1">
-                          ≈ R{(parseFloat(nightlyRate) * exchangeRates[selectedCurrency]).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="occupancyRate">Occupancy Rate (%)</Label>
-                    <Input
-                      id="occupancyRate"
-                      placeholder="e.g. 65"
-                      value={occupancyRate}
-                      onChange={(e) => setOccupancyRate(e.target.value)}
-                      type="number"
-                      min="0"
-                      max="100"
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="purchasePrice">{`Purchase Price (${getSymbol()})`}</Label>
-                    <div className="relative">
-                      <Input
-                        id="purchasePrice"
-                        placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '3,500,000' : selectedCurrency === 'USD' ? '185,000' : selectedCurrency === 'EUR' ? '170,000' : '150,000'}`}
-                        value={purchasePrice ? Number(purchasePrice).toLocaleString() : ''}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/[^\d]/g, '');
-                          setPurchasePrice(value);
-                        }}
-                        type="text"
-                        className="w-full"
-                      />
-                      {selectedCurrency !== 'ZAR' && purchasePrice && (
-                        <div className="text-sm text-muted-foreground mt-1">
-                          ≈ R{(parseFloat(purchasePrice) * exchangeRates[selectedCurrency]).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    onClick={calculateAirbnbYield}
-                    disabled={!nightlyRate || !occupancyRate || !purchasePrice}
-                    className="w-full sm:w-auto"
-                  >
-                    Calculate Airbnb Yield
-                  </Button>
-
-                  {propertyYield !== null && (
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                      <h3 className="text-lg font-semibold text-blue-900">Results</h3>
-                      <p className="text-blue-800">
-                        Gross Yield: {propertyYield}%
-                      </p>
-                      <p className="text-sm text-blue-600 mt-2">
-                        Note: This is a basic calculation of gross yield. Actual returns may vary based on expenses,
-                        seasonality, and market conditions.
-                      </p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="longterm" className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="monthlyRent">{`Monthly Rent (${getSymbol()})`}</Label>
-                    <div className="relative">
-                      <Input
-                        id="monthlyRent"
-                        placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '25,000' : selectedCurrency === 'USD' ? '1,300' : selectedCurrency === 'EUR' ? '1,200' : '1,100'}`}
-                        value={monthlyRent ? Number(monthlyRent).toLocaleString() : ''}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/[^\d]/g, '');
-                          setMonthlyRent(value);
-                        }}
-                        type="text"
-                        className="w-full"
-                      />
-                      {selectedCurrency !== 'ZAR' && monthlyRent && (
-                        <div className="text-sm text-muted-foreground mt-1">
-                          ≈ R{(parseFloat(monthlyRent) * exchangeRates[selectedCurrency]).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="longTermPurchasePrice">{`Purchase Price (${getSymbol()})`}</Label>
-                    <div className="relative">
-                      <Input
-                        id="longTermPurchasePrice"
-                        placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '3,500,000' : selectedCurrency === 'USD' ? '185,000' : selectedCurrency === 'EUR' ? '170,000' : '150,000'}`}
-                        value={longTermPurchasePrice ? Number(longTermPurchasePrice).toLocaleString() : ''}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/[^\d]/g, '');
-                          setLongTermPurchasePrice(value);
-                        }}
-                        type="text"
-                        className="w-full"
-                      />
-                      {selectedCurrency !== 'ZAR' && longTermPurchasePrice && (
-                        <div className="text-sm text-muted-foreground mt-1">
-                          ≈ R{(parseFloat(longTermPurchasePrice) * exchangeRates[selectedCurrency]).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    onClick={calculateLongTermYield}
-                    disabled={!monthlyRent || !longTermPurchasePrice}
-                    className="w-full sm:w-auto"
-                  >
-                    Calculate Long-term Yield
-                  </Button>
-
-                  {longTermYield !== null && (
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                      <h3 className="text-lg font-semibold text-blue-900">Results</h3>
-                      <p className="text-blue-800">
-                        Gross Yield: {longTermYield}%
-                      </p>
-                      <p className="text-sm text-blue-600 mt-2">
-                        Note: This is a basic calculation of gross yield. Actual returns may vary based on expenses,
-                        vacancy rates, and market conditions.
-                      </p>
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-
-          <div className="mt-8 sm:mt-12 bg-blue-50 rounded-lg p-4 sm:p-8 text-center">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
-              Need a More Comprehensive Analysis?
-            </h2>
-            <p className="text-gray-600 mb-6 max-w-2xl mx-auto text-sm sm:text-base">
-              While these calculators provide quick estimates, successful property investing requires deeper insights.
-              Get access to our full suite of tools including:
-            </p>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-8 text-left">
-              <div className="bg-white p-4 rounded shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-2">Market Analysis</h3>
-                <p className="text-sm text-gray-600">Compare short-term and long-term rental performance in your area</p>
-              </div>
-              <div className="bg-white p-4 rounded shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-2">Revenue Forecasting</h3>
-                <p className="text-sm text-gray-600">Detailed financial projections for both rental strategies</p>
-              </div>
-              <div className="bg-white p-4 rounded shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-2">Expense Tracking</h3>
-                <p className="text-sm text-gray-600">Complete expense analysis and ROI calculations</p>
+              <div className="flex items-start gap-4">
+                <div className="rounded-full p-2 bg-green-100">
+                  <Calculator className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Multiple Currencies</h3>
+                  <p className="text-gray-600">Support for ZAR, USD, EUR, and GBP</p>
+                </div>
               </div>
             </div>
-            <Link href="/pricing">
-              <Button className="w-full sm:w-auto bg-[#1BA3FF] hover:bg-[#1BA3FF]/90">
-                Explore Pro Features
-              </Button>
-            </Link>
           </div>
 
-          <section className="mt-8 sm:mt-12 prose max-w-none">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
-              Understanding Rental Property Yields
-            </h2>
-            <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 text-gray-600">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Short-term vs Long-term Rentals</h3>
-                <p className="mb-4 text-sm sm:text-base">
-                  Both rental strategies have their unique advantages in the South African property market. Short-term rentals
-                  through platforms like Airbnb often generate higher gross yields but require more active management.
-                  Long-term rentals typically offer more stable income with less day-to-day involvement, making them
-                  attractive to passive investors.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Why Calculate Rental Yield?</h3>
-                <p className="mb-4 text-sm sm:text-base">
-                  Rental yield is a crucial metric for property investors to evaluate potential returns on investment.
-                  It helps compare different properties and rental strategies objectively. Our calculator provides instant
-                  insights into both short-term and long-term rental potential, helping you make informed investment decisions.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">How to Use This Calculator</h3>
-              <div className="space-y-4 text-sm sm:text-base text-gray-600">
-                <p>
-                  1. For Airbnb calculations: Enter your expected nightly rate, estimated occupancy rate, and the property's
-                  purchase price. The calculator will instantly show your potential gross yield.
-                </p>
-                <p>
-                  2. For long-term rental calculations: Input your expected monthly rental income and the property's
-                  purchase price to see the projected annual yield.
-                </p>
-                <p>
-                  3. Compare both strategies to determine which approach might work better for your investment goals.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Frequently Asked Questions</h3>
-              <div className="space-y-4 text-sm sm:text-base">
-                <div>
-                  <h4 className="font-semibold text-gray-800">What is a good rental yield?</h4>
-                  <p className="text-gray-600">
-                    In South Africa, rental yields typically range from 4% to 12%. A yield above 7% is generally
-                    considered good, but this can vary significantly by location and property type.
-                  </p>
+          <div className="lg:pl-12">
+            <Card className="shadow-xl border-0">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl font-bold">Rental Yield Calculator</CardTitle>
+                <p className="text-gray-500">Compare short-term and long-term rental strategies</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="mb-6">
+                  <Label htmlFor="currency" className="text-gray-700">Select Currency</Label>
+                  <Select onValueChange={setSelectedCurrency} value={selectedCurrency}>
+                    <SelectTrigger id="currency" className="w-full">
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ZAR">South African Rand (R) - Base Rate</SelectItem>
+                      <SelectItem value="USD">US Dollar ($) - R{exchangeRates.USD.toFixed(2)}</SelectItem>
+                      <SelectItem value="EUR">Euro (€) - R{exchangeRates.EUR.toFixed(2)}</SelectItem>
+                      <SelectItem value="GBP">British Pound (£) - R{exchangeRates.GBP.toFixed(2)}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div>
-                  <h4 className="font-semibold text-gray-800">How accurate are these calculations?</h4>
-                  <p className="text-gray-600">
-                    This calculator provides a basic gross yield calculation. For more accurate predictions, consider
-                    using our full suite of tools which account for expenses, vacancy rates, and market conditions.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
+
+                <Tabs defaultValue="airbnb" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsTrigger value="airbnb">Airbnb</TabsTrigger>
+                    <TabsTrigger value="longterm">Long Term</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="airbnb" className="space-y-6">
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="nightlyRate">{`Nightly Rate (${getSymbol()})`}</Label>
+                        <div className="relative">
+                          <Input
+                            id="nightlyRate"
+                            placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '2,500' : selectedCurrency === 'USD' ? '135' : selectedCurrency === 'EUR' ? '125' : '110'}`}
+                            value={nightlyRate ? Number(nightlyRate).toLocaleString() : ''}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^\d]/g, '');
+                              setNightlyRate(value);
+                            }}
+                            type="text"
+                            className="w-full"
+                          />
+                          {selectedCurrency !== 'ZAR' && nightlyRate && (
+                            <div className="text-sm text-muted-foreground mt-1">
+                              ≈ R{(parseFloat(nightlyRate) * exchangeRates[selectedCurrency as keyof typeof exchangeRates]).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="occupancyRate">Occupancy Rate (%)</Label>
+                        <Input
+                          id="occupancyRate"
+                          placeholder="e.g. 65"
+                          value={occupancyRate}
+                          onChange={(e) => setOccupancyRate(e.target.value)}
+                          type="number"
+                          min="0"
+                          max="100"
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="purchasePrice">{`Purchase Price (${getSymbol()})`}</Label>
+                        <div className="relative">
+                          <Input
+                            id="purchasePrice"
+                            placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '3,500,000' : selectedCurrency === 'USD' ? '185,000' : selectedCurrency === 'EUR' ? '170,000' : '150,000'}`}
+                            value={purchasePrice ? Number(purchasePrice).toLocaleString() : ''}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^\d]/g, '');
+                              setPurchasePrice(value);
+                            }}
+                            type="text"
+                            className="w-full"
+                          />
+                          {selectedCurrency !== 'ZAR' && purchasePrice && (
+                            <div className="text-sm text-muted-foreground mt-1">
+                              ≈ R{(parseFloat(purchasePrice) * exchangeRates[selectedCurrency as keyof typeof exchangeRates]).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={calculateAirbnbYield}
+                      disabled={!nightlyRate || !occupancyRate || !purchasePrice}
+                      className="w-full bg-[#1BA3FF] hover:bg-[#1BA3FF]/90"
+                    >
+                      Calculate Airbnb Yield
+                    </Button>
+
+                    {propertyYield !== null && (
+                      <div className="mt-6 p-6 bg-blue-50 rounded-lg">
+                        <h3 className="text-xl font-semibold text-blue-900 mb-2">Results</h3>
+                        <p className="text-3xl font-bold text-blue-800">
+                          {propertyYield}% <span className="text-lg font-normal">Gross Yield</span>
+                        </p>
+                        <p className="text-sm text-blue-600 mt-4">
+                          Note: This is a basic calculation of gross yield. Actual returns may vary based on expenses,
+                          seasonality, and market conditions.
+                        </p>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="longterm" className="space-y-6">
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="monthlyRent">{`Monthly Rent (${getSymbol()})`}</Label>
+                        <div className="relative">
+                          <Input
+                            id="monthlyRent"
+                            placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '25,000' : selectedCurrency === 'USD' ? '1,300' : selectedCurrency === 'EUR' ? '1,200' : '1,100'}`}
+                            value={monthlyRent ? Number(monthlyRent).toLocaleString() : ''}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^\d]/g, '');
+                              setMonthlyRent(value);
+                            }}
+                            type="text"
+                            className="w-full"
+                          />
+                          {selectedCurrency !== 'ZAR' && monthlyRent && (
+                            <div className="text-sm text-muted-foreground mt-1">
+                              ≈ R{(parseFloat(monthlyRent) * exchangeRates[selectedCurrency as keyof typeof exchangeRates]).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="longTermPurchasePrice">{`Purchase Price (${getSymbol()})`}</Label>
+                        <div className="relative">
+                          <Input
+                            id="longTermPurchasePrice"
+                            placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '3,500,000' : selectedCurrency === 'USD' ? '185,000' : selectedCurrency === 'EUR' ? '170,000' : '150,000'}`}
+                            value={longTermPurchasePrice ? Number(longTermPurchasePrice).toLocaleString() : ''}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^\d]/g, '');
+                              setLongTermPurchasePrice(value);
+                            }}
+                            type="text"
+                            className="w-full"
+                          />
+                          {selectedCurrency !== 'ZAR' && longTermPurchasePrice && (
+                            <div className="text-sm text-muted-foreground mt-1">
+                              ≈ R{(parseFloat(longTermPurchasePrice) * exchangeRates[selectedCurrency as keyof typeof exchangeRates]).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={calculateLongTermYield}
+                      disabled={!monthlyRent || !longTermPurchasePrice}
+                      className="w-full bg-[#1BA3FF] hover:bg-[#1BA3FF]/90"
+                    >
+                      Calculate Long-term Yield
+                    </Button>
+
+                    {longTermYield !== null && (
+                      <div className="mt-6 p-6 bg-blue-50 rounded-lg">
+                        <h3 className="text-xl font-semibold text-blue-900 mb-2">Results</h3>
+                        <p className="text-3xl font-bold text-blue-800">
+                          {longTermYield}% <span className="text-lg font-normal">Gross Yield</span>
+                        </p>
+                        <p className="text-sm text-blue-600 mt-4">
+                          Note: This is a basic calculation of gross yield. Actual returns may vary based on expenses,
+                          vacancy rates, and market conditions.
+                        </p>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
       <PublicFooter />
