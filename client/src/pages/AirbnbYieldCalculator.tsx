@@ -288,7 +288,7 @@ export default function AirbnbYieldCalculator() {
                         <div className="relative">
                           <Input
                             id="nightlyRate"
-                            placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '2,500' : selectedCurrency === 'USD' ? '135' : selectedCurrency === 'EUR' ? '125' : '110'}`}
+                            placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '2,500' : selectedCurrency === 'USD' ? '135' : selectedCurrency === 'EUR' ? '125' : selectedCurrency === 'AED' ? '500' : '110'}`}
                             value={nightlyRate ? Number(nightlyRate).toLocaleString() : ''}
                             onChange={(e) => {
                               const value = e.target.value.replace(/[^\d]/g, '');
@@ -324,7 +324,7 @@ export default function AirbnbYieldCalculator() {
                         <div className="relative">
                           <Input
                             id="purchasePrice"
-                            placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '3,500,000' : selectedCurrency === 'USD' ? '185,000' : selectedCurrency === 'EUR' ? '170,000' : '150,000'}`}
+                            placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '3,500,000' : selectedCurrency === 'USD' ? '185,000' : selectedCurrency === 'EUR' ? '170,000' : selectedCurrency === 'AED' ? '680,000' : '150,000'}`}
                             value={purchasePrice ? Number(purchasePrice).toLocaleString() : ''}
                             onChange={(e) => {
                               const value = e.target.value.replace(/[^\d]/g, '');
@@ -371,7 +371,7 @@ export default function AirbnbYieldCalculator() {
                         <div className="relative">
                           <Input
                             id="monthlyRent"
-                            placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '25,000' : selectedCurrency === 'USD' ? '1,300' : selectedCurrency === 'EUR' ? '1,200' : '1,100'}`}
+                            placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '25,000' : selectedCurrency === 'USD' ? '1,350' : selectedCurrency === 'EUR' ? '1,250' : selectedCurrency === 'AED' ? '5,000' : '1,100'}`}
                             value={monthlyRent ? Number(monthlyRent).toLocaleString() : ''}
                             onChange={(e) => {
                               const value = e.target.value.replace(/[^\d]/g, '');
@@ -393,7 +393,7 @@ export default function AirbnbYieldCalculator() {
                         <div className="relative">
                           <Input
                             id="longTermPurchasePrice"
-                            placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '3,500,000' : selectedCurrency === 'USD' ? '185,000' : selectedCurrency === 'EUR' ? '170,000' : '150,000'}`}
+                            placeholder={`e.g. ${selectedCurrency === 'ZAR' ? '3,500,000' : selectedCurrency === 'USD' ? '185,000' : selectedCurrency === 'EUR' ? '170,000' : selectedCurrency === 'AED' ? '680,000' : '150,000'}`}
                             value={longTermPurchasePrice ? Number(longTermPurchasePrice).toLocaleString() : ''}
                             onChange={(e) => {
                               const value = e.target.value.replace(/[^\d]/g, '');
