@@ -391,7 +391,7 @@ export default function AdminPage() {
             title="Total Properties"
             icon={Building2}
             mainValue={statsLoading ? "..." : stats?.totalProperties}
-            subValue="Combined PA & RC properties"
+            subValue="Total properties across all users"
           />
         </div>
 
