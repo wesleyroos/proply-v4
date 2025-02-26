@@ -107,7 +107,6 @@ function App() {
   return (
     <>
       <TooltipProvider>
-        <FollowingEyes />
         <AnimatePresence mode="wait">
           <Switch key={location}>
             <Route path="/" component={() => (
@@ -204,35 +203,3 @@ function App() {
 }
 
 export default App;
-
-
-function FollowingEyes() {
-  const [mouseX, setMouseX] = useState(0);
-  const [mouseY, setMouseY] = useState(0);
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setMouseX(e.clientX);
-    setMouseY(e.clientY);
-  };
-
-  useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  const eyeStyle = {
-    position: "absolute",
-    top: "20px",
-    right: "20px",
-    width: "50px",
-    height: "50px",
-    transform: `translate(${mouseX - 60}px, ${mouseY - 60}px)`,
-  };
-
-  return (
-    <div style={eyeStyle} className="flex items-center justify-center">
-      <div className="w-4 h-4 rounded-full bg-black"></div>
-      <div className="w-2 h-2 rounded-full bg-white ml-1"></div>
-    </div>
-  );
-}
