@@ -358,11 +358,8 @@ const SidebarHeader = React.forwardRef<
       ref={ref}
       data-sidebar="header"
       className={cn("flex flex-col gap-2 p-2", className)}
-    >
-      <Link href="/" className="block cursor-pointer">
-        {props.children}
-      </Link>
-    </div>
+      {...props}
+    />
   )
 })
 SidebarHeader.displayName = "SidebarHeader"
