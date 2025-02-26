@@ -87,7 +87,7 @@ interface AdminUser extends SelectUser {
   rcApiCalls: number;
   paApiCalls: number;
   propertyCount: number;
-  rentCompareCount: number; // Add this line
+  rentCompareCount: number;
 }
 
 interface UserStats {
@@ -101,6 +101,9 @@ interface UserStats {
   totalApiCalls: number;
   totalReportsGenerated: number;
   monthlyReportsGenerated: number;
+  totalProperties: number;
+  activePayfastSubscriptions: number;
+  manuallyUpgradedPro: number;
 }
 
 type SortConfig = {
@@ -383,6 +386,12 @@ export default function AdminPage() {
             subValue={`${
               statsLoading ? "..." : stats?.manuallyUpgradedPro
             } manually upgraded`}
+          />
+          <StatCard
+            title="Total Properties"
+            icon={Building2}
+            mainValue={statsLoading ? "..." : stats?.totalProperties}
+            subValue="Combined PA & RC properties"
           />
         </div>
 

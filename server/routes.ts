@@ -794,7 +794,15 @@ export function registerRoutes(app: Express): Server {
         .from(users)
         .then((rows) => rows[0]);
 
-      // Get API usage for current month (keeping this as it was)
+      // Get total properties count
+      const propertyStats = await db
+        .select({
+          totalProperties: sql`count(*)::integer`,
+        })
+        .from(properties)
+        .then((rows) => rows[0]);
+
+      // Get API usage for current month
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
@@ -807,7 +815,7 @@ export function registerRoutes(app: Express): Server {
         .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
         .then((rows) => rows[0]);
 
-      // Separate query for reports, now counting both total and monthly reports directly from propertyAnalyzerResults
+      // Separate query for reports
       const reportStats = await db
         .select({
           monthlyReportsGenerated: sql`count(*) filter (where ${propertyAnalyzerResults.createdAt} >= ${startOfMonth})`,
@@ -821,6 +829,7 @@ export function registerRoutes(app: Express): Server {
         monthlyApiCalls: apiStats.monthlyApiCalls,
         monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
         totalReportsGenerated: reportStats.totalReportsGenerated || 0,
+        totalProperties: propertyStats.totalProperties || 0,
       });
     } catch (error) {
       console.error("Error fetching admin stats:", error);
