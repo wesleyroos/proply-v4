@@ -24,7 +24,32 @@ export default function AirbnbYieldCalculator() {
   const [monthlyRent, setMonthlyRent] = useState("");
   const [longTermPurchasePrice, setLongTermPurchasePrice] = useState("");
   const [longTermYield, setLongTermYield] = useState<number | null>(null);
-  const [selectedCurrency, setSelectedCurrency] = useState("ZAR"); // Initialize with ZAR
+  const [selectedCurrency, setSelectedCurrency] = useState("ZAR");
+  const [exchangeRates, setExchangeRates] = useState({
+    ZAR: 1,
+    USD: 0,
+    EUR: 0,
+    GBP: 0
+  });
+
+  // Fetch exchange rates on component mount
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const response = await fetch(`https://api.exchangerate-api.com/v4/latest/ZAR`);
+        const data = await response.json();
+        setExchangeRates({
+          ZAR: 1,
+          USD: 1 / data.rates.USD,
+          EUR: 1 / data.rates.EUR,
+          GBP: 1 / data.rates.GBP
+        });
+      } catch (error) {
+        console.error('Failed to fetch exchange rates:', error);
+      }
+    };
+    fetchRates();
+  }, []);
 
   const calculateAirbnbYield = () => {
     const annualRevenue = parseFloat(nightlyRate) * (parseFloat(occupancyRate) / 100) * 365;
@@ -116,10 +141,10 @@ export default function AirbnbYieldCalculator() {
                     <SelectValue placeholder="Select currency" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ZAR">South African Rand (R)</SelectItem>
-                    <SelectItem value="USD">US Dollar ($)</SelectItem>
-                    <SelectItem value="EUR">Euro (€)</SelectItem>
-                    <SelectItem value="GBP">British Pound (£)</SelectItem>
+                    <SelectItem value="ZAR">South African Rand (R) - Base Rate</SelectItem>
+                    <SelectItem value="USD">US Dollar ($) - R{exchangeRates.USD.toFixed(2)}</SelectItem>
+                    <SelectItem value="EUR">Euro (€) - R{exchangeRates.EUR.toFixed(2)}</SelectItem>
+                    <SelectItem value="GBP">British Pound (£) - R{exchangeRates.GBP.toFixed(2)}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
