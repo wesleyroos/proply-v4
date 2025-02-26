@@ -44,7 +44,8 @@ export default function AirbnbYieldCalculator() {
           ZAR: 1,
           USD: 1 / data.rates.USD,
           EUR: 1 / data.rates.EUR,
-          GBP: 1 / data.rates.GBP
+          GBP: 1 / data.rates.GBP,
+          AED: 1 / data.rates.AED
         });
       } catch (error) {
         console.error('Failed to fetch exchange rates:', error);
