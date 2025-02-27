@@ -14,8 +14,12 @@ export default function PricingPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h1>
-          <p className="text-xl text-gray-600">Choose the plan that's right for you</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Simple, Transparent Pricing
+          </h1>
+          <p className="text-xl text-gray-600">
+            Choose the plan that's right for you
+          </p>
         </div>
 
         {/* Pricing Cards */}
@@ -25,7 +29,9 @@ export default function PricingPage() {
             <CardHeader>
               <CardTitle>
                 <h3 className="text-2xl font-bold">Free</h3>
-                <p className="text-sm font-normal text-gray-600 mt-2">Perfect for getting started</p>
+                <p className="text-sm font-normal text-gray-600 mt-2">
+                  Perfect for getting started
+                </p>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -61,7 +67,9 @@ export default function PricingPage() {
             <CardHeader>
               <CardTitle>
                 <h3 className="text-2xl font-bold">Pro</h3>
-                <p className="text-sm font-normal text-gray-600 mt-2">For serious investors</p>
+                <p className="text-sm font-normal text-gray-600 mt-2">
+                  For investors and property managers
+                </p>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -91,7 +99,10 @@ export default function PricingPage() {
                   <span>Market insights</span>
                 </li>
               </ul>
-              <Button className="w-full mt-8 bg-[#1BA3FF] hover:bg-[#114D9D]" asChild>
+              <Button
+                className="w-full mt-8 bg-[#1BA3FF] hover:bg-[#114D9D]"
+                asChild
+              >
                 <Link href="/register?plan=pro">Get Started</Link>
               </Button>
             </CardContent>
@@ -102,7 +113,9 @@ export default function PricingPage() {
             <CardHeader>
               <CardTitle>
                 <h3 className="text-2xl font-bold">Enterprise API</h3>
-                <p className="text-sm font-normal text-gray-600 mt-2">For real estate platforms</p>
+                <p className="text-sm font-normal text-gray-600 mt-2">
+                  For real estate platforms
+                </p>
               </CardTitle>
             </CardHeader>
             <CardContent>
