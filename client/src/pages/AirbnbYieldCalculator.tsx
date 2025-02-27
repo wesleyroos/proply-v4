@@ -428,6 +428,9 @@ export default function AirbnbYieldCalculator() {
                         <p className="text-3xl font-bold text-blue-800">
                           {longTermYield}% <span className="text-lg font-normal">Gross Yield</span>
                         </p>
+                        <div className="mt-2 text-lg text-blue-700">
+                          <span className="font-medium">Annual Revenue:</span> {getSymbol()}{(parseFloat(monthlyRent) * 12).toLocaleString(undefined, {maximumFractionDigits: 0})}
+                        </div>
                         <p className="text-sm text-blue-600 mt-4">
                           Note: This is a basic calculation of gross yield. Actual returns may vary based on expenses,
                           vacancy rates, and market conditions.
