@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Sparkles, HelpCircle } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UpgradeModal } from "@/components/UpgradeModal"; // Added import
 import { ScrapingProgressModal } from "./ScrapingProgressModal";
@@ -26,7 +26,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -1062,7 +1061,8 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                       <FormControl>
                         <div className="space-y-2">
                           <Button
-                            type="button                            variant="outline"
+                            type="button"
+                            variant="outline"
                             className="flex items-center gap-2 w-full h-10"
                             onClick={() => {
                               if (isProAccessLoading) return;
@@ -1158,17 +1158,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   name="leaseCycleGap"
                   render={({ field }) => (
                     <FormItem>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <FormLabel>
-                            Lease Cycle Gap (days)
-                            <HelpCircle className="ml-2 h-4 w-4 text-muted-foreground" />
-                          </FormLabel>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          The average number of days between the end of one lease and the start of the next.  A shorter gap indicates higher occupancy rates, potentially generating more revenue.
-                        </TooltipContent>
-                      </Tooltip>
+                      <FormLabel>Lease Cycle Gap (days)</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
