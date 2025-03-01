@@ -1158,7 +1158,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   name="leaseCycleGap"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Lease Cycle Gap (days)</FormLabel>
+                      <FormLabel>Lease Cycle Gap (days) <span className="text-sm text-muted-foreground ml-1">- Average days between leases. A shorter gap means higher occupancy and potentially more revenue.</span></FormLabel>
                       <FormControl>
                         <Input
                           type="number"
