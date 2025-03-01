@@ -786,32 +786,7 @@ export default function PropertyAnalyzerPage() {
                           </div>
                         </div>
 
-                        {formData?.propertyPhoto && (
-                          <div className="mt-4">
-                            <h3 className="text-sm font-semibold text-slate-600">
-                              Property Photo
-                            </h3>
-                            <div className="rounded-lg overflow-hidden mt-2">
-                              <img
-                                src={
-                                  formData.propertyPhoto instanceof File
-                                    ? URL.createObjectURL(
-                                        formData.propertyPhoto,
-                                      )
-                                    : typeof formData.propertyPhoto === "string"
-                                      ? formData.propertyPhoto
-                                      : null
-                                }
-                                alt="Property"
-                                className="w-full h-48 object-cover rounded-lg"
-                                onError={(e) => {
-                                  console.error("Error loading image:", e);
-                                  e.currentTarget.style.display = "none";
-                                }}
-                              />
-                            </div>
-                          </div>
-                        )}
+                        
                       </>
                     )}
                   </CardContent>
