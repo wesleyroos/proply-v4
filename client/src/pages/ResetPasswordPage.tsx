@@ -162,13 +162,13 @@ export default function ResetPasswordPage() {
                         <FormLabel>Email</FormLabel>
                         <FormControl>
                           <Input
-                            type="email"
-                            placeholder="Enter your email"
-                            value={field.value || ""}
+                            value={field.value}
                             onChange={field.onChange}
                             onBlur={field.onBlur}
                             name={field.name}
                             ref={field.ref}
+                            type="email"
+                            placeholder="Enter your email"
                           />
                         </FormControl>
                         <FormMessage />
@@ -191,14 +191,13 @@ export default function ResetPasswordPage() {
                         <FormLabel>New Password</FormLabel>
                         <FormControl>
                           <Input
-                            value={field.value || ""}
+                            type="password"
+                            placeholder="Enter new password"
+                            value={field.value}
                             onChange={field.onChange}
                             onBlur={field.onBlur}
                             name={field.name}
                             ref={field.ref}
-                            type="password"
-                            placeholder="Enter new password"
-                            autoComplete="new-password"
                           />
                         </FormControl>
                         <FormMessage />
@@ -213,13 +212,13 @@ export default function ResetPasswordPage() {
                         <FormLabel>Confirm Password</FormLabel>
                         <FormControl>
                           <Input
-                            value={field.value || ""}
+                            type="password"
+                            placeholder="Confirm new password"
+                            value={field.value}
                             onChange={field.onChange}
                             onBlur={field.onBlur}
                             name={field.name}
                             ref={field.ref}
-                            type="password"
-                            placeholder="Confirm new password"
                           />
                         </FormControl>
                         <FormMessage />
