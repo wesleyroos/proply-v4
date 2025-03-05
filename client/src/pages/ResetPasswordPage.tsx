@@ -1,13 +1,22 @@
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useLocation, Link } from "wouter";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLocation } from "wouter";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const requestResetSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -24,14 +33,19 @@ const resetPasswordSchema = z.object({
 export default function ResetPasswordPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"request" | "reset">("request");
-  const searchParams = new URLSearchParams(window.location.search);
-  const token = searchParams.get("token");
 
-  // If we have a token in the URL, show the reset password form
-  if (token && mode === "request") {
-    setMode("reset");
-  }
+  // Get token from URL params
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+
+  useEffect(() => {
+    if (token) {
+      setMode("reset");
+    }
+  }, [token]);
 
   const requestForm = useForm({
     resolver: zodResolver(requestResetSchema),
@@ -50,6 +64,8 @@ export default function ResetPasswordPage() {
 
   const onRequestSubmit = async (data: z.infer<typeof requestResetSchema>) => {
     try {
+      setIsLoading(true);
+      setError(null);
       const response = await fetch("/api/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -63,16 +79,16 @@ export default function ResetPasswordPage() {
         description: "If an account exists with this email, you will receive a password reset link",
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send reset email",
-        variant: "destructive",
-      });
+      setError(error instanceof Error ? error.message : "Failed to send reset email");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const onResetSubmit = async (data: z.infer<typeof resetPasswordSchema>) => {
     try {
+      setIsLoading(true);
+      setError(null);
       const response = await fetch("/api/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -89,29 +105,43 @@ export default function ResetPasswordPage() {
         description: "Your password has been reset. Please log in with your new password.",
       });
 
-      setLocation("/auth");
+      setLocation("/login");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to reset password",
-        variant: "destructive",
-      });
+      setError(error instanceof Error ? error.message : "Failed to reset password");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-[400px]">
+        <Link href="/">
+          <img
+            src="/proply-logo-1.png"
+            alt="Proply"
+            className="h-12 mx-auto mb-8 cursor-pointer"
+          />
+        </Link>
+
         <Card>
           <CardHeader>
-            <CardTitle>{mode === "request" ? "Reset Password" : "Create New Password"}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-center text-[#262626]">
+              {mode === "request" ? "Reset Password" : "Create New Password"}
+            </CardTitle>
+            <CardDescription className="text-center">
               {mode === "request" 
                 ? "Enter your email address and we'll send you a password reset link."
                 : "Please enter your new password below."}
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
             {mode === "request" ? (
               <Form {...requestForm}>
                 <form onSubmit={requestForm.handleSubmit(onRequestSubmit)} className="space-y-4">
@@ -122,14 +152,14 @@ export default function ResetPasswordPage() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="Enter your email" {...field} />
+                          <Input type="email" placeholder="Enter your email" {...field} disabled={isLoading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]" disabled={requestForm.formState.isSubmitting}>
-                    {requestForm.formState.isSubmitting ? "Sending..." : "Send Reset Link"}
+                  <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]" disabled={isLoading}>
+                    {isLoading ? "Sending..." : "Send Reset Link"}
                   </Button>
                 </form>
               </Form>
@@ -143,7 +173,7 @@ export default function ResetPasswordPage() {
                       <FormItem>
                         <FormLabel>New Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Enter new password" {...field} />
+                          <Input type="password" placeholder="Enter new password" {...field} disabled={isLoading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -156,21 +186,21 @@ export default function ResetPasswordPage() {
                       <FormItem>
                         <FormLabel>Confirm Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Confirm new password" {...field} />
+                          <Input type="password" placeholder="Confirm new password" {...field} disabled={isLoading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]" disabled={resetForm.formState.isSubmitting}>
-                    {resetForm.formState.isSubmitting ? "Resetting..." : "Reset Password"}
+                  <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]" disabled={isLoading}>
+                    {isLoading ? "Resetting..." : "Reset Password"}
                   </Button>
                 </form>
               </Form>
             )}
           </CardContent>
           <CardFooter className="flex justify-center">
-            <Button variant="link" onClick={() => setLocation("/login")}>
+            <Button variant="link" onClick={() => setLocation("/login")} className="text-[#1BA3FF]">
               Back to Login
             </Button>
           </CardFooter>

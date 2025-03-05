@@ -115,6 +115,11 @@ function App() {
                 <ResetPasswordPage />
               </PageTransition>
             )} />
+            <Route path="/reset-password/:token" component={() => (
+              <PageTransition>
+                <ResetPasswordPage />
+              </PageTransition>
+            )} />
             <Route path="/" component={() => (
               <PageTransition>
                 <HomePage />
