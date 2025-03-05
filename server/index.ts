@@ -7,22 +7,38 @@ import rateLimit from 'express-rate-limit';
 
 const app = express();
 
-// Rate limiting middleware
-const limiter = rateLimit({
+// Configure different rate limiters for different routes
+const standardLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 150, // limit each IP to 150 requests per windowMs
   message: { 
-    error: 'Too many requests, please try again later.',
+    error: 'Too many requests from this IP. Please try again after 15 minutes.',
     retryAfter: '15 minutes'
-  }
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20, // limit each IP to 20 AI requests per minute
+  message: { 
+    error: 'AI request limit reached. Please wait a minute before trying again.',
+    retryAfter: '1 minute'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Essential middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Apply rate limiting to all routes
-app.use(limiter);
+// Apply standard rate limiting to all non-AI API routes
+app.use(/^\/api\/(?!ai).+/, standardLimiter);
+
+// Apply AI-specific rate limiting to AI routes
+app.use('/api/ai', aiLimiter);
 
 // Domain redirect middleware
 app.use((req, res, next) => {
@@ -70,17 +86,31 @@ app.use('/api', aiRouter);
 (async () => {
   const server = registerRoutes(app);
 
+  // Enhanced error handling
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
     const retryAfter = err.retryAfter || undefined;
 
+    // Set retry-after header for rate limit errors
     if (status === 429) {
       res.set('Retry-After', retryAfter || '900'); // 15 minutes in seconds
+      res.set('X-RateLimit-Reset', String(Date.now() + (parseInt(retryAfter || '900') * 1000)));
     }
 
-    res.status(status).json({ message, retryAfter });
-    throw err;
+    // Include more detailed error information in development
+    const errorResponse = {
+      message,
+      retryAfter,
+      ...(app.get('env') === 'development' ? { stack: err.stack } : {})
+    };
+
+    res.status(status).json(errorResponse);
+
+    // Only log errors, don't throw them
+    if (status >= 500) {
+      console.error(err);
+    }
   });
 
   if (app.get("env") === "development") {
