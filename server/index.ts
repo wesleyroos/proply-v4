@@ -3,26 +3,12 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createServer } from "net";
 import aiRouter from './routes/ai';
-import rateLimit from 'express-rate-limit';
 
 const app = express();
-
-// Rate limiting middleware
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: { 
-    error: 'Too many requests, please try again later.',
-    retryAfter: '15 minutes'
-  }
-});
 
 // Essential middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-// Apply rate limiting to all routes
-app.use(limiter);
 
 // Domain redirect middleware
 app.use((req, res, next) => {
@@ -73,16 +59,14 @@ app.use('/api', aiRouter);
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-    const retryAfter = err.retryAfter || undefined;
 
-    if (status === 429) {
-      res.set('Retry-After', retryAfter || '900'); // 15 minutes in seconds
-    }
-
-    res.status(status).json({ message, retryAfter });
+    res.status(status).json({ message });
     throw err;
   });
 
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
@@ -90,8 +74,9 @@ app.use('/api', aiRouter);
   }
 
   try {
-    const port = parseInt(process.env.PORT || "5000", 10);
-    server.listen(port, () => {
+    // Use environment port if available, otherwise use 5000
+    const port = process.env.PORT || 5000;
+    server.listen(port, "0.0.0.0", () => {
       log(`serving on port ${port}`);
     });
   } catch (error) {
