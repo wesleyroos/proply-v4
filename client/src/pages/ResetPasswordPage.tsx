@@ -1,21 +1,13 @@
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
 import { useLocation, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const requestResetSchema = z.object({
@@ -48,14 +40,23 @@ export default function ResetPasswordPage() {
     }
   }, [token]);
 
-  const requestForm = useForm({
+  const {
+    register: registerRequest,
+    handleSubmit: handleRequestSubmit,
+    formState: { errors: requestErrors }
+  } = useForm({
     resolver: zodResolver(requestResetSchema),
     defaultValues: {
       email: "",
     },
   });
 
-  const resetForm = useForm({
+  const {
+    register: registerReset,
+    handleSubmit: handleResetSubmit,
+    formState: { errors: resetErrors },
+    watch
+  } = useForm({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       password: "",
@@ -63,7 +64,10 @@ export default function ResetPasswordPage() {
     },
   });
 
-  const onRequestSubmit = async (data: z.infer<typeof requestResetSchema>) => {
+  // Debug: Watch password value changes
+  console.log('Password value:', watch('password'));
+
+  const onRequestSubmit = async (data: any) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -86,7 +90,7 @@ export default function ResetPasswordPage() {
     }
   };
 
-  const onResetSubmit = async (data: z.infer<typeof resetPasswordSchema>) => {
+  const onResetSubmit = async (data: any) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -151,85 +155,60 @@ export default function ResetPasswordPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
+
             {mode === "request" ? (
-              <Form {...requestForm}>
-                <form onSubmit={requestForm.handleSubmit(onRequestSubmit)} className="space-y-4">
-                  <FormField
-                    control={requestForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            value={field.value}
-                            onChange={field.onChange}
-                            onBlur={field.onBlur}
-                            name={field.name}
-                            ref={field.ref}
-                            type="email"
-                            placeholder="Enter your email"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+              <form onSubmit={handleRequestSubmit(onRequestSubmit)} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <Input
+                    type="email"
+                    {...registerRequest('email')}
+                    placeholder="Enter your email"
                   />
-                  <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]" disabled={isLoading}>
-                    {isLoading ? "Sending..." : "Send Reset Link"}
-                  </Button>
-                </form>
-              </Form>
+                  {requestErrors.email && (
+                    <p className="text-sm text-red-500 mt-1">{requestErrors.email.message}</p>
+                  )}
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Sending..." : "Send Reset Link"}
+                </Button>
+              </form>
             ) : (
-              <Form {...resetForm}>
-                <form onSubmit={resetForm.handleSubmit(onResetSubmit)} className="space-y-4">
-                  <FormField
-                    control={resetForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>New Password</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="Enter new password"
-                            value={field.value}
-                            onChange={field.onChange}
-                            onBlur={field.onBlur}
-                            name={field.name}
-                            ref={field.ref}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+              <form onSubmit={handleResetSubmit(onResetSubmit)} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">New Password</label>
+                  <Input
+                    type="password"
+                    {...registerReset('password')}
+                    placeholder="Enter new password"
                   />
-                  <FormField
-                    control={resetForm.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirm Password</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="Confirm new password"
-                            value={field.value}
-                            onChange={field.onChange}
-                            onBlur={field.onBlur}
-                            name={field.name}
-                            ref={field.ref}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                  {resetErrors.password && (
+                    <p className="text-sm text-red-500 mt-1">{resetErrors.password.message}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Confirm Password</label>
+                  <Input
+                    type="password"
+                    {...registerReset('confirmPassword')}
+                    placeholder="Confirm new password"
                   />
-                  <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]" disabled={isLoading}>
-                    {isLoading ? "Resetting..." : "Reset Password"}
-                  </Button>
-                </form>
-              </Form>
+                  {resetErrors.confirmPassword && (
+                    <p className="text-sm text-red-500 mt-1">{resetErrors.confirmPassword.message}</p>
+                  )}
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Resetting..." : "Reset Password"}
+                </Button>
+              </form>
             )}
           </CardContent>
           <CardFooter className="flex justify-center">
