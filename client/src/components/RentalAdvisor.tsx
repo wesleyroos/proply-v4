@@ -15,11 +15,11 @@ interface Message {
 }
 
 const SAMPLE_QUESTIONS = [
-  "Which rental strategy would be more profitable?",
-  "What are the risks of short-term rentals?",
-  "How does the break-even occupancy compare to the market?",
-  "What are the tax implications of each strategy?",
-  "Should I consider property management fees?"
+  "How do I explain the profitability difference to my owner?",
+  "What if my owner is concerned about occupancy rates?",
+  "How can I address owner concerns about property wear and tear?",
+  "What data points should I highlight to build owner trust?",
+  "How do I justify my management fee with this comparison?"
 ];
 
 export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
@@ -35,7 +35,7 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
     if (isOpen && messages.length === 0) {
       setMessages([{
         type: 'assistant',
-        content: `Hello! I'm your Rental Strategy Advisor. Based on your property analysis, I can answer questions about long-term vs. short-term rental options. How can I help you today?`
+        content: `Hello! I'm your Airbnb Manager Advisor. I can help you communicate effectively with property owners about the rental comparison data and address their concerns. My goal is to help you build trust and retain your owners. How can I assist you today?`
       }]);
     }
   }, [isOpen, messages.length]);
