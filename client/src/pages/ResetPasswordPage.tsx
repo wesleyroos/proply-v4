@@ -191,6 +191,8 @@ export default function ResetPasswordPage() {
                             {...field}
                             type="password"
                             placeholder="Enter new password"
+                            required
+                            autoComplete="new-password"
                           />
                         </FormControl>
                         <FormMessage />
