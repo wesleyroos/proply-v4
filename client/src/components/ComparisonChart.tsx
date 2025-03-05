@@ -764,7 +764,7 @@ export default function ComparisonChart({
                           seasonalRate,
                           data.managementFee > 0,
                         );
-                        const daysInMonth =                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
                         const revenue =
                           feeAdjustedRate * occupancyRate * daysInMonth;
