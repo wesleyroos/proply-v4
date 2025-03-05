@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Loader2, Send, MessageSquare, Info, X } from "lucide-react";
+import { Loader2, Send, MessageSquare, Info, X, Lock } from "lucide-react";
 import { getRentalAdvice, RentalAnalysisContext } from "@/services/openai";
+import { useProAccess } from "@/hooks/use-pro-access";
 
 interface RentalAdvisorProps {
   analysisData: RentalAnalysisContext;
@@ -23,6 +24,7 @@ const SAMPLE_QUESTIONS = [
 ];
 
 export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
+  const { hasAccess, isLoading: accessLoading } = useProAccess();
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -76,6 +78,45 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
     setQuery(question);
   };
 
+  // Helper to render pro-only upgrade prompt
+  const renderProUpgradePrompt = () => (
+    <Card className="fixed bottom-6 right-6 w-96 bg-white shadow-lg border border-gray-200 flex flex-col z-50" style={{ maxHeight: "600px" }}>
+      <div className="p-4 border-b">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Lock className="h-5 w-5 text-[#1BA3FF]" />
+            <h3 className="text-lg font-semibold text-gray-900">Rental Strategy Advisor</h3>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setIsOpen(false)}
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      
+      <div className="flex-1 p-6 flex flex-col items-center justify-center text-center space-y-4">
+        <Lock className="h-12 w-12 text-[#1BA3FF] mb-2" />
+        <h3 className="text-xl font-semibold">Pro Feature</h3>
+        <p className="text-gray-600">
+          The Rental Strategy Advisor is available exclusively to Pro plan subscribers.
+        </p>
+        <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 mt-2" onClick={() => window.location.href = '/settings'}>
+          Upgrade to Pro
+        </Button>
+      </div>
+    </Card>
+  );
+
+  // If still checking access status, show nothing
+  if (accessLoading) {
+    return null;
+  }
+
+  // If not open, show the button only
   if (!isOpen) {
     return (
       <Button
@@ -88,6 +129,12 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
     );
   }
 
+  // If no pro access, show upgrade prompt
+  if (!hasAccess) {
+    return renderProUpgradePrompt();
+  }
+
+  // Regular chatbox for pro users
   return (
     <Card className="fixed bottom-6 right-6 w-96 bg-white shadow-lg border border-gray-200 flex flex-col z-50" style={{ maxHeight: "600px" }}>
       <div className="p-4 border-b">
