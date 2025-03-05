@@ -135,108 +135,101 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
 
   // If no pro access, show upgrade prompt
   if (!hasAccess) {
-    return (
-      <>
-        {renderProUpgradePrompt()}
-        <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
-      </>
-    );
+    return renderProUpgradePrompt();
   }
 
   // Regular chatbox for pro users
   return (
-    <>
-      <Card className="fixed bottom-6 right-6 w-96 bg-white shadow-lg border border-gray-200 flex flex-col z-50" style={{ maxHeight: "600px" }}>
-        <div className="p-4 border-b">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-[#1BA3FF]" />
-              <h3 className="text-lg font-semibold text-gray-900">Rental Strategy Advisor</h3>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setIsOpen(false)}
-              aria-label="Close"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+    <Card className="fixed bottom-6 right-6 w-96 bg-white shadow-lg border border-gray-200 flex flex-col z-50" style={{ maxHeight: "600px" }}>
+      <div className="p-4 border-b">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-[#1BA3FF]" />
+            <h3 className="text-lg font-semibold text-gray-900">Rental Strategy Advisor</h3>
           </div>
-          <p className="text-sm text-gray-600 mt-2">
-            Ask me anything about the rental comparison data or for advice on your rental strategy.
-          </p>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setIsOpen(false)}
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
+        <p className="text-sm text-gray-600 mt-2">
+          Ask me anything about the rental comparison data or for advice on your rental strategy.
+        </p>
+      </div>
 
-        <div className="flex-1 overflow-y-auto p-4" style={{ maxHeight: "400px" }}>
-          {messages.map((message, index) => (
+      <div className="flex-1 overflow-y-auto p-4" style={{ maxHeight: "400px" }}>
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`mb-4 ${
+              message.type === 'user'
+                ? 'ml-auto max-w-[80%]'
+                : 'mr-auto max-w-[80%]'
+            }`}
+          >
             <div
-              key={index}
-              className={`mb-4 ${
+              className={`p-3 rounded-lg ${
                 message.type === 'user'
-                  ? 'ml-auto max-w-[80%]'
-                  : 'mr-auto max-w-[80%]'
+                  ? 'bg-[#1BA3FF] text-white'
+                  : 'bg-gray-100 text-gray-800'
               }`}
             >
-              <div
-                className={`p-3 rounded-lg ${
-                  message.type === 'user'
-                    ? 'bg-[#1BA3FF] text-white'
-                    : 'bg-gray-100 text-gray-800'
-                }`}
-              >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-              </div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {showSuggestions && messages.length === 1 && (
-          <div className="px-4 py-2 border-t border-gray-100">
-            <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
-              <Info className="h-3 w-3" /> Try asking:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {SAMPLE_QUESTIONS.map((question, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleSampleQuestionClick(question)}
-                  className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-full transition-colors"
-                >
-                  {question}
-                </button>
-              ))}
+              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
             </div>
           </div>
-        )}
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
 
-        <div className="p-4 border-t bg-white">
-          <form onSubmit={handleSubmit} className="flex gap-2">
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ask about the rental comparison..."
-              className="flex-1"
-              disabled={isLoading}
-              aria-label="Ask a question"
-            />
-            <Button 
-              type="submit" 
-              disabled={isLoading || !query.trim()}
-              aria-label="Send message"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
-          </form>
+      {showSuggestions && messages.length === 1 && (
+        <div className="px-4 py-2 border-t border-gray-100">
+          <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+            <Info className="h-3 w-3" /> Try asking:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {SAMPLE_QUESTIONS.map((question, index) => (
+              <button
+                key={index}
+                onClick={() => handleSampleQuestionClick(question)}
+                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-full transition-colors"
+              >
+                {question}
+              </button>
+            ))}
+          </div>
         </div>
-      </Card>
-      
-      {/* Upgrade Modal */}
-      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
-    </>
+      )}
+
+      <div className="p-4 border-t bg-white">
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Ask about the rental comparison..."
+            className="flex-1"
+            disabled={isLoading}
+            aria-label="Ask a question"
+          />
+          <Button 
+            type="submit" 
+            disabled={isLoading || !query.trim()}
+            aria-label="Send message"
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
+        </form>
+      </div>
+    </Card>
   );
+      
+  {/* Upgrade Modal */}
+  <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
 }
