@@ -8,10 +8,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import html2canvas from "html2canvas";
-import { FileText, Sparkles } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,45 +68,8 @@ export default function ComparisonChart({
   const [showUpgradeModal, setShowUpgradeModal] = useState(false); // Added state for upgrade modal
   const user = useUser(); // Placeholder for user data
 
-  const handleExportPDF = async (withBranding: boolean = false) => {
-    try {
-      if (withBranding && !hasProAccess) {
-        toast({
-          title: "Pro Feature",
-          description: "Branded reports are only available to Pro users. Upgrade to access this feature.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Convert data to Property type
-      const propertyData = {
-        id: 0,
-        title: data.title,
-        address: address,
-        bedrooms: data.bedrooms,
-        bathrooms: data.bathrooms,
-        longTermMonthly: data.longTermMonthly,
-        shortTermAnnual: data.shortTermAnnual,
-        shortTermAfterFees: data.shortTermAfterFees,
-        breakEvenOccupancy: data.breakEvenOccupancy,
-        shortTermNightly: data.shortTermNightly,
-        annualOccupancy: data.annualOccupancy,
-        managementFee: data.managementFee,
-        parkingSpaces: data.parkingSpaces,
-        createdAt: new Date().toISOString()
-      };
-
-      await generatePropertyPreviewPDF(propertyData, withBranding, user.user);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate PDF report",
-        variant: "destructive",
-      });
-    }
-  };
+  // PDF export functionality has been removed
+  // The export button is now static and non-functional
 
   // Calculate annual revenue with or without seasonality
   const calculateAnnualRevenue = () => {
@@ -174,109 +133,6 @@ export default function ComparisonChart({
   });
 
   const { toast } = useToast();
-
-  const generatePropertyPreviewPDF = async (data: ComparisonData, includeBranding: boolean, user: any) => {
-    const doc = new jsPDF();
-    let yPos = 20;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 20;
-
-    // Add logos if branding enabled
-    if (includeBranding && user?.companyLogo) {
-      try {
-        const logoWidth = 40;
-        await new Promise<void>((resolve) => {
-          const img = new Image();
-          img.onload = () => {
-            const aspectRatio = img.height / img.width;
-            const logoHeight = logoWidth * aspectRatio;
-            doc.addImage(user.companyLogo, "PNG", margin, 20, logoWidth, logoHeight);
-            resolve();
-          };
-          img.onerror = () => resolve();
-          img.crossOrigin = "Anonymous";
-          img.src = user.companyLogo;
-        });
-      } catch (error) {
-        console.error("Error adding logo:", error);
-      }
-    }
-
-    // Title
-    doc.setFontSize(20);
-    doc.text("Rental Strategy Comparison", 20, yPos += 20);
-
-    // Property Details
-    doc.setFontSize(12);
-    doc.text("Property Details", 20, yPos += 20);
-
-    const propertyDetails = [
-      ["Address", address],
-      ["Bedrooms", data.bedrooms || "N/A"],
-      ["Bathrooms", data.bathrooms || "N/A"],
-      ["Short Term Nightly Rate", formatter.format(data.shortTermNightly)],
-      ["Annual Occupancy", data.annualOccupancy + "%"],
-    ];
-
-    autoTable(doc, {
-      startY: yPos += 10,
-      head: [["Feature", "Value"]],
-      body: propertyDetails,
-      theme: "grid",
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [27, 163, 255] },
-    });
-
-    // Revenue Comparison
-    yPos = (doc as any).lastAutoTable.finalY + 20;
-    doc.text("Revenue Comparison", 20, yPos);
-
-    const revenueDetails = [
-      ["Long Term Monthly", formatter.format(data.longTermMonthly)],
-      ["Long Term Annual", formatter.format(data.longTermAnnual)],
-      ["Short Term Monthly", formatter.format(data.shortTermMonthly)],
-      ["Short Term Annual", formatter.format(data.shortTermAnnual)],
-      ["Short Term After Fees", formatter.format(data.shortTermAfterFees)],
-    ];
-
-    autoTable(doc, {
-      startY: yPos += 10,
-      head: [["Metric", "Amount"]],
-      body: revenueDetails,
-      theme: "grid",
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [27, 163, 255] },
-    });
-
-    // Try to capture and add the chart
-    try {
-      const chartElement = document.querySelector(".recharts-wrapper");
-      if (chartElement) {
-        const canvas = await html2canvas(chartElement as HTMLElement);
-        const chartImage = canvas.toDataURL("image/png");
-        const imgWidth = pageWidth - 40;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        doc.addImage(chartImage, "PNG", 20, (doc as any).lastAutoTable.finalY + 20, imgWidth, imgHeight);
-      }
-    } catch (error) {
-      console.error("Error adding chart:", error);
-    }
-
-    // Add footer with page numbers
-    const totalPages = doc.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setFontSize(10);
-      doc.text(
-        `Page ${i} of ${totalPages}`,
-        pageWidth - 20,
-        doc.internal.pageSize.getHeight() - 10,
-        { align: "right" }
-      );
-    }
-
-    doc.save(`Rental Comparison - ${address}.pdf`);
-  };
 
 
   return (
@@ -343,12 +199,12 @@ export default function ComparisonChart({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleExportPDF(false)}>
+              <DropdownMenuItem>
                 <FileText className="mr-2" />
                 Without Branding
               </DropdownMenuItem>
               {hasProAccess ? (
-                <DropdownMenuItem onClick={() => handleExportPDF(true)}>
+                <DropdownMenuItem>
                   <FileText className="mr-2" />
                   With Branding
                   <div className="ml-2 flex items-center gap-1">
