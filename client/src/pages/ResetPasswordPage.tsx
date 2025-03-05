@@ -166,7 +166,6 @@ export default function ResetPasswordPage() {
                             type="email"
                             placeholder="Enter your email"
                             disabled={isLoading}
-                            required
                           />
                         </FormControl>
                         <FormMessage />
@@ -192,8 +191,6 @@ export default function ResetPasswordPage() {
                             {...field}
                             type="password"
                             placeholder="Enter new password"
-                            disabled={isLoading}
-                            required
                           />
                         </FormControl>
                         <FormMessage />
@@ -211,8 +208,6 @@ export default function ResetPasswordPage() {
                             {...field}
                             type="password"
                             placeholder="Confirm new password"
-                            disabled={isLoading}
-                            required
                           />
                         </FormControl>
                         <FormMessage />
