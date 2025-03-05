@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -9,23 +9,44 @@ interface RentalAdvisorProps {
   analysisData: RentalAnalysisContext;
 }
 
+interface Message {
+  type: 'user' | 'assistant';
+  content: string;
+}
+
 export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
   const [query, setQuery] = useState("");
-  const [response, setResponse] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
 
+    const userMessage = query.trim();
+    setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
+    setQuery("");
     setIsLoading(true);
+
     try {
-      const advice = await getRentalAdvice(analysisData, query);
-      setResponse(advice);
+      const advice = await getRentalAdvice(analysisData, userMessage);
+      setMessages(prev => [...prev, { type: 'assistant', content: advice }]);
     } catch (error) {
       console.error("Error getting advice:", error);
-      setResponse("Sorry, I encountered an error while analyzing the data. Please try again.");
+      setMessages(prev => [...prev, {
+        type: 'assistant',
+        content: "Sorry, I encountered an error while analyzing the data. Please try again."
+      }]);
     } finally {
       setIsLoading(false);
     }
@@ -55,11 +76,27 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4" style={{ maxHeight: "400px" }}>
-        {response && (
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-800 whitespace-pre-wrap">{response}</p>
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`mb-4 ${
+              message.type === 'user'
+                ? 'ml-auto max-w-[80%]'
+                : 'mr-auto max-w-[80%]'
+            }`}
+          >
+            <div
+              className={`p-3 rounded-lg ${
+                message.type === 'user'
+                  ? 'bg-[#1BA3FF] text-white'
+                  : 'bg-gray-100 text-gray-800'
+              }`}
+            >
+              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+            </div>
           </div>
-        )}
+        ))}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="p-4 border-t bg-white">
