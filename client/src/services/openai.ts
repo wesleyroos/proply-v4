@@ -1,5 +1,3 @@
-import { RentalAnalysisContext } from './context';
-
 export interface RentalAnalysisContext {
   longTermMonthly: number;
   shortTermMonthly: number;
