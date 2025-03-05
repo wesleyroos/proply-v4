@@ -121,11 +121,11 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 rounded-full p-5 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 shadow-lg flex items-center justify-center"
+        className="fixed bottom-6 right-6 rounded-full p-6 bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 shadow-lg flex items-center justify-center"
         aria-label="Open Rental Advisor"
         size="icon"
       >
-        <MessageSquare className="h-7 w-7 text-white" />
+        <MessageSquare className="h-8 w-8 text-white" />
         <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></span>
       </Button>
     );
