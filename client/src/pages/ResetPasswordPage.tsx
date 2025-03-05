@@ -100,80 +100,82 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="container max-w-[400px] py-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>{mode === "request" ? "Reset Password" : "Create New Password"}</CardTitle>
-          <CardDescription>
-            {mode === "request" 
-              ? "Enter your email address and we'll send you a password reset link."
-              : "Please enter your new password below."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {mode === "request" ? (
-            <Form {...requestForm}>
-              <form onSubmit={requestForm.handleSubmit(onRequestSubmit)} className="space-y-4">
-                <FormField
-                  control={requestForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="Enter your email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={requestForm.formState.isSubmitting}>
-                  {requestForm.formState.isSubmitting ? "Sending..." : "Send Reset Link"}
-                </Button>
-              </form>
-            </Form>
-          ) : (
-            <Form {...resetForm}>
-              <form onSubmit={resetForm.handleSubmit(onResetSubmit)} className="space-y-4">
-                <FormField
-                  control={resetForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>New Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Enter new password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={resetForm.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Confirm new password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={resetForm.formState.isSubmitting}>
-                  {resetForm.formState.isSubmitting ? "Resetting..." : "Reset Password"}
-                </Button>
-              </form>
-            </Form>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <Button variant="link" onClick={() => setLocation("/auth")}>
-            Back to Login
-          </Button>
-        </CardFooter>
-      </Card>
+    <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-[400px]">
+        <Card>
+          <CardHeader>
+            <CardTitle>{mode === "request" ? "Reset Password" : "Create New Password"}</CardTitle>
+            <CardDescription>
+              {mode === "request" 
+                ? "Enter your email address and we'll send you a password reset link."
+                : "Please enter your new password below."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {mode === "request" ? (
+              <Form {...requestForm}>
+                <form onSubmit={requestForm.handleSubmit(onRequestSubmit)} className="space-y-4">
+                  <FormField
+                    control={requestForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="Enter your email" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]" disabled={requestForm.formState.isSubmitting}>
+                    {requestForm.formState.isSubmitting ? "Sending..." : "Send Reset Link"}
+                  </Button>
+                </form>
+              </Form>
+            ) : (
+              <Form {...resetForm}>
+                <form onSubmit={resetForm.handleSubmit(onResetSubmit)} className="space-y-4">
+                  <FormField
+                    control={resetForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>New Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="Enter new password" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={resetForm.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="Confirm new password" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]" disabled={resetForm.formState.isSubmitting}>
+                    {resetForm.formState.isSubmitting ? "Resetting..." : "Reset Password"}
+                  </Button>
+                </form>
+              </Form>
+            )}
+          </CardContent>
+          <CardFooter className="flex justify-center">
+            <Button variant="link" onClick={() => setLocation("/auth")}>
+              Back to Login
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 }
