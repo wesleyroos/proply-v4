@@ -37,9 +37,10 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"request" | "reset">("request");
 
-  // Get token from URL params
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("token");
+  // Get token from URL - check both path parameter and query parameter
+  const pathToken = window.location.pathname.split('/reset-password/')[1];
+  const queryToken = new URLSearchParams(window.location.search).get("token");
+  const token = pathToken || queryToken;
 
   useEffect(() => {
     if (token) {
@@ -89,6 +90,11 @@ export default function ResetPasswordPage() {
     try {
       setIsLoading(true);
       setError(null);
+
+      if (!token) {
+        throw new Error("Reset token is missing");
+      }
+
       const response = await fetch("/api/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -98,7 +104,10 @@ export default function ResetPasswordPage() {
         }),
       });
 
-      if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
 
       toast({
         title: "Success",
@@ -152,7 +161,13 @@ export default function ResetPasswordPage() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="Enter your email" {...field} disabled={isLoading} />
+                          <Input
+                            {...field}
+                            type="email"
+                            placeholder="Enter your email"
+                            disabled={isLoading}
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -173,7 +188,13 @@ export default function ResetPasswordPage() {
                       <FormItem>
                         <FormLabel>New Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Enter new password" {...field} disabled={isLoading} />
+                          <Input
+                            {...field}
+                            type="password"
+                            placeholder="Enter new password"
+                            disabled={isLoading}
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -186,7 +207,13 @@ export default function ResetPasswordPage() {
                       <FormItem>
                         <FormLabel>Confirm Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Confirm new password" {...field} disabled={isLoading} />
+                          <Input
+                            {...field}
+                            type="password"
+                            placeholder="Confirm new password"
+                            disabled={isLoading}
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
