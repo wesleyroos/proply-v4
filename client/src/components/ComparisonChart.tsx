@@ -192,7 +192,7 @@ export default function ComparisonChart({
           >
             Save Property
           </Button>
-          <Tooltip>
+          <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <Button
                 className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white opacity-70"
