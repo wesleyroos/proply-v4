@@ -12,15 +12,12 @@ import {
   Home,
   LineChart,
   Settings,
-  Building2,
-  PieChart,
-  TrendingUp,
 } from "lucide-react";
 import PublicHeader from "@/components/PublicHeader";
 import PublicFooter from "@/components/PublicFooter";
 
 export default function HomePage() {
-  // Structured data for SEO remains unchanged
+  // Structured data for SEO
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -39,112 +36,68 @@ export default function HomePage() {
       <Helmet>
         <title>Proply - Property Investment Intelligence Platform | Real Estate Analytics</title>
         <meta name="description" content="Transform complex real estate data into actionable strategic insights. Compare long-term vs Airbnb rental yields, analyze property investments, and make data-driven decisions." />
-        {/* Rest of the meta tags remain unchanged */}
+        <meta name="keywords" content="property investment, real estate analytics, rental yield calculator, Airbnb analytics, property analysis, investment strategy" />
+
+        {/* Open Graph tags for social sharing */}
+        <meta property="og:title" content="Proply - Property Investment Intelligence Platform" />
+        <meta property="og:description" content="Transform complex real estate data into actionable strategic insights for professional investors." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://proply.com" />
+        <meta property="og:image" content="/images/property-technology.png" />
+
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Proply - Property Investment Intelligence Platform" />
+        <meta name="twitter:description" content="Transform complex real estate data into actionable strategic insights for professional investors." />
+        <meta name="twitter:image" content="/images/property-technology.png" />
+
+        {/* Add structured data */}
         <script type="application/ld+json">
           {JSON.stringify(structuredData)}
         </script>
       </Helmet>
       <PublicHeader />
 
-      {/* Redesigned Hero Section with Split Layout */}
-      <div className="relative min-h-[90vh] flex items-center bg-gradient-to-r from-[#114D9D] to-[#1BA3FF] overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/property-technology.png')] bg-cover bg-center opacity-10" />
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#114D9D] to-[#1BA3FF]">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#114D9D]/90 to-[#1BA3FF]/90" />
+        <div className="absolute inset-0 z-10">
+          <img
+            src="/images/property-technology.png"
+            alt="Property Technology"
+            className="w-full h-full object-cover opacity-75"
+          />
+        </div>
 
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            {/* Left Column - Content */}
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 text-white/90">
-                  <TrendingUp className="h-5 w-5" />
-                  <span className="text-sm font-medium">Property Intelligence Platform</span>
-                </div>
-                <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1]">
-                  <span className="block">Powerful Real</span>
-                  <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-200">
-                    Estate Analytics
-                  </span>
-                </h1>
-                <p className="text-xl sm:text-2xl text-white/90 max-w-xl leading-relaxed">
-                  We deliver you with data-driven insights for strategic decision-making in real estate.
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  size="lg" 
-                  className="bg-white text-[#114D9D] hover:bg-white/90 text-lg px-8 h-14"
-                  asChild
-                >
-                  <Link href="/register">
-                    Get Started
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-2 border-white text-white hover:bg-white/10 text-lg px-8 h-14"
-                  asChild
-                >
-                  <Link href="/pricing">View Pricing</Link>
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 pt-8">
-                <div className="flex items-center gap-3 text-white/90">
-                  <div className="rounded-full p-2 bg-white/10">
-                    <Building2 className="h-5 w-5" />
-                  </div>
-                  <span className="font-medium">Property Analysis</span>
-                </div>
-                <div className="flex items-center gap-3 text-white/90">
-                  <div className="rounded-full p-2 bg-white/10">
-                    <PieChart className="h-5 w-5" />
-                  </div>
-                  <span className="font-medium">Market Insights</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column - Feature Cards */}
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-transparent blur-3xl -z-10" />
-              <div className="grid gap-4">
-                <Card className="bg-white/10 backdrop-blur-sm border-0 shadow-xl hover:bg-white/15 transition-colors">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-lg p-2.5 bg-[#1BA3FF]">
-                        <Calculator className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="space-y-1">
-                        <h3 className="text-lg font-semibold text-white">Yield Calculator</h3>
-                        <p className="text-white/80">Compare short-term and long-term rental yields instantly</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-white/5 backdrop-blur-sm border-0 shadow-xl hover:bg-white/10 transition-colors">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-lg p-2.5 bg-[#1BA3FF]">
-                        <LineChart className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="space-y-1">
-                        <h3 className="text-lg font-semibold text-white">Market Analysis</h3>
-                        <p className="text-white/80">Get real-time property market insights and trends</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 sm:py-40">
+          <div className="text-center space-y-12">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
+              Powerful Real Estate Investment
+              <br className="hidden sm:block" />
+              Data at Your Fingertips
+            </h1>
+            <p className="max-w-2xl mx-auto text-xl text-white/90">
+              We deliver you with data-driven insights for strategic
+              decision-making in real estate.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Button size="lg" variant="secondary" asChild>
+                <Link href="/register">Get Started</Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-white/10 text-white border-white hover:bg-white/20"
+                asChild
+              >
+                <Link href="/pricing">View Pricing</Link>
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Rest of the content remains unchanged */}
+      {/* Rest of the sections with overflow fixes */}
       <div className="overflow-hidden">
         {/* SaaS Product Section */}
         <section id="saas" className="py-20 bg-white">
