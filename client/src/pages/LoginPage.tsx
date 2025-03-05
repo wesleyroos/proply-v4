@@ -41,7 +41,7 @@ export default function LoginPage() {
         password: data.password,
         userType: 'individual'
       });
-      
+
       // Check for redirect URL in session storage
       const redirectUrl = sessionStorage.getItem('redirectUrl');
       if (redirectUrl) {
@@ -136,12 +136,19 @@ export default function LoginPage() {
                   {isLoading ? "Logging in..." : "Login"}
                 </Button>
 
-                <p className="text-center text-sm text-gray-600">
-                  Don't have an account?{" "}
-                  <Link href="/register" className="text-[#1BA3FF] hover:underline">
-                    Register
-                  </Link>
-                </p>
+                <div className="space-y-2 text-center text-sm text-gray-600">
+                  <p>
+                    <Link href="/reset-password" className="text-[#1BA3FF] hover:underline">
+                      Forgot your password?
+                    </Link>
+                  </p>
+                  <p>
+                    Don't have an account?{" "}
+                    <Link href="/register" className="text-[#1BA3FF] hover:underline">
+                      Register
+                    </Link>
+                  </p>
+                </div>
               </form>
             </Form>
           </CardContent>

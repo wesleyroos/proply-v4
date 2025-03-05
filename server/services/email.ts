@@ -115,3 +115,43 @@ export async function sendNewUserNotification(userData: {
     text,
   });
 }
+
+export async function sendPasswordResetEmail(email: string, resetToken: string): Promise<boolean> {
+  const resetLink = `${process.env.APP_URL || 'https://proply.co.za'}/reset-password?token=${resetToken}`;
+
+  const html = `
+    <h2>Reset Your Password</h2>
+    <p>We received a request to reset your password for your Proply account.</p>
+    <p>Click the button below to reset your password:</p>
+    <p>
+      <a href="${resetLink}" style="background-color: #0066cc; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">
+        Reset Password
+      </a>
+    </p>
+    <p>If you didn't request this, you can safely ignore this email.</p>
+    <p>The password reset link will expire in 1 hour.</p>
+    <p>
+      If the button above doesn't work, copy and paste this link into your browser:<br>
+      ${resetLink}
+    </p>
+  `;
+
+  const text = `
+    Reset Your Password
+
+    We received a request to reset your password for your Proply account.
+
+    Click the link below to reset your password:
+    ${resetLink}
+
+    If you didn't request this, you can safely ignore this email.
+    The password reset link will expire in 1 hour.
+  `;
+
+  return sendAdminNotification({
+    to: email,
+    subject: 'Reset Your Proply Password',
+    html,
+    text,
+  });
+}

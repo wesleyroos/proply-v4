@@ -12,6 +12,7 @@ import AdminPage from "./pages/AdminPage";
 import AccessCodePage from "./pages/AccessCodePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import HomePage from "./pages/HomePage";
 import PricingPage from "./pages/PricingPage";
 import BlogPage from "./pages/BlogPage";
@@ -109,6 +110,11 @@ function App() {
       <TooltipProvider>
         <AnimatePresence mode="wait">
           <Switch key={location}>
+            <Route path="/reset-password" component={() => (
+              <PageTransition>
+                <ResetPasswordPage />
+              </PageTransition>
+            )} />
             <Route path="/" component={() => (
               <PageTransition>
                 <HomePage />

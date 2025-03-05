@@ -2,6 +2,7 @@ import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb } fr
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
+import { createId } from '@paralleldrive/cuid2';
 
 // Existing tables
 export const accessCodes = pgTable("access_codes", {
@@ -142,6 +143,16 @@ export const reportTracking = pgTable("report_tracking", {
   errorMessage: text("error_message"),
 });
 
+// New table for password reset tokens
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: serial("id").primaryKey(),
+  token: text("token").notNull().unique().$defaultFn(() => createId()),
+  userId: integer("user_id").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Add this new table after the existing tables but before the relations
 export const apiUsage = pgTable("api_usage", {
   id: serial("id").primaryKey(),
@@ -163,14 +174,6 @@ export const invoices = pgTable("invoices", {
   paidAt: timestamp("paid_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-
-// Add relations for invoices
-export const invoicesRelations = relations(invoices, ({ one }) => ({
-  user: one(users, {
-    fields: [invoices.userId],
-    references: [users.id],
-  }),
-}));
 
 // Add new table for subscription history
 export const subscriptionHistory = pgTable("subscription_history", {
@@ -341,6 +344,13 @@ export const apiUsageRelations = relations(apiUsage, ({ one }) => ({
   }),
 }));
 
+export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [passwordResetTokens.userId],
+    references: [users.id],
+  }),
+}));
+
 // Add relations
 export const subscriptionHistoryRelations = relations(subscriptionHistory, ({ one }) => ({
   user: one(users, {
@@ -365,11 +375,15 @@ export const selectAgencySettingsSchema = createSelectSchema(agencySettings);
 export const insertReportTrackingSchema = createInsertSchema(reportTracking);
 export const selectReportTrackingSchema = createSelectSchema(reportTracking);
 
-// Add these to the exports section at the bottom of the file
 export const insertApiUsageSchema = createInsertSchema(apiUsage);
 export const selectApiUsageSchema = createSelectSchema(apiUsage);
 export const insertSubscriptionHistorySchema = createInsertSchema(subscriptionHistory);
 export const selectSubscriptionHistorySchema = createSelectSchema(subscriptionHistory);
+export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens);
+export const selectPasswordResetTokenSchema = createSelectSchema(passwordResetTokens);
+export const insertInvoiceSchema = createInsertSchema(invoices);
+export const selectInvoiceSchema = createSelectSchema(invoices);
+
 
 // Types
 export type InsertAccessCode = typeof accessCodes.$inferInsert;
@@ -395,6 +409,5 @@ export type InsertSubscriptionHistory = typeof subscriptionHistory.$inferInsert;
 export type SelectSubscriptionHistory = typeof subscriptionHistory.$inferSelect;
 export type InsertInvoice = typeof invoices.$inferInsert;
 export type SelectInvoice = typeof invoices.$inferSelect;
-
-export const insertInvoiceSchema = createInsertSchema(invoices);
-export const selectInvoiceSchema = createSelectSchema(invoices);
+export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+export type SelectPasswordResetToken = typeof passwordResetTokens.$inferSelect;
