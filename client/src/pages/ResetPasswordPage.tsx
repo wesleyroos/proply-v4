@@ -139,7 +139,7 @@ export default function ResetPasswordPage() {
               {mode === "request" ? "Reset Password" : "Create New Password"}
             </CardTitle>
             <CardDescription className="text-center">
-              {mode === "request" 
+              {mode === "request"
                 ? "Enter your email address and we'll send you a password reset link."
                 : "Please enter your new password below."}
             </CardDescription>
@@ -162,10 +162,13 @@ export default function ResetPasswordPage() {
                         <FormLabel>Email</FormLabel>
                         <FormControl>
                           <Input
-                            {...field}
                             type="email"
                             placeholder="Enter your email"
-                            disabled={isLoading}
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
                           />
                         </FormControl>
                         <FormMessage />
@@ -195,7 +198,6 @@ export default function ResetPasswordPage() {
                             ref={field.ref}
                             type="password"
                             placeholder="Enter new password"
-                            required
                             autoComplete="new-password"
                           />
                         </FormControl>
@@ -211,7 +213,11 @@ export default function ResetPasswordPage() {
                         <FormLabel>Confirm Password</FormLabel>
                         <FormControl>
                           <Input
-                            {...field}
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
                             type="password"
                             placeholder="Confirm new password"
                           />
