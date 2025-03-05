@@ -8,6 +8,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { FileText, Sparkles } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
