@@ -12,6 +12,9 @@ import {
   Home,
   LineChart,
   Settings,
+  Sparkles,
+  TrendingUp,
+  Building,
 } from "lucide-react";
 import PublicHeader from "@/components/PublicHeader";
 import PublicFooter from "@/components/PublicFooter";
@@ -32,26 +35,20 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen overflow-hidden">
+    <div className="min-h-screen bg-black">
       <Helmet>
         <title>Proply - Property Investment Intelligence Platform | Real Estate Analytics</title>
         <meta name="description" content="Transform complex real estate data into actionable strategic insights. Compare long-term vs Airbnb rental yields, analyze property investments, and make data-driven decisions." />
         <meta name="keywords" content="property investment, real estate analytics, rental yield calculator, Airbnb analytics, property analysis, investment strategy" />
-
-        {/* Open Graph tags for social sharing */}
         <meta property="og:title" content="Proply - Property Investment Intelligence Platform" />
         <meta property="og:description" content="Transform complex real estate data into actionable strategic insights for professional investors." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://proply.com" />
         <meta property="og:image" content="/images/property-technology.png" />
-
-        {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Proply - Property Investment Intelligence Platform" />
         <meta name="twitter:description" content="Transform complex real estate data into actionable strategic insights for professional investors." />
         <meta name="twitter:image" content="/images/property-technology.png" />
-
-        {/* Add structured data */}
         <script type="application/ld+json">
           {JSON.stringify(structuredData)}
         </script>
@@ -59,35 +56,53 @@ export default function HomePage() {
       <PublicHeader />
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#114D9D] to-[#1BA3FF]">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#114D9D]/90 to-[#1BA3FF]/90" />
-        <div className="absolute inset-0 z-10">
-          <img
-            src="/images/property-technology.png"
-            alt="Property Technology"
-            className="w-full h-full object-cover opacity-75"
-          />
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-black to-[#114D9D]">
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#114D9D]/20 via-[#1BA3FF]/20 to-[#114D9D]/20 animate-gradient-x" />
+
+        {/* Mesh gradient overlay */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute inset-0" style={{
+            background: "radial-gradient(50% 50% at 50% 50%, #1BA3FF 0%, transparent 70%)"
+          }} />
+          <div className="absolute inset-0" style={{
+            background: "radial-gradient(30% 30% at 80% 20%, #114D9D 0%, transparent 70%)"
+          }} />
         </div>
 
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 sm:py-40">
-          <div className="text-center space-y-12">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
-              Powerful Real Estate Investment
-              <br className="hidden sm:block" />
-              Data at Your Fingertips
+        {/* Content */}
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-8">
+              <Sparkles className="h-4 w-4 text-[#1BA3FF]" />
+              <span className="text-white/90">Cutting-edge property analytics</span>
+            </div>
+
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-tight">
+              Property Investment
+              <br />
+              <span className="bg-gradient-to-r from-[#1BA3FF] to-white bg-clip-text text-transparent">
+                Intelligence Platform
+              </span>
             </h1>
-            <p className="max-w-2xl mx-auto text-xl text-white/90">
-              We deliver you with data-driven insights for strategic
-              decision-making in real estate.
+
+            <p className="max-w-2xl mx-auto text-xl text-white/80">
+              Transform complex real estate data into actionable insights with
+              our advanced AI-powered analytics platform.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button size="lg" variant="secondary" asChild>
-                <Link href="/register">Get Started</Link>
+
+            <div className="flex flex-col sm:flex-row justify-center gap-4 mt-12">
+              <Button
+                size="lg"
+                className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white px-8"
+                asChild
+              >
+                <Link href="/register">Get Started Free</Link>
               </Button>
               <Button
                 size="lg"
                 variant="outline"
-                className="bg-white/10 text-white border-white hover:bg-white/20"
+                className="border-white/20 text-white hover:bg-white/10 px-8"
                 asChild
               >
                 <Link href="/pricing">View Pricing</Link>
@@ -95,327 +110,171 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Rest of the sections with overflow fixes */}
-      <div className="overflow-hidden">
-        {/* SaaS Product Section */}
-        <section id="saas" className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900">
-                Property Analyzer
+        {/* Decorative elements */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent" />
+      </section>
+
+      {/* Features Grid */}
+      <section className="relative bg-black py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Powerful Analytics Suite
+            </h2>
+            <p className="text-lg text-white/70">
+              Everything you need to make data-driven property investment decisions
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: <LineChart className="h-8 w-8 text-[#1BA3FF]" />,
+                title: "Property Analysis",
+                description: "Comprehensive property analysis with ROI calculations and market comparisons",
+                link: "/property-analyzer"
+              },
+              {
+                icon: <BarChart2 className="h-8 w-8 text-[#1BA3FF]" />,
+                title: "Rental Comparison",
+                description: "Compare long-term vs Airbnb rental potential with our advanced calculator",
+                link: "/rent-compare"
+              },
+              {
+                icon: <TrendingUp className="h-8 w-8 text-[#1BA3FF]" />,
+                title: "Market Intelligence",
+                description: "Real-time market insights and trend analysis for informed decisions",
+                link: "/market-intelligence"
+              }
+            ].map((feature, i) => (
+              <Card key={i} className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors">
+                <CardContent className="p-6">
+                  <div className="mb-4">{feature.icon}</div>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-white/70 mb-6">
+                    {feature.description}
+                  </p>
+                  <Link href={feature.link}>
+                    <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">
+                      Learn More
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* API Integration Section */}
+      <section className="relative bg-gradient-to-b from-black to-[#114D9D] py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-6">
+                Enterprise API Integration
               </h2>
-              <p className="mt-4 text-xl text-gray-600">
-                Comprehensive on-platform property analysis for investors and
-                professionals
+              <p className="text-lg text-white/70 mb-8">
+                Integrate our powerful analysis engine directly into your platform
+                with our enterprise-grade API.
               </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-              <Card>
-                <CardContent className="pt-6">
-                  <LineChart className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">The Challenge</h3>
-                  <p className="text-gray-600">
-                    Making investment decisions without accurate data and
-                    comprehensive analysis leads to missed opportunities and
-                    potential losses.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <Database className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">The Solution</h3>
-                  <p className="text-gray-600">
-                    Our platform provides detailed property analysis, market
-                    insights, and financial projections to guide your investment
-                    decisions.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <DollarSign className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Start Analyzing</h3>
-                  <div className="flex flex-col gap-4 mt-4">
-                    <Link href="/property-analyzer">
-                      <Button variant="outline" className="w-full">
-                        Learn More
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Link href="/register">
-                      <Button className="w-full">
-                        Try Free Analysis
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+              <ul className="space-y-4 mb-8">
+                {[
+                  { icon: <Code />, text: "RESTful API with comprehensive documentation" },
+                  { icon: <Database />, text: "Scalable infrastructure for high-volume analysis" },
+                  { icon: <Settings />, text: "Custom integration support and consulting" }
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-white/70">
+                    <div className="text-[#1BA3FF]">{item.icon}</div>
+                    {item.text}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
+                asChild
+              >
+                <Link href="/register">Get API Access</Link>
+              </Button>
             </div>
 
-            {/* Targeted Property Analysis Section */}
-            <div className="mt-16 max-w-4xl mx-auto text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                Comprehensive Analysis for Every Stakeholder
-              </h3>
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="bg-white p-6 rounded-lg shadow-sm border">
-                  <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
-                    For Property Investors
-                  </h4>
-                  <p className="text-gray-600">
-                    Make confident investment decisions with our detailed
-                    financial modeling and market analysis. Get instant insights
-                    into property potential, ROI calculations, and future value
-                    projections based on real market data.
-                  </p>
-                </div>
-                <div className="bg-white p-6 rounded-lg shadow-sm border">
-                  <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
-                    For Real Estate Professionals
-                  </h4>
-                  <p className="text-gray-600">
-                    Elevate your client service with professional-grade property
-                    analysis. Present compelling investment cases backed by
-                    comprehensive data and detailed financial projections.
-                  </p>
-                </div>
-              </div>
+            {/* Code preview */}
+            <div className="bg-black/50 backdrop-blur-sm rounded-lg border border-white/10 p-6">
+              <pre className="text-sm text-white/90 overflow-x-auto">
+                <code>{`// Example API Response
+{
+  "property_analysis": {
+    "financial_metrics": {
+      "roi": 8.5,
+      "cap_rate": 7.2,
+      "cash_on_cash": 6.8
+    },
+    "market_data": {
+      "comparable_properties": [...],
+      "area_statistics": {...}
+    }
+  }
+}`}</code>
+              </pre>
             </div>
           </div>
-        </section>
-
-        <div className="overflow-hidden">
-          {/* Rental Comparison Section */}
-          <section id="comparison" className="py-20 bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-gray-900">Rent Compare</h2>
-                <p className="mt-4 text-xl text-gray-600">
-                  Compare long-term vs short-term rental potential for your property
-                </p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 px-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <Home className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">The Challenge</h3>
-                    <p className="text-gray-600">
-                      Deciding between long-term rentals and Airbnb without clear
-                      data on potential returns and market dynamics.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <Calculator className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">The Solution</h3>
-                    <p className="text-gray-600">
-                      Side-by-side comparison of rental strategies with projected
-                      revenues, expenses, and ROI calculations.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <BarChart2 className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Start Comparing</h3>
-                    <div className="flex flex-col gap-4 mt-4">
-                      <Link href="/rent-compare">
-                        <Button variant="outline" className="w-full">
-                          Learn More
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Link href="/register">
-                        <Button className="w-full">
-                          Compare Now
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Targeted Airbnb Management Section */}
-              <div className="mt-16 max-w-4xl mx-auto text-center">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                  Transform Your Airbnb Management Business
-                </h3>
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
-                      For Management Companies
-                    </h4>
-                    <p className="text-gray-600">
-                      Convert prospects into clients with confidence using our
-                      comprehensive data-driven analysis. Show potential clients
-                      exactly how much more they could earn with professional Airbnb
-                      management, backed by precise market data and revenue
-                      projections.
-                    </p>
-                  </div>
-                  <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
-                      For Individual Hosts
-                    </h4>
-                    <p className="text-gray-600">
-                      Whether you're considering Airbnb hosting or already managing
-                      your property, get detailed insights into your property's true
-                      potential. Make informed decisions about your investment with
-                      actual market data, not guesswork.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* API Section */}
-          <section id="api" className="py-20 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-gray-900">
-                  Property Analyzer (API)
-                </h2>
-                <p className="mt-4 text-xl text-gray-600">
-                  Enterprise-grade property analysis engine for your business
-                </p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 px-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <Settings className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">The Challenge</h3>
-                    <p className="text-gray-600">
-                      Real estate agencies need quick and accurate property analysis
-                      when uploading properties to the market to better assist their
-                      clients with transactions.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <Code className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">The Solution</h3>
-                    <p className="text-gray-600">
-                      Automatic property analysis reports generated instantly when
-                      you list properties, seamlessly integrated with your existing
-                      workflow.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <Database className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Get API Access</h3>
-                    <div className="flex flex-col gap-4 mt-4">
-                      <Link href="/property-analyzer">
-                        <Button variant="outline" className="w-full">
-                          Learn More
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Link href="/pricing">
-                        <Button className="w-full">
-                          View Enterprise Plans
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Targeted API Integration Section */}
-              <div className="mt-16 max-w-4xl mx-auto text-center">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                  Empower Your Real Estate Platform
-                </h3>
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
-                      For Real Estate Agencies
-                    </h4>
-                    <p className="text-gray-600">
-                      Streamline your property listing process with automatic
-                      analysis reports. Every time you upload a new property, our
-                      system generates comprehensive insights that help your agents
-                      close deals faster and provide more value to clients.
-                    </p>
-                  </div>
-                  <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
-                      For Property Platforms
-                    </h4>
-                    <p className="text-gray-600">
-                      Enhance your platform's value proposition with
-                      enterprise-grade property analysis. Our API seamlessly
-                      integrates with your existing systems to provide automatic,
-                      accurate property insights at scale.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Trusted By Section */}
-          <section className="py-4">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="grid md:grid-cols-4 gap-8 items-center">
-                <div className="text-right">
-                  <h2 className="text-2xl font-bold text-gray-900">Trusted By:</h2>
-                </div>
-                <img
-                  src="/images/partners/nox-properties.jpg"
-                  alt="Nox Properties"
-                  className="h-21 object-contain justify-self-center"
-                />
-                <img
-                  src="/images/partners/prospr-management.jpg"
-                  alt="Prospr Management"
-                  className="h-21 object-contain justify-self-center"
-                />
-                <img
-                  src="/images/partners/sothebys.jpg"
-                  alt="Sotheby's International Realty"
-                  className="h-21 object-contain justify-self-center"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Final CTA Section */}
-          <section className="py-16 bg-[#1BA3FF]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-              <h2 className="text-3xl font-bold text-white mb-4">
-                Ready to Transform Your Property Investment Strategy?
-              </h2>
-              <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-                Join industry leaders making data-driven decisions with Proply
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button size="lg" variant="secondary" asChild>
-                  <Link href="/register">Get Started Free</Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="bg-white/10 text-white border-white hover:bg-white/20"
-                  asChild
-                >
-                  <Link href="/contact">Contact Sales</Link>
-                </Button>
-              </div>
-            </div>
-          </section>
         </div>
-      </div>
+      </section>
+
+      {/* Trusted By Section */}
+      <section className="bg-black py-16 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl font-bold text-white">Trusted By Industry Leaders</h2>
+          </div>
+          <div className="grid md:grid-cols-4 gap-8 items-center opacity-70">
+            <div className="text-right">
+              <h3 className="text-lg text-white/70">Trusted By:</h3>
+            </div>
+            {['nox-properties.jpg', 'prospr-management.jpg', 'sothebys.jpg'].map((logo, i) => (
+              <img
+                key={i}
+                src={`/images/partners/${logo}`}
+                alt="Partner logo"
+                className="h-12 object-contain justify-self-center invert"
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-gradient-to-r from-[#114D9D] to-[#1BA3FF] py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Ready to Transform Your Investment Strategy?
+          </h2>
+          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            Join industry leaders making data-driven decisions with Proply
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Button
+              size="lg"
+              className="bg-white text-[#1BA3FF] hover:bg-white/90"
+              asChild
+            >
+              <Link href="/register">Get Started Free</Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white hover:bg-white/10"
+              asChild
+            >
+              <Link href="/contact">Contact Sales</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
 
       <PublicFooter />
     </div>
