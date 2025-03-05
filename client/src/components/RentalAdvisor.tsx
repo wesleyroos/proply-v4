@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Loader2, Send, MessageSquare, Info, X, Lock } from "lucide-react";
 import { getRentalAdvice, RentalAnalysisContext } from "@/services/openai";
 import { useProAccess } from "@/hooks/use-pro-access";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 interface RentalAdvisorProps {
   analysisData: RentalAnalysisContext;
@@ -30,6 +31,7 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Add welcome message when chat is first opened
@@ -104,7 +106,7 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
         <p className="text-gray-600">
           The Rental Strategy Advisor is available exclusively to Pro plan subscribers.
         </p>
-        <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 mt-2" onClick={() => window.location.href = '/settings'}>
+        <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 mt-2" onClick={() => setShowUpgradeModal(true)}>
           Upgrade to Pro
         </Button>
       </div>
@@ -227,4 +229,7 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
       </div>
     </Card>
   );
+      
+  {/* Upgrade Modal */}
+  <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
 }
