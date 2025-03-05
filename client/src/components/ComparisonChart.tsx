@@ -192,20 +192,18 @@ export default function ComparisonChart({
           >
             Save Property
           </Button>
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <Button
-                className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white opacity-70"
-                disabled
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                Export Report
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>This feature is currently in development, please export report from Properties Page</p>
-            </TooltipContent>
-          </Tooltip>
+          <div className="flex flex-col">
+            <Button
+              className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white opacity-70"
+              disabled={true}
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Export Report
+            </Button>
+            <p className="text-xs text-muted-foreground mt-1">
+              This feature is currently in development, please export report from Properties Page
+            </p>
+          </div>
         </div>
         <MapView address={address} />
         <div className="p-4 bg-gray-50 rounded-lg">
@@ -766,7 +764,7 @@ export default function ComparisonChart({
                           seasonalRate,
                           data.managementFee > 0,
                         );
-                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const daysInMonth =                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
                         const revenue =
                           feeAdjustedRate * occupancyRate * daysInMonth;
