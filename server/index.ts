@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createServer } from "net";
+import aiRouter from './routes/ai';
 
 const app = express();
 
@@ -48,6 +49,9 @@ app.use((req, res, next) => {
 
   next();
 });
+
+// Register AI routes
+app.use('/api', aiRouter);
 
 (async () => {
   const server = registerRoutes(app);
