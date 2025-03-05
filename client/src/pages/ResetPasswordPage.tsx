@@ -170,7 +170,7 @@ export default function ResetPasswordPage() {
             )}
           </CardContent>
           <CardFooter className="flex justify-center">
-            <Button variant="link" onClick={() => setLocation("/auth")}>
+            <Button variant="link" onClick={() => setLocation("/login")}>
               Back to Login
             </Button>
           </CardFooter>
