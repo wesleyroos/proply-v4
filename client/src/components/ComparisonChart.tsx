@@ -192,39 +192,20 @@ export default function ComparisonChart({
           >
             Save Property
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white opacity-70"
+                disabled
+              >
                 <FileText className="w-4 h-4 mr-2" />
                 Export Report
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem>
-                <FileText className="mr-2" />
-                Without Branding
-              </DropdownMenuItem>
-              {hasProAccess ? (
-                <DropdownMenuItem>
-                  <FileText className="mr-2" />
-                  With Branding
-                  <div className="ml-2 flex items-center gap-1">
-                    <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
-                    <Sparkles className="h-4 w-4 text-[#3B82F6]" />
-                  </div>
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem onClick={() => setShowUpgradeModal(true)}>
-                  <FileText className="mr-2" />
-                  With Branding
-                  <div className="ml-2 flex items-center gap-1">
-                    <span className="text-xs font-semibold text-[#3B82F6]">PRO</span>
-                    <Sparkles className="h-4 w-4 text-[#3B82F6]" />
-                  </div>
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>This feature is currently in development, please export report from Properties Page</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
         <MapView address={address} />
         <div className="p-4 bg-gray-50 rounded-lg">
@@ -785,7 +766,7 @@ export default function ComparisonChart({
                           seasonalRate,
                           data.managementFee > 0,
                         );
-                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        constdaysInMonth = new Date(2024, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
                         const revenue =
                           feeAdjustedRate * occupancyRate * daysInMonth;
