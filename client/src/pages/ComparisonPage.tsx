@@ -13,6 +13,7 @@ import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
 import PropertyForm from "../components/PropertyForm";
 import ComparisonChart from "../components/ComparisonChart";
+import { RentalAdvisor } from "../components/RentalAdvisor";
 import { useUser } from "@/hooks/use-user";
 import { useQueryClient } from "@tanstack/react-query";
 import { useProAccess } from "@/hooks/use-pro-access";
@@ -101,7 +102,6 @@ export default function ComparisonPage() {
       bathrooms: data.bathrooms,
     });
 
-    // After successful save, set isSaved to true
     setIsSaved(true);
 
     console.log("Fetching revenue data for bedrooms:", data.bedrooms);
@@ -192,7 +192,6 @@ export default function ComparisonPage() {
       const startY = 20;
       let maxLogoHeight = 0;
 
-      // Always add Proply logo in top right
       try {
         const proplyLogoWidth = 40;
         await new Promise<void>((resolve) => {
@@ -228,7 +227,6 @@ export default function ComparisonPage() {
         console.error("Error adding Proply logo:", error);
       }
 
-      // Add company logo if user has Pro access and a logo
       if (withBranding && user?.companyLogo) {
         try {
           const logoWidth = 40;
@@ -263,13 +261,11 @@ export default function ComparisonPage() {
       let currentY = startY + maxLogoHeight + 10;
       currentY = Math.max(currentY, 50);
 
-      // Title and description
       doc.setFontSize(20);
       doc.setTextColor(0);
       doc.text("Rent Compare Analysis", margin, currentY);
       currentY += 10;
 
-      // Add description
       doc.setFontSize(10);
       doc.setTextColor(90);
       const contentWidth = pageWidth - 2 * margin;
@@ -282,7 +278,6 @@ export default function ComparisonPage() {
       });
       currentY += 15;
 
-      // Property Details section
       if (comparisonData) {
         doc.setFontSize(16);
         doc.text("Property Details", margin, currentY);
@@ -306,7 +301,6 @@ export default function ComparisonPage() {
 
         currentY = (doc as any).lastAutoTable.finalY + 20;
 
-        // Short-Term Performance
         doc.setFontSize(16);
         doc.text("Short-Term Performance", margin, currentY);
         currentY += 10;
@@ -332,7 +326,6 @@ export default function ComparisonPage() {
 
         currentY = (doc as any).lastAutoTable.finalY + 20;
 
-        // Long-Term Performance
         doc.setFontSize(16);
         doc.text("Long-Term Performance", margin, currentY);
         currentY += 10;
@@ -355,7 +348,6 @@ export default function ComparisonPage() {
       }
 
 
-      // Add footer elements to all pages
       const totalPages = doc.getNumberOfPages();
       const footerMargin = 20;
       const footerPadding = 10;
@@ -370,7 +362,6 @@ export default function ComparisonPage() {
               doc.setPage(i);
 
               if (withBranding) {
-                // Add Proply logo to bottom left
                 const logoHeight = 6;
                 const aspectRatio = logo.width / logo.height;
                 const logoWidth = logoHeight * aspectRatio;
@@ -384,7 +375,6 @@ export default function ComparisonPage() {
                 );
               }
 
-              // Add page numbers to bottom right
               doc.setFontSize(8);
               doc.setTextColor(100);
               doc.text(
@@ -394,7 +384,6 @@ export default function ComparisonPage() {
                 { align: "right" },
               );
 
-              // Add copyright text to center if branding is enabled
               if (withBranding) {
                 const currentYear = new Date().getFullYear();
                 doc.text(
@@ -414,7 +403,6 @@ export default function ComparisonPage() {
         });
       } catch (error) {
         console.error("Error adding footer elements:", error);
-        // If logo fails, still add page numbers
         for (let i = 1; i <= totalPages; i++) {
           doc.setPage(i);
           doc.setFontSize(8);
@@ -437,16 +425,13 @@ export default function ComparisonPage() {
         }
       }
 
-      // Add disclaimer page if branding is enabled
       if (withBranding) {
         doc.addPage();
 
-        // Add disclaimer heading
         doc.setFontSize(12);
         doc.setTextColor(0);
         doc.text("Important Disclaimers & Legal Notices", margin, 40);
 
-        // Set disclaimer text style
         doc.setFontSize(7);
         doc.setTextColor(90);
 
@@ -477,7 +462,6 @@ export default function ComparisonPage() {
         });
       }
 
-      // Save the PDF
       doc.save(
         `Rent Compare Analysis - ${address.replace(/[^a-zA-Z0-9]/g, " ")}.pdf`,
       );
@@ -517,6 +501,16 @@ export default function ComparisonPage() {
               <CardContent className="pt-6">
                 <h2 className="text-xl font-medium mb-4">Comparison Results</h2>
                 <ComparisonChart data={comparisonData} address={address} />
+
+                <div className="mt-6">
+                  <RentalAdvisor
+                    analysisData={{
+                      ...comparisonData,
+                      address
+                    }}
+                  />
+                </div>
+
                 {revenueData && (
                   <div>
                     <h2 className="text-xl font-medium mb-4">Percentile Data</h2>
