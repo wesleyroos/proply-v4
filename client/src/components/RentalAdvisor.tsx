@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Loader2, Send, MessageSquare, Info, X } from "lucide-react";
 import { getRentalAdvice, RentalAnalysisContext } from "@/services/openai";
-import ReactMarkdown from "react-markdown";
 
 interface RentalAdvisorProps {
   analysisData: RentalAnalysisContext;
@@ -128,9 +127,7 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
                   : 'bg-gray-100 text-gray-800'
               }`}
             >
-              <ReactMarkdown className="text-sm whitespace-pre-wrap markdown-content">
-                {message.content}
-              </ReactMarkdown>
+              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
             </div>
           </div>
         ))}
