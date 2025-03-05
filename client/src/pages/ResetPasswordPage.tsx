@@ -188,7 +188,11 @@ export default function ResetPasswordPage() {
                         <FormLabel>New Password</FormLabel>
                         <FormControl>
                           <Input
-                            {...field}
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
                             type="password"
                             placeholder="Enter new password"
                             required
