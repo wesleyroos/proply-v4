@@ -40,7 +40,7 @@ export async function sendAdminNotification(params: EmailParams): Promise<boolea
       },
       trackingSettings: {
         clickTracking: {
-          enable: true
+          enable: false // Disable click tracking to prevent URL rewriting
         },
         openTracking: {
           enable: true
@@ -117,7 +117,9 @@ export async function sendNewUserNotification(userData: {
 }
 
 export async function sendPasswordResetEmail(email: string, resetToken: string): Promise<boolean> {
-  const resetLink = `${process.env.APP_URL || 'https://proply.co.za'}/reset-password?token=${resetToken}`;
+  // Use APPLICATION_URL from environment or fallback to default URL
+  const appUrl = process.env.APPLICATION_URL || process.env.APP_URL || 'https://proply.co.za';
+  const resetLink = `${appUrl}/reset-password?token=${resetToken}`;
 
   const html = `
     <h2>Reset Your Password</h2>
