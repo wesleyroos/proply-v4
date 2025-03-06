@@ -952,7 +952,7 @@ export default function PropertyAnalyzerPage() {
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-4 rounded-lg bgblue-50/50">
-                        <h3 className="text-sm font-bold text-blue600 mb-3">
+                        <h3 className="text-smfont-bold text-blue600 mb-3">
                           Short-Term Rental (Year 1)
                         </h3>
                         <div className="space-y-2">
