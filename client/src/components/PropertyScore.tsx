@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Scale, TrendingUp, Wallet, Timer, AlertTriangle, Home } from "lucide-react";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+import { Progress } from "@/components/ui/progress";
 
 interface PropertyScoreProps {
   scores?: {
@@ -125,7 +126,7 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
             {categories.map((category) => (
               <div key={category.name} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
                 {category.icon}
-                <div>
+                <div className="w-full">
                   <div className="font-medium flex items-center gap-2">
                     {category.name}
                     <span className="text-sm text-muted-foreground">
@@ -135,9 +136,10 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
                   <div className="text-sm text-muted-foreground">
                     {category.description}
                   </div>
-                  <div className="text-sm font-medium mt-1">
+                  <div className="text-sm font-medium mt-2">
                     Score: {category.score}%
                   </div>
+                  <Progress value={category.score} className="h-2 mt-2" />
                 </div>
               </div>
             ))}
