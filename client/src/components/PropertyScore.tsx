@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Scale, TrendingUp, Wallet, Timer, AlertTriangle, Home } from "lucide-react";
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend } from 'recharts';
 import { Progress } from "@/components/ui/progress";
 
 interface PropertyScoreProps {
@@ -120,30 +120,67 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="h-[400px] w-full">
+          <div className="h-[500px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
-                <PolarGrid gridType="polygon" />
+              <RadarChart 
+                cx="50%" 
+                cy="50%" 
+                outerRadius="75%" 
+                data={chartData}
+                margin={{ top: 20, right: 30, bottom: 30, left: 30 }}
+              >
+                <PolarGrid 
+                  gridType="polygon"
+                  stroke="hsl(var(--border))"
+                  strokeWidth={0.5}
+                  strokeDasharray="4 4"
+                />
                 <PolarAngleAxis
                   dataKey="subject"
-                  tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+                  tick={{ 
+                    fill: 'hsl(var(--foreground))',
+                    fontSize: 14,
+                    fontWeight: 500 
+                  }}
+                  stroke="hsl(var(--border))"
+                  strokeWidth={0.5}
                 />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                <PolarRadiusAxis 
+                  angle={30} 
+                  domain={[0, 100]}
+                  stroke="hsl(var(--border))"
+                  strokeWidth={0.5}
+                  tick={{ 
+                    fill: 'hsl(var(--muted-foreground))',
+                    fontSize: 12
+                  }}
+                />
                 {/* Market Benchmark Layer */}
                 <Radar
-                  name="Market Benchmark"
+                  name="Market Average"
                   dataKey="benchmark"
                   stroke="hsl(var(--muted-foreground))"
-                  fill="hsl(var(--muted-foreground))"
-                  fillOpacity={0.2}
+                  strokeWidth={2}
+                  fill="none"
+                  dot
                 />
                 {/* Property Score Layer */}
                 <Radar
-                  name="Score"
+                  name="Property Score"
                   dataKey="score"
                   stroke="hsl(var(--primary))"
-                  fill="hsl(var(--primary))"
-                  fillOpacity={0.5}
+                  strokeWidth={3}
+                  fill="none"
+                  dot
+                />
+                <Legend 
+                  align="center"
+                  verticalAlign="bottom"
+                  wrapperStyle={{
+                    paddingTop: '20px',
+                    fontSize: '14px',
+                    fontWeight: 500
+                  }}
                 />
               </RadarChart>
             </ResponsiveContainer>
