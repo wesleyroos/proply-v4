@@ -573,12 +573,12 @@ export default function PropertyAnalyzerPage() {
               isOpen={isOpen}
               onOpenChange={setIsOpen}
               scores={{
-                priceVsMarket: analysisResult.analysis.investmentMetrics.year1.capRate * 10,
-                rentalYield: analysisResult.shortTermGrossYield * 10,
-                affordability: analysisResult.analysis.investmentMetrics.year1.cashOnCashReturn + 100,
+                priceVsMarket: 85,
+                rentalYield: 75,
+                affordability: 90,
                 liquidity: 70,
-                riskFactors: 100 - (analysisResult.analysis.investmentMetrics.year1.irr * 10),
-                amenities: 80,
+                riskFactors: 80,
+                amenities: 95,
               }}
             />
             <div ref={resultsRef}>
