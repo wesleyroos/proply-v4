@@ -104,7 +104,7 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
   }));
 
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-gradient-to-br from-background/50 to-background border-primary/10 hover:border-primary/20 transition-colors">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="space-y-1">
@@ -120,7 +120,7 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="h-[500px] w-full">
+          <div className="h-[600px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart 
                 cx="50%" 
@@ -139,8 +139,8 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
                   dataKey="subject"
                   tick={{ 
                     fill: 'hsl(var(--foreground))',
-                    fontSize: 14,
-                    fontWeight: 500 
+                    fontSize: 16,
+                    fontWeight: 600
                   }}
                   stroke="hsl(var(--border))"
                   strokeWidth={0.5}
@@ -152,10 +152,9 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
                   strokeWidth={0.5}
                   tick={{ 
                     fill: 'hsl(var(--muted-foreground))',
-                    fontSize: 12
+                    fontSize: 14
                   }}
                 />
-                {/* Market Benchmark Layer */}
                 <Radar
                   name="Market Average"
                   dataKey="benchmark"
@@ -164,7 +163,6 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
                   fill="none"
                   dot
                 />
-                {/* Property Score Layer */}
                 <Radar
                   name="Property Score"
                   dataKey="score"
@@ -178,8 +176,8 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
                   verticalAlign="bottom"
                   wrapperStyle={{
                     paddingTop: '20px',
-                    fontSize: '14px',
-                    fontWeight: 500
+                    fontSize: '16px',
+                    fontWeight: 600
                   }}
                 />
               </RadarChart>
@@ -200,8 +198,8 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
                     {category.description}
                   </div>
                   <div className="flex items-center justify-between mt-2">
-                    <div className="text-sm font-medium">Score: {category.score}%</div>
-                    <div className="text-sm text-muted-foreground">Market: {category.benchmark}%</div>
+                    <div className="text-lg font-medium">Score: {category.score}%</div>
+                    <div className="text-lg text-muted-foreground">Market: {category.benchmark}%</div>
                   </div>
                   <Progress value={category.score} className="h-2 mt-2" />
                 </div>
