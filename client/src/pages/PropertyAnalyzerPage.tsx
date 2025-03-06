@@ -161,13 +161,8 @@ interface AnalysisResult {
       };
     } | null;
     investmentMetrics: {
-      year1: YearlyMetrics;
-      year2: YearlyMetrics;
-      year3: YearlyMetrics;
-      year4: YearlyMetrics;
-      year5: YearlyMetrics;
-      year10: YearlyMetrics;
-      year20: YearlyMetrics;
+      shortTerm: YearlyMetrics[];
+      longTerm: YearlyMetrics[];
     };
   };
   netOperatingIncome: {
@@ -573,11 +568,11 @@ export default function PropertyAnalyzerPage() {
               isOpen={isOpen}
               onOpenChange={setIsOpen}
               scores={{
-                priceVsMarket: analysisResult.analysis.investmentMetrics.year1.capRate * 10,
-                rentalYield: analysisResult.shortTermGrossYield * 10,
-                affordability: analysisResult.analysis.investmentMetrics.year1.cashOnCashReturn + 100,
+                priceVsMarket: (analysisResult.analysis.investmentMetrics.shortTerm[0].capRate || 0) * 10,
+                rentalYield: (analysisResult.shortTermGrossYield || 0) * 10,
+                affordability: (analysisResult.analysis.investmentMetrics.shortTerm[0].cashOnCashReturn || 0) + 100,
                 liquidity: 70,
-                riskFactors: 100 - (analysisResult.analysis.investmentMetrics.year1.irr * 10),
+                riskFactors: 100 - ((analysisResult.analysis.investmentMetrics.shortTerm[0].irr || 0) * 10),
                 amenities: 80,
               }}
             />
@@ -942,7 +937,7 @@ export default function PropertyAnalyzerPage() {
                           calculateBondRegistration(
                             analysisResult.analysis.purchasePrice,
                             !removeVat,
-                          ) +
+                          )+
                           calculateTransferCosts(
                             analysisResult.analysis.purchasePrice,
                             !removeVat,
