@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import html2canvas from "html2canvas";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
+import { PropertyScoreModal } from "@/components/PropertyScoreModal";
 import {
   Card,
   CardContent,
@@ -27,7 +28,6 @@ import {
   Info,
   Sparkles,
 } from "lucide-react";
-//import AnalyzerIndicator from "@/components/AnalyzerIndicator"; // Removed import
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
 import RentalPerformance from "@/components/RentalPerformance";
@@ -53,8 +53,8 @@ import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAn
 import { generatePDF } from "@/features/property-analyzer-pdf/services/PDFService";
 import { ReportSelections } from "@/types/ReportSelections";
 import Link from "next/link";
-import { useQueryClient } from "@tanstack/react-query"; // Added import for React Query
-import { UpgradeModal } from "@/components/UpgradeModal"; // Import the UpgradeModal component
+import { useQueryClient } from "@tanstack/react-query";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 interface YearlyMetrics {
   grossYield: number;
@@ -216,23 +216,21 @@ interface AnalysisResult {
   } | null;
   address: string;
   propertyPhotoUrl?: string;
-  newCount: number; // Added newCount to AnalysisResult
+  newCount: number;
 }
 
 export default function PropertyAnalyzerPage() {
   const [isDataReady, setIsDataReady] = useState(false);
-  const [showLimitModal, setShowLimitModal] = useState(false); //This state is no longer used.
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const { user } = useUser();
   const hasProAccess = useProAccess();
-  const queryClient = useQueryClient(); // Added React Query client initialization
-
+  const queryClient = useQueryClient();
+  const [isOpen, setIsOpen] = useState(false);
   useEffect(() => {
-    //This useEffect is no longer used, but kept to avoid breaking changes.
     if (user && !hasProAccess && user.reportsGenerated >= 3) {
-      setShowLimitModal(true); //This line is no longer used.
+      setShowLimitModal(true);
     }
   }, [user, hasProAccess]);
-
 
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
     null,
@@ -306,7 +304,7 @@ export default function PropertyAnalyzerPage() {
         propertyUrl: formData.propertyUrl,
         purchasePrice: parseFloat(formData.purchasePrice),
         floorArea: parseFloat(formData.floorArea),
-        bedrooms: parseFloat(formData.bedrooms), // Changed to parseFloat
+        bedrooms: parseFloat(formData.bedrooms),
         bathrooms: parseInt(formData.bathrooms),
         parkingSpaces: parseInt(formData.parkingSpaces || 0),
         depositType: formData.depositType,
@@ -350,10 +348,8 @@ export default function PropertyAnalyzerPage() {
       const data = await response.json();
       console.log("Analysis response:", data);
 
-      // Wait for user data to be refreshed
       await queryClient.invalidateQueries({ queryKey: ['user'] });
 
-      // Get fresh user data
       const freshUserData = queryClient.getQueryData(['user']);
       console.log("Analysis count after update:", {
         previousCount: user?.analysisCount || 0,
@@ -367,7 +363,7 @@ export default function PropertyAnalyzerPage() {
         annualOccupancy: requestBody.annualOccupancy,
         managementFee: requestBody.managementFee,
         loanTerm: requestBody.loanTerm,
-        newCount: freshUserData?.analysisCount || 0 //Added newCount to the state
+        newCount: freshUserData?.analysisCount || 0
       });
 
       setTimeout(() => {
@@ -404,7 +400,6 @@ export default function PropertyAnalyzerPage() {
       return null;
     }
 
-    // Ensure bedrooms is a valid number
     const bedroomValue = Number(formData.bedrooms);
     if (isNaN(bedroomValue) || bedroomValue < 0) {
       throw new Error("Bedrooms must be a valid number greater than or equal to 0");
@@ -490,7 +485,6 @@ export default function PropertyAnalyzerPage() {
         return;
       }
 
-      // Log the bedroom value specifically
       console.log("Bedrooms raw value:", formData.bedrooms);
       console.log("Bedrooms parsed value:", dataToSave.bedrooms);
 
@@ -556,8 +550,7 @@ export default function PropertyAnalyzerPage() {
             </Button>
           </div>
         )}
-
-      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+        <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
       </div>
 
       <div className="space-y-6">
@@ -596,15 +589,21 @@ export default function PropertyAnalyzerPage() {
                     Save Analysis
                   </Button>
 
+                  <Button
+                    onClick={() => setIsOpen(true)}
+                    className="bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    View Property Score
+                  </Button>
+
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div>
                         <Button
-                          // Update the pdfData preparation in the Export PDF button click handler:
                           onClick={() => {
                             if (!analysisResult || !analysisId) return;
 
-                            // Add this console log right before setPDFData
                             console.log("Raw Analysis Result:", {
                               managementFee: analysisResult.managementFee,
                               fullAnalysisResult: analysisResult,
@@ -640,7 +639,6 @@ export default function PropertyAnalyzerPage() {
                                 longTermNetOperatingIncome: analysisResult.analysis.longTermNetOperatingIncome,
                                 revenueProjections: analysisResult.analysis.revenueProjections,
                               },
-                              // Add this new performance object
                               performance: {
                                 shortTermNightlyRate: Number(
                                   analysisResult.shortTermNightlyRate,
@@ -696,7 +694,6 @@ export default function PropertyAnalyzerPage() {
                                   ),
                               },
                               expenses: {
-                                // Changed from operatingExpenses to expenses
                                 monthlyLevies: Number(formData?.monthlyLevies) || 0,
                                 monthlyRatesTaxes: Number(
                                   formData?.monthlyRatesTaxes
@@ -740,9 +737,8 @@ export default function PropertyAnalyzerPage() {
                               revenueProjections:
                                 analysisResult.analysis.revenueProjections,
                             });
-                            setIsDataReady(true); // Add this after setPDFData
+                            setIsDataReady(true);
 
-                            // Add this console log after setPDFData
                             console.log("PDF Data being passed:", pdfData);
 
                             setShowPDFGenerator(true);
@@ -785,8 +781,6 @@ export default function PropertyAnalyzerPage() {
                             <PropertyMap address={analysisResult.address} />
                           </div>
                         </div>
-
-                        
                       </>
                     )}
                   </CardContent>
@@ -958,7 +952,7 @@ export default function PropertyAnalyzerPage() {
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-4 rounded-lg bgblue-50/50">
-                        <h3 className="text-sm font-bold text-blue-600 mb-3">
+                        <h3 className="text-sm font-bold text-blue600 mb-3">
                           Short-Term Rental (Year 1)
                         </h3>
                         <div className="space-y-2">
