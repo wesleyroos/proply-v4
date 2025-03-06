@@ -25,6 +25,16 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
     amenities: 95,
   };
 
+  // Market benchmark scores
+  const marketBenchmarks = {
+    priceVsMarket: 70,
+    rentalYield: 65,
+    affordability: 75,
+    liquidity: 80,
+    riskFactors: 70,
+    amenities: 85,
+  };
+
   const activeScores = scores || defaultScores;
 
   const categories = [
@@ -32,6 +42,7 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
       name: "Price vs. Market",
       weight: 25,
       score: activeScores.priceVsMarket,
+      benchmark: marketBenchmarks.priceVsMarket,
       description: "Compares purchase price to AvgRatePerM2 and market trends",
       icon: <Scale className="h-5 w-5 text-blue-500" />,
     },
@@ -39,6 +50,7 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
       name: "Rental Yield",
       weight: 25,
       score: activeScores.rentalYield,
+      benchmark: marketBenchmarks.rentalYield,
       description: "Gross yield + Net cash flow vs. market average",
       icon: <TrendingUp className="h-5 w-5 text-green-500" />,
     },
@@ -46,6 +58,7 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
       name: "Affordability",
       weight: 15,
       score: activeScores.affordability,
+      benchmark: marketBenchmarks.affordability,
       description: "Loan affordability vs. expected rental income",
       icon: <Wallet className="h-5 w-5 text-purple-500" />,
     },
@@ -53,6 +66,7 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
       name: "Liquidity",
       weight: 15,
       score: activeScores.liquidity,
+      benchmark: marketBenchmarks.liquidity,
       description: "Popularity of area, lease cycle gap, and resale potential",
       icon: <Timer className="h-5 w-5 text-orange-500" />,
     },
@@ -60,6 +74,7 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
       name: "Risk Factors",
       weight: 10,
       score: activeScores.riskFactors,
+      benchmark: marketBenchmarks.riskFactors,
       description: "Operating expenses, management fees, and escalation risks",
       icon: <AlertTriangle className="h-5 w-5 text-red-500" />,
     },
@@ -67,6 +82,7 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
       name: "Amenities",
       weight: 10,
       score: activeScores.amenities,
+      benchmark: marketBenchmarks.amenities,
       description: "Bedrooms, bathrooms, parking, and qualitative factors",
       icon: <Home className="h-5 w-5 text-indigo-500" />,
     },
@@ -83,6 +99,7 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
   const chartData = categories.map(category => ({
     subject: category.name,
     score: category.score,
+    benchmark: category.benchmark,
     fullMark: 100,
   }));
 
@@ -112,6 +129,15 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
                   tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
                 />
                 <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                {/* Market Benchmark Layer */}
+                <Radar
+                  name="Market Benchmark"
+                  dataKey="benchmark"
+                  stroke="hsl(var(--muted-foreground))"
+                  fill="hsl(var(--muted-foreground))"
+                  fillOpacity={0.2}
+                />
+                {/* Property Score Layer */}
                 <Radar
                   name="Score"
                   dataKey="score"
@@ -136,8 +162,9 @@ export function PropertyScore({ scores }: PropertyScoreProps) {
                   <div className="text-sm text-muted-foreground">
                     {category.description}
                   </div>
-                  <div className="text-sm font-medium mt-2">
-                    Score: {category.score}%
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="text-sm font-medium">Score: {category.score}%</div>
+                    <div className="text-sm text-muted-foreground">Market: {category.benchmark}%</div>
                   </div>
                   <Progress value={category.score} className="h-2 mt-2" />
                 </div>
