@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { UpgradeModal } from "@/components/UpgradeModal";
@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { PropertyScoreModal } from "@/components/PropertyScoreModal";
 
 interface RevenueData {
   adr: number;
@@ -58,6 +59,7 @@ export default function DealScorePage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [submittedData, setSubmittedData] = useState<typeof formData | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [showPropertyScoreModal, setShowPropertyScoreModal] = useState(false);
 
   // Prefill data handler
   const handlePrefill = () => {
@@ -75,7 +77,7 @@ export default function DealScorePage() {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    if (field === "purchasePrice" || field === "size" || field === "areaRate" || 
+    if (field === "purchasePrice" || field === "size" || field === "areaRate" ||
         field === "nightlyRate" || field === "occupancy" || field === "longTermRental" ||
         field === "bedrooms") {
       value = value.replace(/[^0-9.]/g, '');
@@ -176,7 +178,14 @@ export default function DealScorePage() {
   return (
     <PageTransition>
       <div className="p-8">
-        <h1 className="text-3xl font-bold mb-6">Deal Score</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">Deal Score</h1>
+          {hasProAccess.hasAccess && (
+            <Button variant="outline" onClick={() => setShowPropertyScoreModal(true)}>
+              View Property Score <BarChart3 className="h-4 w-4 ml-2" />
+            </Button>
+          )}
+        </div>
 
         <div className="flex gap-8">
           {/* Form Section */}
@@ -408,7 +417,7 @@ export default function DealScorePage() {
         </div>
 
         {/* Prefill Button */}
-        <div 
+        <div
           onClick={(e) => {
             // Track clicks to detect triple click
             const now = new Date().getTime();
@@ -503,6 +512,7 @@ export default function DealScorePage() {
             </div>
           </DialogContent>
         </Dialog>
+        <PropertyScoreModal open={showPropertyScoreModal} onOpenChange={setShowPropertyScoreModal} />
       </div>
     </PageTransition>
   );
