@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 export default function DealScorePage() {
   const [formData, setFormData] = useState({
@@ -20,8 +19,8 @@ export default function DealScorePage() {
     propertyCondition: "excellent"
   });
 
-  const [calculatedResults, setCalculatedResults] = useState({ marketPrice: 0, priceDiff: 0 });
-  const [displayedResults, setDisplayedResults] = useState({ marketPrice: 0, priceDiff: 0 }); // Added displayedResults state
+  // Separate state for submitted data
+  const [submittedData, setSubmittedData] = useState<typeof formData | null>(null);
   const [showResults, setShowResults] = useState(false);
 
   // Prefill data handler
@@ -36,26 +35,6 @@ export default function DealScorePage() {
       longTermRental: "25000",
       propertyCondition: "excellent"
     });
-
-    // Add visual feedback that prefill was triggered
-    const feedbackEl = document.createElement('div');
-    feedbackEl.textContent = 'Form prefilled!';
-    feedbackEl.style.position = 'fixed';
-    feedbackEl.style.bottom = '20px';
-    feedbackEl.style.left = '50%';
-    feedbackEl.style.transform = 'translateX(-50%)';
-    feedbackEl.style.padding = '8px 16px';
-    feedbackEl.style.backgroundColor = 'rgba(0,0,0,0.7)';
-    feedbackEl.style.color = 'white';
-    feedbackEl.style.borderRadius = '4px';
-    feedbackEl.style.zIndex = '9999';
-
-    document.body.appendChild(feedbackEl);
-
-    // Remove the notification after 2 seconds
-    setTimeout(() => {
-      document.body.removeChild(feedbackEl);
-    }, 2000);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -65,7 +44,6 @@ export default function DealScorePage() {
       value = value.replace(/[^0-9.]/g, '');
     }
 
-    // Only update the form data without recalculating results
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -74,13 +52,13 @@ export default function DealScorePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Calculate results only when the form is submitted
-    const marketPrice = Number(formData.size) * Number(formData.areaRate);
-    const priceDiff = ((Number(formData.purchasePrice) - marketPrice) / marketPrice) * 100;
-    setCalculatedResults({ marketPrice, priceDiff });
-    setDisplayedResults({ marketPrice, priceDiff }); // Update displayedResults
+    setSubmittedData(formData); // Update submitted data
     setShowResults(true);
   };
+
+  // Calculate results only from submitted data
+  const marketPrice = submittedData ? Number(submittedData.size) * Number(submittedData.areaRate) : 0;
+  const priceDiff = submittedData ? ((Number(submittedData.purchasePrice) - marketPrice) / marketPrice) * 100 : 0;
 
   return (
     <PageTransition>
@@ -215,7 +193,7 @@ export default function DealScorePage() {
 
           {/* Results Section */}
           <div className="flex-1">
-            {showResults && (
+            {showResults && submittedData && (
               <Card>
                 <CardHeader>
                   <CardTitle>Price Justification</CardTitle>
@@ -225,21 +203,21 @@ export default function DealScorePage() {
                     <div>
                       <div className="text-sm font-medium">Asking Price</div>
                       <div className="text-3xl font-bold">
-                        R{Number(formData.purchasePrice).toLocaleString()}
+                        R{Number(submittedData.purchasePrice).toLocaleString()}
                       </div>
                     </div>
                     <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
                     <div>
                       <div className="text-sm font-medium">Market Average</div>
                       <div className="text-3xl font-bold">
-                        R{displayedResults.marketPrice.toLocaleString()}
+                        R{marketPrice.toLocaleString()}
                       </div>
                     </div>
                     <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
                     <div>
                       <div className="text-sm font-medium">Difference</div>
-                      <div className={`text-3xl font-bold ${displayedResults.priceDiff > 0 ? 'text-amber-500' : 'text-green-500'}`}>
-                        {displayedResults.priceDiff > 0 ? '+' : ''}{Math.round(displayedResults.priceDiff)}%
+                      <div className={`text-3xl font-bold ${priceDiff > 0 ? 'text-amber-500' : 'text-green-500'}`}>
+                        {priceDiff > 0 ? '+' : ''}{Math.round(priceDiff)}%
                       </div>
                     </div>
                   </div>
@@ -248,18 +226,18 @@ export default function DealScorePage() {
                   <div className="flex justify-between items-center mt-4">
                     <div className="font-medium">Price per m²</div>
                     <div className="font-bold">
-                      R{Math.round(Number(formData.purchasePrice) / Number(formData.size)).toLocaleString()}/m²
+                      R{submittedData ? Math.round(Number(submittedData.purchasePrice) / Number(submittedData.size)).toLocaleString() : "0"}/m²
                     </div>
                     <div className="text-muted-foreground">
-                      (vs. area avg R{Number(formData.areaRate).toLocaleString()}/m²)
+                      (vs. area avg R{submittedData ? Number(submittedData.areaRate).toLocaleString() : "0"}/m²)
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className={Number(formData.purchasePrice) / Number(formData.size) <= Number(formData.areaRate) ? 'text-green-500' : 'text-amber-500'}>
-                        {Number(formData.purchasePrice) / Number(formData.size) <= Number(formData.areaRate) ? '-' : '+'}
-                        R{Math.abs(Math.round(Number(formData.purchasePrice) / Number(formData.size) - Number(formData.areaRate))).toLocaleString()}/m²
+                      <div className={submittedData && (Number(submittedData.purchasePrice) / Number(submittedData.size) <= Number(submittedData.areaRate)) ? 'text-green-500' : 'text-amber-500'}>
+                        {submittedData && (Number(submittedData.purchasePrice) / Number(submittedData.size) <= Number(submittedData.areaRate)) ? '-' : '+'}
+                        R{submittedData ? Math.abs(Math.round(Number(submittedData.purchasePrice) / Number(submittedData.size) - Number(submittedData.areaRate))).toLocaleString() : "0"}/m²
                       </div>
-                      <Badge variant="outline" className={displayedResults.priceDiff <= 5 ? 'text-green-500' : 'text-amber-500'}>
-                        {displayedResults.priceDiff <= 5 ? 'COMPETITIVE' : 'PREMIUM'}
+                      <Badge variant="outline" className={priceDiff <= 5 ? 'text-green-500' : 'text-amber-500'}>
+                        {priceDiff <= 5 ? 'COMPETITIVE' : 'PREMIUM'}
                       </Badge>
                     </div>
                   </div>
