@@ -175,6 +175,41 @@ export default function DealScorePage() {
   const marketPrice = submittedData ? Number(submittedData.size) * Number(submittedData.areaRate) : 0;
   const priceDiff = submittedData ? ((Number(submittedData.purchasePrice) - marketPrice) / marketPrice) * 100 : 0;
 
+  const getConditionDetails = (condition: string) => {
+    switch (condition) {
+      case "excellent":
+        return {
+          description: "(minimal repairs needed)",
+          badge: "MOVE-IN READY",
+          badgeColor: "text-emerald-500"
+        };
+      case "good":
+        return {
+          description: "(some repairs needed)",
+          badge: "MINOR WORK",
+          badgeColor: "text-blue-500"
+        };
+      case "fair":
+        return {
+          description: "(significant repairs needed)",
+          badge: "NEEDS WORK",
+          badgeColor: "text-amber-500"
+        };
+      case "poor":
+        return {
+          description: "(major repairs needed)",
+          badge: "MAJOR WORK",
+          badgeColor: "text-red-500"
+        };
+      default:
+        return {
+          description: "",
+          badge: "",
+          badgeColor: ""
+        };
+    }
+  };
+
   return (
     <PageTransition>
       <div className="p-8">
@@ -410,21 +445,33 @@ export default function DealScorePage() {
                       </Badge>
                     </div>
                   </div>
+
+                  <div className="flex justify-between items-center mt-4">
+                    <div className="font-medium">Property Condition</div>
+                    <div className="font-bold capitalize">
+                      {submittedData.propertyCondition}
+                    </div>
+                    <div className="text-muted-foreground">
+                      {getConditionDetails(submittedData.propertyCondition).description}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className={getConditionDetails(submittedData.propertyCondition).badgeColor}>
+                        {getConditionDetails(submittedData.propertyCondition).badge}
+                      </Badge>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             )}
           </div>
         </div>
 
-        {/* Prefill Button */}
         <div
           onClick={(e) => {
-            // Track clicks to detect triple click
             const now = new Date().getTime();
             if (!window.lastClick) window.lastClick = 0;
             if (!window.clickCount) window.clickCount = 0;
 
-            // Reset counter if more than 500ms between clicks
             if (now - window.lastClick > 500) {
               window.clickCount = 1;
             } else {
@@ -433,7 +480,6 @@ export default function DealScorePage() {
 
             window.lastClick = now;
 
-            // If triple click detected, call handlePrefill
             if (window.clickCount === 3) {
               handlePrefill();
               window.clickCount = 0;
