@@ -33,6 +33,26 @@ export default function DealScorePage() {
       longTermRental: "25000",
       propertyCondition: "excellent"
     });
+    
+    // Add visual feedback that prefill was triggered
+    const feedbackEl = document.createElement('div');
+    feedbackEl.textContent = 'Form prefilled!';
+    feedbackEl.style.position = 'fixed';
+    feedbackEl.style.bottom = '20px';
+    feedbackEl.style.left = '50%';
+    feedbackEl.style.transform = 'translateX(-50%)';
+    feedbackEl.style.padding = '8px 16px';
+    feedbackEl.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    feedbackEl.style.color = 'white';
+    feedbackEl.style.borderRadius = '4px';
+    feedbackEl.style.zIndex = '9999';
+    
+    document.body.appendChild(feedbackEl);
+    
+    // Remove the notification after 2 seconds
+    setTimeout(() => {
+      document.body.removeChild(feedbackEl);
+    }, 2000);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -226,8 +246,28 @@ export default function DealScorePage() {
 
         {/* Prefill Button */}
         <div 
-          onTripleClick={handlePrefill}
-          className="fixed bottom-4 right-4 w-6 h-6 rounded-full bg-gray-100/20 cursor-default select-none"
+          onClick={(e) => {
+            // Track clicks to detect triple click
+            const now = new Date().getTime();
+            if (!window.lastClick) window.lastClick = 0;
+            if (!window.clickCount) window.clickCount = 0;
+            
+            // Reset counter if more than 500ms between clicks
+            if (now - window.lastClick > 500) {
+              window.clickCount = 1;
+            } else {
+              window.clickCount++;
+            }
+            
+            window.lastClick = now;
+            
+            // If triple click detected, call handlePrefill
+            if (window.clickCount === 3) {
+              handlePrefill();
+              window.clickCount = 0;
+            }
+          }}
+          className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-100/20 cursor-default select-none"
           style={{ opacity: 0.1 }}
         />
       </div>
