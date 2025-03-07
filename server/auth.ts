@@ -8,7 +8,7 @@ import { promisify } from "util";
 import { users, insertUserSchema, accessCodes, type SelectUser, passwordResetTokens } from "@db/schema";
 import { db } from "@db";
 import { eq, and, isNull } from "drizzle-orm";
-import { sendNewUserNotification, sendPasswordResetEmail } from "./services/email";
+import { sendNewUserNotification, sendPasswordResetEmail, sendWelcomeEmail } from "./services/email";
 
 const scryptAsync = promisify(scrypt);
 export const crypto = {
@@ -211,6 +211,15 @@ export function setupAuth(app: Express) {
         id: newUser.id,
         email: newUser.email,
         subscriptionStatus: newUser.subscriptionStatus
+      });
+
+      // Send welcome email to the new user
+      await sendWelcomeEmail({
+        email: newUser.email || '',
+        firstName: newUser.firstName || 'there'
+      }).catch(error => {
+        console.error('Failed to send welcome email:', error);
+        // Don't fail registration if email fails
       });
 
       // Send admin notification email

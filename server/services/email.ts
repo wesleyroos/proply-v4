@@ -14,7 +14,7 @@ export async function sendAdminNotification(params: EmailParams): Promise<boolea
   try {
     const adminEmail = 'wesley@proply.co.za';
     // Important: This must be your verified sender in SendGrid
-    const verifiedSender = 'wesley@proply.co.za'; 
+    const verifiedSender = 'wesley@proply.co.za';
 
     console.log('Preparing to send admin notification email:', {
       to: params.to || adminEmail,
@@ -110,6 +110,56 @@ export async function sendNewUserNotification(userData: {
 
   return sendAdminNotification({
     to: 'wesley@proply.co.za',
+    subject,
+    html,
+    text,
+  });
+}
+
+export async function sendWelcomeEmail(userData: {
+  email: string;
+  firstName: string;
+}): Promise<boolean> {
+  const subject = 'Welcome to Proply!';
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <img src="https://proply.co.za/proply-logo-1.png" alt="Proply" style="max-width: 200px; margin: 20px 0;" />
+      <h2>Welcome to Proply, ${userData.firstName}!</h2>
+      <p>Thank you for joining Proply - your partner in property investment intelligence.</p>
+      <div style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; margin: 20px 0;">
+        <h3>Getting Started</h3>
+        <ul style="list-style-type: none; padding: 0;">
+          <li style="margin-bottom: 10px;">✨ Analyze your first property</li>
+          <li style="margin-bottom: 10px;">📊 Generate detailed reports</li>
+          <li style="margin-bottom: 10px;">💡 Get market insights</li>
+        </ul>
+      </div>
+      <p>
+        Ready to start? <a href="https://proply.co.za/dashboard" style="color: #1BA3FF;">Visit your dashboard</a>
+      </p>
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
+        <p>If you need any assistance, don't hesitate to contact our support team.</p>
+      </div>
+    </div>
+  `;
+
+  const text = `
+    Welcome to Proply, ${userData.firstName}!
+
+    Thank you for joining Proply - your partner in property investment intelligence.
+
+    Getting Started:
+    - Analyze your first property
+    - Generate detailed reports
+    - Get market insights
+
+    Ready to start? Visit your dashboard at: https://proply.co.za/dashboard
+
+    If you need any assistance, don't hesitate to contact our support team.
+  `;
+
+  return sendAdminNotification({
+    to: userData.email,
     subject,
     html,
     text,
