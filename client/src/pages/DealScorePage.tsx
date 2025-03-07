@@ -236,8 +236,8 @@ export default function DealScorePage() {
                         {submittedData && (Number(submittedData.purchasePrice) / Number(submittedData.size) <= Number(submittedData.areaRate)) ? '-' : '+'}
                         R{submittedData ? Math.abs(Math.round(Number(submittedData.purchasePrice) / Number(submittedData.size) - Number(submittedData.areaRate))).toLocaleString() : "0"}/m²
                       </div>
-                      <Badge variant="outline" className={priceDiff <= 5 ? 'text-green-500' : 'text-amber-500'}>
-                        {priceDiff <= 5 ? 'COMPETITIVE' : 'PREMIUM'}
+                      <Badge variant="outline" className={priceDiff <= 0 ? 'text-green-500' : 'text-amber-500'}>
+                        {priceDiff <= 0 ? 'Under Paying' : 'Over Paying'}
                       </Badge>
                     </div>
                   </div>
