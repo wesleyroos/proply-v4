@@ -21,6 +21,7 @@ export default function DealScorePage() {
   });
 
   const [calculatedResults, setCalculatedResults] = useState({ marketPrice: 0, priceDiff: 0 });
+  const [displayedResults, setDisplayedResults] = useState({ marketPrice: 0, priceDiff: 0 }); // Added displayedResults state
   const [showResults, setShowResults] = useState(false);
 
   // Prefill data handler
@@ -69,10 +70,6 @@ export default function DealScorePage() {
       ...prev,
       [field]: value
     }));
-
-    // No additional logic here - just update the form values
-    // Results will remain visible with previous calculation values
-    // until the user explicitly clicks the Calculate button
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -81,6 +78,7 @@ export default function DealScorePage() {
     const marketPrice = Number(formData.size) * Number(formData.areaRate);
     const priceDiff = ((Number(formData.purchasePrice) - marketPrice) / marketPrice) * 100;
     setCalculatedResults({ marketPrice, priceDiff });
+    setDisplayedResults({ marketPrice, priceDiff }); // Update displayedResults
     setShowResults(true);
   };
 
@@ -234,14 +232,14 @@ export default function DealScorePage() {
                     <div>
                       <div className="text-sm font-medium">Market Average</div>
                       <div className="text-3xl font-bold">
-                        R{calculatedResults.marketPrice.toLocaleString()}
+                        R{displayedResults.marketPrice.toLocaleString()}
                       </div>
                     </div>
                     <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
                     <div>
                       <div className="text-sm font-medium">Difference</div>
-                      <div className={`text-3xl font-bold ${calculatedResults.priceDiff > 0 ? 'text-amber-500' : 'text-green-500'}`}>
-                        {calculatedResults.priceDiff > 0 ? '+' : ''}{Math.round(calculatedResults.priceDiff)}%
+                      <div className={`text-3xl font-bold ${displayedResults.priceDiff > 0 ? 'text-amber-500' : 'text-green-500'}`}>
+                        {displayedResults.priceDiff > 0 ? '+' : ''}{Math.round(displayedResults.priceDiff)}%
                       </div>
                     </div>
                   </div>
@@ -260,8 +258,8 @@ export default function DealScorePage() {
                         {Number(formData.purchasePrice) / Number(formData.size) <= Number(formData.areaRate) ? '-' : '+'}
                         R{Math.abs(Math.round(Number(formData.purchasePrice) / Number(formData.size) - Number(formData.areaRate))).toLocaleString()}/m²
                       </div>
-                      <Badge variant="outline" className={Number(formData.purchasePrice) / Number(formData.size) <= Number(formData.areaRate) ? 'text-green-500' : 'text-amber-500'}>
-                        {Number(formData.purchasePrice) / Number(formData.size) <= Number(formData.areaRate) ? 'COMPETITIVE' : 'PREMIUM'}
+                      <Badge variant="outline" className={displayedResults.priceDiff <= 5 ? 'text-green-500' : 'text-amber-500'}>
+                        {displayedResults.priceDiff <= 5 ? 'COMPETITIVE' : 'PREMIUM'}
                       </Badge>
                     </div>
                   </div>
