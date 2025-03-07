@@ -22,9 +22,18 @@ export default function DealScorePage() {
 
   const [showResults, setShowResults] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowResults(true);
+  // Prefill data handler
+  const handlePrefill = () => {
+    setFormData({
+      address: "27 Leeuwen St, Cape Town City Centre, 8001",
+      purchasePrice: "3500000",
+      size: "85",
+      areaRate: "45000",
+      nightlyRate: "2500",
+      occupancy: "70",
+      longTermRental: "25000",
+      propertyCondition: "excellent"
+    });
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -40,6 +49,11 @@ export default function DealScorePage() {
     }));
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowResults(true);
+  };
+
   // Calculate market price and price difference
   const marketPrice = Number(formData.size) * Number(formData.areaRate);
   const priceDiff = ((Number(formData.purchasePrice) - marketPrice) / marketPrice) * 100;
@@ -47,7 +61,16 @@ export default function DealScorePage() {
   return (
     <PageTransition>
       <div className="container mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-6">Deal Score</h1>
+        <h1 className="text-3xl font-bold mb-6">
+          Deal Score
+          <span 
+            onTripleClick={handlePrefill} 
+            className="ml-2 text-xs text-muted-foreground cursor-default select-none"
+            style={{ opacity: 0 }}
+          >
+            prefill
+          </span>
+        </h1>
 
         <div className="flex gap-8">
           {/* Form Section */}
