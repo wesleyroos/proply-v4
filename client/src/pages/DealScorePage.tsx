@@ -460,6 +460,22 @@ export default function DealScorePage() {
                       </Badge>
                     </div>
                   </div>
+
+                  <div className="flex justify-between items-center mt-4">
+                    <div className="font-medium">Recent Area Sales</div>
+                    <div className="font-bold">
+                      R3.4M - R3.7M
+                    </div>
+                    <div className="text-muted-foreground">
+                      (last 3 months)
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-blue-600">
+                        WITHIN RANGE
+                      </Badge>
+                    </div>
+                  </div>
+
                 </CardContent>
               </Card>
             )}
