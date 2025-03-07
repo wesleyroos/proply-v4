@@ -602,14 +602,6 @@ export default function PropertyAnalyzerPage() {
                       Save Analysis
                     </Button>
 
-                    <Button
-                      onClick={() => setIsOpen(true)}
-                      className="bg-indigo-600 hover:bg-indigo-700"
-                    >
-                      <BarChart3 className="w-4 h-4 mr-2" />
-                      View Property Score
-                    </Button>
-
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div>
