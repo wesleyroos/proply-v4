@@ -14,7 +14,8 @@ import {
   Calculator,
   Brain,
   ToggleLeft,
-  BarChart2
+  BarChart2,
+  Target // Add this import for the Deal Score icon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
@@ -54,6 +55,12 @@ export default function Sidebar() {
       title: "Rent Compare",
       icon: Building2,
       href: "/dashboard/rent-compare",
+    },
+    {
+      title: "Deal Score",
+      icon: Target,
+      href: "/dashboard/deal-score",
+      adminOnly: true,
     },
     {
       title: "Properties",
