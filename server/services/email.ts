@@ -203,6 +203,30 @@ export async function sendWelcomeEmail(userData: {
                   <p style="margin: 5px 0 0; color: #64748b;">Access valuable market data and trends</p>
                 </div>
               </div>
+
+              <div style="margin-bottom: 16px; display: flex;">
+                <span style="color: #1BA3FF; font-size: 20px; margin-right: 10px;">⚖️</span>
+                <div>
+                  <strong style="color: #1e293b;">Compare Rental Strategies</strong>
+                  <p style="margin: 5px 0 0; color: #64748b;">Evaluate long-term vs short-term rental opportunities</p>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px; display: flex;">
+                <span style="color: #1BA3FF; font-size: 20px; margin-right: 10px;">🤖</span>
+                <div>
+                  <strong style="color: #1e293b;">AI-Powered Insights</strong>
+                  <p style="margin: 5px 0 0; color: #64748b;">Get tailored recommendations for your clients</p>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px; display: flex;">
+                <span style="color: #1BA3FF; font-size: 20px; margin-right: 10px;">🤝</span>
+                <div>
+                  <strong style="color: #1e293b;">Build Trust</strong>
+                  <p style="margin: 5px 0 0; color: #64748b;">Foster stronger relationships between Airbnb managers and homeowners</p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -258,6 +282,15 @@ export async function sendWelcomeEmail(userData: {
 
       💡 Market Insights
       Access valuable market data and trends
+
+      ⚖️ Compare Rental Strategies
+      Evaluate long-term vs short-term rental opportunities
+
+      🤖 AI-Powered Insights
+      Get tailored recommendations for your clients
+
+      🤝 Build Trust
+      Foster stronger relationships between Airbnb managers and homeowners
 
       Ready to start? Visit your dashboard at: https://proply.co.za/dashboard
 
