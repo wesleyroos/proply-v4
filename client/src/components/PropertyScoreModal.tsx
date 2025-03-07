@@ -138,7 +138,10 @@ export function PropertyScoreModal({
                       Easy talking points for your client
                     </div>
                   </div>
-                  <div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-lg font-medium">
+                      R{purchasePrice.toLocaleString()}
+                    </div>
                     <Badge className={`${dealBadge.color} text-white px-6 py-2 text-xl`}>
                       {dealBadge.text}
                     </Badge>
