@@ -14,7 +14,7 @@ export async function sendAdminNotification(params: EmailParams): Promise<boolea
   try {
     const adminEmail = 'wesley@proply.co.za';
     // Important: This must be your verified sender in SendGrid
-    const verifiedSender = 'wesley@proply.co.za';
+    const verifiedSender = 'hello@proply.co.za';
 
     console.log('Preparing to send admin notification email:', {
       to: params.to || adminEmail,
@@ -122,7 +122,7 @@ export async function sendWelcomeEmail(userData: {
 }): Promise<boolean> {
   try {
     const subject = 'Welcome to Proply!';
-    const verifiedWelcomeSender = 'hello@proply.co.za';
+    const verifiedSender = 'hello@proply.co.za';
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -164,7 +164,7 @@ export async function sendWelcomeEmail(userData: {
     const msg = {
       to: userData.email,
       from: {
-        email: verifiedWelcomeSender,
+        email: verifiedSender,
         name: 'Proply'
       },
       subject,
