@@ -537,172 +537,173 @@ export function PropertyScoreModal({
                         <div>If rates rise 1%:</div>
                         <div className="font-bold text-red-500">R37,200/month</div>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="p-4 rounded-lg border bg-yellow-50">
+              <div className="flex gap-3">
+                <div className="mt-0.5 text-amber-500">💡</div>
+                <div>
+                  <div className="font-semibold text-amber-800">Agent Tip</div>
+                  <div className="text-amber-700">
+                    Tell clients: "At R3.5M with a 10% deposit, you'll need about R34K per month for the bond, 
+                    which requires a household income of around R102K per month."
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* 5️⃣ BUYER PROFILE TAB */}
+          <TabsContent value="buyer">
+            <Card className="mb-4">
+              <CardHeader className="pb-2">
+                <CardTitle>Ideal Buyer Profiles</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-5">
+                  {buyerProfiles.map((profile, i) => (
+                    <div key={`profile-${i}`} className="p-4 border rounded-lg bg-muted/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="font-bold text-lg flex items-center gap-2">
+                          {i === 0 ? 
+                            <Users className="h-5 w-5 text-primary" /> : 
+                            i === 1 ? <Home className="h-5 w-5 text-blue-500" /> : 
+                            <Banknote className="h-5 w-5 text-green-500" />
+                          }
+                          {profile.type}
+                        </div>
+                        <Badge className={profile.match >= 90 ? "bg-green-500" : profile.match >= 80 ? "bg-blue-500" : "bg-muted"}>
+                          {profile.match}% Match
+                        </Badge>
                       </div>
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
 
-                                <div className="p-4 rounded-lg border bg-yellow-50">
-                                  <div className="flex gap-3">
-                                    <div className="mt-0.5 text-amber-500">💡</div>
-                                    <div>
-                                      <div className="font-semibold text-amber-800">Agent Tip</div>
-                                      <div className="text-amber-700">
-                                        Tell clients: "At R3.5M with a 10% deposit, you'll need about R34K per month for the bond, 
-                                        which requires a household income of around R102K per month."
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </TabsContent>
+                      <div className="mb-3 text-muted-foreground">
+                        {profile.reason}
+                      </div>
 
-                              {/* 5️⃣ BUYER PROFILE TAB */}
-                              <TabsContent value="buyer">
-                                <Card className="mb-4">
-                                  <CardHeader className="pb-2">
-                                    <CardTitle>Ideal Buyer Profiles</CardTitle>
-                                  </CardHeader>
-                                  <CardContent>
-                                    <div className="space-y-5">
-                                      {buyerProfiles.map((profile, i) => (
-                                        <div key={`profile-${i}`} className="p-4 border rounded-lg bg-muted/30">
-                                          <div className="flex items-center justify-between mb-2">
-                                            <div className="font-bold text-lg flex items-center gap-2">
-                                              {i === 0 ? 
-                                                <Users className="h-5 w-5 text-primary" /> : 
-                                                i === 1 ? <Home className="h-5 w-5 text-blue-500" /> : 
-                                                <Banknote className="h-5 w-5 text-green-500" />
-                                              }
-                                              {profile.type}
-                                            </div>
-                                            <Badge className={profile.match >= 90 ? "bg-green-500" : profile.match >= 80 ? "bg-blue-500" : "bg-muted"}>
-                                              {profile.match}% Match
-                                            </Badge>
-                                          </div>
+                      <div className="relative pt-1">
+                        <div className="overflow-hidden h-2 mb-4 flex rounded bg-muted">
+                          <div 
+                            className={`h-full ${
+                              profile.match >= 90 ? "bg-green-500" : 
+                              profile.match >= 80 ? "bg-blue-500" : 
+                              profile.match >= 70 ? "bg-amber-500" : "bg-red-500"
+                            }`}
+                            style={{ width: `${profile.match}%` }}
+                          />
+                        </div>
+                      </div>
 
-                                          <div className="mb-3 text-muted-foreground">
-                                            {profile.reason}
-                                          </div>
-
-                                          <div className="relative pt-1">
-                                            <div className="overflow-hidden h-2 mb-4 flex rounded bg-muted">
-                                              <div 
-                                                className={`h-full ${
-                                                  profile.match >= 90 ? "bg-green-500" : 
-                                                  profile.match >= 80 ? "bg-blue-500" : 
-                                                  profile.match >= 70 ? "bg-amber-500" : "bg-red-500"
-                                                }`}
-                                                style={{ width: `${profile.match}%` }}
-                                              />
-                                            </div>
-                                          </div>
-
-                                          <div className="space-y-2">
-                                            {i === 0 && (
-                                              <>
-                                                <div className="flex justify-between items-center">
-                                                  <div>Short-term rental yield:</div>
-                                                  <div className="font-bold text-green-500">{rentalData.yieldShortTerm}%</div>
-                                                </div>
-                                                <div className="flex justify-between items-center">
-                                                  <div>Airbnb occupancy rate:</div>
-                                                  <div className="font-bold">{rentalData.occupancyRate}%</div>
-                                                </div>
-                                                <div className="flex justify-between items-center">
-                                                  <div>Monthly Airbnb income:</div>
-                                                  <div className="font-bold">R{rentalData.shortTerm.toLocaleString()}</div>
-                                                </div>
-                                              </>
-                                            )}
-
-                                            {i === 1 && (
-                                              <>
-                                                <div className="flex justify-between items-center">
-                                                  <div>Proximity to business district:</div>
-                                                  <div className="font-bold">5 min walk</div>
-                                                </div>
-                                                <div className="flex justify-between items-center">
-                                                  <div>Transport links:</div>
-                                                  <div className="font-bold">Excellent</div>
-                                                </div>
-                                                <div className="flex justify-between items-center">
-                                                  <div>Restaurants & amenities:</div>
-                                                  <div className="font-bold">20+ within 500m</div>
-                                                </div>
-                                              </>
-                                            )}
-
-                                            {i === 2 && (
-                                              <>
-                                                <div className="flex justify-between items-center">
-                                                  <div>Long-term rental yield:</div>
-                                                  <div className="font-bold">{rentalData.yieldLongTerm}%</div>
-                                                </div>
-                                                <div className="flex justify-between items-center">
-                                                  <div>Tenant demand:</div>
-                                                  <div className="font-bold">High (+{rentalData.rentalDemand}%)</div>
-                                                </div>
-                                                <div className="flex justify-between items-center">
-                                                  <div>Monthly rental income:</div>
-                                                  <div className="font-bold">R{rentalData.longTerm.toLocaleString()}</div>
-                                                </div>
-                                              </>
-                                            )}
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-
-                                    <div className="mt-6 p-4 border rounded-lg bg-muted">
-                                      <div className="font-bold mb-2">How to Position This Property</div>
-                                      <div className="space-y-3">
-                                        <div className="flex items-start gap-2">
-                                          <div className="bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center mt-0.5 text-xs">1</div>
-                                          <div>
-                                            <div className="font-medium">For investors:</div>
-                                            <div className="text-sm">Highlight the exceptional {rentalData.yieldShortTerm}% Airbnb yield and strong rental demand in the area.</div>
-                                          </div>
-                                        </div>
-
-                                        <div className="flex items-start gap-2">
-                                          <div className="bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center mt-0.5 text-xs">2</div>
-                                          <div>
-                                            <div className="font-medium">For young professionals:</div>
-                                            <div className="text-sm">Emphasize the prime location, walkability to Cape Town CBD, and modern amenities.</div>
-                                          </div>
-                                        </div>
-
-                                        <div className="flex items-start gap-2">
-                                          <div className="bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center mt-0.5 text-xs">3</div>
-                                          <div>
-                                            <div className="font-medium">For buy-to-let landlords:</div>
-                                            <div className="text-sm">Focus on consistent rental demand and competitive yield compared to other areas.</div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-
-                                <div className="p-4 rounded-lg border bg-yellow-50">
-                                  <div className="flex gap-3">
-                                    <div className="mt-0.5 text-amber-500">💡</div>
-                                    <div>
-                                      <div className="font-semibold text-amber-800">Agent Tip</div>
-                                      <div className="text-amber-700">
-                                        Always qualify your buyer first. For investors, focus on the rental returns and yield.
-                                        For owner-occupiers, highlight the lifestyle benefits and proximity to amenities.
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </TabsContent>
-                            </Tabs>
-
-                            <div className="text-xs text-center text-muted-foreground mt-6">
-                              *Analysis based on ProvenProperty™ AI-Powered Market Analysis using real-time Cape Town market data
+                      <div className="space-y-2">
+                        {i === 0 && (
+                          <>
+                            <div className="flex justify-between items-center">
+                              <div>Short-term rental yield:</div>
+                              <div className="font-bold text-green-500">{rentalData.yieldShortTerm}%</div>
                             </div>
-                          </DialogContent>
-                        </Dialog>
-                      );
+                            <div className="flex justify-between items-center">
+                              <div>Airbnb occupancy rate:</div>
+                              <div className="font-bold">{rentalData.occupancyRate}%</div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <div>Monthly Airbnb income:</div>
+                              <div className="font-bold">R{rentalData.shortTerm.toLocaleString()}</div>
+                            </div>
+                          </>
+                        )}
+
+                        {i === 1 && (
+                          <>
+                            <div className="flex justify-between items-center">
+                              <div>Proximity to business district:</div>
+                              <div className="font-bold">5 min walk</div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <div>Transport links:</div>
+                              <div className="font-bold">Excellent</div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <div>Restaurants & amenities:</div>
+                              <div className="font-bold">20+ within 500m</div>
+                            </div>
+                          </>
+                        )}
+
+                        {i === 2 && (
+                          <>
+                            <div className="flex justify-between items-center">
+                              <div>Long-term rental yield:</div>
+                              <div className="font-bold">{rentalData.yieldLongTerm}%</div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <div>Tenant demand:</div>
+                              <div className="font-bold">High (+{rentalData.rentalDemand}%)</div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <div>Monthly rental income:</div>
+                              <div className="font-bold">R{rentalData.longTerm.toLocaleString()}</div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 p-4 border rounded-lg bg-muted">
+                  <div className="font-bold mb-2">How to Position This Property</div>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-2">
+                      <div className="bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center mt-0.5 text-xs">1</div>
+                      <div>
+                        <div className="font-medium">For investors:</div>
+                        <div className="text-sm">Highlight the exceptional {rentalData.yieldShortTerm}% Airbnb yield and strong rental demand in the area.</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <div className="bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center mt-0.5 text-xs">2</div>
+                      <div>
+                        <div className="font-medium">For young professionals:</div>
+                        <div className="text-sm">Emphasize the prime location, walkability to Cape Town CBD, and modern amenities.</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <div className="bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center mt-0.5 text-xs">3</div>
+                      <div>
+                        <div className="font-medium">For buy-to-let landlords:</div>
+                        <div className="text-sm">Focus on consistent rental demand and competitive yield compared to other areas.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="p-4 rounded-lg border bg-yellow-50">
+              <div className="flex gap-3">
+                <div className="mt-0.5 text-amber-500">💡</div>
+                <div>
+                  <div className="font-semibold text-amber-800">Agent Tip</div>
+                  <div className="text-amber-700">
+                    Always qualify your buyer first. For investors, focus on the rental returns and yield.
+                    For owner-occupiers, highlight the lifestyle benefits and proximity to amenities.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <div className="text-xs text-center text-muted-foreground mt-6">
+          *Analysis based on ProvenProperty™ AI-Powered Market Analysis using real-time Cape Town market data
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
