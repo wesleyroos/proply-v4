@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export default function DealScorePage() {
   const [formData, setFormData] = useState({
@@ -222,7 +223,6 @@ export default function DealScorePage() {
                     </div>
                   </div>
 
-                  {/* Price per square meter comparison */}
                   <div className="flex justify-between items-center mt-4">
                     <div className="font-medium">Price per m²</div>
                     <div className="font-bold">
