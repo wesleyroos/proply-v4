@@ -512,7 +512,7 @@ export default function DealScorePage() {
             </div>
           </DialogContent>
         </Dialog>
-        <PropertyScoreModal open={showPropertyScoreModal} onOpenChange={setShowPropertyScoreModal} />
+        <PropertyScoreModal isOpen={showPropertyScoreModal} onOpenChange={setShowPropertyScoreModal} />
       </div>
     </PageTransition>
   );
