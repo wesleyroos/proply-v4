@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 export default function DealScorePage() {
   const [formData, setFormData] = useState({
@@ -61,16 +60,7 @@ export default function DealScorePage() {
   return (
     <PageTransition>
       <div className="container mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-6">
-          Deal Score
-          <span 
-            onTripleClick={handlePrefill} 
-            className="ml-2 text-xs text-muted-foreground cursor-default select-none"
-            style={{ opacity: 0 }}
-          >
-            prefill
-          </span>
-        </h1>
+        <h1 className="text-3xl font-bold mb-6">Deal Score</h1>
 
         <div className="flex gap-8">
           {/* Form Section */}
@@ -233,6 +223,13 @@ export default function DealScorePage() {
             )}
           </div>
         </div>
+
+        {/* Prefill Button */}
+        <div 
+          onTripleClick={handlePrefill}
+          className="fixed bottom-4 right-4 w-6 h-6 rounded-full bg-gray-100/20 cursor-default select-none"
+          style={{ opacity: 0.1 }}
+        />
       </div>
     </PageTransition>
   );
