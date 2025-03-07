@@ -4,20 +4,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PropertyScoreModal } from "@/components/PropertyScoreModal";
 
 export default function DealScorePage() {
-  const [propertyDetails, setPropertyDetails] = useState({
+  const [formData, setFormData] = useState({
     address: "",
-    purchasePrice: 0,
-    marketAvgPrice: 0,
+    purchasePrice: "",
+    size: "",
+    areaRate: "",
+    nightlyRate: "",
+    occupancy: "",
+    longTermRental: "",
+    propertyCondition: "excellent"
   });
 
   const [showScore, setShowScore] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setShowScore(true);
+    console.log("Form submitted:", formData);
+    setShowScore(true); // Added to show the modal after submission
+    // We'll handle the submission logic later
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   return (
@@ -28,7 +43,7 @@ export default function DealScorePage() {
         {!showScore ? (
           <Card className="max-w-2xl mx-auto">
             <CardHeader>
-              <CardTitle>Enter Property Details</CardTitle>
+              <CardTitle>Property Details</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -36,44 +51,103 @@ export default function DealScorePage() {
                   <Label htmlFor="address">Property Address</Label>
                   <Input
                     id="address"
-                    value={propertyDetails.address}
-                    onChange={(e) => setPropertyDetails(prev => ({
-                      ...prev,
-                      address: e.target.value
-                    }))}
+                    value={formData.address}
+                    onChange={(e) => handleInputChange("address", e.target.value)}
                     placeholder="Enter property address"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="purchasePrice">Purchase Price</Label>
+                  <Label htmlFor="purchasePrice">Purchase Price (R)</Label>
                   <Input
                     id="purchasePrice"
                     type="number"
-                    value={propertyDetails.purchasePrice || ''}
-                    onChange={(e) => setPropertyDetails(prev => ({
-                      ...prev,
-                      purchasePrice: Number(e.target.value)
-                    }))}
+                    value={formData.purchasePrice}
+                    onChange={(e) => handleInputChange("purchasePrice", e.target.value)}
                     placeholder="Enter purchase price"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="marketAvgPrice">Market Average Price</Label>
+                  <Label htmlFor="size">Size (m²)</Label>
                   <Input
-                    id="marketAvgPrice"
+                    id="size"
                     type="number"
-                    value={propertyDetails.marketAvgPrice || ''}
-                    onChange={(e) => setPropertyDetails(prev => ({
-                      ...prev,
-                      marketAvgPrice: Number(e.target.value)
-                    }))}
-                    placeholder="Enter market average price"
+                    value={formData.size}
+                    onChange={(e) => handleInputChange("size", e.target.value)}
+                    placeholder="Enter property size"
                     required
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
+                  <Input
+                    id="areaRate"
+                    type="number"
+                    value={formData.areaRate}
+                    onChange={(e) => handleInputChange("areaRate", e.target.value)}
+                    placeholder="Enter area rate per square meter"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="nightlyRate">Nightly Rate (R)</Label>
+                  <Input
+                    id="nightlyRate"
+                    type="number"
+                    value={formData.nightlyRate}
+                    onChange={(e) => handleInputChange("nightlyRate", e.target.value)}
+                    placeholder="Enter nightly rate"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="occupancy">Occupancy (%)</Label>
+                  <Input
+                    id="occupancy"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={formData.occupancy}
+                    onChange={(e) => handleInputChange("occupancy", e.target.value)}
+                    placeholder="Enter expected occupancy rate"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="longTermRental">Long Term Rental (R/month)</Label>
+                  <Input
+                    id="longTermRental"
+                    type="number"
+                    value={formData.longTermRental}
+                    onChange={(e) => handleInputChange("longTermRental", e.target.value)}
+                    placeholder="Enter long term rental amount"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="propertyCondition">Property Condition</Label>
+                  <Select
+                    value={formData.propertyCondition}
+                    onValueChange={(value) => handleInputChange("propertyCondition", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select property condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <Button type="submit" className="w-full">
@@ -86,9 +160,16 @@ export default function DealScorePage() {
           <PropertyScoreModal
             isOpen={true}
             onOpenChange={() => setShowScore(false)}
-            propertyAddress={propertyDetails.address}
-            purchasePrice={propertyDetails.purchasePrice}
-            marketAvgPrice={propertyDetails.marketAvgPrice}
+            // Pass formData instead of propertyDetails
+            address={formData.address}
+            purchasePrice={Number(formData.purchasePrice)}
+            // Add other formData properties as needed
+            size={Number(formData.size)}
+            areaRate={Number(formData.areaRate)}
+            nightlyRate={Number(formData.nightlyRate)}
+            occupancy={Number(formData.occupancy)}
+            longTermRental={Number(formData.longTermRental)}
+            propertyCondition={formData.propertyCondition}
           />
         )}
       </div>
