@@ -64,14 +64,21 @@ export default function DealScorePage() {
       value = value.replace(/[^0-9.]/g, '');
     }
 
+    // Only update the form data without recalculating results
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+    
+    // If results are already showing, hide them until the user submits again
+    if (showResults) {
+      setShowResults(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Calculate results only when the form is submitted
     const marketPrice = Number(formData.size) * Number(formData.areaRate);
     const priceDiff = ((Number(formData.purchasePrice) - marketPrice) / marketPrice) * 100;
     setCalculatedResults({ marketPrice, priceDiff });
