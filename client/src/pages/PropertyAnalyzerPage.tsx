@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import html2canvas from "html2canvas";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
+import { PropertyScoreModal } from "@/components/PropertyScoreModal";
 import {
   Card,
   CardContent,
@@ -224,7 +225,16 @@ export default function PropertyAnalyzerPage() {
   const { user } = useUser();
   const hasProAccess = useProAccess();
   const queryClient = useQueryClient();
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => {
+    if (user && !hasProAccess && user.reportsGenerated >= 3) {
+      setShowLimitModal(true);
+    }
+  }, [user, hasProAccess]);
+
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null,
+  );
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(null);
   const [removeVat, setRemoveVat] = useState(false);
@@ -248,6 +258,8 @@ export default function PropertyAnalyzerPage() {
   const resultsRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const companyLogo = "/your-company-logo.png";
 
   const calculateBondRegistration = (
     purchasePrice: number,
@@ -557,6 +569,18 @@ export default function PropertyAnalyzerPage() {
 
         {analysisResult && (
           <>
+            <PropertyScoreModal
+              isOpen={isOpen}
+              onOpenChange={setIsOpen}
+              scores={{
+                priceVsMarket: 85,
+                rentalYield: 75,
+                affordability: 90,
+                liquidity: 70,
+                riskFactors: 80,
+                amenities: 95,
+              }}
+            />
             <div ref={resultsRef}>
               <div className="mb-6">
                 <div className="flex items-center justify-between">
@@ -576,6 +600,14 @@ export default function PropertyAnalyzerPage() {
                     >
                       <Save className="w-4 h-4 mr-2" />
                       Save Analysis
+                    </Button>
+
+                    <Button
+                      onClick={() => setIsOpen(true)}
+                      className="bg-indigo-600 hover:bg-indigo-700"
+                    >
+                      <BarChart3 className="w-4 h-4 mr-2" />
+                      View Property Score
                     </Button>
 
                     <Tooltip>
@@ -952,7 +984,6 @@ export default function PropertyAnalyzerPage() {
                                     .shortTermAnnualRevenue || 0) / 12,
                                 ).toLocaleString()}
                                 /month
-                              <p>
                               </p>
                             </div>
                             <p className="text-sm flex items-center gap-2">
