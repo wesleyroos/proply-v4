@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export default function DealScorePage() {
   const [formData, setFormData] = useState({
@@ -237,6 +238,20 @@ export default function DealScorePage() {
                         {calculatedResults.priceDiff > 0 ? '+' : ''}{Math.round(calculatedResults.priceDiff)}%
                       </div>
                     </div>
+                  </div>
+                  
+                  {/* Price per square meter comparison */}
+                  <div className="flex justify-between items-center mt-4">
+                    <div className="font-medium">Price per m²</div>
+                    <div className="font-bold">
+                      R{Math.round(Number(formData.purchasePrice) / Number(formData.size)).toLocaleString()}/m²
+                    </div>
+                    <div className="text-muted-foreground">
+                      (vs. area avg R{Number(formData.areaRate).toLocaleString()}/m²)
+                    </div>
+                    <Badge variant="outline" className={Number(formData.purchasePrice) / Number(formData.size) <= Number(formData.areaRate) ? 'text-green-500' : 'text-amber-500'}>
+                      {Number(formData.purchasePrice) / Number(formData.size) <= Number(formData.areaRate) ? 'COMPETITIVE' : 'PREMIUM'}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
