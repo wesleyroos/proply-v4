@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export default function DealScorePage() {
   const [formData, setFormData] = useState({
@@ -18,18 +20,29 @@ export default function DealScorePage() {
     propertyCondition: "excellent"
   });
 
+  const [showResults, setShowResults] = useState(false);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    // We'll handle the submission logic later
+    setShowResults(true);
   };
 
   const handleInputChange = (field: string, value: string) => {
+    // Remove any non-numeric characters (except decimal point) for number fields
+    if (field === "purchasePrice" || field === "size" || field === "areaRate" || 
+        field === "nightlyRate" || field === "occupancy" || field === "longTermRental") {
+      value = value.replace(/[^0-9.]/g, '');
+    }
+
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
+
+  // Calculate market price and price difference
+  const marketPrice = Number(formData.size) * Number(formData.areaRate);
+  const priceDiff = ((Number(formData.purchasePrice) - marketPrice) / marketPrice) * 100;
 
   return (
     <PageTransition>
@@ -57,7 +70,8 @@ export default function DealScorePage() {
                 <Label htmlFor="purchasePrice">Purchase Price (R)</Label>
                 <Input
                   id="purchasePrice"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={formData.purchasePrice}
                   onChange={(e) => handleInputChange("purchasePrice", e.target.value)}
                   placeholder="Enter purchase price"
@@ -69,7 +83,8 @@ export default function DealScorePage() {
                 <Label htmlFor="size">Size (m²)</Label>
                 <Input
                   id="size"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={formData.size}
                   onChange={(e) => handleInputChange("size", e.target.value)}
                   placeholder="Enter property size"
@@ -81,7 +96,8 @@ export default function DealScorePage() {
                 <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
                 <Input
                   id="areaRate"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={formData.areaRate}
                   onChange={(e) => handleInputChange("areaRate", e.target.value)}
                   placeholder="Enter area rate per square meter"
@@ -93,7 +109,8 @@ export default function DealScorePage() {
                 <Label htmlFor="nightlyRate">Nightly Rate (R)</Label>
                 <Input
                   id="nightlyRate"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={formData.nightlyRate}
                   onChange={(e) => handleInputChange("nightlyRate", e.target.value)}
                   placeholder="Enter nightly rate"
@@ -105,7 +122,8 @@ export default function DealScorePage() {
                 <Label htmlFor="occupancy">Occupancy (%)</Label>
                 <Input
                   id="occupancy"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   min="0"
                   max="100"
                   value={formData.occupancy}
@@ -119,7 +137,8 @@ export default function DealScorePage() {
                 <Label htmlFor="longTermRental">Long Term Rental (R/month)</Label>
                 <Input
                   id="longTermRental"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={formData.longTermRental}
                   onChange={(e) => handleInputChange("longTermRental", e.target.value)}
                   placeholder="Enter long term rental amount"
@@ -151,6 +170,38 @@ export default function DealScorePage() {
             </form>
           </CardContent>
         </Card>
+
+        {showResults && (
+          <Card className="max-w-2xl mt-8">
+            <CardHeader>
+              <CardTitle>Price Justification</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg mb-6">
+                <div>
+                  <div className="text-sm font-medium">Asking Price</div>
+                  <div className="text-3xl font-bold">
+                    R{Number(formData.purchasePrice).toLocaleString()}
+                  </div>
+                </div>
+                <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
+                <div>
+                  <div className="text-sm font-medium">Market Average</div>
+                  <div className="text-3xl font-bold">
+                    R{marketPrice.toLocaleString()}
+                  </div>
+                </div>
+                <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
+                <div>
+                  <div className="text-sm font-medium">Difference</div>
+                  <div className={`text-3xl font-bold ${priceDiff > 0 ? 'text-amber-500' : 'text-green-500'}`}>
+                    {priceDiff > 0 ? '+' : ''}{Math.round(priceDiff)}%
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </PageTransition>
   );
