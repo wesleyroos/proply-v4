@@ -559,27 +559,16 @@ export default function DealScorePage() {
                           </div>
                         </div>
                         <div className="relative">
-                          <Progress
-                            value={
-                              priceDiff <= -5 && submittedData?.propertyCondition === "excellent"
-                                ? 100
-                                : priceDiff <= 0
-                                ? 75
-                                : priceDiff <= 10
-                                ? 50
-                                : 25
-                            }
-                            className="h-2"
-                          />
+                          <div className="h-2 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-green-500 to-blue-500" />
                           <div className="flex justify-between mt-1 text-xs text-muted-foreground">
                             <span>Bad</span>
                             <span>Fair</span>
                             <span>Good</span>
                             <span>Great</span>
                           </div>
-                          <div className="absolute -bottom-1 w-full">
+                          <div className="absolute -top-2 w-full">
                             <div
-                              className="w-2 h-3 bg-primary transform -translate-y-full"
+                              className="absolute w-4 h-4 rounded-full border-2 border-white bg-primary shadow-lg transform -translate-x-1/2"
                               style={{
                                 left: `${
                                   priceDiff <= -5 && submittedData?.propertyCondition === "excellent"
@@ -590,7 +579,6 @@ export default function DealScorePage() {
                                     ? 50
                                     : 25
                                 }%`,
-                                transform: 'translateX(-50%) translateY(-100%)'
                               }}
                             />
                           </div>
