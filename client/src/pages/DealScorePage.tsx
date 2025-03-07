@@ -4,7 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ArrowRight, Loader2, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useProAccess } from "@/hooks/use-pro-access";
@@ -42,7 +48,7 @@ export default function DealScorePage() {
     nightlyRate: "",
     occupancy: "",
     longTermRental: "",
-    propertyCondition: "excellent"
+    propertyCondition: "excellent",
   });
 
   // States for revenue data
@@ -57,7 +63,9 @@ export default function DealScorePage() {
 
   const hasProAccess = useProAccess();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [submittedData, setSubmittedData] = useState<typeof formData | null>(null);
+  const [submittedData, setSubmittedData] = useState<typeof formData | null>(
+    null,
+  );
   const [showResults, setShowResults] = useState(false);
   const [showPropertyScoreModal, setShowPropertyScoreModal] = useState(false);
 
@@ -72,20 +80,26 @@ export default function DealScorePage() {
       nightlyRate: "2500",
       occupancy: "70",
       longTermRental: "25000",
-      propertyCondition: "excellent"
+      propertyCondition: "excellent",
     });
   };
 
   const handleInputChange = (field: string, value: string) => {
-    if (field === "purchasePrice" || field === "size" || field === "areaRate" ||
-        field === "nightlyRate" || field === "occupancy" || field === "longTermRental" ||
-        field === "bedrooms") {
-      value = value.replace(/[^0-9.]/g, '');
+    if (
+      field === "purchasePrice" ||
+      field === "size" ||
+      field === "areaRate" ||
+      field === "nightlyRate" ||
+      field === "occupancy" ||
+      field === "longTermRental" ||
+      field === "bedrooms"
+    ) {
+      value = value.replace(/[^0-9.]/g, "");
     }
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -102,7 +116,9 @@ export default function DealScorePage() {
       const bedrooms = formData.bedrooms;
 
       if (!address || !bedrooms) {
-        alert("Please enter the property address and number of bedrooms first.");
+        alert(
+          "Please enter the property address and number of bedrooms first.",
+        );
         return;
       }
 
@@ -163,17 +179,21 @@ export default function DealScorePage() {
     if (!revenueData) return;
 
     const data = revenueData[percentile];
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       nightlyRate: data.adr.toString(),
-      occupancy: data.occupancy.toString()
+      occupancy: data.occupancy.toString(),
     }));
     setShowPercentileDialog(false);
   };
 
   // Calculate results only from submitted data
-  const marketPrice = submittedData ? Number(submittedData.size) * Number(submittedData.areaRate) : 0;
-  const priceDiff = submittedData ? ((Number(submittedData.purchasePrice) - marketPrice) / marketPrice) * 100 : 0;
+  const marketPrice = submittedData
+    ? Number(submittedData.size) * Number(submittedData.areaRate)
+    : 0;
+  const priceDiff = submittedData
+    ? ((Number(submittedData.purchasePrice) - marketPrice) / marketPrice) * 100
+    : 0;
 
   const getConditionDetails = (condition: string) => {
     switch (condition) {
@@ -181,31 +201,31 @@ export default function DealScorePage() {
         return {
           description: "(minimal repairs needed)",
           badge: "MOVE-IN READY",
-          badgeColor: "text-emerald-500"
+          badgeColor: "text-emerald-500",
         };
       case "good":
         return {
           description: "(some repairs needed)",
           badge: "MINOR WORK",
-          badgeColor: "text-blue-500"
+          badgeColor: "text-blue-500",
         };
       case "fair":
         return {
           description: "(significant repairs needed)",
           badge: "NEEDS WORK",
-          badgeColor: "text-amber-500"
+          badgeColor: "text-amber-500",
         };
       case "poor":
         return {
           description: "(major repairs needed)",
           badge: "MAJOR WORK",
-          badgeColor: "text-red-500"
+          badgeColor: "text-red-500",
         };
       default:
         return {
           description: "",
           badge: "",
-          badgeColor: ""
+          badgeColor: "",
         };
     }
   };
@@ -216,7 +236,10 @@ export default function DealScorePage() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Deal Score</h1>
           {hasProAccess.hasAccess && (
-            <Button variant="outline" onClick={() => setShowPropertyScoreModal(true)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowPropertyScoreModal(true)}
+            >
               View Property Score <BarChart3 className="h-4 w-4 ml-2" />
             </Button>
           )}
@@ -236,7 +259,9 @@ export default function DealScorePage() {
                     <Input
                       id="address"
                       value={formData.address}
-                      onChange={(e) => handleInputChange("address", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("address", e.target.value)
+                      }
                       placeholder="Enter property address"
                       required
                     />
@@ -249,7 +274,9 @@ export default function DealScorePage() {
                       type="text"
                       inputMode="numeric"
                       value={formData.purchasePrice}
-                      onChange={(e) => handleInputChange("purchasePrice", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("purchasePrice", e.target.value)
+                      }
                       placeholder="Enter purchase price"
                       required
                     />
@@ -262,7 +289,9 @@ export default function DealScorePage() {
                       type="text"
                       inputMode="numeric"
                       value={formData.size}
-                      onChange={(e) => handleInputChange("size", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("size", e.target.value)
+                      }
                       placeholder="Enter property size"
                       required
                     />
@@ -275,7 +304,9 @@ export default function DealScorePage() {
                       type="text"
                       inputMode="numeric"
                       value={formData.areaRate}
-                      onChange={(e) => handleInputChange("areaRate", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("areaRate", e.target.value)
+                      }
                       placeholder="Enter area rate per square meter"
                       required
                     />
@@ -288,7 +319,9 @@ export default function DealScorePage() {
                       type="text"
                       inputMode="numeric"
                       value={formData.bedrooms}
-                      onChange={(e) => handleInputChange("bedrooms", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("bedrooms", e.target.value)
+                      }
                       placeholder="Enter number of bedrooms"
                       required
                     />
@@ -303,7 +336,9 @@ export default function DealScorePage() {
                           type="text"
                           inputMode="numeric"
                           value={formData.nightlyRate}
-                          onChange={(e) => handleInputChange("nightlyRate", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("nightlyRate", e.target.value)
+                          }
                           placeholder="Enter nightly rate"
                           required
                         />
@@ -318,7 +353,9 @@ export default function DealScorePage() {
                           min="0"
                           max="100"
                           value={formData.occupancy}
-                          onChange={(e) => handleInputChange("occupancy", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("occupancy", e.target.value)
+                          }
                           placeholder="Enter expected occupancy rate"
                           required
                         />
@@ -358,23 +395,31 @@ export default function DealScorePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="longTermRental">Long Term Rental (R/month)</Label>
+                    <Label htmlFor="longTermRental">
+                      Long Term Rental (R/month)
+                    </Label>
                     <Input
                       id="longTermRental"
                       type="text"
                       inputMode="numeric"
                       value={formData.longTermRental}
-                      onChange={(e) => handleInputChange("longTermRental", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("longTermRental", e.target.value)
+                      }
                       placeholder="Enter long term rental amount"
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="propertyCondition">Property Condition</Label>
+                    <Label htmlFor="propertyCondition">
+                      Property Condition
+                    </Label>
                     <Select
                       value={formData.propertyCondition}
-                      onValueChange={(value) => handleInputChange("propertyCondition", value)}
+                      onValueChange={(value) =>
+                        handleInputChange("propertyCondition", value)
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select property condition" />
@@ -399,85 +444,109 @@ export default function DealScorePage() {
           {/* Results Section */}
           <div className="flex-1">
             {showResults && submittedData && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Price Justification</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg mb-6">
-                    <div>
-                      <div className="text-sm font-medium">Asking Price</div>
-                      <div className="text-3xl font-bold">
-                        R{Number(submittedData.purchasePrice).toLocaleString()}
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Price Justification</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg mb-6">
+                      <div>
+                        <div className="text-sm font-medium">Asking Price</div>
+                        <div className="text-3xl font-bold">
+                          R{Number(submittedData.purchasePrice).toLocaleString()}
+                        </div>
+                      </div>
+                      <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
+                      <div>
+                        <div className="text-sm font-medium">Market Average</div>
+                        <div className="text-3xl font-bold">
+                          R{marketPrice.toLocaleString()}
+                        </div>
+                      </div>
+                      <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
+                      <div>
+                        <div className="text-sm font-medium">Difference</div>
+                        <div className={`text-3xl font-bold ${priceDiff > 0 ? 'text-amber-500' : 'text-green-500'}`}>
+                          {priceDiff > 0 ? '+' : ''}{Math.round(priceDiff)}%
+                        </div>
                       </div>
                     </div>
-                    <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
-                    <div>
-                      <div className="text-sm font-medium">Market Average</div>
-                      <div className="text-3xl font-bold">
-                        R{marketPrice.toLocaleString()}
+
+                    <div className="flex justify-between items-center mt-4">
+                      <div className="font-medium">Price per m²</div>
+                      <div className="font-bold">
+                        R{submittedData ? Math.round(Number(submittedData.purchasePrice) / Number(submittedData.size)).toLocaleString() : "0"}/m²
+                      </div>
+                      <div className="text-muted-foreground">
+                        (vs. area avg R{submittedData ? Number(submittedData.areaRate).toLocaleString() : "0"}/m²)
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className={submittedData && (Number(submittedData.purchasePrice) / Number(submittedData.size) <= Number(submittedData.areaRate)) ? 'text-green-500' : 'text-amber-500'}>
+                          {submittedData && (Number(submittedData.purchasePrice) / Number(submittedData.size) <= Number(submittedData.areaRate)) ? '-' : '+'}
+                          R{submittedData ? Math.abs(Math.round(Number(submittedData.purchasePrice) / Number(submittedData.size) - Number(submittedData.areaRate))).toLocaleString() : "0"}/m²
+                        </div>
+                        <Badge variant="outline" className={priceDiff <= 0 ? 'text-green-500' : 'text-amber-500'}>
+                          {priceDiff <= 0 ? 'Under Paying' : 'Over Paying'}
+                        </Badge>
                       </div>
                     </div>
-                    <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
-                    <div>
-                      <div className="text-sm font-medium">Difference</div>
-                      <div className={`text-3xl font-bold ${priceDiff > 0 ? 'text-amber-500' : 'text-green-500'}`}>
-                        {priceDiff > 0 ? '+' : ''}{Math.round(priceDiff)}%
+
+                    <div className="flex justify-between items-center mt-4">
+                      <div className="font-medium">Property Condition</div>
+                      <div className="font-bold capitalize">
+                        {submittedData.propertyCondition}
+                      </div>
+                      <div className="text-muted-foreground">
+                        {getConditionDetails(submittedData.propertyCondition).description}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className={getConditionDetails(submittedData.propertyCondition).badgeColor}>
+                          {getConditionDetails(submittedData.propertyCondition).badge}
+                        </Badge>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex justify-between items-center mt-4">
-                    <div className="font-medium">Price per m²</div>
-                    <div className="font-bold">
-                      R{submittedData ? Math.round(Number(submittedData.purchasePrice) / Number(submittedData.size)).toLocaleString() : "0"}/m²
-                    </div>
-                    <div className="text-muted-foreground">
-                      (vs. area avg R{submittedData ? Number(submittedData.areaRate).toLocaleString() : "0"}/m²)
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className={submittedData && (Number(submittedData.purchasePrice) / Number(submittedData.size) <= Number(submittedData.areaRate)) ? 'text-green-500' : 'text-amber-500'}>
-                        {submittedData && (Number(submittedData.purchasePrice) / Number(submittedData.size) <= Number(submittedData.areaRate)) ? '-' : '+'}
-                        R{submittedData ? Math.abs(Math.round(Number(submittedData.purchasePrice) / Number(submittedData.size) - Number(submittedData.areaRate))).toLocaleString() : "0"}/m²
+                    <div className="flex justify-between items-center mt-4">
+                      <div className="font-medium">Recent Area Sales</div>
+                      <div className="font-bold">
+                        R3.4M - R3.7M
                       </div>
-                      <Badge variant="outline" className={priceDiff <= 0 ? 'text-green-500' : 'text-amber-500'}>
-                        {priceDiff <= 0 ? 'Under Paying' : 'Over Paying'}
-                      </Badge>
+                      <div className="text-muted-foreground">
+                        (last 3 months)
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-blue-600">
+                          WITHIN RANGE
+                        </Badge>
+                      </div>
                     </div>
-                  </div>
+                  </CardContent>
+                </Card>
 
-                  <div className="flex justify-between items-center mt-4">
-                    <div className="font-medium">Property Condition</div>
-                    <div className="font-bold capitalize">
-                      {submittedData.propertyCondition}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Making This a Good Deal</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-2">To make this a good deal, consider:</p>
+                        <p className="text-lg font-medium">
+                          Make an offer between{" "}
+                          <span className="font-bold text-green-600">
+                            R{(marketPrice * 0.9).toLocaleString()}
+                          </span>
+                          {" "}and{" "}
+                          <span className="font-bold text-amber-600">
+                            R{(marketPrice * 1.1).toLocaleString()}
+                          </span>
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-muted-foreground">
-                      {getConditionDetails(submittedData.propertyCondition).description}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className={getConditionDetails(submittedData.propertyCondition).badgeColor}>
-                        {getConditionDetails(submittedData.propertyCondition).badge}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center mt-4">
-                    <div className="font-medium">Recent Area Sales</div>
-                    <div className="font-bold">
-                      R3.4M - R3.7M
-                    </div>
-                    <div className="text-muted-foreground">
-                      (last 3 months)
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-blue-600">
-                        WITHIN RANGE
-                      </Badge>
-                    </div>
-                  </div>
-
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             )}
           </div>
         </div>
@@ -574,7 +643,10 @@ export default function DealScorePage() {
             </div>
           </DialogContent>
         </Dialog>
-        <PropertyScoreModal isOpen={showPropertyScoreModal} onOpenChange={setShowPropertyScoreModal} />
+        <PropertyScoreModal
+          isOpen={showPropertyScoreModal}
+          onOpenChange={setShowPropertyScoreModal}
+        />
       </div>
     </PageTransition>
   );
