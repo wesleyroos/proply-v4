@@ -69,11 +69,10 @@ export default function DealScorePage() {
       ...prev,
       [field]: value
     }));
-    
-    // If results are already showing, hide them until the user submits again
-    if (showResults) {
-      setShowResults(false);
-    }
+
+    // No additional logic here - just update the form values
+    // Results will remain visible with previous calculation values
+    // until the user explicitly clicks the Calculate button
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -246,7 +245,7 @@ export default function DealScorePage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Price per square meter comparison */}
                   <div className="flex justify-between items-center mt-4">
                     <div className="font-medium">Price per m²</div>
