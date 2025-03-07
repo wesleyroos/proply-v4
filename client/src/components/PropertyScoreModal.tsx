@@ -704,7 +704,7 @@ export function PropertyScoreModal({
         </Tabs>
 
         <div className="text-xs text-center text-muted-foreground mt-6">
-          *Analysis based on ProvenProperty™ AI-Powered Market Analysis using real-time Cape Town market data
+          *Analysis based on Proply Tech (Pty) Ltd AI-Powered Market Analysis using real-time market data
         </div>
       </DialogContent>
     </Dialog>
