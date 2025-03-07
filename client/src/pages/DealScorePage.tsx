@@ -19,6 +19,7 @@ export default function DealScorePage() {
     propertyCondition: "excellent"
   });
 
+  const [calculatedResults, setCalculatedResults] = useState({ marketPrice: 0, priceDiff: 0 });
   const [showResults, setShowResults] = useState(false);
 
   // Prefill data handler
@@ -33,7 +34,7 @@ export default function DealScorePage() {
       longTermRental: "25000",
       propertyCondition: "excellent"
     });
-    
+
     // Add visual feedback that prefill was triggered
     const feedbackEl = document.createElement('div');
     feedbackEl.textContent = 'Form prefilled!';
@@ -46,9 +47,9 @@ export default function DealScorePage() {
     feedbackEl.style.color = 'white';
     feedbackEl.style.borderRadius = '4px';
     feedbackEl.style.zIndex = '9999';
-    
+
     document.body.appendChild(feedbackEl);
-    
+
     // Remove the notification after 2 seconds
     setTimeout(() => {
       document.body.removeChild(feedbackEl);
@@ -70,12 +71,11 @@ export default function DealScorePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const marketPrice = Number(formData.size) * Number(formData.areaRate);
+    const priceDiff = ((Number(formData.purchasePrice) - marketPrice) / marketPrice) * 100;
+    setCalculatedResults({ marketPrice, priceDiff });
     setShowResults(true);
   };
-
-  // Calculate market price and price difference
-  const marketPrice = Number(formData.size) * Number(formData.areaRate);
-  const priceDiff = ((Number(formData.purchasePrice) - marketPrice) / marketPrice) * 100;
 
   return (
     <PageTransition>
@@ -227,14 +227,14 @@ export default function DealScorePage() {
                     <div>
                       <div className="text-sm font-medium">Market Average</div>
                       <div className="text-3xl font-bold">
-                        R{marketPrice.toLocaleString()}
+                        R{calculatedResults.marketPrice.toLocaleString()}
                       </div>
                     </div>
                     <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
                     <div>
                       <div className="text-sm font-medium">Difference</div>
-                      <div className={`text-3xl font-bold ${priceDiff > 0 ? 'text-amber-500' : 'text-green-500'}`}>
-                        {priceDiff > 0 ? '+' : ''}{Math.round(priceDiff)}%
+                      <div className={`text-3xl font-bold ${calculatedResults.priceDiff > 0 ? 'text-amber-500' : 'text-green-500'}`}>
+                        {calculatedResults.priceDiff > 0 ? '+' : ''}{Math.round(calculatedResults.priceDiff)}%
                       </div>
                     </div>
                   </div>
@@ -251,16 +251,16 @@ export default function DealScorePage() {
             const now = new Date().getTime();
             if (!window.lastClick) window.lastClick = 0;
             if (!window.clickCount) window.clickCount = 0;
-            
+
             // Reset counter if more than 500ms between clicks
             if (now - window.lastClick > 500) {
               window.clickCount = 1;
             } else {
               window.clickCount++;
             }
-            
+
             window.lastClick = now;
-            
+
             // If triple click detected, call handlePrefill
             if (window.clickCount === 3) {
               handlePrefill();
