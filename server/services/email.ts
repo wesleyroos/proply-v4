@@ -1,7 +1,7 @@
-import { MailService } from '@sendgrid/mail';
+import { MailService } from "@sendgrid/mail";
 
 const mailService = new MailService();
-mailService.setApiKey(process.env.SENDGRID_API_KEY || '');
+mailService.setApiKey(process.env.SENDGRID_API_KEY || "");
 
 interface EmailParams {
   to: string;
@@ -10,57 +10,59 @@ interface EmailParams {
   html?: string;
 }
 
-export async function sendAdminNotification(params: EmailParams): Promise<boolean> {
+export async function sendAdminNotification(
+  params: EmailParams,
+): Promise<boolean> {
   try {
-    const adminEmail = 'wesley@proply.co.za';
+    const adminEmail = "wesley@proply.co.za";
     // Important: This must be your verified sender in SendGrid
-    const verifiedSender = 'hello@proply.co.za';
+    const verifiedSender = "hello@proply.co.za";
 
-    console.log('Preparing to send admin notification email:', {
+    console.log("Preparing to send admin notification email:", {
       to: params.to || adminEmail,
       from: verifiedSender,
       subject: params.subject,
       hasHtml: !!params.html,
-      hasText: !!params.text
+      hasText: !!params.text,
     });
 
     const msg = {
       to: params.to || adminEmail,
       from: {
         email: verifiedSender,
-        name: 'Proply'
+        name: "Proply",
       },
       subject: params.subject,
-      text: params.text || '',
+      text: params.text || "",
       html: params.html,
       mailSettings: {
         sandboxMode: {
-          enable: false
-        }
+          enable: false,
+        },
       },
       trackingSettings: {
         clickTracking: {
-          enable: false // Disable click tracking to prevent URL rewriting
+          enable: false, // Disable click tracking to prevent URL rewriting
         },
         openTracking: {
-          enable: true
-        }
-      }
+          enable: true,
+        },
+      },
     };
 
-    console.log('Sending email with SendGrid...');
+    console.log("Sending email with SendGrid...");
     await mailService.send(msg);
-    console.log('Admin notification email sent successfully');
+    console.log("Admin notification email sent successfully");
     return true;
   } catch (error: unknown) {
-    console.error('SendGrid email error:', error);
-    if (error instanceof Error && 'response' in error) {
+    console.error("SendGrid email error:", error);
+    if (error instanceof Error && "response" in error) {
       const sendGridError = error as any;
-      console.error('SendGrid API detailed error:', {
+      console.error("SendGrid API detailed error:", {
         body: sendGridError.response?.body,
         statusCode: sendGridError.response?.statusCode,
         message: sendGridError.message,
-        name: sendGridError.name
+        name: sendGridError.name,
       });
     }
     return false;
@@ -74,13 +76,13 @@ export async function sendNewUserNotification(userData: {
   userType: string;
   subscriptionStatus: string;
 }): Promise<boolean> {
-  console.log('Preparing new user notification email for:', {
+  console.log("Preparing new user notification email for:", {
     userEmail: userData.email,
     name: `${userData.firstName} ${userData.lastName}`,
-    type: userData.userType
+    type: userData.userType,
   });
 
-  const subject = 'New User Registration on Proply';
+  const subject = "New User Registration on Proply";
   const html = `
     <h2>New User Registration</h2>
     <p>A new user has registered on the Proply platform.</p>
@@ -109,7 +111,7 @@ export async function sendNewUserNotification(userData: {
   `;
 
   return sendAdminNotification({
-    to: 'wesley@proply.co.za',
+    to: "wesley@proply.co.za",
     subject,
     html,
     text,
@@ -125,40 +127,142 @@ export async function sendWelcomeEmail(userData: {
     const verifiedSender = 'hello@proply.co.za';
 
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <img src="https://proply.co.za/proply-logo-1.png" alt="Proply" style="max-width: 200px; margin: 20px 0;" />
-        <h2>Welcome to Proply, ${userData.firstName}!</h2>
-        <p>Thank you for joining Proply - your partner in property investment intelligence.</p>
-        <div style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; margin: 20px 0;">
-          <h3>Getting Started</h3>
-          <ul style="list-style-type: none; padding: 0;">
-            <li style="margin-bottom: 10px;">✨ Analyze your first property</li>
-            <li style="margin-bottom: 10px;">📊 Generate detailed reports</li>
-            <li style="margin-bottom: 10px;">💡 Get market insights</li>
-          </ul>
+      <!DOCTYPE html>
+      <div style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #ffffff;
+        color: #333333;
+        line-height: 1.6;
+      ">
+        <!-- Header with Logo -->
+        <div style="text-align: center; padding: 20px 0 30px;">
+          <img src="https://proply.co.za/proply-logo-1.png" alt="Proply" style="max-width: 180px; height: auto;" />
         </div>
-        <p>
-          Ready to start? <a href="https://proply.co.za/dashboard" style="color: #1BA3FF;">Visit your dashboard</a>
-        </p>
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
-          <p>If you need any assistance, don't hesitate to contact our support team.</p>
+
+        <!-- Main Content -->
+        <div style="
+          background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+          border-radius: 12px;
+          padding: 32px;
+          margin-bottom: 30px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        ">
+          <h1 style="
+            color: #1e293b;
+            font-size: 24px;
+            margin: 0 0 20px;
+            text-align: center;
+          ">Welcome to Proply, ${userData.firstName}! 🎉</h1>
+
+          <p style="
+            color: #475569;
+            font-size: 16px;
+            margin-bottom: 25px;
+            text-align: center;
+          ">Your journey to smarter property investment starts here.</p>
+
+          <!-- Features Grid -->
+          <div style="
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 20px 0;
+            border: 1px solid #e2e8f0;
+          ">
+            <h2 style="
+              color: #1e293b;
+              font-size: 18px;
+              margin: 0 0 20px;
+              text-align: center;
+            ">Here's what you can do with Proply:</h2>
+
+            <div style="margin: 20px 0;">
+              <div style="margin-bottom: 16px; display: flex;">
+                <span style="color: #1BA3FF; font-size: 20px; margin-right: 10px;">✨</span>
+                <div>
+                  <strong style="color: #1e293b;">Analyze Properties</strong>
+                  <p style="margin: 5px 0 0; color: #64748b;">Get detailed insights and analytics for any property</p>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px; display: flex;">
+                <span style="color: #1BA3FF; font-size: 20px; margin-right: 10px;">📊</span>
+                <div>
+                  <strong style="color: #1e293b;">Generate Reports</strong>
+                  <p style="margin: 5px 0 0; color: #64748b;">Create professional property analysis reports</p>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px; display: flex;">
+                <span style="color: #1BA3FF; font-size: 20px; margin-right: 10px;">💡</span>
+                <div>
+                  <strong style="color: #1e293b;">Market Insights</strong>
+                  <p style="margin: 5px 0 0; color: #64748b;">Access valuable market data and trends</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CTA Button -->
+          <div style="text-align: center; margin: 35px 0;">
+            <a href="https://proply.co.za/dashboard" 
+              style="
+                display: inline-block;
+                background-color: #1BA3FF;
+                color: #ffffff;
+                padding: 16px 32px;
+                text-decoration: none;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 16px;
+                transition: background-color 0.3s ease;
+                box-shadow: 0 4px 6px rgba(27, 163, 255, 0.1);
+              "
+            >
+              Go to Dashboard
+            </a>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="
+          text-align: center;
+          padding-top: 30px;
+          border-top: 1px solid #e2e8f0;
+          color: #64748b;
+          font-size: 14px;
+        ">
+          <p style="margin: 0 0 10px;">Need help getting started? Our support team is here for you.</p>
+          <p style="margin: 0;">
+            <a href="mailto:support@proply.co.za" style="color: #1BA3FF; text-decoration: none;">support@proply.co.za</a>
+          </p>
         </div>
       </div>
     `;
 
     const text = `
-      Welcome to Proply, ${userData.firstName}!
+      Welcome to Proply, ${userData.firstName}! 🎉
 
-      Thank you for joining Proply - your partner in property investment intelligence.
+      Your journey to smarter property investment starts here.
 
-      Getting Started:
-      - Analyze your first property
-      - Generate detailed reports
-      - Get market insights
+      Here's what you can do with Proply:
+
+      ✨ Analyze Properties
+      Get detailed insights and analytics for any property
+
+      📊 Generate Reports
+      Create professional property analysis reports
+
+      💡 Market Insights
+      Access valuable market data and trends
 
       Ready to start? Visit your dashboard at: https://proply.co.za/dashboard
 
-      If you need any assistance, don't hesitate to contact our support team.
+      Need help getting started? Our support team is here for you.
+      Contact us at: support@proply.co.za
     `;
 
     const msg = {
@@ -195,9 +299,15 @@ export async function sendWelcomeEmail(userData: {
   }
 }
 
-export async function sendPasswordResetEmail(email: string, resetToken: string): Promise<boolean> {
+export async function sendPasswordResetEmail(
+  email: string,
+  resetToken: string,
+): Promise<boolean> {
   // Use APPLICATION_URL from environment or fallback to default URL
-  const appUrl = process.env.APPLICATION_URL || process.env.APP_URL || 'https://proply.co.za';
+  const appUrl =
+    process.env.APPLICATION_URL ||
+    process.env.APP_URL ||
+    "https://proply.co.za";
   const resetLink = `${appUrl}/reset-password?token=${resetToken}`;
 
   const html = `
@@ -231,7 +341,7 @@ export async function sendPasswordResetEmail(email: string, resetToken: string):
 
   return sendAdminNotification({
     to: email,
-    subject: 'Reset Your Proply Password',
+    subject: "Reset Your Proply Password",
     html,
     text,
   });
