@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PropertyScoreModal } from "@/components/PropertyScoreModal";
+import { Progress } from "@/components/ui/progress"; // Add this import
 
 interface RevenueData {
   adr: number;
@@ -542,6 +543,58 @@ export default function DealScorePage() {
                             R{(marketPrice * 1.1).toLocaleString()}
                           </span>
                         </p>
+                      </div>
+
+                      <div className="mt-6">
+                        <div className="flex justify-between mb-2">
+                          <div className="text-sm font-medium">Deal Rating</div>
+                          <div className="text-sm font-medium">
+                            {priceDiff <= -5 && submittedData?.propertyCondition === "excellent"
+                              ? "Great"
+                              : priceDiff <= 0
+                              ? "Good"
+                              : priceDiff <= 10
+                              ? "Fair"
+                              : "Bad"}
+                          </div>
+                        </div>
+                        <div className="relative">
+                          <Progress
+                            value={
+                              priceDiff <= -5 && submittedData?.propertyCondition === "excellent"
+                                ? 100
+                                : priceDiff <= 0
+                                ? 75
+                                : priceDiff <= 10
+                                ? 50
+                                : 25
+                            }
+                            className="h-2"
+                          />
+                          <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                            <span>Bad</span>
+                            <span>Fair</span>
+                            <span>Good</span>
+                            <span>Great</span>
+                          </div>
+                          <div className="absolute -bottom-1 w-full">
+                            <div
+                              className="w-2 h-3 bg-primary transform -translate-y-full"
+                              style={{
+                                left: `${
+                                  priceDiff <= -5 && submittedData?.propertyCondition === "excellent"
+                                    ? 100
+                                    : priceDiff <= 0
+                                    ? 75
+                                    : priceDiff <= 10
+                                    ? 50
+                                    : 25
+                                }%`,
+                                transform: 'translateX(-50%) translateY(-100%)'
+                              }}
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
