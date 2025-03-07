@@ -249,9 +249,15 @@ export default function DealScorePage() {
                     <div className="text-muted-foreground">
                       (vs. area avg R{Number(formData.areaRate).toLocaleString()}/m²)
                     </div>
-                    <Badge variant="outline" className={Number(formData.purchasePrice) / Number(formData.size) <= Number(formData.areaRate) ? 'text-green-500' : 'text-amber-500'}>
-                      {Number(formData.purchasePrice) / Number(formData.size) <= Number(formData.areaRate) ? 'COMPETITIVE' : 'PREMIUM'}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <div className={Number(formData.purchasePrice) / Number(formData.size) <= Number(formData.areaRate) ? 'text-green-500' : 'text-amber-500'}>
+                        {Number(formData.purchasePrice) / Number(formData.size) <= Number(formData.areaRate) ? '-' : '+'}
+                        R{Math.abs(Math.round(Number(formData.purchasePrice) / Number(formData.size) - Number(formData.areaRate))).toLocaleString()}/m²
+                      </div>
+                      <Badge variant="outline" className={Number(formData.purchasePrice) / Number(formData.size) <= Number(formData.areaRate) ? 'text-green-500' : 'text-amber-500'}>
+                        {Number(formData.purchasePrice) / Number(formData.size) <= Number(formData.areaRate) ? 'COMPETITIVE' : 'PREMIUM'}
+                      </Badge>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
