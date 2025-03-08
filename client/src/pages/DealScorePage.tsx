@@ -289,7 +289,7 @@ export default function DealScorePage() {
 
         <div className="flex gap-8">
           {/* Form Section */}
-          <div className="w-[700px]">
+          <div className="w-[600px]">
             <Card>
               <CardHeader>
                 <CardTitle>Property Details</CardTitle>
