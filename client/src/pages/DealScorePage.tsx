@@ -22,7 +22,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PropertyScoreModal } from "@/components/PropertyScoreModal";
-import { Progress } from "@/components/ui/progress"; // Add this import
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface RevenueData {
   adr: number;
@@ -461,149 +462,183 @@ export default function DealScorePage() {
           {/* Results Section */}
           <div className="flex-1">
             {showResults && submittedData && (
-              <div className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Price Justification</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg mb-6">
-                      <div>
-                        <div className="text-sm font-medium">Asking Price</div>
-                        <div className="text-3xl font-bold">
-                          R{Number(submittedData.purchasePrice).toLocaleString()}
-                        </div>
-                      </div>
-                      <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
-                      <div>
-                        <div className="text-sm font-medium">Market Average</div>
-                        <div className="text-3xl font-bold">
-                          R{marketPrice.toLocaleString()}
-                        </div>
-                      </div>
-                      <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
-                      <div>
-                        <div className="text-sm font-medium">Difference</div>
-                        <div className={`text-3xl font-bold ${priceDiff > 0 ? 'text-amber-500' : 'text-green-500'}`}>
-                          {priceDiff > 0 ? '+' : ''}{Math.round(priceDiff)}%
-                        </div>
-                      </div>
-                    </div>
+              <Tabs defaultValue="deal_score" className="w-full">
+                <TabsList className="bg-muted/50 p-0 h-12">
+                  <TabsTrigger value="deal_score" className="flex-1 h-12">Deal Score</TabsTrigger>
+                  <TabsTrigger value="price" className="flex-1 h-12">Price</TabsTrigger>
+                  <TabsTrigger value="rental" className="flex-1 h-12">Rental</TabsTrigger>
+                  <TabsTrigger value="affordability" className="flex-1 h-12">Affordability</TabsTrigger>
+                  <TabsTrigger value="buyer_profile" className="flex-1 h-12">Buyer Profile</TabsTrigger>
+                </TabsList>
 
-                    <div className="flex justify-between items-center mt-4">
-                      <div className="font-medium">Price per m²</div>
-                      <div className="font-bold">
-                        R{submittedData ? Math.round(Number(submittedData.purchasePrice) / Number(submittedData.size)).toLocaleString() : "0"}/m²
-                      </div>
-                      <div className="text-muted-foreground">
-                        (vs. area avg R{submittedData ? Number(submittedData.areaRate).toLocaleString() : "0"}/m²)
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className={submittedData && (Number(submittedData.purchasePrice) / Number(submittedData.size) <= Number(submittedData.areaRate)) ? 'text-green-500' : 'text-amber-500'}>
-                          {submittedData && (Number(submittedData.purchasePrice) / Number(submittedData.size) <= Number(submittedData.areaRate)) ? '-' : '+'}
-                          R{submittedData ? Math.abs(Math.round(Number(submittedData.purchasePrice) / Number(submittedData.size) - Number(submittedData.areaRate))).toLocaleString() : "0"}/m²
-                        </div>
-                        <Badge variant="outline" className={priceDiff <= 0 ? 'text-green-500' : 'text-amber-500'}>
-                          {priceDiff <= 0 ? 'Under Paying' : 'Over Paying'}
-                        </Badge>
-                      </div>
-                    </div>
+                <TabsContent value="deal_score">
+                  <div className="text-center py-8 text-muted-foreground">
+                    Deal Score analysis coming soon
+                  </div>
+                </TabsContent>
 
-                    <div className="flex justify-between items-center mt-4">
-                      <div className="font-medium">Property Condition</div>
-                      <div className="font-bold capitalize">
-                        {submittedData.propertyCondition}
-                      </div>
-                      <div className="text-muted-foreground">
-                        {getConditionDetails(submittedData.propertyCondition).description}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className={getConditionDetails(submittedData.propertyCondition).badgeColor}>
-                          {getConditionDetails(submittedData.propertyCondition).badge}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center mt-4">
-                      <div className="font-medium">Recent Area Sales</div>
-                      <div className="font-bold">
-                        R3.4M - R3.7M
-                      </div>
-                      <div className="text-muted-foreground">
-                        (last 3 months)
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-blue-600">
-                          WITHIN RANGE
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Making This a Good Deal</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="p-4 bg-muted/30 rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-2">To make this a good deal, consider:</p>
-                        <p className="text-lg font-medium">
-                          Make an offer between{" "}
-                          <span className="font-bold text-green-600">
-                            R{(marketPrice * 0.9).toLocaleString()}
-                          </span>
-                          {" "}and{" "}
-                          <span className="font-bold text-amber-600">
-                            R{(marketPrice * 1.1).toLocaleString()}
-                          </span>
-                        </p>
-                      </div>
-
-                      <div className="mt-6">
-                        <div className="flex justify-between mb-2">
-                          <div className="text-sm font-medium">Deal Rating</div>
-                          <div className="text-sm font-medium">
-                            {priceDiff <= -5 && submittedData?.propertyCondition === "excellent"
-                              ? "Great"
-                              : priceDiff <= 0
-                              ? "Good"
-                              : priceDiff <= 10
-                              ? "Fair"
-                              : "Bad"}
+                <TabsContent value="price" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Price Justification</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg mb-6">
+                        <div>
+                          <div className="text-sm font-medium">Asking Price</div>
+                          <div className="text-3xl font-bold">
+                            R{Number(submittedData.purchasePrice).toLocaleString()}
                           </div>
                         </div>
-                        <div className="relative">
-                          <div className="h-2 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-green-500 to-blue-500" />
-                          <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                            <span>Bad</span>
-                            <span>Fair</span>
-                            <span>Good</span>
-                            <span>Great</span>
+                        <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
+                        <div>
+                          <div className="text-sm font-medium">Market Average</div>
+                          <div className="text-3xl font-bold">
+                            R{marketPrice.toLocaleString()}
                           </div>
-                          <div className="absolute -top-2 w-full">
-                            <div
-                              className="absolute w-4 h-4 rounded-full border-2 border-white bg-primary shadow-lg transform -translate-x-1/2"
-                              style={{
-                                left: `${
-                                  priceDiff <= -5 && submittedData?.propertyCondition === "excellent"
-                                    ? 100
-                                    : priceDiff <= 0
-                                    ? 75
-                                    : priceDiff <= 10
-                                    ? 50
-                                    : 25
-                                }%`,
-                              }}
-                            />
+                        </div>
+                        <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
+                        <div>
+                          <div className="text-sm font-medium">Difference</div>
+                          <div className={`text-3xl font-bold ${priceDiff > 0 ? 'text-amber-500' : 'text-green-500'}`}>
+                            {priceDiff > 0 ? '+' : ''}{Math.round(priceDiff)}%
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+
+                      <div className="flex justify-between items-center mt-4">
+                        <div className="font-medium">Price per m²</div>
+                        <div className="font-bold">
+                          R{submittedData ? Math.round(Number(submittedData.purchasePrice) / Number(submittedData.size)).toLocaleString() : "0"}/m²
+                        </div>
+                        <div className="text-muted-foreground">
+                          (vs. area avg R{submittedData ? Number(submittedData.areaRate).toLocaleString() : "0"}/m²)
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className={submittedData && (Number(submittedData.purchasePrice) / Number(submittedData.size) <= Number(submittedData.areaRate)) ? 'text-green-500' : 'text-amber-500'}>
+                            {submittedData && (Number(submittedData.purchasePrice) / Number(submittedData.size) <= Number(submittedData.areaRate)) ? '-' : '+'}
+                            R{submittedData ? Math.abs(Math.round(Number(submittedData.purchasePrice) / Number(submittedData.size) - Number(submittedData.areaRate))).toLocaleString() : "0"}/m²
+                          </div>
+                          <Badge variant="outline" className={priceDiff <= 0 ? 'text-green-500' : 'text-amber-500'}>
+                            {priceDiff <= 0 ? 'Under Paying' : 'Over Paying'}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-4">
+                        <div className="font-medium">Property Condition</div>
+                        <div className="font-bold capitalize">
+                          {submittedData.propertyCondition}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {getConditionDetails(submittedData.propertyCondition).description}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className={getConditionDetails(submittedData.propertyCondition).badgeColor}>
+                            {getConditionDetails(submittedData.propertyCondition).badge}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-4">
+                        <div className="font-medium">Recent Area Sales</div>
+                        <div className="font-bold">
+                          R3.4M - R3.7M
+                        </div>
+                        <div className="text-muted-foreground">
+                          (last 3 months)
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-blue-600">
+                            WITHIN RANGE
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Making This a Good Deal</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="p-4 bg-muted/30 rounded-lg">
+                          <p className="text-sm text-muted-foreground mb-2">To make this a good deal, consider:</p>
+                          <p className="text-lg font-medium">
+                            Make an offer between{" "}
+                            <span className="font-bold text-green-600">
+                              R{(marketPrice * 0.9).toLocaleString()}
+                            </span>
+                            {" "}and{" "}
+                            <span className="font-bold text-amber-600">
+                              R{(marketPrice * 1.1).toLocaleString()}
+                            </span>
+                          </p>
+                        </div>
+
+                        <div className="mt-6">
+                          <div className="flex justify-between mb-2">
+                            <div className="text-sm font-medium">Deal Rating</div>
+                            <div className="text-sm font-medium">
+                              {priceDiff <= -5 && submittedData?.propertyCondition === "excellent"
+                                ? "Great"
+                                : priceDiff <= 0
+                                ? "Good"
+                                : priceDiff <= 10
+                                ? "Fair"
+                                : "Bad"}
+                            </div>
+                          </div>
+                          <div className="relative">
+                            <div className="h-2 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-green-500 to-blue-500" />
+                            <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                              <span>Bad</span>
+                              <span>Fair</span>
+                              <span>Good</span>
+                              <span>Great</span>
+                            </div>
+                            <div className="absolute -top-2 w-full">
+                              <div
+                                className="absolute w-4 h-4 rounded-full border-2 border-white bg-primary shadow-lg transform -translate-x-1/2"
+                                style={{
+                                  left: `${
+                                    priceDiff <= -5 && submittedData?.propertyCondition === "excellent"
+                                      ? 100
+                                      : priceDiff <= 0
+                                      ? 75
+                                      : priceDiff <= 10
+                                      ? 50
+                                      : 25
+                                  }%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="rental">
+                  <div className="text-center py-8 text-muted-foreground">
+                    Rental analysis coming soon
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="affordability">
+                  <div className="text-center py-8 text-muted-foreground">
+                    Affordability analysis coming soon
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="buyer_profile">
+                  <div className="text-center py-8 text-muted-foreground">
+                    Buyer profile analysis coming soon
+                  </div>
+                </TabsContent>
+              </Tabs>
             )}
           </div>
         </div>
