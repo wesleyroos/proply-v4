@@ -69,6 +69,7 @@ export default function DealScorePage() {
   );
   const [showResults, setShowResults] = useState(false);
   const [showPropertyScoreModal, setShowPropertyScoreModal] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   // Prefill data handler
   const handlePrefill = () => {
@@ -106,8 +107,14 @@ export default function DealScorePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmittedData(formData);
-    setShowResults(true);
+    setIsCalculating(true);
+
+    // Simulate calculation time
+    setTimeout(() => {
+      setSubmittedData(formData);
+      setShowResults(true);
+      setIsCalculating(false);
+    }, 3000);
   };
 
   const fetchRevenueData = async () => {
@@ -124,7 +131,9 @@ export default function DealScorePage() {
       }
 
       const response = await fetch(
-        `/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${bedrooms}`,
+        `/api/revenue-data?address=${encodeURIComponent(
+          address,
+        )}&bedrooms=${bedrooms}`,
       );
 
       const data = await response.json();
@@ -434,8 +443,15 @@ export default function DealScorePage() {
                     </Select>
                   </div>
 
-                  <Button type="submit" className="w-full">
-                    Calculate Deal Score
+                  <Button type="submit" className="w-full" disabled={isCalculating}>
+                    {isCalculating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Calculating...
+                      </>
+                    ) : (
+                      "Calculate Deal Score"
+                    )}
                   </Button>
                 </form>
               </CardContent>
