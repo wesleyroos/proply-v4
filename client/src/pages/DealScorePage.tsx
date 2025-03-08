@@ -89,14 +89,23 @@ export default function DealScorePage() {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    if (
+    if (field === "bedrooms") {
+      // Replace comma with period for decimal values
+      value = value.replace(",", ".");
+      // Only allow numbers and one decimal point
+      value = value.replace(/[^0-9.]/g, "");
+      // Ensure only one decimal point
+      const decimalCount = (value.match(/\./g) || []).length;
+      if (decimalCount > 1) {
+        value = value.slice(0, value.lastIndexOf("."));
+      }
+    } else if (
       field === "purchasePrice" ||
       field === "size" ||
       field === "areaRate" ||
       field === "nightlyRate" ||
       field === "occupancy" ||
-      field === "longTermRental" ||
-      field === "bedrooms"
+      field === "longTermRental"
     ) {
       value = value.replace(/[^0-9.]/g, "");
     }
@@ -112,7 +121,10 @@ export default function DealScorePage() {
 
     // Short term calculations
     const daysInMonth = 30;
-    const shortTermMonthly = Number(formData.nightlyRate) * daysInMonth * (Number(formData.occupancy) / 100);
+    const shortTermMonthly =
+      Number(formData.nightlyRate) *
+      daysInMonth *
+      (Number(formData.occupancy) / 100);
     const shortTermYearly = shortTermMonthly * 12;
     const shortTermYield = (shortTermYearly / Number(formData.purchasePrice)) * 100;
 
@@ -132,10 +144,9 @@ export default function DealScorePage() {
         yearly: longTermYearly,
         yield: longTermYield,
       },
-      isShortTermRecommended: shortTermYearly > longTermYearly
+      isShortTermRecommended: shortTermYearly > longTermYearly,
     };
   };
-
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,22 +167,23 @@ export default function DealScorePage() {
       const bedrooms = formData.bedrooms;
 
       if (!address || !bedrooms) {
-        alert(
-          "Please enter the property address and number of bedrooms first.",
-        );
+        alert("Please enter the property address and number of bedrooms first.");
         return;
       }
+
+      // Format bedrooms to ensure it's a valid number
+      const formattedBedrooms = Number(bedrooms).toString();
 
       const response = await fetch(
         `/api/revenue-data?address=${encodeURIComponent(
           address,
-        )}&bedrooms=${bedrooms}`,
+        )}&bedrooms=${formattedBedrooms}`,
       );
 
       const data = await response.json();
 
-      if (data.KPIsByBedroomCategory?.[bedrooms]) {
-        const result = data.KPIsByBedroomCategory[bedrooms];
+      if (data.KPIsByBedroomCategory?.[formattedBedrooms]) {
+        const result = data.KPIsByBedroomCategory[formattedBedrooms];
         const processedData = {
           "25": {
             adr: result.ADR25PercentileAvg,
@@ -191,19 +203,43 @@ export default function DealScorePage() {
             adr: result.ADR50PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 50,
-            activeListings: result.NoOfListings,
+            revpar: result.RevPARAvg,
+            revpam: result.RevPAMAvg,
+            leadTime: result.BookingLeadTimeDays,
+            stayLength: result.LengthOfStayDays,
+            activeListings: result.ActiveListings,
+            seasonalityIndex: result.MonthlySeasonalityIndex,
+            demandScore: result.MonthlyDemandScore,
+            ratePosition: result.RatePositionPercentile,
+            revparPosition: result.RevPARPositionPercentile,
           },
           "75": {
             adr: result.ADR75PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 75,
-            activeListings: result.NoOfListings,
+            revpar: result.RevPARAvg,
+            revpam: result.RevPAMAvg,
+            leadTime: result.BookingLeadTimeDays,
+            stayLength: result.LengthOfStayDays,
+            activeListings: result.ActiveListings,
+            seasonalityIndex: result.MonthlySeasonalityIndex,
+            demandScore: result.MonthlyDemandScore,
+            ratePosition: result.RatePositionPercentile,
+            revparPosition: result.RevPARPositionPercentile,
           },
           "90": {
             adr: result.ADR90PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
             percentile: 90,
-            activeListings: result.NoOfListings,
+            revpar: result.RevPARAvg,
+            revpam: result.RevPAMAvg,
+            leadTime: result.BookingLeadTimeDays,
+            stayLength: result.LengthOfStayDays,
+            activeListings: result.ActiveListings,
+            seasonalityIndex: result.MonthlySeasonalityIndex,
+            demandScore: result.MonthlyDemandScore,
+            ratePosition: result.RatePositionPercentile,
+            revparPosition: result.RevPARPositionPercentile,
           },
         };
         setRevenueData(processedData);
@@ -425,7 +461,7 @@ export default function DealScorePage() {
                             </>
                           ) : (
                             <>
-                              Get Revenue Data
+                              Get Revenue
                               <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
                                 PRO
                               </span>
@@ -475,7 +511,11 @@ export default function DealScorePage() {
                     </Select>
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={isCalculating}>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isCalculating}
+                  >
                     {isCalculating ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -495,11 +535,21 @@ export default function DealScorePage() {
             {showResults && submittedData && (
               <Tabs defaultValue="deal_score" className="w-full">
                 <TabsList className="bg-muted/50 p-0 h-12">
-                  <TabsTrigger value="deal_score" className="flex-1 h-12">Deal Score</TabsTrigger>
-                  <TabsTrigger value="price" className="flex-1 h-12">Price</TabsTrigger>
-                  <TabsTrigger value="rental" className="flex-1 h-12">Rental</TabsTrigger>
-                  <TabsTrigger value="affordability" className="flex-1 h-12">Affordability</TabsTrigger>
-                  <TabsTrigger value="buyer_profile" className="flex-1 h-12">Buyer Profile</TabsTrigger>
+                  <TabsTrigger value="deal_score" className="flex-1 h-12">
+                    Deal Score
+                  </TabsTrigger>
+                  <TabsTrigger value="price" className="flex-1 h-12">
+                    Price
+                  </TabsTrigger>
+                  <TabsTrigger value="rental" className="flex-1 h-12">
+                    Rental
+                  </TabsTrigger>
+                  <TabsTrigger value="affordability" className="flex-1 h-12">
+                    Affordability
+                  </TabsTrigger>
+                  <TabsTrigger value="buyer_profile" className="flex-1 h-12">
+                    Buyer Profile
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="deal_score">
@@ -516,14 +566,21 @@ export default function DealScorePage() {
                     <CardContent>
                       <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg mb-6">
                         <div>
-                          <div className="text-sm font-medium">Asking Price</div>
+                          <div className="text-sm font-medium">
+                            Asking Price
+                          </div>
                           <div className="text-3xl font-bold">
-                            R{Number(submittedData.purchasePrice).toLocaleString()}
+                            R
+                            {Number(
+                              submittedData.purchasePrice,
+                            ).toLocaleString()}
                           </div>
                         </div>
                         <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
                         <div>
-                          <div className="text-sm font-medium">Market Average</div>
+                          <div className="text-sm font-medium">
+                            Market Average
+                          </div>
                           <div className="text-3xl font-bold">
                             R{marketPrice.toLocaleString()}
                           </div>
@@ -531,8 +588,11 @@ export default function DealScorePage() {
                         <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
                         <div>
                           <div className="text-sm font-medium">Difference</div>
-                          <div className={`text-3xl font-bold ${priceDiff > 0 ? 'text-amber-500' : 'text-green-500'}`}>
-                            {priceDiff > 0 ? '+' : ''}{Math.round(priceDiff)}%
+                          <div
+                            className={`text-3xl font-bold ${priceDiff > 0 ? "text-amber-500" : "text-green-500"}`}
+                          >
+                            {priceDiff > 0 ? "+" : ""}
+                            {Math.round(priceDiff)}%
                           </div>
                         </div>
                       </div>
@@ -540,18 +600,60 @@ export default function DealScorePage() {
                       <div className="flex justify-between items-center mt-4">
                         <div className="font-medium">Price per m²</div>
                         <div className="font-bold">
-                          R{submittedData ? Math.round(Number(submittedData.purchasePrice) / Number(submittedData.size)).toLocaleString() : "0"}/m²
+                          R
+                          {submittedData
+                            ? Math.round(
+                                Number(submittedData.purchasePrice) /
+                                  Number(submittedData.size),
+                              ).toLocaleString()
+                            : "0"}
+                          /m²
                         </div>
                         <div className="text-muted-foreground">
-                          (vs. area avg R{submittedData ? Number(submittedData.areaRate).toLocaleString() : "0"}/m²)
+                          (vs. area avg R
+                          {submittedData
+                            ? Number(submittedData.areaRate).toLocaleString()
+                            : "0"}
+                          /m²)
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className={submittedData && (Number(submittedData.purchasePrice) / Number(submittedData.size) <= Number(submittedData.areaRate)) ? 'text-green-500' : 'text-amber-500'}>
-                            {submittedData && (Number(submittedData.purchasePrice) / Number(submittedData.size) <= Number(submittedData.areaRate)) ? '-' : '+'}
-                            R{submittedData ? Math.abs(Math.round(Number(submittedData.purchasePrice) / Number(submittedData.size) - Number(submittedData.areaRate))).toLocaleString() : "0"}/m²
+                          <div
+                            className={
+                              submittedData &&
+                              Number(submittedData.purchasePrice) /
+                                Number(submittedData.size) <=
+                                Number(submittedData.areaRate)
+                                ? "text-green-500"
+                                : "text-amber-500"
+                            }
+                          >
+                            {submittedData &&
+                            Number(submittedData.purchasePrice) /
+                              Number(submittedData.size) <=
+                              Number(submittedData.areaRate)
+                              ? "-"
+                              : "+"}
+                            R
+                            {submittedData
+                              ? Math.abs(
+                                  Math.round(
+                                    Number(submittedData.purchasePrice) /
+                                      Number(submittedData.size) -
+                                      Number(submittedData.areaRate),
+                                  ),
+                                ).toLocaleString()
+                              : "0"}
+                            /m²
                           </div>
-                          <Badge variant="outline" className={priceDiff <= 0 ? 'text-green-500' : 'text-amber-500'}>
-                            {priceDiff <= 0 ? 'Under Paying' : 'Over Paying'}
+                          <Badge
+                            variant="outline"
+                            className={
+                              priceDiff <= 0
+                                ? "text-green-500"
+                                : "text-amber-500"
+                            }
+                          >
+                            {priceDiff <= 0 ? "Under Paying" : "Over Paying"}
                           </Badge>
                         </div>
                       </div>
@@ -562,20 +664,32 @@ export default function DealScorePage() {
                           {submittedData.propertyCondition}
                         </div>
                         <div className="text-muted-foreground">
-                          {getConditionDetails(submittedData.propertyCondition).description}
+                          {
+                            getConditionDetails(submittedData.propertyCondition)
+                              .description
+                          }
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className={getConditionDetails(submittedData.propertyCondition).badgeColor}>
-                            {getConditionDetails(submittedData.propertyCondition).badge}
+                          <Badge
+                            variant="outline"
+                            className={
+                              getConditionDetails(
+                                submittedData.propertyCondition,
+                              ).badgeColor
+                            }
+                          >
+                            {
+                              getConditionDetails(
+                                submittedData.propertyCondition,
+                              ).badge
+                            }
                           </Badge>
                         </div>
                       </div>
 
                       <div className="flex justify-between items-center mt-4">
                         <div className="font-medium">Recent Area Sales</div>
-                        <div className="font-bold">
-                          R3.4M - R3.7M
-                        </div>
+                        <div className="font-bold">R3.4M - R3.7M</div>
                         <div className="text-muted-foreground">
                           (last 3 months)
                         </div>
@@ -595,13 +709,15 @@ export default function DealScorePage() {
                     <CardContent>
                       <div className="space-y-4">
                         <div className="p-4 bg-muted/30 rounded-lg">
-                          <p className="text-sm text-muted-foreground mb-2">To make this a good deal, consider:</p>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            To make this a good deal, consider:
+                          </p>
                           <p className="text-lg font-medium">
                             Make an offer between{" "}
                             <span className="font-bold text-green-600">
                               R{(marketPrice * 0.9).toLocaleString()}
-                            </span>
-                            {" "}and{" "}
+                            </span>{" "}
+                            and{" "}
                             <span className="font-bold text-amber-600">
                               R{(marketPrice * 1.1).toLocaleString()}
                             </span>
@@ -610,15 +726,18 @@ export default function DealScorePage() {
 
                         <div className="mt-6">
                           <div className="flex justify-between mb-2">
-                            <div className="text-sm font-medium">Deal Rating</div>
                             <div className="text-sm font-medium">
-                              {priceDiff <= -5 && submittedData?.propertyCondition === "excellent"
+                              Deal Rating
+                            </div>
+                            <div className="text-sm font-medium">
+                              {priceDiff <= -5 &&
+                              submittedData?.propertyCondition === "excellent"
                                 ? "Great"
                                 : priceDiff <= 0
-                                ? "Good"
-                                : priceDiff <= 10
-                                ? "Fair"
-                                : "Bad"}
+                                  ? "Good"
+                                  : priceDiff <= 10
+                                    ? "Fair"
+                                    : "Bad"}
                             </div>
                           </div>
                           <div className="relative">
@@ -634,13 +753,15 @@ export default function DealScorePage() {
                                 className="absolute w-4 h-4 rounded-full border-2 border-white bg-primary shadow-lg transform -translate-x-1/2"
                                 style={{
                                   left: `${
-                                    priceDiff <= -5 && submittedData?.propertyCondition === "excellent"
+                                    priceDiff <= -5 &&
+                                    submittedData?.propertyCondition ===
+                                      "excellent"
                                       ? 100
                                       : priceDiff <= 0
-                                      ? 75
-                                      : priceDiff <= 10
-                                      ? 50
-                                      : 25
+                                        ? 75
+                                        : priceDiff <= 10
+                                          ? 50
+                                          : 25
                                   }%`,
                                 }}
                               />
@@ -658,14 +779,21 @@ export default function DealScorePage() {
                       <h2 className="text-2xl font-bold">Rental Potential</h2>
                       <div className="grid grid-cols-2 gap-4">
                         {/* Short Term Rental Card */}
-                        <div className={`p-6 rounded-lg border bg-card relative ${
-                          calculateRentalMetrics(submittedData)?.isShortTermRecommended ? 
-                          'before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg' : ''
-                        }`}>
+                        <div
+                          className={`p-6 rounded-lg border bg-card relative ${
+                            calculateRentalMetrics(submittedData)
+                              ?.isShortTermRecommended
+                              ? "before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg"
+                              : ""
+                          }`}
+                        >
                           <div className="flex items-center gap-2 mb-4">
                             <Calendar className="h-5 w-5" />
-                            <h3 className="text-lg font-semibold">Short-Term (Airbnb)</h3>
-                            {calculateRentalMetrics(submittedData)?.isShortTermRecommended && (
+                            <h3 className="text-lg font-semibold">
+                              Short-Term (Airbnb)
+                            </h3>
+                            {calculateRentalMetrics(submittedData)
+                              ?.isShortTermRecommended && (
                               <span className="px-2 py-1 text-xs bg-emerald-500 text-white rounded">
                                 RECOMMENDED
                               </span>
@@ -675,7 +803,11 @@ export default function DealScorePage() {
                           <div className="space-y-4">
                             <div>
                               <div className="text-3xl font-bold">
-                                R{calculateRentalMetrics(submittedData)?.shortTerm.monthly.toLocaleString()}/month
+                                R
+                                {calculateRentalMetrics(
+                                  submittedData,
+                                )?.shortTerm.monthly.toLocaleString()}
+                                /month
                               </div>
                               <div className="text-sm text-muted-foreground">
                                 Based on {formData.occupancy}% occupancy rate
@@ -686,13 +818,19 @@ export default function DealScorePage() {
                               <div className="flex justify-between">
                                 <span>Annual yield:</span>
                                 <span className="font-semibold text-emerald-600">
-                                  {calculateRentalMetrics(submittedData)?.shortTerm.yield.toFixed(1)}%
+                                  {calculateRentalMetrics(
+                                    submittedData,
+                                  )?.shortTerm.yield.toFixed(1)}
+                                  %
                                 </span>
                               </div>
                               <div className="flex justify-between">
                                 <span>Yearly income:</span>
                                 <span className="font-semibold">
-                                  R{calculateRentalMetrics(submittedData)?.shortTerm.yearly.toLocaleString()}
+                                  R
+                                  {calculateRentalMetrics(
+                                    submittedData,
+                                  )?.shortTerm.yearly.toLocaleString()}
                                 </span>
                               </div>
                               <div className="flex justify-between">
@@ -704,14 +842,21 @@ export default function DealScorePage() {
                         </div>
 
                         {/* Long Term Rental Card */}
-                        <div className={`p-6 rounded-lg border bg-card relative ${
-                          !calculateRentalMetrics(submittedData)?.isShortTermRecommended ? 
-                          'before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg' : ''
-                        }`}>
+                        <div
+                          className={`p-6 rounded-lg border bg-card relative ${
+                            !calculateRentalMetrics(submittedData)
+                              ?.isShortTermRecommended
+                              ? "before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg"
+                              : ""
+                          }`}
+                        >
                           <div className="flex items-center gap-2 mb-4">
                             <Home className="h-5 w-5" />
-                            <h3 className="text-lg font-semibold">Long-Term Rental</h3>
-                            {!calculateRentalMetrics(submittedData)?.isShortTermRecommended && (
+                            <h3 className="text-lg font-semibold">
+                              Long-Term Rental
+                            </h3>
+                            {!calculateRentalMetrics(submittedData)
+                              ?.isShortTermRecommended && (
                               <span className="px-2 py-1 text-xs bg-emerald-500 text-white rounded">
                                 RECOMMENDED
                               </span>
@@ -721,7 +866,11 @@ export default function DealScorePage() {
                           <div className="space-y-4">
                             <div>
                               <div className="text-3xl font-bold">
-                                R{calculateRentalMetrics(submittedData)?.longTerm.monthly.toLocaleString()}/month
+                                R
+                                {calculateRentalMetrics(
+                                  submittedData,
+                                )?.longTerm.monthly.toLocaleString()}
+                                /month
                               </div>
                               <div className="text-sm text-muted-foreground">
                                 Standard 12-month lease
@@ -732,13 +881,19 @@ export default function DealScorePage() {
                               <div className="flex justify-between">
                                 <span>Annual yield:</span>
                                 <span className="font-semibold text-emerald-600">
-                                  {calculateRentalMetrics(submittedData)?.longTerm.yield.toFixed(1)}%
+                                  {calculateRentalMetrics(
+                                    submittedData,
+                                  )?.longTerm.yield.toFixed(1)}
+                                  %
                                 </span>
                               </div>
                               <div className="flex justify-between">
                                 <span>Yearly income:</span>
                                 <span className="font-semibold">
-                                  R{calculateRentalMetrics(submittedData)?.longTerm.yearly.toLocaleString()}
+                                  R
+                                  {calculateRentalMetrics(
+                                    submittedData,
+                                  )?.longTerm.yearly.toLocaleString()}
                                 </span>
                               </div>
                               <div className="flex justify-between">
@@ -797,25 +952,22 @@ export default function DealScorePage() {
           onOpenChange={setShowUpgradeModal}
         />
 
-        <Dialog
-          open={showPercentileDialog}
-          onOpenChange={setShowPercentileDialog}
-        >
+        <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Revenue Performance Data</DialogTitle>
+              <DialogTitle>Select Revenue Data</DialogTitle>
             </DialogHeader>
-            <div className="py-4">
-              <p className="text-sm text-gray-500 mb-4">
-                Select an Average Daily Rate (ADR) percentile to use for the
-                analysis:
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Select the percentile data you'd like to use for your analysis:
               </p>
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
                     <th className="text-left py-2 px-4">Percentile</th>
-                    <th className="text-right py-2 px-4">ADR</th>
-                    <th className="text-right py-2 px-4">Action</th>
+                    <th className="text-right py-2 px-4">Nightly Rate</th>
+                    <th className="text-right py-2 px-4">Occupancy</th>
+                    <th className="text-right py-2 px-4"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -828,36 +980,25 @@ export default function DealScorePage() {
                             style: "currency",
                             currency: "ZAR",
                           }).format(data.adr)}
+                        </td>                        <td className="text-right py-2 px-4">
+                          {Math.round(data.occupancy)}%
                         </td>
                         <td className="text-right py-2 px-4">
                           <Button
+                            size="sm"
                             onClick={() =>
                               applyPercentileData(
                                 percentile as "25" | "50" | "75" | "90",
                               )
                             }
-                            variant="secondary"
-                            size="sm"
                           >
-                            Select
+                            Use This Data
                           </Button>
                         </td>
                       </tr>
                     ))}
                 </tbody>
               </table>
-              <div className="mt-4">
-                <div className="text-sm text-gray-500">
-                  <p>
-                    Average Occupancy Rate:{" "}
-                    {revenueData?.["50"].occupancy?.toFixed(1) || "--"}%
-                  </p>
-                  <p className="mt-1">
-                    Number of Active Listings:{" "}
-                    {revenueData?.["50"].activeListings || "--"}
-                  </p>
-                </div>
-              </div>
             </div>
           </DialogContent>
         </Dialog>
