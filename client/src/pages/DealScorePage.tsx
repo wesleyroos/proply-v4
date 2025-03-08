@@ -90,14 +90,21 @@ export default function DealScorePage() {
 
   const handleInputChange = (field: string, value: string) => {
     if (field === "bedrooms") {
-      // Replace comma with period for decimal values
-      value = value.replace(",", ".");
-      // Only allow numbers and one decimal point
-      value = value.replace(/[^0-9.]/g, "");
-      // Ensure only one decimal point
-      const decimalCount = (value.match(/\./g) || []).length;
-      if (decimalCount > 1) {
-        value = value.slice(0, value.lastIndexOf("."));
+      // Convert text input to appropriate values
+      if (value.toLowerCase() === "studio") {
+        value = "0";
+      } else if (value.toLowerCase() === "room") {
+        value = "-1";
+      } else {
+        // Replace comma with period for decimal values
+        value = value.replace(",", ".");
+        // Only allow numbers and one decimal point
+        value = value.replace(/[^0-9.-]/g, "");
+        // Ensure only one decimal point
+        const decimalCount = (value.match(/\./g) || []).length;
+        if (decimalCount > 1) {
+          value = value.slice(0, value.lastIndexOf("."));
+        }
       }
     } else if (
       field === "purchasePrice" ||
@@ -171,8 +178,17 @@ export default function DealScorePage() {
         return;
       }
 
-      // Format bedrooms to ensure it's a valid number
-      const formattedBedrooms = Number(bedrooms).toString();
+      // Convert studio apartments and rooms to API expected values
+      let formattedBedrooms: string;
+      const bedroomValue = Number(bedrooms);
+
+      if (bedrooms.toLowerCase() === "studio" || bedroomValue === 0) {
+        formattedBedrooms = "0";
+      } else if (bedrooms.toLowerCase() === "room" || bedroomValue === -1) {
+        formattedBedrooms = "-1";
+      } else {
+        formattedBedrooms = Math.floor(bedroomValue).toString();
+      }
 
       const response = await fetch(
         `/api/revenue-data?address=${encodeURIComponent(
