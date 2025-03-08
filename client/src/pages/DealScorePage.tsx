@@ -658,7 +658,10 @@ export default function DealScorePage() {
                       <h2 className="text-2xl font-bold">Rental Potential</h2>
                       <div className="grid grid-cols-2 gap-4">
                         {/* Short Term Rental Card */}
-                        <div className="p-6 rounded-lg border bg-card">
+                        <div className={`p-6 rounded-lg border bg-card relative ${
+                          calculateRentalMetrics(submittedData)?.isShortTermRecommended ? 
+                          'before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg' : ''
+                        }`}>
                           <div className="flex items-center gap-2 mb-4">
                             <Calendar className="h-5 w-5" />
                             <h3 className="text-lg font-semibold">Short-Term (Airbnb)</h3>
@@ -701,7 +704,10 @@ export default function DealScorePage() {
                         </div>
 
                         {/* Long Term Rental Card */}
-                        <div className="p-6 rounded-lg border bg-card">
+                        <div className={`p-6 rounded-lg border bg-card relative ${
+                          !calculateRentalMetrics(submittedData)?.isShortTermRecommended ? 
+                          'before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg' : ''
+                        }`}>
                           <div className="flex items-center gap-2 mb-4">
                             <Home className="h-5 w-5" />
                             <h3 className="text-lg font-semibold">Long-Term Rental</h3>
