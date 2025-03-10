@@ -912,7 +912,7 @@ export default function DealScorePage() {
     };
 
     const purchasePrice = parseValue(formData.purchasePrice);
-    const depositAmount = parseValue(formData.depositAmount);
+    constdepositAmount = parseValue(formData.depositAmount);
     const interestRate = parseValue(formData.interestRate);
     const loanTerm = parseValue(formData.loanTerm);
     const depositPercentageValue = parseValue(formData.depositPercentage);
@@ -968,6 +968,7 @@ export default function DealScorePage() {
       requiredIncome,
     };
   };
+
 
 
 
@@ -1786,9 +1787,10 @@ export default function DealScorePage() {
                         </td>
                       </tr>
                     ))}
-                </tbody>              </table>
+                </tbody>
+              </table>
             </div>
-          </DialogContent>
+                    </DialogContent>
         </Dialog>
         <PropertyScoreModal
           isOpen={showPropertyScoreModal}
@@ -1802,9 +1804,11 @@ export default function DealScorePage() {
 const calculateDealScore = (data: typeof submittedData) => {
   if (!data) return null;
 
-  // Parse values
-  const purchasePrice = parseFormattedValue(data.purchasePrice);
-  const marketPrice = parseFormattedValue(data.size) * parseFormattedValue(data.areaRate);
+  // Parse values using the existing parseFormattedNumber function
+  const purchasePrice = Number(parseFormattedNumber(data.purchasePrice));
+  const size = Number(parseFormattedNumber(data.size));
+  const areaRate = Number(parseFormattedNumber(data.areaRate));
+  const marketPrice = size * areaRate;
   const priceDiffPercentage = ((purchasePrice - marketPrice) / marketPrice) * 100;
 
   // 1. Market Price Score (30 points max)
@@ -1816,9 +1820,8 @@ const calculateDealScore = (data: typeof submittedData) => {
   }
 
   // 2. Price per m² Score (25 points max)
-  const pricePerM2 = purchasePrice / parseFormattedValue(data.size);
-  const areaAverage = parseFormattedValue(data.areaRate);
-  const m2DiffPercentage = ((pricePerM2 - areaAverage) / areaAverage) * 100;
+  const pricePerM2 = purchasePrice / size;
+  const m2DiffPercentage = ((pricePerM2 - areaRate) / areaRate) * 100;
   let pricePerM2Score = 25;
   if (m2DiffPercentage > 0) {
     pricePerM2Score = Math.max(0, 25 - (m2DiffPercentage * 1.5));
