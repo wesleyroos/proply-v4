@@ -873,30 +873,30 @@ export default function DealScorePage() {
     // Look up costs from the transfer costs table
     // Make sure we're passing the parameters in the correct order
     const costs = findCostFromTable(purchasePrice, transferCostsTable);
-    
+
     if (!costs) {
       // Fallback to simplified estimation if price is outside the table range
       const estimatedTransferFee = purchasePrice * 0.025; // Approx. 2.5% for transfer fees
       const estimatedDisbursements = purchasePrice * 0.01; // Approx. 1% for disbursements
       const estimatedDeeds = purchasePrice * 0.005; // Approx. 0.5% for deeds fees
       const transferDutyAmount = includeTransferDuty ? calculateTransferDuty(purchasePrice) : 0;
-      
+
       return estimatedTransferFee + estimatedDisbursements + estimatedDeeds + transferDutyAmount;
     }
 
     // Use values from the table
     let totalCost = costs.transferFee + costs.disbursements + costs.deedsFee;
-    
+
     // Add VAT if needed
     if (includeVat) {
       totalCost += costs.vat;
     }
-    
+
     // Add transfer duty if needed
     if (includeTransferDuty) {
       totalCost += costs.transferDuty > 0 ? costs.transferDuty : calculateTransferDuty(purchasePrice);
     }
-    
+
     return totalCost;
   };
 
@@ -938,11 +938,17 @@ export default function DealScorePage() {
     // Required monthly income (using 30% debt-to-income ratio)
     const requiredIncome = Math.round((monthlyPayment + leviesAndRates) / 0.3);
 
+    //Simplified bond registration cost calculation (replace with actual calculation if needed)
+    const bondRegistrationCosts = Math.round(purchasePrice * 0.005); // Approximately 0.5% of property value
+
+    //Combine transfer costs
+    const combinedTransferCosts = transferCosts + transferDuty;
+
     return {
       upfrontCosts: {
         deposit: depositAmount,
-        transferDuty,
-        transferCosts,
+        combinedTransferCosts,
+        bondRegistrationCosts,
         totalCashNeeded,
       },
       monthlyPayments: {
@@ -1411,6 +1417,8 @@ export default function DealScorePage() {
                         const metrics = calculateAffordabilityMetrics(submittedData);
                         if (!metrics) return null;
 
+                        const totalCashNeeded = metrics.upfrontCosts.deposit + metrics.upfrontCosts.combinedTransferCosts + metrics.upfrontCosts.bondRegistrationCosts;
+
                         return (
                           <div className="grid grid-cols-2 gap-4">
                             {/* Upfront Costs */}
@@ -1424,21 +1432,21 @@ export default function DealScorePage() {
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>Transfer duty:</span>
+                                  <span>Transfer costs:</span>
                                   <span className="font-medium">
-                                    R{Math.round(metrics.upfrontCosts.transferDuty).toLocaleString()}
+                                    R{Math.round(metrics.upfrontCosts.combinedTransferCosts).toLocaleString()}
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>Transfer costs:</span>
+                                  <span>Bond registration costs:</span>
                                   <span className="font-medium">
-                                    R{Math.round(metrics.upfrontCosts.transferCosts).toLocaleString()}
+                                    R{Math.round(metrics.upfrontCosts.bondRegistrationCosts).toLocaleString()}
                                   </span>
                                 </div>
                                 <div className="flex justify-between pt-2 border-t">
                                   <span>Total cash needed:</span>
                                   <span className="font-medium">
-                                    R{Math.round(metrics.upfrontCosts.totalCashNeeded).toLocaleString()}
+                                    R{Math.round(totalCashNeeded).toLocaleString()}
                                   </span>
                                 </div>
                               </div>
