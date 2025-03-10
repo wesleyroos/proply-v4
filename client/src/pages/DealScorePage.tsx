@@ -26,7 +26,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { findCostFromTable, transferCostsTable } from "@/lib/costTables";
+import { findCostFromTable, transferCostsTable, bondCostsTable } from "@/lib/costTables";
 
 interface RevenueData {
   adr: number;
@@ -939,8 +939,12 @@ export default function DealScorePage() {
     // Required monthly income (using 30% debt-to-income ratio)
     const requiredIncome = Math.round((monthlyPayment + leviesAndRates) / 0.3);
 
-    //Simplified bond registration cost calculation (replace with actual calculation if needed)
-    const bondRegistrationCosts = depositPercentageValue === 100 ? 0 : Math.round(purchasePrice * 0.005); // Approximately 0.5% of property value
+    // Calculate bond registration costs from the bond costs table
+    // If deposit is 100% (cash payment), there's no bond so the cost is 0
+    const bondAmount = purchasePrice - depositAmount;
+    const bondRegistrationCosts = depositPercentageValue === 100
+      ? 0
+      : findCostFromTable(bondAmount, bondCostsTable)?.total || Math.round(bondAmount * 0.005);
 
     //Combine transfer costs
     const combinedTransferCosts = transferCosts + transferDuty;
