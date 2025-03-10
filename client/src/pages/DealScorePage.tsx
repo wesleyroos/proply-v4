@@ -27,7 +27,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { findCostFromTable, transferCostsTable, bondCostsTable } from "@/lib/costTables";
-import { Scale, TrendingDown, TrendingUp, Star } from "lucide-react";
 
 interface RevenueData {
   adr: number;
@@ -1060,149 +1059,9 @@ export default function DealScorePage() {
                 </TabsList>
 
                 <TabsContent value="deal_score">
-                  {submittedData && (() => {
-                    const dealScore = calculateDealScore(submittedData);
-                    if (!dealScore) return null;
-
-                    const getScoreColor = (score: number) => {
-                      if (score >= 80) return "text-emerald-500";
-                      if (score >= 60) return "text-blue-500";
-                      if (score >= 40) return "text-amber-500";
-                      return "text-red-500";
-                    };
-
-                    return (
-                      <div className="space-y-6">
-                        {/* Overall Score */}
-                        <div className="flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="relative w-48 h-48">
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <div>
-                                  <div className={`text-5xl font-bold ${getScoreColor(dealScore.total)}`}>
-                                    {dealScore.total}
-                                  </div>
-                                  <div className="text-sm text-muted-foreground mt-1">Deal Score</div>
-                                </div>
-                              </div>
-                              <svg className="w-full h-full transform -rotate-90">
-                                <circle
-                                  cx="96"
-                                  cy="96"
-                                  r="88"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="3"
-                                  className="text-muted"
-                                />
-                                <circle
-                                  cx="96"
-                                  cy="96"
-                                  r="88"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="3"
-                                  strokeDasharray={553}
-                                  strokeDashoffset={553 - (553 * dealScore.total) / 100}
-                                  className={getScoreColor(dealScore.total)}
-                                />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Score Breakdown */}
-                        <div className="grid grid-cols-2 gap-4">
-                          {/* Market Price */}
-                          <div className="border rounded-lg p-4 space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Scale className="h-4 w-4" />
-                              <h3 className="font-medium">Market Price</h3>
-                            </div>
-                            <Progress value={dealScore.breakdown.marketPrice.percentage} className="h-2" />
-                            <div className="flex justify-between text-sm">
-                              <span>{dealScore.breakdown.marketPrice.label}</span>
-                              <span className={getScoreColor(dealScore.breakdown.marketPrice.score)}>
-                                {dealScore.breakdown.marketPrice.difference}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Price per m² */}
-                          <div className="border rounded-lg p-4 space-y-2">
-                            <div className="flex items-center gap-2">
-                              <TrendingDown className="h-4 w-4" />
-                              <h3 className="font-medium">Price per m²</h3>
-                            </div>
-                            <Progress value={dealScore.breakdown.pricePerM2.percentage} className="h-2" />
-                            <div className="flex justify-between text-sm">
-                              <span>{dealScore.breakdown.pricePerM2.label}</span>
-                              <span className={getScoreColor(dealScore.breakdown.pricePerM2.score)}>
-                                {dealScore.breakdown.pricePerM2.difference}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Property Condition */}
-                          <div className="border rounded-lg p-4 space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Home className="h-4 w-4" />
-                              <h3 className="font-medium">Property Condition</h3>
-                            </div>
-                            <Progress value={dealScore.breakdown.condition.percentage} className="h-2" />
-                            <div className="flex justify-between text-sm">
-                              <span>{dealScore.breakdown.condition.label}</span>
-                              <span className={getScoreColor(dealScore.breakdown.condition.score)}>
-                                {Math.round(dealScore.breakdown.condition.percentage)}%
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Rental Yield */}
-                          <div className="border rounded-lg p-4 space-y-2">
-                            <div className="flex items-center gap-2">
-                              <TrendingUp className="h-4 w-4" />
-                              <h3 className="font-medium">Rental Yield</h3>
-                            </div>
-                            <Progress value={dealScore.breakdown.rentalYield.percentage} className="h-2" />
-                            <div className="flex justify-between text-sm">
-                              <span>{dealScore.breakdown.rentalYield.label}</span>
-                              <span className={getScoreColor(dealScore.breakdown.rentalYield.score)}>
-                                {dealScore.breakdown.rentalYield.yield}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Recent Sales */}
-                          <div className="border rounded-lg p-4 space-y-2 col-span-2">
-                            <div className="flex items-center gap-2">
-                              <Star className="h-4 w-4" />
-                              <h3 className="font-medium">Recent Sales Range</h3>
-                            </div>
-                            <Progress value={dealScore.breakdown.salesRange.percentage} className="h-2" />
-                            <div className="flex justify-between text-sm">
-                              <span>{dealScore.breakdown.salesRange.label}</span>
-                              <span className={getScoreColor(dealScore.breakdown.salesRange.score)}>
-                                {Math.round(dealScore.breakdown.salesRange.percentage)}%
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Deal Score Explanation */}
-                        <div className="bg-muted/50 rounded-lg p-4 text-sm">
-                          <h3 className="font-medium mb-2">What makes this score?</h3>
-                          <ul className="space-y-1 list-disc pl-4">
-                            <li>Market Price comparison (30%)</li>
-                            <li>Price per m² vs area average (25%)</li>
-                            <li>Property condition assessment (15%)</li>
-                            <li>Rental yield potential (15%)</li>
-                            <li>Recent sales range analysis (15%)</li>
-                          </ul>
-                        </div>
-                      </div>
-                    );
-                  })()}
+                  <div className="text-center py-8 text-muted-foreground">
+                    Deal Score analysis coming soon
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="price" className="space-y-4">
@@ -1786,7 +1645,8 @@ export default function DealScorePage() {
                         </td>
                       </tr>
                     ))}
-                </tbody>              </table>
+                </tbody>
+              </table>
             </div>
           </DialogContent>
         </Dialog>
@@ -1798,99 +1658,3 @@ export default function DealScorePage() {
     </PageTransition>
   );
 }
-
-const calculateDealScore = (data: typeof submittedData) => {
-  if (!data) return null;
-
-  // Parse values
-  const purchasePrice = parseFormattedValue(data.purchasePrice);
-  const marketPrice = parseFormattedValue(data.size) * parseFormattedValue(data.areaRate);
-  const priceDiffPercentage = ((purchasePrice - marketPrice) / marketPrice) * 100;
-
-  // 1. Market Price Score (30 points max)
-  let marketPriceScore = 30;
-  if (priceDiffPercentage > 0) {
-    marketPriceScore = Math.max(0, 30 - (priceDiffPercentage * 2));
-  } else {
-    marketPriceScore = Math.min(30, 30 + Math.abs(priceDiffPercentage));
-  }
-
-  // 2. Price per m² Score (25 points max)
-  const pricePerM2 = purchasePrice / parseFormattedValue(data.size);
-  const areaAverage = parseFormattedValue(data.areaRate);
-  const m2DiffPercentage = ((pricePerM2 - areaAverage) / areaAverage) * 100;
-  let pricePerM2Score = 25;
-  if (m2DiffPercentage > 0) {
-    pricePerM2Score = Math.max(0, 25 - (m2DiffPercentage * 1.5));
-  } else {
-    pricePerM2Score = Math.min(25, 25 + Math.abs(m2DiffPercentage));
-  }
-
-  // 3. Property Condition Score (15 points max)
-  const conditionScores = {
-    excellent: 15,
-    good: 12,
-    fair: 8,
-    poor: 4
-  };
-  const conditionScore = conditionScores[data.propertyCondition as keyof typeof conditionScores];
-
-  // 4. Rental Yields Score (15 points max)
-  const rentalMetrics = calculateRentalMetrics(data);
-  let rentalScore = 0;
-  if (rentalMetrics) {
-    const shortTermYield = rentalMetrics.shortTerm.yield;
-    const longTermYield = rentalMetrics.longTerm.yield;
-    const bestYield = Math.max(shortTermYield, longTermYield);
-    rentalScore = Math.min(15, bestYield);
-  }
-
-  // 5. Recent Sales Range Score (15 points max) - TODO: Implement when we have sales data
-  const salesRangeScore = 12; // Default score for now
-
-  // Calculate total score
-  const totalScore = Math.round(
-    marketPriceScore +
-    pricePerM2Score +
-    conditionScore +
-    rentalScore +
-    salesRangeScore
-  );
-
-  return {
-    total: totalScore,
-    breakdown: {
-      marketPrice: {
-        score: marketPriceScore,
-        percentage: (marketPriceScore / 30) * 100,
-        label: priceDiffPercentage <= 0 ? "Below Market" : "Above Market",
-        difference: Math.abs(priceDiffPercentage).toFixed(1) + "%"
-      },
-      pricePerM2: {
-        score: pricePerM2Score,
-        percentage: (pricePerM2Score / 25) * 100,
-        label: m2DiffPercentage <= 0 ? "Below Average" : "Above Average",
-        difference: Math.abs(m2DiffPercentage).toFixed(1) + "%"
-      },
-      condition: {
-        score: conditionScore,
-        percentage: (conditionScore / 15) * 100,
-        label: data.propertyCondition.charAt(0).toUpperCase() + data.propertyCondition.slice(1),
-      },
-      rentalYield: {
-        score: rentalScore,
-        percentage: (rentalScore / 15) * 100,
-        label: rentalMetrics?.isShortTermRecommended ? "Short Term" : "Long Term",
-        yield: Math.max(
-          rentalMetrics?.shortTerm.yield || 0,
-          rentalMetrics?.longTerm.yield || 0
-        ).toFixed(1) + "%"
-      },
-      salesRange: {
-        score: salesRangeScore,
-        percentage: (salesRangeScore / 15) * 100,
-        label: "Within Range",
-      }
-    }
-  };
-};
