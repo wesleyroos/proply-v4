@@ -1049,31 +1049,112 @@ export default function DealScorePage() {
           </div>
 
           {/* Results Section */}
-          <div className="flex-1">
-            {showResults && submittedData && (
-              <Tabs defaultValue="deal_score" className="w-full">
-                <TabsList className="bg-muted/50 p-0 h-12">
-                  <TabsTrigger value="deal_score" className="flex-1 h-12">
-                    Deal Score
-                  </TabsTrigger>
-                  <TabsTrigger value="price" className="flex-1 h-12">
-                    Price
-                  </TabsTrigger>
-                  <TabsTrigger value="rental" className="flex-1 h-12">
-                    Rental
-                  </TabsTrigger>
-                  <TabsTrigger value="affordability" className="flex-1 h-12">
-                    Affordability
-                  </TabsTrigger>
-                  <TabsTrigger value="buyer_profile" className="flex-1 h-12">
-                    Buyer Profile
-                  </TabsTrigger>
+          {submittedData && (
+            <div className="flex-1">
+              <Tabs defaultValue="deal-score" className="w-full">
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="deal-score">Deal Score</TabsTrigger>
+                  <TabsTrigger value="price">Price</TabsTrigger>
+                  <TabsTrigger value="rental">Rental</TabsTrigger>
+                  <TabsTrigger value="affordability">Affordability</TabsTrigger>
+                  <TabsTrigger value="buyer-profile">Buyer Profile</TabsTrigger>
                 </TabsList>
+                <TabsContent value="deal-score">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Deal Assessment</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {/* Deal Score Gauge */}
+                      <div className="flex flex-col items-center mb-6">
+                        <div className="text-2xl font-bold flex items-center mb-2">
+                          {priceDiff <= -5 ? "🔥" : priceDiff <= 5 ? "✅" : "⚠️"} Deal Score
+                        </div>
 
-                <TabsContent value="deal_score">
-                  <div className="text-center py-8 text-muted-foreground">
-                    Deal Score analysis coming soon
-                  </div>
+                        {/* Score Display */}
+                        <div className="flex items-center justify-center mb-4">
+                          <Badge 
+                            className={`
+                              ${priceDiff <= -5 ? "bg-green-500" : priceDiff <= 5 ? "bg-blue-500" : "bg-amber-500"} 
+                              text-white px-6 py-2 text-xl
+                            `}
+                          >
+                            {priceDiff <= -5 ? "GREAT DEAL" : priceDiff <= 5 ? "FAIR PRICE" : "OVERPRICED"}
+                          </Badge>
+                        </div>
+
+                        {/* Gauge Visualization */}
+                        <div className="w-full max-w-md">
+                          <div className="relative pt-4">
+                            {/* Gauge Background */}
+                            <div className="h-3 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-green-500 to-blue-500" />
+
+                            {/* Gauge Markers */}
+                            <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                              <span>Overpriced</span>
+                              <span>Fair</span>
+                              <span>Good</span>
+                              <span>Great</span>
+                            </div>
+
+                            {/* Gauge Pointer */}
+                            <div 
+                              className="absolute -top-1 w-4 h-4 bg-background border-2 border-primary rounded-full transform -translate-x-1/2" 
+                              style={{ 
+                                left: `${Math.min(Math.max((100 - priceDiff * 5), 0), 100)}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Deal Explanation */}
+                        <div className="mt-6 text-center">
+                          <p className="text-sm text-muted-foreground mb-2">
+                            This property is {Math.abs(priceDiff).toFixed(1)}% 
+                            {priceDiff > 0 ? " above " : " below "} 
+                            the estimated market value.
+                          </p>
+
+                          <div className="flex justify-between items-center mt-4 px-4">
+                            <div className="text-sm">Asking Price:</div>
+                            <div className="font-bold">R{parseFormattedValue(submittedData.purchasePrice).toLocaleString()}</div>
+                          </div>
+
+                          <div className="flex justify-between items-center mt-2 px-4">
+                            <div className="text-sm">Estimated Market Value:</div>
+                            <div className="font-bold">R{marketPrice.toLocaleString()}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Additional Deal Details */}
+                      <div className="mt-8 border-t pt-4">
+                        <h3 className="font-medium mb-4">Key Deal Factors</h3>
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <div>Price per m²</div>
+                            <div className="font-bold">
+                              R{Math.round(parseFormattedValue(submittedData.purchasePrice) / parseFormattedValue(submittedData.size)).toLocaleString()}/m²
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <div>Area average</div>
+                            <div className="font-bold">
+                              R{parseFormattedValue(submittedData.areaRate).toLocaleString()}/m²
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <div>Property condition</div>
+                            <div className="capitalize font-medium">
+                              {submittedData.propertyCondition}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 <TabsContent value="price" className="space-y-4">
@@ -1573,14 +1654,14 @@ export default function DealScorePage() {
                   )}
                 </TabsContent>
 
-                <TabsContent value="buyer_profile">
+                <TabsContent value="buyer-profile">
                   <div className="text-center py-8 text-muted-foreground">
                     Buyer profile analysis coming soon
                   </div>
                 </TabsContent>
               </Tabs>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         <div
