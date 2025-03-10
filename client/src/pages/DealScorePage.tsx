@@ -25,7 +25,7 @@ import { PropertyScoreModal } from "@/components/PropertyScoreModal";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Home } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface RevenueData {
   adr: number;
