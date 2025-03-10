@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageTransition } from "@/components/PageTransition";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowRight, Loader2, BarChart3 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { UpgradeModal } from "@/components/UpgradeModal";
@@ -42,16 +42,26 @@ interface RevenueData {
 }
 
 export default function DealScorePage() {
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
+    // Property Details (Step 1)
     address: "",
     purchasePrice: "",
     size: "",
     areaRate: "",
     bedrooms: "",
+    propertyCondition: "excellent",
+
+    // Rental Details (Step 2)
     nightlyRate: "",
     occupancy: "",
     longTermRental: "",
-    propertyCondition: "excellent",
+
+    // Financing Details (Step 3)
+    depositAmount: "",
+    depositPercentage: "",
+    interestRate: "11.75", // Default to current prime rate
+    loanTerm: "20", // Default to 20 years
   });
 
   // States for revenue data
@@ -73,6 +83,24 @@ export default function DealScorePage() {
   const [showPropertyScoreModal, setShowPropertyScoreModal] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
 
+  useEffect(() => {
+    // Fetch current prime rate when component mounts
+    const fetchPrimeRate = async () => {
+      try {
+        const response = await fetch('/api/prime-rate');
+        const data = await response.json();
+        setFormData(prev => ({
+          ...prev,
+          interestRate: data.primeRate.toString()
+        }));
+      } catch (error) {
+        console.error('Failed to fetch prime rate:', error);
+      }
+    };
+
+    fetchPrimeRate();
+  }, []);
+
   // Prefill data handler
   const handlePrefill = () => {
     setFormData({
@@ -85,6 +113,10 @@ export default function DealScorePage() {
       occupancy: "70",
       longTermRental: "25000",
       propertyCondition: "excellent",
+      depositAmount: "350000",
+      depositPercentage: "10",
+      interestRate: "11.75",
+      loanTerm: "20",
     });
   };
 
@@ -112,9 +144,38 @@ export default function DealScorePage() {
       field === "areaRate" ||
       field === "nightlyRate" ||
       field === "occupancy" ||
-      field === "longTermRental"
+      field === "longTermRental" ||
+      field === "depositAmount" ||
+      field === "loanTerm"
     ) {
       value = value.replace(/[^0-9.]/g, "");
+    }
+
+    // Handle deposit calculations
+    if (field === "depositAmount") {
+      const purchasePrice = Number(formData.purchasePrice);
+      if (purchasePrice > 0) {
+        const percentage = (Number(value) / purchasePrice) * 100;
+        setFormData(prev => ({
+          ...prev,
+          [field]: value,
+          depositPercentage: percentage.toFixed(2)
+        }));
+        return;
+      }
+    }
+
+    if (field === "depositPercentage") {
+      const purchasePrice = Number(formData.purchasePrice);
+      if (purchasePrice > 0) {
+        const amount = (Number(value) / 100) * purchasePrice;
+        setFormData(prev => ({
+          ...prev,
+          [field]: value,
+          depositAmount: amount.toFixed(2)
+        }));
+        return;
+      }
     }
 
     setFormData((prev) => ({
@@ -157,14 +218,23 @@ export default function DealScorePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsCalculating(true);
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+      return;
+    }
 
-    // Simulate calculation time
+    setIsCalculating(true);
     setTimeout(() => {
       setSubmittedData(formData);
       setShowResults(true);
       setIsCalculating(false);
     }, 2000);
+  };
+
+  const handlePrevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
   };
 
   const fetchRevenueData = async () => {
@@ -324,16 +394,254 @@ export default function DealScorePage() {
     }
   };
 
+  // Render form steps
+  const renderFormStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="address">Property Address</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  placeholder="Enter property address"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="purchasePrice">Purchase Price (R)</Label>
+                <Input
+                  id="purchasePrice"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.purchasePrice}
+                  onChange={(e) => handleInputChange("purchasePrice", e.target.value)}
+                  placeholder="Enter purchase price"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="size">Size (m²)</Label>
+                <Input
+                  id="size"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.size}
+                  onChange={(e) => handleInputChange("size", e.target.value)}
+                  placeholder="Enter property size"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
+                <Input
+                  id="areaRate"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.areaRate}
+                  onChange={(e) => handleInputChange("areaRate", e.target.value)}
+                  placeholder="Enter area rate per square meter"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bedrooms">Bedrooms</Label>
+                <Input
+                  id="bedrooms"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.bedrooms}
+                  onChange={(e) => handleInputChange("bedrooms", e.target.value)}
+                  placeholder="Enter number of bedrooms"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="propertyCondition">Property Condition</Label>
+                <Select
+                  value={formData.propertyCondition}
+                  onValueChange={(value) => handleInputChange("propertyCondition", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select property condition" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="excellent">Excellent</SelectItem>
+                    <SelectItem value="good">Good</SelectItem>
+                    <SelectItem value="fair">Fair</SelectItem>
+                    <SelectItem value="poor">Poor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </>
+        );
+
+      case 2:
+        return (
+          <>
+            <div className="p-4 bg-gray-50 rounded-lg border">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nightlyRate">Nightly Rate (R)</Label>
+                  <Input
+                    id="nightlyRate"
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.nightlyRate}
+                    onChange={(e) => handleInputChange("nightlyRate", e.target.value)}
+                    placeholder="Enter nightly rate"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="occupancy">Occupancy (%)</Label>
+                  <Input
+                    id="occupancy"
+                    type="text"
+                    inputMode="numeric"
+                    min="0"
+                    max="100"
+                    value={formData.occupancy}
+                    onChange={(e) => handleInputChange("occupancy", e.target.value)}
+                    placeholder="Enter expected occupancy rate"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Market Data</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-10"
+                    onClick={() => {
+                      if (hasProAccess.hasAccess) {
+                        fetchRevenueData();
+                      } else {
+                        setShowUpgradeModal(true);
+                      }
+                    }}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Getting Data...
+                      </>
+                    ) : (
+                      <>
+                        Get Revenue
+                        <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                          PRO
+                        </span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2 mt-4">
+              <Label htmlFor="longTermRental">Long Term Rental (R/month)</Label>
+              <Input
+                id="longTermRental"
+                type="text"
+                inputMode="numeric"
+                value={formData.longTermRental}
+                onChange={(e) => handleInputChange("longTermRental", e.target.value)}
+                placeholder="Enter long term rental amount"
+                required
+              />
+            </div>
+          </>
+        );
+
+      case 3:
+        return (
+          <>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="depositAmount">Deposit Amount (R)</Label>
+                  <Input
+                    id="depositAmount"
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.depositAmount}
+                    onChange={(e) => handleInputChange("depositAmount", e.target.value)}
+                    placeholder="Enter deposit amount"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="depositPercentage">Deposit (%)</Label>
+                  <Input
+                    id="depositPercentage"
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.depositPercentage}
+                    onChange={(e) => handleInputChange("depositPercentage", e.target.value)}
+                    placeholder="Enter deposit percentage"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="interestRate">Interest Rate (%)</Label>
+                <Input
+                  id="interestRate"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.interestRate}
+                  onChange={(e) => handleInputChange("interestRate", e.target.value)}
+                  placeholder="Enter interest rate"
+                  required
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Current prime rate: {formData.interestRate}%
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="loanTerm">Loan Term (years)</Label>
+                <Input
+                  id="loanTerm"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.loanTerm}
+                  onChange={(e) => handleInputChange("loanTerm", e.target.value)}
+                  placeholder="Enter loan term"
+                  required
+                />
+              </div>
+            </div>
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <PageTransition>
       <div className="p-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Deal Score</h1>
           {hasProAccess.hasAccess && (
-            <Button
-              variant="outline"
-              onClick={() => setShowPropertyScoreModal(true)}
-            >
+            <Button variant="outline" onClick={() => setShowPropertyScoreModal(true)}>
               View Property Score <BarChart3 className="h-4 w-4 ml-2" />
             </Button>
           )}
@@ -344,203 +652,92 @@ export default function DealScorePage() {
           <div className="w-[600px]">
             <Card>
               <CardHeader>
-                <CardTitle>Property Details</CardTitle>
+                <CardTitle>
+                  {currentStep === 1
+                    ? "Property Details"
+                    : currentStep === 2
+                    ? "Rental Details"
+                    : "Financing Details"}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Property Address</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) =>
-                        handleInputChange("address", e.target.value)
-                      }
-                      placeholder="Enter property address"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="purchasePrice">Purchase Price (R)</Label>
-                    <Input
-                      id="purchasePrice"
-                      type="text"
-                      inputMode="numeric"
-                      value={formData.purchasePrice}
-                      onChange={(e) =>
-                        handleInputChange("purchasePrice", e.target.value)
-                      }
-                      placeholder="Enter purchase price"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="size">Size (m²)</Label>
-                    <Input
-                      id="size"
-                      type="text"
-                      inputMode="numeric"
-                      value={formData.size}
-                      onChange={(e) =>
-                        handleInputChange("size", e.target.value)
-                      }
-                      placeholder="Enter property size"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
-                    <Input
-                      id="areaRate"
-                      type="text"
-                      inputMode="numeric"
-                      value={formData.areaRate}
-                      onChange={(e) =>
-                        handleInputChange("areaRate", e.target.value)
-                      }
-                      placeholder="Enter area rate per square meter"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="bedrooms">Bedrooms</Label>
-                    <Input
-                      id="bedrooms"
-                      type="text"
-                      inputMode="numeric"
-                      value={formData.bedrooms}
-                      onChange={(e) =>
-                        handleInputChange("bedrooms", e.target.value)
-                      }
-                      placeholder="Enter number of bedrooms"
-                      required
-                    />
-                  </div>
-
-                  <div className="p-4 bg-gray-50 rounded-lg border">
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="nightlyRate">Nightly Rate (R)</Label>
-                        <Input
-                          id="nightlyRate"
-                          type="text"
-                          inputMode="numeric"
-                          value={formData.nightlyRate}
-                          onChange={(e) =>
-                            handleInputChange("nightlyRate", e.target.value)
-                          }
-                          placeholder="Enter nightly rate"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="occupancy">Occupancy (%)</Label>
-                        <Input
-                          id="occupancy"
-                          type="text"
-                          inputMode="numeric"
-                          min="0"
-                          max="100"
-                          value={formData.occupancy}
-                          onChange={(e) =>
-                            handleInputChange("occupancy", e.target.value)
-                          }
-                          placeholder="Enter expected occupancy rate"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Market Data</Label>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="w-full h-10"
-                          onClick={() => {
-                            if (hasProAccess.hasAccess) {
-                              fetchRevenueData();
-                            } else {
-                              setShowUpgradeModal(true);
-                            }
-                          }}
-                          disabled={isLoading}
+                <div className="mb-6">
+                  <div className="flex justify-between mb-2">
+                    {[1, 2, 3].map((step) => (
+                      <div
+                        key={step}
+                        className={`flex items-center ${
+                          step < 3 ? "flex-1" : ""
+                        }`}
+                      >
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            step <= currentStep
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-muted-foreground"
+                          }`}
                         >
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Getting Data...
-                            </>
-                          ) : (
-                            <>
-                              Get Revenue
-                              <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
-                                PRO
-                              </span>
-                            </>
-                          )}
-                        </Button>
+                          {step}
+                        </div>
+                        {step < 3 && (
+                          <div
+                            className={`flex-1 h-1 mx-2 ${
+                              step < currentStep
+                                ? "bg-primary"
+                                : "bg-muted"
+                            }`}
+                          />
+                        )}
                       </div>
-                    </div>
+                    ))}
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="longTermRental">
-                      Long Term Rental (R/month)
-                    </Label>
-                    <Input
-                      id="longTermRental"
-                      type="text"
-                      inputMode="numeric"
-                      value={formData.longTermRental}
-                      onChange={(e) =>
-                        handleInputChange("longTermRental", e.target.value)
-                      }
-                      placeholder="Enter long term rental amount"
-                      required
-                    />
+                  <div className="flex justify-between text-sm">
+                    <span className={currentStep === 1 ? "text-primary" : ""}>
+                      Property
+                    </span>
+                    <span className={currentStep === 2 ? "text-primary" : ""}>
+                      Rental
+                    </span>
+                    <span className={currentStep === 3 ? "text-primary" : ""}>
+                      Financing
+                    </span>
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="propertyCondition">
-                      Property Condition
-                    </Label>
-                    <Select
-                      value={formData.propertyCondition}
-                      onValueChange={(value) =>
-                        handleInputChange("propertyCondition", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select property condition" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="excellent">Excellent</SelectItem>
-                        <SelectItem value="good">Good</SelectItem>
-                        <SelectItem value="fair">Fair</SelectItem>
-                        <SelectItem value="poor">Poor</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {renderFormStep()}
 
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isCalculating}
-                  >
-                    {isCalculating ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Calculating...
-                      </>
-                    ) : (
-                      "Calculate Deal Score"
+                  <div className="flex justify-between gap-4 mt-6">
+                    {currentStep > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handlePrevStep}
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Previous
+                      </Button>
                     )}
-                  </Button>
+                    <Button
+                      type="submit"
+                      className={currentStep === 1 ? "w-full" : "flex-1"}
+                      disabled={isCalculating}
+                    >
+                      {isCalculating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Calculating...
+                        </>
+                      ) : currentStep < 3 ? (
+                        <>
+                          Next
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </>
+                      ) : (
+                        "Calculate Deal Score"
+                      )}
+                    </Button>
+                  </div>
                 </form>
               </CardContent>
             </Card>
@@ -996,7 +1193,8 @@ export default function DealScorePage() {
                             style: "currency",
                             currency: "ZAR",
                           }).format(data.adr)}
-                        </td>                        <td className="text-right py-2 px-4">
+                        </td>
+                        <td className="text-right py-2 px-4">
                           {Math.round(data.occupancy)}%
                         </td>
                         <td className="text-right py-2 px-4">

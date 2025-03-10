@@ -23,6 +23,7 @@ import { sql } from "drizzle-orm";
 import { suburbs } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
+import primeRateRouter from './routes/prime-rate';
 
 // Extend Express.User to include our schema
 declare global {
@@ -945,6 +946,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Property comparison routes
+  app.use('/api/prime-rate', primeRateRouter);
   app.post("/api/properties", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
