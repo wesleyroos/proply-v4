@@ -26,6 +26,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { findCostFromTable, transferCostsTable } from "@/lib/costTables";
 
 interface RevenueData {
   adr: number;
@@ -859,6 +860,7 @@ export default function DealScorePage() {
   };
 
   const calculateTransferDuty = (purchasePrice: number) => {
+    // Using the official SARS transfer duty rates
     if (purchasePrice <= 1000000) return 0;
     if (purchasePrice <= 1375000) return (purchasePrice - 1000000) * 0.03;
     if (purchasePrice <= 1925000) return 11250 + (purchasePrice - 1375000) * 0.06;
@@ -867,9 +869,34 @@ export default function DealScorePage() {
     return 1026000 + (purchasePrice - 11000000) * 0.13;
   };
 
-  const calculateTransferCosts = (purchasePrice: number) => {
-    // Simplified transfer cost calculation
-    return purchasePrice * 0.05; // Approximately 5% of purchase price
+  const calculateTransferCosts = (purchasePrice: number, includeVat = true, includeTransferDuty = true) => {
+    // Look up costs from the transfer costs table
+    const costs = findCostFromTable(transferCostsTable, purchasePrice);
+    
+    if (!costs) {
+      // Fallback to simplified estimation if price is outside the table range
+      const estimatedTransferFee = purchasePrice * 0.025; // Approx. 2.5% for transfer fees
+      const estimatedDisbursements = purchasePrice * 0.01; // Approx. 1% for disbursements
+      const estimatedDeeds = purchasePrice * 0.005; // Approx. 0.5% for deeds fees
+      const transferDutyAmount = includeTransferDuty ? calculateTransferDuty(purchasePrice) : 0;
+      
+      return estimatedTransferFee + estimatedDisbursements + estimatedDeeds + transferDutyAmount;
+    }
+
+    // Use values from the table
+    let totalCost = costs.transferFee + costs.disbursements + costs.deedsFee;
+    
+    // Add VAT if needed
+    if (includeVat) {
+      totalCost += costs.vat;
+    }
+    
+    // Add transfer duty if needed
+    if (includeTransferDuty) {
+      totalCost += costs.transferDuty > 0 ? costs.transferDuty : calculateTransferDuty(purchasePrice);
+    }
+    
+    return totalCost;
   };
 
   const calculateAffordabilityMetrics = (formData: typeof submittedData) => {
@@ -890,7 +917,7 @@ export default function DealScorePage() {
     const loanAmount = purchasePrice - depositAmount;
     const monthlyPayment = calculateMonthlyPayment(loanAmount, interestRate, loanTerm);
     const transferDuty = calculateTransferDuty(purchasePrice);
-    const transferCosts = calculateTransferCosts(purchasePrice);
+    const transferCosts = calculateTransferCosts(purchasePrice, true, true) - transferDuty; // Exclude duty from costs as we track it separately
     const totalCashNeeded = depositAmount + transferDuty + transferCosts;
 
     // Monthly payments with different rates
