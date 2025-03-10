@@ -725,7 +725,11 @@ export default function DealScorePage() {
     }
   };
 
-  // This duplicate function was removed to fix the error
+  // Handle step click
+  const handleStepClick = (step: number) => {
+    // Allow unconditional navigation between steps
+    setCurrentStep(step);
+  };
 
   // Check if step is complete (all fields filled)
   const isStepComplete = (step: number) => {
