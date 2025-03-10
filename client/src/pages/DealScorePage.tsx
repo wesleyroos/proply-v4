@@ -220,10 +220,10 @@ export default function DealScorePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Always check for required fields before proceeding, regardless of current step
     const missingFields = getMissingFields(currentStep);
-    
+
     if (missingFields.length > 0) {
       // Show validation error for missing fields
       toast({
@@ -233,20 +233,20 @@ export default function DealScorePage() {
       });
       return;
     }
-    
+
     if (currentStep < 3) {
       // Proceed to next step
       setCurrentStep(currentStep + 1);
       return;
     }
-    
+
     // Before calculating, check ALL required fields from all steps
     const allMissingFields = [
       ...getMissingFields(1),
       ...getMissingFields(2),
       ...getMissingFields(3)
     ];
-    
+
     if (allMissingFields.length > 0) {
       toast({
         title: "Missing information",
@@ -255,6 +255,7 @@ export default function DealScorePage() {
       });
       return;
     }
+
 
     setIsCalculating(true);
     setTimeout(() => {
@@ -678,29 +679,29 @@ export default function DealScorePage() {
   const isStepComplete = (step: number) => {
     switch (step) {
       case 1: // Property Details
-        return formData.address !== "" && 
-               formData.purchasePrice !== "" && 
-               formData.size !== "" && 
-               formData.areaRate !== "" && 
+        return formData.address !== "" &&
+               formData.purchasePrice !== "" &&
+               formData.size !== "" &&
+               formData.areaRate !== "" &&
                formData.bedrooms !== "";
       case 2: // Rental Details
-        return formData.nightlyRate !== "" && 
-               formData.occupancy !== "" && 
+        return formData.nightlyRate !== "" &&
+               formData.occupancy !== "" &&
                formData.longTermRental !== "";
       case 3: // Financing Details
-        return formData.depositAmount !== "" && 
-               formData.depositPercentage !== "" && 
-               formData.interestRate !== "" && 
+        return formData.depositAmount !== "" &&
+               formData.depositPercentage !== "" &&
+               formData.interestRate !== "" &&
                formData.loanTerm !== "";
       default:
         return false;
     }
   };
-  
+
   // Get list of missing field names for validation
   const getMissingFields = (step: number): string[] => {
     const missingFields: string[] = [];
-    
+
     switch (step) {
       case 1: // Property Details
         if (!formData.address) missingFields.push("Property Address");
@@ -721,7 +722,7 @@ export default function DealScorePage() {
         if (!formData.loanTerm) missingFields.push("Loan Term");
         break;
     }
-    
+
     return missingFields;
   };
 
@@ -761,21 +762,21 @@ export default function DealScorePage() {
         ))}
       </div>
       <div className="flex justify-between text-sm">
-        <span 
+        <span
           className={`${currentStep === 1 ? "text-primary" : ""} ${isStepComplete(1) ? "font-medium" : ""}`}
           onClick={() => handleStepClick(1)}
           style={{ cursor: 'pointer' }}
         >
           Property {isStepComplete(1) && "✓"}
         </span>
-        <span 
+        <span
           className={`${currentStep === 2 ? "text-primary" : ""} ${isStepComplete(2) ? "font-medium" : ""}`}
           onClick={() => handleStepClick(2)}
           style={{ cursor: 'pointer' }}
         >
           Rental {isStepComplete(2) && "✓"}
         </span>
-        <span 
+        <span
           className={`${currentStep === 3 ? "text-primary" : ""} ${isStepComplete(3) ? "font-medium" : ""}`}
           onClick={() => handleStepClick(3)}
           style={{ cursor: 'pointer' }}
@@ -785,6 +786,79 @@ export default function DealScorePage() {
       </div>
     </div>
   );
+
+  const calculateMonthlyPayment = (loanAmount: number, annualRate: number, years: number) => {
+    const monthlyRate = annualRate / 12 / 100;
+    const numberOfPayments = years * 12;
+    const payment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
+                   (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+    return Math.round(payment);
+  };
+
+  const calculateTransferDuty = (purchasePrice: number) => {
+    if (purchasePrice <= 1000000) return 0;
+    if (purchasePrice <= 1375000) return (purchasePrice - 1000000) * 0.03;
+    if (purchasePrice <= 1925000) return 11250 + (purchasePrice - 1375000) * 0.06;
+    if (purchasePrice <= 2475000) return 44250 + (purchasePrice - 1925000) * 0.08;
+    if (purchasePrice <= 11000000) return 88250 + (purchasePrice - 2475000) * 0.11;
+    return 1026000 + (purchasePrice - 11000000) * 0.13;
+  };
+
+  const calculateTransferCosts = (purchasePrice: number) => {
+    // Simplified transfer cost calculation
+    return purchasePrice * 0.05; // Approximately 5% of purchase price
+  };
+
+  const calculateAffordabilityMetrics = (formData: typeof submittedData) => {
+    if (!formData) return null;
+
+    const purchasePrice = Number(formData.purchasePrice);
+    const depositAmount = Number(formData.depositAmount);
+    const interestRate = Number(formData.interestRate);
+    const loanTerm = Number(formData.loanTerm);
+
+    const loanAmount = purchasePrice - depositAmount;
+    const monthlyPayment = calculateMonthlyPayment(loanAmount, interestRate, loanTerm);
+    const transferDuty = calculateTransferDuty(purchasePrice);
+    const transferCosts = calculateTransferCosts(purchasePrice);
+    const totalCashNeeded = depositAmount + transferDuty + transferCosts;
+
+    // Monthly payments with different rates
+    const paymentWithLowerRate = calculateMonthlyPayment(loanAmount, interestRate - 1, loanTerm);
+    const paymentWithHigherRate = calculateMonthlyPayment(loanAmount, interestRate + 1, loanTerm);
+
+    // Different deposit scenarios
+    const depositScenarios = {
+      twenty: calculateMonthlyPayment(purchasePrice * 0.8, interestRate, loanTerm),
+      ten: calculateMonthlyPayment(purchasePrice * 0.9, interestRate, loanTerm),
+      five: calculateMonthlyPayment(purchasePrice * 0.95, interestRate, loanTerm),
+    };
+
+    // Estimated levies and rates (simplified calculation)
+    const leviesAndRates = Math.round(purchasePrice * 0.001); // Approximately 0.1% of property value monthly
+
+    // Required monthly income (using 30% debt-to-income ratio)
+    const requiredIncome = Math.round((monthlyPayment + leviesAndRates) / 0.3);
+
+    return {
+      upfrontCosts: {
+        deposit: depositAmount,
+        transferDuty,
+        transferCosts,
+        totalCashNeeded,
+      },
+      monthlyPayments: {
+        bondPayment: monthlyPayment,
+        lowerRatePayment: paymentWithLowerRate,
+        higherRatePayment: paymentWithHigherRate,
+        leviesAndRates,
+        totalMonthlyCost: monthlyPayment + leviesAndRates,
+      },
+      depositScenarios,
+      requiredIncome,
+    };
+  };
+
 
   return (
     <PageTransition>
@@ -975,7 +1049,7 @@ export default function DealScorePage() {
                                 : "text-amber-500"
                             }
                           >
-                            {priceDiff <= 0 ? "Under Paying" : "Over Paying"}
+                            {priceDiff <= 0 ? "UnderPaying" : "Over Paying"}
                           </Badge>
                         </div>
                       </div>
@@ -1230,10 +1304,154 @@ export default function DealScorePage() {
                   )}
                 </TabsContent>
 
-                <TabsContent value="affordability">
-                  <div className="text-center py-8 text-muted-foreground">
-                    Affordability analysis coming soon
-                  </div>
+                <TabsContent value="affordability" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Affordability Cheat Sheet</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {submittedData && (
+                        <>
+                          {(() => {
+                            const metrics = calculateAffordabilityMetrics(submittedData);
+                            if (!metrics) return null;
+
+                            return (
+                              <div className="grid grid-cols-2 gap-6">
+                                {/* Upfront Costs */}
+                                <div className="space-y-4">
+                                  <h3 className="font-semibold text-lg">Upfront Costs</h3>
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between">
+                                      <span>Deposit ({submittedData.depositPercentage}%):</span>
+                                      <span className="font-medium">
+                                        R{Math.round(metrics.upfrontCosts.deposit).toLocaleString()}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Transfer duty:</span>
+                                      <span className="font-medium">
+                                        R{Math.round(metrics.upfrontCosts.transferDuty).toLocaleString()}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Transfer costs:</span>
+                                      <span className="font-medium">
+                                        R{Math.round(metrics.upfrontCosts.transferCosts).toLocaleString()}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between pt-2 border-t">
+                                      <span>Total cash needed:</span>
+                                      <span className="font-medium">
+                                        R{Math.round(metrics.upfrontCosts.totalCashNeeded).toLocaleString()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Monthly Payments */}
+                                <div className="space-y-4">
+                                  <h3 className="font-semibold text-lg">Monthly Payments</h3>
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between">
+                                      <span>Bond payment:</span>
+                                      <span className="font-medium">
+                                        R{metrics.monthlyPayments.bondPayment.toLocaleString()}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>If rates drop 1%:</span>
+                                      <span className="font-medium text-emerald-600">
+                                        R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Levies/rates:</span>
+                                      <span className="font-medium">
+                                        R{metrics.monthlyPayments.leviesAndRates.toLocaleString()}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between pt-2 border-t">
+                                      <span>Total monthly cost:</span>
+                                      <span className="font-medium">
+                                        R{metrics.monthlyPayments.totalMonthlyCost.toLocaleString()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Income Requirements */}
+                                <div className="col-span-2 space-y-2 bg-gray-50 p-4 rounded-lg">
+                                  <h3 className="font-semibold text-lg">Income Requirements</h3>
+                                  <div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span>Required household income:</span>
+                                      <span className="font-bold text-xl">
+                                        R{metrics.requiredIncome.toLocaleString()}/month
+                                      </span>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">
+                                      Based on 30% debt-to-income ratio
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Different Deposit Options */}
+                                <div className="space-y-4">
+                                  <h3 className="font-semibold text-lg">Different Deposit Options</h3>
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between">
+                                      <span>20% deposit:</span>
+                                      <span className="font-medium">
+                                        R{metrics.depositScenarios.twenty.toLocaleString()}/month
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>10% deposit:</span>
+                                      <span className="font-medium">
+                                        R{metrics.depositScenarios.ten.toLocaleString()}/month
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>5% deposit:</span>
+                                      <span className="font-medium">
+                                        R{metrics.depositScenarios.five.toLocaleString()}/month
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Rate Changes */}
+                                <div className="space-y-4">
+                                  <h3 className="font-semibold text-lg">Rate Changes</h3>
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between">
+                                      <span>Current rate:</span>
+                                      <span className="font-medium">
+                                        R{metrics.monthlyPayments.bondPayment.toLocaleString()}/month
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>If rates drop 1%:</span>
+                                      <span className="font-medium text-emerald-600">
+                                        R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}/month
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>If rates rise 1%:</span>
+                                      <span className="font-medium text-red-600">
+                                        R{metrics.monthlyPayments.higherRatePayment.toLocaleString()}/month
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 <TabsContent value="buyer_profile">
