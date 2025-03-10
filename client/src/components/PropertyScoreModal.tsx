@@ -12,6 +12,11 @@ interface PropertyScoreModalProps {
   propertyAddress?: string;
   purchasePrice?: number;
   marketAvgPrice?: number;
+  shortTermYield?: number;
+  longTermYield?: number;
+  areaRateM2?: number;
+  priceM2?: number;
+  propertyCondition?: string;
 }
 
 export function PropertyScoreModal({ 
@@ -20,15 +25,28 @@ export function PropertyScoreModal({
   propertyId = "PROP-1234",
   propertyAddress = "27 Leeuwen St, Cape Town City Centre, 8001",
   purchasePrice = 3500000,
-  marketAvgPrice = 3250000
+  marketAvgPrice = 3250000,
+  shortTermYield = 12.9,
+  longTermYield = 6.2,
+  areaRateM2 = 31000,
+  priceM2 = 32500,
+  propertyCondition = "Excellent"
 }: PropertyScoreModalProps) {
   // Deal Assessment Logic
   const priceDiff = marketAvgPrice ? ((purchasePrice - marketAvgPrice) / marketAvgPrice) * 100 : 0;
 
+  //Rudimentary Deal Score Calculation (Needs Refinement)
+  const priceScore = priceDiff <= -5 ? 100 : priceDiff <= 5 ? 50 : 0;
+  const yieldScore = (shortTermYield + longTermYield) / 2; //Average Yield Score
+  const areaRateScore = priceM2 <= areaRateM2 ? 100 : 50; //Simple comparison
+  const conditionScore = propertyCondition === "Excellent" ? 100 : propertyCondition === "Good" ? 75 : 50;
+  const dealScore = Math.round((priceScore + yieldScore + areaRateScore + conditionScore) / 4);
+
+
   // Deal Badge logic
   const getDealBadge = () => {
-    if (priceDiff <= -5) return { emoji: "🔥", text: "GREAT DEAL", color: "bg-green-500", textColor: "text-green-500" };
-    if (priceDiff <= 5) return { emoji: "✅", text: "FAIR PRICE", color: "bg-blue-500", textColor: "text-blue-500" };
+    if (dealScore >= 80) return { emoji: "🔥", text: "GREAT DEAL", color: "bg-green-500", textColor: "text-green-500" };
+    if (dealScore >= 50) return { emoji: "✅", text: "FAIR PRICE", color: "bg-blue-500", textColor: "text-blue-500" };
     return { emoji: "⚠️", text: "OVERPRICED", color: "bg-amber-500", textColor: "text-amber-500" };
   };
 
@@ -40,8 +58,8 @@ export function PropertyScoreModal({
     longTerm: 18000,  // Monthly rental
     occupancyRate: 75, // Airbnb occupancy %
     rentalDemand: 15,  // % higher than average
-    yieldLongTerm: 6.2, // Annual yield %
-    yieldShortTerm: 12.9, // Annual yield %
+    yieldLongTerm: longTermYield, // Annual yield %
+    yieldShortTerm: shortTermYield, // Annual yield %
     bestStrategy: "short-term" // short-term or long-term
   };
 
@@ -135,7 +153,8 @@ export function PropertyScoreModal({
                       {dealBadge.emoji} Deal Assessment
                     </div>
                     <div className="text-muted-foreground mt-1">
-                      Easy talking points for your client
+                      <div>Deal Score: <span className="font-semibold">{dealScore}/100</span></div>
+                      <div>This property is {Math.abs(Math.round(priceDiff))}% {priceDiff > 0 ? 'above' : 'below'} market average</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -244,8 +263,8 @@ export function PropertyScoreModal({
                 <div className="space-y-5">
                   <div className="flex justify-between items-center">
                     <div className="font-medium">Price per m²</div>
-                    <div className="font-bold">R32,500/m²</div>
-                    <div className="text-muted-foreground">(vs. area avg R31,000/m²)</div>
+                    <div className="font-bold">R{priceM2.toLocaleString()}/m²</div>
+                    <div className="text-muted-foreground">(vs. area avg R{areaRateM2.toLocaleString()}/m²)</div>
                     <Badge variant="outline" className={priceDiff <= 5 ? 'text-green-500' : 'text-amber-500'}>
                       {priceDiff <= 5 ? 'COMPETITIVE' : 'PREMIUM'}
                     </Badge>
@@ -260,7 +279,7 @@ export function PropertyScoreModal({
 
                   <div className="flex justify-between items-center">
                     <div className="font-medium">Property Condition</div>
-                    <div className="font-bold">Excellent</div>
+                    <div className="font-bold">{propertyCondition}</div>
                     <div className="text-muted-foreground">(minimal repairs needed)</div>
                     <Badge className="bg-green-500 text-white">MOVE-IN READY</Badge>
                   </div>
@@ -661,7 +680,7 @@ export function PropertyScoreModal({
                   <div className="font-bold mb-2">How to Position This Property</div>
                   <div className="space-y-3">
                     <div className="flex items-start gap-2">
-                      <div className="bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center mt-0.5 text-xs">1</div>
+                      <div className="bg-primary text-white rounded-full h-5 w-5 flex items-center justify-centermt-0.5 text-xs">1</div>
                       <div>
                         <div className="font-medium">For investors:</div>
                         <div className="text-sm">Highlight the exceptional {rentalData.yieldShortTerm}% Airbnb yield and strong rental demand in the area.</div>

@@ -918,8 +918,7 @@ export default function DealScorePage() {
     // Parse formatted values to get numeric values for calculations
     const parseValue = (value: string) => {
       if (!value) return 0;
-      // Remove all non-numeric characters except decimal point
-      return Number(value.toString().replace(/[^\d.]/g, ''));
+      // Remove all non-numeric characters except decimal point      return Number(value.toString().replace(/[^\d.]/g, ''));
     };
 
     const purchasePrice = parseValue(formData.purchasePrice);
@@ -1147,7 +1146,7 @@ export default function DealScorePage() {
                               R{parseFormattedValue(submittedData.areaRate).toLocaleString()}/m²
                             </div>
                           </div>
-                          
+
                           <div className="flex justify-between items-center mb-2">
                             <div>Short-Term Yield</div>
                             <div className="font-semibold text-emerald-600">
@@ -1760,10 +1759,32 @@ export default function DealScorePage() {
             </div>
           </DialogContent>
         </Dialog>
+        {showPropertyScoreModal && (
         <PropertyScoreModal
           isOpen={showPropertyScoreModal}
           onOpenChange={setShowPropertyScoreModal}
+          propertyAddress={submittedData?.address}
+          purchasePrice={parseFloat(submittedData?.purchasePrice || "0")}
+          marketAvgPrice={parseFloat(submittedData?.size || "0") * parseFloat(submittedData?.areaRate || "0")}
+          propertyCondition={submittedData?.propertyCondition || "good"}
+          shortTermYield={
+            submittedData?.nightlyRate && submittedData?.occupancy
+              ? ((parseFloat(submittedData.nightlyRate) * 365 * parseFloat(submittedData.occupancy) / 100) / parseFloat(submittedData.purchasePrice)) * 100
+              : null
+          }
+          longTermYield={
+            submittedData?.longTermRental
+              ? ((parseFloat(submittedData.longTermRental) * 12) / parseFloat(submittedData.purchasePrice)) * 100
+              : null
+          }
+          areaRatePerSqm={parseFloat(submittedData?.areaRate || "0")}
+          propertyRatePerSqm={
+            submittedData?.purchasePrice && submittedData?.size
+              ? parseFloat(submittedData.purchasePrice) / parseFloat(submittedData.size)
+              : 0
+          }
         />
+      )}
       </div>
     </PageTransition>
   );
