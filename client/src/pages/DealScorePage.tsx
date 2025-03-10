@@ -219,6 +219,7 @@ export default function DealScorePage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (currentStep < 3) {
+      // Proceed to next step without validation
       setCurrentStep(currentStep + 1);
       return;
     }
@@ -637,9 +638,8 @@ export default function DealScorePage() {
 
   // Handle step click
   const handleStepClick = (step: number) => {
-    if (formData.purchasePrice) { // Only allow navigation if purchase price is entered
-      setCurrentStep(step);
-    }
+    // Allow unconditional navigation between steps
+    setCurrentStep(step);
   };
 
   // Update the step counter UI to be clickable
