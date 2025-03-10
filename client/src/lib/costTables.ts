@@ -135,9 +135,15 @@ export const transferCostsTable = [
 ];
 
 // Cost calculation utilities
-export const findCostFromTable = (value: number, table: any[]) => {
+export const findCostFromTable = (value: number, table: any) => {
+  // Check if table is an array
+  if (!Array.isArray(table)) {
+    console.error('Expected an array for cost table, but received:', typeof table);
+    return null;
+  }
+  
   // Find the first entry where the table value is greater than or equal to the property value
-  const entry = table.find(entry => entry.value >= value);
+  const entry = table.find((entry: any) => entry.value >= value);
   // If no entry found, use the last entry in the table
   return entry || table[table.length - 1];
 };

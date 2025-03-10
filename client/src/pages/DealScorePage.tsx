@@ -871,7 +871,8 @@ export default function DealScorePage() {
 
   const calculateTransferCosts = (purchasePrice: number, includeVat = true, includeTransferDuty = true) => {
     // Look up costs from the transfer costs table
-    const costs = findCostFromTable(transferCostsTable, purchasePrice);
+    // Make sure we're passing the parameters in the correct order
+    const costs = findCostFromTable(purchasePrice, transferCostsTable);
     
     if (!costs) {
       // Fallback to simplified estimation if price is outside the table range
