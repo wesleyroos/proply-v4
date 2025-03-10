@@ -230,21 +230,26 @@ export default function DealScorePage() {
     if (!formData) return null;
 
     // Parse formatted values to get numeric values for calculations
-    const parseValue = (value: string) => Number(value.replace(/,/g, ''));
+    const parseValue = (value: string) => {
+      if (!value) return 0;
+      // Remove all non-numeric characters except decimal point
+      return Number(value.toString().replace(/[^\d.]/g, ''));
+    };
     
     // Short term calculations
     const daysInMonth = 30;
-    const shortTermMonthly =
-      parseValue(formData.nightlyRate) *
-      daysInMonth *
-      (Number(formData.occupancy) / 100);
+    const purchasePrice = parseValue(formData.purchasePrice);
+    const nightlyRate = parseValue(formData.nightlyRate);
+    const occupancy = parseValue(formData.occupancy);
+    
+    const shortTermMonthly = nightlyRate * daysInMonth * (occupancy / 100);
     const shortTermYearly = shortTermMonthly * 12;
-    const shortTermYield = (shortTermYearly / parseValue(formData.purchasePrice)) * 100;
+    const shortTermYield = purchasePrice > 0 ? (shortTermYearly / purchasePrice) * 100 : 0;
 
     // Long term calculations
     const longTermMonthly = parseValue(formData.longTermRental);
     const longTermYearly = longTermMonthly * 12;
-    const longTermYield = (longTermYearly / parseValue(formData.purchasePrice)) * 100;
+    const longTermYield = purchasePrice > 0 ? (longTermYearly / purchasePrice) * 100 : 0;
 
     return {
       shortTerm: {
@@ -429,13 +434,17 @@ export default function DealScorePage() {
   };
 
   // Parse formatted values for calculations
-  const parseFormattedValue = (value: string) => Number(value.toString().replace(/,/g, ''));
+  const parseFormattedValue = (value: string) => {
+    if (!value) return 0;
+    // Remove all non-numeric characters except decimal point
+    return Number(value.toString().replace(/[^\d.]/g, ''));
+  };
   
   // Calculate results only from submitted data
   const marketPrice = submittedData
     ? parseFormattedValue(submittedData.size) * parseFormattedValue(submittedData.areaRate)
     : 0;
-  const priceDiff = submittedData
+  const priceDiff = submittedData && marketPrice > 0
     ? ((parseFormattedValue(submittedData.purchasePrice) - marketPrice) / marketPrice) * 100
     : 0;
 
@@ -867,12 +876,16 @@ export default function DealScorePage() {
     if (!formData) return null;
 
     // Parse formatted values to get numeric values for calculations
-    const parseValue = (value: string) => Number(value.toString().replace(/,/g, ''));
+    const parseValue = (value: string) => {
+      if (!value) return 0;
+      // Remove all non-numeric characters except decimal point
+      return Number(value.toString().replace(/[^\d.]/g, ''));
+    };
 
     const purchasePrice = parseValue(formData.purchasePrice);
     const depositAmount = parseValue(formData.depositAmount);
-    const interestRate = Number(formData.interestRate);
-    const loanTerm = Number(formData.loanTerm);
+    const interestRate = parseValue(formData.interestRate);
+    const loanTerm = parseValue(formData.loanTerm);
 
     const loanAmount = purchasePrice - depositAmount;
     const monthlyPayment = calculateMonthlyPayment(loanAmount, interestRate, loanTerm);
