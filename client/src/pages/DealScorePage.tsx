@@ -220,7 +220,8 @@ export default function DealScorePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Check for required fields based on current step
+    
+    // Always check for required fields before proceeding, regardless of current step
     const missingFields = getMissingFields(currentStep);
     
     if (missingFields.length > 0) {
@@ -236,6 +237,22 @@ export default function DealScorePage() {
     if (currentStep < 3) {
       // Proceed to next step
       setCurrentStep(currentStep + 1);
+      return;
+    }
+    
+    // Before calculating, check ALL required fields from all steps
+    const allMissingFields = [
+      ...getMissingFields(1),
+      ...getMissingFields(2),
+      ...getMissingFields(3)
+    ];
+    
+    if (allMissingFields.length > 0) {
+      toast({
+        title: "Missing information",
+        description: `Please fill in: ${allMissingFields.join(", ")}`,
+        variant: "destructive",
+      });
       return;
     }
 
