@@ -107,18 +107,18 @@ export default function DealScorePage() {
   const handlePrefill = () => {
     setFormData({
       address: "27 Leeuwen St, Cape Town City Centre, 8001",
-      purchasePrice: "3500000",
-      size: "85",
-      areaRate: "45000",
+      purchasePrice: formatWithThousandSeparators("3500000"),
+      size: formatWithThousandSeparators("85"),
+      areaRate: formatWithThousandSeparators("45000"),
       bedrooms: "2",
-      nightlyRate: "2500",
-      occupancy: "70",
-      longTermRental: "25000",
+      nightlyRate: formatWithThousandSeparators("2500"),
+      occupancy: "70", // Don't format percentage
+      longTermRental: formatWithThousandSeparators("25000"),
       propertyCondition: "excellent",
-      depositAmount: "350000",
-      depositPercentage: "10",
-      interestRate: "11", // Updated to 11%
-      loanTerm: "20",
+      depositAmount: formatWithThousandSeparators("350000"),
+      depositPercentage: "10", // Don't format percentage
+      interestRate: "11", // Don't format percentage
+      loanTerm: formatWithThousandSeparators("20"),
     });
   };
 
