@@ -115,7 +115,7 @@ export default function DealScorePage() {
       propertyCondition: "excellent",
       depositAmount: "350000",
       depositPercentage: "10",
-      interestRate: "11.75",
+      interestRate: "11", // Updated to 11%
       loanTerm: "20",
     });
   };
@@ -635,6 +635,69 @@ export default function DealScorePage() {
     }
   };
 
+  // Handle step click
+  const handleStepClick = (step: number) => {
+    if (formData.purchasePrice) { // Only allow navigation if purchase price is entered
+      setCurrentStep(step);
+    }
+  };
+
+  // Update the step counter UI to be clickable
+  const renderStepCounter = () => (
+    <div className="mb-6">
+      <div className="flex justify-between mb-2">
+        {[1, 2, 3].map((step) => (
+          <div
+            key={step}
+            className={`flex items-center ${step < 3 ? "flex-1" : ""}`}
+            onClick={() => handleStepClick(step)}
+            style={{ cursor: 'pointer' }}
+          >
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                step <= currentStep
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {step}
+            </div>
+            {step < 3 && (
+              <div
+                className={`flex-1 h-1 mx-2 ${
+                  step < currentStep ? "bg-primary" : "bg-muted"
+                }`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-between text-sm">
+        <span 
+          className={currentStep === 1 ? "text-primary" : ""}
+          onClick={() => handleStepClick(1)}
+          style={{ cursor: 'pointer' }}
+        >
+          Property
+        </span>
+        <span 
+          className={currentStep === 2 ? "text-primary" : ""}
+          onClick={() => handleStepClick(2)}
+          style={{ cursor: 'pointer' }}
+        >
+          Rental
+        </span>
+        <span 
+          className={currentStep === 3 ? "text-primary" : ""}
+          onClick={() => handleStepClick(3)}
+          style={{ cursor: 'pointer' }}
+        >
+          Financing
+        </span>
+      </div>
+    </div>
+  );
+
   return (
     <PageTransition>
       <div className="p-8">
@@ -661,49 +724,7 @@ export default function DealScorePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="mb-6">
-                  <div className="flex justify-between mb-2">
-                    {[1, 2, 3].map((step) => (
-                      <div
-                        key={step}
-                        className={`flex items-center ${
-                          step < 3 ? "flex-1" : ""
-                        }`}
-                      >
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            step <= currentStep
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {step}
-                        </div>
-                        {step < 3 && (
-                          <div
-                            className={`flex-1 h-1 mx-2 ${
-                              step < currentStep
-                                ? "bg-primary"
-                                : "bg-muted"
-                            }`}
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className={currentStep === 1 ? "text-primary" : ""}>
-                      Property
-                    </span>
-                    <span className={currentStep === 2 ? "text-primary" : ""}>
-                      Rental
-                    </span>
-                    <span className={currentStep === 3 ? "text-primary" : ""}>
-                      Financing
-                    </span>
-                  </div>
-                </div>
-
+                {renderStepCounter()}
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {renderFormStep()}
 
