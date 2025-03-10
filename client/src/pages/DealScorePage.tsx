@@ -980,6 +980,9 @@ export default function DealScorePage() {
     };
   };
 
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(value);
+  };
 
 
   return (
@@ -1142,6 +1145,20 @@ export default function DealScorePage() {
                             <div>Area average</div>
                             <div className="font-bold">
                               R{parseFormattedValue(submittedData.areaRate).toLocaleString()}/m²
+                            </div>
+                          </div>
+                          
+                          <div className="flex justify-between items-center mb-2">
+                            <div>Short-Term Yield</div>
+                            <div className="font-semibold text-emerald-600">
+                              {calculateRentalMetrics(submittedData)?.shortTerm.yield.toFixed(2) || "0"}%
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center mb-2">
+                            <div>Long-Term Yield</div>
+                            <div className="font-semibold text-blue-600">
+                              {calculateRentalMetrics(submittedData)?.longTerm.yield.toFixed(2) || "0"}%
                             </div>
                           </div>
 
