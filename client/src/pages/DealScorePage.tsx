@@ -725,13 +725,25 @@ export default function DealScorePage() {
     }
   };
 
-  // Handle step click
+  /**
+   * Handles navigation when a step indicator is clicked
+   * This function allows users to navigate directly to any step
+   * by clicking on the step indicator in the UI
+   * 
+   * @param step - The step number to navigate to (1-based index)
+   */
   const handleStepClick = (step: number) => {
     // Allow unconditional navigation between steps
     setCurrentStep(step);
   };
 
-  // Check if step is complete (all fields filled)
+  /**
+   * Determines if a particular step has all required fields completed
+   * Used to display completion indicators in the step navigation UI
+   * 
+   * @param step - The step number to check for completion
+   * @returns boolean indicating if all required fields for the given step are filled
+   */
   const isStepComplete = (step: number) => {
     switch (step) {
       case 1: // Property Details
