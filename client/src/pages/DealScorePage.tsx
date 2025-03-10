@@ -126,16 +126,16 @@ export default function DealScorePage() {
   const formatWithThousandSeparators = (value: string): string => {
     // Remove all non-numeric characters except decimal point
     const numericValue = value.replace(/[^\d.]/g, '');
-    
+
     // If empty, return empty string
     if (!numericValue) return '';
-    
+
     // Split by decimal point
     const parts = numericValue.split('.');
-    
+
     // Format the integer part with thousand separators
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    
+
     // Return the formatted string, with decimal part if it exists
     return parts.length > 1 ? `${parts[0]}.${parts[1]}` : parts[0];
   };
@@ -148,7 +148,7 @@ export default function DealScorePage() {
   const handleInputChange = (field: string, value: string) => {
     // Store the actual numeric value (without formatting)
     let numericValue = value;
-    
+
     if (field === "bedrooms") {
       // Convert text input to appropriate values
       if (value.toLowerCase() === "studio") {
@@ -180,10 +180,10 @@ export default function DealScorePage() {
       numericValue = parseFormattedNumber(value);
       // Only allow numbers and decimal point
       numericValue = numericValue.replace(/[^0-9.]/g, "");
-      
+
       // Format with thousand separators for display in the input field
       const formattedValue = formatWithThousandSeparators(numericValue);
-      
+
       // For these fields, we'll store the formatted value in the form
       if (field !== "occupancy") { // Don't add separators to occupancy percentage
         value = formattedValue;
@@ -235,13 +235,13 @@ export default function DealScorePage() {
       // Remove all non-numeric characters except decimal point
       return Number(value.toString().replace(/[^\d.]/g, ''));
     };
-    
+
     // Short term calculations
     const daysInMonth = 30;
     const purchasePrice = parseValue(formData.purchasePrice);
     const nightlyRate = parseValue(formData.nightlyRate);
     const occupancy = parseValue(formData.occupancy);
-    
+
     const shortTermMonthly = nightlyRate * daysInMonth * (occupancy / 100);
     const shortTermYearly = shortTermMonthly * 12;
     const shortTermYield = purchasePrice > 0 ? (shortTermYearly / purchasePrice) * 100 : 0;
@@ -439,7 +439,7 @@ export default function DealScorePage() {
     // Remove all non-numeric characters except decimal point
     return Number(value.toString().replace(/[^\d.]/g, ''));
   };
-  
+
   // Calculate results only from submitted data
   const marketPrice = submittedData
     ? parseFormattedValue(submittedData.size) * parseFormattedValue(submittedData.areaRate)
@@ -756,7 +756,7 @@ export default function DealScorePage() {
   // Get list of missing field names for validation
   const getMissingFields = (step: number): string[] => {
     const missingFields: string[] = [];
-    
+
     // Check if a field has a valid value (handles formatted values with commas)
     const isFieldEmpty = (field: string): boolean => {
       if (!formData[field as keyof typeof formData]) return true;
@@ -928,6 +928,7 @@ export default function DealScorePage() {
       requiredIncome,
     };
   };
+
 
 
   return (
@@ -1375,153 +1376,147 @@ export default function DealScorePage() {
                 </TabsContent>
 
                 <TabsContent value="affordability" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Affordability Cheat Sheet</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {submittedData && (
-                        <>
-                          {(() => {
-                            const metrics = calculateAffordabilityMetrics(submittedData);
-                            if (!metrics) return null;
+                  <h2 className="text-2xl font-semibold mb-4">Affordability Cheat Sheet</h2>
+                  {submittedData && (
+                    <>
+                      {(() => {
+                        const metrics = calculateAffordabilityMetrics(submittedData);
+                        if (!metrics) return null;
 
-                            return (
-                              <div className="grid grid-cols-2 gap-6">
-                                {/* Upfront Costs */}
-                                <div className="space-y-4">
-                                  <h3 className="font-semibold text-lg">Upfront Costs</h3>
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                      <span>Deposit ({submittedData.depositPercentage}%):</span>
-                                      <span className="font-medium">
-                                        R{Math.round(metrics.upfrontCosts.deposit).toLocaleString()}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>Transfer duty:</span>
-                                      <span className="font-medium">
-                                        R{Math.round(metrics.upfrontCosts.transferDuty).toLocaleString()}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>Transfer costs:</span>
-                                      <span className="font-medium">
-                                        R{Math.round(metrics.upfrontCosts.transferCosts).toLocaleString()}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between pt-2 border-t">
-                                      <span>Total cash needed:</span>
-                                      <span className="font-medium">
-                                        R{Math.round(metrics.upfrontCosts.totalCashNeeded).toLocaleString()}
-                                      </span>
-                                    </div>
-                                  </div>
+                        return (
+                          <div className="grid grid-cols-2 gap-4">
+                            {/* Upfront Costs */}
+                            <div className="border rounded-lg bg-white p-4">
+                              <h3 className="font-semibold text-lg mb-4">Upfront Costs</h3>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>Deposit ({submittedData.depositPercentage}%):</span>
+                                  <span className="font-medium">
+                                    R{Math.round(metrics.upfrontCosts.deposit).toLocaleString()}
+                                  </span>
                                 </div>
-
-                                {/* Monthly Payments */}
-                                <div className="space-y-4">
-                                  <h3 className="font-semibold text-lg">Monthly Payments</h3>
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                      <span>Bond payment:</span>
-                                      <span className="font-medium">
-                                        R{metrics.monthlyPayments.bondPayment.toLocaleString()}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>If rates drop 1%:</span>
-                                      <span className="font-medium text-emerald-600">
-                                        R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>Levies/rates:</span>
-                                      <span className="font-medium">
-                                        R{metrics.monthlyPayments.leviesAndRates.toLocaleString()}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between pt-2 border-t">
-                                      <span>Total monthly cost:</span>
-                                      <span className="font-medium">
-                                        R{metrics.monthlyPayments.totalMonthlyCost.toLocaleString()}
-                                      </span>
-                                    </div>
-                                  </div>
+                                <div className="flex justify-between">
+                                  <span>Transfer duty:</span>
+                                  <span className="font-medium">
+                                    R{Math.round(metrics.upfrontCosts.transferDuty).toLocaleString()}
+                                  </span>
                                 </div>
-
-                                {/* Income Requirements */}
-                                <div className="col-span-2 space-y-2 bg-gray-50 p-4 rounded-lg">
-                                  <h3 className="font-semibold text-lg">Income Requirements</h3>
-                                  <div>
-                                    <div className="flex justify-between items-baseline">
-                                      <span>Required household income:</span>
-                                      <span className="font-bold text-xl">
-                                        R{metrics.requiredIncome.toLocaleString()}/month
-                                      </span>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground">
-                                      Based on 30% debt-to-income ratio
-                                    </p>
-                                  </div>
+                                <div className="flex justify-between">
+                                  <span>Transfer costs:</span>
+                                  <span className="font-medium">
+                                    R{Math.round(metrics.upfrontCosts.transferCosts).toLocaleString()}
+                                  </span>
                                 </div>
-
-                                {/* Different Deposit Options */}
-                                <div className="space-y-4">
-                                  <h3 className="font-semibold text-lg">Different Deposit Options</h3>
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                      <span>20% deposit:</span>
-                                      <span className="font-medium">
-                                        R{metrics.depositScenarios.twenty.toLocaleString()}/month
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>10% deposit:</span>
-                                      <span className="font-medium">
-                                        R{metrics.depositScenarios.ten.toLocaleString()}/month
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>5% deposit:</span>
-                                      <span className="font-medium">
-                                        R{metrics.depositScenarios.five.toLocaleString()}/month
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Rate Changes */}
-                                <div className="space-y-4">
-                                  <h3 className="font-semibold text-lg">Rate Changes</h3>
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                      <span>Current rate:</span>
-                                      <span className="font-medium">
-                                        R{metrics.monthlyPayments.bondPayment.toLocaleString()}/month
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>If rates drop 1%:</span>
-                                      <span className="font-medium text-emerald-600">
-                                        R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}/month
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>If rates rise 1%:</span>
-                                      <span className="font-medium text-red-600">
-                                        R{metrics.monthlyPayments.higherRatePayment.toLocaleString()}/month
-                                      </span>
-                                    </div>
-                                  </div>
+                                <div className="flex justify-between pt-2 border-t">
+                                  <span>Total cash needed:</span>
+                                  <span className="font-medium">
+                                    R{Math.round(metrics.upfrontCosts.totalCashNeeded).toLocaleString()}
+                                  </span>
                                 </div>
                               </div>
-                            );
-                          })()}
-                        </>
-                      )}
-                    </CardContent>
-                  </Card>
+                            </div>
+
+                            {/* Monthly Payments */}
+                            <div className="border rounded-lg bg-white p-4">
+                              <h3 className="font-semibold text-lg mb-4">Monthly Payments</h3>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>Bond payment:</span>
+                                  <span className="font-medium">
+                                    R{metrics.monthlyPayments.bondPayment.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>If rates drop 1%:</span>
+                                  <span className="font-medium text-emerald-600">
+                                    R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Levies/rates:</span>
+                                  <span className="font-medium">
+                                    R{metrics.monthlyPayments.leviesAndRates.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between pt-2 border-t">
+                                  <span>Total monthly cost:</span>
+                                  <span className="font-medium">
+                                    R{metrics.monthlyPayments.totalMonthlyCost.toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Income Requirements */}
+                            <div className="border rounded-lg bg-gray-50 p-4">
+                              <h3 className="font-semibold text-lg mb-2">Income Requirements</h3>
+                              <div>
+                                <div className="flex justify-between items-baseline">
+                                  <span>Required household income:</span>
+                                  <span className="font-bold text-xl">
+                                    R{metrics.requiredIncome.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Based on 30% debt-to-income ratio
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Different Deposit Options */}
+                            <div className="border rounded-lg bg-white p-4">
+                              <h3 className="font-semibold text-lg mb-4">Different Deposit Options</h3>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>20% deposit:</span>
+                                  <span className="font-medium">
+                                    R{metrics.depositScenarios.twenty.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>10% deposit:</span>
+                                  <span className="font-medium">
+                                    R{metrics.depositScenarios.ten.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>5% deposit:</span>
+                                  <span className="font-medium">
+                                    R{metrics.depositScenarios.five.toLocaleString()}/month
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Rate Changes */}
+                            <div className="border rounded-lg bg-white p-4">
+                              <h3 className="font-semibold text-lg mb-4">Rate Changes</h3>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>Current rate:</span>
+                                  <span className="font-medium">
+                                    R{metrics.monthlyPayments.bondPayment.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>If rates drop 1%:</span>
+                                  <span className="font-medium text-emerald-600">
+                                    R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>If rates rise 1%:</span>
+                                  <span className="font-medium text-red-600">
+                                    R{metrics.monthlyPayments.higherRatePayment.toLocaleString()}/month
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="buyer_profile">
