@@ -642,6 +642,29 @@ export default function DealScorePage() {
     setCurrentStep(step);
   };
 
+  // Check if step is complete (all fields filled)
+  const isStepComplete = (step: number) => {
+    switch (step) {
+      case 1: // Property Details
+        return formData.address !== "" && 
+               formData.purchasePrice !== "" && 
+               formData.size !== "" && 
+               formData.areaRate !== "" && 
+               formData.bedrooms !== "";
+      case 2: // Rental Details
+        return formData.nightlyRate !== "" && 
+               formData.occupancy !== "" && 
+               formData.longTermRental !== "";
+      case 3: // Financing Details
+        return formData.depositAmount !== "" && 
+               formData.depositPercentage !== "" && 
+               formData.interestRate !== "" && 
+               formData.loanTerm !== "";
+      default:
+        return false;
+    }
+  };
+
   // Update the step counter UI to be clickable
   const renderStepCounter = () => (
     <div className="mb-6">
@@ -654,13 +677,18 @@ export default function DealScorePage() {
             style={{ cursor: 'pointer' }}
           >
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${
+              className={`w-8 h-8 rounded-full flex items-center justify-center relative ${
                 step <= currentStep
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground"
               }`}
             >
               {step}
+              {isStepComplete(step) && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">
+                  ✓
+                </div>
+              )}
             </div>
             {step < 3 && (
               <div
@@ -674,25 +702,25 @@ export default function DealScorePage() {
       </div>
       <div className="flex justify-between text-sm">
         <span 
-          className={currentStep === 1 ? "text-primary" : ""}
+          className={`${currentStep === 1 ? "text-primary" : ""} ${isStepComplete(1) ? "font-medium" : ""}`}
           onClick={() => handleStepClick(1)}
           style={{ cursor: 'pointer' }}
         >
-          Property
+          Property {isStepComplete(1) && "✓"}
         </span>
         <span 
-          className={currentStep === 2 ? "text-primary" : ""}
+          className={`${currentStep === 2 ? "text-primary" : ""} ${isStepComplete(2) ? "font-medium" : ""}`}
           onClick={() => handleStepClick(2)}
           style={{ cursor: 'pointer' }}
         >
-          Rental
+          Rental {isStepComplete(2) && "✓"}
         </span>
         <span 
-          className={currentStep === 3 ? "text-primary" : ""}
+          className={`${currentStep === 3 ? "text-primary" : ""} ${isStepComplete(3) ? "font-medium" : ""}`}
           onClick={() => handleStepClick(3)}
           style={{ cursor: 'pointer' }}
         >
-          Financing
+          Financing {isStepComplete(3) && "✓"}
         </span>
       </div>
     </div>
