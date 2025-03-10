@@ -1037,8 +1037,8 @@ export default function DealScorePage() {
                           </div>
                           <div className="text-3xl font-bold">
                             R
-                            {Number(
-                              submittedData.purchasePrice,
+                            {parseFormattedValue(
+                              submittedData.purchasePrice
                             ).toLocaleString()}
                           </div>
                         </div>
@@ -1069,8 +1069,8 @@ export default function DealScorePage() {
                           R
                           {submittedData
                             ? Math.round(
-                                Number(submittedData.purchasePrice) /
-                                  Number(submittedData.size),
+                                parseFormattedValue(submittedData.purchasePrice) /
+                                parseFormattedValue(submittedData.size),
                               ).toLocaleString()
                             : "0"}
                           /m²
@@ -1078,7 +1078,7 @@ export default function DealScorePage() {
                         <div className="text-muted-foreground">
                           (vs. area avg R
                           {submittedData
-                            ? Number(submittedData.areaRate).toLocaleString()
+                            ? parseFormattedValue(submittedData.areaRate).toLocaleString()
                             : "0"}
                           /m²)
                         </div>
@@ -1086,26 +1086,26 @@ export default function DealScorePage() {
                           <div
                             className={
                               submittedData &&
-                              Number(submittedData.purchasePrice) /
-                                Number(submittedData.size) <=
-                                Number(submittedData.areaRate)
+                              parseFormattedValue(submittedData.purchasePrice) /
+                                parseFormattedValue(submittedData.size) <=
+                                parseFormattedValue(submittedData.areaRate)
                                 ? "text-green-500"
                                 : "text-amber-500"
                             }
                           >
                             {submittedData &&
-                            Number(submittedData.purchasePrice) /
-                              Number(submittedData.size) <=
-                              Number(submittedData.areaRate)
+                            parseFormattedValue(submittedData.purchasePrice) /
+                              parseFormattedValue(submittedData.size) <=
+                              parseFormattedValue(submittedData.areaRate)
                               ? "-"
                               : "+"}
                             R
                             {submittedData
                               ? Math.abs(
                                   Math.round(
-                                    Number(submittedData.purchasePrice) /
-                                      Number(submittedData.size) -
-                                      Number(submittedData.areaRate),
+                                    parseFormattedValue(submittedData.purchasePrice) /
+                                      parseFormattedValue(submittedData.size) -
+                                      parseFormattedValue(submittedData.areaRate),
                                   ),
                                 ).toLocaleString()
                               : "0"}
