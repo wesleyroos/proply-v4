@@ -25,6 +25,7 @@ import { PropertyScoreModal } from "@/components/PropertyScoreModal";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Home } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface RevenueData {
   adr: number;
@@ -42,6 +43,7 @@ interface RevenueData {
 }
 
 export default function DealScorePage() {
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     // Property Details (Step 1)
@@ -218,8 +220,21 @@ export default function DealScorePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Check for required fields based on current step
+    const missingFields = getMissingFields(currentStep);
+    
+    if (missingFields.length > 0) {
+      // Show validation error for missing fields
+      toast({
+        title: "Missing information",
+        description: `Please fill in: ${missingFields.join(", ")}`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (currentStep < 3) {
-      // Proceed to next step without validation
+      // Proceed to next step
       setCurrentStep(currentStep + 1);
       return;
     }
@@ -663,6 +678,34 @@ export default function DealScorePage() {
       default:
         return false;
     }
+  };
+  
+  // Get list of missing field names for validation
+  const getMissingFields = (step: number): string[] => {
+    const missingFields: string[] = [];
+    
+    switch (step) {
+      case 1: // Property Details
+        if (!formData.address) missingFields.push("Property Address");
+        if (!formData.purchasePrice) missingFields.push("Purchase Price");
+        if (!formData.size) missingFields.push("Size");
+        if (!formData.areaRate) missingFields.push("Area Rate");
+        if (!formData.bedrooms) missingFields.push("Bedrooms");
+        break;
+      case 2: // Rental Details
+        if (!formData.nightlyRate) missingFields.push("Nightly Rate");
+        if (!formData.occupancy) missingFields.push("Occupancy Rate");
+        if (!formData.longTermRental) missingFields.push("Long Term Rental");
+        break;
+      case 3: // Financing Details
+        if (!formData.depositAmount) missingFields.push("Deposit Amount");
+        if (!formData.depositPercentage) missingFields.push("Deposit Percentage");
+        if (!formData.interestRate) missingFields.push("Interest Rate");
+        if (!formData.loanTerm) missingFields.push("Loan Term");
+        break;
+    }
+    
+    return missingFields;
   };
 
   // Update the step counter UI to be clickable
