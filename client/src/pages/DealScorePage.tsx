@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { findCostFromTable, transferCostsTable, bondCostsTable } from "@/lib/costTables";
+import { useEffect, useRef } from "react";
 
 interface RevenueData {
   adr: number;
@@ -42,6 +43,164 @@ interface RevenueData {
   ratePosition: number;
   revparPosition: number;
 }
+
+const calculateDealScore = (data: typeof formData) => {
+  let score = 0;
+  const marketPrice = parseFormattedValue(data.size) * parseFormattedValue(data.areaRate);
+  const purchasePrice = parseFormattedValue(data.purchasePrice);
+
+  // Price vs market (30 points)
+  if (marketPrice > 0) {
+    const priceDiff = ((purchasePrice - marketPrice) / marketPrice) * 100;
+    if (priceDiff <= -10) score += 30;
+    else if (priceDiff <= -5) score += 25;
+    else if (priceDiff <= 0) score += 20;
+    else if (priceDiff <= 5) score += 15;
+    else if (priceDiff <= 10) score += 10;
+    else score += 5;
+  }
+
+  // Price per m² vs area average (20 points)
+  const pricePerM2 = purchasePrice / parseFormattedValue(data.size);
+  const areaAvgPricePerM2 = parseFormattedValue(data.areaRate);
+  if (areaAvgPricePerM2 > 0) {
+    const m2Diff = ((pricePerM2 - areaAvgPricePerM2) / areaAvgPricePerM2) * 100;
+    if (m2Diff <= -10) score += 20;
+    else if (m2Diff <= -5) score += 15;
+    else if (m2Diff <= 0) score += 12;
+    else if (m2Diff <= 5) score += 8;
+    else if (m2Diff <= 10) score += 5;
+    else score += 2;
+  }
+
+  // Property condition (15 points)
+  switch (data.propertyCondition) {
+    case 'excellent': score += 15; break;
+    case 'good': score += 12; break;
+    case 'fair': score += 8; break;
+    case 'poor': score += 4; break;
+  }
+
+  // Recent sales range alignment (15 points)
+  // Using area rate as a proxy for recent sales range
+  const avgAreaPrice = marketPrice;
+  const range = {
+    min: avgAreaPrice * 0.9,
+    max: avgAreaPrice * 1.1
+  };
+
+  if (purchasePrice >= range.min && purchasePrice <= range.max) {
+    score += 15;
+  } else if (purchasePrice < range.min) {
+    score += 12; // Below range could be good for investors
+  } else {
+    score += 5; // Above range is less favorable
+  }
+
+  // Rental yields (20 points total)
+  // Short term yield (10 points)
+  const monthlyShortTerm = parseFormattedValue(data.nightlyRate) * 30 * (parseFormattedValue(data.occupancy) / 100);
+  const shortTermYield = (monthlyShortTerm * 12 / purchasePrice) * 100;
+
+  if (shortTermYield >= 12) score += 10;
+  else if (shortTermYield >= 10) score += 8;
+  else if (shortTermYield >= 8) score += 6;
+  else if (shortTermYield >= 6) score += 4;
+  else score += 2;
+
+  // Long term yield (10 points)
+  const longTermYield = (parseFormattedValue(data.longTermRental) * 12 / purchasePrice) * 100;
+
+  if (longTermYield >= 8) score += 10;
+  else if (longTermYield >= 7) score += 8;
+  else if (longTermYield >= 6) score += 6;
+  else if (longTermYield >= 5) score += 4;
+  else score += 2;
+
+  return Math.min(Math.round(score), 100);
+};
+
+const DealMeter = ({ score }: { score: number }) => {
+  const meterRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    if (meterRef.current) {
+      const needle = meterRef.current.querySelector('#needle');
+      if (needle) {
+        const rotation = -90 + (score / 100) * 180;
+        needle.setAttribute('transform', `rotate(${rotation}, 150, 150)`);
+      }
+    }
+  }, [score]);
+
+  return (
+    <div className="relative w-full max-w-[300px] mx-auto">
+      <svg ref={meterRef} viewBox="0 0 300 200" className="w-full">
+        {/* Meter background */}
+        <path
+          d="M 50,150 A 100,100 0 0 1 250,150"
+          fill="none"
+          stroke="#e5e7eb"
+          strokeWidth="30"
+          strokeLinecap="round"
+        />
+
+        {/* Colored meter segments */}
+        <path
+          d="M 50,150 A 100,100 0 0 1 150,50"
+          fill="none"
+          stroke="#ef4444"
+          strokeWidth="30"
+          strokeLinecap="round"
+          strokeDasharray="157"
+          strokeDashoffset={157 * (1 - Math.min(score / 50, 1))}
+        />
+        <path
+          d="M 150,50 A 100,100 0 0 1 250,150"
+          fill="none"
+          stroke="#22c55e"
+          strokeWidth="30"
+          strokeLinecap="round"
+          strokeDasharray="157"
+          strokeDashoffset={157 * (1 - Math.max((score - 50) / 50, 0))}
+        />
+
+        {/* Needle */}
+        <line
+          id="needle"
+          x1="150"
+          y1="150"
+          x2="150"
+          y2="70"
+          stroke="#1e293b"
+          strokeWidth="4"
+          strokeLinecap="round"
+          transform="rotate(-90, 150, 150)"
+        />
+
+        {/* Center point */}
+        <circle cx="150" cy="150" r="10" fill="#1e293b" />
+
+        {/* Score text */}
+        <text
+          x="150"
+          y="185"
+          textAnchor="middle"
+          className="text-3xl font-bold"
+          fill="#1e293b"
+        >
+          {score}
+        </text>
+      </svg>
+
+      {/* Labels */}
+      <div className="absolute bottom-0 left-0 right-0 flex justify-between px-8 text-sm font-medium">
+        <span className="text-red-500">Poor</span>
+        <span className="text-green-500">Excellent</span>
+      </div>
+    </div>
+  );
+};
 
 export default function DealScorePage() {
   const { toast } = useToast();
@@ -970,6 +1129,74 @@ export default function DealScorePage() {
 
 
 
+  const renderDealScoreTab = () => {
+    if (!submittedData) return null;
+
+    const dealScore = calculateDealScore(submittedData);
+    const marketPrice = parseFormattedValue(submittedData.size) * parseFormattedValue(submittedData.areaRate);
+    const purchasePrice = parseFormattedValue(submittedData.purchasePrice);
+    const priceDiff = ((purchasePrice - marketPrice) / marketPrice) * 100;
+
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Deal Score Analysis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DealMeter score={dealScore} />
+
+            <div className="mt-8 space-y-4">
+              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                <span>Price vs Market</span>
+                <span className={`font-semibold ${priceDiff <= 0 ? 'text-green-600' : 'text-amber-600'}`}>
+                  {Math.abs(priceDiff).toFixed(1)}% {priceDiff <= 0 ? "below" : "above"}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                <span>Price per m²</span>
+                <span className="font-semibold">
+                  R{(purchasePrice / parseFormattedValue(submittedData.size)).toLocaleString()}/m²
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                <span>Property Condition</span>
+                <span className="font-semibold capitalize">{submittedData.propertyCondition}</span>
+              </div>
+
+              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                <span>Recent Sales Range</span>
+                <span className="font-semibold">
+                  R{(marketPrice * 0.9).toLocaleString()} - R{(marketPrice * 1.1).toLocaleString()}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                <span>Rental Yields</span>
+                <div className="text-right">
+                  <div>Short-term: {((parseFormattedValue(submittedData.nightlyRate) * 30 * (parseFormattedValue(submittedData.occupancy) / 100) * 12 / purchasePrice) * 100).toFixed(1)}%</div>
+                  <div>Long-term: {((parseFormattedValue(submittedData.longTermRental) * 12 / purchasePrice) * 100).toFixed(1)}%</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 p-4 rounded-lg border bg-muted">
+              <h3 className="font-semibold mb-2">Quick Analysis</h3>
+              <p>
+                {dealScore >= 80 ? "Outstanding investment opportunity! This property shows exceptional potential across all metrics." :
+                 dealScore >= 60 ? "Good investment opportunity with strong fundamentals. Worth serious consideration." :
+                 dealScore >= 40 ? "Fair deal with some concerns. May need price negotiation." :
+                 "Exercise caution. Several metrics suggest this deal needs careful evaluation."}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   return (
     <PageTransition>
       <div className="p-8">
@@ -1059,9 +1286,7 @@ export default function DealScorePage() {
                 </TabsList>
 
                 <TabsContent value="deal_score">
-                  <div className="text-center py-8 text-muted-foreground">
-                    Deal Score analysis coming soon
-                  </div>
+                  {renderDealScoreTab()}
                 </TabsContent>
 
                 <TabsContent value="price" className="space-y-4">
@@ -1526,7 +1751,7 @@ export default function DealScorePage() {
                                   <span className="font-medium">
                                     R{metrics.depositScenarios.five.toLocaleString()}/month
                                   </span>
-                                </div>
+                                </</div>
                               </div>
                             </div>
 
