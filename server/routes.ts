@@ -14,7 +14,7 @@ import {
   subscriptionHistory,
   invoices,
 } from "@db/schema";
-import { eq, and, lt, isNotNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
@@ -23,7 +23,6 @@ import { sql } from "drizzle-orm";
 import { suburbs } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
-import { sendDowngradeProcessingReport } from './services/monitoring';
 
 // Extend Express.User to include our schema
 declare global {
@@ -49,108 +48,6 @@ function normalizeUserField(value: string | null, fieldName?: string): string | 
 }
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
-
-export async function processSubscriptionDowngrades(): Promise<Array<{userId: number, email: string, status: string, error?: string}>> {
-    const usersToDowngrade = await db
-      .select()
-      .from(users)
-      .where(
-        and(
-          eq(users.pendingDowngrade, true),
-          lt(users.subscriptionExpiryDate, new Date()),
-          isNotNull(users.payfastToken),
-          eq(users.payfastSubscriptionStatus, "active")
-        )
-      );
-
-    console.log(`Found ${usersToDowngrade.length} users to process downgrades for`);
-
-    const results = [];
-    for (const user of usersToDowngrade) {
-      try {
-        const merchantId = process.env.VITE_PAYFAST_MERCHANT_ID;
-        const version = "v1";
-        const timestamp = new Date().toISOString();
-        const signature = ""; // TODO: Implement signature generation
-
-        // Call PayFast API to cancel subscription
-        const response = await fetch(
-          `https://api.payfast.co.za/subscriptions/${user.payfastToken}/cancel`,
-          {
-            method: "PUT",
-            headers: {
-              "merchant-id": merchantId,
-              version,
-              timestamp,
-              signature,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`PayFast API error: ${response.statusText}`);
-        }
-
-        // Update user subscription status
-        await db.transaction(async (tx) => {
-          // Update user record
-          await tx
-            .update(users)
-            .set({
-              subscriptionStatus: "free",
-              pendingDowngrade: false,
-              payfastSubscriptionStatus: "cancelled",
-              updatedAt: new Date(),
-            })
-            .where(eq(users.id, user.id));
-
-          // Record subscription history
-          await tx.insert(subscriptionHistory).values({
-            userId: user.id,
-            action: "cancel",
-            payfastToken: user.payfastToken!,
-            success: true,
-          });
-        });
-
-        // Send confirmation email to user
-        try {
-          await sgMail.send({
-            to: user.email,
-            from: 'notifications@proply.co.za',
-            subject: 'Subscription Downgrade Completed',
-            html: `
-              <h2>Subscription Downgrade Complete</h2>
-              <p>Hello ${user.firstName || 'there'},</p>
-              <p>As requested, your Pro subscription has been downgraded to the free plan.</p>
-              <p>Your recurring payment has been cancelled, and no further charges will be made.</p>
-              <p>You can upgrade back to Pro at any time from your account settings.</p>
-              <p>Thank you for using Proply!</p>
-            `,
-          });
-        } catch (emailError) {
-          console.error('Error sending downgrade confirmation email:', emailError);
-          // Don't fail the process if email fails
-        }
-
-        results.push({
-          userId: user.id,
-          email: user.email,
-          status: "success",
-        });
-      } catch (error) {
-        console.error(`Error processing downgrade for user ${user.id}:`, error);
-        results.push({
-          userId: user.id,
-          email: user.email,
-          status: "error",
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
-      }
-    }
-    return results;
-}
-
 
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
@@ -1059,10 +956,8 @@ export function registerRoutes(app: Express): Server {
         .values({
           ...req.body,
           userId: req.user!.id,
-        })
-        .returning();
-      res.json(property[0]);
-    } catch (error) {
+        })        .returning();
+      res.json(property[0]);} catch (error) {
       res.status(400).json({ error: "Invalid property data" });
     }
   });
@@ -1212,13 +1107,13 @@ export function registerRoutes(app: Express): Server {
       const [updatedUser] = await db
         .update(users)
         .set({
-          firstName: normalizeUserField(firstName),
-          lastName: normalizeUserField(lastName),
-          companyLogo: normalizeUserField(companyLogo),
-          company: normalizeUserField(company),
-          vatNumber: normalizeUserField(vatNumber, 'vatNumber'),
-          registrationNumber: normalizeUserField(registrationNumber),
-          businessAddress: normalizeUserField(businessAddress),
+          firstName: firstName || null,
+          lastName: lastName || null,
+          companyLogo: companyLogo || null,
+          company: company || null,
+          vatNumber: vatNumber || null,
+          registrationNumber: registrationNumber || null,
+          businessAddress: businessAddress || null,
           updatedAt: new Date(),
         })
         .where(eq(users.id, req.user!.id))
@@ -1883,28 +1778,6 @@ export function registerRoutes(app: Express): Server {
   // Register property scraper routes
   app.use("/api", propertyScraper);
 
-
-  // Remove the standalone app.post("/api/subscription/process-downgrades"...) and move it inside registerRoutes
-  app.post("/api/subscription/process-downgrades", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user?.isAdmin) {
-      return res.status(403).send("Not authorized");
-    }
-
-    try {
-      const results = await processSubscriptionDowngrades();
-
-      res.json({
-        message: `Processed ${results.length} downgrades`,
-        results,
-      });
-    } catch (error) {
-      console.error(""Error processing subscription downgrades:", error);
-      res.status(500).json({
-        error: "Failed to process subscription downgrades",
-        details: error instanceof Error ? error.message : undefined,
-      });
-    }
-  });
 
   const httpServer = createServer(app);
   return httpServer;

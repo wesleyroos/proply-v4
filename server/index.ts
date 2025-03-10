@@ -3,8 +3,6 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createServer } from "net";
 import aiRouter from './routes/ai';
-import cron from 'node-cron';
-import { processSubscriptionDowngrades } from './services/cronService';
 
 const app = express();
 
@@ -66,17 +64,6 @@ app.use('/api', aiRouter);
     throw err;
   });
 
-  // Schedule subscription downgrade processing to run daily at 2 AM
-  cron.schedule('0 2 * * *', async () => {
-    try {
-      log('Starting scheduled subscription downgrade processing');
-      const results = await processSubscriptionDowngrades();
-      log(`Completed subscription downgrade processing. Processed ${results.length} downgrades`);
-    } catch (error) {
-      console.error('Error in scheduled subscription downgrade processing:', error);
-    }
-  });
-
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
@@ -88,8 +75,8 @@ app.use('/api', aiRouter);
 
   try {
     // Use environment port if available, otherwise use 5000
-    const port = Number(process.env.PORT) || 5000;
-    server.listen(port, () => {
+    const port = process.env.PORT || 5000;
+    server.listen(port, "0.0.0.0", () => {
       log(`serving on port ${port}`);
     });
   } catch (error) {
