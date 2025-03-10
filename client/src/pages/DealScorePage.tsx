@@ -914,16 +914,17 @@ export default function DealScorePage() {
     const depositAmount = parseValue(formData.depositAmount);
     const interestRate = parseValue(formData.interestRate);
     const loanTerm = parseValue(formData.loanTerm);
+    const depositPercentageValue = parseValue(formData.depositPercentage);
 
     const loanAmount = purchasePrice - depositAmount;
-    const monthlyPayment = calculateMonthlyPayment(loanAmount, interestRate, loanTerm);
+    const monthlyPayment = depositPercentageValue === 100 ? 0 : calculateMonthlyPayment(loanAmount, interestRate, loanTerm);
     const transferDuty = calculateTransferDuty(purchasePrice);
     const transferCosts = calculateTransferCosts(purchasePrice, true, true) - transferDuty; // Exclude duty from costs as we track it separately
     const totalCashNeeded = depositAmount + transferDuty + transferCosts;
 
     // Monthly payments with different rates
-    const paymentWithLowerRate = calculateMonthlyPayment(loanAmount, interestRate - 1, loanTerm);
-    const paymentWithHigherRate = calculateMonthlyPayment(loanAmount, interestRate + 1, loanTerm);
+    const paymentWithLowerRate = depositPercentageValue === 100 ? 0 : calculateMonthlyPayment(loanAmount, interestRate - 1, loanTerm);
+    const paymentWithHigherRate = depositPercentageValue === 100 ? 0 : calculateMonthlyPayment(loanAmount, interestRate + 1, loanTerm);
 
     // Different deposit scenarios
     const depositScenarios = {
@@ -939,7 +940,7 @@ export default function DealScorePage() {
     const requiredIncome = Math.round((monthlyPayment + leviesAndRates) / 0.3);
 
     //Simplified bond registration cost calculation (replace with actual calculation if needed)
-    const bondRegistrationCosts = Math.round(purchasePrice * 0.005); // Approximately 0.5% of property value
+    const bondRegistrationCosts = depositPercentageValue === 100 ? 0 : Math.round(purchasePrice * 0.005); // Approximately 0.5% of property value
 
     //Combine transfer costs
     const combinedTransferCosts = transferCosts + transferDuty;
@@ -1417,6 +1418,7 @@ export default function DealScorePage() {
                         const metrics = calculateAffordabilityMetrics(submittedData);
                         if (!metrics) return null;
 
+                        // Calculate total cash needed based on the costs
                         const totalCashNeeded = metrics.upfrontCosts.deposit + metrics.upfrontCosts.combinedTransferCosts + metrics.upfrontCosts.bondRegistrationCosts;
 
                         return (
