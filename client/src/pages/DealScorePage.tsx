@@ -610,7 +610,7 @@ export default function DealScorePage() {
                   required
                 />
                 <p className="text-sm text-muted-foreground mt-1">
-                  Current prime rate: {formData.interestRate}%
+                  Current prime rate: 11%
                 </p>
               </div>
 
