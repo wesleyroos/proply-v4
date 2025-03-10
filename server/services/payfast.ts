@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-interface PayFastHeaders {
+interface PayFastHeaders extends Record<string, string> {
   'merchant-id': string;
   version: string;
   timestamp: string;
@@ -39,6 +39,10 @@ export function generatePayFastSignature(
 
 export function getPayFastHeaders(token: string, action: 'cancel' | 'pause' | 'unpause'): PayFastHeaders {
   const merchantId = process.env.VITE_PAYFAST_MERCHANT_ID || '';
+  if (!merchantId) {
+    throw new Error('PayFast merchant ID not configured');
+  }
+
   const version = "v1";
   const timestamp = new Date().toISOString();
 
