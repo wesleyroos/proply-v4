@@ -122,22 +122,48 @@ export default function DealScorePage() {
     });
   };
 
+  // Format number with thousand separators for display
+  const formatWithThousandSeparators = (value: string): string => {
+    // Remove all non-numeric characters except decimal point
+    const numericValue = value.replace(/[^\d.]/g, '');
+    
+    // If empty, return empty string
+    if (!numericValue) return '';
+    
+    // Split by decimal point
+    const parts = numericValue.split('.');
+    
+    // Format the integer part with thousand separators
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    
+    // Return the formatted string, with decimal part if it exists
+    return parts.length > 1 ? `${parts[0]}.${parts[1]}` : parts[0];
+  };
+
+  // Parse formatted number to remove separators for calculations
+  const parseFormattedNumber = (value: string): string => {
+    return value.replace(/,/g, '');
+  };
+
   const handleInputChange = (field: string, value: string) => {
+    // Store the actual numeric value (without formatting)
+    let numericValue = value;
+    
     if (field === "bedrooms") {
       // Convert text input to appropriate values
       if (value.toLowerCase() === "studio") {
-        value = "0";
+        numericValue = "0";
       } else if (value.toLowerCase() === "room") {
-        value = "-1";
+        numericValue = "-1";
       } else {
         // Replace comma with period for decimal values
-        value = value.replace(",", ".");
+        numericValue = value.replace(/,/g, "");
         // Only allow numbers and one decimal point
-        value = value.replace(/[^0-9.-]/g, "");
+        numericValue = numericValue.replace(/[^0-9.-]/g, "");
         // Ensure only one decimal point
-        const decimalCount = (value.match(/\./g) || []).length;
+        const decimalCount = (numericValue.match(/\./g) || []).length;
         if (decimalCount > 1) {
-          value = value.slice(0, value.lastIndexOf("."));
+          numericValue = numericValue.slice(0, numericValue.lastIndexOf("."));
         }
       }
     } else if (
@@ -150,14 +176,26 @@ export default function DealScorePage() {
       field === "depositAmount" ||
       field === "loanTerm"
     ) {
-      value = value.replace(/[^0-9.]/g, "");
+      // Remove existing formatting first
+      numericValue = parseFormattedNumber(value);
+      // Only allow numbers and decimal point
+      numericValue = numericValue.replace(/[^0-9.]/g, "");
+      
+      // Format with thousand separators for display in the input field
+      const formattedValue = formatWithThousandSeparators(numericValue);
+      
+      // For these fields, we'll store the formatted value in the form
+      if (field !== "occupancy") { // Don't add separators to occupancy percentage
+        value = formattedValue;
+      }
     }
 
     // Handle deposit calculations
     if (field === "depositAmount") {
-      const purchasePrice = Number(formData.purchasePrice);
+      const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
       if (purchasePrice > 0) {
-        const percentage = (Number(value) / purchasePrice) * 100;
+        const numericDeposit = Number(parseFormattedNumber(numericValue));
+        const percentage = (numericDeposit / purchasePrice) * 100;
         setFormData(prev => ({
           ...prev,
           [field]: value,
@@ -168,13 +206,15 @@ export default function DealScorePage() {
     }
 
     if (field === "depositPercentage") {
-      const purchasePrice = Number(formData.purchasePrice);
+      const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
       if (purchasePrice > 0) {
-        const amount = (Number(value) / 100) * purchasePrice;
+        const percentage = Number(numericValue);
+        const amount = (percentage / 100) * purchasePrice;
+        const formattedAmount = formatWithThousandSeparators(amount.toFixed(2));
         setFormData(prev => ({
           ...prev,
           [field]: value,
-          depositAmount: amount.toFixed(2)
+          depositAmount: formattedAmount
         }));
         return;
       }
@@ -189,19 +229,22 @@ export default function DealScorePage() {
   const calculateRentalMetrics = (formData: typeof submittedData) => {
     if (!formData) return null;
 
+    // Parse formatted values to get numeric values for calculations
+    const parseValue = (value: string) => Number(value.replace(/,/g, ''));
+    
     // Short term calculations
     const daysInMonth = 30;
     const shortTermMonthly =
-      Number(formData.nightlyRate) *
+      parseValue(formData.nightlyRate) *
       daysInMonth *
       (Number(formData.occupancy) / 100);
     const shortTermYearly = shortTermMonthly * 12;
-    const shortTermYield = (shortTermYearly / Number(formData.purchasePrice)) * 100;
+    const shortTermYield = (shortTermYearly / parseValue(formData.purchasePrice)) * 100;
 
     // Long term calculations
-    const longTermMonthly = Number(formData.longTermRental);
+    const longTermMonthly = parseValue(formData.longTermRental);
     const longTermYearly = longTermMonthly * 12;
-    const longTermYield = (longTermYearly / Number(formData.purchasePrice)) * 100;
+    const longTermYield = (longTermYearly / parseValue(formData.purchasePrice)) * 100;
 
     return {
       shortTerm: {
@@ -385,12 +428,15 @@ export default function DealScorePage() {
     setShowPercentileDialog(false);
   };
 
+  // Parse formatted values for calculations
+  const parseFormattedValue = (value: string) => Number(value.toString().replace(/,/g, ''));
+  
   // Calculate results only from submitted data
   const marketPrice = submittedData
-    ? Number(submittedData.size) * Number(submittedData.areaRate)
+    ? parseFormattedValue(submittedData.size) * parseFormattedValue(submittedData.areaRate)
     : 0;
   const priceDiff = submittedData
-    ? ((Number(submittedData.purchasePrice) - marketPrice) / marketPrice) * 100
+    ? ((parseFormattedValue(submittedData.purchasePrice) - marketPrice) / marketPrice) * 100
     : 0;
 
   const getConditionDetails = (condition: string) => {
@@ -701,25 +747,33 @@ export default function DealScorePage() {
   // Get list of missing field names for validation
   const getMissingFields = (step: number): string[] => {
     const missingFields: string[] = [];
+    
+    // Check if a field has a valid value (handles formatted values with commas)
+    const isFieldEmpty = (field: string): boolean => {
+      if (!formData[field as keyof typeof formData]) return true;
+      const value = formData[field as keyof typeof formData].toString();
+      const numericValue = value.replace(/,/g, '');
+      return numericValue === '' || numericValue === '0';
+    };
 
     switch (step) {
       case 1: // Property Details
         if (!formData.address) missingFields.push("Property Address");
-        if (!formData.purchasePrice) missingFields.push("Purchase Price");
-        if (!formData.size) missingFields.push("Size");
-        if (!formData.areaRate) missingFields.push("Area Rate");
-        if (!formData.bedrooms) missingFields.push("Bedrooms");
+        if (isFieldEmpty("purchasePrice")) missingFields.push("Purchase Price");
+        if (isFieldEmpty("size")) missingFields.push("Size");
+        if (isFieldEmpty("areaRate")) missingFields.push("Area Rate");
+        if (isFieldEmpty("bedrooms")) missingFields.push("Bedrooms");
         break;
       case 2: // Rental Details
-        if (!formData.nightlyRate) missingFields.push("Nightly Rate");
-        if (!formData.occupancy) missingFields.push("Occupancy Rate");
-        if (!formData.longTermRental) missingFields.push("Long Term Rental");
+        if (isFieldEmpty("nightlyRate")) missingFields.push("Nightly Rate");
+        if (isFieldEmpty("occupancy")) missingFields.push("Occupancy Rate");
+        if (isFieldEmpty("longTermRental")) missingFields.push("Long Term Rental");
         break;
       case 3: // Financing Details
-        if (!formData.depositAmount) missingFields.push("Deposit Amount");
-        if (!formData.depositPercentage) missingFields.push("Deposit Percentage");
-        if (!formData.interestRate) missingFields.push("Interest Rate");
-        if (!formData.loanTerm) missingFields.push("Loan Term");
+        if (isFieldEmpty("depositAmount")) missingFields.push("Deposit Amount");
+        if (isFieldEmpty("depositPercentage")) missingFields.push("Deposit Percentage");
+        if (isFieldEmpty("interestRate")) missingFields.push("Interest Rate");
+        if (isFieldEmpty("loanTerm")) missingFields.push("Loan Term");
         break;
     }
 
@@ -812,8 +866,11 @@ export default function DealScorePage() {
   const calculateAffordabilityMetrics = (formData: typeof submittedData) => {
     if (!formData) return null;
 
-    const purchasePrice = Number(formData.purchasePrice);
-    const depositAmount = Number(formData.depositAmount);
+    // Parse formatted values to get numeric values for calculations
+    const parseValue = (value: string) => Number(value.toString().replace(/,/g, ''));
+
+    const purchasePrice = parseValue(formData.purchasePrice);
+    const depositAmount = parseValue(formData.depositAmount);
     const interestRate = Number(formData.interestRate);
     const loanTerm = Number(formData.loanTerm);
 
