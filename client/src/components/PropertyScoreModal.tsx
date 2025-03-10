@@ -4,7 +4,6 @@ import { Coins, Home, Users, Calculator, Target, ArrowRight, TrendingUp, Calenda
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useEffect, useRef } from 'react';
 
 interface PropertyScoreModalProps {
   isOpen: boolean;
@@ -13,196 +12,16 @@ interface PropertyScoreModalProps {
   propertyAddress?: string;
   purchasePrice?: number;
   marketAvgPrice?: number;
-  pricePerM2?: number;
-  areaAvgPricePerM2?: number;
-  propertyCondition?: 'excellent' | 'good' | 'fair' | 'poor';
-  recentSalesRange?: { min: number; max: number };
-  rentalData?: {
-    shortTerm: number;
-    longTerm: number;
-    occupancyRate: number;
-    yieldLongTerm: number;
-    yieldShortTerm: number;
-  };
 }
-
-const calculateDealScore = (props: PropertyScoreModalProps) => {
-  let score = 0;
-
-  // Price vs market (30 points)
-  if (props.purchasePrice && props.marketAvgPrice) {
-    const priceDiff = ((props.purchasePrice - props.marketAvgPrice) / props.marketAvgPrice) * 100;
-    if (priceDiff <= -10) score += 30;
-    else if (priceDiff <= -5) score += 25;
-    else if (priceDiff <= 0) score += 20;
-    else if (priceDiff <= 5) score += 15;
-    else if (priceDiff <= 10) score += 10;
-    else score += 5;
-  }
-
-  // Price per m² (20 points)
-  if (props.pricePerM2 && props.areaAvgPricePerM2) {
-    const m2Diff = ((props.pricePerM2 - props.areaAvgPricePerM2) / props.areaAvgPricePerM2) * 100;
-    if (m2Diff <= -10) score += 20;
-    else if (m2Diff <= -5) score += 15;
-    else if (m2Diff <= 0) score += 12;
-    else if (m2Diff <= 5) score += 8;
-    else if (m2Diff <= 10) score += 5;
-    else score += 2;
-  }
-
-  // Property condition (15 points)
-  switch (props.propertyCondition) {
-    case 'excellent': score += 15; break;
-    case 'good': score += 12; break;
-    case 'fair': score += 8; break;
-    case 'poor': score += 4; break;
-    default: score += 0;
-  }
-
-  // Recent sales range (15 points)
-  if (props.recentSalesRange && props.purchasePrice) {
-    if (props.purchasePrice >= props.recentSalesRange.min && 
-        props.purchasePrice <= props.recentSalesRange.max) {
-      score += 15;
-    } else if (props.purchasePrice < props.recentSalesRange.min) {
-      score += 12; // Below range could be good for investors
-    } else {
-      score += 5; // Above range is less favorable
-    }
-  }
-
-  // Rental yields (20 points)
-  if (props.rentalData) {
-    // Short term yield (10 points)
-    if (props.rentalData.yieldShortTerm >= 12) score += 10;
-    else if (props.rentalData.yieldShortTerm >= 10) score += 8;
-    else if (props.rentalData.yieldShortTerm >= 8) score += 6;
-    else if (props.rentalData.yieldShortTerm >= 6) score += 4;
-    else score += 2;
-
-    // Long term yield (10 points)
-    if (props.rentalData.yieldLongTerm >= 8) score += 10;
-    else if (props.rentalData.yieldLongTerm >= 7) score += 8;
-    else if (props.rentalData.yieldLongTerm >= 6) score += 6;
-    else if (props.rentalData.yieldLongTerm >= 5) score += 4;
-    else score += 2;
-  }
-
-  return Math.min(Math.round(score), 100);
-};
-
-const DealMeter = ({ score }: { score: number }) => {
-  const meterRef = useRef<SVGSVGElement>(null);
-
-  useEffect(() => {
-    if (meterRef.current) {
-      const needle = meterRef.current.querySelector('#needle');
-      if (needle) {
-        const rotation = -90 + (score / 100) * 180;
-        needle.setAttribute('transform', `rotate(${rotation}, 150, 150)`);
-      }
-    }
-  }, [score]);
-
-  return (
-    <div className="relative w-full max-w-[300px] mx-auto">
-      <svg ref={meterRef} viewBox="0 0 300 200" className="w-full">
-        {/* Meter background */}
-        <path
-          d="M 50,150 A 100,100 0 0 1 250,150"
-          fill="none"
-          stroke="#e5e7eb"
-          strokeWidth="30"
-          strokeLinecap="round"
-        />
-
-        {/* Colored meter segments */}
-        <path
-          d="M 50,150 A 100,100 0 0 1 150,50"
-          fill="none"
-          stroke="#ef4444"
-          strokeWidth="30"
-          strokeLinecap="round"
-          strokeDasharray="157"
-          strokeDashoffset={157 * (1 - Math.min(score / 50, 1))}
-        />
-        <path
-          d="M 150,50 A 100,100 0 0 1 250,150"
-          fill="none"
-          stroke="#22c55e"
-          strokeWidth="30"
-          strokeLinecap="round"
-          strokeDasharray="157"
-          strokeDashoffset={157 * (1 - Math.max((score - 50) / 50, 0))}
-        />
-
-        {/* Needle */}
-        <line
-          id="needle"
-          x1="150"
-          y1="150"
-          x2="150"
-          y2="70"
-          stroke="#1e293b"
-          strokeWidth="4"
-          strokeLinecap="round"
-          transform="rotate(-90, 150, 150)"
-        />
-
-        {/* Center point */}
-        <circle cx="150" cy="150" r="10" fill="#1e293b" />
-
-        {/* Score text */}
-        <text
-          x="150"
-          y="185"
-          textAnchor="middle"
-          className="text-3xl font-bold"
-          fill="#1e293b"
-        >
-          {score}
-        </text>
-      </svg>
-
-      {/* Labels */}
-      <div className="absolute bottom-0 left-0 right-0 flex justify-between px-8 text-sm font-medium">
-        <span className="text-red-500">Poor</span>
-        <span className="text-green-500">Excellent</span>
-      </div>
-    </div>
-  );
-};
 
 export function PropertyScoreModal({ 
   isOpen, 
-  onOpenChange,
+  onOpenChange, 
   propertyId = "PROP-1234",
   propertyAddress = "27 Leeuwen St, Cape Town City Centre, 8001",
   purchasePrice = 3500000,
-  marketAvgPrice = 3250000,
-  pricePerM2 = 32500,
-  areaAvgPricePerM2 = 31000,
-  propertyCondition = 'excellent',
-  recentSalesRange = { min: 3400000, max: 3700000 },
-  rentalData = {
-    shortTerm: 50000,
-    longTerm: 18000,
-    occupancyRate: 75,
-    yieldLongTerm: 6.2,
-    yieldShortTerm: 12.9
-  }
+  marketAvgPrice = 3250000
 }: PropertyScoreModalProps) {
-  const dealScore = calculateDealScore({
-    purchasePrice,
-    marketAvgPrice,
-    pricePerM2,
-    areaAvgPricePerM2,
-    propertyCondition,
-    recentSalesRange,
-    rentalData
-  });
-
   // Deal Assessment Logic
   const priceDiff = marketAvgPrice ? ((purchasePrice - marketAvgPrice) / marketAvgPrice) * 100 : 0;
 
@@ -216,7 +35,15 @@ export function PropertyScoreModal({
   const dealBadge = getDealBadge();
 
   // Sample Rental Data - moved inside component to avoid potential module scope issues
-  //const rentalData = { ... }; //This is already defined in the props
+  const rentalData = {
+    shortTerm: 50000, // Monthly Airbnb
+    longTerm: 18000,  // Monthly rental
+    occupancyRate: 75, // Airbnb occupancy %
+    rentalDemand: 15,  // % higher than average
+    yieldLongTerm: 6.2, // Annual yield %
+    yieldShortTerm: 12.9, // Annual yield %
+    bestStrategy: "short-term" // short-term or long-term
+  };
 
   // Affordability Calculations
   const deposit = purchasePrice * 0.1; // 10% deposit
@@ -228,7 +55,6 @@ export function PropertyScoreModal({
     monthlyIncome: 102000, // Required monthly income
     transferDuty: priceDiff > 0 ? 95000 : 85000
   };
-
 
   // Buyer Profile Suggestions
   const buyerProfiles = [
@@ -255,7 +81,7 @@ export function PropertyScoreModal({
   // Pre-calculate complex values to avoid re-computation in render
   const shortTermMonthlyIncome = rentalData.shortTerm * (rentalData.occupancyRate/100);
   const longTermMonthlyIncome = rentalData.longTerm;
-  const activeMonthlyIncome = rentalData.yieldShortTerm > rentalData.yieldLongTerm ? shortTermMonthlyIncome : longTermMonthlyIncome;
+  const activeMonthlyIncome = rentalData.bestStrategy === 'short-term' ? shortTermMonthlyIncome : longTermMonthlyIncome;
   const monthlyCashFlow = activeMonthlyIncome - affordabilityData.monthlyPayment;
   const shortTermYearlyIncome = rentalData.shortTerm * 12 * (rentalData.occupancyRate/100);
   const longTermYearlyIncome = rentalData.longTerm * 12;
@@ -299,66 +125,94 @@ export function PropertyScoreModal({
             <TabsTrigger value="buyer">Buyer Profile</TabsTrigger>
           </TabsList>
 
-          {/* Updated Deal Score Tab */}
+          {/* 1️⃣ DEAL SCORE TAB */}
           <TabsContent value="deal-score">
-            <Card className="mb-4">
-              <CardHeader className="pb-2">
-                <CardTitle>Deal Score Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <DealMeter score={dealScore} />
-
-                <div className="mt-8 space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                    <span>Price vs Market</span>
-                    <span className="font-semibold">
-                      {((purchasePrice - marketAvgPrice) / marketAvgPrice * 100).toFixed(1)}%
-                      {purchasePrice <= marketAvgPrice ? " below" : " above"}
-                    </span>
+            <Card className="mb-4 overflow-hidden border-t-8 border-t-primary">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl font-bold flex items-center">
+                      {dealBadge.emoji} Deal Assessment
+                    </div>
+                    <div className="text-muted-foreground mt-1">
+                      Easy talking points for your client
+                    </div>
                   </div>
-
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                    <span>Price per m²</span>
-                    <span className="font-semibold">
-                      R{pricePerM2.toLocaleString()}/m²
-                      {pricePerM2 <= areaAvgPricePerM2 ? " (Competitive)" : " (Premium)"}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                    <span>Property Condition</span>
-                    <span className="font-semibold capitalize">{propertyCondition}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                    <span>Recent Sales Range</span>
-                    <span className="font-semibold">
-                      R{recentSalesRange.min.toLocaleString()} - R{recentSalesRange.max.toLocaleString()}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                    <span>Short-term Yield</span>
-                    <span className="font-semibold">{rentalData.yieldShortTerm}%</span>
-                  </div>
-
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                    <span>Long-term Yield</span>
-                    <span className="font-semibold">{rentalData.yieldLongTerm}%</span>
+                  <div className="flex items-center gap-3">
+                    <div className="text-lg font-medium">
+                      R{purchasePrice.toLocaleString()}
+                    </div>
+                    <Badge className={`${dealBadge.color} text-white px-6 py-2 text-xl`}>
+                      {dealBadge.text}
+                    </Badge>
                   </div>
                 </div>
 
-                <div className="mt-6 p-4 bg-muted/30 rounded-lg">
-                  <h3 className="font-semibold mb-2">Quick Summary</h3>
-                  <p>
-                    {dealScore >= 80 ? "Excellent deal! This property shows strong potential across all key metrics." :
-                     dealScore >= 60 ? "Good opportunity with some positive indicators. Worth serious consideration." :
-                     dealScore >= 40 ? "Fair deal with mixed indicators. May need negotiation." :
-                     "Exercise caution. Multiple metrics suggest this deal needs careful evaluation."}
-                  </p>
+                <div className="mt-6 space-y-5">
+                  <div className="flex gap-4 p-4 border rounded-lg bg-muted/30">
+                    <div className="mt-1">
+                      <Coins className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-lg">Price Position</div>
+                      <div className="text-lg">
+                        This property is priced {Math.abs(Math.round(priceDiff))}% {priceDiff > 0 ? 'above' : 'below'} market average
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 p-4 border rounded-lg bg-muted/30">
+                    <div className="mt-1">
+                      <TrendingUp className="h-8 w-8 text-green-500" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-lg">Rental Potential</div>
+                      <div className="text-lg">
+                        {rentalData.bestStrategy === 'short-term' ? 
+                          `Airbnb potential of R${rentalData.shortTerm.toLocaleString()}/month` : 
+                          `Rental income of R${rentalData.longTerm.toLocaleString()}/month`}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 p-4 border rounded-lg bg-muted/30">
+                    <div className="mt-1">
+                      <Target className="h-8 w-8 text-blue-500" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-lg">Perfect For</div>
+                      <div className="text-lg">
+                        {buyerProfiles[0]?.type || "Investors"} ({buyerProfiles[0]?.match || 90}% match)
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 p-4 border rounded-lg bg-muted/30">
+                    <div className="mt-1">
+                      <Calculator className="h-8 w-8 text-purple-500" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-lg">Affordability</div>
+                      <div className="text-lg">
+                        R{affordabilityData.deposit.toLocaleString()} deposit & R{affordabilityData.monthlyPayment.toLocaleString()}/month
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
+
+            <div className="p-4 rounded-lg border bg-yellow-50">
+              <div className="flex gap-3">
+                <div className="mt-0.5 text-amber-500">💡</div>
+                <div>
+                  <div className="font-semibold text-amber-800">Agent Tip</div>
+                  <div className="text-amber-700">
+                    {getAgentTipText()}
+                  </div>
+                </div>
+              </div>
+            </div>
           </TabsContent>
 
           {/* 2️⃣ PRICE JUSTIFICATION TAB */}
@@ -390,8 +244,8 @@ export function PropertyScoreModal({
                 <div className="space-y-5">
                   <div className="flex justify-between items-center">
                     <div className="font-medium">Price per m²</div>
-                    <div className="font-bold">R{pricePerM2.toLocaleString()}/m²</div>
-                    <div className="text-muted-foreground">(vs. area avg R{areaAvgPricePerM2.toLocaleString()}/m²)</div>
+                    <div className="font-bold">R32,500/m²</div>
+                    <div className="text-muted-foreground">(vs. area avg R31,000/m²)</div>
                     <Badge variant="outline" className={priceDiff <= 5 ? 'text-green-500' : 'text-amber-500'}>
                       {priceDiff <= 5 ? 'COMPETITIVE' : 'PREMIUM'}
                     </Badge>
@@ -400,20 +254,20 @@ export function PropertyScoreModal({
                   <div className="flex justify-between items-center">
                     <div className="font-medium">Rental Demand</div>
                     <div className="font-bold">Very High</div>
-                    <div className="text-muted-foreground">(+{rentalData.occupancyRate}% vs. average)</div>
+                    <div className="text-muted-foreground">(+{rentalData.rentalDemand}% vs. average)</div>
                     <Badge className="bg-green-500 text-white">STRONG</Badge>
                   </div>
 
                   <div className="flex justify-between items-center">
                     <div className="font-medium">Property Condition</div>
-                    <div className="font-bold">{propertyCondition}</div>
+                    <div className="font-bold">Excellent</div>
                     <div className="text-muted-foreground">(minimal repairs needed)</div>
                     <Badge className="bg-green-500 text-white">MOVE-IN READY</Badge>
                   </div>
 
                   <div className="flex justify-between items-center">
                     <div className="font-medium">Recent Area Sales</div>
-                    <div className="font-bold">R{recentSalesRange.min.toLocaleString()} - R{recentSalesRange.max.toLocaleString()}</div>
+                    <div className="font-bold">R3.4M - R3.7M</div>
                     <div className="text-muted-foreground">(last 3 months)</div>
                     <Badge variant="outline" className="text-blue-500">WITHIN RANGE</Badge>
                   </div>
@@ -441,8 +295,8 @@ export function PropertyScoreModal({
                 <div>
                   <div className="font-semibold text-amber-800">Agent Tip</div>
                   <div className="text-amber-700">
-                    When clients say "it's too expensive," show them the rental demand is {rentalData.occupancyRate}% higher than
-                    average, and recent sales in this area ranged from R{recentSalesRange.min.toLocaleString()} to R{recentSalesRange.max.toLocaleString()}.
+                    When clients say "it's too expensive," show them the rental demand is {rentalData.rentalDemand}% higher than
+                    average, and recent sales in this area ranged from R3.4M to R3.7M.
                   </div>
                 </div>
               </div>
@@ -457,14 +311,14 @@ export function PropertyScoreModal({
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <Card className={`border-t-4 ${rentalData.yieldShortTerm > rentalData.yieldLongTerm ? 'border-t-green-500' : 'border-t-muted'}`}>
+                  <Card className={`border-t-4 ${rentalData.bestStrategy === 'short-term' ? 'border-t-green-500' : 'border-t-muted'}`}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-5 w-5 text-blue-500" />
                           <div className="font-medium">Short-Term (Airbnb)</div>
                         </div>
-                        {rentalData.yieldShortTerm > rentalData.yieldLongTerm && (
+                        {rentalData.bestStrategy === 'short-term' && (
                           <Badge className="bg-green-500 text-white">RECOMMENDED</Badge>
                         )}
                       </div>
@@ -491,14 +345,14 @@ export function PropertyScoreModal({
                     </CardContent>
                   </Card>
 
-                  <Card className={`border-t-4 ${rentalData.yieldShortTerm < rentalData.yieldLongTerm ? 'border-t-green-500' : 'border-t-muted'}`}>
+                  <Card className={`border-t-4 ${rentalData.bestStrategy === 'long-term' ? 'border-t-green-500' : 'border-t-muted'}`}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <Home className="h-5 w-5 text-purple-500" />
                           <div className="font-medium">Long-Term Rental</div>
                         </div>
-                        {rentalData.yieldShortTerm < rentalData.yieldLongTerm && (
+                        {rentalData.bestStrategy === 'long-term' && (
                           <Badge className="bg-green-500 text-white">RECOMMENDED</Badge>
                         )}
                       </div>
@@ -530,7 +384,7 @@ export function PropertyScoreModal({
                   <div className="font-bold mb-2">Rental Demand Analysis</div>
                   <div className="flex items-center justify-between mb-3">
                     <div>Demand Level:</div>
-                    <div className="font-bold">High (+{rentalData.occupancyRate}% vs. area average)</div>
+                    <div className="font-bold">High (+{rentalData.rentalDemand}% vs. area average)</div>
                   </div>
                   <div className="flex items-center justify-between mb-3">
                     <div>Average Vacancy Period:</div>
@@ -545,7 +399,7 @@ export function PropertyScoreModal({
                 <div className="p-4 border rounded-lg bg-muted/30">
                   <div className="font-bold mb-2">Income vs. Expenses</div>
                   <div className="flex justify-between mb-3">
-                    <div>Monthly Income ({rentalData.yieldShortTerm > rentalData.yieldLongTerm ? 'Airbnb' : 'Rental'}):</div>
+                    <div>Monthly Income ({rentalData.bestStrategy === 'short-term' ? 'Airbnb' : 'Rental'}):</div>
                     <div className="font-bold">
                       R{activeMonthlyIncome.toLocaleString()}
                     </div>
@@ -690,7 +544,7 @@ export function PropertyScoreModal({
                   </div>
                 </div>
               </CardContent>
-            </</Card>
+            </Card>
 
             <div className="p-4 rounded-lg border bg-yellow-50">
               <div className="flex gap-3">
@@ -790,7 +644,7 @@ export function PropertyScoreModal({
                             </div>
                             <div className="flex justify-between items-center">
                               <div>Tenant demand:</div>
-                              <div className="font-bold">High (+{rentalData.occupancyRate}%)</div>
+                              <div className="font-bold">High (+{rentalData.rentalDemand}%)</div>
                             </div>
                             <div className="flex justify-between items-center">
                               <div>Monthly rental income:</div>
