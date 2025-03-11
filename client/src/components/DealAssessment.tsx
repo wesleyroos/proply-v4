@@ -207,6 +207,24 @@ export function DealAssessment({
             <h3 className="font-semibold mb-4">Key Deal Factors</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
+                <div>Price per m²</div>
+                <div className="font-bold">
+                  R{Math.round(propertyRate).toLocaleString()}/m²
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <div>Area average</div>
+                <div className="font-bold">
+                  R{Math.round(areaRate).toLocaleString()}/m²
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <div>Property condition</div>
+                <div className="capitalize font-medium">
+                  {propertyCondition}
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
                 <div className="font-medium">Short-Term Yield:</div>
                 <div 
                   className={`font-bold ${
@@ -280,24 +298,6 @@ export function DealAssessment({
                   >
                     {rentalData.isShortTermRecommended ? "AIRBNB" : "RENTAL"}
                   </Badge>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div>Price per m²</div>
-                <div className="font-bold">
-                  R{Math.round(propertyRate).toLocaleString()}/m²
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div>Area average</div>
-                <div className="font-bold">
-                  R{Math.round(areaRate).toLocaleString()}/m²
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div>Property condition</div>
-                <div className="capitalize font-medium">
-                  {propertyCondition}
                 </div>
               </div>
             </div>
