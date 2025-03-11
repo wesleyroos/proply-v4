@@ -194,13 +194,13 @@ export function DealScoreAdvisor({
         {showSuggestions && messages.length === 1 && (
           <div className="px-4 py-2">
             <p className="text-sm font-medium text-gray-700 mb-2">Try asking about:</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 max-w-full">
               {SAMPLE_QUESTIONS.map((question, index) => (
                 <Button
                   key={index}
                   variant="outline"
                   size="sm"
-                  className="text-xs"
+                  className="text-xs py-1 px-2 h-auto whitespace-normal text-left justify-start"
                   onClick={() => handleSampleQuestion(question)}
                 >
                   {question}
