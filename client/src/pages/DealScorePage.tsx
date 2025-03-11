@@ -1306,7 +1306,11 @@ export default function DealScorePage() {
                                 </tr>
                                 <tr>
                                   <td className="border px-4 py-2">Long-Term Rental Yield</td>
-                                  <td className="border px-4 py-2">{dealScoreData?.longTermYield.toFixed(1)}%</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.longTermYield.toFixed(1)}%
+                                    {dealScoreData?.longTermYield >= 80 ? ' (Strong Yield)' : 
+                                      dealScoreData?.longTermYield >= 50 ? ' (Average Yield)' : ' (Low Yield)'}
+                                  </td>
                                 </tr>
                               </tbody>
                             </table>
@@ -1352,7 +1356,11 @@ export default function DealScorePage() {
                                 </tr>
                                 <tr>
                                   <td className="border px-4 py-2">Long-Term Rental Yield</td>
-                                  <td className="border px-4 py-2">{dealScoreData?.longTermYieldScore}</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.longTermYieldScore}
+                                    {dealScoreData?.longTermYieldScore >= 80 ? ' (Strong Yield)' : 
+                                      dealScoreData?.longTermYieldScore >= 50 ? ' (Average Yield)' : ' (Low Yield)'}
+                                  </td>
                                 </tr>
                               </tbody>
                             </table>
@@ -1408,6 +1416,7 @@ export default function DealScorePage() {
                               </tbody>
                             </table>
                           </div>
+
                         </div>
                       </div>
                     </CardContent>
@@ -1697,8 +1706,7 @@ export default function DealScorePage() {
                           </div>
                         </div>
 
-                        {/* Long Term Rental Card */}
-                        <div
+                        {/* Long Term Rental Card */}<div
                           className={`p-6 rounded-lg border bg-card relative ${
                             !calculateRentalMetrics(submittedData)
                               ?.isShortTermRecommended
