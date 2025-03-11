@@ -85,6 +85,24 @@ export default function DealScorePage() {
   const [showResults, setShowResults] = useState(false);
   // PropertyScoreModal state removed
   const [isCalculating, setIsCalculating] = useState(false);
+  const [dealScoreData, setDealScoreData] = useState<{
+    dealScore: number;
+    priceDiff: number;
+    pricePerSqmDiff: number;
+    propertyCondition: string;
+    shortTermYield: number;
+    longTermYield: number;
+    priceVsMarketScore: number;
+    pricePerSqmScore: number;
+    propertyConditionScore: number;
+    shortTermYieldScore: number;
+    longTermYieldScore: number;
+    weightedPriceVsMarket: number;
+    weightedPricePerSqm: number;
+    weightedPropertyCondition: number;
+    weightedShortTermYield: number;
+    weightedLongTermYield: number;
+  } | null>(null);
 
   useEffect(() => {
     // Fetch current prime rate when component mounts
@@ -311,6 +329,7 @@ export default function DealScorePage() {
       setSubmittedData(formData);
       setShowResults(true);
       setIsCalculating(false);
+      calculateDealScore();
     }, 2000);
   };
 
@@ -983,6 +1002,88 @@ export default function DealScorePage() {
     return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(value);
   };
 
+  const calculateDealScore = () => {
+    if (!submittedData) return;
+    const purchasePrice = parseFloat(submittedData.purchasePrice.replace(/,/g, ''));
+    const size = parseFloat(submittedData.size.replace(/,/g, ''));
+    const areaRate = parseFloat(submittedData.areaRate.replace(/,/g, ''));
+    const longTermRental = parseFloat(submittedData.longTermRental.replace(/,/g, ''));
+
+    const marketPrice = size * areaRate;
+    const priceDiff = (purchasePrice - marketPrice) / marketPrice * 100;
+    const pricePerSqmDiff = (purchasePrice / size - areaRate) / areaRate * 100;
+    const shortTermYield = calculateRentalMetrics(submittedData)?.shortTerm.yield || 0;
+    const longTermYield = calculateRentalMetrics(submittedData)?.longTerm.yield || 0;
+    const propertyCondition = submittedData.propertyCondition;
+
+    const priceVsMarketScore = calculateScore(priceDiff, -10, 10, 30, 70);
+    const pricePerSqmScore = calculateScore(pricePerSqmDiff, -10, 10, 30, 70);
+    const propertyConditionScore = calculatePropertyConditionScore(propertyCondition);
+    const shortTermYieldScore = calculateScore(shortTermYield, 0, 20, 30, 70);
+    const longTermYieldScore = calculateScore(longTermYield, 0, 20, 30, 70);
+
+    const weightedPriceVsMarket = priceVsMarketScore * 0.3;
+    const weightedPricePerSqm = pricePerSqmScore * 0.2;
+    const weightedPropertyCondition = propertyConditionScore * 0.1;
+    const weightedShortTermYield = shortTermYieldScore * 0.2;
+    const weightedLongTermYield = longTermYieldScore * 0.2;
+
+    const dealScore = weightedPriceVsMarket + weightedPricePerSqm + weightedPropertyCondition + weightedShortTermYield + weightedLongTermYield;
+
+    setDealScoreData({
+      dealScore: Math.round(dealScore),
+      priceDiff: priceDiff,
+      pricePerSqmDiff: pricePerSqmDiff,
+      propertyCondition: propertyCondition,
+      shortTermYield: shortTermYield,
+      longTermYield: longTermYield,
+      priceVsMarketScore: priceVsMarketScore,
+      pricePerSqmScore: pricePerSqmScore,
+      propertyConditionScore: propertyConditionScore,
+      shortTermYieldScore: shortTermYieldScore,
+      longTermYieldScore: longTermYieldScore,
+      weightedPriceVsMarket: weightedPriceVsMarket,
+      weightedPricePerSqm: weightedPricePerSqm,
+      weightedPropertyCondition: weightedPropertyCondition,
+      weightedShortTermYield: weightedShortTermYield,
+      weightedLongTermYield: weightedLongTermYield,
+    });
+
+    window.dealScoreData = {
+      dealScore: Math.round(dealScore),
+      priceDiff: priceDiff,
+      pricePerSqmDiff: pricePerSqmDiff,
+      propertyCondition: propertyCondition,
+      shortTermYield: shortTermYield,
+      longTermYield: longTermYield,
+      priceVsMarketScore: priceVsMarketScore,
+      pricePerSqmScore: pricePerSqmScore,
+      propertyConditionScore: propertyConditionScore,
+      shortTermYieldScore: shortTermYieldScore,
+      longTermYieldScore: longTermYieldScore,
+      weightedPriceVsMarket: weightedPriceVsMarket,
+      weightedPricePerSqm: weightedPricePerSqm,
+      weightedPropertyCondition: weightedPropertyCondition,
+      weightedShortTermYield: weightedShortTermYield,
+      weightedLongTermYield: weightedLongTermYield,
+    };
+  };
+
+  const calculateScore = (value: number, min: number, max: number, minScore: number, maxScore: number): number => {
+    if (value <= min) return maxScore;
+    if (value >= max) return minScore;
+    return minScore + (maxScore - minScore) * (max - value) / (max - min);
+  }
+
+  const calculatePropertyConditionScore = (condition: string): number => {
+    switch (condition) {
+      case "excellent": return 100;
+      case "good": return 75;
+      case "fair": return 50;
+      case "poor": return 25;
+      default: return 0;
+    }
+  }
 
   return (
     <PageTransition>
@@ -1065,18 +1166,18 @@ export default function DealScorePage() {
                       {/* Deal Score Gauge */}
                       <div className="flex flex-col items-center mb-6">
                         <div className="text-2xl font-bold flex items-center mb-2">
-                          {priceDiff <= -5 ? "🔥" : priceDiff <= 5 ? "✅" : "⚠️"} Deal Score
+                          {dealScoreData?.dealScore >= 80 ? "🔥" : dealScoreData?.dealScore >= 50 ? "✅" : "⚠️"} Deal Score
                         </div>
 
                         {/* Score Display */}
                         <div className="flex items-center justify-center mb-4">
                           <Badge 
                             className={`
-                              ${priceDiff <= -5 ? "bg-green-500" : priceDiff <= 5 ? "bg-blue-500" : "bg-amber-500"} 
+                              ${dealScoreData?.dealScore >= 80 ? "bg-green-500" : dealScoreData?.dealScore >= 50 ? "bg-blue-500" : "bg-amber-500"} 
                               text-white px-6 py-2 text-xl
                             `}
                           >
-                            {priceDiff <= -5 ? "GREAT DEAL" : priceDiff <= 5 ? "FAIR PRICE" : "OVERPRICED"}
+                            {dealScoreData?.dealScore >= 80 ? "GREAT DEAL" : dealScoreData?.dealScore >= 50 ? "FAIR PRICE" : "OVERPRICED"}
                           </Badge>
                         </div>
 
@@ -1161,6 +1262,151 @@ export default function DealScorePage() {
                             <div className="capitalize font-medium">
                               {submittedData.propertyCondition}
                             </div>
+                          </div>
+                        </div>
+
+                        {/* Detailed Deal Score Breakdown */}
+                        <div className="mt-8 border-t pt-4">
+                          <h3 className="font-medium mb-4">Deal Score Breakdown</h3>
+
+                          {/* Factor Values Table */}
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full border-collapse bg-white text-sm mb-6">
+                              <thead>
+                                <tr className="bg-gray-100">
+                                  <th className="border px-4 py-2 text-left">Factor</th>
+                                  <th className="border px-4 py-2 text-left">Value</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td className="border px-4 py-2">Asking Price vs Market Price</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.priceDiff.toFixed(1)}% 
+                                    ({dealScoreData?.priceDiff < 0 ? 'Under market' : 'Above market'})
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Price per m² vs Area Average</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.pricePerSqmDiff.toFixed(1)}%
+                                    ({dealScoreData?.pricePerSqmDiff < 0 ? 'Below avg' : 'Above avg'})
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Property Condition</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.propertyCondition?.charAt(0).toUpperCase() + 
+                                      dealScoreData?.propertyCondition?.slice(1)}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Short-Term Rental Yield</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.shortTermYield.toFixed(1)}%</td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Long-Term Rental Yield</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.longTermYield.toFixed(1)}%</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* Factor Scoring Table */}
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full border-collapse bg-white text-sm mb-6">
+                              <thead>
+                                <tr className="bg-gray-100">
+                                  <th className="border px-4 py-2 text-left">Factor</th>
+                                  <th className="border px-4 py-2 text-left">Score (Out of 100)</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td className="border px-4 py-2">Asking Price vs Market Price</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.priceVsMarketScore} 
+                                    {dealScoreData?.priceVsMarketScore >= 80 ? ' (Good Deal)' : 
+                                      dealScoreData?.priceVsMarketScore >= 50 ? ' (Fair Deal)' : ' (Poor Deal)'}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Price per m² vs Area Average</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.pricePerSqmScore}
+                                    {dealScoreData?.pricePerSqmScore >= 80 ? ' (Good Deal)' : 
+                                      dealScoreData?.pricePerSqmScore >= 50 ? ' (Fair Deal)' : ' (Poor Deal)'}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Property Condition</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.propertyConditionScore}</td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Short-Term Rental Yield</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.shortTermYieldScore}
+                                    {dealScoreData?.shortTermYieldScore >= 80 ? ' (Strong Yield)' : 
+                                      dealScoreData?.shortTermYieldScore >= 50 ? ' (Average Yield)' : ' (Low Yield)'}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Long-Term Rental Yield</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.longTermYieldScore}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* Weighted Score Contribution Table */}
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full border-collapse bg-white text-sm">
+                              <thead>
+                                <tr className="bg-gray-100">
+                                  <th className="border px-4 py-2 text-left">Factor</th>
+                                  <th className="border px-4 py-2 text-left">Score</th>
+                                  <th className="border px-4 py-2 text-left">Weighting</th>
+                                  <th className="border px-4 py-2 text-left">Contribution to Final Score</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td className="border px-4 py-2">Asking Price vs Market Price</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.priceVsMarketScore}</td>
+                                  <td className="border px-4 py-2">30%</td>
+                                  <td className="border px-4 py-2">{Math.round(dealScoreData?.weightedPriceVsMarket || 0)}</td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Price per m² vs Area Average</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.pricePerSqmScore}</td>
+                                  <td className="border px-4 py-2">20%</td>
+                                  <td className="border px-4 py-2">{Math.round(dealScoreData?.weightedPricePerSqm || 0)}</td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Property Condition</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.propertyConditionScore}</td>
+                                  <td className="border px-4 py-2">10%</td>
+                                  <td className="border px-4 py-2">{Math.round(dealScoreData?.weightedPropertyCondition || 0)}</td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Short-Term Rental Yield</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.shortTermYieldScore}</td>
+                                  <td className="border px-4 py-2">20%</td>
+                                  <td className="border px-4 py-2">{Math.round(dealScoreData?.weightedShortTermYield || 0)}</td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Long-Term Rental Yield</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.longTermYieldScore}</td>
+                                  <td className="border px-4 py-2">20%</td>
+                                  <td className="border px-4 py-2">{Math.round(dealScoreData?.weightedLongTermYield || 0)}</td>
+                                </tr>
+                                <tr className="font-bold bg-gray-50">
+                                  <td className="border px-4 py-2">Final Deal Score</td>
+                                  <td className="border px-4 py-2" colSpan={2}></td>
+                                  <td className="border px-4 py-2">{dealScoreData?.dealScore}/100</td>
+                                </tr>
+                              </tbody>
+                            </table>
                           </div>
                         </div>
                       </div>
@@ -1340,12 +1586,12 @@ export default function DealScorePage() {
                               Deal Rating
                             </div>
                             <div className="text-sm font-medium">
-                              {priceDiff <= -5 &&
+                              {dealScoreData?.dealScore >= 80 &&
                               submittedData?.propertyCondition === "excellent"
                                 ? "Great"
-                                : priceDiff <= 0
+                                : dealScoreData?.dealScore >= 50
                                   ? "Good"
-                                  : priceDiff <= 10
+                                  : dealScoreData?.dealScore >= 25
                                     ? "Fair"
                                     : "Bad"}
                             </div>
@@ -1363,13 +1609,13 @@ export default function DealScorePage() {
                                 className="absolute w-4 h-4 rounded-full border-2 border-white bg-primary shadow-lg transform -translate-x-1/2"
                                 style={{
                                   left: `${
-                                    priceDiff <= -5 &&
+                                    dealScoreData?.dealScore >= 80 &&
                                     submittedData?.propertyCondition ===
                                       "excellent"
                                       ? 100
-                                      : priceDiff <= 0
+                                      : dealScoreData?.dealScore >= 50
                                         ? 75
-                                        : priceDiff <= 10
+                                        : dealScoreData?.dealScore >= 25
                                           ? 50
                                           : 25
                                   }%`,
@@ -1755,11 +2001,6 @@ export default function DealScorePage() {
           </DialogContent>
         </Dialog>
         {/* PropertyScoreModal removed to focus on deal score functionality */}
-          longTermYield={
-            submittedData?.longTermRental
-              ? ((parseFloat(submittedData.longTermRental) * 12) / parseFloat(submittedData.purchasePrice)) * 100
-              : null
-          }
       </div>
     </PageTransition>
   );
