@@ -1,6 +1,6 @@
 import passport from "passport";
 import { IVerifyOptions, Strategy as LocalStrategy } from "passport-local";
-import { type Express } from "express";
+import { type Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
@@ -9,6 +9,14 @@ import { users, insertUserSchema, accessCodes, type SelectUser, passwordResetTok
 import { db } from "@db";
 import { eq, and, isNull } from "drizzle-orm";
 import { sendNewUserNotification, sendPasswordResetEmail, sendWelcomeEmail } from "./services/email";
+
+// Add the requireAuth middleware export
+export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  next();
+};
 
 const scryptAsync = promisify(scrypt);
 export const crypto = {
