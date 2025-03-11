@@ -219,13 +219,7 @@ export function DealAssessment({
               </div>
             </div>
 
-            <div className="flex justify-between items-center">
-              <div>Property condition</div>
-              <div className="capitalize font-medium">
-                {propertyCondition}
-              </div>
             </div>
-          </div>
         </div>
 
         {/* Yield Assessment - Only show if we have rental data */}
@@ -319,6 +313,12 @@ export function DealAssessment({
                 <div>Area average</div>
                 <div className="font-bold">
                   R{Math.round(areaRate).toLocaleString()}/m²
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <div>Property condition</div>
+                <div className="capitalize font-medium">
+                  {propertyCondition}
                 </div>
               </div>
             </div>
