@@ -1085,10 +1085,9 @@ export default function DealScorePage() {
   }
 
   // Main component return
-  const DealScorePage = () => {
-    return (
-      <PageTransition>
-        <div className="p-8">
+  return (
+    <PageTransition>
+      <div className="p-8">
           <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Deal Score</h1>
         </div>
@@ -2032,4 +2031,3 @@ export default function DealScorePage() {
 }
 
 export default DealScorePage;
-}
