@@ -135,6 +135,7 @@ export function DealScoreAdvisor({
         className="fixed bottom-6 right-6 rounded-full h-14 w-14 shadow-lg"
       >
         <MessageSquare className="h-6 w-6" />
+        <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></span>
       </Button>
     );
   }
