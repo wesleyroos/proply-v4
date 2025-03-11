@@ -21,12 +21,54 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-// PropertyScoreModal removed to focus on deal score functionality
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { findCostFromTable, transferCostsTable, bondCostsTable } from "@/lib/costTables";
+
+// Define types at the top level
+interface FormData {
+  address: string;
+  purchasePrice: string;
+  size: string;
+  areaRate: string;
+  bedrooms: string;
+  propertyCondition: string;
+  nightlyRate: string;
+  occupancy: string;
+  longTermRental: string;
+  depositAmount: string;
+  depositPercentage: string;
+  interestRate: string;
+  loanTerm: string;
+}
+
+// Add window interface extensions at the top level
+declare global {
+  interface Window {
+    dealScoreData?: {
+      dealScore: number;
+      priceDiff: number;
+      pricePerSqmDiff: number;
+      propertyCondition: string;
+      shortTermYield: number;
+      longTermYield: number;
+      priceVsMarketScore: number;
+      pricePerSqmScore: number;
+      propertyConditionScore: number;
+      shortTermYieldScore: number;
+      longTermYieldScore: number;
+      weightedPriceVsMarket: number;
+      weightedPricePerSqm: number;
+      weightedPropertyCondition: number;
+      weightedShortTermYield: number;
+      weightedLongTermYield: number;
+    };
+    lastClick?: number;
+    clickCount?: number;
+  }
+}
 
 interface RevenueData {
   adr: number;
@@ -42,6 +84,56 @@ interface RevenueData {
   ratePosition: number;
   revparPosition: number;
 }
+
+interface DealScoreData {
+  dealScore: number;
+  priceDiff: number;
+  pricePerSqmDiff: number;
+  propertyCondition: string;
+  shortTermYield: number;
+  longTermYield: number;
+  priceVsMarketScore: number;
+  pricePerSqmScore: number;
+  propertyConditionScore: number;
+  shortTermYieldScore: number;
+  longTermYieldScore: number;
+  weightedPriceVsMarket: number;
+  weightedPricePerSqm: number;
+  weightedPropertyCondition: number;
+  weightedShortTermYield: number;
+  weightedLongTermYield: number;
+}
+
+interface PropertyMetrics {
+  shortTerm: {
+    monthly: number;
+    yearly: number;
+    yield: number;
+  };
+  longTerm: {
+    monthly: number;
+    yearly: number;
+    yield: number;
+  };
+  isShortTermRecommended: boolean;
+}
+
+// Helper functions for score calculations
+const calculateScore = (value: number, min: number, max: number, lowScore: number, highScore: number): number => {
+  if (value <= min) return lowScore;
+  if (value >= max) return highScore;
+  return lowScore + ((value - min) / (max - min)) * (highScore - lowScore);
+};
+
+const calculatePropertyConditionScore = (condition: string): number => {
+  switch (condition) {
+    case "excellent": return 90;
+    case "good": return 70; 
+    case "fair": return 50;
+    case "poor": return 30;
+    default: return 50;
+  }
+};
 
 export default function DealScorePage() {
   const { toast } = useToast();
@@ -243,6 +335,98 @@ export default function DealScorePage() {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const calculateDealScore = () => {
+    if (!submittedData) return;
+
+    try {
+      // Parse numeric values with default fallbacks
+      const purchasePrice = parseFormattedValue(submittedData.purchasePrice);
+      const size = parseFormattedValue(submittedData.size);
+      const areaRate = parseFormattedValue(submittedData.areaRate);  
+      const nightlyRate = parseFormattedValue(submittedData.nightlyRate);
+      const occupancy = parseFormattedValue(submittedData.occupancy);
+      const longTermRental = parseFormattedValue(submittedData.longTermRental);
+      
+      // Validate key inputs
+      if (purchasePrice <= 0 || size <= 0 || areaRate <= 0) {
+        toast({
+          title: "Invalid input values", 
+          description: "Please check price, size and area rate values",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Calculate market price and differences
+      const marketPrice = size * areaRate;
+      const priceDiff = ((purchasePrice - marketPrice) / marketPrice) * 100;
+      const pricePerSqmDiff = ((purchasePrice / size) - areaRate) / areaRate * 100;
+      
+      // Calculate rental yields
+      const annualShortTermRevenue = nightlyRate * 365 * (occupancy / 100); 
+      const annualLongTermRevenue = longTermRental * 12;
+      const shortTermYield = (annualShortTermRevenue / purchasePrice) * 100;
+      const longTermYield = (annualLongTermRevenue / purchasePrice) * 100;
+      
+      // Score calculations (0-100 scale)
+      const priceVsMarketScore = calculateScore(priceDiff, -10, 10, 30, 70);
+      const pricePerSqmScore = calculateScore(pricePerSqmDiff, -10, 10, 30, 70);
+      const propertyConditionScore = calculatePropertyConditionScore(submittedData.propertyCondition);
+      const shortTermYieldScore = calculateScore(shortTermYield, 0, 20, 30, 70);
+      const longTermYieldScore = calculateScore(longTermYield, 0, 20, 30, 70);
+      
+      // Apply weightings
+      const weightedPriceVsMarket = priceVsMarketScore * 0.3; // 30%
+      const weightedPricePerSqm = pricePerSqmScore * 0.2; // 20%
+      const weightedPropertyCondition = propertyConditionScore * 0.1; // 10%
+      const weightedShortTermYield = shortTermYieldScore * 0.2; // 20%
+      const weightedLongTermYield = longTermYieldScore * 0.2; // 20%
+      
+      // Calculate final score
+      const finalScore = Math.round(
+        weightedPriceVsMarket +
+        weightedPricePerSqm +
+        weightedPropertyCondition +
+        weightedShortTermYield +
+        weightedLongTermYield
+      );
+      
+      // Store calculated values
+      const scoreData = {
+        dealScore: finalScore,
+        priceDiff,
+        pricePerSqmDiff,
+        propertyCondition: submittedData.propertyCondition,
+        shortTermYield,
+        longTermYield,
+        priceVsMarketScore,
+        pricePerSqmScore,
+        propertyConditionScore,
+        shortTermYieldScore,
+        longTermYieldScore,
+        weightedPriceVsMarket,
+        weightedPricePerSqm,
+        weightedPropertyCondition,
+        weightedShortTermYield,
+        weightedLongTermYield
+      };
+      
+      setDealScoreData(scoreData);
+
+      // Only set window property in development
+      if (process.env.NODE_ENV === 'development') {
+        (window as any).dealScoreData = scoreData;
+      }
+    } catch (error) {
+      console.error('Error calculating deal score:', error);
+      toast({
+        title: "Calculation Error",
+        description: "An error occurred while calculating the deal score",
+        variant: "destructive",
+      });
+    }
   };
 
   const calculateRentalMetrics = (formData: typeof submittedData) => {
@@ -453,11 +637,10 @@ export default function DealScorePage() {
     setShowPercentileDialog(false);
   };
 
-  // Parse formatted values for calculations
-  const parseFormattedValue = (value: string) => {
+  const parseFormattedValue = (value: string): number => {
     if (!value) return 0;
     // Remove all non-numeric characters except decimal point
-    return Number(value.toString().replace(/[^\d.]/g, ''));
+    return Number(value.toString().replace(/[^\d.]/g, '')) || 0;
   };
 
   // Calculate results only from submitted data
@@ -931,7 +1114,193 @@ export default function DealScorePage() {
     return totalCost;
   };
 
-  const calculateAffordabilityMetrics = (formData: typeof submittedData) => {
+  const calculateDealScore = () => {
+    if (!submittedData) return;
+
+    try {
+      // Parse numeric values with default fallbacks
+      const purchasePrice = parseFormattedValue(submittedData.purchasePrice);
+      const size = parseFormattedValue(submittedData.size);
+      const areaRate = parseFormattedValue(submittedData.areaRate);  
+      const nightlyRate = parseFormattedValue(submittedData.nightlyRate);
+      const occupancy = parseFormattedValue(submittedData.occupancy);
+      const longTermRental = parseFormattedValue(submittedData.longTermRental);
+      
+      // Validate key inputs
+      if (purchasePrice <= 0 || size <= 0 || areaRate <= 0) {
+        toast({
+          title: "Invalid input values", 
+          description: "Please check price, size and area rate values",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Calculate market price and differences
+      const marketPrice = size * areaRate;
+      const priceDiff = ((purchasePrice - marketPrice) / marketPrice) * 100;
+      const pricePerSqmDiff = ((purchasePrice / size) - areaRate) / areaRate * 100;
+      
+      // Calculate rental yields
+      const annualShortTermRevenue = nightlyRate * 365 * (occupancy / 100); 
+      const annualLongTermRevenue = longTermRental * 12;
+      const shortTermYield = (annualShortTermRevenue / purchasePrice) * 100;
+      const longTermYield = (annualLongTermRevenue / purchasePrice) * 100;
+      
+      // Score calculations (0-100 scale)
+      const priceVsMarketScore = calculateScore(priceDiff, -10, 10, 30, 70);
+      const pricePerSqmScore = calculateScore(pricePerSqmDiff, -10, 10, 30, 70);
+      const propertyConditionScore = calculatePropertyConditionScore(submittedData.propertyCondition);
+      const shortTermYieldScore = calculateScore(shortTermYield, 0, 20, 30, 70);
+      const longTermYieldScore = calculateScore(longTermYield, 0, 20, 30, 70);
+      
+      // Apply weightings
+      const weightedPriceVsMarket = priceVsMarketScore * 0.3; // 30%
+      const weightedPricePerSqm = pricePerSqmScore * 0.2; // 20%
+      const weightedPropertyCondition = propertyConditionScore * 0.1; // 10%
+      const weightedShortTermYield = shortTermYieldScore * 0.2; // 20%
+      const weightedLongTermYield = longTermYieldScore * 0.2; // 20%
+      
+      // Calculate final score
+      const finalScore = Math.round(
+        weightedPriceVsMarket +
+        weightedPricePerSqm +
+        weightedPropertyCondition +
+        weightedShortTermYield +
+        weightedLongTermYield
+      );
+      
+      // Store calculated values
+      const scoreData = {
+        dealScore: finalScore,
+        priceDiff,
+        pricePerSqmDiff,
+        propertyCondition: submittedData.propertyCondition,
+        shortTermYield,
+        longTermYield,
+        priceVsMarketScore,
+        pricePerSqmScore,
+        propertyConditionScore,
+        shortTermYieldScore,
+        longTermYieldScore,
+        weightedPriceVsMarket,
+        weightedPricePerSqm,
+        weightedPropertyCondition,
+        weightedShortTermYield,
+        weightedLongTermYield
+      };
+      
+      setDealScoreData(scoreData);
+
+      // Only set window property in development
+      if (process.env.NODE_ENV === 'development') {
+        (window as any).dealScoreData = scoreData;
+      }
+    } catch (error) {
+      console.error('Error calculating deal score:', error);
+      toast({
+        title: "Calculation Error",
+        description: "An error occurred while calculating the deal score",
+        variant: "destructive",
+      });
+    }
+  };
+        return;
+      }
+      
+      // Calculate market price and differences
+      const marketPrice = size * areaRate;
+      const priceDiff = ((purchasePrice - marketPrice) / marketPrice) * 100;
+      const pricePerSqmDiff = ((purchasePrice / size) - areaRate) / areaRate * 100;
+      
+      // Calculate rental yields
+      const annualShortTermRevenue = nightlyRate * 365 * (occupancy / 100);
+      const annualLongTermRevenue = longTermRental * 12;
+      const shortTermYield = (annualShortTermRevenue / purchasePrice) * 100;
+      const longTermYield = (annualLongTermRevenue / purchasePrice) * 100;
+      
+      // Score calculations (0-100 scale)
+      const priceVsMarketScore = Math.max(0, Math.min(100, 100 - Math.abs(priceDiff) * 2));
+      const pricePerSqmScore = Math.max(0, Math.min(100, 100 - Math.abs(pricePerSqmDiff) * 2));
+      const propertyConditionScore = {
+        excellent: 100,
+        good: 75,
+        fair: 50,
+        poor: 25
+      }[submittedData.propertyCondition] || 0;
+      
+      const shortTermYieldScore = Math.min(100, Math.max(0, shortTermYield * 10)); // 10% yield = 100 score
+      const longTermYieldScore = Math.min(100, Math.max(0, longTermYield * 12)); // 8.33% yield = 100 score
+      
+      // Apply weightings
+      const weightedPriceVsMarket = priceVsMarketScore * 0.3; // 30%
+      const weightedPricePerSqm = pricePerSqmScore * 0.2; // 20%
+      const weightedPropertyCondition = propertyConditionScore * 0.1; // 10%
+      const weightedShortTermYield = shortTermYieldScore * 0.2; // 20%
+      const weightedLongTermYield = longTermYieldScore * 0.2; // 20%
+      
+      // Calculate final score
+      const finalScore = Math.round(
+        weightedPriceVsMarket +
+        weightedPricePerSqm +
+        weightedPropertyCondition +
+        weightedShortTermYield +
+        weightedLongTermYield
+      );
+      
+      // Store calculated values
+      const scoreData = {
+        dealScore: finalScore,
+        priceDiff,
+        pricePerSqmDiff,
+        propertyCondition: submittedData.propertyCondition,
+        shortTermYield,
+        longTermYield,
+        priceVsMarketScore,
+        pricePerSqmScore,
+        propertyConditionScore,
+        shortTermYieldScore,
+        longTermYieldScore,
+        weightedPriceVsMarket,
+        weightedPricePerSqm,
+        weightedPropertyCondition,
+        weightedShortTermYield,
+        weightedLongTermYield
+      };
+      
+      setDealScoreData(scoreData);
+
+      // Only set window property in development
+      if (process.env.NODE_ENV === 'development') {
+        (window as any).dealScoreData = scoreData;
+      }
+    } catch (error) {
+      console.error('Error calculating deal score:', error);
+      toast({
+        title: "Calculation Error",
+        description: "An error occurred while calculating the deal score",
+        variant: "destructive",
+      });
+    }
+  };
+
+  interface FormData {
+    address: string;
+    purchasePrice: string;
+    size: string;
+    areaRate: string;
+    bedrooms: string;
+    propertyCondition: string;
+    nightlyRate: string;
+    occupancy: string;
+    longTermRental: string;
+    depositAmount: string;
+    depositPercentage: string;
+    interestRate: string;
+    loanTerm: string;
+  }
+
+  const calculateAffordabilityMetrics = (formData: FormData) => {
     if (!formData) return null;
 
     // Parse formatted values to get numeric values for calculations
@@ -1002,73 +1371,6 @@ export default function DealScorePage() {
     return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(value);
   };
 
-  const calculateDealScore = () => {
-    if (!submittedData) return;
-    const purchasePrice = parseFloat(submittedData.purchasePrice.replace(/,/g, ''));
-    const size = parseFloat(submittedData.size.replace(/,/g, ''));
-    const areaRate = parseFloat(submittedData.areaRate.replace(/,/g, ''));
-    const longTermRental = parseFloat(submittedData.longTermRental.replace(/,/g, ''));
-
-    const marketPrice = size * areaRate;
-    const priceDiff = (purchasePrice - marketPrice) / marketPrice * 100;
-    const pricePerSqmDiff = (purchasePrice / size - areaRate) / areaRate * 100;
-    const shortTermYield = calculateRentalMetrics(submittedData)?.shortTerm.yield || 0;
-    const longTermYield = calculateRentalMetrics(submittedData)?.longTerm.yield || 0;
-    const propertyCondition = submittedData.propertyCondition;
-
-    const priceVsMarketScore = calculateScore(priceDiff, -10, 10, 30, 70);
-    const pricePerSqmScore = calculateScore(pricePerSqmDiff, -10, 10, 30, 70);
-    const propertyConditionScore = calculatePropertyConditionScore(propertyCondition);
-    const shortTermYieldScore = calculateScore(shortTermYield, 0, 20, 30, 70);
-    const longTermYieldScore = calculateScore(longTermYield, 0, 20, 30, 70);
-
-    const weightedPriceVsMarket = priceVsMarketScore * 0.3;
-    const weightedPricePerSqm = pricePerSqmScore * 0.2;
-    const weightedPropertyCondition = propertyConditionScore * 0.1;
-    const weightedShortTermYield = shortTermYieldScore * 0.2;
-    const weightedLongTermYield = longTermYieldScore * 0.2;
-
-    const dealScore = weightedPriceVsMarket + weightedPricePerSqm + weightedPropertyCondition + weightedShortTermYield + weightedLongTermYield;
-
-    setDealScoreData({
-      dealScore: Math.round(dealScore),
-      priceDiff: priceDiff,
-      pricePerSqmDiff: pricePerSqmDiff,
-      propertyCondition: propertyCondition,
-      shortTermYield: shortTermYield,
-      longTermYield: longTermYield,
-      priceVsMarketScore: priceVsMarketScore,
-      pricePerSqmScore: pricePerSqmScore,
-      propertyConditionScore: propertyConditionScore,
-      shortTermYieldScore: shortTermYieldScore,
-      longTermYieldScore: longTermYieldScore,
-      weightedPriceVsMarket: weightedPriceVsMarket,
-      weightedPricePerSqm: weightedPricePerSqm,
-      weightedPropertyCondition: weightedPropertyCondition,
-      weightedShortTermYield: weightedShortTermYield,
-      weightedLongTermYield: weightedLongTermYield,
-    });
-
-    window.dealScoreData = {
-      dealScore: Math.round(dealScore),
-      priceDiff: priceDiff,
-      pricePerSqmDiff: pricePerSqmDiff,
-      propertyCondition: propertyCondition,
-      shortTermYield: shortTermYield,
-      longTermYield: longTermYield,
-      priceVsMarketScore: priceVsMarketScore,
-      pricePerSqmScore: pricePerSqmScore,
-      propertyConditionScore: propertyConditionScore,
-      shortTermYieldScore: shortTermYieldScore,
-      longTermYieldScore: longTermYieldScore,
-      weightedPriceVsMarket: weightedPriceVsMarket,
-      weightedPricePerSqm: weightedPricePerSqm,
-      weightedPropertyCondition: weightedPropertyCondition,
-      weightedShortTermYield: weightedShortTermYield,
-      weightedLongTermYield: weightedLongTermYield,
-    };
-  };
-
   const calculateScore = (value: number, min: number, max: number, minScore: number, maxScore: number): number => {
     if (value <= min) return maxScore;
     if (value >= max) return minScore;
@@ -1087,191 +1389,16 @@ export default function DealScorePage() {
 
   return (
     <PageTransition>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Deal Score</h1>
-        </div>
-
-        <div className="flex gap-8">
-          {/* Form Section */}
-          <div className="w-[600px]">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {currentStep === 1
-                    ? "Property Details"
-                    : currentStep === 2
-                    ? "Rental Details"
-                    : "Financing Details"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {renderStepCounter()}
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {renderFormStep()}
-
-                  <div className="flex justify-between gap-4 mt-6">
-                    {currentStep > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handlePrevStep}
-                      >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Previous
-                      </Button>
-                    )}
-                    <Button
-                      type="submit"
-                      className={currentStep === 1 ? "w-full" : "flex-1"}
-                      disabled={isCalculating}
-                    >
-                      {isCalculating ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Calculating...
-                        </>
-                      ) : currentStep < 3 ? (
-                        <>
-                          Next
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </>
-                      ) : (
-                        "Calculate Deal Score"
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
+      <div className="container mx-auto p-8">
+        <div className="flex flex-col gap-8">
+          <div className="w-full">
+            <h1 className="text-3xl font-bold">Deal Score</h1>
           </div>
-
-          {/* Results Section */}
-          {submittedData && (
-            <div className="flex-1">
-              <Tabs defaultValue="deal-score" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
-                  <TabsTrigger value="deal-score">Deal Score</TabsTrigger>
-                  <TabsTrigger value="price">Price</TabsTrigger>
-                  <TabsTrigger value="rental">Rental</TabsTrigger>
-                  <TabsTrigger value="affordability">Affordability</TabsTrigger>
-                  <TabsTrigger value="buyer-profile">Buyer Profile</TabsTrigger>
-                </TabsList>
-                <TabsContent value="deal-score">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Deal Assessment</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {/* Deal Score Gauge */}
-                      <div className="flex flex-col items-center mb-6">
-                        <div className="text-2xl font-bold flex items-center mb-2">
-                          {dealScoreData?.dealScore >= 80 ? "🔥" : dealScoreData?.dealScore >= 50 ? "✅" : "⚠️"} Deal Score
-                        </div>
-
-                        {/* Score Display */}
-                        <div className="flex items-center justify-center mb-4">
-                          <Badge 
-                            className={`
-                              ${dealScoreData?.dealScore >= 80 ? "bg-green-500" : dealScoreData?.dealScore >= 50 ? "bg-blue-500" : "bg-amber-500"} 
-                              text-white px-6 py-2 text-xl
-                            `}
-                          >
-                            {dealScoreData?.dealScore >= 80 ? "GREAT DEAL" : dealScoreData?.dealScore >= 50 ? "FAIR PRICE" : "OVERPRICED"}
-                          </Badge>
-                        </div>
-
-                        {/* Gauge Visualization */}
-                        <div className="w-full max-w-md">
-                          <div className="relative pt-4">
-                            {/* Gauge Background */}
-                            <div className="h-3 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-green-500 to-blue-500" />
-
-                            {/* Gauge Markers */}
-                            <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                              <span>Overpriced</span>
-                              <span>Fair</span>
-                              <span>Good</span>
-                              <span>Great</span>
-                            </div>
-
-                            {/* Gauge Pointer */}
-                            <div 
-                              className="absolute -top-1 w-4 h-4 bg-background border-2 border-primary rounded-full transform -translate-x-1/2" 
-                              style={{ 
-                                left: `${Math.min(Math.max((100 - priceDiff * 5), 0), 100)}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Deal Explanation */}
-                        <div className="mt-6 text-center">
-                          <p className="text-sm text-muted-foreground mb-2">
-                            This property is {Math.abs(priceDiff).toFixed(1)}% 
-                            {priceDiff > 0 ? " above " : " below "} 
-                            the estimated market value.
-                          </p>
-
-                          <div className="flex justify-between items-center mt-4 px-4">
-                            <div className="text-sm">Asking Price:</div>
-                            <div className="font-bold">R{parseFormattedValue(submittedData.purchasePrice).toLocaleString()}</div>
-                          </div>
-
-                          <div className="flex justify-between items-center mt-2 px-4">
-                            <div className="text-sm">Estimated Market Value:</div>
-                            <div className="font-bold">R{marketPrice.toLocaleString()}</div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Additional Deal Details */}
-                      <div className="mt-8 border-t pt-4">
-                        <h3 className="font-medium mb-4">Key Deal Factors</h3>
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center">
-                            <div>Price per m²</div>
-                            <div className="font-bold">
-                              R{Math.round(parseFormattedValue(submittedData.purchasePrice) / parseFormattedValue(submittedData.size)).toLocaleString()}/m²
-                            </div>
-                          </div>
-
-                          <div className="flex justify-between items-center">
-                            <div>Area average</div>
-                            <div className="font-bold">
-                              R{parseFormattedValue(submittedData.areaRate).toLocaleString()}/m²
-                            </div>
-                          </div>
-
-                          <div className="flex justify-between items-center mb-2">
-                            <div>Short-Term Yield</div>
-                            <div className="font-semibold text-emerald-600">
-                              {calculateRentalMetrics(submittedData)?.shortTerm.yield.toFixed(2) || "0"}%
-                            </div>
-                          </div>
-
-                          <div className="flex justify-between items-center mb-2">
-                            <div>Long-Term Yield</div>
-                            <div className="font-semibold text-blue-600">
-                              {calculateRentalMetrics(submittedData)?.longTerm.yield.toFixed(2) || "0"}%
-                            </div>
-                          </div>
-
-                          <div className="flex justify-between items-center">
-                            <div>Property condition</div>
-                            <div className="capitalize font-medium">
-                              {submittedData.propertyCondition}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Detailed Deal Score Breakdown */}
-                        <div className="mt-8 border-t pt-4">
-                          <h3 className="font-medium mb-4">Deal Score Breakdown</h3>
-
-                          {/* Factor Values Table */}
-                          <div className="overflow-x-auto">
-                            <table className="min-w-full border-collapse bg-white text-sm mb-6">
+          {/* Content goes here */}
+        </div>
+      </div>
+    </PageTransition>
+  );
                               <thead>
                                 <tr className="bg-gray-100">
                                   <th className="border px-4 py-2 text-left">Factor</th>
