@@ -918,8 +918,9 @@ export default function DealScorePage() {
 
     // Parse formatted values to get numeric values for calculations
     const parseValue = (value: string) => {
-      if (!value) return 0;
-      // Remove all non-numeric characters except decimal point      return Number(value.toString().replace(/[^\d.]/g, ''));
+            if (!value) return 0;
+      // Remove all non-numeric characters except decimal point
+      return Number(value.toString().replace(/[^\d.]/g, ''));
     };
 
     const purchasePrice = parseValue(formData.purchasePrice);
