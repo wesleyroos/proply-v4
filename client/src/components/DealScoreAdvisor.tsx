@@ -230,11 +230,6 @@ export function DealScoreAdvisor() {
     </>
   );
 }
-
-import { useState, useRef, useEffect } from 'react';
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { MessageSquare, X, Loader2, Sparkles, Send } from "lucide-react";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { UpgradeModal } from "@/components/UpgradeModal";
