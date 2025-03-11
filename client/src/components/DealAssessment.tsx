@@ -204,12 +204,6 @@ export function DealAssessment({
         <div className="mt-8 border-t pt-4">
           <h3 className="font-medium mb-4">Key Deal Factors</h3>
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <div>Price per m²</div>
-              <div className="font-bold">
-                R{Math.round(propertyRate).toLocaleString()}/m²
-              </div>
-            </div>
 
             <div className="flex justify-between items-center">
               <div>Area average</div>
@@ -320,6 +314,12 @@ export function DealAssessment({
                   >
                     {rentalData.isShortTermRecommended ? "AIRBNB" : "RENTAL"}
                   </Badge>
+                </div>
+              </div>
+              <div className="flex justify-between items-center mt-4 p-3 bg-gray-50 rounded-lg">
+                <div>Price per m²</div>
+                <div className="font-bold">
+                  R{Math.round(propertyRate).toLocaleString()}/m²
                 </div>
               </div>
             </div>
