@@ -205,13 +205,6 @@ export function DealAssessment({
           <h3 className="font-medium mb-4">Key Deal Factors</h3>
           <div className="space-y-3">
 
-            <div className="flex justify-between items-center">
-              <div>Area average</div>
-              <div className="font-bold">
-                R{Math.round(areaRate).toLocaleString()}/m²
-              </div>
-            </div>
-
             <div className="flex justify-between items-center mb-2">
               <div>Short-Term Yield</div>
               <div className="font-semibold text-emerald-600">
@@ -320,6 +313,12 @@ export function DealAssessment({
                 <div>Price per m²</div>
                 <div className="font-bold">
                   R{Math.round(propertyRate).toLocaleString()}/m²
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <div>Area average</div>
+                <div className="font-bold">
+                  R{Math.round(areaRate).toLocaleString()}/m²
                 </div>
               </div>
             </div>
