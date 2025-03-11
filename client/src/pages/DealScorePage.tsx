@@ -1261,6 +1261,30 @@ export default function DealScorePage() {
           onOpenChange={setShowUpgradeModal}
         />
       </div>
+
+      {/* Secret prefill button */}
+      <div
+        onClick={(e) => {
+          const now = new Date().getTime();
+          if (!window.lastClick) window.lastClick = 0;
+          if (!window.clickCount) window.clickCount = 0;
+
+          if (now - window.lastClick > 500) {
+            window.clickCount = 1;
+          } else {
+            window.clickCount++;
+          }
+
+          window.lastClick = now;
+
+          if (window.clickCount === 3) {
+            handlePrefill();
+            window.clickCount = 0;
+          }
+        }}
+        className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-100/20 cursor-default select-none"
+        style={{ opacity: 0.1 }}
+      />
     </PageTransition>
   );
 }
