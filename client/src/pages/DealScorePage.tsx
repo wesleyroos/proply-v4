@@ -915,7 +915,7 @@ export default function DealScorePage() {
       return estimatedTransferFee + estimatedDisbursements + estimatedDeeds + transferDutyAmount;
     }
 
-    // Use values from the table
+    // Use values fromthe table
     let totalCost = costs.transferFee + costs.disbursements + costs.deedsFee;
 
     // Add VAT if needed
@@ -1296,20 +1296,23 @@ export default function DealScorePage() {
                                 <tr>
                                   <td className="border px-4 py-2">Property Condition</td>
                                   <td className="border px-4 py-2">
-                                    {dealScoreData?.propertyCondition?.charAt(0).toUpperCase() + 
-                                      dealScoreData?.propertyCondition?.slice(1)}
+                                    {dealScoreData?.propertyCondition || "NaN"}
                                   </td>
                                 </tr>
                                 <tr>
                                   <td className="border px-4 py-2">Short-Term Rental Yield</td>
-                                  <td className="border px-4 py-2">{dealScoreData?.shortTermYield.toFixed(1)}%</td>
+                                  <td className="border px-4 py-2">
+                                    {typeof dealScoreData?.shortTermYield === 'number' ? 
+                                      `${dealScoreData.shortTermYield.toFixed(1)}%` : 
+                                      '%'}
+                                  </td>
                                 </tr>
                                 <tr>
                                   <td className="border px-4 py-2">Long-Term Rental Yield</td>
                                   <td className="border px-4 py-2">
-                                    {dealScoreData?.longTermYield.toFixed(1)}%
-                                    {dealScoreData?.longTermYield >= 80 ? ' (Strong Yield)' : 
-                                      dealScoreData?.longTermYield >= 50 ? ' (Average Yield)' : ' (Low Yield)'}
+                                    {typeof dealScoreData?.longTermYield === 'number' ? 
+                                      `${dealScoreData.longTermYield.toFixed(1)}% (${dealScoreData.longTermYield < 5 ? 'Low Yield' : dealScoreData.longTermYield < 8 ? 'Average Yield' : 'Strong Yield'})` : 
+                                      '% (Low Yield)'}
                                   </td>
                                 </tr>
                               </tbody>
@@ -1700,7 +1703,7 @@ export default function DealScorePage() {
                               </div>
                               <div className="flex justify-between">
                                 <span>Management fee:</span>
-                                <span className="font-semibold">15-20%</span>
+                                <span className<span className="font-semibold">15-20%</span>
                               </div>
                             </div>
                           </div>
