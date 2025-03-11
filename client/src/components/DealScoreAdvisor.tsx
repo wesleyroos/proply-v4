@@ -1,9 +1,8 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageSquare, X, Loader2, Sparkles, Send, ArrowLeft } from "lucide-react";
+import { MessageSquare, X, Loader2, Sparkles, Send } from "lucide-react";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { UpgradeModal } from "@/components/UpgradeModal";
 
@@ -33,9 +32,8 @@ interface Message {
 /**
  * DealScoreAdvisor - AI-powered chatbot that provides personalized advice based on deal assessment
  * 
- * This component renders a chat interface that allows real estate agents to ask questions about their
- * property investment analysis and receive AI-generated responses to assist their clients.
- * The UI toggles between an input form and results view for a cleaner interface.
+ * This component renders a chat interface that allows users to ask questions about their
+ * property investment analysis and receive AI-generated responses.
  */
 export function DealScoreAdvisor({ 
   purchasePrice, 
@@ -52,7 +50,6 @@ export function DealScoreAdvisor({
   const [isOpen, setIsOpen] = useState(true);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [viewMode, setViewMode] = useState<'form' | 'results'>('form');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Add welcome message when chat is first opened
@@ -71,7 +68,7 @@ export function DealScoreAdvisor({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, viewMode]);
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,10 +84,6 @@ export function DealScoreAdvisor({
     setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
     setQuery("");
     setIsLoading(true);
-    
-    // Switch to results view when a question is submitted
-    setViewMode('results');
-    setShowSuggestions(false);
 
     try {
       // Make API call to deal advisor endpoint
@@ -115,195 +108,148 @@ export function DealScoreAdvisor({
       }
 
       const data = await response.json();
-      
+
       // Add AI response to chat
       setMessages(prev => [...prev, { type: 'assistant', content: data.response }]);
+      setShowSuggestions(false);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching AI response:', error);
       setMessages(prev => [...prev, { 
         type: 'assistant', 
-        content: "Sorry, I encountered an error. Please try again later." 
+        content: "I'm sorry, I couldn't process your request at the moment. Please try again later." 
       }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSampleQuestionClick = (question: string) => {
+  const handleSampleQuestion = (question: string) => {
     setQuery(question);
-    if (hasAccess) {
-      // Focus on the input
-      document.getElementById('query-input')?.focus();
-    }
-  };
-
-  // Toggle back to form view
-  const handleBackToForm = () => {
-    setViewMode('form');
-    setShowSuggestions(true);
+    handleSubmit(new Event('submit') as unknown as React.FormEvent);
   };
 
   if (!isOpen) {
-    // Render the floating chat button if chat is closed
     return (
-      <Button 
-        onClick={() => setIsOpen(true)} 
-        size="icon" 
-        className="fixed bottom-4 right-4 h-14 w-14 rounded-full shadow-lg z-50 bg-primary"
+      <Button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-6 right-6 rounded-full h-14 w-14 shadow-lg"
       >
         <MessageSquare className="h-6 w-6" />
+        <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></span>
       </Button>
     );
   }
 
+  // Regular chatbox for pro users
   return (
     <>
-      <Card className="relative border rounded-lg overflow-hidden">
-        {/* Chat Header */}
-        <div className="p-4 border-b flex justify-between items-center bg-background">
-          <div className="flex items-center">
-            <MessageSquare className="h-5 w-5 mr-2 text-primary" />
-            <h3 className="font-semibold">Deal Score Advisor</h3>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8" 
-            onClick={() => setIsOpen(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Chat Description */}
-        <div className="px-4 py-2 bg-muted/30 text-sm text-muted-foreground">
-          Ask me anything about the deal score analysis or for advice on improving your investment strategy.
-        </div>
-
-        {viewMode === 'form' ? (
-          // Form view - Input area and suggestions
-          <div className="flex flex-col">
-            {/* Welcome message */}
-            <div className="p-4 bg-muted/20 rounded-lg m-4">
-              <p className="text-sm">
-                {messages[0]?.content}
-              </p>
+      <Card className="fixed bottom-6 right-6 w-96 bg-white shadow-lg border border-gray-200 flex flex-col z-50" style={{ maxHeight: "600px" }}>
+        <div className="p-4 border-b">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-[#1BA3FF]" />
+              <h3 className="text-lg font-semibold text-gray-900">Deal Score Advisor</h3>
             </div>
-
-            {/* Sample Questions */}
-            {showSuggestions && (
-              <div className="px-4 pb-4">
-                <p className="text-sm text-muted-foreground mb-2">Try asking about:</p>
-                <div className="space-y-2 max-w-full">
-                  {SAMPLE_QUESTIONS.map((question, index) => (
-                    <div 
-                      key={index}
-                      className="p-2 bg-background border rounded-lg text-sm cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => handleSampleQuestionClick(question)}
-                    >
-                      {question}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Input Box */}
-            <form onSubmit={handleSubmit} className="p-4 border-t mt-auto">
-              <div className="flex gap-2">
-                <Input
-                  id="query-input"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Ask a question about this property..."
-                  className="flex-1"
-                />
-                <Button 
-                  type="submit" 
-                  size="icon" 
-                  disabled={!query.trim() || isLoading || accessLoading}
-                >
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </div>
-            </form>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setIsOpen(false)}
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-        ) : (
-          // Results view - Chat messages
-          <div className="flex flex-col h-[400px]">
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((message, i) => (
-                <div 
-                  key={i}
-                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+          <p className="text-sm text-gray-600 mt-2">
+            Ask me anything about the deal score analysis or for advice on improving your investment strategy.
+          </p>
+        </div>
+
+        <div className="flex-grow overflow-y-auto p-4 space-y-4">
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-[80%] p-3 rounded-xl ${
+                  message.type === 'user'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted'
+                }`}
+              >
+                {message.content}
+              </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="max-w-[80%] p-3 rounded-lg bg-muted">
+                <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {showSuggestions && messages.length === 1 && (
+          <div className="px-4 py-2">
+            <p className="text-sm font-medium text-gray-700 mb-2">Try asking about:</p>
+            <div className="flex flex-wrap gap-2 max-w-full">
+              {SAMPLE_QUESTIONS.map((question, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs py-1 px-2 h-auto whitespace-normal text-left justify-start"
+                  onClick={() => handleSampleQuestion(question)}
                 >
-                  <div 
-                    className={`max-w-[80%] rounded-lg p-3 ${
-                      message.type === 'user' 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted/30'
-                    }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  </div>
-                </div>
+                  {question}
+                </Button>
               ))}
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="max-w-[80%] rounded-lg p-3 bg-muted/30">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Back button and Input Box */}
-            <div className="p-4 border-t mt-auto">
-              <div className="flex items-center gap-2 mb-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleBackToForm}
-                  className="flex items-center gap-1"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Back
-                </Button>
-              </div>
-              <form onSubmit={handleSubmit} className="flex gap-2">
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Ask a question about this property..."
-                  className="flex-1"
-                />
-                <Button 
-                  type="submit" 
-                  size="icon" 
-                  disabled={!query.trim() || isLoading || accessLoading}
-                >
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </form>
             </div>
           </div>
         )}
+
+        <form onSubmit={handleSubmit} className="p-4 border-t">
+          <div className="flex gap-2">
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Ask a question about this property..."
+              className="flex-grow"
+              disabled={isLoading || !hasAccess}
+            />
+            <Button 
+              type="submit" 
+              size="icon"
+              disabled={isLoading || !query.trim() || !hasAccess}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : hasAccess ? (
+                <Send className="h-4 w-4" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          {!hasAccess && (
+            <div className="mt-2 text-center">
+              <Button 
+                variant="link" 
+                size="sm"
+                className="text-xs text-blue-600"
+                onClick={() => setShowUpgradeModal(true)}
+              >
+                <Sparkles className="h-3 w-3 mr-1" />
+                Upgrade to Pro to use the AI advisor
+              </Button>
+            </div>
+          )}
+        </form>
       </Card>
 
-      {/* Upgrade Modal */}
-      <UpgradeModal
-        open={showUpgradeModal}
-        onOpenChange={setShowUpgradeModal}
-        title="Get AI Deal Advisor"
-        description="Upgrade to Pro to access the AI Deal Advisor and get personalized insights for your property investments."
-        feature={
-          <div className="flex items-center text-primary gap-2 font-medium">
-            <Sparkles className="h-5 w-5" />
-            AI-Powered Deal Analysis
-          </div>
-        }
-      />
+      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
     </>
   );
 }
