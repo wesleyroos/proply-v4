@@ -170,7 +170,7 @@ export function DealAssessment({
           {/* Deal Explanation */}
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground mb-2">
-              This property is {Math.abs(priceDiff).toFixed(1)}%
+              This property is <span className={`font-bold text-base ${priceDiff > 0 ? "text-amber-500" : "text-green-500"}`}>{Math.abs(priceDiff).toFixed(1)}%</span>
               {priceDiff > 0 ? " above " : " below "}
               the estimated market value.
             </p>
