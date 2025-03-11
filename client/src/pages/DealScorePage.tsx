@@ -28,6 +28,8 @@ import { Calendar, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { findCostFromTable, transferCostsTable, bondCostsTable } from "@/lib/costTables";
 import { DealAssessment } from "@/components/DealAssessment";
+import { FormInput } from "@/components/ui/form"; // Added import for FormInput
+
 
 interface RevenueData {
   adr: number;
@@ -83,7 +85,7 @@ export default function DealScorePage() {
   const [submittedData, setSubmittedData] = useState<typeof formData | null>(
     null,
   );
-  const [showResults, setShowResults] = useState(false);
+  const [showResults, setShowResults] = useState(false); // Added showResults state
   const [showPropertyScoreModal, setShowPropertyScoreModal] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
 
@@ -268,7 +270,7 @@ export default function DealScorePage() {
     };
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => { // updated handleSubmit
     e.preventDefault();
 
     // Always check for required fields before proceeding, regardless of current step
@@ -310,7 +312,7 @@ export default function DealScorePage() {
     setIsCalculating(true);
     setTimeout(() => {
       setSubmittedData(formData);
-      setShowResults(true);
+      setShowResults(true); // Show results after submission
       setIsCalculating(false);
     }, 2000);
   };
@@ -999,90 +1001,113 @@ export default function DealScorePage() {
         </div>
 
         <div className="flex gap-8">
-          {/* Form Section */}
+          {/* Form or Results Section - Same container with toggle */}
           <div className="w-[600px]">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {currentStep === 1
-                    ? "Property Details"
-                    : currentStep === 2
-                    ? "Rental Details"
-                    : "Financing Details"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {renderStepCounter()}
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {renderFormStep()}
+            {/* Toggle buttons for form/results view */}
+            {submittedData && (
+              <div className="flex mb-4 border rounded-md overflow-hidden">
+                <Button 
+                  variant={!showResults ? "default" : "ghost"} 
+                  className="flex-1 rounded-none"
+                  onClick={() => setShowResults(false)}
+                >
+                  <FormInput className="h-4 w-4 mr-2" />
+                  Edit Form
+                </Button>
+                <Button 
+                  variant={showResults ? "default" : "ghost"}
+                  className="flex-1 rounded-none"
+                  onClick={() => setShowResults(true)}
+                >
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  View Results
+                </Button>
+              </div>
+            )}
 
-                  <div className="flex justify-between gap-4 mt-6">
-                    {currentStep > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handlePrevStep}
-                      >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Previous
-                      </Button>
-                    )}
-                    <Button
-                      type="submit"
-                      className={currentStep === 1 ? "w-full" : "flex-1"}
-                      disabled={isCalculating}
-                    >
-                      {isCalculating ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Calculating...
-                        </>
-                      ) : currentStep < 3 ? (
-                        <>
-                          Next
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </>
-                      ) : (
-                        "Calculate Deal Score"
+            {/* Form View */}
+            {!showResults && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    {currentStep === 1
+                      ? "Property Details"
+                      : currentStep === 2
+                      ? "Rental Details"
+                      : "Financing Details"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {renderStepCounter()}
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {renderFormStep()}
+                    <div className="flex justify-between mt-6">
+                      {currentStep > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handlePrevStep}
+                        >
+                          <ArrowLeft className="h-4 w-4 mr-2" />
+                          Previous
+                        </Button>
                       )}
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
+                      <Button
+                        type="submit"
+                        className={currentStep === 1 ? "w-full" : "flex-1"}
+                        disabled={isCalculating}
+                      >
+                        {isCalculating ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Calculating...
+                          </>
+                        ) : currentStep < 3 ? (
+                          <>
+                            Next
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </>
+                        ) : (
+                          "Calculate Deal Score"
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Results View */}
+            {showResults && submittedData && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Deal Assessment</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DealAssessment 
+                    purchasePrice={parseFormattedValue(submittedData.purchasePrice)}
+                    marketPrice={marketPrice}
+                    priceDiff={priceDiff}
+                    rentalData={calculateRentalMetrics(submittedData)}
+                    propertyCondition={submittedData.propertyCondition}
+                    areaRate={parseFormattedValue(submittedData.areaRate)}
+                    propertyRate={parseFormattedValue(submittedData.purchasePrice) / parseFormattedValue(submittedData.size)}
+                  />
+                </CardContent>
+              </Card>
+            )}
           </div>
 
-          {/* Results Section */}
-          {submittedData && (
+          {/* Additional tabs when viewing results */}
+          {submittedData && showResults && (
             <div className="flex-1">
               <Tabs defaultValue="deal-score" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
-                  <TabsTrigger value="deal-score">Deal Score</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="price">Price</TabsTrigger>
                   <TabsTrigger value="rental">Rental</TabsTrigger>
                   <TabsTrigger value="affordability">Affordability</TabsTrigger>
                   <TabsTrigger value="buyer-profile">Buyer Profile</TabsTrigger>
                 </TabsList>
-                <TabsContent value="deal-score">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Deal Assessment</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {/* Using the new DealAssessment component */}
-                      <DealAssessment 
-                        purchasePrice={parseFormattedValue(submittedData.purchasePrice)}
-                        marketPrice={marketPrice}
-                        priceDiff={priceDiff}
-                        rentalData={calculateRentalMetrics(submittedData)}
-                        propertyCondition={submittedData.propertyCondition}
-                        areaRate={parseFormattedValue(submittedData.areaRate)}
-                        propertyRate={parseFormattedValue(submittedData.purchasePrice) / parseFormattedValue(submittedData.size)}
-                      />
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
                 <TabsContent value="price" className="space-y-4">
                   <Card>
                     <CardHeader>
