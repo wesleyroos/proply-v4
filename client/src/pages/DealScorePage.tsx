@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowRight, ArrowLeft, Loader2, BarChart3, ArrowLeftCircle } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { UpgradeModal } from "@/components/UpgradeModal";
@@ -28,7 +28,6 @@ import { Calendar, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { findCostFromTable, transferCostsTable, bondCostsTable } from "@/lib/costTables";
 import { DealAssessment } from "@/components/DealAssessment";
-import { DealScoreAdvisor } from "@/components/DealScoreAdvisor";
 
 interface RevenueData {
   adr: number;
@@ -906,7 +905,7 @@ export default function DealScorePage() {
       totalCost += costs.vat;
     }
 
-    // Add transfer dutyif needed
+    // Add transfer duty if needed
     if (includeTransferDuty) {
       totalCost += costs.transferDuty > 0 ? costs.transferDuty : calculateTransferDuty(purchasePrice);
     }
@@ -989,148 +988,19 @@ export default function DealScorePage() {
 
   return (
     <PageTransition>
-      <div className="py-8 px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Deal Score Calculator</h1>
-          <p className="text-muted-foreground">
-            Calculate the investment potential of a property using our comprehensive scoring system.
-          </p>
+      <div className="p-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">Deal Score</h1>
+          {hasProAccess.hasAccess && (
+            <Button variant="outline" onClick={() => setShowPropertyScoreModal(true)}>
+              View Property Score <BarChart3 className="h-4 w-4 ml-2" />
+            </Button>
+          )}
         </div>
 
-        {showResults ? (
-          <>
-            <div className="max-w-[800px]">
-              <div className="mb-6 flex justify-between items-center">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowResults(false)}
-                  className="gap-2"
-                >
-                  <ArrowLeftCircle className="h-4 w-4" />
-                  Edit Inputs
-                </Button>
-                {hasProAccess.hasAccess && (
-                  <Button variant="outline" onClick={() => setShowPropertyScoreModal(true)}>
-                    View Property Score <BarChart3 className="h-4 w-4 ml-2" />
-                  </Button>
-                )}
-              </div>
-
-              <Tabs defaultValue="deal-score" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 mb-6">
-                  <TabsTrigger value="deal-score">Deal Score</TabsTrigger>
-                  <TabsTrigger value="price">Price</TabsTrigger>
-                  <TabsTrigger value="rental">Rental</TabsTrigger>
-                  <TabsTrigger value="affordability">Affordability</TabsTrigger>
-                  <TabsTrigger value="buyer-profile">Buyer Profile</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="deal-score">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Deal Assessment</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <DealAssessment 
-                        purchasePrice={parseFormattedValue(submittedData?.purchasePrice || "0")}
-                        marketPrice={marketPrice}
-                        priceDiff={priceDiff}
-                        rentalData={calculateRentalMetrics(submittedData)}
-                        propertyCondition={submittedData?.propertyCondition || "excellent"}
-                        areaRate={parseFormattedValue(submittedData?.areaRate || "0")}
-                        propertyRate={parseFormattedValue(submittedData?.purchasePrice || "0") / parseFormattedValue(submittedData?.size || "1")}
-                      />
-                    </CardContent>
-                  </Card>
-
-                  {submittedData && <DealScoreAdvisor dealData={submittedData} />}
-                </TabsContent>
-
-                <TabsContent value="price">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Price Analysis</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p>Market Price: {formatCurrency(marketPrice)}</p>
-                      <p>Price Difference: {priceDiff.toFixed(2)}%</p>
-                      {priceDiff > 0 ? (
-                        <p className="text-green-500">
-                          Property is priced below market value.
-                        </p>
-                      ) : priceDiff < 0 ? (
-                        <p className="text-red-500">
-                          Property is priced above market value.
-                        </p>
-                      ) : (
-                        <p>Property is priced at market value.</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="rental">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Rental Analysis</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {submittedData && calculateRentalMetrics(submittedData) && (
-                        <>
-                          <p>Short Term Monthly Rental: {formatCurrency(calculateRentalMetrics(submittedData).shortTerm.monthly)}</p>
-                          <p>Short Term Yearly Rental: {formatCurrency(calculateRentalMetrics(submittedData).shortTerm.yearly)}</p>
-                          <p>Short Term Yield: {calculateRentalMetrics(submittedData).shortTerm.yield.toFixed(2)}%</p>
-                          <p>Long Term Monthly Rental: {formatCurrency(calculateRentalMetrics(submittedData).longTerm.monthly)}</p>
-                          <p>Long Term Yearly Rental: {formatCurrency(calculateRentalMetrics(submittedData).longTerm.yearly)}</p>
-                          <p>Long Term Yield: {calculateRentalMetrics(submittedData).longTerm.yield.toFixed(2)}%</p>
-                          <p>Recommended Rental Strategy: {calculateRentalMetrics(submittedData).isShortTermRecommended ? "Short Term" : "Long Term"}</p>
-                        </>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="affordability">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Affordability Analysis</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {submittedData && calculateAffordabilityMetrics(submittedData) && (
-                        <>
-                          <p>Upfront Costs:</p>
-                          <p>Deposit: {formatCurrency(calculateAffordabilityMetrics(submittedData).upfrontCosts.deposit)}</p>
-                          <p>Transfer Costs: {formatCurrency(calculateAffordabilityMetrics(submittedData).upfrontCosts.combinedTransferCosts)}</p>
-                          <p>Bond Registration Costs: {formatCurrency(calculateAffordabilityMetrics(submittedData).upfrontCosts.bondRegistrationCosts)}</p>
-                          <p>Total Cash Needed: {formatCurrency(calculateAffordabilityMetrics(submittedData).upfrontCosts.totalCashNeeded)}</p>
-
-                          <p>Monthly Payments:</p>
-                          <p>Bond Payment: {formatCurrency(calculateAffordabilityMetrics(submittedData).monthlyPayments.bondPayment)}</p>
-                          <p>Levies & Rates: {formatCurrency(calculateAffordabilityMetrics(submittedData).monthlyPayments.leviesAndRates)}</p>
-                          <p>Total Monthly Cost: {formatCurrency(calculateAffordabilityMetrics(submittedData).monthlyPayments.totalMonthlyCost)}</p>
-
-                          <p>Required Monthly Income: {formatCurrency(calculateAffordabilityMetrics(submittedData).requiredIncome)}</p>
-                        </>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="buyer-profile">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Buyer Profile</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p>This section will contain information about the buyer profile.</p>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            </div>
-          </>
-        ) : (
-          <div className="max-w-[600px]">
+        <div className="flex gap-8">
+          {/* Form Section */}
+          <div className="w-[600px]">
             <Card>
               <CardHeader>
                 <CardTitle>
@@ -1181,7 +1051,572 @@ export default function DealScorePage() {
               </CardContent>
             </Card>
           </div>
-        )}
+
+          {/* Results Section */}
+          {submittedData && (
+            <div className="flex-1">
+              <Tabs defaultValue="deal-score" className="w-full">
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="deal-score">Deal Score</TabsTrigger>
+                  <TabsTrigger value="price">Price</TabsTrigger>
+                  <TabsTrigger value="rental">Rental</TabsTrigger>
+                  <TabsTrigger value="affordability">Affordability</TabsTrigger>
+                  <TabsTrigger value="buyer-profile">Buyer Profile</TabsTrigger>
+                </TabsList>
+                <TabsContent value="deal-score">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Deal Assessment</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {/* Using the new DealAssessment component */}
+                      <DealAssessment 
+                        purchasePrice={parseFormattedValue(submittedData.purchasePrice)}
+                        marketPrice={marketPrice}
+                        priceDiff={priceDiff}
+                        rentalData={calculateRentalMetrics(submittedData)}
+                        propertyCondition={submittedData.propertyCondition}
+                        areaRate={parseFormattedValue(submittedData.areaRate)}
+                        propertyRate={parseFormattedValue(submittedData.purchasePrice) / parseFormattedValue(submittedData.size)}
+                      />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="price" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Price Justification</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg mb-6">
+                        <div>
+                          <div className="text-sm font-medium">
+                            Asking Price
+                          </div>
+                          <div className="text-3xl font-bold">
+                            R
+                            {parseFormattedValue(
+                              submittedData.purchasePrice
+                            ).toLocaleString()}
+                          </div>
+                        </div>
+                        <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
+                        <div>
+                          <div className="text-sm font-medium">
+                            Market Average
+                          </div>
+                          <div className="text-3xl font-bold">
+                            R{marketPrice.toLocaleString()}
+                          </div>
+                        </div>
+                        <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
+                        <div>
+                          <div className="text-sm font-medium">Difference</div>
+                          <div
+                            className={`text-3xl font-bold ${priceDiff > 0 ? "text-amber-500" : "text-green-500"}`}
+                          >
+                            {priceDiff > 0 ? "+" : ""}
+                            {Math.round(priceDiff)}%
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-4">
+                        <div className="font-medium">Price per m²</div>
+                        <div className="font-bold">
+                          R
+                          {submittedData
+                            ? Math.round(
+                                parseFormattedValue(submittedData.purchasePrice) /
+                                parseFormattedValue(submittedData.size),
+                              ).toLocaleString()
+                            : "0"}
+                          /m²
+                        </div>
+                        <div className="text-muted-foreground">
+                          (vs. area avg R
+                          {submittedData
+                            ? parseFormattedValue(submittedData.areaRate).toLocaleString()
+                            : "0"}
+                          /m²)
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={
+                              submittedData &&
+                              parseFormattedValue(submittedData.purchasePrice) /
+                                parseFormattedValue(submittedData.size) <=
+                                parseFormattedValue(submittedData.areaRate)
+                                ? "text-green-500"
+                                : "text-amber-500"
+                            }
+                          >
+                            {submittedData &&
+                            parseFormattedValue(submittedData.purchasePrice) /
+                              parseFormattedValue(submittedData.size) <=
+                              parseFormattedValue(submittedData.areaRate)
+                              ? "-"
+                              : "+"}
+                            R
+                            {submittedData
+                              ? Math.abs(
+                                  Math.round(
+                                    parseFormattedValue(submittedData.purchasePrice) /
+                                      parseFormattedValue(submittedData.size) -
+                                      parseFormattedValue(submittedData.areaRate),
+                                  ),
+                                ).toLocaleString()
+                              : "0"}
+                            /m²
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className={
+                              priceDiff <= 0
+                                ? "text-green-500"
+                                : "text-amber-500"
+                            }
+                          >
+                            {priceDiff <= 0 ? "UnderPaying" : "Over Paying"}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-4">
+                        <div className="font-medium">Property Condition</div>
+                        <div className="font-bold capitalize">
+                          {submittedData.propertyCondition}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {
+                            getConditionDetails(submittedData.propertyCondition)
+                              .description
+                          }
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant="outline"
+                            className={
+                              getConditionDetails(
+                                submittedData.propertyCondition,
+                              ).badgeColor
+                            }
+                          >
+                            {
+                              getConditionDetails(
+                                submittedData.propertyCondition,
+                              ).badge
+                            }
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-4">
+                        <div className="font-medium">Recent Area Sales</div>
+                        <div className="font-bold">R3.4M - R3.7M</div>
+                        <div className="text-muted-foreground">
+                          (last 3 months)
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-blue-600">
+                            WITHIN RANGE
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Making This a Good Deal</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="p-4 bg-muted/30 rounded-lg">
+                          <p className="text-sm text-muted-foreground mb-2">
+                            To make this a good deal, consider:
+                          </p>
+                          <p className="text-lg font-medium">
+                            Make an offer between{" "}
+                            <span className="font-bold text-green-600">
+                              R{(marketPrice * 0.9).toLocaleString()}
+                            </span>{" "}
+                            and{" "}
+                            <span className="font-bold text-amber-600">
+                              R{(marketPrice * 1.1).toLocaleString()}
+                            </span>
+                          </p>
+                        </div>
+
+                        <div className="mt-6">
+                          <div className="flex justify-between mb-2">
+                            <div className="text-sm font-medium">
+                              Deal Rating
+                            </div>
+                            <div className="text-sm font-medium">
+                              {priceDiff <= -5 &&
+                              submittedData?.propertyCondition === "excellent"
+                                ? "Great"
+                                : priceDiff <= 0
+                                  ? "Good"
+                                  : priceDiff <= 10
+                                    ? "Fair"
+                                    : "Bad"}
+                            </div>
+                          </div>
+                          <div className="relative">
+                            <div className="h-2 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-green-500 to-blue-500" />
+                            <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                              <span>Bad</span>
+                              <span>Fair</span>
+                              <span>Good</span>
+                              <span>Great</span>
+                            </div>
+                            <div className="absolute -top-2 w-full">
+                              <div
+                                className="absolute w-4 h-4 rounded-full border-2 border-white bg-primary shadow-lg transform -translate-x-1/2"
+                                style={{
+                                  left: `${
+                                    priceDiff <= -5 &&
+                                    submittedData?.propertyCondition ===
+                                      "excellent"
+                                      ? 100
+                                      : priceDiff <= 0
+                                        ? 75
+                                        : priceDiff <= 10
+                                          ? 50
+                                          : 25
+                                  }%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="rental">
+                  {submittedData && (
+                    <div className="space-y-4">
+                      <h2 className="text-2xl font-bold">Rental Potential</h2>
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Short Term Rental Card */}
+                        <div
+                          className={`p-6 rounded-lg border bg-card relative ${
+                            calculateRentalMetrics(submittedData)
+                              ?.isShortTermRecommended
+                              ? "before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg"
+                              : ""
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-4">
+                            <Calendar className="h-5 w-5" />
+                            <h3 className="text-lg font-semibold">
+                              Short-Term (Airbnb)
+                            </h3>
+                            {calculateRentalMetrics(submittedData)
+                              ?.isShortTermRecommended && (
+                              <span className="px-2 py-1 text-xs bg-emerald-500 text-white rounded">
+                                RECOMMENDED
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="space-y-4">
+                            <div>
+                              <div className="text-3xl font-bold">
+                                R
+                                {calculateRentalMetrics(
+                                  submittedData,
+                                )?.shortTerm.monthly.toLocaleString()}
+                                /month
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                Based on {formData.occupancy}% occupancy rate
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span>Annual yield:</span>
+                                <span className="font-semibold text-emerald-600">
+                                  {calculateRentalMetrics(
+                                    submittedData,
+                                  )?.shortTerm.yield.toFixed(1)}
+                                  %
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Yearly income:</span>
+                                <span className="font-semibold">
+                                  R
+                                  {calculateRentalMetrics(
+                                    submittedData,
+                                  )?.shortTerm.yearly.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Management fee:</span>
+                                <span className="font-semibold">15-20%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Long Term Rental Card */}
+                        <div
+                          className={`p-6 rounded-lg border bg-card relative ${
+                            !calculateRentalMetrics(submittedData)
+                              ?.isShortTermRecommended
+                              ? "before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg"
+                              : ""
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-4">
+                            <Home className="h-5 w-5" />
+                            <h3 className="text-lg font-semibold">
+                              Long-Term Rental
+                            </h3>
+                            {!calculateRentalMetrics(submittedData)
+                              ?.isShortTermRecommended && (
+                              <span className="px-2 py-1 text-xs bg-emerald-500 text-white rounded">
+                                RECOMMENDED
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="space-y-4">
+                            <div>
+                              <div className="text-3xl font-bold">
+                                R
+                                {calculateRentalMetrics(
+                                  submittedData,
+                                )?.longTerm.monthly.toLocaleString()}
+                                /month
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                Standard 12-month lease
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span>Annual yield:</span>
+                                <span className="font-semibold text-emerald-600">
+                                  {calculateRentalMetrics(
+                                    submittedData,
+                                  )?.longTerm.yield.toFixed(1)}
+                                  %
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Yearly income:</span>
+                                <span className="font-semibold">
+                                  R
+                                  {calculateRentalMetrics(
+                                    submittedData,
+                                  )?.longTerm.yearly.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Management fee:</span>
+                                <span className="font-semibold">8-10%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="affordability" className="space-y-4">
+                  <h2 className="text-2xl font-semibold mb-4">Affordability Cheat Sheet</h2>
+                  {submittedData && (
+                    <>
+                      {(() => {
+                        const metrics = calculateAffordabilityMetrics(submittedData);
+                        if (!metrics) return null;
+
+                        // Calculate total cash needed based on the costs
+                        const totalCashNeeded = metrics.upfrontCosts.deposit + metrics.upfrontCosts.combinedTransferCosts + metrics.upfrontCosts.bondRegistrationCosts;
+
+                        return (
+                          <div className="grid grid-cols-2 gap-4">
+                            {/* Upfront Costs */}
+                            <div className="border rounded-lg bg-white p-4">
+                              <h3 className="font-semibold text-lg mb-4">Upfront Costs</h3>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>Deposit ({submittedData.depositPercentage}%):</span>
+                                  <span className="font-medium">
+                                    R{Math.round(metrics.upfrontCosts.deposit).toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Transfer costs:</span>
+                                  <span className="font-medium">
+                                    R{Math.round(metrics.upfrontCosts.combinedTransferCosts).toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Bond registration costs:</span>
+                                  <span className="font-medium">
+                                    R{Math.round(metrics.upfrontCosts.bondRegistrationCosts).toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between pt-2 border-t">
+                                  <span>Total cash needed:</span>
+                                  <span className="font-medium">
+                                    R{Math.round(totalCashNeeded).toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Monthly Payments */}
+                            <div className="border rounded-lg bg-white p-4">
+                              <h3 className="font-semibold text-lg mb-4">Monthly Payments</h3>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>Bond payment:</span>
+                                  <span className="font-medium">
+                                    R{metrics.monthlyPayments.bondPayment.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>If rates drop 1%:</span>
+                                  <span className="font-medium text-emerald-600">
+                                    R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Levies/rates:</span>
+                                  <span className="font-medium">
+                                    R{metrics.monthlyPayments.leviesAndRates.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between pt-2 border-t">
+                                  <span>Total monthly cost:</span>
+                                  <span className="font-medium">
+                                    R{metrics.monthlyPayments.totalMonthlyCost.toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Income Requirements */}
+                            <div className="border rounded-lg bg-gray-50 p-4">
+                              <h3 className="font-semibold text-lg mb-2">Income Requirements</h3>
+                              <div>
+                                <div className="flex justify-between items-baseline">
+                                  <span>Required household income:</span>
+                                  <span className="font-bold text-xl">
+                                    R{metrics.requiredIncome.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Based on 30% debt-to-income ratio
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Different Deposit Options */}
+                            <div className="border rounded-lg bg-white p-4">
+                              <h3 className="font-semibold text-lg mb-4">Different Deposit Options</h3>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>20% deposit:</span>
+                                  <span className="font-medium">
+                                    R{metrics.depositScenarios.twenty.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>10% deposit:</span>
+                                  <span className="font-medium">
+                                    R{metrics.depositScenarios.ten.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>5% deposit:</span>
+                                  <span className="font-medium">
+                                    R{metrics.depositScenarios.five.toLocaleString()}/month
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Rate Changes */}
+                            <div className="border rounded-lg bg-white p-4">
+                              <h3 className="font-semibold text-lg mb-4">Rate Changes</h3>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>Current rate:</span>
+                                  <span className="font-medium">
+                                    R{metrics.monthlyPayments.bondPayment.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>If rates drop 1%:</span>
+                                  <span className="font-medium text-emerald-600">
+                                    R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>If rates rise 1%:</span>
+                                  <span className="font-medium text-red-600">
+                                    R{metrics.monthlyPayments.higherRatePayment.toLocaleString()}/month
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="buyer-profile">
+                  <div className="text-center py-8 text-muted-foreground">
+                    Buyer profile analysis coming soon
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
+        </div>
+
+        <div
+          onClick={(e) => {
+            const now = new Date().getTime();
+            if (!window.lastClick) window.lastClick = 0;
+            if (!window.clickCount) window.clickCount = 0;
+
+            if (now - window.lastClick > 500) {
+              window.clickCount = 1;
+            } else {
+              window.clickCount++;
+            }
+
+            window.lastClick = now;
+
+            if (window.clickCount === 3) {
+              handlePrefill();
+              window.clickCount = 0;
+            }
+          }}
+          className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-100/20 cursor-default select-none"
+          style={{ opacity: 0.1 }}
+        />
+
+        <UpgradeModal
+          open={showUpgradeModal}
+          onOpenChange={setShowUpgradeModal}
+        />
 
         <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
           <DialogContent>
@@ -1234,8 +1669,9 @@ export default function DealScorePage() {
             </div>
           </DialogContent>
         </Dialog>
+        {showPropertyScoreModal && (
         <PropertyScoreModal
-          open={showPropertyScoreModal}
+          isOpen={showPropertyScoreModal}
           onOpenChange={setShowPropertyScoreModal}
           propertyAddress={submittedData?.address}
           purchasePrice={parseFloat(submittedData?.purchasePrice || "0")}
@@ -1258,36 +1694,8 @@ export default function DealScorePage() {
               : 0
           }
         />
-        <UpgradeModal
-          open={showUpgradeModal}
-          onOpenChange={setShowUpgradeModal}
-        />
+      )}
       </div>
-
-      {/* Secret prefill button */}
-      <div
-        onClick={(e) => {
-          const now = new Date().getTime();
-          if (!window.lastClick) window.lastClick = 0;
-          if (!window.clickCount) window.clickCount = 0;
-
-          if (now - window.lastClick > 500) {
-            window.clickCount = 1;
-          } else {
-            window.clickCount++;
-          }
-
-          window.lastClick = now;
-
-          if (window.clickCount === 3) {
-            handlePrefill();
-            window.clickCount = 0;
-          }
-        }}
-        className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-100/20 cursor-default select-none"
-        style={{ opacity: 0.1 }}
-      />
     </PageTransition>
   );
-
 }
