@@ -230,7 +230,6 @@ export function DealScoreAdvisor() {
     </>
   );
 }
-import { MessageSquare, X, Loader2, Sparkles, Send } from "lucide-react";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { UpgradeModal } from "@/components/UpgradeModal";
 
