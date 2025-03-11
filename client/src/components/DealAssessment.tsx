@@ -326,16 +326,18 @@ export function DealAssessment({
           </p>
         </div>
       </div>
-      {/* AI Advisor */}
+      {/* AI Advisor - Render floating button */}
       {rentalData && (
-        <DealScoreAdvisor 
-          purchasePrice={purchasePrice}
-          marketPrice={marketPrice}
-          priceDiff={priceDiff}
-          rentalYield={rentalData.isShortTermRecommended ? rentalData.shortTerm.yield : rentalData.longTerm.yield}
-          condition={propertyCondition}
-          dealScore={finalScore}
-        />
+        <div className="mt-4">
+          <DealScoreAdvisor 
+            purchasePrice={purchasePrice}
+            marketPrice={marketPrice}
+            priceDiff={priceDiff}
+            rentalYield={rentalData.isShortTermRecommended ? rentalData.shortTerm.yield : rentalData.longTerm.yield}
+            condition={propertyCondition}
+            dealScore={finalScore}
+          />
+        </div>
       )}
 
       <Dialog open={isCalculationModalOpen} onOpenChange={setIsCalculationModalOpen}>

@@ -142,7 +142,7 @@ export function DealScoreAdvisor({
   // Regular chatbox for pro users
   return (
     <>
-      <Card className="mt-8 mb-6 bg-white shadow-lg border border-gray-200 flex flex-col z-50" style={{ maxHeight: "600px" }}>
+      <Card className="fixed bottom-6 right-6 w-96 bg-white shadow-lg border border-gray-200 flex flex-col z-50" style={{ maxHeight: "600px" }}>
         <div className="p-4 border-b">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
