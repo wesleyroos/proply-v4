@@ -28,6 +28,7 @@ import { Calendar, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { findCostFromTable, transferCostsTable, bondCostsTable } from "@/lib/costTables";
 import { DealAssessment } from "@/components/DealAssessment";
+import { DealScoreAdvisor } from "@/components/DealScoreAdvisor";
 
 interface RevenueData {
   adr: number;
@@ -1669,6 +1670,21 @@ export default function DealScorePage() {
             </div>
           </DialogContent>
         </Dialog>
+        
+        {/* Add DealScoreAdvisor as a floating component */}
+        {submittedData && calculateRentalMetrics(submittedData) && (
+          <DealScoreAdvisor 
+            purchasePrice={parseFormattedValue(submittedData.purchasePrice)}
+            marketPrice={marketPrice}
+            priceDiff={priceDiff}
+            rentalYield={calculateRentalMetrics(submittedData)?.isShortTermRecommended 
+              ? calculateRentalMetrics(submittedData)?.shortTerm.yield 
+              : calculateRentalMetrics(submittedData)?.longTerm.yield}
+            condition={submittedData.propertyCondition}
+            dealScore={calculateDealScore(submittedData)}
+          />
+        )}
+        
         {showPropertyScoreModal && (
         <PropertyScoreModal
           isOpen={showPropertyScoreModal}
