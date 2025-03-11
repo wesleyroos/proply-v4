@@ -200,27 +200,6 @@ export function DealAssessment({
           </div>
         </div>
 
-        {/* Additional Deal Details */}
-        <div className="mt-8 border-t pt-4">
-          <h3 className="font-medium mb-4">Key Deal Factors</h3>
-          <div className="space-y-3">
-
-            <div className="flex justify-between items-center mb-2">
-              <div>Short-Term Yield</div>
-              <div className="font-semibold text-emerald-600">
-                {rentalData?.shortTerm.yield.toFixed(2) || "0"}%
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center mb-2">
-              <div>Long-Term Yield</div>
-              <div className="font-semibold text-blue-600">
-                {rentalData?.longTerm.yield.toFixed(2) || "0"}%
-              </div>
-            </div>
-
-            </div>
-        </div>
 
         {/* Yield Assessment - Only show if we have rental data */}
         {rentalData && (
