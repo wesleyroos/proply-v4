@@ -1082,15 +1082,15 @@ export default function DealScorePage() {
       case "poor": return 25;
       default: return 0;
     }
-  }
-
+  
   // Main component return
-  return (
-    <PageTransition>
-      <div className="p-8">
+  render() {
+    return (
+      <PageTransition>
+        <div className="p-8">
           <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Deal Score</h1>
-        </div>
+            <h1 className="text-3xl font-bold">Deal Score</h1>
+          </div>
 
         <div className="flex gap-8">
           {/* Form Section */}
@@ -2027,7 +2027,8 @@ export default function DealScorePage() {
         {/* PropertyScoreModal removed to focus on deal score functionality */}
       </div>
     </PageTransition>
-  );
+    );
+  }
 }
 
 export default DealScorePage;
