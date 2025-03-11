@@ -28,8 +28,6 @@ import { Calendar, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { findCostFromTable, transferCostsTable, bondCostsTable } from "@/lib/costTables";
 import { DealAssessment } from "@/components/DealAssessment";
-import { FormInput } from "@/components/ui/form"; // Added import for FormInput
-
 
 interface RevenueData {
   adr: number;
@@ -85,7 +83,7 @@ export default function DealScorePage() {
   const [submittedData, setSubmittedData] = useState<typeof formData | null>(
     null,
   );
-  const [showResults, setShowResults] = useState(false); // Added showResults state
+  const [showResults, setShowResults] = useState(false);
   const [showPropertyScoreModal, setShowPropertyScoreModal] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
 
@@ -270,7 +268,7 @@ export default function DealScorePage() {
     };
   };
 
-  const handleSubmit = async (e: React.FormEvent) => { // updated handleSubmit
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     // Always check for required fields before proceeding, regardless of current step
@@ -312,7 +310,7 @@ export default function DealScorePage() {
     setIsCalculating(true);
     setTimeout(() => {
       setSubmittedData(formData);
-      setShowResults(true); // Show results after submission
+      setShowResults(true);
       setIsCalculating(false);
     }, 2000);
   };
@@ -1001,113 +999,90 @@ export default function DealScorePage() {
         </div>
 
         <div className="flex gap-8">
-          {/* Form or Results Section - Same container with toggle */}
+          {/* Form Section */}
           <div className="w-[600px]">
-            {/* Toggle buttons for form/results view */}
-            {submittedData && (
-              <div className="flex mb-4 border rounded-md overflow-hidden">
-                <Button 
-                  variant={!showResults ? "default" : "ghost"} 
-                  className="flex-1 rounded-none"
-                  onClick={() => setShowResults(false)}
-                >
-                  <FormInput className="h-4 w-4 mr-2" />
-                  Edit Form
-                </Button>
-                <Button 
-                  variant={showResults ? "default" : "ghost"}
-                  className="flex-1 rounded-none"
-                  onClick={() => setShowResults(true)}
-                >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  View Results
-                </Button>
-              </div>
-            )}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {currentStep === 1
+                    ? "Property Details"
+                    : currentStep === 2
+                    ? "Rental Details"
+                    : "Financing Details"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {renderStepCounter()}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {renderFormStep()}
 
-            {/* Form View */}
-            {!showResults && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    {currentStep === 1
-                      ? "Property Details"
-                      : currentStep === 2
-                      ? "Rental Details"
-                      : "Financing Details"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {renderStepCounter()}
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    {renderFormStep()}
-                    <div className="flex justify-between mt-6">
-                      {currentStep > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handlePrevStep}
-                        >
-                          <ArrowLeft className="h-4 w-4 mr-2" />
-                          Previous
-                        </Button>
-                      )}
+                  <div className="flex justify-between gap-4 mt-6">
+                    {currentStep > 1 && (
                       <Button
-                        type="submit"
-                        className={currentStep === 1 ? "w-full" : "flex-1"}
-                        disabled={isCalculating}
+                        type="button"
+                        variant="outline"
+                        onClick={handlePrevStep}
                       >
-                        {isCalculating ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Calculating...
-                          </>
-                        ) : currentStep < 3 ? (
-                          <>
-                            Next
-                            <ArrowRight className="h-4 w-4 ml-2" />
-                          </>
-                        ) : (
-                          "Calculate Deal Score"
-                        )}
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Previous
                       </Button>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Results View */}
-            {showResults && submittedData && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Deal Assessment</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <DealAssessment 
-                    purchasePrice={parseFormattedValue(submittedData.purchasePrice)}
-                    marketPrice={marketPrice}
-                    priceDiff={priceDiff}
-                    rentalData={calculateRentalMetrics(submittedData)}
-                    propertyCondition={submittedData.propertyCondition}
-                    areaRate={parseFormattedValue(submittedData.areaRate)}
-                    propertyRate={parseFormattedValue(submittedData.purchasePrice) / parseFormattedValue(submittedData.size)}
-                  />
-                </CardContent>
-              </Card>
-            )}
+                    )}
+                    <Button
+                      type="submit"
+                      className={currentStep === 1 ? "w-full" : "flex-1"}
+                      disabled={isCalculating}
+                    >
+                      {isCalculating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Calculating...
+                        </>
+                      ) : currentStep < 3 ? (
+                        <>
+                          Next
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </>
+                      ) : (
+                        "Calculate Deal Score"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Additional tabs when viewing results */}
-          {submittedData && showResults && (
+          {/* Results Section */}
+          {showResults && submittedData && (
             <div className="flex-1">
               <Tabs defaultValue="deal-score" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="deal-score">Deal Score</TabsTrigger>
                   <TabsTrigger value="price">Price</TabsTrigger>
                   <TabsTrigger value="rental">Rental</TabsTrigger>
                   <TabsTrigger value="affordability">Affordability</TabsTrigger>
                   <TabsTrigger value="buyer-profile">Buyer Profile</TabsTrigger>
                 </TabsList>
+                <TabsContent value="deal-score">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Deal Assessment</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {/* Using the new DealAssessment component */}
+                      <DealAssessment 
+                        purchasePrice={parseFormattedValue(submittedData.purchasePrice)}
+                        marketPrice={marketPrice}
+                        priceDiff={priceDiff}
+                        rentalData={calculateRentalMetrics(submittedData)}
+                        propertyCondition={submittedData.propertyCondition}
+                        areaRate={parseFormattedValue(submittedData.areaRate)}
+                        propertyRate={parseFormattedValue(submittedData.purchasePrice) / parseFormattedValue(submittedData.size)}
+                      />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
                 <TabsContent value="price" className="space-y-4">
                   <Card>
                     <CardHeader>
@@ -1695,31 +1670,31 @@ export default function DealScorePage() {
           </DialogContent>
         </Dialog>
         {showPropertyScoreModal && (
-        <PropertyScoreModal
-          isOpen={showPropertyScoreModal}
-          onOpenChange={setShowPropertyScoreModal}
-          propertyAddress={submittedData?.address}
-          purchasePrice={parseFloat(submittedData?.purchasePrice || "0")}
-          marketAvgPrice={parseFloat(submittedData?.size || "0") * parseFloat(submittedData?.areaRate || "0")}
-          propertyCondition={submittedData?.propertyCondition || "good"}
-          shortTermYield={
-            submittedData?.nightlyRate && submittedData?.occupancy
-              ? ((parseFloat(submittedData.nightlyRate) * 365 * parseFloat(submittedData.occupancy) / 100) / parseFloat(submittedData.purchasePrice)) * 100
-              : null
-          }
-          longTermYield={
-            submittedData?.longTermRental
-              ? ((parseFloat(submittedData.longTermRental) * 12) / parseFloat(submittedData.purchasePrice)) * 100
-              : null
-          }
-          areaRatePerSqm={parseFloat(submittedData?.areaRate || "0")}
-          propertyRatePerSqm={
-            submittedData?.purchasePrice && submittedData?.size
-              ? parseFloat(submittedData.purchasePrice) / parseFloat(submittedData.size)
-              : 0
-          }
-        />
-      )}
+          <PropertyScoreModal
+            isOpen={showPropertyScoreModal}
+            onOpenChange={setShowPropertyScoreModal}
+            propertyAddress={submittedData?.address}
+            purchasePrice={parseFloat(submittedData?.purchasePrice || "0")}
+            marketAvgPrice={parseFloat(submittedData?.size || "0") * parseFloat(submittedData?.areaRate || "0")}
+            propertyCondition={submittedData?.propertyCondition || "good"}
+            shortTermYield={
+              submittedData?.nightlyRate && submittedData?.occupancy
+                ? ((parseFloat(submittedData.nightlyRate) * 365 * parseFloat(submittedData.occupancy) / 100) / parseFloat(submittedData.purchasePrice)) * 100
+                : null
+            }
+            longTermYield={
+              submittedData?.longTermRental
+                ? ((parseFloat(submittedData.longTermRental) * 12) / parseFloat(submittedData.purchasePrice)) * 100
+                : null
+            }
+            areaRatePerSqm={parseFloat(submittedData?.areaRate || "0")}
+            propertyRatePerSqm={
+              submittedData?.purchasePrice && submittedData?.size
+                ? parseFloat(submittedData.purchasePrice) / parseFloat(submittedData.size)
+                : 0
+            }
+          />
+        )}
       </div>
     </PageTransition>
   );
