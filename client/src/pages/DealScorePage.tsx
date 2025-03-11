@@ -1347,6 +1347,39 @@ export default function DealScorePage() {
                             <div className="text-sm font-medium">
                               {/* Calculate weighted score similar to PropertyScoreModal */}
                               {(() => {
+                                // Function to calculate short-term yield from submitted data
+                                const calculateShortTermYield = () => {
+                                  if (!submittedData) return 0;
+                                  
+                                  // Parse necessary values
+                                  const purchasePrice = parseFloat(submittedData.purchasePrice || "0");
+                                  const nightlyRate = parseFloat(submittedData.nightlyRate || "0");
+                                  const occupancy = parseFloat(submittedData.occupancy || "0");
+                                  
+                                  // Calculate yield
+                                  if (purchasePrice <= 0) return 0;
+                                  
+                                  const daysInMonth = 30;
+                                  const shortTermMonthly = nightlyRate * daysInMonth * (occupancy / 100);
+                                  const shortTermYearly = shortTermMonthly * 12;
+                                  return (shortTermYearly / purchasePrice) * 100;
+                                };
+                                
+                                // Function to calculate long-term yield from submitted data
+                                const calculateLongTermYield = () => {
+                                  if (!submittedData) return 0;
+                                  
+                                  // Parse necessary values
+                                  const purchasePrice = parseFloat(submittedData.purchasePrice || "0");
+                                  const longTermMonthly = parseFloat(submittedData.longTermRental || "0");
+                                  
+                                  // Calculate yield
+                                  if (purchasePrice <= 0) return 0;
+                                  
+                                  const longTermYearly = longTermMonthly * 12;
+                                  return (longTermYearly / purchasePrice) * 100;
+                                };
+                                
                                 // Simple calculation for display purposes
                                 // Use the existing marketPrice value from component state
                                 const priceDiff = marketPrice ? ((parseFloat(submittedData?.purchasePrice || "0") - marketPrice) / marketPrice) * 100 : 0;
