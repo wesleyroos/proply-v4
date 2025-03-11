@@ -915,10 +915,11 @@ export default function DealScorePage() {
       return estimatedTransferFee + estimatedDisbursements + estimatedDeeds + transferDutyAmount;
     }
 
-    // Use values fromthe table
+    // Use values from the table
     let totalCost = costs.transferFee + costs.disbursements + costs.deedsFee;
 
-    // Add VATif (includeVat) {
+    // Add VAT if needed
+    if (includeVat) {
       totalCost += costs.vat;
     }
 
