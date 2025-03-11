@@ -1345,67 +1345,14 @@ export default function DealScorePage() {
                               Deal Rating
                             </div>
                             <div className="text-sm font-medium">
-                              {/* Calculate weighted score similar to PropertyScoreModal */}
-                              {(() => {
-                                // Function to calculate short-term yield from submitted data
-                                const calculateShortTermYield = () => {
-                                  if (!submittedData) return 0;
-                                  
-                                  // Parse necessary values
-                                  const purchasePrice = parseFloat(submittedData.purchasePrice || "0");
-                                  const nightlyRate = parseFloat(submittedData.nightlyRate || "0");
-                                  const occupancy = parseFloat(submittedData.occupancy || "0");
-                                  
-                                  // Calculate yield
-                                  if (purchasePrice <= 0) return 0;
-                                  
-                                  const daysInMonth = 30;
-                                  const shortTermMonthly = nightlyRate * daysInMonth * (occupancy / 100);
-                                  const shortTermYearly = shortTermMonthly * 12;
-                                  return (shortTermYearly / purchasePrice) * 100;
-                                };
-                                
-                                // Function to calculate long-term yield from submitted data
-                                const calculateLongTermYield = () => {
-                                  if (!submittedData) return 0;
-                                  
-                                  // Parse necessary values
-                                  const purchasePrice = parseFloat(submittedData.purchasePrice || "0");
-                                  const longTermMonthly = parseFloat(submittedData.longTermRental || "0");
-                                  
-                                  // Calculate yield
-                                  if (purchasePrice <= 0) return 0;
-                                  
-                                  const longTermYearly = longTermMonthly * 12;
-                                  return (longTermYearly / purchasePrice) * 100;
-                                };
-                                
-                                // Simple calculation for display purposes
-                                // Use the existing marketPrice value from component state
-                                const priceDiff = marketPrice ? ((parseFloat(submittedData?.purchasePrice || "0") - marketPrice) / marketPrice) * 100 : 0;
-                                const propertyCondition = submittedData?.propertyCondition || "average";
-                                const shortTermYield = calculateShortTermYield();
-                                const longTermYield = calculateLongTermYield();
-                                const areaRate = submittedData?.areaRate ? parseFloat(submittedData.areaRate) : 0;
-                                const propertyRate = parseFloat(submittedData?.purchasePrice || "0") / parseFloat(submittedData?.size || "1");
-                                
-                                // Basic score calculation
-                                let score = 0;
-                                
-                                // Price vs Market component (30%)
-                                if (priceDiff <= -10) score += 30;
-                                else if (priceDiff <= -5) score += 24;
-                                else if (priceDiff <= 0) score += 21;
-                                else if (priceDiff <= 5) score += 18;
-                                else if (priceDiff <= 10) score += 12;
-                                else score += 6;
-                                
-                                // Display label based on calculated score
-                                if (score >= 24) return "Great";
-                                if (score >= 19) return "Good";
-                                if (score >= 15) return "Fair";
-                                return "Below Average";
-                              })()}
+                              {priceDiff <= -5 &&
+                              submittedData?.propertyCondition === "excellent"
+                                ? "Great"
+                                : priceDiff <= 0
+                                  ? "Good"
+                                  : priceDiff <= 10
+                                    ? "Fair"
+                                    : "Bad"}
                             </div>
                           </div>
                           <div className="relative">
