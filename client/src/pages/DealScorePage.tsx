@@ -1282,37 +1282,42 @@ export default function DealScorePage() {
                                 <tr>
                                   <td className="border px-4 py-2">Asking Price vs Market Price</td>
                                   <td className="border px-4 py-2">
-                                    {dealScoreData?.priceDiff.toFixed(1)}% 
-                                    ({dealScoreData?.priceDiff < 0 ? 'Under market' : 'Above market'})
+                                    {dealScoreData?.priceDiff ? 
+                                      `${dealScoreData.priceDiff.toFixed(1)}% ${dealScoreData.priceDiff < 0 ? '(Below market)' : '(Above market)'}` 
+                                      : '% (Above market)'}
                                   </td>
                                 </tr>
                                 <tr>
                                   <td className="border px-4 py-2">Price per m² vs Area Average</td>
                                   <td className="border px-4 py-2">
-                                    {dealScoreData?.pricePerSqmDiff.toFixed(1)}%
-                                    ({dealScoreData?.pricePerSqmDiff < 0 ? 'Below avg' : 'Above avg'})
+                                    {dealScoreData?.pricePerSqmDiff ? 
+                                      `${dealScoreData.pricePerSqmDiff.toFixed(1)}% ${dealScoreData.pricePerSqmDiff < 0 ? '(Below avg)' : '(Above avg)'}` 
+                                      : '% (Above avg)'}
                                   </td>
                                 </tr>
                                 <tr>
                                   <td className="border px-4 py-2">Property Condition</td>
                                   <td className="border px-4 py-2">
-                                    {dealScoreData?.propertyCondition || "NaN"}
+                                    {dealScoreData?.propertyCondition ? 
+                                      dealScoreData.propertyCondition.charAt(0).toUpperCase() + dealScoreData.propertyCondition.slice(1) 
+                                      : 'NaN'}
                                   </td>
                                 </tr>
                                 <tr>
                                   <td className="border px-4 py-2">Short-Term Rental Yield</td>
                                   <td className="border px-4 py-2">
-                                    {typeof dealScoreData?.shortTermYield === 'number' ? 
-                                      `${dealScoreData.shortTermYield.toFixed(1)}%` : 
-                                      '%'}
+                                    {dealScoreData?.shortTermYield ? 
+                                      `${dealScoreData.shortTermYield.toFixed(1)}%` 
+                                      : '%'}
                                   </td>
                                 </tr>
                                 <tr>
                                   <td className="border px-4 py-2">Long-Term Rental Yield</td>
                                   <td className="border px-4 py-2">
-                                    {typeof dealScoreData?.longTermYield === 'number' ? 
-                                      `${dealScoreData.longTermYield.toFixed(1)}% (${dealScoreData.longTermYield < 5 ? 'Low Yield' : dealScoreData.longTermYield < 8 ? 'Average Yield' : 'Strong Yield'})` : 
-                                      '% (Low Yield)'}
+                                    {dealScoreData?.longTermYield ? 
+                                      `${dealScoreData.longTermYield.toFixed(1)}% ${dealScoreData.longTermYield < 5 ? '(Low Yield)' : 
+                                        dealScoreData.longTermYield < 8 ? '(Average Yield)' : '(High Yield)'}` 
+                                      : '% (Low Yield)'}
                                   </td>
                                 </tr>
                               </tbody>
@@ -1697,8 +1702,7 @@ export default function DealScorePage() {
                                 <span className="font-semibold">
                                   R
                                   {calculateRentalMetrics(
-                                    submittedData,
-                                  )?.shortTerm.yearly.toLocaleString()}
+                                    submittedData   )?.shortTerm.yearly.toLocaleString()}
                                 </span>
                               </div>
                               <div className="flex justify-between">
