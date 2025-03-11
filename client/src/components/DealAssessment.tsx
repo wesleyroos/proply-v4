@@ -104,14 +104,16 @@ export function DealAssessment({
             <div className="flex items-center justify-between mt-4 text-sm">
               <div className="font-medium">
                 Estimated Market Value
+              </div>
+              <div className="font-bold">R{marketPrice.toLocaleString()}</div>
+              <div>
                 <span
-                  className="ml-2 text-xs text-blue-600 underline cursor-pointer hover:text-blue-800"
+                  className="text-xs text-blue-600 underline cursor-pointer hover:text-blue-800"
                   onClick={() => setIsCalculationModalOpen(true)}
                 >
                   See how we calculate this
                 </span>
               </div>
-              <div className="font-bold">R{marketPrice.toLocaleString()}</div>
             </div>
           </div>
         </div>
