@@ -2028,5 +2028,3 @@ export default function DealScorePage() {
     </PageTransition>
   );
 }
-
-export default DealScorePage;
