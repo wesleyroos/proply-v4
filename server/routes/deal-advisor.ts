@@ -1,60 +1,44 @@
+import { Request, Response } from 'express';
+import { OpenAI } from 'openai';
+import { requireAuth } from "../auth";
 
-import { Request, Response } from "express";
-import { z } from "zod";
-import OpenAI from "openai";
-import { crypto } from "../auth";
-import { db } from "@db";
-
+// Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-const dealAdvisorSchema = z.object({
-  purchasePrice: z.number(),
-  marketPrice: z.number(), 
-  priceDiff: z.number(),
-  rentalYield: z.number(),
-  condition: z.string(),
-  dealScore: z.number(),
-  question: z.string().optional()
-});
-
-/**
- * Handles requests to the deal advisor AI
- * Processes property data and user questions to provide deal insights
- */
 export const dealAdvisorHandler = async (req: Request, res: Response) => {
   try {
-    // Validate request body against schema
-    const validationResult = dealAdvisorSchema.safeParse(req.body);
-    
-    if (!validationResult.success) {
-      return res.status(400).json({ 
-        error: "Invalid request data",
-        details: validationResult.error.format()
-      });
+    // Require authentication
+    const user = requireAuth(req, res);
+    if (!user) return;
+
+    // Extract data from request
+    const { 
+      purchasePrice, 
+      marketPrice, 
+      priceDiff, 
+      rentalYield, 
+      condition, 
+      dealScore, 
+      question 
+    } = req.body;
+
+    // Validate required fields
+    if (!purchasePrice || !marketPrice || priceDiff === undefined || !dealScore) {
+      return res.status(400).json({ error: "Missing required property analysis data" });
     }
 
-    const { 
-      purchasePrice,
-      marketPrice, 
-      priceDiff,
-      rentalYield,
-      condition,
-      dealScore,
-      question 
-    } = validationResult.data;
-
-    // Create system prompt with property context
+    // Create system prompt with property details
     const systemPrompt = `
-You are a property investment advisor. You provide insights about property deals based on data.
-You're analyzing a property with the following metrics:
-- Purchase price: R${purchasePrice.toLocaleString()}
-- Market value: R${marketPrice.toLocaleString()}
-- Price difference: ${priceDiff > 0 ? '+' : ''}${priceDiff.toFixed(1)}% ${priceDiff > 0 ? 'above' : 'below'} market value
-- Rental yield: ${rentalYield.toFixed(1)}%
-- Property condition: ${condition}
-- Overall deal score: ${dealScore}/100
+You are an AI investment advisor specializing in property investments. You're analyzing a property with the following details:
+
+Purchase Price: R${purchasePrice.toLocaleString()}
+Market Value: R${marketPrice.toLocaleString()}
+Price Difference: ${priceDiff.toFixed(1)}% ${priceDiff > 0 ? 'above' : 'below'} market value
+Deal Score: ${dealScore}/100
+Property Condition: ${condition}
+${rentalYield ? `Rental Yield: ${rentalYield.toFixed(1)}%` : ''}
 
 Provide helpful, concise advice about this property investment opportunity.
 `;
@@ -77,7 +61,7 @@ Provide helpful, concise advice about this property investment opportunity.
       response: completion.choices[0].message.content,
       tokensUsed: completion.usage?.total_tokens || 0
     });
-    
+
   } catch (error) {
     console.error('Deal advisor error:', error);
     return res.status(500).json({ 
