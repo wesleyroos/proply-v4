@@ -1,61 +1,88 @@
 
 import { Request, Response } from "express";
+import { z } from "zod";
 import OpenAI from "openai";
-import { auth } from "../auth";
+import { crypto } from "../auth";
+import { db } from "@db";
 
-// Initialize OpenAI client
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+const dealAdvisorSchema = z.object({
+  purchasePrice: z.number(),
+  marketPrice: z.number(), 
+  priceDiff: z.number(),
+  rentalYield: z.number(),
+  condition: z.string(),
+  dealScore: z.number(),
+  question: z.string().optional()
+});
 
 /**
- * API handler for deal advisor AI responses
- * Requires authentication and processes user queries related to property deals
+ * Handles requests to the deal advisor AI
+ * Processes property data and user questions to provide deal insights
  */
 export const dealAdvisorHandler = async (req: Request, res: Response) => {
   try {
-    // Verify authenticated user
-    const user = auth(req);
-    if (!user) {
-      return res.status(401).json({ error: "Unauthorized" });
+    // Validate request body against schema
+    const validationResult = dealAdvisorSchema.safeParse(req.body);
+    
+    if (!validationResult.success) {
+      return res.status(400).json({ 
+        error: "Invalid request data",
+        details: validationResult.error.format()
+      });
     }
 
-    // Extract query and context from request
-    const { query, context } = req.body;
-    
-    if (!query || typeof query !== "string") {
-      return res.status(400).json({ error: "Invalid query" });
-    }
-    
-    // Create system prompt with context about the property
-    const systemPrompt = `You are an AI real estate investment advisor specializing in property deal analysis.
-    
-Current property context:
-- Purchase Price: R${context.purchasePrice.toLocaleString()}
-- Market Value: R${context.marketPrice.toLocaleString()}
-- Price Difference: ${context.priceDiff.toFixed(1)}% ${context.priceDiff > 0 ? "above" : "below"} market value
-- Property Condition: ${context.condition}
-- Deal Score: ${context.dealScore}/100
-${context.rentalYield ? `- Rental Yield: ${context.rentalYield.toFixed(1)}%` : ""}
+    const { 
+      purchasePrice,
+      marketPrice, 
+      priceDiff,
+      rentalYield,
+      condition,
+      dealScore,
+      question 
+    } = validationResult.data;
 
-Provide concise, practical advice based on this data. Focus on actionable insights for the investor.`;
+    // Create system prompt with property context
+    const systemPrompt = `
+You are a property investment advisor. You provide insights about property deals based on data.
+You're analyzing a property with the following metrics:
+- Purchase price: R${purchasePrice.toLocaleString()}
+- Market value: R${marketPrice.toLocaleString()}
+- Price difference: ${priceDiff > 0 ? '+' : ''}${priceDiff.toFixed(1)}% ${priceDiff > 0 ? 'above' : 'below'} market value
+- Rental yield: ${rentalYield.toFixed(1)}%
+- Property condition: ${condition}
+- Overall deal score: ${dealScore}/100
 
-    // Get response from OpenAI
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+Provide helpful, concise advice about this property investment opportunity.
+`;
+
+    // User's question or default prompt
+    const userPrompt = question || "Provide a brief assessment of this deal and any key considerations I should keep in mind.";
+
+    // Call OpenAI API
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: query }
+        { role: "user", content: userPrompt }
       ],
-      max_tokens: 750,
-      temperature: 0.7,
+      max_tokens: 500
     });
-    
-    // Return AI response to client
-    return res.status(200).json({ 
-      response: response.choices[0].message.content
+
+    // Return the response
+    return res.json({
+      response: completion.choices[0].message.content,
+      tokensUsed: completion.usage?.total_tokens || 0
     });
     
   } catch (error) {
-    console.error("Deal advisor error:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    console.error('Deal advisor error:', error);
+    return res.status(500).json({ 
+      error: "Failed to process deal advisor request",
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
   }
 };
