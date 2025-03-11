@@ -915,7 +915,7 @@ export default function DealScorePage() {
       return estimatedTransferFee + estimatedDisbursements + estimatedDeeds + transferDutyAmount;
     }
 
-    // Use values from the table
+    // Use values fromthe table
     let totalCost = costs.transferFee + costs.disbursements + costs.deedsFee;
 
     // Add VAT if needed
@@ -1083,14 +1083,14 @@ export default function DealScorePage() {
       case "poor": return 25;
       default: return 0;
     }
-  
-  // Main component return
+  }
+
   return (
     <PageTransition>
       <div className="p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold">Deal Score</h1>
-          </div>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">Deal Score</h1>
+        </div>
 
         <div className="flex gap-8">
           {/* Form Section */}
@@ -1284,9 +1284,7 @@ export default function DealScorePage() {
                                   <td className="border px-4 py-2">
                                     {dealScoreData?.priceDiff ? 
                                       `${dealScoreData.priceDiff.toFixed(1)}% ${dealScoreData.priceDiff < 0 ? '(Below market)' : '(Above market)'}` 
-                                      : submittedData?.priceDifference ? 
-                                        `${submittedData.priceDifference.toFixed(1)}% ${submittedData.priceDifference < 0 ? '(Below market)' : '(Above market)'}`
-                                        : '% (Above market)'}
+                                      : '% (Above market)'}
                                   </td>
                                 </tr>
                                 <tr>
@@ -1294,9 +1292,7 @@ export default function DealScorePage() {
                                   <td className="border px-4 py-2">
                                     {dealScoreData?.pricePerSqmDiff ? 
                                       `${dealScoreData.pricePerSqmDiff.toFixed(1)}% ${dealScoreData.pricePerSqmDiff < 0 ? '(Below avg)' : '(Above avg)'}` 
-                                      : submittedData?.pricePerSqm && submittedData?.areaAvgPricePerSqm ? 
-                                        `${(((submittedData.pricePerSqm - submittedData.areaAvgPricePerSqm) / submittedData.areaAvgPricePerSqm) * 100).toFixed(1)}% ${submittedData.pricePerSqm < submittedData.areaAvgPricePerSqm ? '(Below avg)' : '(Above avg)'}`
-                                        : '% (Above avg)'}
+                                      : '% (Above avg)'}
                                   </td>
                                 </tr>
                                 <tr>
@@ -1304,9 +1300,7 @@ export default function DealScorePage() {
                                   <td className="border px-4 py-2">
                                     {dealScoreData?.propertyCondition ? 
                                       dealScoreData.propertyCondition.charAt(0).toUpperCase() + dealScoreData.propertyCondition.slice(1) 
-                                      : submittedData?.propertyCondition ? 
-                                        submittedData.propertyCondition.charAt(0).toUpperCase() + submittedData.propertyCondition.slice(1)
-                                        : 'NaN'}
+                                      : 'NaN'}
                                   </td>
                                 </tr>
                                 <tr>
@@ -1314,19 +1308,16 @@ export default function DealScorePage() {
                                   <td className="border px-4 py-2">
                                     {dealScoreData?.shortTermYield ? 
                                       `${dealScoreData.shortTermYield.toFixed(1)}%` 
-                                      : calculateRentalMetrics(submittedData)?.shortTerm?.yield ? 
-                                        `${calculateRentalMetrics(submittedData).shortTerm.yield.toFixed(1)}%`
-                                        : '%'}
+                                      : '%'}
                                   </td>
                                 </tr>
                                 <tr>
                                   <td className="border px-4 py-2">Long-Term Rental Yield</td>
                                   <td className="border px-4 py-2">
                                     {dealScoreData?.longTermYield ? 
-                                      `${dealScoreData.longTermYield.toFixed(1)}% ${dealScoreData.longTermYieldScore < 50 ? '(Low Yield)' : dealScoreData.longTermYieldScore < 80 ? '(Average Yield)' : '(High Yield)'}` 
-                                      : calculateRentalMetrics(submittedData)?.longTerm?.yield ? 
-                                        `${calculateRentalMetrics(submittedData).longTerm.yield.toFixed(1)}% ${calculateRentalMetrics(submittedData).longTerm.yield < 5 ? '(Low Yield)' : calculateRentalMetrics(submittedData).longTerm.yield < 8 ? '(Average Yield)' : '(High Yield)'}`
-                                        : '% (Low Yield)'}
+                                      `${dealScoreData.longTermYield.toFixed(1)}% ${dealScoreData.longTermYield < 5 ? '(Low Yield)' : 
+                                        dealScoreData.longTermYield < 8 ? '(Average Yield)' : '(High Yield)'}` 
+                                      : '% (Low Yield)'}
                                   </td>
                                 </tr>
                               </tbody>
