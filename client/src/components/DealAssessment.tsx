@@ -201,7 +201,7 @@ export function DealAssessment({
         </div>
 
 
-        {/* Yield Assessment - Only show if we have rental data */}
+        {/* Key Deal Factors section - Only show if we have rental data */}
         {rentalData && (
           <div className="border rounded-lg bg-white p-4 mt-6">
             <h3 className="font-semibold mb-4">Key Deal Factors</h3>
