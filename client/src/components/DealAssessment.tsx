@@ -194,14 +194,6 @@ export function DealAssessment({
                 </div>
                 <div className="font-bold">R{marketPrice.toLocaleString()}</div>
               </div>
-              <div className="text-center mt-1">
-                <span
-                  className="text-xs text-blue-600 underline cursor-pointer hover:text-blue-800"
-                  onClick={() => setIsCalculationModalOpen(true)}
-                >
-                  See how we calculate this
-                </span>
-              </div>
             </div>
           </div>
         </div>
@@ -310,6 +302,14 @@ export function DealAssessment({
                           {rentalData.isShortTermRecommended ? "AIRBNB" : "RENTAL"}
                         </Badge>
                       </div>
+                    </div>
+                    <div className="text-center mt-1">
+                      <span
+                        className="text-xs text-blue-600 underline cursor-pointer hover:text-blue-800"
+                        onClick={() => setIsCalculationModalOpen(true)}
+                      >
+                        See how we calculate this
+                      </span>
                     </div>
                   </div>
                 </AccordionContent>
