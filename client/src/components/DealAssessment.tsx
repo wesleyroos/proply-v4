@@ -326,18 +326,115 @@ export function DealAssessment({
         </div>
       </div>
       <Dialog open={isCalculationModalOpen} onOpenChange={setIsCalculationModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Market Value Calculation</DialogTitle>
+            <DialogTitle>Deal Factors Calculation Methodology</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
-            <p className="mb-4">The estimated market value is calculated by multiplying the property size by the area rate:</p>
-            <div className="bg-gray-100 p-3 rounded-md mb-4">
-              <p className="font-semibold">Property Size: {parseFloat(marketPrice / areaRate).toFixed(1)} m²</p>
-              <p className="font-semibold">Area Rate: R{areaRate.toLocaleString()}/m²</p>
-              <p className="font-semibold mt-2">Estimated Market Value: R{marketPrice.toLocaleString()}</p>
+          <div className="py-4 space-y-6">
+            {/* Market Value Calculation */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Market Value</h3>
+              <p className="mb-3">The estimated market value is calculated by multiplying the property size by the area rate:</p>
+              <div className="bg-gray-100 p-3 rounded-md">
+                <p className="font-semibold">Property Size: {parseFloat(marketPrice / areaRate).toFixed(1)} m²</p>
+                <p className="font-semibold">Area Rate: R{areaRate.toLocaleString()}/m²</p>
+                <p className="font-semibold mt-2">Estimated Market Value: R{marketPrice.toLocaleString()}</p>
+              </div>
             </div>
-            <p className="text-sm text-gray-600">Note: This estimation is based on current market rates in the area and provides a useful benchmark for property valuation.</p>
+
+            {/* Price per m² */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Price per m²</h3>
+              <p className="mb-3">This is calculated by dividing the purchase price by the property size:</p>
+              <div className="bg-gray-100 p-3 rounded-md">
+                <p className="font-medium">Purchase Price: R{purchasePrice.toLocaleString()}</p>
+                <p className="font-medium">Property Size: {parseFloat(marketPrice / areaRate).toFixed(1)} m²</p>
+                <p className="font-semibold mt-2">Price per m²: R{Math.round(propertyRate).toLocaleString()}/m²</p>
+              </div>
+            </div>
+
+            {/* Area Average */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Area Average</h3>
+              <p className="mb-3">The area average is based on recent sales data and property valuations in the area:</p>
+              <div className="bg-gray-100 p-3 rounded-md">
+                <p className="font-semibold">Area Average Rate: R{areaRate.toLocaleString()}/m²</p>
+              </div>
+              <p className="text-sm text-gray-600 mt-1">This data is updated periodically based on market transactions.</p>
+            </div>
+
+            {rentalData && (
+              <>
+                {/* Short-term yield */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Short-Term Yield</h3>
+                  <p className="mb-3">Calculated as annual short-term rental income divided by property purchase price:</p>
+                  <div className="bg-gray-100 p-3 rounded-md">
+                    <p className="font-medium">Daily Rate: R{(rentalData.shortTerm.monthly / 30).toFixed(0)}</p>
+                    <p className="font-medium">Average Occupancy: {rentalData.shortTerm.monthly ? ((rentalData.shortTerm.yearly / 12) / (rentalData.shortTerm.monthly / 30) / 365 * 100).toFixed(1) : 0}%</p>
+                    <p className="font-medium">Annual Revenue: R{rentalData.shortTerm.yearly.toLocaleString()}</p>
+                    <p className="font-semibold mt-2">Short-Term Yield: {rentalData.shortTerm.yield.toFixed(1)}%</p>
+                  </div>
+                </div>
+
+                {/* Long-term yield */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Long-Term Yield</h3>
+                  <p className="mb-3">Calculated as annual long-term rental income divided by property purchase price:</p>
+                  <div className="bg-gray-100 p-3 rounded-md">
+                    <p className="font-medium">Monthly Rental: R{rentalData.longTerm.monthly.toLocaleString()}</p>
+                    <p className="font-medium">Annual Revenue: R{rentalData.longTerm.yearly.toLocaleString()}</p>
+                    <p className="font-semibold mt-2">Long-Term Yield: {rentalData.longTerm.yield.toFixed(1)}%</p>
+                  </div>
+                </div>
+
+                {/* Best Strategy */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Best Strategy</h3>
+                  <p className="mb-3">The recommended strategy is determined by comparing the annual yields from short-term and long-term rentals:</p>
+                  <div className="bg-gray-100 p-3 rounded-md">
+                    <p className="font-medium">Short-Term Annual Income: R{rentalData.shortTerm.yearly.toLocaleString()}</p>
+                    <p className="font-medium">Long-Term Annual Income: R{rentalData.longTerm.yearly.toLocaleString()}</p>
+                    <p className="font-semibold mt-2">Recommended Strategy: {rentalData.isShortTermRecommended ? "Short-Term (Airbnb)" : "Long-Term Rental"}</p>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">Note: This recommendation is based solely on revenue and does not account for management costs, maintenance, and other expenses which may vary between strategies.</p>
+                </div>
+              </>
+            )}
+
+            {/* Property Condition */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Property Condition</h3>
+              <p className="mb-3">Property condition affects both valuation and potential returns:</p>
+              <div className="bg-gray-100 p-3 rounded-md">
+                <p className="font-medium">Current Condition: <span className="capitalize">{propertyCondition}</span></p>
+                <p className="text-sm mt-2">
+                  • <strong>Excellent:</strong> Move-in ready, minimal repairs needed
+                </p>
+                <p className="text-sm">
+                  • <strong>Good:</strong> Minor cosmetic issues, some repairs needed
+                </p>
+                <p className="text-sm">
+                  • <strong>Fair:</strong> Significant repairs needed, functional but dated
+                </p>
+                <p className="text-sm">
+                  • <strong>Poor:</strong> Major repairs needed, potential structural issues
+                </p>
+              </div>
+            </div>
+
+            {/* Deal Score */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Deal Score Calculation</h3>
+              <p className="mb-3">The overall deal score is weighted based on multiple factors:</p>
+              <div className="bg-gray-100 p-3 rounded-md">
+                <p className="font-medium">• Price Factor (40%): Based on the difference between asking price and market value</p>
+                <p className="font-medium">• Condition Factor (20%): Based on the property's condition</p>
+                <p className="font-medium">• Rate Comparison (20%): How the property's price per m² compares to area average</p>
+                <p className="font-medium">• Yield Factor (20%): Based on potential rental yields</p>
+              </div>
+              <p className="text-sm text-gray-600 mt-1">The final score is a weighted average of these factors, with 100 being the maximum possible score.</p>
+            </div>
           </div>
           <DialogFooter>
             <Button onClick={() => setIsCalculationModalOpen(false)}>Close</Button>
