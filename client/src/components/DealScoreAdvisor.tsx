@@ -230,8 +230,6 @@ export function DealScoreAdvisor() {
     </>
   );
 }
-import { useProAccess } from "@/hooks/use-pro-access";
-import { UpgradeModal } from "@/components/UpgradeModal";
 
 interface DealScoreAdvisorProps {
   purchasePrice: number;
