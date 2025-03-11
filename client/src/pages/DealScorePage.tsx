@@ -999,133 +999,135 @@ export default function DealScorePage() {
 
         {showResults ? (
           <>
-            <div className="mb-6 flex justify-between items-center">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowResults(false)}
-                className="gap-2"
-              >
-                <ArrowLeftCircle className="h-4 w-4" />
-                Edit Inputs
-              </Button>
-              {hasProAccess.hasAccess && (
-                <Button variant="outline" onClick={() => setShowPropertyScoreModal(true)}>
-                  View Property Score <BarChart3 className="h-4 w-4 ml-2" />
+            <div className="max-w-[800px]">
+              <div className="mb-6 flex justify-between items-center">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowResults(false)}
+                  className="gap-2"
+                >
+                  <ArrowLeftCircle className="h-4 w-4" />
+                  Edit Inputs
                 </Button>
-              )}
+                {hasProAccess.hasAccess && (
+                  <Button variant="outline" onClick={() => setShowPropertyScoreModal(true)}>
+                    View Property Score <BarChart3 className="h-4 w-4 ml-2" />
+                  </Button>
+                )}
+              </div>
+
+              <Tabs defaultValue="deal-score" className="w-full">
+                <TabsList className="grid w-full grid-cols-5 mb-6">
+                  <TabsTrigger value="deal-score">Deal Score</TabsTrigger>
+                  <TabsTrigger value="price">Price</TabsTrigger>
+                  <TabsTrigger value="rental">Rental</TabsTrigger>
+                  <TabsTrigger value="affordability">Affordability</TabsTrigger>
+                  <TabsTrigger value="buyer-profile">Buyer Profile</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="deal-score">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Deal Assessment</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <DealAssessment 
+                        purchasePrice={parseFormattedValue(submittedData?.purchasePrice || "0")}
+                        marketPrice={marketPrice}
+                        priceDiff={priceDiff}
+                        rentalData={calculateRentalMetrics(submittedData)}
+                        propertyCondition={submittedData?.propertyCondition || "excellent"}
+                        areaRate={parseFormattedValue(submittedData?.areaRate || "0")}
+                        propertyRate={parseFormattedValue(submittedData?.purchasePrice || "0") / parseFormattedValue(submittedData?.size || "1")}
+                      />
+                    </CardContent>
+                  </Card>
+
+                  {submittedData && <DealScoreAdvisor dealData={submittedData} />}
+                </TabsContent>
+
+                <TabsContent value="price">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Price Analysis</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Market Price: {formatCurrency(marketPrice)}</p>
+                      <p>Price Difference: {priceDiff.toFixed(2)}%</p>
+                      {priceDiff > 0 ? (
+                        <p className="text-green-500">
+                          Property is priced below market value.
+                        </p>
+                      ) : priceDiff < 0 ? (
+                        <p className="text-red-500">
+                          Property is priced above market value.
+                        </p>
+                      ) : (
+                        <p>Property is priced at market value.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="rental">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Rental Analysis</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {submittedData && calculateRentalMetrics(submittedData) && (
+                        <>
+                          <p>Short Term Monthly Rental: {formatCurrency(calculateRentalMetrics(submittedData).shortTerm.monthly)}</p>
+                          <p>Short Term Yearly Rental: {formatCurrency(calculateRentalMetrics(submittedData).shortTerm.yearly)}</p>
+                          <p>Short Term Yield: {calculateRentalMetrics(submittedData).shortTerm.yield.toFixed(2)}%</p>
+                          <p>Long Term Monthly Rental: {formatCurrency(calculateRentalMetrics(submittedData).longTerm.monthly)}</p>
+                          <p>Long Term Yearly Rental: {formatCurrency(calculateRentalMetrics(submittedData).longTerm.yearly)}</p>
+                          <p>Long Term Yield: {calculateRentalMetrics(submittedData).longTerm.yield.toFixed(2)}%</p>
+                          <p>Recommended Rental Strategy: {calculateRentalMetrics(submittedData).isShortTermRecommended ? "Short Term" : "Long Term"}</p>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="affordability">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Affordability Analysis</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {submittedData && calculateAffordabilityMetrics(submittedData) && (
+                        <>
+                          <p>Upfront Costs:</p>
+                          <p>Deposit: {formatCurrency(calculateAffordabilityMetrics(submittedData).upfrontCosts.deposit)}</p>
+                          <p>Transfer Costs: {formatCurrency(calculateAffordabilityMetrics(submittedData).upfrontCosts.combinedTransferCosts)}</p>
+                          <p>Bond Registration Costs: {formatCurrency(calculateAffordabilityMetrics(submittedData).upfrontCosts.bondRegistrationCosts)}</p>
+                          <p>Total Cash Needed: {formatCurrency(calculateAffordabilityMetrics(submittedData).upfrontCosts.totalCashNeeded)}</p>
+
+                          <p>Monthly Payments:</p>
+                          <p>Bond Payment: {formatCurrency(calculateAffordabilityMetrics(submittedData).monthlyPayments.bondPayment)}</p>
+                          <p>Levies & Rates: {formatCurrency(calculateAffordabilityMetrics(submittedData).monthlyPayments.leviesAndRates)}</p>
+                          <p>Total Monthly Cost: {formatCurrency(calculateAffordabilityMetrics(submittedData).monthlyPayments.totalMonthlyCost)}</p>
+
+                          <p>Required Monthly Income: {formatCurrency(calculateAffordabilityMetrics(submittedData).requiredIncome)}</p>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="buyer-profile">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Buyer Profile</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>This section will contain information about the buyer profile.</p>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
             </div>
-
-            <Tabs defaultValue="deal-score" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-6">
-                <TabsTrigger value="deal-score">Deal Score</TabsTrigger>
-                <TabsTrigger value="price">Price</TabsTrigger>
-                <TabsTrigger value="rental">Rental</TabsTrigger>
-                <TabsTrigger value="affordability">Affordability</TabsTrigger>
-                <TabsTrigger value="buyer-profile">Buyer Profile</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="deal-score">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Deal Assessment</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <DealAssessment 
-                      purchasePrice={parseFormattedValue(submittedData?.purchasePrice || "0")}
-                      marketPrice={marketPrice}
-                      priceDiff={priceDiff}
-                      rentalData={calculateRentalMetrics(submittedData)}
-                      propertyCondition={submittedData?.propertyCondition || "excellent"}
-                      areaRate={parseFormattedValue(submittedData?.areaRate || "0")}
-                      propertyRate={parseFormattedValue(submittedData?.purchasePrice || "0") / parseFormattedValue(submittedData?.size || "1")}
-                    />
-                  </CardContent>
-                </Card>
-
-                {submittedData && <DealScoreAdvisor dealData={submittedData} />}
-              </TabsContent>
-
-              <TabsContent value="price">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Price Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Market Price: {formatCurrency(marketPrice)}</p>
-                    <p>Price Difference: {priceDiff.toFixed(2)}%</p>
-                    {priceDiff > 0 ? (
-                      <p className="text-green-500">
-                        Property is priced below market value.
-                      </p>
-                    ) : priceDiff < 0 ? (
-                      <p className="text-red-500">
-                        Property is priced above market value.
-                      </p>
-                    ) : (
-                      <p>Property is priced at market value.</p>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="rental">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Rental Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {submittedData && calculateRentalMetrics(submittedData) && (
-                      <>
-                        <p>Short Term Monthly Rental: {formatCurrency(calculateRentalMetrics(submittedData).shortTerm.monthly)}</p>
-                        <p>Short Term Yearly Rental: {formatCurrency(calculateRentalMetrics(submittedData).shortTerm.yearly)}</p>
-                        <p>Short Term Yield: {calculateRentalMetrics(submittedData).shortTerm.yield.toFixed(2)}%</p>
-                        <p>Long Term Monthly Rental: {formatCurrency(calculateRentalMetrics(submittedData).longTerm.monthly)}</p>
-                        <p>Long Term Yearly Rental: {formatCurrency(calculateRentalMetrics(submittedData).longTerm.yearly)}</p>
-                        <p>Long Term Yield: {calculateRentalMetrics(submittedData).longTerm.yield.toFixed(2)}%</p>
-                        <p>Recommended Rental Strategy: {calculateRentalMetrics(submittedData).isShortTermRecommended ? "Short Term" : "Long Term"}</p>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="affordability">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Affordability Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {submittedData && calculateAffordabilityMetrics(submittedData) && (
-                      <>
-                        <p>Upfront Costs:</p>
-                        <p>Deposit: {formatCurrency(calculateAffordabilityMetrics(submittedData).upfrontCosts.deposit)}</p>
-                        <p>Transfer Costs: {formatCurrency(calculateAffordabilityMetrics(submittedData).upfrontCosts.combinedTransferCosts)}</p>
-                        <p>Bond Registration Costs: {formatCurrency(calculateAffordabilityMetrics(submittedData).upfrontCosts.bondRegistrationCosts)}</p>
-                        <p>Total Cash Needed: {formatCurrency(calculateAffordabilityMetrics(submittedData).upfrontCosts.totalCashNeeded)}</p>
-
-                        <p>Monthly Payments:</p>
-                        <p>Bond Payment: {formatCurrency(calculateAffordabilityMetrics(submittedData).monthlyPayments.bondPayment)}</p>
-                        <p>Levies & Rates: {formatCurrency(calculateAffordabilityMetrics(submittedData).monthlyPayments.leviesAndRates)}</p>
-                        <p>Total Monthly Cost: {formatCurrency(calculateAffordabilityMetrics(submittedData).monthlyPayments.totalMonthlyCost)}</p>
-
-                        <p>Required Monthly Income: {formatCurrency(calculateAffordabilityMetrics(submittedData).requiredIncome)}</p>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="buyer-profile">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Buyer Profile</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>This section will contain information about the buyer profile.</p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
           </>
         ) : (
           <div className="max-w-[600px]">
@@ -1287,4 +1289,5 @@ export default function DealScorePage() {
       />
     </PageTransition>
   );
+
 }
