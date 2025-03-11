@@ -2,6 +2,12 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface DealAssessmentProps {
   purchasePrice: number;
@@ -203,104 +209,112 @@ export function DealAssessment({
 
         {/* Key Deal Factors section - Only show if we have rental data */}
         {rentalData && (
-          <div className="border rounded-lg bg-white p-4 mt-6">
-            <h3 className="font-semibold mb-4">Key Deal Factors</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div className="font-medium">Price per m²:</div>
-                <div className="font-bold">
-                  R{Math.round(propertyRate).toLocaleString()}/m²
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="font-medium">Area average:</div>
-                <div className="font-bold">
-                  R{Math.round(areaRate).toLocaleString()}/m²
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="font-medium">Property condition:</div>
-                <div className="capitalize font-bold">
-                  {propertyCondition}
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="font-medium">Short-Term Yield:</div>
-                <div 
-                  className={`font-bold ${
-                    rentalData.shortTerm.yield >= 15 
-                      ? "text-green-600" 
-                      : rentalData.shortTerm.yield >= 10 
-                        ? "text-blue-600" 
-                        : "text-amber-600"
-                  }`}
-                >
-                  {rentalData.shortTerm.yield.toFixed(1)}%
-                </div>
-                <div>
-                  <Badge
-                    variant="outline"
-                    className={`
-                      ${rentalData.shortTerm.yield >= 15 ? "text-green-500" : 
-                        rentalData.shortTerm.yield >= 10 ? "text-blue-500" : 
-                        "text-amber-500"}
-                    `}
-                  >
-                    {rentalData.shortTerm.yield >= 15 
-                      ? "EXCELLENT" 
-                      : rentalData.shortTerm.yield >= 10 
-                        ? "GOOD" 
-                        : "FAIR"}
-                  </Badge>
-                </div>
-              </div>
+          <div className="mt-6">
+            <Accordion type="single" collapsible className="border rounded-lg bg-white">
+              <AccordionItem value="deal-factors" className="border-0">
+                <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                  <h3 className="font-semibold">Key Deal Factors</h3>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium">Price per m²:</div>
+                      <div className="font-bold">
+                        R{Math.round(propertyRate).toLocaleString()}/m²
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium">Area average:</div>
+                      <div className="font-bold">
+                        R{Math.round(areaRate).toLocaleString()}/m²
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium">Property condition:</div>
+                      <div className="capitalize font-bold">
+                        {propertyCondition}
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium">Short-Term Yield:</div>
+                      <div 
+                        className={`font-bold ${
+                          rentalData.shortTerm.yield >= 15 
+                            ? "text-green-600" 
+                            : rentalData.shortTerm.yield >= 10 
+                              ? "text-blue-600" 
+                              : "text-amber-600"
+                        }`}
+                      >
+                        {rentalData.shortTerm.yield.toFixed(1)}%
+                      </div>
+                      <div>
+                        <Badge
+                          variant="outline"
+                          className={`
+                            ${rentalData.shortTerm.yield >= 15 ? "text-green-500" : 
+                              rentalData.shortTerm.yield >= 10 ? "text-blue-500" : 
+                              "text-amber-500"}
+                          `}
+                        >
+                          {rentalData.shortTerm.yield >= 15 
+                            ? "EXCELLENT" 
+                            : rentalData.shortTerm.yield >= 10 
+                              ? "GOOD" 
+                              : "FAIR"}
+                        </Badge>
+                      </div>
+                    </div>
 
-              <div className="flex justify-between items-center">
-                <div className="font-medium">Long-Term Yield:</div>
-                <div 
-                  className={`font-bold ${
-                    rentalData.longTerm.yield >= 6 
-                      ? "text-green-600" 
-                      : rentalData.longTerm.yield >= 5 
-                        ? "text-blue-600" 
-                        : "text-amber-600"
-                  }`}
-                >
-                  {rentalData.longTerm.yield.toFixed(1)}%
-                </div>
-                <div>
-                  <Badge
-                    variant="outline"
-                    className={`
-                      ${rentalData.longTerm.yield >= 6 ? "text-green-500" : 
-                        rentalData.longTerm.yield >= 5 ? "text-blue-500" : 
-                        "text-amber-500"}
-                    `}
-                  >
-                    {rentalData.longTerm.yield >= 6 
-                      ? "EXCELLENT" 
-                      : rentalData.longTerm.yield >= 5 
-                        ? "GOOD" 
-                        : "FAIR"}
-                  </Badge>
-                </div>
-              </div>
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium">Long-Term Yield:</div>
+                      <div 
+                        className={`font-bold ${
+                          rentalData.longTerm.yield >= 6 
+                            ? "text-green-600" 
+                            : rentalData.longTerm.yield >= 5 
+                              ? "text-blue-600" 
+                              : "text-amber-600"
+                        }`}
+                      >
+                        {rentalData.longTerm.yield.toFixed(1)}%
+                      </div>
+                      <div>
+                        <Badge
+                          variant="outline"
+                          className={`
+                            ${rentalData.longTerm.yield >= 6 ? "text-green-500" : 
+                              rentalData.longTerm.yield >= 5 ? "text-blue-500" : 
+                              "text-amber-500"}
+                          `}
+                        >
+                          {rentalData.longTerm.yield >= 6 
+                            ? "EXCELLENT" 
+                            : rentalData.longTerm.yield >= 5 
+                              ? "GOOD" 
+                              : "FAIR"}
+                        </Badge>
+                      </div>
+                    </div>
 
-              <div className="flex justify-between items-center">
-                <div className="font-medium">Best Strategy:</div>
-                <div className="font-bold">
-                  {rentalData.isShortTermRecommended ? "Short-Term" : "Long-Term"}
-                </div>
-                <div>
-                  <Badge
-                    variant="outline"
-                    className={`text-purple-500`}
-                  >
-                    {rentalData.isShortTermRecommended ? "AIRBNB" : "RENTAL"}
-                  </Badge>
-                </div>
-              </div>
-            </div>
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium">Best Strategy:</div>
+                      <div className="font-bold">
+                        {rentalData.isShortTermRecommended ? "Short-Term" : "Long-Term"}
+                      </div>
+                      <div>
+                        <Badge
+                          variant="outline"
+                          className={`text-purple-500`}
+                        >
+                          {rentalData.isShortTermRecommended ? "AIRBNB" : "RENTAL"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         )}
 
