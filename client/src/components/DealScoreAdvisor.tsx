@@ -15,13 +15,13 @@ interface DealScoreAdvisorProps {
   dealScore: number;
 }
 
-// Define sample questions for the AI chatbot
+// Define sample questions tailored for real estate agents advising clients
 const SAMPLE_QUESTIONS = [
-  "How should I negotiate based on this deal score?",
-  "What improvements could increase the property value?",
-  "How does this deal compare to typical investments?",
-  "What are the main risks with this property?",
-  "How can I improve the rental yield?"
+  "How should I position this property to potential buyers?",
+  "What negotiation points can I use for my buyer client?",
+  "What property improvements would offer the best ROI for my seller?",
+  "How does this price compare to similar properties in the area?",
+  "What financing options should I recommend to my client?"
 ];
 
 interface Message {
@@ -57,10 +57,10 @@ export function DealScoreAdvisor({
     if (isOpen && messages.length === 0) {
       setMessages([{
         type: 'assistant',
-        content: `Hello! I'm your Deal Score Advisor. I can help you understand the investment potential of this property and provide insights on how to improve your deal score. How can I assist you today?`
+        content: `Hello! I'm your Deal Score Advisor. I can help you advise your clients about this property based on its score of ${dealScore}/100. I can provide insights for both buyers and sellers, suggest negotiation points, and highlight key property features. How can I assist you today?`
       }]);
     }
-  }, [isOpen, messages.length]);
+  }, [isOpen, messages.length, dealScore]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
