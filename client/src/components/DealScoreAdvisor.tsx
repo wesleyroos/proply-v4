@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,7 +48,7 @@ export function DealScoreAdvisor({
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false); // Changed to false by default
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [viewMode, setViewMode] = useState<'form' | 'results'>('form');
@@ -143,26 +142,27 @@ export function DealScoreAdvisor({
     setShowSuggestions(true);
   };
 
+  // If not open, show the floating chat button
   if (!isOpen) {
-    // Render the floating chat button if chat is closed
     return (
       <Button 
         onClick={() => setIsOpen(true)} 
-        size="icon" 
-        className="fixed bottom-4 right-4 h-14 w-14 rounded-full shadow-lg z-50 bg-primary"
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 bg-primary flex items-center justify-center"
       >
         <MessageSquare className="h-6 w-6" />
+        {/* Add back the online indicator */}
+        <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white" />
       </Button>
     );
   }
 
   return (
     <>
-      <Card className="relative border rounded-lg overflow-hidden">
+      <Card className="fixed bottom-6 right-6 w-96 shadow-lg border z-50 flex flex-col bg-background" style={{ maxHeight: "600px" }}>
         {/* Chat Header */}
-        <div className="p-4 border-b flex justify-between items-center bg-background">
-          <div className="flex items-center">
-            <MessageSquare className="h-5 w-5 mr-2 text-primary" />
+        <div className="p-4 border-b flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-primary" />
             <h3 className="font-semibold">Deal Score Advisor</h3>
           </div>
           <Button 
@@ -295,14 +295,6 @@ export function DealScoreAdvisor({
       <UpgradeModal
         open={showUpgradeModal}
         onOpenChange={setShowUpgradeModal}
-        title="Get AI Deal Advisor"
-        description="Upgrade to Pro to access the AI Deal Advisor and get personalized insights for your property investments."
-        feature={
-          <div className="flex items-center text-primary gap-2 font-medium">
-            <Sparkles className="h-5 w-5" />
-            AI-Powered Deal Analysis
-          </div>
-        }
       />
     </>
   );
