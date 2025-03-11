@@ -3,6 +3,10 @@ import { useState } from 'react';
 import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogTitle, DialogContent } from "@/components/ui/dialog";
 
 
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+
 interface DealAssessmentProps {
   purchasePrice: number;
   marketPrice: number;
@@ -108,7 +112,7 @@ export function DealAssessment({
                 </div>
                 <div className="font-bold">R{marketPrice.toLocaleString()}</div>
               </div>
-              <div className="text-right">
+              <div className="text-right mt-1">
                 <span
                   className="text-xs text-blue-600 underline cursor-pointer hover:text-blue-800"
                   onClick={() => setIsCalculationModalOpen(true)}
@@ -161,16 +165,22 @@ export function DealAssessment({
           </div>
         </div>
       </div>
-      <Dialog open={isCalculationModalOpen} onClose={() => setIsCalculationModalOpen(false)}>
+      <Dialog open={isCalculationModalOpen} onOpenChange={setIsCalculationModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Market Value Calculation</DialogTitle>
           </DialogHeader>
-          <DialogBody>
-            <p>This is where a detailed explanation of the market value calculation would go.</p>
-          </DialogBody>
+          <div className="py-4">
+            <p className="mb-4">The estimated market value is calculated by multiplying the property size by the area rate:</p>
+            <div className="bg-gray-100 p-3 rounded-md mb-4">
+              <p className="font-semibold">Property Size: {parseFloat(marketPrice / areaRate).toFixed(1)} m²</p>
+              <p className="font-semibold">Area Rate: R{areaRate.toLocaleString()}/m²</p>
+              <p className="font-semibold mt-2">Estimated Market Value: R{marketPrice.toLocaleString()}</p>
+            </div>
+            <p className="text-sm text-gray-600">Note: This estimation is based on current market rates in the area and provides a useful benchmark for property valuation.</p>
+          </div>
           <DialogFooter>
-            <button onClick={() => setIsCalculationModalOpen(false)}>Close</button>
+            <Button onClick={() => setIsCalculationModalOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
