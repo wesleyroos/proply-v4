@@ -21,7 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PropertyScoreModal } from "@/components/PropertyScoreModal";
+// PropertyScoreModal removed to focus on deal score functionality
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Home } from "lucide-react";
@@ -83,7 +83,7 @@ export default function DealScorePage() {
     null,
   );
   const [showResults, setShowResults] = useState(false);
-  const [showPropertyScoreModal, setShowPropertyScoreModal] = useState(false);
+  // PropertyScoreModal state removed
   const [isCalculating, setIsCalculating] = useState(false);
 
   useEffect(() => {
@@ -989,11 +989,6 @@ export default function DealScorePage() {
       <div className="p-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Deal Score</h1>
-          {hasProAccess.hasAccess && (
-            <Button variant="outline" onClick={() => setShowPropertyScoreModal(true)}>
-              View Property Score <BarChart3 className="h-4 w-4 ml-2" />
-            </Button>
-          )}
         </div>
 
         <div className="flex gap-8">
@@ -1759,19 +1754,7 @@ export default function DealScorePage() {
             </div>
           </DialogContent>
         </Dialog>
-        {showPropertyScoreModal && (
-        <PropertyScoreModal
-          isOpen={showPropertyScoreModal}
-          onOpenChange={setShowPropertyScoreModal}
-          propertyAddress={submittedData?.address}
-          purchasePrice={parseFloat(submittedData?.purchasePrice || "0")}
-          marketAvgPrice={parseFloat(submittedData?.size || "0") * parseFloat(submittedData?.areaRate || "0")}
-          propertyCondition={submittedData?.propertyCondition || "good"}
-          shortTermYield={
-            submittedData?.nightlyRate && submittedData?.occupancy
-              ? ((parseFloat(submittedData.nightlyRate) * 365 * parseFloat(submittedData.occupancy) / 100) / parseFloat(submittedData.purchasePrice)) * 100
-              : null
-          }
+        {/* PropertyScoreModal removed to focus on deal score functionality */}
           longTermYield={
             submittedData?.longTermRental
               ? ((parseFloat(submittedData.longTermRental) * 12) / parseFloat(submittedData.purchasePrice)) * 100
