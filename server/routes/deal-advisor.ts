@@ -1,17 +1,16 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { OpenAI } from 'openai';
-import { requireAuth } from "../auth";
+import { authenticate } from "../auth"; // Assuming authenticate is the middleware function
 
 // Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export const dealAdvisorHandler = async (req: Request, res: Response) => {
+export const dealAdvisorHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Require authentication
-    const user = requireAuth(req, res);
-    if (!user) return;
+    // Require authentication using middleware
+    authenticate(req, res, next);
 
     // Extract data from request
     const { 
