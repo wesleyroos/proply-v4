@@ -1348,7 +1348,8 @@ export default function DealScorePage() {
                               {/* Calculate weighted score similar to PropertyScoreModal */}
                               {(() => {
                                 // Simple calculation for display purposes
-                                const priceDiff = marketEstimate ? ((parseFloat(submittedData?.purchasePrice || "0") - marketEstimate) / marketEstimate) * 100 : 0;
+                                const marketPrice = marketPrice || 0; // Use already defined marketPrice variable
+                                const priceDiff = marketPrice ? ((parseFloat(submittedData?.purchasePrice || "0") - marketPrice) / marketPrice) * 100 : 0;
                                 const propertyCondition = submittedData?.propertyCondition || "average";
                                 const shortTermYield = calculateShortTermYield();
                                 const longTermYield = calculateLongTermYield();
