@@ -204,7 +204,7 @@ export function DealAssessment({
         {/* Yield Assessment - Only show if we have rental data */}
         {rentalData && (
           <div className="border rounded-lg bg-white p-4 mt-6">
-            <h3 className="font-semibold mb-4">Return on Investment</h3>
+            <h3 className="font-semibold mb-4">Key Deal Factors</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div className="font-medium">Short-Term Yield:</div>
