@@ -21,28 +21,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+// PropertyScoreModal removed to focus on deal score functionality
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { findCostFromTable, transferCostsTable, bondCostsTable } from "@/lib/costTables";
-
-// Define types at the top level
-interface FormData {
-  address: string;
-  purchasePrice: string;
-  size: string;
-  areaRate: string;
-  bedrooms: string;
-  propertyCondition: string;
-  nightlyRate: string;
-  occupancy: string;
-  longTermRental: string;
-  depositAmount: string;
-  depositPercentage: string;
-  interestRate: string;
-  loanTerm: string;
-}
 
 interface RevenueData {
   adr: number;
@@ -59,73 +43,28 @@ interface RevenueData {
   revparPosition: number;
 }
 
-interface DealScoreData {
-  dealScore: number;
-  priceDiff: number;
-  pricePerSqmDiff: number;
-  propertyCondition: string;
-  shortTermYield: number;
-  longTermYield: number;
-  priceVsMarketScore: number;
-  pricePerSqmScore: number;
-  propertyConditionScore: number;
-  shortTermYieldScore: number;
-  longTermYieldScore: number;
-  weightedPriceVsMarket: number;
-  weightedPricePerSqm: number;
-  weightedPropertyCondition: number;
-  weightedShortTermYield: number;
-  weightedLongTermYield: number;
-}
-
-interface PropertyMetrics {
-  shortTerm: {
-    monthly: number;
-    yearly: number;
-    yield: number;
-  };
-  longTerm: {
-    monthly: number;
-    yearly: number;
-    yield: number;
-  };
-  isShortTermRecommended: boolean;
-}
-
-// Helper functions for score calculations
-const calculateScore = (value: number, min: number, max: number, lowScore: number, highScore: number): number => {
-  if (value <= min) return lowScore;
-  if (value >= max) return highScore;
-  return lowScore + ((value - min) / (max - min)) * (highScore - lowScore);
-};
-
-const calculatePropertyConditionScore = (condition: string): number => {
-  switch (condition) {
-    case "excellent": return 90;
-    case "good": return 70; 
-    case "fair": return 50;
-    case "poor": return 30;
-    default: return 50;
-  }
-};
-
 export default function DealScorePage() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
+    // Property Details (Step 1)
     address: "",
     purchasePrice: "",
     size: "",
     areaRate: "",
     bedrooms: "",
     propertyCondition: "excellent",
+
+    // Rental Details (Step 2)
     nightlyRate: "",
     occupancy: "",
     longTermRental: "",
+
+    // Financing Details (Step 3)
     depositAmount: "",
     depositPercentage: "",
-    interestRate: "11.75",
-    loanTerm: "20",
+    interestRate: "11.75", // Default to current prime rate
+    loanTerm: "20", // Default to 20 years
   });
 
   // States for revenue data
@@ -140,10 +79,30 @@ export default function DealScorePage() {
 
   const hasProAccess = useProAccess();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [submittedData, setSubmittedData] = useState<FormData | null>(null);
+  const [submittedData, setSubmittedData] = useState<typeof formData | null>(
+    null,
+  );
   const [showResults, setShowResults] = useState(false);
+  // PropertyScoreModal state removed
   const [isCalculating, setIsCalculating] = useState(false);
-  const [dealScoreData, setDealScoreData] = useState<DealScoreData | null>(null);
+  const [dealScoreData, setDealScoreData] = useState<{
+    dealScore: number;
+    priceDiff: number;
+    pricePerSqmDiff: number;
+    propertyCondition: string;
+    shortTermYield: number;
+    longTermYield: number;
+    priceVsMarketScore: number;
+    pricePerSqmScore: number;
+    propertyConditionScore: number;
+    shortTermYieldScore: number;
+    longTermYieldScore: number;
+    weightedPriceVsMarket: number;
+    weightedPricePerSqm: number;
+    weightedPropertyCondition: number;
+    weightedShortTermYield: number;
+    weightedLongTermYield: number;
+  } | null>(null);
 
   useEffect(() => {
     // Fetch current prime rate when component mounts
@@ -163,6 +122,7 @@ export default function DealScorePage() {
     fetchPrimeRate();
   }, []);
 
+  // Prefill data handler
   const handlePrefill = () => {
     setFormData({
       address: "27 Leeuwen St, Cape Town City Centre, 8001",
@@ -170,45 +130,56 @@ export default function DealScorePage() {
       size: formatWithThousandSeparators("85"),
       areaRate: formatWithThousandSeparators("45000"),
       bedrooms: "2",
-      propertyCondition: "excellent",
       nightlyRate: formatWithThousandSeparators("2500"),
-      occupancy: "70",
+      occupancy: "70", // Don't format percentage
       longTermRental: formatWithThousandSeparators("25000"),
+      propertyCondition: "excellent",
       depositAmount: formatWithThousandSeparators("350000"),
-      depositPercentage: "10",
-      interestRate: "11",
-      loanTerm: "20",
+      depositPercentage: "10", // Don't format percentage
+      interestRate: "11", // Don't format percentage
+      loanTerm: formatWithThousandSeparators("20"),
     });
   };
 
+  // Format number with thousand separators for display
   const formatWithThousandSeparators = (value: string): string => {
+    // Remove all non-numeric characters except decimal point
     const numericValue = value.replace(/[^\d.]/g, '');
+
+    // If empty, return empty string
     if (!numericValue) return '';
+
+    // Split by decimal point
     const parts = numericValue.split('.');
+
+    // Format the integer part with thousand separators
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    // Return the formatted string, with decimal part if it exists
     return parts.length > 1 ? `${parts[0]}.${parts[1]}` : parts[0];
   };
 
+  // Parse formatted number to remove separators for calculations
   const parseFormattedNumber = (value: string): string => {
     return value.replace(/,/g, '');
   };
 
-  const parseFormattedValue = (value: string): number => {
-    if (!value) return 0;
-    return Number(value.toString().replace(/[^\d.]/g, '')) || 0;
-  };
-
   const handleInputChange = (field: string, value: string) => {
+    // Store the actual numeric value (without formatting)
     let numericValue = value;
 
     if (field === "bedrooms") {
+      // Convert text input to appropriate values
       if (value.toLowerCase() === "studio") {
         numericValue = "0";
       } else if (value.toLowerCase() === "room") {
         numericValue = "-1";
       } else {
+        // Replace comma with period for decimal values
         numericValue = value.replace(/,/g, "");
+        // Only allow numbers and one decimal point
         numericValue = numericValue.replace(/[^0-9.-]/g, "");
+        // Ensure only one decimal point
         const decimalCount = (numericValue.match(/\./g) || []).length;
         if (decimalCount > 1) {
           numericValue = numericValue.slice(0, numericValue.lastIndexOf("."));
@@ -224,14 +195,21 @@ export default function DealScorePage() {
       field === "depositAmount" ||
       field === "loanTerm"
     ) {
+      // Remove existing formatting first
       numericValue = parseFormattedNumber(value);
+      // Only allow numbers and decimal point
       numericValue = numericValue.replace(/[^0-9.]/g, "");
+
+      // Format with thousand separators for display in the input field
       const formattedValue = formatWithThousandSeparators(numericValue);
-      if (field !== "occupancy") {
+
+      // For these fields, we'll store the formatted value in the form
+      if (field !== "occupancy") { // Don't add separators to occupancy percentage
         value = formattedValue;
       }
     }
 
+    // Handle deposit calculations
     if (field === "depositAmount") {
       const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
       if (purchasePrice > 0) {
@@ -261,19 +239,90 @@ export default function DealScorePage() {
       }
     }
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
+  const calculateRentalMetrics = (formData: typeof submittedData) => {
+    if (!formData) return null;
+
+    // Parse formatted values to get numeric values for calculations
+    const parseValue = (value: string) => {
+      if (!value) return 0;
+      // Remove all non-numeric characters except decimal point
+      return Number(value.toString().replace(/[^\d.]/g, ''));
+    };
+
+    // Short term calculations
+    const daysInMonth = 30;
+    const purchasePrice = parseValue(formData.purchasePrice);
+    const nightlyRate = parseValue(formData.nightlyRate);
+    const occupancy = parseValue(formData.occupancy);
+
+    const shortTermMonthly = nightlyRate * daysInMonth * (occupancy / 100);
+    const shortTermYearly = shortTermMonthly * 12;
+    const shortTermYield = purchasePrice > 0 ? (shortTermYearly / purchasePrice) * 100 : 0;
+
+    // Long term calculations
+    const longTermMonthly = parseValue(formData.longTermRental);
+    const longTermYearly = longTermMonthly * 12;
+    const longTermYield = purchasePrice > 0 ? (longTermYearly / purchasePrice) * 100 : 0;
+
+    return {
+      shortTerm: {
+        monthly: shortTermMonthly,
+        yearly: shortTermYearly,
+        yield: shortTermYield,
+      },
+      longTerm: {
+        monthly: longTermMonthly,
+        yearly: longTermYearly,
+        yield: longTermYield,
+      },
+      isShortTermRecommended: shortTermYearly > longTermYearly,
+    };
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Always check for required fields before proceeding, regardless of current step
+    const missingFields = getMissingFields(currentStep);
+
+    if (missingFields.length > 0) {
+      // Show validation error for missing fields
+      toast({
+        title: "Missing information",
+        description: `Please fill in: ${missingFields.join(", ")}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (currentStep < 3) {
+      // Proceed to next step
       setCurrentStep(currentStep + 1);
       return;
     }
+
+    // Before calculating, check ALL required fields from all steps
+    const allMissingFields = [
+      ...getMissingFields(1),
+      ...getMissingFields(2),
+      ...getMissingFields(3)
+    ];
+
+    if (allMissingFields.length > 0) {
+      toast({
+        title: "Missing information",
+        description: `Please fill in: ${allMissingFields.join(", ")}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
 
     setIsCalculating(true);
     setTimeout(() => {
@@ -281,98 +330,12 @@ export default function DealScorePage() {
       setShowResults(true);
       setIsCalculating(false);
       calculateDealScore();
-    }, 1000);
+    }, 2000);
   };
 
-  const calculateDealScore = () => {
-    if (!submittedData) return;
-
-    try {
-      // Parse numeric values with default fallbacks
-      const purchasePrice = parseFormattedValue(submittedData.purchasePrice);
-      const size = parseFormattedValue(submittedData.size);
-      const areaRate = parseFormattedValue(submittedData.areaRate);  
-      const nightlyRate = parseFormattedValue(submittedData.nightlyRate);
-      const occupancy = parseFormattedValue(submittedData.occupancy);
-      const longTermRental = parseFormattedValue(submittedData.longTermRental);
-
-      // Validate key inputs
-      if (purchasePrice <= 0 || size <= 0 || areaRate <= 0) {
-        toast({
-          title: "Invalid input values", 
-          description: "Please check price, size and area rate values",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Calculate market price and differences
-      const marketPrice = size * areaRate;
-      const priceDiff = ((purchasePrice - marketPrice) / marketPrice) * 100;
-      const pricePerSqmDiff = ((purchasePrice / size) - areaRate) / areaRate * 100;
-
-      // Calculate rental yields
-      const annualShortTermRevenue = nightlyRate * 365 * (occupancy / 100); 
-      const annualLongTermRevenue = longTermRental * 12;
-      const shortTermYield = (annualShortTermRevenue / purchasePrice) * 100;
-      const longTermYield = (annualLongTermRevenue / purchasePrice) * 100;
-
-      // Score calculations (0-100 scale)
-      const priceVsMarketScore = calculateScore(priceDiff, -10, 10, 30, 70);
-      const pricePerSqmScore = calculateScore(pricePerSqmDiff, -10, 10, 30, 70);
-      const propertyConditionScore = calculatePropertyConditionScore(submittedData.propertyCondition);
-      const shortTermYieldScore = calculateScore(shortTermYield, 0, 20, 30, 70);
-      const longTermYieldScore = calculateScore(longTermYield, 0, 20, 30, 70);
-
-      // Apply weightings
-      const weightedPriceVsMarket = priceVsMarketScore * 0.3; // 30%
-      const weightedPricePerSqm = pricePerSqmScore * 0.2; // 20%
-      const weightedPropertyCondition = propertyConditionScore * 0.1; // 10%
-      const weightedShortTermYield = shortTermYieldScore * 0.2; // 20%
-      const weightedLongTermYield = longTermYieldScore * 0.2; // 20%
-
-      // Calculate final score
-      const finalScore = Math.round(
-        weightedPriceVsMarket +
-        weightedPricePerSqm +
-        weightedPropertyCondition +
-        weightedShortTermYield +
-        weightedLongTermYield
-      );
-
-      // Store calculated values
-      const scoreData = {
-        dealScore: finalScore,
-        priceDiff,
-        pricePerSqmDiff,
-        propertyCondition: submittedData.propertyCondition,
-        shortTermYield,
-        longTermYield,
-        priceVsMarketScore,
-        pricePerSqmScore,
-        propertyConditionScore,
-        shortTermYieldScore,
-        longTermYieldScore,
-        weightedPriceVsMarket,
-        weightedPricePerSqm,
-        weightedPropertyCondition,
-        weightedShortTermYield,
-        weightedLongTermYield
-      };
-
-      setDealScoreData(scoreData);
-
-      // Only set window property in development
-      if (process.env.NODE_ENV === 'development') {
-        (window as any).dealScoreData = scoreData;
-      }
-    } catch (error) {
-      console.error('Error calculating deal score:', error);
-      toast({
-        title: "Calculation Error",
-        description: "An error occurred while calculating the deal score",
-        variant: "destructive",
-      });
+  const handlePrevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
     }
   };
 
@@ -387,19 +350,29 @@ export default function DealScorePage() {
         return;
       }
 
-      const formattedBedrooms = bedrooms.toLowerCase() === "studio" ? "0" :
-                               bedrooms.toLowerCase() === "room" ? "-1" :
-                               Math.floor(Number(bedrooms)).toString();
+      // Convert studio apartments and rooms to API expected values
+      let formattedBedrooms: string;
+      const bedroomValue = Number(bedrooms);
+
+      if (bedrooms.toLowerCase() === "studio" || bedroomValue === 0) {
+        formattedBedrooms = "0";
+      } else if (bedrooms.toLowerCase() === "room" || bedroomValue === -1) {
+        formattedBedrooms = "-1";
+      } else {
+        formattedBedrooms = Math.floor(bedroomValue).toString();
+      }
 
       const response = await fetch(
-        `/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}`
+        `/api/revenue-data?address=${encodeURIComponent(
+          address,
+        )}&bedrooms=${formattedBedrooms}`,
       );
 
       const data = await response.json();
 
       if (data.KPIsByBedroomCategory?.[formattedBedrooms]) {
         const result = data.KPIsByBedroomCategory[formattedBedrooms];
-        setRevenueData({
+        const processedData = {
           "25": {
             adr: result.ADR25PercentileAvg,
             occupancy: result.AvgAdjustedOccupancy,
@@ -455,8 +428,9 @@ export default function DealScorePage() {
             demandScore: result.MonthlyDemandScore,
             ratePosition: result.RatePositionPercentile,
             revparPosition: result.RevPARPositionPercentile,
-          }
-        });
+          },
+        };
+        setRevenueData(processedData);
         setShowPercentileDialog(true);
       }
     } catch (error) {
@@ -479,35 +453,669 @@ export default function DealScorePage() {
     setShowPercentileDialog(false);
   };
 
+  // Parse formatted values for calculations
+  const parseFormattedValue = (value: string) => {
+    if (!value) return 0;
+    // Remove all non-numeric characters except decimal point
+    return Number(value.toString().replace(/[^\d.]/g, ''));
+  };
+
+  // Calculate results only from submitted data
+  const marketPrice = submittedData
+    ? parseFormattedValue(submittedData.size) * parseFormattedValue(submittedData.areaRate)
+    : 0;
+  const priceDiff = submittedData && marketPrice > 0
+    ? ((parseFormattedValue(submittedData.purchasePrice) - marketPrice) / marketPrice) * 100
+    : 0;
+
+  const getConditionDetails = (condition: string) => {
+    switch (condition) {
+      case "excellent":
+        return {
+          description: "(minimal repairs needed)",
+          badge: "MOVE-IN READY",
+          badgeColor: "text-emerald-500",
+        };
+      case "good":
+        return {
+          description: "(some repairs needed)",
+          badge: "MINOR WORK",
+          badgeColor: "text-blue-500",
+        };
+      case "fair":
+        return {
+          description: "(significant repairs needed)",
+          badge: "NEEDS WORK",
+          badgeColor: "text-amber-500",
+        };
+      case "poor":
+        return {
+          description: "(major repairs needed)",
+          badge: "MAJOR WORK",
+          badgeColor: "text-red-500",
+        };
+      default:
+        return {
+          description: "",
+          badge: "",
+          badgeColor: "",
+        };
+    }
+  };
+
+  // Render form steps
+  const renderFormStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="address">Property Address</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  placeholder="Enter property address"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="purchasePrice">Purchase Price (R)</Label>
+                <Input
+                  id="purchasePrice"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.purchasePrice}
+                  onChange={(e) => handleInputChange("purchasePrice", e.target.value)}
+                  placeholder="Enter purchase price"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="size">Size (m²)</Label>
+                <Input
+                  id="size"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.size}
+                  onChange={(e) => handleInputChange("size", e.target.value)}
+                  placeholder="Enter property size"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
+                <Input
+                  id="areaRate"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.areaRate}
+                  onChange={(e) => handleInputChange("areaRate", e.target.value)}
+                  placeholder="Enter area rate per square meter"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bedrooms">Bedrooms</Label>
+                <Input
+                  id="bedrooms"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.bedrooms}
+                  onChange={(e) => handleInputChange("bedrooms", e.target.value)}
+                  placeholder="Enter number of bedrooms"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="propertyCondition">Property Condition</Label>
+                <Select
+                  value={formData.propertyCondition}
+                  onValueChange={(value) => handleInputChange("propertyCondition", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select property condition" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="excellent">Excellent</SelectItem>
+                    <SelectItem value="good">Good</SelectItem>
+                    <SelectItem value="fair">Fair</SelectItem>
+                    <SelectItem value="poor">Poor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </>
+        );
+
+      case 2:
+        return (
+          <>
+            <div className="p-4 bg-gray-50 rounded-lg border">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nightlyRate">Nightly Rate (R)</Label>
+                  <Input
+                    id="nightlyRate"
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.nightlyRate}
+                    onChange={(e) => handleInputChange("nightlyRate", e.target.value)}
+                    placeholder="Enter nightly rate"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="occupancy">Occupancy (%)</Label>
+                  <Input
+                    id="occupancy"
+                    type="text"
+                    inputMode="numeric"
+                    min="0"
+                    max="100"
+                    value={formData.occupancy}
+                    onChange={(e) => handleInputChange("occupancy", e.target.value)}
+                    placeholder="Enter expected occupancy rate"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Market Data</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-10"
+                    onClick={() => {
+                      if (hasProAccess.hasAccess) {
+                        fetchRevenueData();
+                      } else {
+                        setShowUpgradeModal(true);
+                      }
+                    }}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Getting Data...
+                      </>
+                    ) : (
+                      <>
+                        Get Revenue
+                        <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                          PRO
+                        </span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2 mt-4">
+              <Label htmlFor="longTermRental">Long Term Rental (R/month)</Label>
+              <Input
+                id="longTermRental"
+                type="text"
+                inputMode="numeric"
+                value={formData.longTermRental}
+                onChange={(e) => handleInputChange("longTermRental", e.target.value)}
+                placeholder="Enter long term rental amount"
+                required
+              />
+            </div>
+          </>
+        );
+
+      case 3:
+        return (
+          <>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="depositAmount">Deposit Amount (R)</Label>
+                  <Input
+                    id="depositAmount"
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.depositAmount}
+                    onChange={(e) => handleInputChange("depositAmount", e.target.value)}
+                    placeholder="Enter deposit amount"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="depositPercentage">Deposit (%)</Label>
+                  <Input
+                    id="depositPercentage"
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.depositPercentage}
+                    onChange={(e) => handleInputChange("depositPercentage", e.target.value)}
+                    placeholder="Enter deposit percentage"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="interestRate">Interest Rate (%)</Label>
+                <Input
+                  id="interestRate"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.interestRate}
+                  onChange={(e) => handleInputChange("interestRate", e.target.value)}
+                  placeholder="Enter interest rate"
+                  required
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Current prime rate: 11%
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="loanTerm">Loan Term (years)</Label>
+                <Input
+                  id="loanTerm"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.loanTerm}
+                  onChange={(e) => handleInputChange("loanTerm", e.target.value)}
+                  placeholder="Enter loan term"
+                  required
+                />
+              </div>
+            </div>
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  /**
+   * Handles navigation when a step indicator is clicked
+   * This function allows users to navigate directly to any step
+   * by clicking on the step indicator in the UI
+   * 
+   * @param step - The step number to navigate to (1-based index)
+   */
+  const handleStepClick = (step: number) => {
+    // Allow unconditional navigation between steps
+    setCurrentStep(step);
+  };
+
+  /**
+   * Determines if a particular step has all required fields completed
+   * Used to display completion indicators in the step navigation UI
+   * 
+   * @param step - The step number to check for completion
+   * @returns boolean indicating if all required fields for the given step are filled
+   */
+  const isStepComplete = (step: number) => {
+    switch (step) {
+      case 1: // Property Details
+        return formData.address !== "" &&
+               formData.purchasePrice !== "" &&
+               formData.size !== "" &&
+               formData.areaRate !== "" &&
+               formData.bedrooms !== "";
+      case 2: // Rental Details
+        return formData.nightlyRate !== "" &&
+               formData.occupancy !== "" &&
+               formData.longTermRental !== "";
+      case 3: // Financing Details
+        return formData.depositAmount !== "" &&
+               formData.depositPercentage !== "" &&
+               formData.interestRate !== "" &&
+               formData.loanTerm !== "";
+      default:
+        return false;
+    }
+  };
+
+  // Get list of missing field names for validation
+  const getMissingFields = (step: number): string[] => {
+    const missingFields: string[] = [];
+
+    // Check if a field has a valid value (handles formatted values with commas)
+    const isFieldEmpty = (field: string): boolean => {
+      if (!formData[field as keyof typeof formData]) return true;
+      const value = formData[field as keyof typeof formData].toString();
+      const numericValue = value.replace(/,/g, '');
+      return numericValue === '' || numericValue === '0';
+    };
+
+    switch (step) {
+      case 1: // Property Details
+        if (!formData.address) missingFields.push("Property Address");
+        if (isFieldEmpty("purchasePrice")) missingFields.push("Purchase Price");
+        if (isFieldEmpty("size")) missingFields.push("Size");
+        if (isFieldEmpty("areaRate")) missingFields.push("Area Rate");
+        if (isFieldEmpty("bedrooms")) missingFields.push("Bedrooms");
+        break;
+      case 2: // Rental Details
+        if (isFieldEmpty("nightlyRate")) missingFields.push("Nightly Rate");
+        if (isFieldEmpty("occupancy")) missingFields.push("Occupancy Rate");
+        if (isFieldEmpty("longTermRental")) missingFields.push("Long Term Rental");
+        break;
+      case 3: // Financing Details
+        if (isFieldEmpty("depositAmount")) missingFields.push("Deposit Amount");
+        if (isFieldEmpty("depositPercentage")) missingFields.push("Deposit Percentage");
+        if (isFieldEmpty("interestRate")) missingFields.push("Interest Rate");
+        if (isFieldEmpty("loanTerm")) missingFields.push("Loan Term");
+        break;
+    }
+
+    return missingFields;
+  };
+
+  // Update the step counter UI to be clickable
+  const renderStepCounter = () => (
+    <div className="mb-6">
+      <div className="flex justify-between mb-2">
+        {[1, 2, 3].map((step) => (
+          <div
+            key={step}
+            className={`flex items-center ${step < 3 ? "flex-1" : ""}`}
+            onClick={() => handleStepClick(step)}
+            style={{ cursor: 'pointer' }}
+          >
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center relative ${
+                step <= currentStep
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {step}
+              {isStepComplete(step) && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">
+                  ✓
+                </div>
+              )}
+            </div>
+            {step < 3 && (
+              <div
+                className={`flex-1 h-1 mx-2 ${
+                  step < currentStep ? "bg-primary" : "bg-muted"
+                }`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-between text-sm">
+        <span
+          className={`${currentStep === 1 ? "text-primary" : ""} ${isStepComplete(1) ? "font-medium" : ""}`}
+          onClick={() => handleStepClick(1)}
+          style={{ cursor: 'pointer' }}
+        >
+          Property {isStepComplete(1) && "✓"}
+        </span>
+        <span
+          className={`${currentStep === 2 ? "text-primary" : ""} ${isStepComplete(2) ? "font-medium" : ""}`}
+          onClick={() => handleStepClick(2)}
+          style={{ cursor: 'pointer' }}
+        >
+          Rental {isStepComplete(2) && "✓"}
+        </span>
+        <span
+          className={`${currentStep === 3 ? "text-primary" : ""} ${isStepComplete(3) ? "font-medium" : ""}`}
+          onClick={() => handleStepClick(3)}
+          style={{ cursor: 'pointer' }}
+        >
+          Financing {isStepComplete(3) && "✓"}
+        </span>
+      </div>
+    </div>
+  );
+
+  const calculateMonthlyPayment = (loanAmount: number, annualRate: number, years: number) => {
+    const monthlyRate = annualRate / 12 / 100;
+    const numberOfPayments = years * 12;
+    const payment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
+                   (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+    return Math.round(payment);
+  };
+
+  const calculateTransferDuty = (purchasePrice: number) => {
+    // Using the official SARS transfer duty rates
+    if (purchasePrice <= 1000000) return 0;
+    if (purchasePrice <= 1375000) return (purchasePrice - 1000000) * 0.03;
+    if (purchasePrice <= 1925000) return 11250 + (purchasePrice - 1375000) * 0.06;
+    if (purchasePrice <= 2475000) return 44250 + (purchasePrice - 1925000) * 0.08;
+    if (purchasePrice <= 11000000) return 88250 + (purchasePrice - 2475000) * 0.11;
+    return 1026000 + (purchasePrice - 11000000) * 0.13;
+  };
+
+  const calculateTransferCosts = (purchasePrice: number, includeVat = true, includeTransferDuty = true) => {
+    // Look up costs from the transfer costs table
+    // Make sure we're passing the parameters in the correct order
+    const costs = findCostFromTable(purchasePrice, transferCostsTable);
+
+    if (!costs) {
+      // Fallback to simplified estimation if price is outside the table range
+      const estimatedTransferFee = purchasePrice * 0.025; // Approx. 2.5% for transfer fees
+      const estimatedDisbursements = purchasePrice * 0.01; // Approx. 1% for disbursements
+      const estimatedDeeds = purchasePrice * 0.005; // Approx. 0.5% for deeds fees
+      const transferDutyAmount = includeTransferDuty ? calculateTransferDuty(purchasePrice) : 0;
+
+      return estimatedTransferFee + estimatedDisbursements + estimatedDeeds + transferDutyAmount;
+    }
+
+    // Use values fromthe table
+    let totalCost = costs.transferFee + costs.disbursements + costs.deedsFee;
+
+    // Add VAT if needed
+    if (includeVat) {
+      totalCost += costs.vat;
+    }
+
+    // Add transfer duty if needed
+    if (includeTransferDuty) {
+      totalCost += costs.transferDuty > 0 ? costs.transferDuty : calculateTransferDuty(purchasePrice);
+    }
+
+    return totalCost;
+  };
+
+  const calculateAffordabilityMetrics = (formData: typeof submittedData) => {
+    if (!formData) return null;
+
+    // Parse formatted values to get numeric values for calculations
+    const parseValue = (value: string) => {
+      if (!value) return 0;
+      // Remove all non-numeric characters except decimal point      return Number(value.toString().replace(/[^\d.]/g, ''));
+    };
+
+    const purchasePrice = parseValue(formData.purchasePrice);
+    const depositAmount = parseValue(formData.depositAmount);
+    const interestRate = parseValue(formData.interestRate);
+    const loanTerm = parseValue(formData.loanTerm);
+    const depositPercentageValue = parseValue(formData.depositPercentage);
+
+    const loanAmount = purchasePrice - depositAmount;
+    const monthlyPayment = depositPercentageValue === 100 ? 0 : calculateMonthlyPayment(loanAmount, interestRate, loanTerm);
+    const transferDuty = calculateTransferDuty(purchasePrice);
+    const transferCosts = calculateTransferCosts(purchasePrice, true, true) - transferDuty; // Exclude duty from costs as we track it separately
+    const totalCashNeeded = depositAmount + transferDuty + transferCosts;
+
+    // Monthly payments with different rates
+    const paymentWithLowerRate = depositPercentageValue === 100 ? 0 : calculateMonthlyPayment(loanAmount, interestRate - 1, loanTerm);
+    const paymentWithHigherRate = depositPercentageValue === 100 ? 0 : calculateMonthlyPayment(loanAmount, interestRate + 1, loanTerm);
+
+    // Different deposit scenarios
+    const depositScenarios = {
+      twenty: calculateMonthlyPayment(purchasePrice * 0.8, interestRate, loanTerm),
+      ten: calculateMonthlyPayment(purchasePrice * 0.9, interestRate, loanTerm),
+      five: calculateMonthlyPayment(purchasePrice * 0.95, interestRate, loanTerm),
+    };
+
+    // Estimated levies and rates (simplified calculation)
+    const leviesAndRates = Math.round(purchasePrice * 0.001); // Approximately 0.1% of property value monthly
+
+    // Required monthly income (using 30% debt-to-income ratio)
+    const requiredIncome = Math.round((monthlyPayment + leviesAndRates) / 0.3);
+
+    // Calculate bond registration costs from the bond costs table
+    // If deposit is 100% (cash payment), there's no bond so the cost is 0
+    const bondAmount = purchasePrice - depositAmount;
+    const bondRegistrationCosts = depositPercentageValue === 100
+      ? 0
+      : findCostFromTable(bondAmount, bondCostsTable)?.total || Math.round(bondAmount * 0.005);
+
+    //Combine transfer costs
+    const combinedTransferCosts = transferCosts + transferDuty;
+
+    return {
+      upfrontCosts: {
+        deposit: depositAmount,
+        combinedTransferCosts,
+        bondRegistrationCosts,
+        totalCashNeeded,
+      },
+      monthlyPayments: {
+        bondPayment: monthlyPayment,
+        lowerRatePayment: paymentWithLowerRate,
+        higherRatePayment: paymentWithHigherRate,
+        leviesAndRates,
+        totalMonthlyCost: monthlyPayment + leviesAndRates,
+      },
+      depositScenarios,
+      requiredIncome,
+    };
+  };
+
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(value);
+  };
+
+  const calculateDealScore = () => {
+    if (!submittedData) return;
+    const purchasePrice = parseFloat(submittedData.purchasePrice.replace(/,/g, ''));
+    const size = parseFloat(submittedData.size.replace(/,/g, ''));
+    const areaRate = parseFloat(submittedData.areaRate.replace(/,/g, ''));
+    const longTermRental = parseFloat(submittedData.longTermRental.replace(/,/g, ''));
+
+    const marketPrice = size * areaRate;
+    const priceDiff = (purchasePrice - marketPrice) / marketPrice * 100;
+    const pricePerSqmDiff = (purchasePrice / size - areaRate) / areaRate * 100;
+    const shortTermYield = calculateRentalMetrics(submittedData)?.shortTerm.yield || 0;
+    const longTermYield = calculateRentalMetrics(submittedData)?.longTerm.yield || 0;
+    const propertyCondition = submittedData.propertyCondition;
+
+    const priceVsMarketScore = calculateScore(priceDiff, -10, 10, 30, 70);
+    const pricePerSqmScore = calculateScore(pricePerSqmDiff, -10, 10, 30, 70);
+    const propertyConditionScore = calculatePropertyConditionScore(propertyCondition);
+    const shortTermYieldScore = calculateScore(shortTermYield, 0, 20, 30, 70);
+    const longTermYieldScore = calculateScore(longTermYield, 0, 20, 30, 70);
+
+    const weightedPriceVsMarket = priceVsMarketScore * 0.3;
+    const weightedPricePerSqm = pricePerSqmScore * 0.2;
+    const weightedPropertyCondition = propertyConditionScore * 0.1;
+    const weightedShortTermYield = shortTermYieldScore * 0.2;
+    const weightedLongTermYield = longTermYieldScore * 0.2;
+
+    const dealScore = weightedPriceVsMarket + weightedPricePerSqm + weightedPropertyCondition + weightedShortTermYield + weightedLongTermYield;
+
+    setDealScoreData({
+      dealScore: Math.round(dealScore),
+      priceDiff: priceDiff,
+      pricePerSqmDiff: pricePerSqmDiff,
+      propertyCondition: propertyCondition,
+      shortTermYield: shortTermYield,
+      longTermYield: longTermYield,
+      priceVsMarketScore: priceVsMarketScore,
+      pricePerSqmScore: pricePerSqmScore,
+      propertyConditionScore: propertyConditionScore,
+      shortTermYieldScore: shortTermYieldScore,
+      longTermYieldScore: longTermYieldScore,
+      weightedPriceVsMarket: weightedPriceVsMarket,
+      weightedPricePerSqm: weightedPricePerSqm,
+      weightedPropertyCondition: weightedPropertyCondition,
+      weightedShortTermYield: weightedShortTermYield,
+      weightedLongTermYield: weightedLongTermYield,
+    });
+
+    window.dealScoreData = {
+      dealScore: Math.round(dealScore),
+      priceDiff: priceDiff,
+      pricePerSqmDiff: pricePerSqmDiff,
+      propertyCondition: propertyCondition,
+      shortTermYield: shortTermYield,
+      longTermYield: longTermYield,
+      priceVsMarketScore: priceVsMarketScore,
+      pricePerSqmScore: pricePerSqmScore,
+      propertyConditionScore: propertyConditionScore,
+      shortTermYieldScore: shortTermYieldScore,
+      longTermYieldScore: longTermYieldScore,
+      weightedPriceVsMarket: weightedPriceVsMarket,
+      weightedPricePerSqm: weightedPricePerSqm,
+      weightedPropertyCondition: weightedPropertyCondition,
+      weightedShortTermYield: weightedShortTermYield,
+      weightedLongTermYield: weightedLongTermYield,
+    };
+  };
+
+  const calculateScore = (value: number, min: number, max: number, minScore: number, maxScore: number): number => {
+    if (value <= min) return maxScore;
+    if (value >= max) return minScore;
+    return minScore + (maxScore - minScore) * (max - value) / (max - min);
+  }
+
+  const calculatePropertyConditionScore = (condition: string): number => {
+    switch (condition) {
+      case "excellent": return 100;
+      case "good": return 75;
+      case "fair": return 50;
+      case "poor": return 25;
+      default: return 0;
+    }
+  }
+
   return (
     <PageTransition>
-      <div className="container p-8">
+      <div className="p-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Deal Score Calculator</h1>
-          <Button onClick={handlePrefill} variant="outline">
-            Prefill Demo Data
-          </Button>
+          <h1 className="text-3xl font-bold">Deal Score</h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
+        <div className="flex gap-8">
+          {/* Form Section */}
+          <div className="w-[600px]">
             <Card>
               <CardHeader>
                 <CardTitle>
-                  {currentStep === 1 && "Property Details"}
-                  {currentStep === 2 && "Rental Details"}
-                  {currentStep === 3 && "Financing Details"}
+                  {currentStep === 1
+                    ? "Property Details"
+                    : currentStep === 2
+                    ? "Rental Details"
+                    : "Financing Details"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                {renderStepCounter()}
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {renderFormStep()}
 
                   <div className="flex justify-between gap-4 mt-6">
                     {currentStep > 1 && (
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => setCurrentStep(currentStep - 1)}
+                        onClick={handlePrevStep}
                       >
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Previous
@@ -538,138 +1146,876 @@ export default function DealScorePage() {
             </Card>
           </div>
 
-          {dealScoreData && (
-            <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Deal Score Results</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold mb-2">
-                      Deal Score: {dealScoreData.dealScore}
-                    </h2>
-                    <Badge
-                      className={`
-                        ${
-                          dealScoreData.dealScore >= 70
-                            ? "bg-green-500"
-                            : dealScoreData.dealScore >= 50
-                            ? "bg-yellow-500"
-                            : "bg-red-500"
-                        }
-                        text-white px-4 py-1
-                      `}
-                    >
-                      {dealScoreData.dealScore >= 70
-                        ? "Good Deal"
-                        : dealScoreData.dealScore >= 50
-                        ? "Fair Deal"
-                        : "Poor Deal"}
-                    </Badge>
-                  </div>
+          {/* Results Section */}
+          {submittedData && (
+            <div className="flex-1">
+              <Tabs defaultValue="deal-score" className="w-full">
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="deal-score">Deal Score</TabsTrigger>
+                  <TabsTrigger value="price">Price</TabsTrigger>
+                  <TabsTrigger value="rental">Rental</TabsTrigger>
+                  <TabsTrigger value="affordability">Affordability</TabsTrigger>
+                  <TabsTrigger value="buyer-profile">Buyer Profile</TabsTrigger>
+                </TabsList>
+                <TabsContent value="deal-score">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Deal Assessment</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {/* Deal Score Gauge */}
+                      <div className="flex flex-col items-center mb-6">
+                        <div className="text-2xl font-bold flex items-center mb-2">
+                          {dealScoreData?.dealScore >= 80 ? "🔥" : dealScoreData?.dealScore >= 50 ? "✅" : "⚠️"} Deal Score
+                        </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-semibold mb-2">Price Analysis</h3>
-                      <div className="grid grid-cols-2 gap-4">
+                        {/* Score Display */}
+                        <div className="flex items-center justify-center mb-4">
+                          <Badge 
+                            className={`
+                              ${dealScoreData?.dealScore >= 80 ? "bg-green-500" : dealScoreData?.dealScore >= 50 ? "bg-blue-500" : "bg-amber-500"} 
+                              text-white px-6 py-2 text-xl
+                            `}
+                          >
+                            {dealScoreData?.dealScore >= 80 ? "GREAT DEAL" : dealScoreData?.dealScore >= 50 ? "FAIR PRICE" : "OVERPRICED"}
+                          </Badge>
+                        </div>
+
+                        {/* Gauge Visualization */}
+                        <div className="w-full max-w-md">
+                          <div className="relative pt-4">
+                            {/* Gauge Background */}
+                            <div className="h-3 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-green-500 to-blue-500" />
+
+                            {/* Gauge Markers */}
+                            <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                              <span>Overpriced</span>
+                              <span>Fair</span>
+                              <span>Good</span>
+                              <span>Great</span>
+                            </div>
+
+                            {/* Gauge Pointer */}
+                            <div 
+                              className="absolute -top-1 w-4 h-4 bg-background border-2 border-primary rounded-full transform -translate-x-1/2" 
+                              style={{ 
+                                left: `${Math.min(Math.max((100 - priceDiff * 5), 0), 100)}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Deal Explanation */}
+                        <div className="mt-6 text-center">
+                          <p className="text-sm text-muted-foreground mb-2">
+                            This property is {Math.abs(priceDiff).toFixed(1)}% 
+                            {priceDiff > 0 ? " above " : " below "} 
+                            the estimated market value.
+                          </p>
+
+                          <div className="flex justify-between items-center mt-4 px-4">
+                            <div className="text-sm">Asking Price:</div>
+                            <div className="font-bold">R{parseFormattedValue(submittedData.purchasePrice).toLocaleString()}</div>
+                          </div>
+
+                          <div className="flex justify-between items-center mt-2 px-4">
+                            <div className="text-sm">Estimated Market Value:</div>
+                            <div className="font-bold">R{marketPrice.toLocaleString()}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Additional Deal Details */}
+                      <div className="mt-8 border-t pt-4">
+                        <h3 className="font-medium mb-4">Key Deal Factors</h3>
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <div>Price per m²</div>
+                            <div className="font-bold">
+                              R{Math.round(parseFormattedValue(submittedData.purchasePrice) / parseFormattedValue(submittedData.size)).toLocaleString()}/m²
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <div>Area average</div>
+                            <div className="font-bold">
+                              R{parseFormattedValue(submittedData.areaRate).toLocaleString()}/m²
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center mb-2">
+                            <div>Short-Term Yield</div>
+                            <div className="font-semibold text-emerald-600">
+                              {calculateRentalMetrics(submittedData)?.shortTerm.yield.toFixed(2) || "0"}%
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center mb-2">
+                            <div>Long-Term Yield</div>
+                            <div className="font-semibold text-blue-600">
+                              {calculateRentalMetrics(submittedData)?.longTerm.yield.toFixed(2) || "0"}%
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <div>Property condition</div>
+                            <div className="capitalize font-medium">
+                              {submittedData.propertyCondition}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Detailed Deal Score Breakdown */}
+                        <div className="mt-8 border-t pt-4">
+                          <h3 className="font-medium mb-4">Deal Score Breakdown</h3>
+
+                          {/* Factor Values Table */}
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full border-collapse bg-white text-sm mb-6">
+                              <thead>
+                                <tr className="bg-gray-100">
+                                  <th className="border px-4 py-2 text-left">Factor</th>
+                                  <th className="border px-4 py-2 text-left">Value</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td className="border px-4 py-2">Asking Price vs Market Price</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.priceDiff ? 
+                                      `${dealScoreData.priceDiff.toFixed(1)}% ${dealScoreData.priceDiff < 0 ? '(Below market)' : '(Above market)'}` 
+                                      : '% (Above market)'}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Price per m² vs Area Average</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.pricePerSqmDiff ? 
+                                      `${dealScoreData.pricePerSqmDiff.toFixed(1)}% ${dealScoreData.pricePerSqmDiff < 0 ? '(Below avg)' : '(Above avg)'}` 
+                                      : '% (Above avg)'}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Property Condition</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.propertyCondition ? 
+                                      dealScoreData.propertyCondition.charAt(0).toUpperCase() + dealScoreData.propertyCondition.slice(1) 
+                                      : 'NaN'}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Short-Term Rental Yield</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.shortTermYield ? 
+                                      `${dealScoreData.shortTermYield.toFixed(1)}%` 
+                                      : '%'}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Long-Term Rental Yield</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.longTermYield ? 
+                                      `${dealScoreData.longTermYield.toFixed(1)}% ${dealScoreData.longTermYield < 5 ? '(Low Yield)' : 
+                                        dealScoreData.longTermYield < 8 ? '(Average Yield)' : '(High Yield)'}` 
+                                      : '% (Low Yield)'}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* Factor Scoring Table */}
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full border-collapse bg-white text-sm mb-6">
+                              <thead>
+                                <tr className="bg-gray-100">
+                                  <th className="border px-4 py-2 text-left">Factor</th>
+                                  <th className="border px-4 py-2 text-left">Score (Out of 100)</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td className="border px-4 py-2">Asking Price vs Market Price</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.priceVsMarketScore} 
+                                    {dealScoreData?.priceVsMarketScore >= 80 ? ' (Good Deal)' : 
+                                      dealScoreData?.priceVsMarketScore >= 50 ? ' (Fair Deal)' : ' (Poor Deal)'}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Price per m² vs Area Average</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.pricePerSqmScore}
+                                    {dealScoreData?.pricePerSqmScore >= 80 ? ' (Good Deal)' : 
+                                      dealScoreData?.pricePerSqmScore >= 50 ? ' (Fair Deal)' : ' (Poor Deal)'}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Property Condition</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.propertyConditionScore}</td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Short-Term Rental Yield</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.shortTermYieldScore}
+                                    {dealScoreData?.shortTermYieldScore >= 80 ? ' (Strong Yield)' : 
+                                      dealScoreData?.shortTermYieldScore >= 50 ? ' (Average Yield)' : ' (Low Yield)'}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Long-Term Rental Yield</td>
+                                  <td className="border px-4 py-2">
+                                    {dealScoreData?.longTermYieldScore}
+                                    {dealScoreData?.longTermYieldScore >= 80 ? ' (Strong Yield)' : 
+                                      dealScoreData?.longTermYieldScore >= 50 ? ' (Average Yield)' : ' (Low Yield)'}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* Weighted Score Contribution Table */}
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full border-collapse bg-white text-sm">
+                              <thead>
+                                <tr className="bg-gray-100">
+                                  <th className="border px-4 py-2 text-left">Factor</th>
+                                  <th className="border px-4 py-2 text-left">Score</th>
+                                  <th className="border px-4 py-2 text-left">Weighting</th>
+                                  <th className="border px-4 py-2 text-left">Contribution to Final Score</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td className="border px-4 py-2">Asking Price vs Market Price</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.priceVsMarketScore}</td>
+                                  <td className="border px-4 py-2">30%</td>
+                                  <td className="border px-4 py-2">{Math.round(dealScoreData?.weightedPriceVsMarket || 0)}</td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Price per m² vs Area Average</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.pricePerSqmScore}</td>
+                                  <td className="border px-4 py-2">20%</td>
+                                  <td className="border px-4 py-2">{Math.round(dealScoreData?.weightedPricePerSqm || 0)}</td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Property Condition</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.propertyConditionScore}</td>
+                                  <td className="border px-4 py-2">10%</td>
+                                  <td className="border px-4 py-2">{Math.round(dealScoreData?.weightedPropertyCondition || 0)}</td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Short-Term Rental Yield</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.shortTermYieldScore}</td>
+                                  <td className="border px-4 py-2">20%</td>
+                                  <td className="border px-4 py-2">{Math.round(dealScoreData?.weightedShortTermYield || 0)}</td>
+                                </tr>
+                                <tr>
+                                  <td className="border px-4 py-2">Long-Term Rental Yield</td>
+                                  <td className="border px-4 py-2">{dealScoreData?.longTermYieldScore}</td>
+                                  <td className="border px-4 py-2">20%</td>
+                                  <td className="border px-4 py-2">{Math.round(dealScoreData?.weightedLongTermYield || 0)}</td>
+                                </tr>
+                                <tr className="font-bold bg-gray-50">
+                                  <td className="border px-4 py-2">Final Deal Score</td>
+                                  <td className="border px-4 py-2" colSpan={2}></td>
+                                  <td className="border px-4 py-2">{dealScoreData?.dealScore}/100</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="price" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Price Justification</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg mb-6">
                         <div>
-                          <p className="text-sm text-gray-500">vs Market Price</p>
-                          <p className="font-medium">
-                            {dealScoreData.priceDiff.toFixed(1)}%
-                            {dealScoreData.priceDiff > 0 ? " above" : " below"}
+                          <div className="text-sm font-medium">
+                            Asking Price
+                          </div>
+                          <div className="text-3xl font-bold">
+                            R
+                            {parseFormattedValue(
+                              submittedData.purchasePrice
+                            ).toLocaleString()}
+                          </div>
+                        </div>
+                        <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
+                        <div>
+                          <div className="text-sm font-medium">
+                            Market Average
+                          </div>
+                          <div className="text-3xl font-bold">
+                            R{marketPrice.toLocaleString()}
+                          </div>
+                        </div>
+                        <ArrowRight className="h-6 w-6 text-muted-foreground mx-2" />
+                        <div>
+                          <div className="text-sm font-medium">Difference</div>
+                          <div
+                            className={`text-3xl font-bold ${priceDiff > 0 ? "text-amber-500" : "text-green-500"}`}
+                          >
+                            {priceDiff > 0 ? "+" : ""}
+                            {Math.round(priceDiff)}%
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-4">
+                        <div className="font-medium">Price per m²</div>
+                        <div className="font-bold">
+                          R
+                          {submittedData
+                            ? Math.round(
+                                parseFormattedValue(submittedData.purchasePrice) /
+                                parseFormattedValue(submittedData.size),
+                              ).toLocaleString()
+                            : "0"}
+                          /m²
+                        </div>
+                        <div className="text-muted-foreground">
+                          (vs. area avg R
+                          {submittedData
+                            ? parseFormattedValue(submittedData.areaRate).toLocaleString()
+                            : "0"}
+                          /m²)
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={
+                              submittedData &&
+                              parseFormattedValue(submittedData.purchasePrice) /
+                                parseFormattedValue(submittedData.size) <=
+                                parseFormattedValue(submittedData.areaRate)
+                                ? "text-green-500"
+                                : "text-amber-500"
+                            }
+                          >
+                            {submittedData &&
+                            parseFormattedValue(submittedData.purchasePrice) /
+                              parseFormattedValue(submittedData.size) <=
+                              parseFormattedValue(submittedData.areaRate)
+                              ? "-"
+                              : "+"}
+                            R
+                            {submittedData
+                              ? Math.abs(
+                                  Math.round(
+                                    parseFormattedValue(submittedData.purchasePrice) /
+                                      parseFormattedValue(submittedData.size) -
+                                      parseFormattedValue(submittedData.areaRate),
+                                  ),
+                                ).toLocaleString()
+                              : "0"}
+                            /m²
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className={
+                              priceDiff <= 0
+                                ? "text-green-500"
+                                : "text-amber-500"
+                            }
+                          >
+                            {priceDiff <= 0 ? "UnderPaying" : "Over Paying"}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-4">
+                        <div className="font-medium">Property Condition</div>
+                        <div className="font-bold capitalize">
+                          {submittedData.propertyCondition}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {
+                            getConditionDetails(submittedData.propertyCondition)
+                              .description
+                          }
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant="outline"
+                            className={
+                              getConditionDetails(
+                                submittedData.propertyCondition,
+                              ).badgeColor
+                            }
+                          >
+                            {
+                              getConditionDetails(
+                                submittedData.propertyCondition,
+                              ).badge
+                            }
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-4">
+                        <div className="font-medium">Recent Area Sales</div>
+                        <div className="font-bold">R3.4M - R3.7M</div>
+                        <div className="text-muted-foreground">
+                          (last 3 months)
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-blue-600">
+                            WITHIN RANGE
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Making This a Good Deal</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="p-4 bg-muted/30 rounded-lg">
+                          <p className="text-sm text-muted-foreground mb-2">
+                            To make this a good deal, consider:
+                          </p>
+                          <p className="text-lg font-medium">
+                            Make an offer between{" "}
+                            <span className="font-bold text-green-600">
+                              R{(marketPrice * 0.9).toLocaleString()}
+                            </span>{" "}
+                            and{" "}
+                            <span className="font-bold text-amber-600">
+                              R{(marketPrice * 1.1).toLocaleString()}
+                            </span>
                           </p>
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-500">vs Area Rate</p>
-                          <p className="font-medium">
-                            {dealScoreData.pricePerSqmDiff.toFixed(1)}%
-                            {dealScoreData.pricePerSqmDiff > 0 ? " above" : " below"}
-                          </p>
+
+                        <div className="mt-6">
+                          <div className="flex justify-between mb-2">
+                            <div className="text-sm font-medium">
+                              Deal Rating
+                            </div>
+                            <div className="text-sm font-medium">
+                              {dealScoreData?.dealScore >= 80 &&
+                              submittedData?.propertyCondition === "excellent"
+                                ? "Great"
+                                : dealScoreData?.dealScore >= 50
+                                  ? "Good"
+                                  : dealScoreData?.dealScore >= 25
+                                    ? "Fair"
+                                    : "Bad"}
+                            </div>
+                          </div>
+                          <div className="relative">
+                            <div className="h-2 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-green-500 to-blue-500" />
+                            <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                              <span>Bad</span>
+                              <span>Fair</span>
+                              <span>Good</span>
+                              <span>Great</span>
+                            </div>
+                            <div className="absolute -top-2 w-full">
+                              <div
+                                className="absolute w-4 h-4 rounded-full border-2 border-white bg-primary shadow-lg transform -translate-x-1/2"
+                                style={{
+                                  left: `${
+                                    dealScoreData?.dealScore >= 80 &&
+                                    submittedData?.propertyCondition ===
+                                      "excellent"
+                                      ? 100
+                                      : dealScoreData?.dealScore >= 50
+                                        ? 75
+                                        : dealScoreData?.dealScore >= 25
+                                          ? 50
+                                          : 25
+                                  }%`,
+                                }}
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
 
-                    <div>
-                      <h3 className="font-semibold mb-2">Yield Analysis</h3>
+                <TabsContent value="rental">
+                  {submittedData && (
+                    <div className="space-y-4">
+                      <h2 className="text-2xl font-bold">Rental Potential</h2>
                       <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-gray-500">Short Term Yield</p>
-                          <p className="font-medium">{dealScoreData.shortTermYield.toFixed(1)}%</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Long Term Yield</p>
-                          <p className="font-medium">{dealScoreData.longTermYield.toFixed(1)}%</p>
-                        </div>
-                      </div>
-                    </div>
+                        {/* Short Term Rental Card */}
+                        <div
+                          className={`p-6 rounded-lg border bg-card relative ${
+                            calculateRentalMetrics(submittedData)
+                              ?.isShortTermRecommended
+                              ? "before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg"
+                              : ""
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-4">
+                            <Calendar className="h-5 w-5" />
+                            <h3 className="text-lg font-semibold">
+                              Short-Term (Airbnb)
+                            </h3>
+                            {calculateRentalMetrics(submittedData)
+                              ?.isShortTermRecommended && (
+                              <span className="px-2 py-1 text-xs bg-emerald-500 text-white rounded">
+                                RECOMMENDED
+                              </span>
+                            )}
+                          </div>
 
-                    <div>
-                      <h3 className="font-semibold mb-2">Score Breakdown</h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span>Price vs Market (30%)</span>
-                          <span>{dealScoreData.weightedPriceVsMarket.toFixed(1)}</span>
+                          <div className="space-y-4">
+                            <div>
+                              <div className="text-3xl font-bold">
+                                R
+                                {calculateRentalMetrics(
+                                  submittedData,
+                                )?.shortTerm.monthly.toLocaleString()}
+                                /month
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                Based on {formData.occupancy}% occupancy rate
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span>Annual yield:</span>
+                                <span className="font-semibold text-emerald-600">
+                                  {calculateRentalMetrics(
+                                    submittedData,
+                                  )?.shortTerm.yield.toFixed(1)}
+                                  %
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Yearly income:</span>
+                                <span className="font-semibold">
+                                  R
+                                  {calculateRentalMetrics(
+                                    submittedData   )?.shortTerm.yearly.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Management fee:</span>
+                                <span className="font-semibold">15-20%</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span>Price per m² (20%)</span>
-                          <span>{dealScoreData.weightedPricePerSqm.toFixed(1)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Property Condition (10%)</span>
-                          <span>{dealScoreData.weightedPropertyCondition.toFixed(1)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Short Term Yield (20%)</span>
-                          <span>{dealScoreData.weightedShortTermYield.toFixed(1)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Long Term Yield (20%)</span>
-                          <span>{dealScoreData.weightedLongTermYield.toFixed(1)}</span>
+
+                        {/* Long Term Rental Card */}<div
+                          className={`p-6 rounded-lg border bg-card relative ${
+                            !calculateRentalMetrics(submittedData)
+                              ?.isShortTermRecommended
+                              ? "before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg"
+                              : ""
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-4">
+                            <Home className="h-5 w-5" />
+                            <h3 className="text-lg font-semibold">
+                              Long-Term Rental
+                            </h3>
+                            {!calculateRentalMetrics(submittedData)
+                              ?.isShortTermRecommended && (
+                              <span className="px-2 py-1 text-xs bg-emerald-500 text-white rounded">
+                                RECOMMENDED
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="space-y-4">
+                            <div>
+                              <div className="text-3xl font-bold">
+                                R
+                                {calculateRentalMetrics(
+                                  submittedData,
+                                )?.longTerm.monthly.toLocaleString()}
+                                /month
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                Standard 12-month lease
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span>Annual yield:</span>
+                                <span className="font-semibold text-emerald-600">
+                                  {calculateRentalMetrics(
+                                    submittedData,
+                                  )?.longTerm.yield.toFixed(1)}
+                                  %
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Yearly income:</span>
+                                <span className="font-semibold">
+                                  R
+                                  {calculateRentalMetrics(
+                                    submittedData,
+                                  )?.longTerm.yearly.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Management fee:</span>
+                                <span className="font-semibold">8-10%</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="affordability" className="space-y-4">
+                  <h2 className="text-2xl font-semibold mb-4">Affordability Cheat Sheet</h2>
+                  {submittedData && (
+                    <>
+                      {(() => {
+                        const metrics = calculateAffordabilityMetrics(submittedData);
+                        if (!metrics) return null;
+
+                        // Calculate total cash needed based on the costs
+                        const totalCashNeeded = metrics.upfrontCosts.deposit + metrics.upfrontCosts.combinedTransferCosts + metrics.upfrontCosts.bondRegistrationCosts;
+
+                        return (
+                          <div className="grid grid-cols-2 gap-4">
+                            {/* Upfront Costs */}
+                            <div className="border rounded-lg bg-white p-4">
+                              <h3 className="font-semibold text-lg mb-4">Upfront Costs</h3>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>Deposit ({submittedData.depositPercentage}%):</span>
+                                  <span className="font-medium">
+                                    R{Math.round(metrics.upfrontCosts.deposit).toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Transfer costs:</span>
+                                  <span className="font-medium">
+                                    R{Math.round(metrics.upfrontCosts.combinedTransferCosts).toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Bond registration costs:</span>
+                                  <span className="font-medium">
+                                    R{Math.round(metrics.upfrontCosts.bondRegistrationCosts).toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between pt-2 border-t">
+                                  <span>Total cash needed:</span>
+                                  <span className="font-medium">
+                                    R{Math.round(totalCashNeeded).toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Monthly Payments */}
+                            <div className="border rounded-lg bg-white p-4">
+                              <h3 className="font-semibold text-lg mb-4">Monthly Payments</h3>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>Bond payment:</span>
+                                  <span className="font-medium">
+                                    R{metrics.monthlyPayments.bondPayment.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>If rates drop 1%:</span>
+                                  <span className="font-medium text-emerald-600">
+                                    R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Levies/rates:</span>
+                                  <span className="font-medium">
+                                    R{metrics.monthlyPayments.leviesAndRates.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between pt-2 border-t">
+                                  <span>Total monthly cost:</span>
+                                  <span className="font-medium">
+                                    R{metrics.monthlyPayments.totalMonthlyCost.toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Income Requirements */}
+                            <div className="border rounded-lg bg-gray-50 p-4">
+                              <h3 className="font-semibold text-lg mb-2">Income Requirements</h3>
+                              <div>
+                                <div className="flex justify-between items-baseline">
+                                  <span>Required household income:</span>
+                                  <span className="font-bold text-xl">
+                                    R{metrics.requiredIncome.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Based on 30% debt-to-income ratio
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Different Deposit Options */}
+                            <div className="border rounded-lg bg-white p-4">
+                              <h3 className="font-semibold text-lg mb-4">Different Deposit Options</h3>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>20% deposit:</span>
+                                  <span className="font-medium">
+                                    R{metrics.depositScenarios.twenty.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>10% deposit:</span>
+                                  <span className="font-medium">
+                                    R{metrics.depositScenarios.ten.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>5% deposit:</span>
+                                  <span className="font-medium">
+                                    R{metrics.depositScenarios.five.toLocaleString()}/month
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Rate Changes */}
+                            <div className="border rounded-lg bg-white p-4">
+                              <h3 className="font-semibold text-lg mb-4">Rate Changes</h3>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>Current rate:</span>
+                                  <span className="font-medium">
+                                    R{metrics.monthlyPayments.bondPayment.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>If rates drop 1%:</span>
+                                  <span className="font-medium text-emerald-600">
+                                    R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}/month
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>If rates rise 1%:</span>
+                                  <span className="font-medium text-red-600">
+                                    R{metrics.monthlyPayments.higherRatePayment.toLocaleString()}/month
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="buyer-profile">
+                  <div className="text-center py-8 text-muted-foreground">
+                    Buyer profile analysis coming soon
                   </div>
-                </CardContent>
-              </Card>
+                </TabsContent>
+              </Tabs>
             </div>
           )}
         </div>
 
-        {/* Modals */}
+        <div
+          onClick={(e) => {
+            const now = new Date().getTime();
+            if (!window.lastClick) window.lastClick = 0;
+            if (!window.clickCount) window.clickCount = 0;
+
+            if (now - window.lastClick > 500) {
+              window.clickCount = 1;
+            } else {
+              window.clickCount++;
+            }
+
+            window.lastClick = now;
+
+            if (window.clickCount === 3) {
+              handlePrefill();
+              window.clickCount = 0;
+            }
+          }}
+          className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-100/20 cursor-default select-none"
+          style={{ opacity: 0.1 }}
+        />
+
         <UpgradeModal
           open={showUpgradeModal}
           onOpenChange={setShowUpgradeModal}
         />
 
-        {/* Revenue Data Dialog */}
         <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Select Revenue Data</DialogTitle>
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-4">
-              {revenueData && Object.entries(revenueData).map(([percentile, data]) => (
-                <Button
-                  key={percentile}
-                  onClick={() => applyPercentileData(percentile as "25" | "50" | "75" | "90")}
-                  variant="outline"
-                  className="p-4"
-                >
-                  <div>
-                    <div className="font-semibold mb-1">{percentile}th Percentile</div>
-                    <div className="text-sm text-gray-500">
-                      ADR: R{data.adr.toFixed(0)}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      Occupancy: {data.occupancy.toFixed(0)}%
-                    </div>
-                  </div>
-                </Button>
-              ))}
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Select the percentile data you'd like to use for your analysis:
+              </p>
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-4">Percentile</th>
+                    <th className="text-right py-2 px-4">Nightly Rate</th>
+                    <th className="text-right py-2 px-4">Occupancy</th>
+                    <th className="text-right py-2 px-4"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {revenueData &&
+                    Object.entries(revenueData).map(([percentile, data]) => (
+                      <tr key={percentile} className="border-b">
+                        <td className="py-2 px-4">{percentile}th Percentile</td>
+                        <td className="text-right py-2 px-4">
+                          {new Intl.NumberFormat("en-ZA", {
+                            style: "currency",
+                            currency: "ZAR",
+                          }).format(data.adr)}
+                        </td>
+                        <td className="text-right py-2 px-4">
+                          {Math.round(data.occupancy)}%
+                        </td>
+                        <td className="text-right py-2 px-4">
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              applyPercentileData(
+                                percentile as "25" | "50" | "75" | "90",
+                              )
+                            }
+                          >
+                            Use This Data
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </div>
           </DialogContent>
         </Dialog>
+        {/* PropertyScoreModal removed to focus on deal score functionality */}
       </div>
     </PageTransition>
   );
