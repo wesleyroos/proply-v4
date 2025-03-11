@@ -1703,7 +1703,7 @@ export default function DealScorePage() {
                               </div>
                               <div className="flex justify-between">
                                 <span>Management fee:</span>
-                                <span className<span className="font-semibold">15-20%</span>
+                                <span className="font-semibold">15-20%</span>
                               </div>
                             </div>
                           </div>
