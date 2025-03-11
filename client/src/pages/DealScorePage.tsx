@@ -447,9 +447,12 @@ export default function DealScorePage() {
   const marketPrice = submittedData
     ? parseFormattedValue(submittedData.size) * parseFormattedValue(submittedData.areaRate)
     : 0;
-  const priceDiff = submittedData && marketPrice > 0
+  const priceDiff = submittedData
     ? ((parseFormattedValue(submittedData.purchasePrice) - marketPrice) / marketPrice) * 100
     : 0;
+
+  // Calculate and store the final deal score if we have submitted data
+  const finalScore = submittedData ? calculateDealScore(submittedData) : 0;
 
   const getConditionDetails = (condition: string) => {
     switch (condition) {
@@ -908,7 +911,7 @@ export default function DealScorePage() {
 
     // Add transfer duty if needed
     if (includeTransferDuty) {
-      totalCost += costs.transferDuty > 0 ? costs.transferDuty : calculateTransferDuty(purchasePrice);
+      totalCost += costs.transferDuty >? 0 ? costs.transferDuty : calculateTransferDuty(purchasePrice);
     }
 
     return totalCost;
@@ -986,6 +989,12 @@ export default function DealScorePage() {
     return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(value);
   };
 
+  // Placeholder function - replace with actual calculation logic
+  const calculateDealScore = (data: typeof submittedData): number => {
+    // This is a placeholder. Replace with your actual deal score calculation.
+    // Consider factors like priceDiff, rentalYield, propertyCondition, etc.
+    return Math.round(Math.random() * 100);
+  };
 
   return (
     <PageTransition>
@@ -1670,7 +1679,7 @@ export default function DealScorePage() {
             </div>
           </DialogContent>
         </Dialog>
-        
+
         {/* Add DealScoreAdvisor as a floating component */}
         {submittedData && calculateRentalMetrics(submittedData) && (
           <DealScoreAdvisor 
@@ -1681,10 +1690,10 @@ export default function DealScorePage() {
               ? calculateRentalMetrics(submittedData)?.shortTerm.yield 
               : calculateRentalMetrics(submittedData)?.longTerm.yield}
             condition={submittedData.propertyCondition}
-            dealScore={calculateDealScore(submittedData)}
+            dealScore={finalScore}
           />
         )}
-        
+
         {showPropertyScoreModal && (
         <PropertyScoreModal
           isOpen={showPropertyScoreModal}
