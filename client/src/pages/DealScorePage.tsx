@@ -1053,7 +1053,7 @@ export default function DealScorePage() {
           </div>
 
           {/* Results Section */}
-          {submittedData && (
+          {showResults && submittedData && (
             <div className="flex-1">
               <Tabs defaultValue="deal-score" className="w-full">
                 <TabsList className="grid w-full grid-cols-5">
@@ -1670,31 +1670,31 @@ export default function DealScorePage() {
           </DialogContent>
         </Dialog>
         {showPropertyScoreModal && (
-        <PropertyScoreModal
-          isOpen={showPropertyScoreModal}
-          onOpenChange={setShowPropertyScoreModal}
-          propertyAddress={submittedData?.address}
-          purchasePrice={parseFloat(submittedData?.purchasePrice || "0")}
-          marketAvgPrice={parseFloat(submittedData?.size || "0") * parseFloat(submittedData?.areaRate || "0")}
-          propertyCondition={submittedData?.propertyCondition || "good"}
-          shortTermYield={
-            submittedData?.nightlyRate && submittedData?.occupancy
-              ? ((parseFloat(submittedData.nightlyRate) * 365 * parseFloat(submittedData.occupancy) / 100) / parseFloat(submittedData.purchasePrice)) * 100
-              : null
-          }
-          longTermYield={
-            submittedData?.longTermRental
-              ? ((parseFloat(submittedData.longTermRental) * 12) / parseFloat(submittedData.purchasePrice)) * 100
-              : null
-          }
-          areaRatePerSqm={parseFloat(submittedData?.areaRate || "0")}
-          propertyRatePerSqm={
-            submittedData?.purchasePrice && submittedData?.size
-              ? parseFloat(submittedData.purchasePrice) / parseFloat(submittedData.size)
-              : 0
-          }
-        />
-      )}
+          <PropertyScoreModal
+            isOpen={showPropertyScoreModal}
+            onOpenChange={setShowPropertyScoreModal}
+            propertyAddress={submittedData?.address}
+            purchasePrice={parseFloat(submittedData?.purchasePrice || "0")}
+            marketAvgPrice={parseFloat(submittedData?.size || "0") * parseFloat(submittedData?.areaRate || "0")}
+            propertyCondition={submittedData?.propertyCondition || "good"}
+            shortTermYield={
+              submittedData?.nightlyRate && submittedData?.occupancy
+                ? ((parseFloat(submittedData.nightlyRate) * 365 * parseFloat(submittedData.occupancy) / 100) / parseFloat(submittedData.purchasePrice)) * 100
+                : null
+            }
+            longTermYield={
+              submittedData?.longTermRental
+                ? ((parseFloat(submittedData.longTermRental) * 12) / parseFloat(submittedData.purchasePrice)) * 100
+                : null
+            }
+            areaRatePerSqm={parseFloat(submittedData?.areaRate || "0")}
+            propertyRatePerSqm={
+              submittedData?.purchasePrice && submittedData?.size
+                ? parseFloat(submittedData.purchasePrice) / parseFloat(submittedData.size)
+                : 0
+            }
+          />
+        )}
       </div>
     </PageTransition>
   );
