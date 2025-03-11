@@ -128,7 +128,7 @@ export function DealAssessment({
       <div>
         <div className="flex flex-col items-center mb-6">
           <div className="text-2xl font-bold flex items-center mb-2">
-            {badgeInfo.emoji} Deal Score: {finalScore}
+            {badgeInfo.emoji} Deal Score: <span className="text-3xl ml-1 text-primary">{finalScore}/100</span>
           </div>
 
           {/* Score Display */}
