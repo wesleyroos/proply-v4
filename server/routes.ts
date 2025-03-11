@@ -24,6 +24,7 @@ import { suburbs } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
 import primeRateRouter from './routes/prime-rate';
+import { dealAdvisorHandler } from "./routes/deal-advisor"; // Added import
 
 // Extend Express.User to include our schema
 declare global {
@@ -954,8 +955,7 @@ export function registerRoutes(app: Express): Server {
 
     try {
       const property = await db
-        .insert(properties)
-        .values({
+        .insert(properties)        .values({
           ...req.body,
           userId: req.user!.id,
         })        .returning();
@@ -1779,7 +1779,7 @@ export function registerRoutes(app: Express): Server {
 
   // Register property scraper routes
   app.use("/api", propertyScraper);
-
+  app.post("/api/deal-advisor", dealAdvisorHandler); // Added deal advisor endpoint
 
   const httpServer = createServer(app);
   return httpServer;

@@ -230,3 +230,266 @@ export function DealScoreAdvisor() {
     </>
   );
 }
+import { useState, useRef, useEffect } from 'react';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { MessageSquare, X, Loader2, Sparkles } from "lucide-react";
+import { useProAccess } from "@/hooks/use-pro-access";
+import { UpgradeModal } from "@/components/UpgradeModal";
+
+interface Message {
+  type: 'user' | 'assistant';
+  content: string;
+}
+
+interface DealScoreAdvisorProps {
+  purchasePrice: number;
+  marketPrice: number;
+  priceDiff: number;
+  rentalYield?: number;
+  condition: string;
+  dealScore: number;
+}
+
+const SAMPLE_QUESTIONS = [
+  "How should I negotiate based on this deal score?",
+  "What improvements could increase the property value?",
+  "How does this deal compare to typical investments?",
+  "What are the main risks with this property?",
+  "How can I improve the rental yield?"
+];
+
+/**
+ * DealScoreAdvisor - AI-powered chatbot that provides personalized advice based on deal assessment
+ * 
+ * This component renders a chat interface that allows users to ask questions about their
+ * property investment analysis and receive AI-generated responses.
+ */
+export function DealScoreAdvisor({ 
+  purchasePrice, 
+  marketPrice, 
+  priceDiff, 
+  rentalYield, 
+  condition, 
+  dealScore 
+}: DealScoreAdvisorProps) {
+  const { hasAccess, isLoading: accessLoading } = useProAccess();
+  const [query, setQuery] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+  const [showSuggestions, setShowSuggestions] = useState(true);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Add welcome message when chat is first opened
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      setMessages([{
+        type: 'assistant',
+        content: `Hi there! I'm your Deal Score Advisor. I can help you interpret your deal score of ${dealScore}/100 and provide advice on this property investment. How can I assist you today?`
+      }]);
+    }
+  }, [isOpen, messages.length, dealScore]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!query.trim()) return;
+    
+    // Check if user has PRO access
+    if (!hasAccess) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    // Add user message to chat
+    setMessages(prev => [...prev, { type: 'user', content: query }]);
+    
+    // Clear input and show loading state
+    const userQuery = query;
+    setQuery("");
+    setIsLoading(true);
+    setShowSuggestions(false);
+    
+    try {
+      // Prepare context about the property for the AI
+      const context = {
+        purchasePrice,
+        marketPrice,
+        priceDiff,
+        rentalYield,
+        condition,
+        dealScore
+      };
+      
+      // Make API call to get AI response
+      const response = await fetch('/api/deal-advisor', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: userQuery,
+          context
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get response');
+      }
+      
+      const data = await response.json();
+      
+      // Add AI response to chat
+      setMessages(prev => [...prev, { type: 'assistant', content: data.response }]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      setMessages(prev => [...prev, { 
+        type: 'assistant', 
+        content: "I'm sorry, I encountered an error processing your request. Please try again." 
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setQuery(suggestion);
+    setShowSuggestions(false);
+  };
+
+  // Show upgrade modal for non-pro users
+  if (!hasAccess && !accessLoading) {
+    return (
+      <>
+        <Card className="fixed bottom-6 right-6 w-96 shadow-lg border border-gray-200 z-50">
+          <div className="p-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-[#1BA3FF]" />
+                <h3 className="text-lg font-semibold">Deal Score Advisor</h3>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setIsOpen(false)}
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-sm text-gray-600 mt-2 mb-4">
+              Get AI-powered advice on your property investment based on the deal score analysis.
+            </p>
+            <Button 
+              className="w-full"
+              onClick={() => setShowUpgradeModal(true)}
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              Upgrade to PRO for AI Advisor
+            </Button>
+          </div>
+        </Card>
+        <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+      </>
+    );
+  }
+
+  // Regular chatbox for pro users
+  return (
+    <>
+      <Card className="fixed bottom-6 right-6 w-96 bg-white shadow-lg border border-gray-200 flex flex-col z-50" style={{ maxHeight: "600px" }}>
+        <div className="p-4 border-b">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-[#1BA3FF]" />
+              <h3 className="text-lg font-semibold text-gray-900">Deal Score Advisor</h3>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setIsOpen(false)}
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <p className="text-sm text-gray-600 mt-2">
+            Ask me anything about the deal score analysis or for advice on improving your investment strategy.
+          </p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.map((message, index) => (
+            <div 
+              key={index} 
+              className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div 
+                className={`max-w-[80%] rounded-lg p-3 ${
+                  message.type === 'user' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted text-foreground'
+                }`}
+              >
+                {message.content}
+              </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="max-w-[80%] rounded-lg p-3 bg-muted">
+                <Loader2 className="h-4 w-4 animate-spin" />
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {showSuggestions && messages.length === 1 && (
+          <div className="p-3 border-t border-gray-100">
+            <p className="text-xs text-gray-500 mb-2">Suggested questions:</p>
+            <div className="flex flex-wrap gap-2">
+              {SAMPLE_QUESTIONS.map((question, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => handleSuggestionClick(question)}
+                >
+                  {question}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="p-3 border-t">
+          <div className="flex gap-2">
+            <Textarea
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Ask a question..."
+              className="resize-none min-h-[44px] max-h-[120px]"
+            />
+            <Button type="submit" size="icon" disabled={isLoading || !query.trim()}>
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+            </Button>
+          </div>
+        </form>
+      </Card>
+      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+    </>
+  );
+}

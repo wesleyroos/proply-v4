@@ -8,6 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { DealScoreAdvisor } from "@/components/DealScoreAdvisor";
 
 interface DealAssessmentProps {
   purchasePrice: number;
@@ -325,6 +326,18 @@ export function DealAssessment({
           </p>
         </div>
       </div>
+      {/* AI Advisor */}
+      {rentalData && (
+        <DealScoreAdvisor 
+          purchasePrice={purchasePrice}
+          marketPrice={marketPrice}
+          priceDiff={priceDiff}
+          rentalYield={rentalData.isShortTermRecommended ? rentalData.shortTerm.yield : rentalData.longTerm.yield}
+          condition={propertyCondition}
+          dealScore={finalScore}
+        />
+      )}
+
       <Dialog open={isCalculationModalOpen} onOpenChange={setIsCalculationModalOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
