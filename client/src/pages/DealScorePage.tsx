@@ -1345,14 +1345,33 @@ export default function DealScorePage() {
                               Deal Rating
                             </div>
                             <div className="text-sm font-medium">
-                              {priceDiff <= -5 &&
-                              submittedData?.propertyCondition === "excellent"
-                                ? "Great"
-                                : priceDiff <= 0
-                                  ? "Good"
-                                  : priceDiff <= 10
-                                    ? "Fair"
-                                    : "Bad"}
+                              {/* Calculate weighted score similar to PropertyScoreModal */}
+                              {(() => {
+                                // Simple calculation for display purposes
+                                const priceDiff = marketEstimate ? ((parseFloat(submittedData?.purchasePrice || "0") - marketEstimate) / marketEstimate) * 100 : 0;
+                                const propertyCondition = submittedData?.propertyCondition || "average";
+                                const shortTermYield = calculateShortTermYield();
+                                const longTermYield = calculateLongTermYield();
+                                const areaRate = submittedData?.areaRate ? parseFloat(submittedData.areaRate) : 0;
+                                const propertyRate = parseFloat(submittedData?.purchasePrice || "0") / parseFloat(submittedData?.size || "1");
+                                
+                                // Basic score calculation
+                                let score = 0;
+                                
+                                // Price vs Market component (30%)
+                                if (priceDiff <= -10) score += 30;
+                                else if (priceDiff <= -5) score += 24;
+                                else if (priceDiff <= 0) score += 21;
+                                else if (priceDiff <= 5) score += 18;
+                                else if (priceDiff <= 10) score += 12;
+                                else score += 6;
+                                
+                                // Display label based on calculated score
+                                if (score >= 24) return "Great";
+                                if (score >= 19) return "Good";
+                                if (score >= 15) return "Fair";
+                                return "Below Average";
+                              })()}
                             </div>
                           </div>
                           <div className="relative">

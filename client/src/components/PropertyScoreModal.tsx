@@ -34,20 +34,90 @@ export function PropertyScoreModal({
 }: PropertyScoreModalProps) {
   // Deal Assessment Logic
   const priceDiff = marketAvgPrice ? ((purchasePrice - marketAvgPrice) / marketAvgPrice) * 100 : 0;
+  const areaRateDiff = areaRateM2 ? ((priceM2 - areaRateM2) / areaRateM2) * 100 : 0;
 
-  //Rudimentary Deal Score Calculation (Needs Refinement)
-  const priceScore = priceDiff <= -5 ? 100 : priceDiff <= 5 ? 50 : 0;
-  const yieldScore = (shortTermYield + longTermYield) / 2; //Average Yield Score
-  const areaRateScore = priceM2 <= areaRateM2 ? 100 : 50; //Simple comparison
-  const conditionScore = propertyCondition === "Excellent" ? 100 : propertyCondition === "Good" ? 75 : 50;
-  const dealScore = Math.round((priceScore + yieldScore + areaRateScore + conditionScore) / 4);
+  // Scoring for each factor (out of 100)
+  // Price vs Market Score
+  const getPriceScore = () => {
+    if (priceDiff <= -10) return 100; // Excellent deal (10%+ under market)
+    if (priceDiff <= -5) return 80; // Good deal (5-10% under market)
+    if (priceDiff <= 0) return 70; // Slightly under market
+    if (priceDiff <= 5) return 60; // Fair price (within 5% over market)
+    if (priceDiff <= 10) return 40; // Moderately overpriced
+    return 20; // Significantly overpriced
+  };
+  
+  // Price per m² vs Area Average Score
+  const getAreaRateScore = () => {
+    if (areaRateDiff <= -10) return 100; // Excellent deal (10%+ under area average)
+    if (areaRateDiff <= -5) return 80; // Good deal (5-10% under area average)
+    if (areaRateDiff <= 0) return 70; // Slightly under area average
+    if (areaRateDiff <= 5) return 60; // Fair price (within 5% over area average)
+    if (areaRateDiff <= 10) return 40; // Moderately overpriced
+    return 20; // Significantly overpriced
+  };
+  
+  // Property Condition Score
+  const getConditionScore = () => {
+    switch (propertyCondition.toLowerCase()) {
+      case "excellent": return 100;
+      case "good": return 80;
+      case "average": return 60;
+      case "fair": return 40;
+      case "poor": return 20;
+      default: return 60; // Default to average if unknown
+    }
+  };
+  
+  // Short-Term Rental Yield Score
+  const getShortTermYieldScore = () => {
+    if (shortTermYield >= 15) return 100; // Excellent yield
+    if (shortTermYield >= 12) return 80; // Good yield
+    if (shortTermYield >= 10) return 60; // Average yield
+    if (shortTermYield >= 8) return 40; // Below average yield
+    return 20; // Poor yield
+  };
+  
+  // Long-Term Rental Yield Score
+  const getLongTermYieldScore = () => {
+    if (longTermYield >= 8) return 100; // Excellent yield for long-term
+    if (longTermYield >= 6) return 80; // Good yield
+    if (longTermYield >= 4) return 60; // Average yield
+    if (longTermYield >= 3) return 40; // Below average yield
+    return 20; // Poor yield
+  };
+
+  // Calculate individual scores
+  const priceScore = getPriceScore();
+  const areaRateScore = getAreaRateScore();
+  const conditionScore = getConditionScore();
+  const shortTermYieldScore = getShortTermYieldScore();
+  const longTermYieldScore = getLongTermYieldScore();
+  
+  // Apply weightings to each factor
+  const priceWeight = 0.30; // 30%
+  const areaRateWeight = 0.20; // 20%
+  const conditionWeight = 0.10; // 10%
+  const shortTermYieldWeight = 0.20; // 20%
+  const longTermYieldWeight = 0.20; // 20%
+  
+  // Calculate final weighted score
+  const dealScore = Math.round(
+    (priceScore * priceWeight) +
+    (areaRateScore * areaRateWeight) +
+    (conditionScore * conditionWeight) +
+    (shortTermYieldScore * shortTermYieldWeight) +
+    (longTermYieldScore * longTermYieldWeight)
+  );
 
 
-  // Deal Badge logic
+  // Deal Badge logic based on final weighted score
   const getDealBadge = () => {
     if (dealScore >= 80) return { emoji: "🔥", text: "GREAT DEAL", color: "bg-green-500", textColor: "text-green-500" };
-    if (dealScore >= 50) return { emoji: "✅", text: "FAIR PRICE", color: "bg-blue-500", textColor: "text-blue-500" };
-    return { emoji: "⚠️", text: "OVERPRICED", color: "bg-amber-500", textColor: "text-amber-500" };
+    if (dealScore >= 65) return { emoji: "👍", text: "GOOD DEAL", color: "bg-blue-500", textColor: "text-blue-500" };
+    if (dealScore >= 50) return { emoji: "✅", text: "FAIR PRICE", color: "bg-blue-300", textColor: "text-blue-300" };
+    if (dealScore >= 35) return { emoji: "⚠️", text: "BELOW AVERAGE", color: "bg-amber-400", textColor: "text-amber-400" };
+    return { emoji: "❌", text: "OVERPRICED", color: "bg-amber-500", textColor: "text-amber-500" };
   };
 
   const dealBadge = getDealBadge();
@@ -202,6 +272,66 @@ export function PropertyScoreModal({
                       <div className="font-medium text-lg">Perfect For</div>
                       <div className="text-lg">
                         {buyerProfiles[0]?.type || "Investors"} ({buyerProfiles[0]?.match || 90}% match)
+
+                {/* Score Breakdown Table */}
+                <div className="mt-6 border rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-muted">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-sm font-medium">Factor</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium">Value</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium">Score</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium">Weight</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium">Contribution</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      <tr>
+                        <td className="px-4 py-2 text-sm">Asking Price vs Market Price</td>
+                        <td className="px-4 py-2 text-sm">{priceDiff.toFixed(1)}%</td>
+                        <td className="px-4 py-2 text-sm">{priceScore}</td>
+                        <td className="px-4 py-2 text-sm">30%</td>
+                        <td className="px-4 py-2 text-sm font-medium">{Math.round(priceScore * priceWeight)}</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-2 text-sm">Price per m² vs Area Average</td>
+                        <td className="px-4 py-2 text-sm">{areaRateDiff.toFixed(1)}%</td>
+                        <td className="px-4 py-2 text-sm">{areaRateScore}</td>
+                        <td className="px-4 py-2 text-sm">20%</td>
+                        <td className="px-4 py-2 text-sm font-medium">{Math.round(areaRateScore * areaRateWeight)}</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-2 text-sm">Property Condition</td>
+                        <td className="px-4 py-2 text-sm">{propertyCondition}</td>
+                        <td className="px-4 py-2 text-sm">{conditionScore}</td>
+                        <td className="px-4 py-2 text-sm">10%</td>
+                        <td className="px-4 py-2 text-sm font-medium">{Math.round(conditionScore * conditionWeight)}</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-2 text-sm">Short-Term Rental Yield</td>
+                        <td className="px-4 py-2 text-sm">{shortTermYield.toFixed(1)}%</td>
+                        <td className="px-4 py-2 text-sm">{shortTermYieldScore}</td>
+                        <td className="px-4 py-2 text-sm">20%</td>
+                        <td className="px-4 py-2 text-sm font-medium">{Math.round(shortTermYieldScore * shortTermYieldWeight)}</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-2 text-sm">Long-Term Rental Yield</td>
+                        <td className="px-4 py-2 text-sm">{longTermYield.toFixed(1)}%</td>
+                        <td className="px-4 py-2 text-sm">{longTermYieldScore}</td>
+                        <td className="px-4 py-2 text-sm">20%</td>
+                        <td className="px-4 py-2 text-sm font-medium">{Math.round(longTermYieldScore * longTermYieldWeight)}</td>
+                      </tr>
+                      <tr className="bg-muted/50">
+                        <td className="px-4 py-2 text-sm font-medium">Final Deal Score</td>
+                        <td className="px-4 py-2 text-sm"></td>
+                        <td className="px-4 py-2 text-sm"></td>
+                        <td className="px-4 py-2 text-sm"></td>
+                        <td className="px-4 py-2 text-sm font-medium">{dealScore}/100</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
                       </div>
                     </div>
                   </div>
