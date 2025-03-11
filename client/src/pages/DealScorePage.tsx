@@ -989,7 +989,7 @@ export default function DealScorePage() {
 
   return (
     <PageTransition>
-      <div className="container max-w-4xl mx-auto py-8 px-4">
+      <div className="py-8 px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Deal Score Calculator</h1>
           <p className="text-muted-foreground">
@@ -1016,7 +1016,7 @@ export default function DealScorePage() {
             </div>
 
             <Tabs defaultValue="deal-score" className="w-full">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-5 mb-6">
                 <TabsTrigger value="deal-score">Deal Score</TabsTrigger>
                 <TabsTrigger value="price">Price</TabsTrigger>
                 <TabsTrigger value="rental">Rental</TabsTrigger>
@@ -1128,55 +1128,57 @@ export default function DealScorePage() {
             </Tabs>
           </>
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {currentStep === 1
-                  ? "Property Details"
-                  : currentStep === 2
-                  ? "Rental Details"
-                  : "Financing Details"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {renderStepCounter()}
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {renderFormStep()}
+          <div className="max-w-[600px]">
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {currentStep === 1
+                    ? "Property Details"
+                    : currentStep === 2
+                    ? "Rental Details"
+                    : "Financing Details"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {renderStepCounter()}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {renderFormStep()}
 
-                <div className="flex justify-between gap-4 mt-6">
-                  {currentStep > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handlePrevStep}
-                    >
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Previous
-                    </Button>
-                  )}
-                  <Button
-                    type="submit"
-                    className={currentStep === 1 ? "w-full" : "flex-1"}
-                    disabled={isCalculating}
-                  >
-                    {isCalculating ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Calculating...
-                      </>
-                    ) : currentStep < 3 ? (
-                      <>
-                        Next
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </>
-                    ) : (
-                      "Calculate Deal Score"
+                  <div className="flex justify-between gap-4 mt-6">
+                    {currentStep > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handlePrevStep}
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Previous
+                      </Button>
                     )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+                    <Button
+                      type="submit"
+                      className={currentStep === 1 ? "w-full" : "flex-1"}
+                      disabled={isCalculating}
+                    >
+                      {isCalculating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Calculating...
+                        </>
+                      ) : currentStep < 3 ? (
+                        <>
+                          Next
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </>
+                      ) : (
+                        "Calculate Deal Score"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
@@ -1257,28 +1259,6 @@ export default function DealScorePage() {
         <UpgradeModal
           open={showUpgradeModal}
           onOpenChange={setShowUpgradeModal}
-        />
-        <div
-          onClick={(e) => {
-            const now = new Date().getTime();
-            if (!window.lastClick) window.lastClick = 0;
-            if (!window.clickCount) window.clickCount = 0;
-
-            if (now - window.lastClick > 500) {
-              window.clickCount = 1;
-            } else {
-              window.clickCount++;
-            }
-
-            window.lastClick = now;
-
-            if (window.clickCount === 3) {
-              handlePrefill();
-              window.clickCount = 0;
-            }
-          }}
-          className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-100/20 cursor-default select-none"
-          style={{ opacity: 0.1 }}
         />
       </div>
     </PageTransition>
