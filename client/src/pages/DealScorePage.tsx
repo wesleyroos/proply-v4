@@ -1760,14 +1760,6 @@ export default function DealScorePage() {
               ? ((parseFloat(submittedData.longTermRental) * 12) / parseFloat(submittedData.purchasePrice)) * 100
               : null
           }
-          areaRatePerSqm={parseFloat(submittedData?.areaRate || "0")}
-          propertyRatePerSqm={
-            submittedData?.purchasePrice && submittedData?.size
-              ? parseFloat(submittedData.purchasePrice) / parseFloat(submittedData.size)
-              : 0
-          }
-        />
-      )}
       </div>
     </PageTransition>
   );
