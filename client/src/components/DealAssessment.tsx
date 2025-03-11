@@ -108,7 +108,7 @@ export function DealAssessment({
                 </div>
                 <div className="font-bold">R{marketPrice.toLocaleString()}</div>
               </div>
-              <div className="text-right mt-1">
+              <div className="text-center mt-1">
                 <span
                   className="text-xs text-blue-600 underline cursor-pointer hover:text-blue-800"
                   onClick={() => setIsCalculationModalOpen(true)}
