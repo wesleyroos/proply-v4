@@ -316,7 +316,7 @@ export function DealAssessment({
                   </Badge>
                 </div>
               </div>
-              <div className="flex justify-between items-center mt-4 p-3 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center">
                 <div>Price per m²</div>
                 <div className="font-bold">
                   R{Math.round(propertyRate).toLocaleString()}/m²
