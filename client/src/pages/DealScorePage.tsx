@@ -1423,7 +1423,7 @@ export default function DealScorePage() {
                                   /month
                                 </div>
                                 <div className="text-sm text-muted-foreground">
-                                  Based on <span className="font-bold">{formData.occupancy}%</span> occupancy & <span className="font-bold">R{formData.nightlyRate}</span> avg nightly rate
+                                  Based on <strong>{formData.occupancy}%</strong> occupancy & <strong>R{formData.nightlyRate}</strong> avg nightly rate
                                 </div>
                               </div>
 
