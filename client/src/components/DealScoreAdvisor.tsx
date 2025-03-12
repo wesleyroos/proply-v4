@@ -59,7 +59,9 @@ export function DealScoreAdvisor({
     if (isOpen && messages.length === 0) {
       setMessages([{
         type: 'assistant',
-        content: `Hello! I'm your Deal Score Advisor. Based on my analysis, this property has a deal score of ${dealScore}% (${getScoreColorClass(dealScore)}). Ask me anything about the deal's strengths, negotiation points, or potential concerns.`
+        content: `Hello! I'm your Deal Score Advisor. Based on my analysis, this property has a deal score of `
+          + `${dealScore}%`
+          + `. Ask me anything about the deal's strengths, negotiation points, or potential concerns.`
       }]);
     }
   }, [isOpen, messages.length, dealScore]);
@@ -74,20 +76,9 @@ export function DealScoreAdvisor({
 
   // Function to safely render message content
   const renderMessageContent = (message: Message) => {
-    if (message.type === 'user') {
-      return <p className="text-sm whitespace-pre-wrap">{message.content}</p>;
-    } else {
-      if (message.content.includes('class="')) {
-        return (
-          <p 
-            className="text-sm whitespace-pre-wrap"
-            dangerouslySetInnerHTML={{ __html: message.content }}
-          />
-        );
-      } else {
-        return <p className="text-sm whitespace-pre-wrap">{message.content}</p>;
-      }
-    }
+    return <p className={`text-sm whitespace-pre-wrap ${message.type === 'assistant' && getScoreColorClass(dealScore)}`}>
+      {message.content}
+    </p>;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -228,7 +219,7 @@ export function DealScoreAdvisor({
           </p>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4" style={{ maxHeight: "400px" }}>
+        <div className="flex-1 overflow-y-auto p-4">
           {messages.map((message, index) => (
             <div
               key={index}
@@ -242,7 +233,7 @@ export function DealScoreAdvisor({
                 className={`p-3 rounded-lg ${
                   message.type === 'user'
                     ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-foreground'
+                    : 'bg-muted'
                 }`}
               >
                 {renderMessageContent(message)}
