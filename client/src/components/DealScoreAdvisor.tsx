@@ -76,9 +76,31 @@ export function DealScoreAdvisor({
 
   // Function to safely render message content
   const renderMessageContent = (message: Message) => {
-    return <p className={`text-sm whitespace-pre-wrap ${message.type === 'assistant' && getScoreColorClass(dealScore)}`}>
-      {message.content}
-    </p>;
+    if (message.type === 'user') {
+      return <p className="text-sm whitespace-pre-wrap">{message.content}</p>;
+    } else {
+      // For the welcome message, we want to color just the score
+      if (message.content.includes("deal score of")) {
+        const parts = message.content.split(/(deal score of \d+%)/);
+        return (
+          <p className="text-sm whitespace-pre-wrap">
+            {parts.map((part, i) => {
+              if (part.includes("deal score of")) {
+                const scoreNumber = part.match(/\d+/)[0];
+                return (
+                  <span key={i}>
+                    deal score of <span className={getScoreColorClass(Number(scoreNumber))}>{scoreNumber}%</span>
+                  </span>
+                );
+              }
+              return <span key={i}>{part}</span>;
+            })}
+          </p>
+        );
+      }
+      // For other assistant messages
+      return <p className="text-sm whitespace-pre-wrap">{message.content}</p>;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
