@@ -61,6 +61,18 @@ export function DealScoreAdvisor({
     setIsLoading(true);
 
     try {
+      console.log("Sending request to deal-advice API with data:", {
+        dealDetails: {
+          purchasePrice,
+          marketPrice,
+          priceDiff,
+          dealScore,
+          condition,
+          rentalYield
+        },
+        question: userMessage
+      });
+
       // Call the correct Deal Score Advisor API endpoint
       const response = await fetch('/api/deal-advice', {
         method: 'POST',
@@ -80,11 +92,24 @@ export function DealScoreAdvisor({
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get AI response');
+      // Log the raw response for debugging
+      console.log("API Response status:", response.status);
+      const responseText = await response.text();
+      console.log("API Response text:", responseText);
+
+      // Try to parse the response as JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("Failed to parse response as JSON:", parseError);
+        throw new Error('Invalid response format from server');
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        console.error("Error response from server:", data);
+        throw new Error(data.error || 'Failed to get AI response');
+      }
 
       // Add AI response to chat
       setMessages(prev => [...prev, { 
@@ -101,7 +126,7 @@ export function DealScoreAdvisor({
       
       setMessages(prev => [...prev, { 
         type: 'assistant', 
-        content: "Sorry, I encountered an error. Please try again later." 
+        content: "Sorry, I encountered an error processing your request. Please try again later." 
       }]);
     } finally {
       setIsLoading(false);

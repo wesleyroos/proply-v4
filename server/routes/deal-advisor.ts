@@ -33,6 +33,14 @@ export const dealAdvisorHandler = async (req: Request, res: Response) => {
                         (req.body.context ? req.body.context : {});
     const question = req.body.question || '';
 
+    if (!dealDetails) {
+      console.error('Missing deal details in request');
+      return res.status(400).json({
+        error: "Missing deal details",
+        details: "The request is missing required property data"
+      });
+    }
+
     // Construct the system prompt with data context
     const purchasePrice = dealDetails.purchasePrice || 0;
     const marketPrice = dealDetails.marketPrice || 0;
@@ -60,20 +68,35 @@ ${rentalYield ? `Rental Yield: ${rentalYield.toFixed(1)}%` : ''}
     const userPrompt = question || "What do you think about this property deal?";
 
     // Call OpenAI API
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ],
-      max_tokens: 500
-    });
+    try {
+      console.log('Calling OpenAI API with system prompt:', systemPrompt);
+      console.log('User prompt:', userPrompt);
+      
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        max_tokens: 500
+      });
 
-    // Return the response
-    return res.json({
-      response: completion.choices[0].message.content,
-      tokensUsed: completion.usage?.total_tokens || 0
-    });
+      console.log('OpenAI API response received');
+      
+      // Return the response
+      return res.json({
+        response: completion.choices[0].message.content,
+        tokensUsed: completion.usage?.total_tokens || 0
+      });
+    } catch (openaiError) {
+      console.error('OpenAI API error:', openaiError);
+      
+      return res.status(503).json({
+        error: "AI service error",
+        details: openaiError instanceof Error ? openaiError.message : "Unknown OpenAI error",
+        suggestion: "Please try again later"
+      });
+    }
 
   } catch (error) {
     console.error('Deal advisor error:', error);
