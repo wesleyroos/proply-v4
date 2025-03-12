@@ -1432,7 +1432,6 @@ export default function DealScorePage() {
                 </TabsContent>
 
                 <TabsContent value="affordability" className="space-y-4">
-                  <h2 className="text-2xl font-semibold mb-4">Affordability Cheat Sheet</h2>
                   {submittedData && (
                     <Card>
                       <CardHeader>
