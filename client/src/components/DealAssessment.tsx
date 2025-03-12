@@ -86,9 +86,10 @@ export function DealAssessment({
           {/* Score Display */}
           <div className="flex items-center justify-center mb-4">
             <Badge
+              variant="solid"
               className={`
                 ${badgeInfo.color}
-                text-white px-6 py-2 text-xl
+                text-white px-6 py-2 text-xl hover:${badgeInfo.color}
               `}
             >
               {badgeInfo.text}
