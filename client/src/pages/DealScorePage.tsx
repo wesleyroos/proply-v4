@@ -915,7 +915,7 @@ export default function DealScorePage() {
   const calculateAffordabilityMetrics = (formData: typeof submittedData) => {
     if (!formData) return null;
 
-    // Parse formatted values to getnumeric values for calculations
+    //    // Parse formatted values to getnumeric values for calculations
     const parseValue = (value: string) => {
             if (!value) return 0;
       // Remove all non-numeric characters except decimal point
@@ -1434,147 +1434,152 @@ export default function DealScorePage() {
                 <TabsContent value="affordability" className="space-y-4">
                   <h2 className="text-2xl font-semibold mb-4">Affordability Cheat Sheet</h2>
                   {submittedData && (
-                    <>
-                      {(() => {
-                        const metrics = calculateAffordabilityMetrics(submittedData);
-                        if (!metrics) return null;
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Affordability Cheat Sheet</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {(() => {
+                          const metrics = calculateAffordabilityMetrics(submittedData);
+                          if (!metrics) return null;
 
-                        // Calculate total cash needed based on the costs
-                        const totalCashNeeded = metrics.upfrontCosts.deposit + metrics.upfrontCosts.combinedTransferCosts + metrics.upfrontCosts.bondRegistrationCosts;
+                          // Calculate total cash needed based on the costs
+                          const totalCashNeeded = metrics.upfrontCosts.deposit + metrics.upfrontCosts.combinedTransferCosts + metrics.upfrontCosts.bondRegistrationCosts;
 
-                        return (
-                          <div className="grid grid-cols-2 gap-4">
-                            {/* Upfront Costs */}
-                            <div className="border rounded-lg bg-white p-4">
-                              <h3 className="font-semibold text-lg mb-4">Upfront Costs</h3>
-                              <div className="space-y-2">
-                                <div className="flex justify-between">
-                                  <span>Deposit ({submittedData.depositPercentage}%):</span>
-                                  <span className="font-medium">
-                                    R{Math.round(metrics.upfrontCosts.deposit).toLocaleString()}
-                                  </span>
+                          return (
+                            <div className="grid grid-cols-2 gap-4">
+                              {/* Upfront Costs */}
+                              <div className="border rounded-lg bg-white p-4">
+                                <h3 className="font-semibold text-lg mb-4">Upfront Costs</h3>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <span>Deposit ({submittedData.depositPercentage}%):</span>
+                                    <span className="font-medium">
+                                      R{Math.round(metrics.upfrontCosts.deposit).toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Transfer costs:</span>
+                                    <span className="font-medium">
+                                      R{Math.round(metrics.upfrontCosts.combinedTransferCosts).toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Bond registration costs:</span>
+                                    <span className="font-medium">
+                                      R{Math.round(metrics.upfrontCosts.bondRegistrationCosts).toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between pt-2 border-t">
+                                    <span>Total cash needed:</span>
+                                    <span className="font-medium">
+                                      R{Math.round(totalCashNeeded).toLocaleString()}
+                                    </span>
+                                  </div>
                                 </div>
-                                <div className="flex justify-between">
-                                  <span>Transfer costs:</span>
-                                  <span className="font-medium">
-                                    R{Math.round(metrics.upfrontCosts.combinedTransferCosts).toLocaleString()}
-                                  </span>
+                              </div>
+
+                              {/* Monthly Payments */}
+                              <div className="border rounded-lg bg-white p-4">
+                                <h3 className="font-semibold text-lg mb-4">Monthly Payments</h3>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <span>Bond payment:</span>
+                                    <span className="font-medium">
+                                      R{metrics.monthlyPayments.bondPayment.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>If rates drop 1%:</span>
+                                    <span className="font-medium text-emerald-600">
+                                      R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Levies/rates:</span>
+                                    <span className="font-medium">
+                                      R{metrics.monthlyPayments.leviesAndRates.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between pt-2 border-t">
+                                    <span>Total monthly cost:</span>
+                                    <span className="font-medium">
+                                      R{metrics.monthlyPayments.totalMonthlyCost.toLocaleString()}
+                                    </span>
+                                  </div>
                                 </div>
-                                <div className="flex justify-between">
-                                  <span>Bond registration costs:</span>
-                                  <span className="font-medium">
-                                    R{Math.round(metrics.upfrontCosts.bondRegistrationCosts).toLocaleString()}
-                                  </span>
+                              </div>
+
+                              {/* Income Requirements */}
+                              <div className="border rounded-lg bg-gray-50 p-4">
+                                <h3 className="font-semibold text-lg mb-2">Income Requirements</h3>
+                                <div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span>Required household income:</span>
+                                    <span className="font-bold text-xl">
+                                      R{metrics.requiredIncome.toLocaleString()}/month
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    Based on 30% debt-to-income ratio
+                                  </p>
                                 </div>
-                                <div className="flex justify-between pt-2 border-t">
-                                  <span>Total cash needed:</span>
-                                  <span className="font-medium">
-                                    R{Math.round(totalCashNeeded).toLocaleString()}
-                                  </span>
+                              </div>
+
+                              {/* Different Deposit Options */}
+                              <div className="border rounded-lg bg-white p-4">
+                                <h3 className="font-semibold text-lg mb-4">Different Deposit Options</h3>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <span>20% deposit:</span>
+                                    <span className="font-medium">
+                                      R{metrics.depositScenarios.twenty.toLocaleString()}/month
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>10% deposit:</span>
+                                    <span className="font-medium">
+                                      R{metrics.depositScenarios.ten.toLocaleString()}/month
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>5% deposit:</span>
+                                    <span className="font-medium">
+                                      R{metrics.depositScenarios.five.toLocaleString()}/month
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Rate Changes */}
+                              <div className="border rounded-lg bg-white p-4">
+                                <h3 className="font-semibold text-lg mb-4">Rate Changes</h3>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <span>Current rate:</span>
+                                    <span className="font-medium">
+                                      R{metrics.monthlyPayments.bondPayment.toLocaleString()}/month
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>If rates drop 1%:</span>
+                                    <span className="font-medium text-emerald-600">
+                                      R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}/month
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>If rates rise 1%:</span>
+                                    <span className="font-medium text-red-600">
+                                      R{metrics.monthlyPayments.higherRatePayment.toLocaleString()}/month
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-
-                            {/* Monthly Payments */}
-                            <div className="border rounded-lg bg-white p-4">
-                              <h3 className="font-semibold text-lg mb-4">Monthly Payments</h3>
-                              <div className="space-y-2">
-                                <div className="flex justify-between">
-                                  <span>Bond payment:</span>
-                                  <span className="font-medium">
-                                    R{metrics.monthlyPayments.bondPayment.toLocaleString()}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>If rates drop 1%:</span>
-                                  <span className="font-medium text-emerald-600">
-                                    R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>Levies/rates:</span>
-                                  <span className="font-medium">
-                                    R{metrics.monthlyPayments.leviesAndRates.toLocaleString()}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between pt-2 border-t">
-                                  <span>Total monthly cost:</span>
-                                  <span className="font-medium">
-                                    R{metrics.monthlyPayments.totalMonthlyCost.toLocaleString()}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Income Requirements */}
-                            <div className="border rounded-lg bg-gray-50 p-4">
-                              <h3 className="font-semibold text-lg mb-2">Income Requirements</h3>
-                              <div>
-                                <div className="flex justify-between items-baseline">
-                                  <span>Required household income:</span>
-                                  <span className="font-bold text-xl">
-                                    R{metrics.requiredIncome.toLocaleString()}/month
-                                  </span>
-                                </div>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  Based on 30% debt-to-income ratio
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Different Deposit Options */}
-                            <div className="border rounded-lg bg-white p-4">
-                              <h3 className="font-semibold text-lg mb-4">Different Deposit Options</h3>
-                              <div className="space-y-2">
-                                <div className="flex justify-between">
-                                  <span>20% deposit:</span>
-                                  <span className="font-medium">
-                                    R{metrics.depositScenarios.twenty.toLocaleString()}/month
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>10% deposit:</span>
-                                  <span className="font-medium">
-                                    R{metrics.depositScenarios.ten.toLocaleString()}/month
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>5% deposit:</span>
-                                  <span className="font-medium">
-                                    R{metrics.depositScenarios.five.toLocaleString()}/month
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Rate Changes */}
-                            <div className="border rounded-lg bg-white p-4">
-                              <h3 className="font-semibold text-lg mb-4">Rate Changes</h3>
-                              <div className="space-y-2">
-                                <div className="flex justify-between">
-                                  <span>Current rate:</span>
-                                  <span className="font-medium">
-                                    R{metrics.monthlyPayments.bondPayment.toLocaleString()}/month
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>If rates drop 1%:</span>
-                                  <span className="font-medium text-emerald-600">
-                                    R{metrics.monthlyPayments.lowerRatePayment.toLocaleString()}/month
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>If rates rise 1%:</span>
-                                  <span className="font-medium text-red-600">
-                                    R{metrics.monthlyPayments.higherRatePayment.toLocaleString()}/month
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </>
+                          );
+                        })()}
+                      </CardContent>
+                    </Card>
                   )}
                 </TabsContent>
 
