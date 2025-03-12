@@ -65,6 +65,16 @@ export function DealAssessment({
   const badgeInfo = getBadgeInfo();
   const [isCalculationModalOpen, setIsCalculationModalOpen] = useState(false);
 
+  // Threshold points for the gauge
+  const thresholds = [
+    { value: 40, label: "Poor" },
+    { value: 50, label: "Fair" },
+    { value: 60, label: "Average" },
+    { value: 75, label: "Good" },
+    { value: 90, label: "Great" },
+    { value: 100, label: "Excellent" }
+  ];
+
   return (
     <>
       <div>
@@ -94,23 +104,42 @@ export function DealAssessment({
               {/* Gauge Background - Updated gradient order to match score colors */}
               <div className="h-3 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-orange-500 via-blue-500 via-green-500 to-emerald-500" />
 
-              {/* Gauge Markers - Updated text to match badges */}
-              <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                <span>Poor</span>
-                <span>Fair</span>
-                <span>Average</span>
-                <span>Good</span>
-                <span>Great</span>
-                <span>Excellent</span>
-              </div>
+              {/* Threshold Markers */}
+              {thresholds.map((threshold, index) => (
+                threshold.value < 100 && (
+                  <div
+                    key={threshold.value}
+                    className="absolute -top-1 bottom-1 w-0.5 bg-gray-300"
+                    style={{
+                      left: `${threshold.value}%`,
+                      transform: 'translateX(-50%)',
+                    }}
+                  />
+                )
+              ))}
 
               {/* Gauge Pointer */}
               <div
-                className="absolute -top-1 w-4 h-4 bg-background border-2 border-primary rounded-full transform -translate-x-1/2"
+                className="absolute -top-1 w-4 h-4 bg-background border-2 border-primary rounded-full transform -translate-x-1/2 z-10"
                 style={{
                   left: `${finalScore}%`,
                 }}
               />
+
+              {/* Gauge Labels */}
+              <div className="flex justify-between mt-3 text-xs text-muted-foreground relative">
+                {thresholds.map((threshold, index) => (
+                  <div
+                    key={threshold.value}
+                    className="absolute transform -translate-x-1/2"
+                    style={{
+                      left: `${index === thresholds.length - 1 ? 100 : threshold.value}%`,
+                    }}
+                  >
+                    {threshold.label}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
