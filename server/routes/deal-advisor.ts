@@ -1,4 +1,3 @@
-
 import { Request, Response } from 'express';
 import { OpenAI } from 'openai';
 import { requireAuth } from "../auth";
@@ -32,15 +31,6 @@ export const dealAdvisorHandler = async (req: Request, res: Response) => {
       dealContext
     } = req.body;
 
-    // Validate input
-    if (!question) {
-      return res.status(400).json({ error: "Question is required" });
-    }
-
-    if (!dealContext) {
-      return res.status(400).json({ error: "Deal context is required" });
-    }
-
     // Create a system prompt for the AI with property-specific context
     const systemPrompt = `
 You are a helpful Real Estate Deal Advisor that provides guidance on property investments.
@@ -53,53 +43,45 @@ You're currently analyzing a property deal with the following characteristics:
 - Deal Score: ${dealContext.dealScore}/100
 ${dealContext.rentalYield ? `- Expected Rental Yield: ${dealContext.rentalYield.toFixed(1)}%` : ''}
 
-Based on these metrics, provide helpful, concise, and professional advice for property investors.
-Focus on actionable insights and practical recommendations.
+Your role is to help the real estate agent:
+1. Provide balanced insights for both buyer and seller perspectives
+2. Suggest negotiation points based on the deal score and market value
+3. Highlight property strengths and potential concerns
+4. Offer guidance on positioning the property or making a competitive offer
+5. Provide context on comparable properties and market trends
 
-Property is ${dealContext.priceDiff <= -5 ? 'underpriced' : dealContext.priceDiff <= 5 ? 'fairly priced' : 'overpriced'}.
-Deal score interpretation:
-- 90-100: Excellent deal
-- 75-89: Very good deal
-- 60-74: Good deal
-- 40-59: Fair deal
-- Below 40: Poor deal / Requires caution
-
-For yield:
-- Above 8%: Excellent
-- 6-8%: Good
-- 4-6%: Average
-- Below 4%: Poor
+Always reference the specific data points provided above in your responses when relevant.
+Provide professional, concise advice that the agent can use when advising their clients.
 `;
 
-    // Make request to OpenAI
+    // User's question or default prompt
+    const userPrompt = question || "What do you think about this property deal?";
+
+    // Call OpenAI API
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-3.5-turbo",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: question }
+        { role: "user", content: userPrompt }
       ],
-      temperature: 0.7,
-      max_tokens: 800
+      max_tokens: 500
     });
 
-    // Get AI response
-    const aiResponse = completion.choices[0].message.content;
+    // Return the response
+    return res.json({
+      response: completion.choices[0].message.content,
+      tokensUsed: completion.usage?.total_tokens || 0
+    });
 
-    if (!aiResponse) {
-      throw new Error("Empty response from AI");
-    }
-
-    // Return success response
-    return res.status(200).json({ response: aiResponse });
   } catch (error) {
     console.error('Deal advisor error:', error);
-    
+
     // Check if error is related to OpenAI API
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     const isOpenAIError = errorMessage.includes('openai') || 
                           errorMessage.includes('api key') || 
                           errorMessage.includes('authentication');
-    
+
     return res.status(500).json({ 
       error: isOpenAIError 
         ? "AI service is currently unavailable" 
