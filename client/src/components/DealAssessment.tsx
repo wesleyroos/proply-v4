@@ -326,18 +326,7 @@ export function DealAssessment({
           </p>
         </div>
       </div>
-      {/* AI Advisor - Render floating button */}
-      {rentalData && (
-        <div className="mt-4">
-          <DealScoreAdvisor 
-            purchasePrice={purchasePrice}
-            marketPrice={marketPrice}
-            priceDiff={priceDiff}
-            rentalYield={rentalData.isShortTermRecommended ? rentalData.shortTerm.yield : rentalData.longTerm.yield}
-            condition={propertyCondition}
-            dealScore={finalScore}
-          />
-        </div>
+      {/* AI Advisor moved to parent component to be available across all tabs */}
       )}
 
       <Dialog open={isCalculationModalOpen} onOpenChange={setIsCalculationModalOpen}>

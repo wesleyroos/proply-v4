@@ -85,6 +85,8 @@ export default function DealScorePage() {
   );
   const [showResults, setShowResults] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [dealScore, setDealScore] = useState<number | null>(null); // Added state for deal score
+
 
   useEffect(() => {
     // Fetch current prime rate when component mounts
@@ -311,6 +313,7 @@ export default function DealScorePage() {
       setSubmittedData(formData);
       setShowResults(true);
       setIsCalculating(false);
+      setDealScore(calculateDealScore(new FormData(e.currentTarget as HTMLFormElement))); // Calculate deal score after submission
     }, 2000);
   };
 
@@ -984,6 +987,80 @@ export default function DealScorePage() {
     return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(value);
   };
 
+  // Helper function to calculate deal score for the advisor
+  const calculateDealScore = (formData: FormData) => {
+    // Get necessary values
+    const purchasePrice = parseFormattedValue(formData.get("purchasePrice")!);
+    const marketPrice = parseFormattedValue(formData.get("size")!) * parseFormattedValue(formData.get("areaRate")!);
+    const priceDiff = ((purchasePrice - marketPrice) / marketPrice) * 100;
+    const propertyCondition = formData.get("propertyCondition")!;
+    const areaRate = parseFormattedValue(formData.get("areaRate")!);
+    const squareMeters = parseFormattedValue(formData.get("size")!);
+    const propertyRate = purchasePrice / squareMeters;
+    const rentalData = calculateRentalMetrics(Object.fromEntries(formData));
+
+    // Price Factor: 0-100 based on price difference
+    let priceScore = 0;
+    if (priceDiff <= -15) priceScore = 100; // Great deal
+    else if (priceDiff <= -10) priceScore = 90;
+    else if (priceDiff <= -5) priceScore = 80;
+    else if (priceDiff <= 0) priceScore = 70;
+    else if (priceDiff <= 5) priceScore = 60;
+    else if (priceDiff <= 10) priceScore = 50;
+    else if (priceDiff <= 15) priceScore = 40;
+    else if (priceDiff <= 20) priceScore = 30;
+    else priceScore = 20;
+
+    // Condition Factor: 0-100
+    const conditionScore = 
+      propertyCondition === "excellent" ? 100 :
+      propertyCondition === "good" ? 80 :
+      propertyCondition === "fair" ? 60 :
+      40; // poor
+
+    // Area Rate vs Property Rate: 0-100
+    let rateScore = 0;
+    const rateDiff = ((propertyRate - areaRate) / areaRate) * 100;
+
+    if (rateDiff <= -15) rateScore = 100;
+    else if (rateDiff <= -10) rateScore = 90;
+    else if (rateDiff <= -5) rateScore = 80;
+    else if (rateDiff <= 0) rateScore = 70;
+    else if (rateDiff <= 5) rateScore = 60;
+    else if (rateDiff <= 10) rateScore = 50;
+    else if (rateDiff <= 15) rateScore = 40;
+    else rateScore = 30;
+
+    // Yield Factor: 0-100 based on rental yields
+    let yieldScore = 0;
+    const yield_val = rentalData.isShortTermRecommended ? rentalData.shortTerm.yield : rentalData.longTerm.yield;
+
+    if (yield_val >= 12) yieldScore = 100;
+    else if (yield_val >= 10) yieldScore = 90;
+    else if (yield_val >= 8) yieldScore = 80;
+    else if (yield_val >= 7) yieldScore = 70;
+    else if (yield_val >= 6) yieldScore = 60;
+    else if (yield_val >= 5) yieldScore = 50;
+    else if (yield_val >= 4) yieldScore = 40;
+    else yieldScore = 30;
+
+    // Calculate final score (weighted average)
+    const finalScore = Math.round(
+      (priceScore * 0.35) + // Price difference is important
+      (conditionScore * 0.15) + // Condition affects maintenance costs
+      (rateScore * 0.2) + // Rate comparison is good for value
+      (yieldScore * 0.3) // Yield is critical for investment returns
+    );
+
+    return finalScore;
+  };
+
+  // Common result processing function
+  const calculatePriceDiff = (formData: FormData) => {
+    const purchasePrice = parseFormattedValue(formData.get("purchasePrice")!);
+    const marketPrice = parseFormattedValue(formData.get("size")!) * parseFormattedValue(formData.get("areaRate")!);
+    return ((purchasePrice - marketPrice) / marketPrice) * 100;
+  };
 
   return (
     <PageTransition>
@@ -1047,7 +1124,7 @@ export default function DealScorePage() {
           </div>
 
           {/* Results Section */}
-          {submittedData && (
+          {showResults && (
             <div className="flex-1">
               <Tabs defaultValue="deal-score" className="w-full">
                 <TabsList className="grid w-full grid-cols-5">
@@ -1064,7 +1141,7 @@ export default function DealScorePage() {
                     </CardHeader>
                     <CardContent>
                       {/* Using the new DealAssessment component */}
-                      <DealAssessment 
+                      <DealAssessment
                         purchasePrice={parseFormattedValue(submittedData.purchasePrice)}
                         marketPrice={marketPrice}
                         priceDiff={priceDiff}
@@ -1072,6 +1149,7 @@ export default function DealScorePage() {
                         propertyCondition={submittedData.propertyCondition}
                         areaRate={parseFormattedValue(submittedData.areaRate)}
                         propertyRate={parseFormattedValue(submittedData.purchasePrice) / parseFormattedValue(submittedData.size)}
+                        dealScore={dealScore} // Pass deal score to DealAssessment
                       />
                     </CardContent>
                   </Card>
