@@ -21,7 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PropertyScoreModal } from "@/components/PropertyScoreModal";
+
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Home } from "lucide-react";
@@ -84,7 +84,7 @@ export default function DealScorePage() {
     null,
   );
   const [showResults, setShowResults] = useState(false);
-  const [showPropertyScoreModal, setShowPropertyScoreModal] = useState(false);
+  
   const [isCalculating, setIsCalculating] = useState(false);
 
   useEffect(() => {
@@ -1664,20 +1664,7 @@ export default function DealScorePage() {
             </div>
           </DialogContent>
         </Dialog>
-        {showPropertyScoreModal && (
-        <PropertyScoreModal
-          isOpen={showPropertyScoreModal}
-          onOpenChange={setShowPropertyScoreModal}
-          propertyAddress={submittedData?.address}
-          purchasePrice={parseFloat(submittedData?.purchasePrice || "0")}
-          marketAvgPrice={parseFloat(submittedData?.size || "0") * parseFloat(submittedData?.areaRate || "0")}
-          propertyCondition={submittedData?.propertyCondition || "good"}
-          shortTermYield={
-            submittedData?.nightlyRate && submittedData?.occupancy
-              ? ((parseFloat(submittedData.nightlyRate) * 365 * parseFloat(submittedData.occupancy) / 100) / parseFloat(submittedData.purchasePrice)) * 100
-              : null
-          }
-          longTermYield={
+        ongTermYield={
             submittedData?.longTermRental
               ? ((parseFloat(submittedData.longTermRental) * 12) / parseFloat(submittedData.purchasePrice)) * 100
               : null

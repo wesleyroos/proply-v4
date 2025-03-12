@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import html2canvas from "html2canvas";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
-import { PropertyScoreModal } from "@/components/PropertyScoreModal";
+
 import {
   Card,
   CardContent,
@@ -569,18 +569,7 @@ export default function PropertyAnalyzerPage() {
 
         {analysisResult && (
           <>
-            <PropertyScoreModal
-              isOpen={isOpen}
-              onOpenChange={setIsOpen}
-              scores={{
-                priceVsMarket: 85,
-                rentalYield: 75,
-                affordability: 90,
-                liquidity: 70,
-                riskFactors: 80,
-                amenities: 95,
-              }}
-            />
+            
             <div ref={resultsRef}>
               <div className="mb-6">
                 <div className="flex items-center justify-between">
