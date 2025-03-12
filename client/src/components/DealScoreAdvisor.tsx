@@ -15,14 +15,12 @@ interface DealScoreAdvisorProps {
   dealScore: number;
 }
 
-// Update the getScoreColorClass function to match DealAssessment
+// Get score color based on value - same function as in DealAssessment
 const getScoreColorClass = (score: number): string => {
   if (score >= 90) return "text-emerald-500";
   if (score >= 75) return "text-green-500";
   if (score >= 60) return "text-blue-500";
-  if (score >= 45) return "text-orange-500";
-  if (score >= 30) return "text-amber-500";
-  if (score >= 15) return "text-rose-500";
+  if (score >= 40) return "text-amber-500";
   return "text-red-500";
 };
 

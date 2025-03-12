@@ -47,10 +47,8 @@ export function DealAssessment({
     if (finalScore >= 90) return { emoji: "🔥", text: "EXCELLENT DEAL", color: "bg-emerald-500" };
     if (finalScore >= 75) return { emoji: "✨", text: "GREAT DEAL", color: "bg-green-500" };
     if (finalScore >= 60) return { emoji: "✅", text: "GOOD DEAL", color: "bg-blue-500" };
-    if (finalScore >= 45) return { emoji: "📊", text: "AVERAGE DEAL", color: "bg-orange-500" };
-    if (finalScore >= 30) return { emoji: "⚠️", text: "FAIR DEAL", color: "bg-amber-500" };
-    if (finalScore >= 15) return { emoji: "⛔", text: "POOR DEAL", color: "bg-rose-500" };
-    return { emoji: "❌", text: "VERY POOR DEAL", color: "bg-red-500" };
+    if (finalScore >= 40) return { emoji: "⚠️", text: "FAIR DEAL", color: "bg-amber-500" };
+    return { emoji: "❌", text: "POOR DEAL", color: "bg-red-500" };
   };
 
   // Get score color based on value
@@ -58,9 +56,7 @@ export function DealAssessment({
     if (score >= 90) return "text-emerald-500";
     if (score >= 75) return "text-green-500";
     if (score >= 60) return "text-blue-500";
-    if (score >= 45) return "text-orange-500";
-    if (score >= 30) return "text-amber-500";
-    if (score >= 15) return "text-rose-500";
+    if (score >= 40) return "text-amber-500";
     return "text-red-500";
   };
 
@@ -94,14 +90,12 @@ export function DealAssessment({
           <div className="w-full max-w-md">
             <div className="relative pt-4">
               {/* Gauge Background - Updated gradient order to match score colors */}
-              <div className="h-3 rounded-full bg-gradient-to-r from-red-500 via-rose-500 via-amber-500 via-orange-500 via-blue-500 via-green-500 to-emerald-500" />
+              <div className="h-3 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-blue-500 via-green-500 to-emerald-500" />
 
               {/* Gauge Markers - Updated text to match badges */}
               <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                <span>Very Poor</span>
                 <span>Poor</span>
                 <span>Fair</span>
-                <span>Average</span>
                 <span>Good</span>
                 <span>Great</span>
                 <span>Excellent</span>
