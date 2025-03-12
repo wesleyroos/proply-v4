@@ -89,10 +89,16 @@ export function DealScoreAdvisor({
       // Add AI response to chat
       setMessages(prev => [...prev, { 
         type: 'assistant', 
-        content: data.advice || "I'm sorry, I couldn't generate advice at this moment."
+        content: data.response || data.advice || "I'm sorry, I couldn't generate advice at this moment."
       }]);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error in DealScoreAdvisor:', error);
+      
+      // More detailed error logging
+      if (error instanceof Error) {
+        console.error('Error details:', error.message);
+      }
+      
       setMessages(prev => [...prev, { 
         type: 'assistant', 
         content: "Sorry, I encountered an error. Please try again later." 
