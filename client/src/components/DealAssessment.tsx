@@ -94,14 +94,14 @@ export function DealAssessment({
               {/* Gauge Background - Updated gradient order to match score colors */}
               <div className="h-3 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-orange-500 via-blue-500 via-green-500 to-emerald-500" />
 
-              {/* Gauge Markers - Updated text to match badges exactly */}
+              {/* Gauge Markers - Updated text to match badges */}
               <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                <span>POOR DEAL</span>
-                <span>FAIR DEAL</span>
-                <span>AVERAGE DEAL</span>
-                <span>GOOD DEAL</span>
-                <span>GREAT DEAL</span>
-                <span>EXCELLENT DEAL</span>
+                <span>Poor</span>
+                <span>Fair</span>
+                <span>Average</span>
+                <span>Good</span>
+                <span>Great</span>
+                <span>Excellent</span>
               </div>
 
               {/* Gauge Pointer */}
