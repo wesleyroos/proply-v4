@@ -61,6 +61,12 @@ export default function DealScorePage() {
     nightlyRate: "",
     occupancy: "",
     longTermRental: "",
+
+    // Financing Details (Step 3)
+    depositAmount: "",
+    depositPercentage: "",
+    interestRate: "11.75", // Default to current prime rate
+    loanTerm: "20", // Default to 20 years
   });
 
   // States for revenue data
@@ -252,7 +258,6 @@ export default function DealScorePage() {
         monthly: shortTermMonthly,
         yearly: shortTermYearly,
         yield: shortTermYield,
-        nightly: parseValue(formData.nightlyRate) // Added nightly rate
       },
       longTerm: {
         monthly: longTermMonthly,
@@ -575,7 +580,7 @@ export default function DealScorePage() {
         return (
           <>
             <div className="p-4 bg-gray-50 rounded-lg border">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="nightlyRate">Nightly Rate (R)</Label>
                   <Input
@@ -919,7 +924,6 @@ export default function DealScorePage() {
     };
 
     const purchasePrice = parseValue(formData.purchasePrice);
-    
     const depositAmount = parseValue(formData.depositAmount);
     const interestRate = parseValue(formData.interestRate);
     const loanTerm = parseValue(formData.loanTerm);
@@ -1419,7 +1423,7 @@ export default function DealScorePage() {
                                   /month
                                 </div>
                                 <div className="text-sm text-muted-foreground">
-                                  Based on {formData.occupancy}% occupancy & R{formData.nightlyRate} avg nightly rate
+                                  Based on {formData.occupancy}% occupancy rate
                                 </div>
                               </div>
 
