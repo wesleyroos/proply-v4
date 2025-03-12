@@ -61,6 +61,7 @@ export default function DealScorePage() {
     nightlyRate: "",
     occupancy: "",
     longTermRental: "",
+    airbnbNightlyRate:"", // Added airbnbNightlyRate
 
     // Financing Details (Step 3)
     depositAmount: "",
@@ -121,6 +122,7 @@ export default function DealScorePage() {
       depositPercentage: "10", // Don't format percentage
       interestRate: "11", // Don't format percentage
       loanTerm: formatWithThousandSeparators("20"),
+      airbnbNightlyRate: formatWithThousandSeparators("2500") // Added airbnbNightlyRate
     });
   };
 
@@ -176,7 +178,8 @@ export default function DealScorePage() {
       field === "occupancy" ||
       field === "longTermRental" ||
       field === "depositAmount" ||
-      field === "loanTerm"
+      field === "loanTerm" ||
+      field === "airbnbNightlyRate" // Added airbnbNightlyRate
     ) {
       // Remove existing formatting first
       numericValue = parseFormattedNumber(value);
@@ -431,6 +434,7 @@ export default function DealScorePage() {
       ...prev,
       nightlyRate: data.adr.toString(),
       occupancy: data.occupancy.toString(),
+      airbnbNightlyRate: data.adr.toString() // Added airbnbNightlyRate update
     }));
     setShowPercentileDialog(false);
   };
@@ -610,6 +614,19 @@ export default function DealScorePage() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="airbnbNightlyRate">Airbnb Nightly Rate (R)</Label> {/* Added Airbnb Nightly Rate */}
+                  <Input
+                    id="airbnbNightlyRate"
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.airbnbNightlyRate}
+                    onChange={(e) => handleInputChange("airbnbNightlyRate", e.target.value)}
+                    placeholder="Enter Airbnb nightly rate"
+                    required
+                  /> {/* Added Airbnb Nightly Rate Input */}
+                </div>
+
+                <div className="space-y-2">
                   <Label>Market Data</Label>
                   <Button
                     type="button"
@@ -756,7 +773,8 @@ export default function DealScorePage() {
       case 2: // Rental Details
         return formData.nightlyRate !== "" &&
                formData.occupancy !== "" &&
-               formData.longTermRental !== "";
+               formData.longTermRental !== "" &&
+               formData.airbnbNightlyRate !== ""; // Added airbnbNightlyRate check
       case 3: // Financing Details
         return formData.depositAmount !== "" &&
                formData.depositPercentage !== "" &&
@@ -791,6 +809,7 @@ export default function DealScorePage() {
         if (isFieldEmpty("nightlyRate")) missingFields.push("Nightly Rate");
         if (isFieldEmpty("occupancy")) missingFields.push("Occupancy Rate");
         if (isFieldEmpty("longTermRental")) missingFields.push("Long Term Rental");
+        if (isFieldEmpty("airbnbNightlyRate")) missingFields.push("Airbnb Nightly Rate"); //Added Airbnb nightly rate check
         break;
       case 3: // Financing Details
         if (isFieldEmpty("depositAmount")) missingFields.push("Deposit Amount");
@@ -884,7 +903,6 @@ export default function DealScorePage() {
 
   const calculateTransferCosts = (purchasePrice: number, includeVat = true, includeTransferDuty = true) => {
     // Look up costs from the transfer costs table
-    // Make sure we're passing the parameters in the correct order
     const costs = findCostFromTable(purchasePrice, transferCostsTable);
 
     if (!costs) {
@@ -892,18 +910,445 @@ export default function DealScorePage() {
       const estimatedTransferFee = purchasePrice * 0.025; // Approx. 2.5% for transfer fees
       const estimatedDisbursements = purchasePrice * 0.01; // Approx. 1% for disbursements
       const estimatedDeeds = purchasePrice * 0.005; // Approx. 0.5% for deeds fees
-      const transferDutyAmount = includeTransferDuty ? calculateTransferDuty(purchasePrice) : 0;
-
-      return estimatedTransferFee + estimatedDisbursements + estimatedDeeds + transferDutyAmount;
+      return estimatedTransferFee + estimatedDisbursements + estimatedDeeds;
     }
 
-    // Use values from the table
-    let totalCost = costs.transferFee + costs.disbursements + costs.deedsFee;
+    let totalCost = costs.transferFee + costs.deedsFee + costs.postageAndPetties;
 
-    // Add VAT if needed
-    if (includeVat) {
-      totalCost += costs.vat;
+    // Add transfer duty if needed
+    if (includeTransferDuty) {
+      totalCost += costs.transferDuty > 0 ? costs.transferDuty : calculateTransferDuty(purchasePrice);
     }
+
+    return totalCost;
+  };
+
+  // In your rental section where it shows "Based on 70% occupancy rate"
+  // Add the following text update:
+  const renderFormStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="address">Property Address</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  placeholder="Enter property address"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="purchasePrice">Purchase Price (R)</Label>
+                <Input
+                  id="purchasePrice"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.purchasePrice}
+                  onChange={(e) => handleInputChange("purchasePrice", e.target.value)}
+                  placeholder="Enter purchase price"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="size">Size (m²)</Label>
+                <Input
+                  id="size"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.size}
+                  onChange={(e) => handleInputChange("size", e.target.value)}
+                  placeholder="Enter property size"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
+                <Input
+                  id="areaRate"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.areaRate}
+                  onChange={(e) => handleInputChange("areaRate", e.target.value)}
+                  placeholder="Enter area rate per square meter"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bedrooms">Bedrooms</Label>
+                <Input
+                  id="bedrooms"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.bedrooms}
+                  onChange={(e) => handleInputChange("bedrooms", e.target.value)}
+                  placeholder="Enter number of bedrooms"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="propertyCondition">Property Condition</Label>
+                <Select
+                  value={formData.propertyCondition}
+                  onValueChange={(value) => handleInputChange("propertyCondition", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select property condition" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="excellent">Excellent</SelectItem>
+                    <SelectItem value="good">Good</SelectItem>
+                    <SelectItem value="fair">Fair</SelectItem>
+                    <SelectItem value="poor">Poor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </>
+        );
+
+      case 2:
+        return (
+          <>
+            <div className="p-4 bg-gray-50 rounded-lg border">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nightlyRate">Nightly Rate (R)</Label>
+                  <Input
+                    id="nightlyRate"
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.nightlyRate}
+                    onChange={(e) => handleInputChange("nightlyRate", e.target.value)}
+                    placeholder="Enter nightly rate"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="occupancy">Occupancy (%)</Label>
+                  <Input
+                    id="occupancy"
+                    type="text"
+                    inputMode="numeric"
+                    min="0"
+                    max="100"
+                    value={formData.occupancy}
+                    onChange={(e) => handleInputChange("occupancy", e.target.value)}
+                    placeholder="Enter expected occupancy rate"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="airbnbNightlyRate">Airbnb Nightly Rate (R)</Label> {/* Added Airbnb Nightly Rate */}
+                  <Input
+                    id="airbnbNightlyRate"
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.airbnbNightlyRate}
+                    onChange={(e) => handleInputChange("airbnbNightlyRate", e.target.value)}
+                    placeholder="Enter Airbnb nightly rate"
+                    required
+                  /> {/* Added Airbnb Nightly Rate Input */}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Market Data</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-10"
+                    onClick={() => {
+                      if (hasProAccess.hasAccess) {
+                        fetchRevenueData();
+                      } else {
+                        setShowUpgradeModal(true);
+                      }
+                    }}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Getting Data...
+                      </>
+                    ) : (
+                      <>
+                        Get Revenue
+                        <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                          PRO
+                        </span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2 mt-4">
+              <Label htmlFor="longTermRental">Long Term Rental (R/month)</Label>
+              <Input
+                id="longTermRental"
+                type="text"
+                inputMode="numeric"
+                value={formData.longTermRental}
+                onChange={(e) => handleInputChange("longTermRental", e.target.value)}
+                placeholder="Enter long term rental amount"
+                required
+              />
+            </div>
+          </>
+        );
+
+      case 3:
+        return (
+          <>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="depositAmount">Deposit Amount (R)</Label>
+                  <Input
+                    id="depositAmount"
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.depositAmount}
+                    onChange={(e) => handleInputChange("depositAmount", e.target.value)}
+                    placeholder="Enter deposit amount"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="depositPercentage">Deposit (%)</Label>
+                  <Input
+                    id="depositPercentage"
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.depositPercentage}
+                    onChange={(e) => handleInputChange("depositPercentage", e.target.value)}
+                    placeholder="Enter deposit percentage"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="interestRate">Interest Rate (%)</Label>
+                <Input
+                  id="interestRate"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.interestRate}
+                  onChange={(e) => handleInputChange("interestRate", e.target.value)}
+                  placeholder="Enter interest rate"
+                  required
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Current prime rate: 11%
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="loanTerm">Loan Term (years)</Label>
+                <Input
+                  id="loanTerm"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.loanTerm}
+                  onChange={(e) => handleInputChange("loanTerm", e.target.value)}
+                  placeholder="Enter loan term"
+                  required
+                />
+              </div>
+            </div>
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  /**
+   * Handles navigation when a step indicator is clicked
+   * This function allows users to navigate directly to any step
+   * by clicking on the step indicator in the UI
+   * 
+   * @param step - The step number to navigate to (1-based index)
+   */
+  const handleStepClick = (step: number) => {
+    // Allow unconditional navigation between steps
+    setCurrentStep(step);
+  };
+
+  /**
+   * Determines if a particular step has all required fields completed
+   * Used to display completion indicators in the step navigation UI
+   * 
+   * @param step - The step number to check for completion
+   * @returns boolean indicating if all required fields for the given step are filled
+   */
+  const isStepComplete = (step: number) => {
+    switch (step) {
+      case 1: // Property Details
+        return formData.address !== "" &&
+               formData.purchasePrice !== "" &&
+               formData.size !== "" &&
+               formData.areaRate !== "" &&
+               formData.bedrooms !== "";
+      case 2: // Rental Details
+        return formData.nightlyRate !== "" &&
+               formData.occupancy !== "" &&
+               formData.longTermRental !== "" &&
+               formData.airbnbNightlyRate !== ""; // Added airbnbNightlyRate check
+      case 3: // Financing Details
+        return formData.depositAmount !== "" &&
+               formData.depositPercentage !== "" &&
+               formData.interestRate !== "" &&
+               formData.loanTerm !== "";
+      default:
+        return false;
+    }
+  };
+
+  // Get list of missing field names for validation
+  const getMissingFields = (step: number): string[] => {
+    const missingFields: string[] = [];
+
+    // Check if a field has a valid value (handles formatted values with commas)
+    const isFieldEmpty = (field: string): boolean => {
+      if (!formData[field as keyof typeof formData]) return true;
+      const value = formData[field as keyof typeof formData].toString();
+      const numericValue = value.replace(/,/g, '');
+      return numericValue === '' || numericValue === '0';
+    };
+
+    switch (step) {
+      case 1: // Property Details
+        if (!formData.address) missingFields.push("Property Address");
+        if (isFieldEmpty("purchasePrice")) missingFields.push("Purchase Price");
+        if (isFieldEmpty("size")) missingFields.push("Size");
+        if (isFieldEmpty("areaRate")) missingFields.push("Area Rate");
+        if (isFieldEmpty("bedrooms")) missingFields.push("Bedrooms");
+        break;
+      case 2: // Rental Details
+        if (isFieldEmpty("nightlyRate")) missingFields.push("Nightly Rate");
+        if (isFieldEmpty("occupancy")) missingFields.push("Occupancy Rate");
+        if (isFieldEmpty("longTermRental")) missingFields.push("Long Term Rental");
+        if (isFieldEmpty("airbnbNightlyRate")) missingFields.push("Airbnb Nightly Rate"); //Added Airbnb nightly rate check
+        break;
+      case 3: // Financing Details
+        if (isFieldEmpty("depositAmount")) missingFields.push("Deposit Amount");
+        if (isFieldEmpty("depositPercentage")) missingFields.push("Deposit Percentage");
+        if (isFieldEmpty("interestRate")) missingFields.push("Interest Rate");
+        if (isFieldEmpty("loanTerm")) missingFields.push("Loan Term");
+        break;
+    }
+
+    return missingFields;
+  };
+
+  // Update the step counter UI to be clickable
+  const renderStepCounter = () => (
+    <div className="mb-6">
+      <div className="flex justify-between mb-2">
+        {[1, 2, 3].map((step) => (
+          <div
+            key={step}
+            className={`flex items-center ${step < 3 ? "flex-1" : ""}`}
+            onClick={() => handleStepClick(step)}
+            style={{ cursor: 'pointer' }}
+          >
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center relative ${
+                step <= currentStep
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {step}
+              {isStepComplete(step) && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">
+                  ✓
+                </div>
+              )}
+            </div>
+            {step < 3 && (
+              <div
+                className={`flex-1 h-1 mx-2 ${
+                  step < currentStep ? "bg-primary" : "bg-muted"
+                }`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-between text-sm">
+        <span
+          className={`${currentStep === 1 ? "text-primary" : ""} ${isStepComplete(1) ? "font-medium" : ""}`}
+          onClick={() => handleStepClick(1)}
+          style={{ cursor: 'pointer' }}
+        >
+          Property {isStepComplete(1) && "✓"}
+        </span>
+        <span
+          className={`${currentStep === 2 ? "text-primary" : ""} ${isStepComplete(2) ? "font-medium" : ""}`}
+          onClick={() => handleStepClick(2)}
+          style={{ cursor: 'pointer' }}
+        >
+          Rental {isStepComplete(2) && "✓"}
+        </span>
+        <span
+          className={`${currentStep === 3 ? "text-primary" : ""} ${isStepComplete(3) ? "font-medium" : ""}`}
+          onClick={() => handleStepClick(3)}
+          style={{ cursor: 'pointer' }}
+        >
+          Financing {isStepComplete(3) && "✓"}
+        </span>
+      </div>
+    </div>
+  );
+
+  const calculateMonthlyPayment = (loanAmount: number, annualRate: number, years: number) => {
+    const monthlyRate = annualRate / 12 / 100;
+    const numberOfPayments = years * 12;
+    const payment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
+                   (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+    return Math.round(payment);
+  };
+
+  const calculateTransferDuty = (purchasePrice: number) => {
+    // Using the official SARS transfer duty rates
+    if (purchasePrice <= 1000000) return 0;
+    if (purchasePrice <= 1375000) return (purchasePrice - 1000000) * 0.03;
+    if (purchasePrice <= 1925000) return 11250 + (purchasePrice - 1375000) * 0.06;
+    if (purchasePrice <= 2475000) return 44250 + (purchasePrice - 1925000) * 0.08;
+    if (purchasePrice <= 11000000) return 88250 + (purchasePrice - 2475000) * 0.11;
+    return 1026000 + (purchasePrice - 11000000) * 0.13;
+  };
+
+  const calculateTransferCosts = (purchasePrice: number, includeVat = true, includeTransferDuty = true) => {
+    // Look up costs from the transfer costs table
+    const costs = findCostFromTable(purchasePrice, transferCostsTable);
+
+    if (!costs) {
+      // Fallback to simplified estimation if price is outside the table range
+      const estimatedTransferFee = purchasePrice * 0.025; // Approx. 2.5% for transfer fees
+      const estimatedDisbursements = purchasePrice * 0.01; // Approx. 1% for disbursements
+      const estimatedDeeds = purchasePrice * 0.005; // Approx. 0.5% for deeds fees
+      return estimatedTransferFee + estimatedDisbursements + estimatedDeeds;
+    }
+
+    let totalCost = costs.transferFee + costs.deedsFee + costs.postageAndPetties;
 
     // Add transfer duty if needed
     if (includeTransferDuty) {
@@ -1329,7 +1774,7 @@ export default function DealScorePage() {
                             </span>{" "}
                             and{" "}
                             <span className="font-bold text-amber-600">
-                              R{(marketPrice * 1.1).toLocaleString()}
+                                                            R{(marketPrice * 1.1).toLocaleString()}
                             </span>
                           </p>
                         </div>
@@ -1422,9 +1867,9 @@ export default function DealScorePage() {
                                   )?.shortTerm.monthly.toLocaleString()}
                                   /month
                                 </div>
-                                <div className="text-sm text-muted-foreground">
-                                  Based on {formData.occupancy}% occupancy rate
-                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  Based on {formData.occupancy}% occupancy and R{parseFormattedNumber(formData.nightlyRate)} average nightly rate
+                                </p>
                               </div>
 
                               <div className="space-y-2">
@@ -1750,7 +2195,7 @@ export default function DealScorePage() {
                       <tr key={percentile} className="border-b">
                         <td className="py-2 px-4">{percentile}th Percentile</td>
                         <td className="text-right py-2 px-4">
-                          {new Intl.NumberFormat("en-ZA", {
+                                                    {new Intl.NumberFormat("en-ZA", {
                             style: "currency",
                             currency: "ZAR",
                           }).format(data.adr)}
