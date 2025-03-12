@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,11 @@ interface DealScoreAdvisorProps {
   dealScore: number;
 }
 
+interface Message {
+  type: 'user' | 'assistant';
+  content: string;
+}
+
 // Define sample questions tailored for real estate agents advising clients
 const SAMPLE_QUESTIONS = [
   "How should I position this property to potential buyers?",
@@ -23,11 +29,6 @@ const SAMPLE_QUESTIONS = [
   "How does this price compare to similar properties in the area?",
   "What financing options should I recommend to my client?"
 ];
-
-interface Message {
-  type: 'user' | 'assistant';
-  content: string;
-}
 
 /**
  * DealScoreAdvisor - AI-powered chatbot that provides personalized advice based on deal assessment
@@ -158,7 +159,7 @@ export function DealScoreAdvisor({
 
   return (
     <>
-      <Card className="fixed bottom-6 right-6 w-96 shadow-lg border z-50 flex flex-col bg-background" style={{ maxHeight: "600px" }}>
+      <Card className="fixed bottom-6 right-6 w-96 shadow-lg border z-50 flex flex-col bg-background" style={{ maxHeight: '80vh' }}>
         {/* Chat Header */}
         <div className="p-4 border-b flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -180,121 +181,101 @@ export function DealScoreAdvisor({
           Ask me anything about the deal score analysis or for advice on improving your investment strategy.
         </div>
 
-        {viewMode === 'form' ? (
-          // Form view - Input area and suggestions
-          <div className="flex flex-col">
-            {/* Welcome message */}
-            <div className="p-4 bg-muted/20 rounded-lg m-4">
-              <p className="text-sm">
-                {messages[0]?.content}
-              </p>
-            </div>
-
-            {/* Sample Questions */}
-            {showSuggestions && (
-              <div className="px-4 pb-4">
-                <p className="text-sm text-muted-foreground mb-2">Try asking about:</p>
-                <div className="space-y-2 max-w-full">
-                  {SAMPLE_QUESTIONS.map((question, index) => (
-                    <div 
-                      key={index}
-                      className="p-2 bg-background border rounded-lg text-sm cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => handleSampleQuestionClick(question)}
-                    >
-                      {question}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Input Box */}
-            <form onSubmit={handleSubmit} className="p-4 border-t mt-auto">
-              <div className="flex gap-2">
-                <Input
-                  id="query-input"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Ask a question about this property..."
-                  className="flex-1"
-                />
-                <Button 
-                  type="submit" 
-                  size="icon" 
-                  disabled={!query.trim() || isLoading || accessLoading}
-                >
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </div>
-            </form>
-          </div>
-        ) : (
-          // Results view - Chat messages
-          <div className="flex flex-col h-[400px]">
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((message, i) => (
-                <div 
-                  key={i}
-                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div 
-                    className={`max-w-[80%] rounded-lg p-3 ${
-                      message.type === 'user' 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted/30'
-                    }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="max-w-[80%] rounded-lg p-3 bg-muted/30">
-                    <Loader2 className="h-4 w-4 animate-spin" />
+        {/* Chat Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {viewMode === 'form' ? (
+            /* Form View - Show sample questions */
+            <div className="flex-1 flex flex-col p-4 overflow-hidden">
+              {/* Suggestions Section */}
+              {showSuggestions && (
+                <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+                  <p className="text-sm text-muted-foreground mb-3">Try asking about:</p>
+                  <div className="space-y-2">
+                    {SAMPLE_QUESTIONS.map((question, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleSampleQuestionClick(question)}
+                        className="p-3 bg-muted/50 rounded-lg text-sm cursor-pointer hover:bg-muted transition-colors"
+                      >
+                        {question}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
-              <div ref={messagesEndRef} />
             </div>
-
-            {/* Back button and Input Box */}
-            <div className="p-4 border-t mt-auto">
-              <div className="flex items-center gap-2 mb-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleBackToForm}
-                  className="flex items-center gap-1"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Back
-                </Button>
+          ) : (
+            /* Results View - Show chat messages */
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Back Button */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="ml-2 mt-2 w-fit flex items-center gap-1" 
+                onClick={handleBackToForm}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back</span>
+              </Button>
+              
+              {/* Chat Messages - Scrollable */}
+              <div className="flex-1 p-4 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`mb-4 ${
+                      message.type === 'user' ? 'text-right' : ''
+                    }`}
+                  >
+                    <div
+                      className={`inline-block p-3 rounded-lg max-w-[85%] ${
+                        message.type === 'user'
+                          ? 'bg-primary text-primary-foreground ml-auto'
+                          : 'bg-muted'
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-center items-center p-3">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
-              <form onSubmit={handleSubmit} className="flex gap-2">
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Ask a question about this property..."
-                  className="flex-1"
-                />
-                <Button 
-                  type="submit" 
-                  size="icon" 
-                  disabled={!query.trim() || isLoading || accessLoading}
-                >
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </form>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Input Form - Always at the bottom */}
+          <form onSubmit={handleSubmit} className="p-4 border-t mt-auto">
+            <div className="flex gap-2">
+              <Input
+                id="query-input"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Ask me anything..."
+                className="flex-1"
+                disabled={isLoading || accessLoading}
+              />
+              <Button 
+                type="submit" 
+                size="icon" 
+                disabled={!query.trim() || isLoading || accessLoading}
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </form>
+        </div>
       </Card>
 
       {/* Upgrade Modal */}
-      <UpgradeModal
-        open={showUpgradeModal}
-        onOpenChange={setShowUpgradeModal}
+      <UpgradeModal 
+        isOpen={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)}
+        feature="AI Deal Advisor"
       />
     </>
   );
