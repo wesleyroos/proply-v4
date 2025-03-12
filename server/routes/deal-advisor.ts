@@ -63,7 +63,7 @@ Provide professional, concise advice that the agent can use when advising their 
 `;
 
     // User's question or default prompt
-    const userPrompt = question || "Provide a brief assessment of this deal and any key considerations I should keep in mind.";
+    const userPrompt = question || "What do you think about this property deal?";
 
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
@@ -83,13 +83,13 @@ Provide professional, concise advice that the agent can use when advising their 
 
   } catch (error) {
     console.error('Deal advisor error:', error);
-    
+
     // Check if error is related to OpenAI API
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     const isOpenAIError = errorMessage.includes('openai') || 
                           errorMessage.includes('api key') || 
                           errorMessage.includes('authentication');
-    
+
     return res.status(500).json({ 
       error: isOpenAIError 
         ? "AI service is currently unavailable" 

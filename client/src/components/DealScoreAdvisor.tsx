@@ -1,11 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
-import { Card } from "@/components/ui/card";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageSquare, X, Loader2, Send } from "lucide-react";
-import { useProAccess } from "@/hooks/use-pro-access";
-import { UpgradeModal } from "@/components/UpgradeModal";
+import { Card } from "@/components/ui/card";
+import { Loader2, Send, MessageSquare, X } from "lucide-react";
 
+// Define props interface to receive property data
 interface DealScoreAdvisorProps {
   purchasePrice: number;
   marketPrice: number;
@@ -15,71 +14,65 @@ interface DealScoreAdvisorProps {
   dealScore: number;
 }
 
-type Message = {
+// Define message interface for chat history
+interface Message {
   type: 'user' | 'assistant';
   content: string;
-};
+}
 
 /**
- * DealScoreAdvisor - Simplified AI-powered chatbot that provides personalized advice
- * based on property deal assessment data
+ * DealScoreAdvisor component provides an AI assistant specifically for property deal analysis
+ * It uses the property data provided as props to offer context-aware insights on deal quality
  */
-export function DealScoreAdvisor({ 
-  purchasePrice, 
-  marketPrice, 
-  priceDiff, 
-  rentalYield, 
-  condition, 
-  dealScore 
+export function DealScoreAdvisor({
+  purchasePrice,
+  marketPrice,
+  priceDiff,
+  rentalYield,
+  condition,
+  dealScore
 }: DealScoreAdvisorProps) {
-  const { hasAccess, isLoading: accessLoading } = useProAccess();
-  const [query, setQuery] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // State for controlling chat visibility
   const [isOpen, setIsOpen] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  // State for message history
+  const [messages, setMessages] = useState<Message[]>([
+    { 
+      type: 'assistant', 
+      content: `Hi there! I'm your Deal Score advisor. Ask me anything about this property deal with a Deal Score of ${dealScore}/100.` 
+    }
+  ]);
+  // State for current user input
+  const [input, setInput] = useState('');
+  // State for loading status
+  const [isLoading, setIsLoading] = useState(false);
+  // Reference to the messages container for auto-scrolling
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Add welcome message when chat is first opened
+  // Scroll to bottom of chat when messages change
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      setMessages([{
-        type: 'assistant',
-        content: `Hello! I'm your Deal Score Advisor. I can help you advise your clients about this property based on its score of ${dealScore}/100. I can provide insights for both buyers and sellers, suggest negotiation points, and highlight key property features. How can I assist you today?`
-      }]);
-    }
-  }, [isOpen, messages.length, dealScore]);
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Toggle chat visibility
+  const toggleChat = () => {
+    setIsOpen(!isOpen);
+  };
 
-    if (!query.trim()) return;
-
-    if (!hasAccess) {
-      setShowUpgradeModal(true);
-      return;
-    }
-
-    const userMessage = query.trim();
+  // Handle user sending a message
+  const handleSendMessage = async () => {
+    if (!input.trim() || isLoading) return;
 
     // Add user message to chat
+    const userMessage = input.trim();
     setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
-    setQuery("");
+    setInput('');
     setIsLoading(true);
 
     try {
-      // Make API call to deal advisor endpoint
+      // Send request to deal-advisor API endpoint
       const response = await fetch('/api/deal-advisor', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           purchasePrice,
           marketPrice,
@@ -115,102 +108,81 @@ export function DealScoreAdvisor({
     }
   };
 
-  if (!isOpen) {
-    // Floating button when chat is closed
-    return (
-      <div className="fixed bottom-4 right-4 z-50">
-        <Button 
-          onClick={() => setIsOpen(true)} 
-          className="rounded-full w-14 h-14 shadow-lg bg-primary hover:bg-primary/90"
-        >
-          <MessageSquare className="h-6 w-6" />
-        </Button>
-      </div>
-    );
-  }
+  // Handle Enter key press to send message
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-50">
-        <Card className="w-80 md:w-96 shadow-xl flex flex-col" style={{ maxHeight: '80vh' }}>
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b">
-            <h3 className="font-medium flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Deal Score Advisor
-            </h3>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setIsOpen(false)}
-            >
+      {/* Floating chat button */}
+      <Button
+        onClick={toggleChat}
+        className="fixed bottom-6 right-6 rounded-full p-4 shadow-lg z-50"
+        size="icon"
+      >
+        <MessageSquare className="h-6 w-6" />
+      </Button>
+
+      {/* Chat window */}
+      {isOpen && (
+        <Card className="fixed bottom-20 right-6 w-80 sm:w-96 max-h-[500px] shadow-xl z-50 flex flex-col">
+          {/* Chat header */}
+          <div className="flex justify-between items-center p-3 border-b">
+            <h3 className="font-medium">Deal Score Advisor</h3>
+            <Button variant="ghost" size="icon" onClick={toggleChat}>
               <X className="h-4 w-4" />
             </Button>
           </div>
 
-          {/* Chat Container */}
-          <div className="flex flex-col h-full" style={{ maxHeight: 'calc(80vh - 60px)' }}>
-            {/* Messages */}
-            <div className="p-4 overflow-y-auto flex-1" style={{ scrollbarWidth: 'thin' }}>
-              {messages.map((message, index) => (
-                <div 
-                  key={index} 
-                  className={`mb-4 ${message.type === 'user' ? 'ml-auto' : ''}`}
+          {/* Chat messages */}
+          <div className="p-3 overflow-y-auto flex-1 max-h-[350px]">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`mb-3 ${
+                  message.type === 'user' ? 'ml-auto mr-0' : 'ml-0 mr-auto'
+                } max-w-[80%]`}
+              >
+                <div
+                  className={`p-2 rounded-lg ${
+                    message.type === 'user'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted'
+                  }`}
                 >
-                  <div 
-                    className={`p-3 rounded-lg max-w-[90%] ${
-                      message.type === 'user' 
-                        ? 'bg-primary text-primary-foreground ml-auto' 
-                        : 'bg-muted'
-                    }`}
-                  >
-                    {message.content}
-                  </div>
+                  {message.content}
                 </div>
-              ))}
-
-              {/* Loading indicator */}
-              {isLoading && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>AI is thinking...</span>
-                </div>
-              )}
-
-              {/* Invisible element to scroll to */}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input Form */}
-            <form onSubmit={handleSubmit} className="p-4 border-t mt-auto">
-              <div className="flex gap-2">
-                <Input
-                  id="query-input"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Ask me anything..."
-                  className="flex-1"
-                  disabled={isLoading || accessLoading}
-                />
-                <Button 
-                  type="submit" 
-                  size="icon" 
-                  disabled={!query.trim() || isLoading || accessLoading}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
               </div>
-            </form>
+            ))}
+            {isLoading && (
+              <div className="flex justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input area */}
+          <div className="p-3 border-t">
+            <div className="flex gap-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask about this property deal..."
+                className="flex-1"
+              />
+              <Button onClick={handleSendMessage} disabled={isLoading || !input.trim()}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </Card>
-      </div>
-
-      {/* Upgrade Modal */}
-      <UpgradeModal 
-        isOpen={showUpgradeModal} 
-        onClose={() => setShowUpgradeModal(false)}
-        feature="AI Deal Advisor"
-      />
+      )}
     </>
   );
 }
