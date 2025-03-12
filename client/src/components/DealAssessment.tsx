@@ -89,22 +89,23 @@ export function DealAssessment({
           {/* Gauge Visualization */}
           <div className="w-full max-w-md">
             <div className="relative pt-4">
-              {/* Gauge Background */}
-              <div className="h-3 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-green-500 to-blue-500" />
+              {/* Gauge Background - Updated gradient order to match score colors */}
+              <div className="h-3 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-blue-500 via-green-500 to-emerald-500" />
 
-              {/* Gauge Markers */}
+              {/* Gauge Markers - Updated text to match badges */}
               <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                <span>Overpriced</span>
+                <span>Poor</span>
                 <span>Fair</span>
                 <span>Good</span>
                 <span>Great</span>
+                <span>Excellent</span>
               </div>
 
               {/* Gauge Pointer */}
               <div
                 className="absolute -top-1 w-4 h-4 bg-background border-2 border-primary rounded-full transform -translate-x-1/2"
                 style={{
-                  left: `${Math.min(Math.max((100 - priceDiff * 5), 0), 100)}%`,
+                  left: `${finalScore}%`,
                 }}
               />
             </div>
