@@ -15,7 +15,6 @@ interface DealScoreAdvisorProps {
   dealScore: number;
 }
 
-// Define message interface for chat history
 interface Message {
   type: 'user' | 'assistant';
   content: string;
@@ -62,43 +61,47 @@ export function DealScoreAdvisor({
     setIsLoading(true);
 
     try {
-      // Create context object similar to RentalAdvisor
-      const context = {
-        address: "This property",
+      // Create context data about the property deal for the AI
+      const dealContext = {
         purchasePrice,
         marketPrice,
         priceDiff,
-        rentalYield: rentalYield || 0,
+        rentalYield,
         condition,
-        dealScore
+        dealScore,
+        priceStatus: priceDiff <= -5 ? "below market" : priceDiff <= 5 ? "at market" : "above market"
       };
 
-      // Send request to rental-advice API endpoint (the one that works)
-      const response = await fetch('/api/rental-advice', {
+      // Send the question along with the deal context to the API
+      const response = await fetch('/api/deal-advisor', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          context,
-          userQuery: userMessage
+          question: userMessage,
+          dealContext: dealContext,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get AI response');
-      }
-
+      // Get response data even if not OK to capture error messages
       const data = await response.json();
 
+      if (!response.ok) {
+        // Check if we have a specific error message from the server
+        const errorMessage = data.error || data.details || 'Failed to get AI response';
+        console.error('API Error:', errorMessage);
+        throw new Error(errorMessage);
+      }
+
       // Add AI response to chat
-      setMessages(prev => [...prev, { 
-        type: 'assistant', 
-        content: data.advice || "I'm sorry, I couldn't generate advice at this moment."
-      }]);
+      setMessages(prev => [...prev, { type: 'assistant', content: data.response }]);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error details:', error);
+      // Provide a more helpful error message
       setMessages(prev => [...prev, { 
         type: 'assistant', 
-        content: "Sorry, I encountered an error. Please try again later." 
+        content: "Sorry, I encountered an error processing your request. This might be because the AI service is currently unavailable or the OpenAI API key needs to be configured. Please try again later or contact support if the issue persists." 
       }]);
     } finally {
       setIsLoading(false);
@@ -106,76 +109,63 @@ export function DealScoreAdvisor({
   };
 
   return (
-    <>
-      {/* Floating button */}
+    <div className="relative">
+      {/* Floating chat button */}
       <Button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 rounded-full p-3 w-12 h-12"
-        variant="default"
+        className="fixed bottom-6 right-6 rounded-full p-4 shadow-lg z-50 bg-primary hover:bg-primary/90"
+        onClick={() => setIsOpen(!isOpen)}
       >
-        <MessageSquare className="h-6 w-6" />
+        {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
       </Button>
 
-      {/* Chat Modal */}
+      {/* Chat window */}
       {isOpen && (
-        <Card className="fixed bottom-20 right-4 w-96 max-w-[calc(100vw-2rem)] shadow-xl flex flex-col border z-50">
-          {/* Chat Header */}
-          <div className="flex justify-between items-center p-3 border-b">
-            <h3 className="font-medium">Deal Score Advisor</h3>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-8 w-8 p-0 rounded-full" 
-              onClick={() => setIsOpen(false)}
-            >
-              <X className="h-4 w-4" />
+        <Card className="fixed bottom-24 right-6 w-96 max-h-[500px] shadow-xl z-50 flex flex-col">
+          <div className="bg-primary text-white p-3 flex justify-between items-center rounded-t-lg">
+            <h3 className="font-semibold">Deal Score Advisor</h3>
+            <Button variant="ghost" size="sm" className="p-1 h-auto text-white hover:bg-primary/80" onClick={() => setIsOpen(false)}>
+              <X size={18} />
             </Button>
           </div>
-
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-3 max-h-96 space-y-4">
-            {messages.map((message, index) => (
+          
+          {/* Chat messages */}
+          <div className="flex-1 overflow-y-auto p-3 max-h-[320px]">
+            {messages.map((message, i) => (
               <div 
-                key={index} 
-                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                key={i} 
+                className={`mb-3 ${message.type === 'user' ? 'text-right' : 'text-left'}`}
               >
                 <div 
-                  className={`max-w-[80%] rounded-lg p-3 ${
+                  className={`inline-block p-3 rounded-lg ${
                     message.type === 'user' 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-muted'
+                      ? 'bg-primary text-white rounded-tr-none' 
+                      : 'bg-muted rounded-tl-none'
                   }`}
                 >
                   {message.content}
                 </div>
               </div>
             ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-muted rounded-lg p-3 flex items-center">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Thinking...
-                </div>
-              </div>
-            )}
             <div ref={messagesEndRef} />
           </div>
-
-          {/* Message Input */}
-          <form onSubmit={handleSubmit} className="p-3 border-t flex">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about this property deal..."
-              className="flex-1 mr-2"
-              disabled={isLoading}
-            />
-            <Button type="submit" size="sm" disabled={isLoading || !input.trim()}>
-              <Send className="h-4 w-4" />
-            </Button>
+          
+          {/* Input form */}
+          <form onSubmit={handleSubmit} className="p-3 border-t">
+            <div className="flex">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask about this property deal..."
+                className="flex-1 mr-2"
+                disabled={isLoading}
+              />
+              <Button type="submit" size="sm" disabled={isLoading}>
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
+            </div>
           </form>
         </Card>
       )}
-    </>
+    </div>
   );
 }

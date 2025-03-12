@@ -27,30 +27,21 @@ export const dealAdvisorHandler = async (req: Request, res: Response) => {
 
     // Extract data from request
     const { 
-      purchasePrice, 
-      marketPrice, 
-      priceDiff, 
-      rentalYield, 
-      condition, 
-      dealScore, 
-      question 
+      question,
+      dealContext
     } = req.body;
 
-    // Validate required fields
-    if (!purchasePrice || !marketPrice || priceDiff === undefined || !dealScore) {
-      return res.status(400).json({ error: "Missing required property analysis data" });
-    }
-
-    // Create system prompt with property details for real estate agents
+    // Create a system prompt for the AI with property-specific context
     const systemPrompt = `
-You are an AI real estate advisor helping agents provide informed guidance to their clients. You're analyzing a property with the following details:
+You are a helpful Real Estate Deal Advisor that provides guidance on property investments.
 
-Purchase Price: R${purchasePrice.toLocaleString()}
-Market Value: R${marketPrice.toLocaleString()}
-Price Difference: ${priceDiff.toFixed(1)}% ${priceDiff > 0 ? 'above' : 'below'} market value
-Deal Score: ${dealScore}/100
-Property Condition: ${condition}
-${rentalYield ? `Rental Yield: ${rentalYield.toFixed(1)}%` : ''}
+You're currently analyzing a property deal with the following characteristics:
+- Purchase Price: R${dealContext.purchasePrice.toLocaleString()}
+- Market Value: R${dealContext.marketPrice.toLocaleString()}
+- Price Difference: ${Math.abs(dealContext.priceDiff).toFixed(1)}% ${dealContext.priceDiff > 0 ? 'above' : 'below'} market value
+- Property Condition: ${dealContext.condition}
+- Deal Score: ${dealContext.dealScore}/100
+${dealContext.rentalYield ? `- Expected Rental Yield: ${dealContext.rentalYield.toFixed(1)}%` : ''}
 
 Your role is to help the real estate agent:
 1. Provide balanced insights for both buyer and seller perspectives
@@ -59,6 +50,7 @@ Your role is to help the real estate agent:
 4. Offer guidance on positioning the property or making a competitive offer
 5. Provide context on comparable properties and market trends
 
+Always reference the specific data points provided above in your responses when relevant.
 Provide professional, concise advice that the agent can use when advising their clients.
 `;
 
