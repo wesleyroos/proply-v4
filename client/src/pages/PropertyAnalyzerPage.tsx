@@ -225,7 +225,7 @@ export default function PropertyAnalyzerPage() {
   const { user } = useUser();
   const hasProAccess = useProAccess();
   const queryClient = useQueryClient();
-  const [isOpen, setIsOpen] = useState(false);
+  // Removed isOpen and setIsOpen
   useEffect(() => {
     if (user && !hasProAccess && user.reportsGenerated >= 3) {
       setShowLimitModal(true);
@@ -569,18 +569,6 @@ export default function PropertyAnalyzerPage() {
 
         {analysisResult && (
           <>
-            <PropertyScoreModal
-              isOpen={isOpen}
-              onOpenChange={setIsOpen}
-              scores={{
-                priceVsMarket: 85,
-                rentalYield: 75,
-                affordability: 90,
-                liquidity: 70,
-                riskFactors: 80,
-                amenities: 95,
-              }}
-            />
             <div ref={resultsRef}>
               <div className="mb-6">
                 <div className="flex items-center justify-between">
