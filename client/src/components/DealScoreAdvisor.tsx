@@ -91,19 +91,24 @@ export function DealScoreAdvisor({
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get AI response');
-      }
-
+      // Get response data even if not OK to capture error messages
       const data = await response.json();
+
+      if (!response.ok) {
+        // Check if we have a specific error message from the server
+        const errorMessage = data.error || data.details || 'Failed to get AI response';
+        console.error('API Error:', errorMessage);
+        throw new Error(errorMessage);
+      }
 
       // Add AI response to chat
       setMessages(prev => [...prev, { type: 'assistant', content: data.response }]);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error details:', error);
+      // Provide a more helpful error message
       setMessages(prev => [...prev, { 
         type: 'assistant', 
-        content: "Sorry, I encountered an error. Please try again later." 
+        content: "Sorry, I encountered an error processing your request. This might be because the AI service is currently unavailable or the OpenAI API key needs to be configured. Please try again later or contact support if the issue persists." 
       }]);
     } finally {
       setIsLoading(false);
