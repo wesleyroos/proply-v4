@@ -48,7 +48,6 @@ export function DealAssessment({
     if (finalScore >= 75) return { emoji: "✨", text: "GREAT DEAL", color: "bg-green-500" };
     if (finalScore >= 60) return { emoji: "✅", text: "GOOD DEAL", color: "bg-blue-500" };
     if (finalScore >= 50) return { emoji: "⭐", text: "AVERAGE DEAL", color: "bg-orange-500" };
-    if (finalScore >= 40) return { emoji: "⚠️", text: "FAIR DEAL", color: "bg-amber-500" };
     return { emoji: "❌", text: "POOR DEAL", color: "bg-red-500" };
   };
 
@@ -58,7 +57,6 @@ export function DealAssessment({
     if (score >= 75) return "text-green-500";
     if (score >= 60) return "text-blue-500";
     if (score >= 50) return "text-orange-500";
-    if (score >= 40) return "text-amber-500";
     return "text-red-500";
   };
 
@@ -67,8 +65,7 @@ export function DealAssessment({
 
   // Threshold points for the gauge
   const thresholds = [
-    { value: 40, label: "Poor" },
-    { value: 50, label: "Fair" },
+    { value: 50, label: "Poor" },
     { value: 60, label: "Average" },
     { value: 75, label: "Good" },
     { value: 90, label: "Great" },
@@ -102,7 +99,7 @@ export function DealAssessment({
           <div className="w-full max-w-md">
             <div className="relative pt-4">
               {/* Gauge Background - Updated gradient order to match score colors */}
-              <div className="h-3 rounded-full bg-gradient-to-r from-red-500 via-amber-500 via-orange-500 via-blue-500 via-green-500 to-emerald-500" />
+              <div className="h-3 rounded-full bg-gradient-to-r from-red-500 via-orange-500 via-blue-500 via-green-500 to-emerald-500" />
 
               {/* Threshold Markers */}
               {thresholds.map((threshold, index) => (
