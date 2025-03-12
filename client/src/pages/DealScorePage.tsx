@@ -61,6 +61,7 @@ export default function DealScorePage() {
     nightlyRate: "",
     occupancy: "",
     longTermRental: "",
+    shortTermNightly:"", // Added shortTermNightly
 
     // Financing Details (Step 3)
     depositAmount: "",
@@ -121,6 +122,7 @@ export default function DealScorePage() {
       depositPercentage: "10", // Don't format percentage
       interestRate: "11", // Don't format percentage
       loanTerm: formatWithThousandSeparators("20"),
+      shortTermNightly: formatWithThousandSeparators("2500") //Added shortTermNightly
     });
   };
 
@@ -176,7 +178,8 @@ export default function DealScorePage() {
       field === "occupancy" ||
       field === "longTermRental" ||
       field === "depositAmount" ||
-      field === "loanTerm"
+      field === "loanTerm" ||
+      field === "shortTermNightly" //Added shortTermNightly
     ) {
       // Remove existing formatting first
       numericValue = parseFormattedNumber(value);
@@ -258,6 +261,7 @@ export default function DealScorePage() {
         monthly: shortTermMonthly,
         yearly: shortTermYearly,
         yield: shortTermYield,
+        nightly: parseValue(formData.nightlyRate) // Added nightly rate
       },
       longTerm: {
         monthly: longTermMonthly,
@@ -431,6 +435,7 @@ export default function DealScorePage() {
       ...prev,
       nightlyRate: data.adr.toString(),
       occupancy: data.occupancy.toString(),
+      shortTermNightly: data.adr.toString() //Added shortTermNightly
     }));
     setShowPercentileDialog(false);
   };
@@ -608,6 +613,18 @@ export default function DealScorePage() {
                     required
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="shortTermNightly">Short Term Nightly Rate (R)</Label>
+                  <Input
+                    id="shortTermNightly"
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.shortTermNightly}
+                    onChange={(e) => handleInputChange("shortTermNightly", e.target.value)}
+                    placeholder="Enter short term nightly rate"
+                    required
+                  />
+                </div>
 
                 <div className="space-y-2">
                   <Label>Market Data</Label>
@@ -756,7 +773,8 @@ export default function DealScorePage() {
       case 2: // Rental Details
         return formData.nightlyRate !== "" &&
                formData.occupancy !== "" &&
-               formData.longTermRental !== "";
+               formData.longTermRental !== "" &&
+               formData.shortTermNightly !== ""; // Added shortTermNightly
       case 3: // Financing Details
         return formData.depositAmount !== "" &&
                formData.depositPercentage !== "" &&
@@ -791,6 +809,7 @@ export default function DealScorePage() {
         if (isFieldEmpty("nightlyRate")) missingFields.push("Nightly Rate");
         if (isFieldEmpty("occupancy")) missingFields.push("Occupancy Rate");
         if (isFieldEmpty("longTermRental")) missingFields.push("Long Term Rental");
+        if (isFieldEmpty("shortTermNightly")) missingFields.push("Short Term Nightly Rate"); // Added shortTermNightly
         break;
       case 3: // Financing Details
         if (isFieldEmpty("depositAmount")) missingFields.push("Deposit Amount");
@@ -1423,7 +1442,7 @@ export default function DealScorePage() {
                                   /month
                                 </div>
                                 <div className="text-sm text-muted-foreground">
-                                  Based on {formData.occupancy}% occupancy rate
+                                  Based on {formData.occupancy}% occupancy & R{formData.shortTermNightly} avg nightly rate
                                 </div>
                               </div>
 
