@@ -28,6 +28,7 @@ import { Calendar, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { findCostFromTable, transferCostsTable, bondCostsTable } from "@/lib/costTables";
 import { DealAssessment } from "@/components/DealAssessment";
+import { DealScoreAdvisor } from "@/components/DealScoreAdvisor"; // Import DealScoreAdvisor
 
 interface RevenueData {
   adr: number;
@@ -984,6 +985,8 @@ export default function DealScorePage() {
     return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(value);
   };
 
+
+  const finalScore = null; // Placeholder for deal score - cannot introduce new variables
 
   return (
     <PageTransition>

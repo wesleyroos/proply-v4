@@ -8,7 +8,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { DealScoreAdvisor } from "@/components/DealScoreAdvisor";
 
 interface DealAssessmentProps {
   purchasePrice: number;
@@ -17,15 +16,20 @@ interface DealAssessmentProps {
   rentalData: {
     shortTerm: {
       yield: number;
+      monthly: number;
+      yearly: number;
     };
     longTerm: {
       yield: number;
+      monthly: number;
+      yearly: number;
     };
     isShortTermRecommended: boolean;
   } | null;
   propertyCondition: string;
   areaRate: number;
   propertyRate: number;
+  finalScore: number; // Added finalScore prop
 }
 
 /**
@@ -39,7 +43,8 @@ export function DealAssessment({
   rentalData,
   propertyCondition,
   areaRate,
-  propertyRate
+  propertyRate,
+  finalScore // Added finalScore prop
 }: DealAssessmentProps) {
   // Determine badge and color based on price difference
   const getBadgeInfo = () => {
@@ -50,85 +55,6 @@ export function DealAssessment({
 
   const badgeInfo = getBadgeInfo();
   const [isCalculationModalOpen, setIsCalculationModalOpen] = useState(false);
-
-  // Deal Score calculation (with yield factors included)
-  const calculateDealScore = () => {
-    // Price Factor: 0-100 based on price difference
-    let priceScore = 0;
-    if (priceDiff <= -15) priceScore = 100; // Great deal
-    else if (priceDiff <= -10) priceScore = 90;
-    else if (priceDiff <= -5) priceScore = 80;
-    else if (priceDiff <= 0) priceScore = 70;
-    else if (priceDiff <= 5) priceScore = 60;
-    else if (priceDiff <= 10) priceScore = 50;
-    else if (priceDiff <= 15) priceScore = 40;
-    else if (priceDiff <= 20) priceScore = 30;
-    else priceScore = 20;
-
-    // Condition Factor: 0-100
-    const conditionScore = 
-      propertyCondition === "excellent" ? 100 :
-      propertyCondition === "good" ? 80 :
-      propertyCondition === "fair" ? 60 :
-      40; // poor
-
-    // Area Rate vs Property Rate: 0-100
-    let rateScore = 0;
-    const rateDiff = ((propertyRate - areaRate) / areaRate) * 100;
-
-    if (rateDiff <= -15) rateScore = 100;
-    else if (rateDiff <= -10) rateScore = 90;
-    else if (rateDiff <= -5) rateScore = 80;
-    else if (rateDiff <= 0) rateScore = 70;
-    else if (rateDiff <= 5) rateScore = 60;
-    else if (rateDiff <= 10) rateScore = 50;
-    else if (rateDiff <= 15) rateScore = 40;
-    else rateScore = 30;
-
-    // Yield Factor: 0-100 based on short-term and long-term yields
-    let yieldScore = 0;
-
-    // Only calculate if we have rental data
-    if (rentalData) {
-      // Short-term yield score (0-50, with 50 being excellent)
-      let shortTermYieldScore = 0;
-      const shortTermYield = rentalData.shortTerm.yield;
-
-      if (shortTermYield >= 15) shortTermYieldScore = 50; // Excellent yield
-      else if (shortTermYield >= 12) shortTermYieldScore = 40;
-      else if (shortTermYield >= 10) shortTermYieldScore = 30;
-      else if (shortTermYield >= 8) shortTermYieldScore = 20;
-      else if (shortTermYield >= 6) shortTermYieldScore = 10;
-      else shortTermYieldScore = 5;
-
-      // Long-term yield score (0-50, with 50 being excellent)
-      let longTermYieldScore = 0;
-      const longTermYield = rentalData.longTerm.yield;
-
-      if (longTermYield >= 8) longTermYieldScore = 50; // Excellent yield
-      else if (longTermYield >= 7) longTermYieldScore = 40;
-      else if (longTermYield >= 6) longTermYieldScore = 30;
-      else if (longTermYield >= 5) longTermYieldScore = 20;
-      else if (longTermYield >= 4) longTermYieldScore = 10;
-      else longTermYieldScore = 5;
-
-      // Combined yield score (0-100)
-      yieldScore = shortTermYieldScore + longTermYieldScore;
-    }
-
-    // Final Score (weighted average)
-    // 40% price, 20% condition, 20% rate comparison, 20% yield
-    const finalScore = Math.round(
-      (priceScore * 0.4) + 
-      (conditionScore * 0.2) + 
-      (rateScore * 0.2) + 
-      (yieldScore * 0.2)
-    );
-
-    return finalScore;
-  };
-
-  const finalScore = calculateDealScore();
 
   return (
     <>
@@ -230,15 +156,11 @@ export function DealAssessment({
                     </div>
                     <div className="flex justify-between items-center">
                       <div className="font-medium">Short-Term Yield:</div>
-                      <div 
-                        className={`font-bold ${
-                          rentalData.shortTerm.yield >= 15 
-                            ? "text-green-600" 
-                            : rentalData.shortTerm.yield >= 10 
-                              ? "text-blue-600" 
-                              : "text-amber-600"
-                        }`}
-                      >
+                      <div className={`font-bold ${
+                        rentalData.shortTerm.yield >= 15 ? "text-green-600" : 
+                        rentalData.shortTerm.yield >= 10 ? "text-blue-600" : 
+                        "text-amber-600"
+                      }`}>
                         {rentalData.shortTerm.yield.toFixed(1)}%
                       </div>
                       <div>
@@ -250,26 +172,20 @@ export function DealAssessment({
                               "text-amber-500"}
                           `}
                         >
-                          {rentalData.shortTerm.yield >= 15 
-                            ? "EXCELLENT" 
-                            : rentalData.shortTerm.yield >= 10 
-                              ? "GOOD" 
-                              : "FAIR"}
+                          {rentalData.shortTerm.yield >= 15 ? "EXCELLENT" : 
+                            rentalData.shortTerm.yield >= 10 ? "GOOD" : 
+                            "FAIR"}
                         </Badge>
                       </div>
                     </div>
 
                     <div className="flex justify-between items-center">
                       <div className="font-medium">Long-Term Yield:</div>
-                      <div 
-                        className={`font-bold ${
-                          rentalData.longTerm.yield >= 6 
-                            ? "text-green-600" 
-                            : rentalData.longTerm.yield >= 5 
-                              ? "text-blue-600" 
-                              : "text-amber-600"
-                        }`}
-                      >
+                      <div className={`font-bold ${
+                        rentalData.longTerm.yield >= 6 ? "text-green-600" : 
+                        rentalData.longTerm.yield >= 5 ? "text-blue-600" : 
+                        "text-amber-600"
+                      }`}>
                         {rentalData.longTerm.yield.toFixed(1)}%
                       </div>
                       <div>
@@ -281,11 +197,9 @@ export function DealAssessment({
                               "text-amber-500"}
                           `}
                         >
-                          {rentalData.longTerm.yield >= 6 
-                            ? "EXCELLENT" 
-                            : rentalData.longTerm.yield >= 5 
-                              ? "GOOD" 
-                              : "FAIR"}
+                          {rentalData.longTerm.yield >= 6 ? "EXCELLENT" : 
+                            rentalData.longTerm.yield >= 5 ? "GOOD" : 
+                            "FAIR"}
                         </Badge>
                       </div>
                     </div>
@@ -326,19 +240,6 @@ export function DealAssessment({
           </p>
         </div>
       </div>
-      {/* AI Advisor - Render floating button */}
-      {rentalData && (
-        <div className="mt-4">
-          <DealScoreAdvisor 
-            purchasePrice={purchasePrice}
-            marketPrice={marketPrice}
-            priceDiff={priceDiff}
-            rentalYield={rentalData.isShortTermRecommended ? rentalData.shortTerm.yield : rentalData.longTerm.yield}
-            condition={propertyCondition}
-            dealScore={finalScore}
-          />
-        </div>
-      )}
 
       <Dialog open={isCalculationModalOpen} onOpenChange={setIsCalculationModalOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
