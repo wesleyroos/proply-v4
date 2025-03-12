@@ -15,6 +15,15 @@ interface DealScoreAdvisorProps {
   dealScore: number;
 }
 
+// Get score color based on value
+const getScoreColorClass = (score: number): string => {
+  if (score >= 90) return "text-emerald-500";
+  if (score >= 75) return "text-green-500";
+  if (score >= 60) return "text-blue-500";
+  if (score >= 50) return "text-orange-500";
+  return "text-red-500";
+};
+
 interface Message {
   type: 'user' | 'assistant';
   content: string;
@@ -50,7 +59,7 @@ export function DealScoreAdvisor({
     if (isOpen && messages.length === 0) {
       setMessages([{
         type: 'assistant',
-        content: `Hello! I'm your Deal Score Advisor. Based on my analysis, this property has a deal score of ${dealScore}%. Ask me anything about the deal's strengths, negotiation points, or potential concerns.`
+        content: "Hello! I'm your Deal Score Advisor. Based on my analysis, this property has a deal score of " + dealScore + "%. Ask me anything about the deal's strengths, negotiation points, or potential concerns."
       }]);
     }
   }, [isOpen, messages.length, dealScore]);
@@ -223,7 +232,17 @@ export function DealScoreAdvisor({
                     : 'bg-muted text-foreground'
                 }`}
               >
-                {renderMessageContent(message)}
+                {message.type === 'assistant' && message === messages[0] ? (
+                  <p className="text-sm whitespace-pre-wrap">
+                    Hello! I'm your Deal Score Advisor. Based on my analysis, this property has a deal score of{' '}
+                    <span className={getScoreColorClass(dealScore)}>
+                      {dealScore}%
+                    </span>
+                    . Ask me anything about the deal's strengths, negotiation points, or potential concerns.
+                  </p>
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                )}
               </div>
             </div>
           ))}
