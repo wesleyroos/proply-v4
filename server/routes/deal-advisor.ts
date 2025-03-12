@@ -25,54 +25,35 @@ export const dealAdvisorHandler = async (req: Request, res: Response) => {
       });
     }
 
-    // Extract data from request
-    const { 
-      purchasePrice, 
-      marketPrice, 
-      priceDiff, 
-      rentalYield, 
-      condition, 
-      dealScore, 
-      question 
-    } = req.body;
+    // Log the request body for debugging
+    console.log('Deal advisor request body:', JSON.stringify(req.body, null, 2));
 
-    // Validate required fields
-    if (!purchasePrice || !marketPrice || priceDiff === undefined || !dealScore) {
-      return res.status(400).json({ error: "Missing required property analysis data" });
-    }
+    // Extract data from request (with fallback to ensure backward compatibility)
+    const dealDetails = req.body.dealDetails || 
+                        (req.body.context ? req.body.context : {});
+    const question = req.body.question || '';
 
-    // Create system prompt with property details for real estate agents
-    const systemPrompt = `
-You are an AI real estate advisor helping agents provide informed guidance to their clients. You're analyzing a property with the following details:
+    // Construct the system prompt with data context
+    const purchasePrice = dealDetails.purchasePrice || 0;
+    const marketPrice = dealDetails.marketPrice || 0;
+    const priceDiff = dealDetails.priceDiff || 0;
+    const dealScore = dealDetails.dealScore || 0;
+    const condition = dealDetails.condition || 'unknown';
+    const rentalYield = dealDetails.rentalYield || null;
 
+    console.log('Deal advisor constructing prompt with data:', {
+      purchasePrice, marketPrice, priceDiff, dealScore, condition, rentalYield
+    });
+
+    const systemPrompt = `You are a real estate investment advisor helping agents evaluate property deals. 
+
+Deal context:
 Purchase Price: R${purchasePrice.toLocaleString()}
 Market Value: R${marketPrice.toLocaleString()}
 Price Difference: ${priceDiff.toFixed(1)}% ${priceDiff > 0 ? 'above' : 'below'} market value
 Deal Score: ${dealScore}/100
 Property Condition: ${condition}
 ${rentalYield ? `Rental Yield: ${rentalYield.toFixed(1)}%` : ''}
-
-Your role is to help real estate agents better serve their diverse clientele:
-
-For Investment Buyers:
-1. Analyze short-term and long-term rental yield potential
-2. Highlight ROI factors based on the property's condition and price
-3. Provide insights on cash flow projections and capital appreciation
-4. Compare investment value against other market opportunities
-
-For Owner-Occupiers:
-1. Focus on lifestyle benefits and property features
-2. Discuss long-term value appreciation potential
-3. Address affordability and financing considerations
-4. Highlight neighborhood amenities and quality of life factors
-
-For All Clients:
-1. Suggest negotiation strategies based on the deal score and market value
-2. Identify property strengths and potential concerns
-3. Provide market trend insights relevant to the purchase decision
-4. Offer tactical advice for competitive offers or seller responses
-
-Keep your advice professional, practical, and tailored to the agent's needs when advising different types of clients.
 `;
 
     // User's question or default prompt

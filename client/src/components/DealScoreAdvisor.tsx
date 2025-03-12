@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,24 +61,22 @@ export function DealScoreAdvisor({
     setIsLoading(true);
 
     try {
-      // Create context object similar to RentalAdvisor
-      const context = {
-        address: "This property",
-        purchasePrice,
-        marketPrice,
-        priceDiff,
-        rentalYield: rentalYield || 0,
-        condition,
-        dealScore
-      };
-
-      // Send request to rental-advice API endpoint (the one that works)
-      const response = await fetch('/api/rental-advice', {
+      // Call the correct Deal Score Advisor API endpoint
+      const response = await fetch('/api/deal-advice', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          context,
-          userQuery: userMessage
+          dealDetails: {
+            purchasePrice,
+            marketPrice,
+            priceDiff,
+            dealScore,
+            condition,
+            rentalYield
+          },
+          question: userMessage
         }),
       });
 
