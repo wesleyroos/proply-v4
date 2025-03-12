@@ -1,0 +1,61 @@
+Sending request to deal-advice API with data: {dealDetails: {…}, question: 'what prompt are you using to assist me?'}
+DealScoreAdvisor.tsx:77 
+            
+            
+           POST https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/api/deal-advisor 500 (Internal Server Error)
+handleSubmit @ DealScoreAdvisor.tsx:77
+callCallback2 @ chunk-UPELNCPK.js?v=d082be23:3674
+invokeGuardedCallbackDev @ chunk-UPELNCPK.js?v=d082be23:3699
+invokeGuardedCallback @ chunk-UPELNCPK.js?v=d082be23:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-UPELNCPK.js?v=d082be23:3736
+executeDispatch @ chunk-UPELNCPK.js?v=d082be23:7014
+processDispatchQueueItemsInOrder @ chunk-UPELNCPK.js?v=d082be23:7034
+processDispatchQueue @ chunk-UPELNCPK.js?v=d082be23:7043
+dispatchEventsForPlugins @ chunk-UPELNCPK.js?v=d082be23:7051
+(anonymous) @ chunk-UPELNCPK.js?v=d082be23:7174
+batchedUpdates$1 @ chunk-UPELNCPK.js?v=d082be23:18913
+batchedUpdates @ chunk-UPELNCPK.js?v=d082be23:3579
+dispatchEventForPluginEventSystem @ chunk-UPELNCPK.js?v=d082be23:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-UPELNCPK.js?v=d082be23:5478
+dispatchEvent @ chunk-UPELNCPK.js?v=d082be23:5472
+dispatchDiscreteEvent @ chunk-UPELNCPK.js?v=d082be23:5449Understand this errorAI
+DealScoreAdvisor.tsx:96 API Response status: 500
+DealScoreAdvisor.tsx:98 API Response text: {"error":"Failed to process deal advisor request","details":"next is not a function"}
+DealScoreAdvisor.tsx:110 Error response from server: {error: 'Failed to process deal advisor request', details: 'next is not a function'}
+handleSubmit @ DealScoreAdvisor.tsx:110
+await in handleSubmit
+callCallback2 @ chunk-UPELNCPK.js?v=d082be23:3674
+invokeGuardedCallbackDev @ chunk-UPELNCPK.js?v=d082be23:3699
+invokeGuardedCallback @ chunk-UPELNCPK.js?v=d082be23:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-UPELNCPK.js?v=d082be23:3736
+executeDispatch @ chunk-UPELNCPK.js?v=d082be23:7014
+processDispatchQueueItemsInOrder @ chunk-UPELNCPK.js?v=d082be23:7034
+processDispatchQueue @ chunk-UPELNCPK.js?v=d082be23:7043
+dispatchEventsForPlugins @ chunk-UPELNCPK.js?v=d082be23:7051
+(anonymous) @ chunk-UPELNCPK.js?v=d082be23:7174
+batchedUpdates$1 @ chunk-UPELNCPK.js?v=d082be23:18913
+batchedUpdates @ chunk-UPELNCPK.js?v=d082be23:3579
+dispatchEventForPluginEventSystem @ chunk-UPELNCPK.js?v=d082be23:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-UPELNCPK.js?v=d082be23:5478
+dispatchEvent @ chunk-UPELNCPK.js?v=d082be23:5472
+dispatchDiscreteEvent @ chunk-UPELNCPK.js?v=d082be23:5449Understand this errorAI
+DealScoreAdvisor.tsx:120 Error in DealScoreAdvisor: Error: Failed to process deal advisor request
+    at handleSubmit (DealScoreAdvisor.tsx:111:15)
+handleSubmit @ DealScoreAdvisor.tsx:120
+await in handleSubmit
+callCallback2 @ chunk-UPELNCPK.js?v=d082be23:3674
+invokeGuardedCallbackDev @ chunk-UPELNCPK.js?v=d082be23:3699
+invokeGuardedCallback @ chunk-UPELNCPK.js?v=d082be23:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-UPELNCPK.js?v=d082be23:3736
+executeDispatch @ chunk-UPELNCPK.js?v=d082be23:7014
+processDispatchQueueItemsInOrder @ chunk-UPELNCPK.js?v=d082be23:7034
+processDispatchQueue @ chunk-UPELNCPK.js?v=d082be23:7043
+dispatchEventsForPlugins @ chunk-UPELNCPK.js?v=d082be23:7051
+(anonymous) @ chunk-UPELNCPK.js?v=d082be23:7174
+batchedUpdates$1 @ chunk-UPELNCPK.js?v=d082be23:18913
+batchedUpdates @ chunk-UPELNCPK.js?v=d082be23:3579
+dispatchEventForPluginEventSystem @ chunk-UPELNCPK.js?v=d082be23:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-UPELNCPK.js?v=d082be23:5478
+dispatchEvent @ chunk-UPELNCPK.js?v=d082be23:5472
+dispatchDiscreteEvent @ chunk-UPELNCPK.js?v=d082be23:5449Understand this errorAI
+DealScoreAdvisor.tsx:124 Error details: Failed to process deal advisor request
