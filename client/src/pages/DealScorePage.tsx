@@ -313,7 +313,8 @@ export default function DealScorePage() {
       setSubmittedData(formData);
       setShowResults(true);
       setIsCalculating(false);
-      setDealScore(calculateDealScore(new FormData(e.currentTarget as HTMLFormElement))); // Calculate deal score after submission
+      // Calculate deal score using the existing formData instead of creating a new FormData object
+      setDealScore(calculateDealScore(formData));
     }, 2000);
   };
 
@@ -988,16 +989,36 @@ export default function DealScorePage() {
   };
 
   // Helper function to calculate deal score for the advisor
-  const calculateDealScore = (formData: FormData) => {
+  const calculateDealScore = (formData: any) => {
     // Get necessary values
-    const purchasePrice = parseFormattedValue(formData.get("purchasePrice")!);
-    const marketPrice = parseFormattedValue(formData.get("size")!) * parseFormattedValue(formData.get("areaRate")!);
+    // Check if formData is a FormData object or a plain object and handle accordingly
+    const isFormDataObject = formData instanceof FormData;
+    
+    const purchasePrice = isFormDataObject 
+      ? parseFormattedValue(formData.get("purchasePrice")!) 
+      : parseFormattedValue(formData.purchasePrice);
+      
+    const size = isFormDataObject 
+      ? parseFormattedValue(formData.get("size")!) 
+      : parseFormattedValue(formData.size);
+      
+    const areaRate = isFormDataObject 
+      ? parseFormattedValue(formData.get("areaRate")!) 
+      : parseFormattedValue(formData.areaRate);
+      
+    const marketPrice = size * areaRate;
     const priceDiff = ((purchasePrice - marketPrice) / marketPrice) * 100;
-    const propertyCondition = formData.get("propertyCondition")!;
-    const areaRate = parseFormattedValue(formData.get("areaRate")!);
-    const squareMeters = parseFormattedValue(formData.get("size")!);
+    
+    const propertyCondition = isFormDataObject 
+      ? formData.get("propertyCondition")! 
+      : formData.propertyCondition;
+      
+    const squareMeters = size;
     const propertyRate = purchasePrice / squareMeters;
-    const rentalData = calculateRentalMetrics(Object.fromEntries(formData));
+    
+    const rentalData = isFormDataObject 
+      ? calculateRentalMetrics(Object.fromEntries(formData)) 
+      : calculateRentalMetrics(formData);
 
     // Price Factor: 0-100 based on price difference
     let priceScore = 0;
