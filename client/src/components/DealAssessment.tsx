@@ -50,6 +50,15 @@ export function DealAssessment({
     return { emoji: "⚠️", text: "OVERPRICED", color: "bg-amber-500" };
   };
 
+  // Get score color based on value
+  const getScoreColorClass = (score: number): string => {
+    if (score >= 90) return "text-emerald-500";
+    if (score >= 75) return "text-green-500";
+    if (score >= 60) return "text-blue-500";
+    if (score >= 40) return "text-amber-500";
+    return "text-red-500";
+  };
+
   const badgeInfo = getBadgeInfo();
   const [isCalculationModalOpen, setIsCalculationModalOpen] = useState(false);
 
@@ -58,7 +67,10 @@ export function DealAssessment({
       <div>
         <div className="flex flex-col items-center mb-6">
           <div className="text-2xl font-bold flex items-center mb-2">
-            {badgeInfo.emoji} Deal Score: <span className="text-3xl ml-1 text-primary">{finalScore}%</span>
+            {badgeInfo.emoji} Deal Score: 
+            <span className={`text-3xl ml-1 ${getScoreColorClass(finalScore)}`}>
+              {finalScore}%
+            </span>
           </div>
 
           {/* Score Display */}
@@ -155,8 +167,8 @@ export function DealAssessment({
                       <div className="font-medium">Short-Term Yield:</div>
                       <div className={`font-bold ${
                         rentalData.shortTerm.yield >= 15 ? "text-green-600" :
-                        rentalData.shortTerm.yield >= 10 ? "text-blue-600" :
-                        "text-amber-600"
+                          rentalData.shortTerm.yield >= 10 ? "text-blue-600" :
+                            "text-amber-600"
                       }`}>
                         {rentalData.shortTerm.yield.toFixed(1)}%
                       </div>
@@ -166,12 +178,12 @@ export function DealAssessment({
                           className={`
                             ${rentalData.shortTerm.yield >= 15 ? "text-green-500" :
                               rentalData.shortTerm.yield >= 10 ? "text-blue-500" :
-                              "text-amber-500"}
+                                "text-amber-500"}
                           `}
                         >
                           {rentalData.shortTerm.yield >= 15 ? "EXCELLENT" :
                             rentalData.shortTerm.yield >= 10 ? "GOOD" :
-                            "FAIR"}
+                              "FAIR"}
                         </Badge>
                       </div>
                     </div>
@@ -180,8 +192,8 @@ export function DealAssessment({
                       <div className="font-medium">Long-Term Yield:</div>
                       <div className={`font-bold ${
                         rentalData.longTerm.yield >= 6 ? "text-green-600" :
-                        rentalData.longTerm.yield >= 5 ? "text-blue-600" :
-                        "text-amber-600"
+                          rentalData.longTerm.yield >= 5 ? "text-blue-600" :
+                            "text-amber-600"
                       }`}>
                         {rentalData.longTerm.yield.toFixed(1)}%
                       </div>
@@ -191,12 +203,12 @@ export function DealAssessment({
                           className={`
                             ${rentalData.longTerm.yield >= 6 ? "text-green-500" :
                               rentalData.longTerm.yield >= 5 ? "text-blue-500" :
-                              "text-amber-500"}
+                                "text-amber-500"}
                           `}
                         >
                           {rentalData.longTerm.yield >= 6 ? "EXCELLENT" :
                             rentalData.longTerm.yield >= 5 ? "GOOD" :
-                            "FAIR"}
+                              "FAIR"}
                         </Badge>
                       </div>
                     </div>

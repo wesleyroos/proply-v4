@@ -15,6 +15,15 @@ interface DealScoreAdvisorProps {
   dealScore: number;
 }
 
+// Get score color based on value - same function as in DealAssessment
+const getScoreColorClass = (score: number): string => {
+  if (score >= 90) return "text-emerald-500";
+  if (score >= 75) return "text-green-500";
+  if (score >= 60) return "text-blue-500";
+  if (score >= 40) return "text-amber-500";
+  return "text-red-500";
+};
+
 interface Message {
   type: 'user' | 'assistant';
   content: string;
@@ -50,7 +59,9 @@ export function DealScoreAdvisor({
     if (isOpen && messages.length === 0) {
       setMessages([{
         type: 'assistant',
-        content: `Hello! I'm your Deal Score Advisor. Based on my analysis, this property has a deal score of ${dealScore}%. Ask me anything about the deal's strengths, negotiation points, or potential concerns.`
+        content: `Hello! I'm your Deal Score Advisor. Based on my analysis, this property has a deal score of `
+          + `<span class="${getScoreColorClass(dealScore)}">${dealScore}%</span>. `
+          + `Ask me anything about the deal's strengths, negotiation points, or potential concerns.`
       }]);
     }
   }, [isOpen, messages.length, dealScore]);
@@ -97,15 +108,15 @@ export function DealScoreAdvisor({
       }
 
       const data = await response.json();
-      setMessages(prev => [...prev, { 
-        type: 'assistant', 
+      setMessages(prev => [...prev, {
+        type: 'assistant',
         content: data.response || "I'm sorry, I couldn't generate advice at this moment."
       }]);
     } catch (error) {
       console.error('Error in DealScoreAdvisor:', error);
-      setMessages(prev => [...prev, { 
-        type: 'assistant', 
-        content: "Sorry, I encountered an error processing your request. Please try again later." 
+      setMessages(prev => [...prev, {
+        type: 'assistant',
+        content: "Sorry, I encountered an error processing your request. Please try again later."
       }]);
     } finally {
       setIsLoading(false);
@@ -116,7 +127,6 @@ export function DealScoreAdvisor({
     setQuery(question);
   };
 
-  // Helper to render pro-only upgrade prompt
   const renderProUpgradePrompt = () => (
     <Card className="fixed bottom-6 right-6 w-96 bg-white shadow-lg border border-gray-200 flex flex-col z-50" style={{ maxHeight: "600px" }}>
       <div className="p-4 border-b">
@@ -125,9 +135,9 @@ export function DealScoreAdvisor({
             <Lock className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold text-gray-900">Deal Score Advisor</h3>
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setIsOpen(false)}
             aria-label="Close"
           >
@@ -142,8 +152,8 @@ export function DealScoreAdvisor({
         <p className="text-gray-600">
           The Deal Score Advisor is available exclusively to Pro plan subscribers.
         </p>
-        <Button 
-          className="bg-primary hover:bg-primary/90 mt-2" 
+        <Button
+          className="bg-primary hover:bg-primary/90 mt-2"
           onClick={() => setShowUpgradeModal(true)}
         >
           Upgrade to Pro
@@ -152,12 +162,10 @@ export function DealScoreAdvisor({
     </Card>
   );
 
-  // If still checking access status, show nothing
   if (accessLoading) {
     return null;
   }
 
-  // If not open, show only the button
   if (!isOpen) {
     return (
       <Button
@@ -172,7 +180,6 @@ export function DealScoreAdvisor({
     );
   }
 
-  // If no pro access, show upgrade prompt
   if (!hasAccess) {
     return (
       <>
@@ -182,7 +189,6 @@ export function DealScoreAdvisor({
     );
   }
 
-  // Regular chatbox for pro users
   return (
     <>
       <Card className="fixed bottom-6 right-6 w-96 bg-white shadow-lg border border-gray-200 flex flex-col z-50" style={{ maxHeight: "600px" }}>
@@ -192,9 +198,9 @@ export function DealScoreAdvisor({
               <MessageSquare className="h-5 w-5 text-primary" />
               <h3 className="text-lg font-semibold text-gray-900">Deal Score Advisor</h3>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setIsOpen(false)}
               aria-label="Close"
             >
@@ -259,8 +265,8 @@ export function DealScoreAdvisor({
               disabled={isLoading}
               aria-label="Ask a question"
             />
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isLoading || !query.trim()}
               aria-label="Send message"
             >
