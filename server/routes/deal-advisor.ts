@@ -4,14 +4,26 @@ import { requireAuth } from "../auth";
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY || '',
 });
+
+// Check if API key is configured
+const isApiKeyConfigured = !!process.env.OPENAI_API_KEY;
 
 export const dealAdvisorHandler = async (req: Request, res: Response) => {
   try {
     // Require authentication
     const user = requireAuth(req, res);
     if (!user) return;
+
+    // Check if OpenAI API key is configured
+    if (!isApiKeyConfigured) {
+      console.error('OpenAI API key is not configured');
+      return res.status(503).json({ 
+        error: "AI service is unavailable", 
+        details: "OpenAI API key is not configured" 
+      });
+    }
 
     // Extract data from request
     const { 
@@ -71,9 +83,21 @@ Provide professional, concise advice that the agent can use when advising their 
 
   } catch (error) {
     console.error('Deal advisor error:', error);
+    
+    // Check if error is related to OpenAI API
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const isOpenAIError = errorMessage.includes('openai') || 
+                          errorMessage.includes('api key') || 
+                          errorMessage.includes('authentication');
+    
     return res.status(500).json({ 
-      error: "Failed to process deal advisor request",
-      details: error instanceof Error ? error.message : "Unknown error"
+      error: isOpenAIError 
+        ? "AI service is currently unavailable" 
+        : "Failed to process deal advisor request",
+      details: errorMessage,
+      suggestion: isOpenAIError 
+        ? "Please contact the administrator to verify the OpenAI API configuration" 
+        : "Please try again later"
     });
   }
 };
