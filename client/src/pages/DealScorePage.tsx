@@ -61,13 +61,6 @@ export default function DealScorePage() {
     nightlyRate: "",
     occupancy: "",
     longTermRental: "",
-    shortTermNightly:"", // Added shortTermNightly
-
-    // Financing Details (Step 3)
-    depositAmount: "",
-    depositPercentage: "",
-    interestRate: "11.75", // Default to current prime rate
-    loanTerm: "20", // Default to 20 years
   });
 
   // States for revenue data
@@ -122,7 +115,6 @@ export default function DealScorePage() {
       depositPercentage: "10", // Don't format percentage
       interestRate: "11", // Don't format percentage
       loanTerm: formatWithThousandSeparators("20"),
-      shortTermNightly: formatWithThousandSeparators("2500") //Added shortTermNightly
     });
   };
 
@@ -178,8 +170,7 @@ export default function DealScorePage() {
       field === "occupancy" ||
       field === "longTermRental" ||
       field === "depositAmount" ||
-      field === "loanTerm" ||
-      field === "shortTermNightly" //Added shortTermNightly
+      field === "loanTerm"
     ) {
       // Remove existing formatting first
       numericValue = parseFormattedNumber(value);
@@ -435,7 +426,6 @@ export default function DealScorePage() {
       ...prev,
       nightlyRate: data.adr.toString(),
       occupancy: data.occupancy.toString(),
-      shortTermNightly: data.adr.toString() //Added shortTermNightly
     }));
     setShowPercentileDialog(false);
   };
@@ -585,7 +575,7 @@ export default function DealScorePage() {
         return (
           <>
             <div className="p-4 bg-gray-50 rounded-lg border">
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="nightlyRate">Nightly Rate (R)</Label>
                   <Input
@@ -610,18 +600,6 @@ export default function DealScorePage() {
                     value={formData.occupancy}
                     onChange={(e) => handleInputChange("occupancy", e.target.value)}
                     placeholder="Enter expected occupancy rate"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="shortTermNightly">Short Term Nightly Rate (R)</Label>
-                  <Input
-                    id="shortTermNightly"
-                    type="text"
-                    inputMode="numeric"
-                    value={formData.shortTermNightly}
-                    onChange={(e) => handleInputChange("shortTermNightly", e.target.value)}
-                    placeholder="Enter short term nightly rate"
                     required
                   />
                 </div>
@@ -773,8 +751,7 @@ export default function DealScorePage() {
       case 2: // Rental Details
         return formData.nightlyRate !== "" &&
                formData.occupancy !== "" &&
-               formData.longTermRental !== "" &&
-               formData.shortTermNightly !== ""; // Added shortTermNightly
+               formData.longTermRental !== "";
       case 3: // Financing Details
         return formData.depositAmount !== "" &&
                formData.depositPercentage !== "" &&
@@ -809,7 +786,6 @@ export default function DealScorePage() {
         if (isFieldEmpty("nightlyRate")) missingFields.push("Nightly Rate");
         if (isFieldEmpty("occupancy")) missingFields.push("Occupancy Rate");
         if (isFieldEmpty("longTermRental")) missingFields.push("Long Term Rental");
-        if (isFieldEmpty("shortTermNightly")) missingFields.push("Short Term Nightly Rate"); // Added shortTermNightly
         break;
       case 3: // Financing Details
         if (isFieldEmpty("depositAmount")) missingFields.push("Deposit Amount");
@@ -943,6 +919,7 @@ export default function DealScorePage() {
     };
 
     const purchasePrice = parseValue(formData.purchasePrice);
+    
     const depositAmount = parseValue(formData.depositAmount);
     const interestRate = parseValue(formData.interestRate);
     const loanTerm = parseValue(formData.loanTerm);
@@ -1442,7 +1419,7 @@ export default function DealScorePage() {
                                   /month
                                 </div>
                                 <div className="text-sm text-muted-foreground">
-                                  Based on {formData.occupancy}% occupancy & R{formData.shortTermNightly} avg nightly rate
+                                  Based on {formData.occupancy}% occupancy & R{formData.nightlyRate} avg nightly rate
                                 </div>
                               </div>
 
