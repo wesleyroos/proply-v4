@@ -59,7 +59,7 @@ export function DealScoreAdvisor({
     if (isOpen && messages.length === 0) {
       setMessages([{
         type: 'assistant',
-        content: "Hello! I'm your Deal Score Advisor. Based on my analysis, this property has a deal score of " + dealScore + "%. Ask me anything about the deal's strengths, negotiation points, or potential concerns."
+        content: `Hello! I'm your Deal Score Advisor. Based on my analysis, this property has a deal score of ${dealScore}% (${getScoreColorClass(dealScore)}). Ask me anything about the deal's strengths, negotiation points, or potential concerns.`
       }]);
     }
   }, [isOpen, messages.length, dealScore]);
@@ -74,7 +74,20 @@ export function DealScoreAdvisor({
 
   // Function to safely render message content
   const renderMessageContent = (message: Message) => {
-    return <p className="text-sm whitespace-pre-wrap">{message.content}</p>;
+    if (message.type === 'user') {
+      return <p className="text-sm whitespace-pre-wrap">{message.content}</p>;
+    } else {
+      if (message.content.includes('class="')) {
+        return (
+          <p 
+            className="text-sm whitespace-pre-wrap"
+            dangerouslySetInnerHTML={{ __html: message.content }}
+          />
+        );
+      } else {
+        return <p className="text-sm whitespace-pre-wrap">{message.content}</p>;
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -232,17 +245,7 @@ export function DealScoreAdvisor({
                     : 'bg-muted text-foreground'
                 }`}
               >
-                {message.type === 'assistant' && message === messages[0] ? (
-                  <p className="text-sm whitespace-pre-wrap">
-                    Hello! I'm your Deal Score Advisor. Based on my analysis, this property has a deal score of{' '}
-                    <span className={getScoreColorClass(dealScore)}>
-                      {dealScore}%
-                    </span>
-                    . Ask me anything about the deal's strengths, negotiation points, or potential concerns.
-                  </p>
-                ) : (
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                )}
+                {renderMessageContent(message)}
               </div>
             </div>
           ))}
