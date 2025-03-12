@@ -19,9 +19,9 @@ interface PropertyScoreModalProps {
   propertyCondition?: string;
 }
 
-export function PropertyScoreModal({ 
-  isOpen, 
-  onOpenChange, 
+export function PropertyScoreModal({
+  isOpen,
+  onOpenChange,
   propertyId = "PROP-1234",
   propertyAddress = "27 Leeuwen St, Cape Town City Centre, 8001",
   purchasePrice = 3500000,
@@ -97,11 +97,11 @@ export function PropertyScoreModal({
   const goodDealPriceMax = marketAvgPrice * 1.05;
 
   // Pre-calculate complex values to avoid re-computation in render
-  const shortTermMonthlyIncome = rentalData.shortTerm * (rentalData.occupancyRate/100);
+  const shortTermMonthlyIncome = rentalData.shortTerm * (rentalData.occupancyRate / 100);
   const longTermMonthlyIncome = rentalData.longTerm;
   const activeMonthlyIncome = rentalData.bestStrategy === 'short-term' ? shortTermMonthlyIncome : longTermMonthlyIncome;
   const monthlyCashFlow = activeMonthlyIncome - affordabilityData.monthlyPayment;
-  const shortTermYearlyIncome = rentalData.shortTerm * 12 * (rentalData.occupancyRate/100);
+  const shortTermYearlyIncome = rentalData.shortTerm * 12 * (rentalData.occupancyRate / 100);
   const longTermYearlyIncome = rentalData.longTerm * 12;
   const totalCashNeeded = affordabilityData.deposit + affordabilityData.transferDuty + affordabilityData.transferCosts;
   const totalMonthlyCost = affordabilityData.monthlyPayment + 4500;
@@ -187,8 +187,8 @@ export function PropertyScoreModal({
                     <div>
                       <div className="font-medium text-lg">Rental Potential</div>
                       <div className="text-lg">
-                        {rentalData.bestStrategy === 'short-term' ? 
-                          `Airbnb potential of R${rentalData.shortTerm.toLocaleString()}/month` : 
+                        {rentalData.bestStrategy === 'short-term' ?
+                          `Airbnb potential of R${rentalData.shortTerm.toLocaleString()}/month` :
                           `Rental income of R${rentalData.longTerm.toLocaleString()}/month`}
                       </div>
                     </div>
@@ -399,42 +399,46 @@ export function PropertyScoreModal({
                   </Card>
                 </div>
 
-                <div className="p-4 border rounded-lg bg-muted/30 mb-4">
-                  <div className="font-bold mb-2">Rental Demand Analysis</div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div>Demand Level:</div>
-                    <div className="font-bold">High (+{rentalData.rentalDemand}% vs. area average)</div>
-                  </div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div>Average Vacancy Period:</div>
-                    <div className="font-bold">7 days (vs. area avg 21 days)</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>Tenant Profile:</div>
-                    <div className="font-bold">Young professionals, Digital nomads</div>
-                  </div>
-                </div>
+                <Card className="mb-4">
+                  <CardContent className="p-4">
+                    <div className="font-bold mb-2">Rental Demand Analysis</div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div>Demand Level:</div>
+                      <div className="font-bold">High (+{rentalData.rentalDemand}% vs. area average)</div>
+                    </div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div>Average Vacancy Period:</div>
+                      <div className="font-bold">7 days (vs. area avg 21 days)</div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>Tenant Profile:</div>
+                      <div className="font-bold">Young professionals, Digital nomads</div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                <div className="p-4 border rounded-lg bg-muted/30">
-                  <div className="font-bold mb-2">Income vs. Expenses</div>
-                  <div className="flex justify-between mb-3">
-                    <div>Monthly Income ({rentalData.bestStrategy === 'short-term' ? 'Airbnb' : 'Rental'}):</div>
-                    <div className="font-bold">
-                      R{activeMonthlyIncome.toLocaleString()}
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="font-bold mb-2">Income vs. Expenses</div>
+                    <div className="flex justify-between mb-3">
+                      <div>Monthly Income ({rentalData.bestStrategy === 'short-term' ? 'Airbnb' : 'Rental'}):</div>
+                      <div className="font-bold">
+                        R{activeMonthlyIncome.toLocaleString()}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex justify-between mb-3">
-                    <div>Monthly Bond Payment:</div>
-                    <div className="font-bold">R{affordabilityData.monthlyPayment.toLocaleString()}</div>
-                  </div>
-                  <div className="flex justify-between mb-1">
-                    <div>Monthly Cash Flow:</div>
-                    <div className={`font-bold ${monthlyCashFlow > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {monthlyCashFlow > 0 ? '+' : ''}
-                      R{monthlyCashFlow.toLocaleString()}
+                    <div className="flex justify-between mb-3">
+                      <div>Monthly Bond Payment:</div>
+                      <div className="font-bold">R{affordabilityData.monthlyPayment.toLocaleString()}</div>
                     </div>
-                  </div>
-                </div>
+                    <div className="flex justify-between mb-1">
+                      <div>Monthly Cash Flow:</div>
+                      <div className={`font-bold ${monthlyCashFlow > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {monthlyCashFlow > 0 ? '+' : ''}
+                        R{monthlyCashFlow.toLocaleString()}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </CardContent>
             </Card>
 
@@ -444,8 +448,8 @@ export function PropertyScoreModal({
                 <div>
                   <div className="font-semibold text-amber-800">Agent Tip</div>
                   <div className="text-amber-700">
-                    For investor clients, highlight that this property can generate 
-                    R{shortTermYearlyIncome.toLocaleString()} annually as an Airbnb, 
+                    For investor clients, highlight that this property can generate
+                    R{shortTermYearlyIncome.toLocaleString()} annually as an Airbnb,
                     with a yield of {rentalData.yieldShortTerm}% that's well above market average.
                   </div>
                 </div>
@@ -571,7 +575,7 @@ export function PropertyScoreModal({
                 <div>
                   <div className="font-semibold text-amber-800">Agent Tip</div>
                   <div className="text-amber-700">
-                    Tell clients: "At R3.5M with a 10% deposit, you'll need about R34K per month for the bond, 
+                    Tell clients: "At R3.5M with a 10% deposit, you'll need about R34K per month for the bond,
                     which requires a household income of around R102K per month."
                   </div>
                 </div>
@@ -591,9 +595,9 @@ export function PropertyScoreModal({
                     <div key={`profile-${i}`} className="p-4 border rounded-lg bg-muted/30">
                       <div className="flex items-center justify-between mb-2">
                         <div className="font-bold text-lg flex items-center gap-2">
-                          {i === 0 ? 
-                            <Users className="h-5 w-5 text-primary" /> : 
-                            i === 1 ? <Home className="h-5 w-5 text-blue-500" /> : 
+                          {i === 0 ?
+                            <Users className="h-5 w-5 text-primary" /> :
+                            i === 1 ? <Home className="h-5 w-5 text-blue-500" /> :
                             <Banknote className="h-5 w-5 text-green-500" />
                           }
                           {profile.type}
@@ -609,12 +613,12 @@ export function PropertyScoreModal({
 
                       <div className="relative pt-1">
                         <div className="overflow-hidden h-2 mb-4 flex rounded bg-muted">
-                          <div 
+                          <div
                             className={`h-full ${
-                              profile.match >= 90 ? "bg-green-500" : 
-                              profile.match >= 80 ? "bg-blue-500" : 
-                              profile.match >= 70 ? "bg-amber-500" : "bg-red-500"
-                            }`}
+                              profile.match >= 90 ? "bg-green-500" :
+                                profile.match >= 80 ? "bg-blue-500" :
+                                profile.match >= 70 ? "bg-amber-500" : "bg-red-500"
+                              }`}
                             style={{ width: `${profile.match}%` }}
                           />
                         </div>
