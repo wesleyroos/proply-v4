@@ -991,11 +991,6 @@ export default function DealScorePage() {
       <div className="p-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Deal Score</h1>
-          {hasProAccess.hasAccess && (
-            <Button variant="outline" onClick={() => setShowPropertyScoreModal(true)}>
-              View Property Score <BarChart3 className="h-4 w-4 ml-2" />
-            </Button>
-          )}
         </div>
 
         <div className="flex gap-8">
