@@ -1595,6 +1595,21 @@ export default function DealScorePage() {
           )}
         </div>
 
+        {/* Add DealScoreAdvisor at the root level */}
+        {submittedData && (
+          <DealScoreAdvisor
+            purchasePrice={parseFormattedValue(submittedData.purchasePrice)}
+            marketPrice={marketPrice}
+            priceDiff={priceDiff}
+            rentalYield={
+              calculateRentalMetrics(submittedData)?.isShortTermRecommended
+                ? calculateRentalMetrics(submittedData)?.shortTerm.yield || 0
+                : calculateRentalMetrics(submittedData)?.longTerm.yield || 0
+            }
+            condition={submittedData.propertyCondition}
+            dealScore={finalScore}
+          />
+        )}
         <div
           onClick={(e) => {
             const now = new Date().getTime();
