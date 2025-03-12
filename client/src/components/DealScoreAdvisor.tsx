@@ -50,10 +50,10 @@ export function DealScoreAdvisor({
     if (isOpen && messages.length === 0) {
       setMessages([{
         type: 'assistant',
-        content: `Hello! I'm your Deal Score Advisor. I can help analyze this property deal and provide insights for your clients. Ask me anything about the deal's strengths, negotiation points, or potential concerns.`
+        content: `Hello! I'm your Deal Score Advisor. Based on my analysis, this property has a deal score of ${dealScore}%. Ask me anything about the deal's strengths, negotiation points, or potential concerns.`
       }]);
     }
-  }, [isOpen, messages.length]);
+  }, [isOpen, messages.length, dealScore]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

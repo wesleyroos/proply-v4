@@ -2,13 +2,14 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+// Props interface remains the same
 interface DealAssessmentProps {
   purchasePrice: number;
   marketPrice: number;
@@ -29,13 +30,9 @@ interface DealAssessmentProps {
   propertyCondition: string;
   areaRate: number;
   propertyRate: number;
-  finalScore: number; // Added finalScore prop
+  finalScore: number;
 }
 
-/**
- * DealAssessment component displays a comprehensive deal score and key metrics
- * for property investment evaluation
- */
 export function DealAssessment({
   purchasePrice,
   marketPrice,
@@ -44,7 +41,7 @@ export function DealAssessment({
   propertyCondition,
   areaRate,
   propertyRate,
-  finalScore // Added finalScore prop
+  finalScore
 }: DealAssessmentProps) {
   // Determine badge and color based on price difference
   const getBadgeInfo = () => {
@@ -61,7 +58,7 @@ export function DealAssessment({
       <div>
         <div className="flex flex-col items-center mb-6">
           <div className="text-2xl font-bold flex items-center mb-2">
-            {badgeInfo.emoji} Deal Score: <span className="text-3xl ml-1 text-primary">{finalScore}/100</span>
+            {badgeInfo.emoji} Deal Score: <span className="text-3xl ml-1 text-primary">{finalScore}%</span>
           </div>
 
           {/* Score Display */}
@@ -157,8 +154,8 @@ export function DealAssessment({
                     <div className="flex justify-between items-center">
                       <div className="font-medium">Short-Term Yield:</div>
                       <div className={`font-bold ${
-                        rentalData.shortTerm.yield >= 15 ? "text-green-600" : 
-                        rentalData.shortTerm.yield >= 10 ? "text-blue-600" : 
+                        rentalData.shortTerm.yield >= 15 ? "text-green-600" :
+                        rentalData.shortTerm.yield >= 10 ? "text-blue-600" :
                         "text-amber-600"
                       }`}>
                         {rentalData.shortTerm.yield.toFixed(1)}%
@@ -167,13 +164,13 @@ export function DealAssessment({
                         <Badge
                           variant="outline"
                           className={`
-                            ${rentalData.shortTerm.yield >= 15 ? "text-green-500" : 
-                              rentalData.shortTerm.yield >= 10 ? "text-blue-500" : 
+                            ${rentalData.shortTerm.yield >= 15 ? "text-green-500" :
+                              rentalData.shortTerm.yield >= 10 ? "text-blue-500" :
                               "text-amber-500"}
                           `}
                         >
-                          {rentalData.shortTerm.yield >= 15 ? "EXCELLENT" : 
-                            rentalData.shortTerm.yield >= 10 ? "GOOD" : 
+                          {rentalData.shortTerm.yield >= 15 ? "EXCELLENT" :
+                            rentalData.shortTerm.yield >= 10 ? "GOOD" :
                             "FAIR"}
                         </Badge>
                       </div>
@@ -182,8 +179,8 @@ export function DealAssessment({
                     <div className="flex justify-between items-center">
                       <div className="font-medium">Long-Term Yield:</div>
                       <div className={`font-bold ${
-                        rentalData.longTerm.yield >= 6 ? "text-green-600" : 
-                        rentalData.longTerm.yield >= 5 ? "text-blue-600" : 
+                        rentalData.longTerm.yield >= 6 ? "text-green-600" :
+                        rentalData.longTerm.yield >= 5 ? "text-blue-600" :
                         "text-amber-600"
                       }`}>
                         {rentalData.longTerm.yield.toFixed(1)}%
@@ -192,13 +189,13 @@ export function DealAssessment({
                         <Badge
                           variant="outline"
                           className={`
-                            ${rentalData.longTerm.yield >= 6 ? "text-green-500" : 
-                              rentalData.longTerm.yield >= 5 ? "text-blue-500" : 
+                            ${rentalData.longTerm.yield >= 6 ? "text-green-500" :
+                              rentalData.longTerm.yield >= 5 ? "text-blue-500" :
                               "text-amber-500"}
                           `}
                         >
-                          {rentalData.longTerm.yield >= 6 ? "EXCELLENT" : 
-                            rentalData.longTerm.yield >= 5 ? "GOOD" : 
+                          {rentalData.longTerm.yield >= 6 ? "EXCELLENT" :
+                            rentalData.longTerm.yield >= 5 ? "GOOD" :
                             "FAIR"}
                         </Badge>
                       </div>
@@ -246,6 +243,7 @@ export function DealAssessment({
           <DialogHeader>
             <DialogTitle>Deal Factors Calculation Methodology</DialogTitle>
           </DialogHeader>
+          {/* Update the reference to percentage in the calculation modal */}
           <div className="py-4 space-y-6">
             {/* Market Value Calculation */}
             <div>
@@ -342,14 +340,14 @@ export function DealAssessment({
             {/* Deal Score */}
             <div>
               <h3 className="text-lg font-semibold mb-2">Deal Score Calculation</h3>
-              <p className="mb-3">The overall deal score is weighted based on multiple factors:</p>
+              <p className="mb-3">The overall deal score percentage is weighted based on multiple factors:</p>
               <div className="bg-gray-100 p-3 rounded-md">
                 <p className="font-medium">• Price Factor (40%): Based on the difference between asking price and market value</p>
                 <p className="font-medium">• Condition Factor (20%): Based on the property's condition</p>
                 <p className="font-medium">• Rate Comparison (20%): How the property's price per m² compares to area average</p>
                 <p className="font-medium">• Yield Factor (20%): Based on potential rental yields</p>
               </div>
-              <p className="text-sm text-gray-600 mt-1">The final score is a weighted average of these factors, with 100 being the maximum possible score.</p>
+              <p className="text-sm text-gray-600 mt-1">The final percentage is a weighted average of these factors.</p>
             </div>
           </div>
           <DialogFooter>
