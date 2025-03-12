@@ -12,9 +12,9 @@ const isApiKeyConfigured = !!process.env.OPENAI_API_KEY;
 
 export const dealAdvisorHandler = async (req: Request, res: Response) => {
   try {
-    // Require authentication
+    // Require authentication - updated to handle response directly
     const user = requireAuth(req, res);
-    if (!user) return;
+    if (!user) return res.status(401).json({ error: "Unauthorized" });
 
     // Check if OpenAI API key is configured
     if (!isApiKeyConfigured) {
