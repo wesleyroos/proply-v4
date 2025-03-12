@@ -1,64 +1,67 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Loader2, Send, MessageSquare, X } from "lucide-react";
+import { MessageSquare, SendIcon, X } from "lucide-react";
 
-// Define props interface to receive property data
-interface DealScoreAdvisorProps {
-  purchasePrice: number;
-  marketPrice: number;
-  priceDiff: number;
-  rentalYield?: number;
-  condition: string;
-  dealScore: number;
-}
-
+// Define message type for chat
 interface Message {
   type: 'user' | 'assistant';
   content: string;
 }
 
+// Props interface for deal context
+interface DealScoreAdvisorProps {
+  purchasePrice: number;
+  marketPrice: number;
+  priceDiff: number;
+  rentalYield: number;
+  condition: string;
+  dealScore: number;
+}
+
 /**
- * DealScoreAdvisor component provides an AI-powered chat interface
- * for getting insights about property deals
+ * DealScoreAdvisor component - A floating AI assistant that provides
+ * intelligent insights about the property deal based on the deal score data
  */
-export function DealScoreAdvisor({
-  purchasePrice,
-  marketPrice,
-  priceDiff,
-  rentalYield,
-  condition,
-  dealScore
+export function DealScoreAdvisor({ 
+  purchasePrice, 
+  marketPrice, 
+  priceDiff, 
+  rentalYield, 
+  condition, 
+  dealScore 
 }: DealScoreAdvisorProps) {
+  // State for chat UI
   const [isOpen, setIsOpen] = useState(false);
-  const [input, setInput] = useState('');
+  const [userMessage, setUserMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     { 
       type: 'assistant', 
-      content: "Hello! I'm your Deal Score Advisor. Ask me anything about this property deal." 
+      content: "Hello! I'm your Deal Score Advisor. Ask me anything about this property deal, or how to improve the investment." 
     }
   ]);
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Automatically scroll to the bottom of the chat when new messages appear
+  // Auto-scroll to bottom of chat when messages change
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    const chatContainer = document.getElementById('chat-messages');
+    if (chatContainer) {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  // Handle sending a user message
+  const handleSendMessage = async () => {
+    if (!userMessage.trim() || isLoading) return;
 
     // Add user message to chat
-    const userMessage = input.trim();
     setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
-    setInput('');
     setIsLoading(true);
+    
+    // Store message and clear input
+    const messageToSend = userMessage;
+    setUserMessage('');
 
     try {
       // Create context data about the property deal for the AI
@@ -79,7 +82,7 @@ export function DealScoreAdvisor({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          question: userMessage,
+          question: messageToSend,
           dealContext: dealContext,
         }),
       });
@@ -118,53 +121,84 @@ export function DealScoreAdvisor({
         {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
       </Button>
 
-      {/* Chat window */}
+      {/* Chat panel */}
       {isOpen && (
-        <Card className="fixed bottom-24 right-6 w-96 max-h-[500px] shadow-xl z-50 flex flex-col">
-          <div className="bg-primary text-white p-3 flex justify-between items-center rounded-t-lg">
-            <h3 className="font-semibold">Deal Score Advisor</h3>
-            <Button variant="ghost" size="sm" className="p-1 h-auto text-white hover:bg-primary/80" onClick={() => setIsOpen(false)}>
-              <X size={18} />
+        <div className="fixed bottom-24 right-6 w-80 sm:w-96 h-96 bg-background border rounded-lg shadow-lg flex flex-col z-50">
+          {/* Chat header */}
+          <div className="p-3 border-b flex items-center justify-between bg-primary/5">
+            <div className="flex items-center">
+              <MessageSquare className="h-5 w-5 text-primary mr-2" />
+              <h3 className="font-medium">Deal Score Advisor</h3>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 rounded-full"
+              onClick={() => setIsOpen(false)}
+            >
+              <X className="h-4 w-4" />
             </Button>
           </div>
-          
+
           {/* Chat messages */}
-          <div className="flex-1 overflow-y-auto p-3 max-h-[320px]">
-            {messages.map((message, i) => (
+          <div 
+            id="chat-messages"
+            className="flex-1 overflow-y-auto p-3 space-y-4"
+          >
+            {messages.map((message, index) => (
               <div 
-                key={i} 
-                className={`mb-3 ${message.type === 'user' ? 'text-right' : 'text-left'}`}
+                key={index} 
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div 
-                  className={`inline-block p-3 rounded-lg ${
-                    message.type === 'user' 
-                      ? 'bg-primary text-white rounded-tr-none' 
-                      : 'bg-muted rounded-tl-none'
-                  }`}
+                  className={`max-w-[80%] rounded-lg px-3 py-2 
+                    ${message.type === 'user' 
+                      ? 'bg-primary text-primary-foreground ml-auto' 
+                      : 'bg-muted'
+                    }`}
                 >
                   {message.content}
                 </div>
               </div>
             ))}
-            <div ref={messagesEndRef} />
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="max-w-[80%] rounded-lg px-3 py-2 bg-muted">
+                  <div className="flex space-x-2 items-center">
+                    <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse"></div>
+                    <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse delay-75"></div>
+                    <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse delay-150"></div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-          
-          {/* Input form */}
-          <form onSubmit={handleSubmit} className="p-3 border-t">
-            <div className="flex">
+
+          {/* Chat input */}
+          <div className="p-3 border-t">
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMessage();
+              }}
+              className="flex space-x-2"
+            >
               <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
+                value={userMessage}
+                onChange={(e) => setUserMessage(e.target.value)}
                 placeholder="Ask about this property deal..."
-                className="flex-1 mr-2"
-                disabled={isLoading}
+                className="flex-1"
               />
-              <Button type="submit" size="sm" disabled={isLoading}>
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              <Button 
+                type="submit" 
+                size="icon" 
+                disabled={!userMessage.trim() || isLoading}
+              >
+                <SendIcon className="h-4 w-4" />
               </Button>
-            </div>
-          </form>
-        </Card>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
