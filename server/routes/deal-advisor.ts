@@ -52,14 +52,27 @@ Deal Score: ${dealScore}/100
 Property Condition: ${condition}
 ${rentalYield ? `Rental Yield: ${rentalYield.toFixed(1)}%` : ''}
 
-Your role is to help the real estate agent:
-1. Provide balanced insights for both buyer and seller perspectives
-2. Suggest negotiation points based on the deal score and market value
-3. Highlight property strengths and potential concerns
-4. Offer guidance on positioning the property or making a competitive offer
-5. Provide context on comparable properties and market trends
+Your role is to help real estate agents better serve their diverse clientele:
 
-Provide professional, concise advice that the agent can use when advising their clients.
+For Investment Buyers:
+1. Analyze short-term and long-term rental yield potential
+2. Highlight ROI factors based on the property's condition and price
+3. Provide insights on cash flow projections and capital appreciation
+4. Compare investment value against other market opportunities
+
+For Owner-Occupiers:
+1. Focus on lifestyle benefits and property features
+2. Discuss long-term value appreciation potential
+3. Address affordability and financing considerations
+4. Highlight neighborhood amenities and quality of life factors
+
+For All Clients:
+1. Suggest negotiation strategies based on the deal score and market value
+2. Identify property strengths and potential concerns
+3. Provide market trend insights relevant to the purchase decision
+4. Offer tactical advice for competitive offers or seller responses
+
+Keep your advice professional, practical, and tailored to the agent's needs when advising different types of clients.
 `;
 
     // User's question or default prompt
