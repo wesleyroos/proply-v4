@@ -21,7 +21,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PropertyScoreModal } from "@/components/PropertyScoreModal";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Home } from "lucide-react";
@@ -84,7 +83,6 @@ export default function DealScorePage() {
     null,
   );
   const [showResults, setShowResults] = useState(false);
-  const [showPropertyScoreModal, setShowPropertyScoreModal] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
 
   useEffect(() => {
@@ -916,7 +914,7 @@ export default function DealScorePage() {
   const calculateAffordabilityMetrics = (formData: typeof submittedData) => {
     if (!formData) return null;
 
-    // Parse formatted values to get numeric values for calculations
+    //    // Parse formatted valuesto get numeric values for calculations
     const parseValue = (value: string) => {
             if (!value) return 0;
       // Remove all non-numeric characters except decimal point
@@ -991,11 +989,6 @@ export default function DealScorePage() {
       <div className="p-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Deal Score</h1>
-          {hasProAccess.hasAccess && (
-            <Button variant="outline" onClick={() => setShowPropertyScoreModal(true)}>
-              View Property Score <BarChart3 className="h-4 w-4 ml-2" />
-            </Button>
-          )}
         </div>
 
         <div className="flex gap-8">
@@ -1300,136 +1293,142 @@ export default function DealScorePage() {
 
                 <TabsContent value="rental">
                   {submittedData && (
-                    <div className="space-y-4">
-                      <h2 className="text-2xl font-bold">Rental Potential</h2>
-                      <div className="grid grid-cols-2 gap-4">
-                        {/* Short Term Rental Card */}
-                        <div
-                          className={`p-6 rounded-lg border bg-card relative ${
-                            calculateRentalMetrics(submittedData)
-                              ?.isShortTermRecommended
-                              ? "before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg"
-                              : ""
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 mb-4">
-                            <Calendar className="h-5 w-5" />
-                            <h3 className="text-lg font-semibold">
-                              Short-Term (Airbnb)
-                            </h3>
-                            {calculateRentalMetrics(submittedData)
-                              ?.isShortTermRecommended && (
-                              <span className="px-2 py-1 text-xs bg-emerald-500 text-white rounded">
-                                RECOMMENDED
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="space-y-4">
-                            <div>
-                              <div className="text-3xl font-bold">
-                                R
-                                {calculateRentalMetrics(
-                                  submittedData,
-                                )?.shortTerm.monthly.toLocaleString()}
-                                /month
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Rental Potential</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            {/* Short Term Rental Card */}
+                            <div
+                              className={`p-6 rounded-lg border bg-card relative ${
+                                calculateRentalMetrics(submittedData)
+                                  ?.isShortTermRecommended
+                                  ? "before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg"
+                                  : ""
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 mb-4">
+                                <Calendar className="h-5 w-5" />
+                                <h3 className="text-lg font-semibold">
+                                  Short-Term (Airbnb)
+                                </h3>
+                                {calculateRentalMetrics(submittedData)
+                                  ?.isShortTermRecommended && (
+                                  <span className="px-2 py-1 text-xs bg-emerald-500 text-white rounded">
+                                    RECOMMENDED
+                                  </span>
+                                )}
                               </div>
-                              <div className="text-sm text-muted-foreground">
-                                Based on {formData.occupancy}% occupancy rate
+
+                              <div className="space-y-4">
+                                <div>
+                                  <div className="text-3xl font-bold">
+                                    R
+                                    {calculateRentalMetrics(
+                                      submittedData,
+                                    )?.shortTerm.monthly.toLocaleString()}
+                                    /month
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">
+                                    Based on {formData.occupancy}% occupancy rate
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <span>Annual yield:</span>
+                                    <span className="font-semibold text-emerald-600">
+                                      {calculateRentalMetrics(
+                                        submittedData,
+                                      )?.shortTerm.yield.toFixed(1)}
+                                      %
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Yearly income:</span>
+                                    <span className="font-semibold">
+                                      R
+                                      {calculateRentalMetrics(
+                                        submittedData,
+                                      )?.shortTerm.yearly.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Management fee:</span>
+                                    <span className="font-semibold">15-20%</span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
 
-                            <div className="space-y-2">
-                              <div className="flex justify-between">
-                                <span>Annual yield:</span>
-                                <span className="font-semibold text-emerald-600">
-                                  {calculateRentalMetrics(
-                                    submittedData,
-                                  )?.shortTerm.yield.toFixed(1)}
-                                  %
-                                </span>
+                            {/* Long Term Rental Card */}
+                            <div
+                              className={`p-6 rounded-lg border bg-card relative ${
+                                !calculateRentalMetrics(submittedData)
+                                  ?.isShortTermRecommended
+                                  ? "before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg"
+                                  : ""
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 mb-4">
+                                <Home className="h-5 w-5" />
+                                <h3 className="text-lg font-semibold">
+                                  Long-Term Rental
+                                </h3>
+                                {!calculateRentalMetrics(submittedData)
+                                  ?.isShortTermRecommended && (
+                                  <span className="px-2 py-1 text-xs bg-emerald-500 text-white rounded">
+                                    RECOMMENDED
+                                  </span>
+                                )}
                               </div>
-                              <div className="flex justify-between">
-                                <span>Yearly income:</span>
-                                <span className="font-semibold">
-                                  R
-                                  {calculateRentalMetrics(
-                                    submittedData,
-                                  )?.shortTerm.yearly.toLocaleString()}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Management fee:</span>
-                                <span className="font-semibold">15-20%</span>
+
+                              <div className="space-y-4">
+                                <div>
+                                  <div className="text-3xl font-bold">
+                                    R
+                                    {calculateRentalMetrics(
+                                      submittedData,
+                                    )?.longTerm.monthly.toLocaleString()}
+                                    /month
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">
+                                    Standard 12-month lease
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <span>Annual yield:</span>
+                                    <span className="font-semibold text-emerald-600">
+                                      {calculateRentalMetrics(
+                                        submittedData,
+                                      )?.longTerm.yield.toFixed(1)}
+                                      %
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Yearly income:</span>
+                                    <span className="font-semibold">
+                                      R
+                                      {calculateRentalMetrics(
+                                        submittedData,
+                                      )?.longTerm.yearly.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Management fee:</span>
+                                    <span className="font-semibold">8-10%</span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
-
-                        {/* Long Term Rental Card */}
-                        <div
-                          className={`p-6 rounded-lg border bg-card relative ${
-                            !calculateRentalMetrics(submittedData)
-                              ?.isShortTermRecommended
-                              ? "before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-emerald-500 before:rounded-t-lg"
-                              : ""
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 mb-4">
-                            <Home className="h-5 w-5" />
-                            <h3 className="text-lg font-semibold">
-                              Long-Term Rental
-                            </h3>
-                            {!calculateRentalMetrics(submittedData)
-                              ?.isShortTermRecommended && (
-                              <span className="px-2 py-1 text-xs bg-emerald-500 text-white rounded">
-                                RECOMMENDED
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="space-y-4">
-                            <div>
-                              <div className="text-3xl font-bold">
-                                R
-                                {calculateRentalMetrics(
-                                  submittedData,
-                                )?.longTerm.monthly.toLocaleString()}
-                                /month
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                Standard 12-month lease
-                              </div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <div className="flex justify-between">
-                                <span>Annual yield:</span>
-                                <span className="font-semibold text-emerald-600">
-                                  {calculateRentalMetrics(
-                                    submittedData,
-                                  )?.longTerm.yield.toFixed(1)}
-                                  %
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Yearly income:</span>
-                                <span className="font-semibold">
-                                  R
-                                  {calculateRentalMetrics(
-                                    submittedData,
-                                  )?.longTerm.yearly.toLocaleString()}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Management fee:</span>
-                                <span className="font-semibold">8-10%</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   )}
                 </TabsContent>
 
@@ -1669,32 +1668,6 @@ export default function DealScorePage() {
             </div>
           </DialogContent>
         </Dialog>
-        {showPropertyScoreModal && (
-        <PropertyScoreModal
-          isOpen={showPropertyScoreModal}
-          onOpenChange={setShowPropertyScoreModal}
-          propertyAddress={submittedData?.address}
-          purchasePrice={parseFloat(submittedData?.purchasePrice || "0")}
-          marketAvgPrice={parseFloat(submittedData?.size || "0") * parseFloat(submittedData?.areaRate || "0")}
-          propertyCondition={submittedData?.propertyCondition || "good"}
-          shortTermYield={
-            submittedData?.nightlyRate && submittedData?.occupancy
-              ? ((parseFloat(submittedData.nightlyRate) * 365 * parseFloat(submittedData.occupancy) / 100) / parseFloat(submittedData.purchasePrice)) * 100
-              : null
-          }
-          longTermYield={
-            submittedData?.longTermRental
-              ? ((parseFloat(submittedData.longTermRental) * 12) / parseFloat(submittedData.purchasePrice)) * 100
-              : null
-          }
-          areaRatePerSqm={parseFloat(submittedData?.areaRate || "0")}
-          propertyRatePerSqm={
-            submittedData?.purchasePrice && submittedData?.size
-              ? parseFloat(submittedData.purchasePrice) / parseFloat(submittedData.size)
-              : 0
-          }
-        />
-      )}
       </div>
     </PageTransition>
   );
