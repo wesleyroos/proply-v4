@@ -9,7 +9,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-// Props interface remains the same
 interface DealAssessmentProps {
   purchasePrice: number;
   marketPrice: number;
@@ -43,11 +42,13 @@ export function DealAssessment({
   propertyRate,
   finalScore
 }: DealAssessmentProps) {
-  // Determine badge and color based on price difference
+  // Determine badge and color based on deal score
   const getBadgeInfo = () => {
-    if (priceDiff <= -5) return { emoji: "🔥", text: "GREAT DEAL", color: "bg-green-500" };
-    if (priceDiff <= 5) return { emoji: "✅", text: "FAIR PRICE", color: "bg-blue-500" };
-    return { emoji: "⚠️", text: "OVERPRICED", color: "bg-amber-500" };
+    if (finalScore >= 90) return { emoji: "🔥", text: "EXCELLENT DEAL", color: "bg-emerald-500" };
+    if (finalScore >= 75) return { emoji: "✨", text: "GREAT DEAL", color: "bg-green-500" };
+    if (finalScore >= 60) return { emoji: "✅", text: "GOOD DEAL", color: "bg-blue-500" };
+    if (finalScore >= 40) return { emoji: "⚠️", text: "FAIR DEAL", color: "bg-amber-500" };
+    return { emoji: "❌", text: "POOR DEAL", color: "bg-red-500" };
   };
 
   // Get score color based on value
