@@ -73,8 +73,8 @@ export function DealScoreAdvisor({
         question: userMessage
       });
 
-      // Call the correct Deal Score Advisor API endpoint
-      const response = await fetch('/api/deal-advice', {
+      // Call the correct Deal Score Advisor API endpoint with full path
+      const response = await fetch('/api/deal-advisor', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
