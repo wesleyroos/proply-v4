@@ -326,10 +326,9 @@ export function DealAssessment({
           </p>
         </div>
       </div>
-      {/* AI Advisor moved to parent component to be available across all tabs */}
-      )}
+        {/* AI Advisor moved to parent component to be available across all tabs */}
 
-      <Dialog open={isCalculationModalOpen} onOpenChange={setIsCalculationModalOpen}>
+        <Dialog open={isCalculationModalOpen} onOpenChange={setIsCalculationModalOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Deal Factors Calculation Methodology</DialogTitle>
