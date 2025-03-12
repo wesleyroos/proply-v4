@@ -1,120 +1,61 @@
-import { Request, Response } from 'express';
-import { OpenAI } from 'openai';
-import { requireAuth } from "../auth";
+import express from 'express';
+import OpenAI from "openai";
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-});
+const router = express.Router();
 
-// Check if API key is configured
-const isApiKeyConfigured = !!process.env.OPENAI_API_KEY;
+// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export const dealAdvisorHandler = async (req: Request, res: Response) => {
+router.post('/', async (req, res) => {
   try {
-    // Require authentication - updated to handle response directly
-    const user = requireAuth(req, res);
-    if (!user) return res.status(401).json({ error: "Unauthorized" });
-
-    // Check if OpenAI API key is configured
-    if (!isApiKeyConfigured) {
-      console.error('OpenAI API key is not configured');
-      return res.status(503).json({ 
-        error: "AI service is unavailable", 
-        details: "OpenAI API key is not configured" 
-      });
-    }
-
-    // Log the request body for debugging
-    console.log('Deal advisor request body:', JSON.stringify(req.body, null, 2));
-
-    // Extract data from request (with fallback to ensure backward compatibility)
-    const dealDetails = req.body.dealDetails || 
-                        (req.body.context ? req.body.context : {});
-    const question = req.body.question || '';
+    const { dealDetails, question } = req.body;
 
     if (!dealDetails) {
-      console.error('Missing deal details in request');
       return res.status(400).json({
         error: "Missing deal details",
         details: "The request is missing required property data"
       });
     }
 
-    // Construct the system prompt with data context
-    const purchasePrice = dealDetails.purchasePrice || 0;
-    const marketPrice = dealDetails.marketPrice || 0;
-    const priceDiff = dealDetails.priceDiff || 0;
-    const dealScore = dealDetails.dealScore || 0;
-    const condition = dealDetails.condition || 'unknown';
-    const rentalYield = dealDetails.rentalYield || null;
+    const systemPrompt = `You are an AI real estate advisor helping agents provide informed guidance to their clients. You're analyzing a property with the following details:
 
-    console.log('Deal advisor constructing prompt with data:', {
-      purchasePrice, marketPrice, priceDiff, dealScore, condition, rentalYield
+Purchase Price: R${dealDetails.purchasePrice.toLocaleString()}
+Market Value: R${dealDetails.marketPrice.toLocaleString()}
+Price Difference: ${dealDetails.priceDiff.toFixed(1)}% ${dealDetails.priceDiff > 0 ? 'above' : 'below'} market value
+Deal Score: ${dealDetails.dealScore}/100
+Property Condition: ${dealDetails.condition}
+${dealDetails.rentalYield ? `Rental Yield: ${dealDetails.rentalYield.toFixed(1)}%` : ''}
+
+Your role is to help the real estate agent:
+1. Provide balanced insights for both buyer and seller perspectives
+2. Suggest negotiation points based on the deal score and market value
+3. Highlight property strengths and potential concerns
+4. Offer guidance on positioning the property or making a competitive offer
+5. Provide context on comparable properties and market trends
+
+Provide professional, concise advice that the agent can use when advising their clients.`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt
+        },
+        {
+          role: "user",
+          content: question || "What do you think about this property deal?"
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 500
     });
 
-    const systemPrompt = `You are a real estate investment advisor helping agents evaluate property deals. 
-
-Deal context:
-Purchase Price: R${purchasePrice.toLocaleString()}
-Market Value: R${marketPrice.toLocaleString()}
-Price Difference: ${priceDiff.toFixed(1)}% ${priceDiff > 0 ? 'above' : 'below'} market value
-Deal Score: ${dealScore}/100
-Property Condition: ${condition}
-${rentalYield ? `Rental Yield: ${rentalYield.toFixed(1)}%` : ''}
-`;
-
-    // User's question or default prompt
-    const userPrompt = question || "What do you think about this property deal?";
-
-    // Call OpenAI API
-    try {
-      console.log('Calling OpenAI API with system prompt:', systemPrompt);
-      console.log('User prompt:', userPrompt);
-      
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        max_tokens: 500
-      });
-
-      console.log('OpenAI API response received');
-      
-      // Return the response
-      return res.json({
-        response: completion.choices[0].message.content,
-        tokensUsed: completion.usage?.total_tokens || 0
-      });
-    } catch (openaiError) {
-      console.error('OpenAI API error:', openaiError);
-      
-      return res.status(503).json({
-        error: "AI service error",
-        details: openaiError instanceof Error ? openaiError.message : "Unknown OpenAI error",
-        suggestion: "Please try again later"
-      });
-    }
-
+    res.json({ response: response.choices[0].message.content });
   } catch (error) {
-    console.error('Deal advisor error:', error);
-
-    // Check if error is related to OpenAI API
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    const isOpenAIError = errorMessage.includes('openai') || 
-                          errorMessage.includes('api key') || 
-                          errorMessage.includes('authentication');
-
-    return res.status(500).json({ 
-      error: isOpenAIError 
-        ? "AI service is currently unavailable" 
-        : "Failed to process deal advisor request",
-      details: errorMessage,
-      suggestion: isOpenAIError 
-        ? "Please contact the administrator to verify the OpenAI API configuration" 
-        : "Please try again later"
-    });
+    console.error("Error in deal advisor:", error);
+    res.status(500).json({ error: "Failed to get AI response" });
   }
-};
+});
+
+export default router;

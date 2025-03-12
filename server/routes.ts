@@ -25,6 +25,7 @@ import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
 import primeRateRouter from './routes/prime-rate';
 import { dealAdvisorHandler } from "./routes/deal-advisor"; // Added import
+import dealAdvisorRouter from './routes/deal-advisor'; // Added import
 
 // Extend Express.User to include our schema
 declare global {
@@ -948,18 +949,21 @@ export function registerRoutes(app: Express): Server {
 
   // Property comparison routes
   app.use('/api/prime-rate', primeRateRouter);
-  app.post("/api/properties", async (req, res) => {
+app.post("/api/properties", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
     }
 
     try {
       const property = await db
-        .insert(properties)        .values({
+        .insert(properties)
+        .values({
           ...req.body,
           userId: req.user!.id,
-        })        .returning();
-      res.json(property[0]);} catch (error) {
+        })
+        .returning();
+      res.json(property[0]);
+    } catch (error) {
       res.status(400).json({ error: "Invalid property data" });
     }
   });
@@ -1779,7 +1783,7 @@ export function registerRoutes(app: Express): Server {
 
   // Register property scraper routes
   app.use("/api", propertyScraper);
-  app.post("/api/deal-advisor", dealAdvisorHandler); // Added deal advisor endpoint
+  app.use('/api/deal-advisor', dealAdvisorRouter); // Added deal advisor endpoint
 
   const httpServer = createServer(app);
   return httpServer;
