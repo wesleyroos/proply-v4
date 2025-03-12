@@ -1,0 +1,34 @@
+Based on your full context of the codebase and the structure of this web app, I would like your assistance in redesigning the homepage to better tell the story of Proply and its three core products while addressing the unique pain points of each audience.
+
+The homepage should be clear, compelling, and conversion-driven, guiding different users toward the product that best suits them.
+
+The Three Core Products & Their Audiences:
+Property Analyzer (Target: Savvy Investors & Investment-Focused Real Estate Agents)
+
+A powerful tool that enriches real estate transaction data with deep investment insights.
+Helps agents and investors make data-driven decisions with detailed financial modeling and investment metrics.
+Rent Compare (Target: Airbnb Management Companies)
+
+Designed to build trust with short-term rental owners and help managers retain more clients.
+Provides real-time rental benchmarks to optimize pricing strategies and validate revenue expectations.
+Deal Score (Target: Buyers, Investors & General Market Participants)
+
+A universal deal-scoring system that instantly evaluates any property’s value against the market.
+Factors in pricing, investment performance, and expected yield to give users a clear, data-backed decision on whether a deal is strong or weak.
+Your Task:
+Take the mindset of:
+
+Andrew Chen (Growth at Uber, Partner at Andreessen Horowitz) → Conversion-focused, product-led growth.
+Gibson Biddle (Former VP of Product at Netflix) → Storytelling, engagement, and user-driven design.
+Refactor & redesign the homepage to:
+
+Address each audience’s unique pain points in a structured, intuitive way.
+Guide users toward the right product seamlessly (Property Analyzer, Rent Compare, or Deal Score).
+Create a bold, modern, high-converting landing page experience that establishes Proply as an essential tool for serious property professionals.
+Make engagement frictionless, ensuring users immediately see the value of Proply and feel compelled to sign up or explore further.
+Key Considerations for UI/UX:
+
+Sectioning the homepage for each audience segment (e.g., split layout, dynamic content).
+Visual storytelling (e.g., compelling headlines, short success stories, interactive elements).
+Strong CTAs that move users toward sign-ups, trials, or deeper engagement with the platform.
+Let me know your strategy for implementing this, and generate an updated homepage structure with the necessary UI/UX elements.
