@@ -986,7 +986,94 @@ export default function DealScorePage() {
   };
 
 
-  const finalScore = null; // Placeholder for deal score - cannot introduce new variables
+  const calculateDealScore = (
+    priceDiff: number,
+    propertyCondition: string,
+    propertyRate: number,
+    areaRate: number,
+    rentalData: any
+  ) => {
+    // Price Factor: 0-100 based on price difference
+    let priceScore = 0;
+    if (priceDiff <= -15) priceScore = 100; // Great deal
+    else if (priceDiff <= -10) priceScore = 90;
+    else if (priceDiff <= -5) priceScore = 80;
+    else if (priceDiff <= 0) priceScore = 70;
+    else if (priceDiff <= 5) priceScore = 60;
+    else if (priceDiff <= 10) priceScore = 50;
+    else if (priceDiff <= 15) priceScore = 40;
+    else if (priceDiff <= 20) priceScore = 30;
+    else priceScore = 20;
+
+    // Condition Factor: 0-100
+    const conditionScore = 
+      propertyCondition === "excellent" ? 100 :
+      propertyCondition === "good" ? 80 :
+      propertyCondition === "fair" ? 60 :
+      40; // poor
+
+    // Area Rate vs Property Rate: 0-100
+    let rateScore = 0;
+    const rateDiff = ((propertyRate - areaRate) / areaRate) * 100;
+
+    if (rateDiff <= -15) rateScore = 100;
+    else if (rateDiff <= -10) rateScore = 90;
+    else if (rateDiff <= -5) rateScore = 80;
+    else if (rateDiff <= 0) rateScore = 70;
+    else if (rateDiff <= 5) rateScore = 60;
+    else if (rateDiff <= 10) rateScore = 50;
+    else if (rateDiff <= 15) rateScore = 40;
+    else rateScore = 30;
+
+    // Yield Factor: 0-100 based on short-term and long-term yields
+    let yieldScore = 0;
+
+    // Only calculate if we have rental data
+    if (rentalData) {
+      // Short-term yield score (0-50, with 50 being excellent)
+      let shortTermYieldScore = 0;
+      const shortTermYield = rentalData.shortTerm.yield;
+
+      if (shortTermYield >= 15) shortTermYieldScore = 50; // Excellent yield
+      else if (shortTermYield >= 12) shortTermYieldScore = 40;
+      else if (shortTermYield >= 10) shortTermYieldScore = 30;
+      else if (shortTermYield >= 8) shortTermYieldScore = 20;
+      else if (shortTermYield >= 6) shortTermYieldScore = 10;
+      else shortTermYieldScore = 5;
+
+      // Long-term yield score (0-50, with 50 being excellent)
+      let longTermYieldScore = 0;
+      const longTermYield = rentalData.longTerm.yield;
+
+      if (longTermYield >= 8) longTermYieldScore = 50; // Excellent yield
+      else if (longTermYield >= 7) longTermYieldScore = 40;
+      else if (longTermYield >= 6) longTermYieldScore = 30;
+      else if (longTermYield >= 5) longTermYieldScore = 20;
+      else if (longTermYield >= 4) longTermYieldScore = 10;
+      else longTermYieldScore = 5;
+
+      // Combined yield score (0-100)
+      yieldScore = shortTermYieldScore + longTermYieldScore;
+    }
+
+    // Final Score (weighted average)
+    // 40% price, 20% condition, 20% rate comparison, 20% yield
+    return Math.round(
+      (priceScore * 0.4) + 
+      (conditionScore * 0.2) + 
+      (rateScore * 0.2) + 
+      (yieldScore * 0.2)
+    );
+  };
+
+  // Calculate the score when we have submitted data
+  const finalScore = submittedData ? calculateDealScore(
+    priceDiff,
+    submittedData.propertyCondition,
+    parseFormattedValue(submittedData.purchasePrice) / parseFormattedValue(submittedData.size),
+    parseFormattedValue(submittedData.areaRate),
+    calculateRentalMetrics(submittedData)
+  ) : null;
 
   return (
     <PageTransition>
@@ -1075,6 +1162,7 @@ export default function DealScorePage() {
                         propertyCondition={submittedData.propertyCondition}
                         areaRate={parseFormattedValue(submittedData.areaRate)}
                         propertyRate={parseFormattedValue(submittedData.purchasePrice) / parseFormattedValue(submittedData.size)}
+                        finalScore={finalScore || 0} // Pass the calculated score
                       />
                     </CardContent>
                   </Card>
@@ -1607,7 +1695,7 @@ export default function DealScorePage() {
                 : calculateRentalMetrics(submittedData)?.longTerm.yield || 0
             }
             condition={submittedData.propertyCondition}
-            dealScore={finalScore}
+            dealScore={finalScore || 0} // Pass the calculated score
           />
         )}
         <div
