@@ -21,7 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PropertyScoreModal } from "@/components/PropertyScoreModal";
+
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Home } from "lucide-react";
@@ -84,7 +84,6 @@ export default function DealScorePage() {
     null,
   );
   const [showResults, setShowResults] = useState(false);
-  const [showPropertyScoreModal, setShowPropertyScoreModal] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
 
   useEffect(() => {
