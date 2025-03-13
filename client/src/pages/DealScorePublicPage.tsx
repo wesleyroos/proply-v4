@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { ArrowRight, AlertCircle } from "lucide-react";
+import { ArrowRight, AlertCircle, CreditCard, Wallet } from "lucide-react";
 import { dealCalculationSchema, type DealCalculation, type DealScoreResult } from "@/types/dealScore";
 import { apiRequest } from "@/lib/queryClient";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -13,9 +13,23 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+
 
 export default function DealScorePublicPage() {
   const [result, setResult] = useState<DealScoreResult | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   const form = useForm<DealCalculation>({
     resolver: zodResolver(dealCalculationSchema),
@@ -36,6 +50,17 @@ export default function DealScorePublicPage() {
       setResult(data);
     },
   });
+
+  const handlePayment = () => {
+    setProcessingPayment(true);
+    // Simulate payment processing
+    setTimeout(() => {
+      setProcessingPayment(false);
+      setShowPaymentModal(false);
+      // Here you would normally redirect to the report or show a success message
+      alert("Payment successful! Redirecting to full report...");
+    }, 2000);
+  };
 
   const onSubmit = (data: DealCalculation) => {
     calculateMutation.mutate(data);
@@ -99,8 +124,8 @@ export default function DealScorePublicPage() {
         </svg>
       </div>
 
-      <main className="flex-1 relative z-10 flex flex-col items-center justify-center pt-8"> {/* Added padding to the top */}
-        <div className="container flex flex-col items-center px-4 py-8 text-center md:py-16 lg:py-24"> {/* Adjusted padding */}
+      <main className="flex-1 relative z-10 flex flex-col items-center justify-center pt-8">
+        <div className="container flex flex-col items-center px-4 py-8 text-center md:py-16 lg:py-24">
           <div className="mx-auto max-w-[800px] space-y-4">
             <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">Proply Deal Score™</h1>
             <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl">
@@ -290,7 +315,7 @@ export default function DealScorePublicPage() {
                       <Button className="w-full" onClick={resetForm}>
                         Calculate Another
                       </Button>
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full" onClick={() => setShowPaymentModal(true)}>
                         View Full Report
                       </Button>
                     </div>
@@ -301,6 +326,87 @@ export default function DealScorePublicPage() {
           </div>
         </div>
       </main>
+
+      {/* Payment Modal */}
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Purchase Full Property Report</DialogTitle>
+            <DialogDescription>
+              Get detailed insights, comparable properties, and investment projections for this property.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium">Full Property Report</div>
+              <div className="font-bold text-lg">R100</div>
+            </div>
+
+            <div className="border-t border-b py-4">
+              <div className="font-medium mb-3">What's included:</div>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <svg className="h-4 w-4 text-primary mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Detailed property valuation analysis</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="h-4 w-4 text-primary mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Comparable property listings in the area</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="h-4 w-4 text-primary mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>5-year investment projection</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="h-4 w-4 text-primary mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Neighborhood growth trends</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="space-y-4">
+              <div className="font-medium">Payment Method</div>
+              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-2 gap-4">
+                <Label htmlFor="card" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                  <RadioGroupItem value="card" id="card" className="sr-only" />
+                  <CreditCard className="mb-3 h-6 w-6" />
+                  <span className="text-sm">Credit Card</span>
+                </Label>
+                <Label htmlFor="instant-eft" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                  <RadioGroupItem value="instant-eft" id="instant-eft" className="sr-only" />
+                  <Wallet className="mb-3 h-6 w-6" />
+                  <span className="text-sm">Instant EFT</span>
+                </Label>
+              </RadioGroup>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPaymentModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handlePayment} disabled={processingPayment}>
+              {processingPayment ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  Processing...
+                </div>
+              ) : (
+                "Pay R100"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
