@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-
 
 export default function DealScorePublicPage() {
   const [result, setResult] = useState<DealScoreResult | null>(null);
@@ -73,6 +72,15 @@ export default function DealScorePublicPage() {
 
   return (
     <div className="flex min-h-screen flex-col relative overflow-hidden bg-background">
+      {/* Logo */}
+      <div className="absolute top-8 left-8 z-20">
+        <img
+          src="/Proply Logo 1.png"
+          alt="Proply Logo"
+          className="h-8 w-auto"
+        />
+      </div>
+
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Grid Pattern */}
