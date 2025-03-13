@@ -13,8 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
-import PublicHeader from "@/components/PublicHeader";
-import PublicFooter from "@/components/PublicFooter";
 
 export default function DealScorePublicPage() {
   const [result, setResult] = useState<DealScoreResult | null>(null);
@@ -49,10 +47,8 @@ export default function DealScorePublicPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] flex flex-col">
-      <PublicHeader />
-
-      <div className="flex-1 relative overflow-hidden">
+    <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center">
+      <div className="relative overflow-hidden w-full">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Grid Pattern */}
@@ -62,23 +58,6 @@ export default function DealScorePublicPage() {
           <div className="circle-animation absolute -top-[150px] -left-[150px] w-[300px] h-[300px] rounded-full bg-primary/10 blur-3xl"></div>
           <div className="circle-animation animation-delay-1000 absolute top-[20%] -right-[100px] w-[200px] h-[200px] rounded-full bg-blue-400/10 blur-3xl"></div>
           <div className="circle-animation animation-delay-2000 absolute -bottom-[150px] left-[20%] w-[250px] h-[250px] rounded-full bg-primary/10 blur-3xl"></div>
-
-          {/* Data Points */}
-          <div className="data-points absolute top-0 left-0 w-full h-full">
-            {Array.from({ length: 50 }).map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-1 h-1 rounded-full bg-primary/40"
-                style={{
-                  top: `${Math.random() * 100}%`,
-                  left: `${Math.random() * 100}%`,
-                  opacity: Math.random() * 0.5 + 0.2,
-                  animationDelay: `${Math.random() * 5000}ms`,
-                  animationDuration: `${Math.random() * 10000 + 5000}ms`,
-                }}
-              />
-            ))}
-          </div>
 
           {/* Data Lines */}
           <svg className="absolute inset-0 w-full h-full opacity-[0.07]" xmlns="http://www.w3.org/2000/svg">
@@ -99,7 +78,7 @@ export default function DealScorePublicPage() {
           </svg>
         </div>
 
-        <main className="relative z-10 flex flex-col items-center justify-center pt-24 pb-16">
+        <main className="relative z-10 flex flex-col items-center justify-center py-16">
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-[800px] space-y-4 text-center mb-12">
               <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">
@@ -303,8 +282,6 @@ export default function DealScorePublicPage() {
           </div>
         </main>
       </div>
-
-      <PublicFooter />
     </div>
   );
 }
