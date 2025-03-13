@@ -37,6 +37,7 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import NotificationsMenu from "./components/NotificationsMenu";
 import AirbnbYieldCalculator from "./pages/AirbnbYieldCalculator";
 import DealScorePage from "./pages/DealScorePage";
+import PublicDealScorePage from "./pages/PublicDealScorePage";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -111,6 +112,11 @@ function App() {
       <TooltipProvider>
         <AnimatePresence mode="wait">
           <Switch key={location}>
+            <Route path="/deal-score-calculator" component={() => (
+              <PageTransition>
+                <PublicDealScorePage />
+              </PageTransition>
+            )} />
             <Route path="/reset-password" component={() => (
               <PageTransition>
                 <ResetPasswordPage />
