@@ -111,11 +111,6 @@ function App() {
       <TooltipProvider>
         <AnimatePresence mode="wait">
           <Switch key={location}>
-            <Route path="/deal-score" component={() => (
-              <PageTransition>
-                <DealScorePage />
-              </PageTransition>
-            )} />
             <Route path="/reset-password" component={() => (
               <PageTransition>
                 <ResetPasswordPage />
@@ -191,6 +186,8 @@ function App() {
                 <PaymentFailurePage />
               </PageTransition>
             )} />
+
+            {/* Protected routes */}
             <Route path="/dashboard" component={() => <ProtectedRoute component={DashboardPage} />} />
             <Route path="/dashboard/property-analyzer" component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} />
             <Route path="/dashboard/market-intelligence" component={() => <ProtectedRoute component={MarketIntelligencePage} />} />
