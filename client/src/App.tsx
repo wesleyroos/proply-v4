@@ -37,8 +37,6 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import NotificationsMenu from "./components/NotificationsMenu";
 import AirbnbYieldCalculator from "./pages/AirbnbYieldCalculator";
 import DealScorePage from "./pages/DealScorePage";
-import DealScoreLandingPage from "./pages/DealScoreLandingPage";
-import "./components/DealScoreLanding.css";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -151,11 +149,6 @@ function App() {
             <Route path="/blog/:slug" component={() => (
               <PageTransition>
                 <BlogPage />
-              </PageTransition>
-            )} />
-            <Route path="/deal-score-calculator" component={() => (
-              <PageTransition>
-                <DealScoreLandingPage />
               </PageTransition>
             )} />
             <Route path="/property-analyzer" component={() => (
