@@ -1,0 +1,40 @@
+Property Deal Calculator Project Overview
+This project is a full-stack web application for calculating property deal scores. Here's how it's structured and how you can incorporate it into another Replit project:
+
+Project Architecture
+Frontend: React application with Tailwind CSS for styling
+Backend: Express.js server with API routes
+Shared: TypeScript schema definitions used by both frontend and backend
+Build/Dev Tools: Vite for bundling and development server
+Key Files and Their Purposes
+server/index.ts: Main Express server entrypoint
+server/routes.ts: API route definitions, includes property deal calculation logic
+server/storage.ts: Memory storage implementation for user data
+server/vite.ts: Configuration for Vite in development mode
+shared/schema.ts: Zod schemas for form validation and TypeScript types
+client/src/main.tsx: React application entry point
+vite.config.ts: Configuration for Vite bundler
+package.json: Dependencies and scripts
+tsconfig.json: TypeScript configuration
+.replit: Replit configuration for run commands
+drizzle.config.ts: Database ORM configuration (currently using Neon Postgres)
+How to Incorporate Into Another Replit Project
+Method 1: Start from this project
+Fork this project: Create a fork and modify it as needed
+Add your features: Build upon the existing codebase
+Update schemas: Modify shared/schema.ts for your data models
+Method 2: Import components into an existing project
+Install dependencies: Add the required packages from package.json
+Copy key files:
+The server directory for backend logic
+The shared directory for schemas
+Configure Vite with the vite.config.ts file
+Update your Express app: Integrate the API routes from server/routes.ts
+Configure scripts: Add the dev/build scripts from package.json
+Key Features
+Full-stack TypeScript project with shared types
+Property deal score calculation with visual rating system
+React frontend with Tailwind styling
+Express backend API
+Development HMR (Hot Module Replacement) with Vite
+The most important part of the architecture is how the frontend and backend share type definitions through the shared directory, making it type-safe across the entire stack.
