@@ -98,6 +98,11 @@ export default function PublicHeader() {
                         Get Started
                       </Button>
                     </Link>
+                    <Link href="/deal-score-calculator">
+                      <Button variant="outline" className="w-full mt-2">
+                        Deal Score™
+                      </Button>
+                    </Link>
                   </>
                 )}
               </div>
