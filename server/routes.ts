@@ -24,8 +24,8 @@ import { suburbs } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
 import primeRateRouter from './routes/prime-rate';
-import { dealAdvisorHandler } from "./routes/deal-advisor"; // Added import
-import dealAdvisorRouter from './routes/deal-advisor'; // Added import
+import { dealAdvisorHandler } from "./routes/deal-advisor"; 
+import dealAdvisorRouter from './routes/deal-advisor'; 
 
 // Extend Express.User to include our schema
 declare global {
@@ -947,6 +947,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  
   // Property comparison routes
   app.use('/api/prime-rate', primeRateRouter);
 app.post("/api/properties", async (req, res) => {

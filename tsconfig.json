@@ -18,6 +18,7 @@
     "paths": {
       "@db": ["./db/index.ts"],
       "@db/*": ["./db/*"],
+      "@shared/*": ["./shared/*"],
       "@/*": ["./client/src/*"]
     }
   }
