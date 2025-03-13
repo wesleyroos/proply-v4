@@ -17,6 +17,11 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // Set headers for streaming response
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
     const systemPrompt = `You are an AI real estate advisor helping agents provide informed guidance to their clients. You're analyzing a property with the following details:
 
 Purchase Price: R${dealDetails.purchasePrice.toLocaleString()}
@@ -35,7 +40,8 @@ Your role is to help the real estate agent:
 
 Provide professional, concise advice that the agent can use when advising their clients.`;
 
-    const response = await openai.chat.completions.create({
+    // Create a streaming completion
+    const stream = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
@@ -48,13 +54,31 @@ Provide professional, concise advice that the agent can use when advising their 
         }
       ],
       temperature: 0.7,
-      max_tokens: 500
+      max_tokens: 500,
+      stream: true
     });
 
-    res.json({ response: response.choices[0].message.content });
+    // Stream the response chunks to the client
+    let fullResponse = '';
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || '';
+      if (content) {
+        fullResponse += content;
+        res.write(`data: ${JSON.stringify({ chunk: content, fullResponse })}\n\n`);
+      }
+    }
+
+    // End the response
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
   } catch (error) {
     console.error("Error in deal advisor:", error);
-    res.status(500).json({ error: "Failed to get AI response" });
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Failed to get AI response" });
+    } else {
+      res.write(`data: ${JSON.stringify({ error: "Failed to get AI response" })}\n\n`);
+      res.end();
+    }
   }
 });
 

@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Loader2, Send, MessageSquare, Info, X, Lock } from "lucide-react";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { UpgradeModal } from "@/components/UpgradeModal";
+import './DealScoreAdvisor.css'; // Import CSS for typing indicator
 
 interface DealScoreAdvisorProps {
   purchasePrice: number;
@@ -27,6 +28,7 @@ const getScoreColorClass = (score: number): string => {
 interface Message {
   type: 'user' | 'assistant';
   content: string;
+  isStreaming?: boolean; // Added isStreaming flag
 }
 
 const SAMPLE_QUESTIONS = [
@@ -139,7 +141,8 @@ export function DealScoreAdvisor({
       const data = await response.json();
       setMessages(prev => [...prev, {
         type: 'assistant',
-        content: data.response || "I'm sorry, I couldn't generate advice at this moment."
+        content: data.response || "I'm sorry, I couldn't generate advice at this moment.",
+        isStreaming: false // Added isStreaming flag
       }]);
     } catch (error) {
       console.error('Error in DealScoreAdvisor:', error);
@@ -259,6 +262,13 @@ export function DealScoreAdvisor({
                 }`}
               >
                 {renderMessageContent(message)}
+                {message.isStreaming && ( // Added typing indicator
+                  <span className="typing-indicator">
+                    <span className="dot"></span>
+                    <span className="dot"></span>
+                    <span className="dot"></span>
+                  </span>
+                )}
               </div>
             </div>
           ))}
