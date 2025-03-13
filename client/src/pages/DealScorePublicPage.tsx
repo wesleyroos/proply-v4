@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { ArrowRight, AlertCircle } from "lucide-react";
+import { Link } from "wouter";
 import { dealCalculationSchema, type DealCalculation, type DealScoreResult } from "@/types/dealScore";
 import { apiRequest } from "@/lib/queryClient";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -47,8 +48,10 @@ export default function DealScorePublicPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center relative overflow-hidden bg-background">
+    <div className="flex min-h-screen flex-col relative overflow-hidden bg-background">
+      {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Grid Pattern */}
         <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#8884_1px,transparent_1px),linear-gradient(to_bottom,#8884_1px,transparent_1px)] bg-[size:14px_24px]"></div>
 
         {/* Animated Circles */}
@@ -97,180 +100,223 @@ export default function DealScorePublicPage() {
         </svg>
       </div>
 
-      <main className="flex-1 relative z-10 w-full flex items-center justify-center">
-        <div className="container max-w-7xl mx-auto px-4 py-8 md:py-12 lg:py-16">
-          <div className="mx-auto max-w-[800px] space-y-4 text-center mb-12">
-            <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">
-              Proply Deal Score™
-            </h1>
+      <header className="border-b relative z-10 bg-background/80 backdrop-blur-sm">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <img
+              src="/Proply Logo 1.png"
+              alt="Proply Logo"
+              className="h-8 w-auto"
+            />
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="#" className="text-sm font-medium hover:underline underline-offset-4">
+              Sign In
+            </Link>
+            <Button>Get Started</Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1 relative z-10">
+        <div className="container flex flex-col items-center px-4 py-16 text-center md:py-24 lg:py-32">
+          <div className="mx-auto max-w-[800px] space-y-4">
+            <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">Proply Deal Score™</h1>
             <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl">
-              Enter the property details below to get an instant deal score based on market data, area rates, and rental yields.
+              Enter the property details below to get an instant deal score based on market data, area rates, and rental
+              yields.
             </p>
           </div>
 
-          <div className="mx-auto w-full max-w-[500px]">
-            {!result ? (
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-card p-6 rounded-lg shadow-sm">
-                  {calculateMutation.error && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>
-                        {calculateMutation.error instanceof Error
-                          ? calculateMutation.error.message
-                          : "An error occurred while calculating the deal score"}
-                      </AlertDescription>
-                    </Alert>
-                  )}
+          <div className="mx-auto mt-12 w-full max-w-[500px] relative">
+            {/* Card Glow Effect */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-slow"></div>
 
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Property Address</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter the full property address" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+            <div className="relative bg-background rounded-lg p-1">
+              {!result ? (
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 p-5 bg-card rounded-lg shadow-sm">
+                    {calculateMutation.error && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          {calculateMutation.error instanceof Error
+                            ? calculateMutation.error.message
+                            : "An error occurred while calculating the deal score"}
+                        </AlertDescription>
+                      </Alert>
                     )}
-                  />
 
-                  <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Asking Price</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
-                            <Input
-                              type="number"
-                              placeholder="0"
-                              className="pl-7"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="propertyType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Property Type</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Property Address</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select property type" />
-                            </SelectTrigger>
+                            <Input placeholder="Enter the full property address" {...field} />
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="house">House</SelectItem>
-                            <SelectItem value="apartment">Apartment</SelectItem>
-                            <SelectItem value="townhouse">Townhouse</SelectItem>
-                            <SelectItem value="land">Vacant Land</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="bedrooms"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Bedrooms</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Asking Price</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Number of bedrooms" />
-                            </SelectTrigger>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                className="pl-7"
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </div>
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="1">1</SelectItem>
-                            <SelectItem value="2">2</SelectItem>
-                            <SelectItem value="3">3</SelectItem>
-                            <SelectItem value="4">4</SelectItem>
-                            <SelectItem value="5+">5+</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <Button className="w-full mt-6" type="submit" disabled={calculateMutation.isPending}>
-                    {calculateMutation.isPending ? (
-                      <div className="flex items-center gap-2">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        Analyzing...
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        Calculate Deal Score
-                        <ArrowRight className="h-4 w-4" />
-                      </div>
-                    )}
-                  </Button>
-                </form>
-              </Form>
-            ) : (
-              <Card className="p-6">
-                <div className="space-y-8">
-                  <div className="space-y-4">
-                    <h2 className="text-2xl font-bold">Deal Assessment</h2>
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">✨ Deal Score:</span>
-                        <span className="text-3xl font-bold text-primary">{result.score}%</span>
-                      </div>
-                      <div className={`rounded-full px-4 py-1 text-sm font-medium ${result.color}`}>
-                        {result.rating}
+                    <FormField
+                      control={form.control}
+                      name="propertyType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Property Type</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select property type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="house">House</SelectItem>
+                              <SelectItem value="apartment">Apartment</SelectItem>
+                              <SelectItem value="townhouse">Townhouse</SelectItem>
+                              <SelectItem value="land">Vacant Land</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="bedrooms"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Bedrooms</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Number of bedrooms" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="1">1</SelectItem>
+                              <SelectItem value="2">2</SelectItem>
+                              <SelectItem value="3">3</SelectItem>
+                              <SelectItem value="4">4</SelectItem>
+                              <SelectItem value="5+">5+</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button className="mt-2" type="submit" disabled={calculateMutation.isPending}>
+                      {calculateMutation.isPending ? (
+                        <div className="flex items-center gap-2">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          Analyzing...
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          Calculate Deal Score
+                          <ArrowRight className="h-4 w-4" />
+                        </div>
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+              ) : (
+                <div className="rounded-lg bg-card p-6 text-card-foreground shadow-sm">
+                  <div className="space-y-8">
+                    <div className="space-y-4">
+                      <h2 className="text-2xl font-bold">Deal Assessment</h2>
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">✨ Deal Score:</span>
+                          <span className="text-3xl font-bold text-primary">{result.score}%</span>
+                        </div>
+                        <div className={`rounded-full px-4 py-1 text-sm font-medium text-primary-foreground ${result.color}`}>
+                          {result.rating}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-4 text-left">
-                    <p className="text-sm text-muted-foreground">
-                      This property is{" "}
-                      <span className="font-medium text-primary">
-                        {result.percentageDifference.toFixed(1)}%
-                      </span>
-                      {result.percentageDifference > 0 ? " below" : " above"} the estimated market value.
-                    </p>
-                    <div className="grid gap-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm">Asking Price:</span>
-                        <span className="font-medium">R{result.askingPrice.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Estimated Market Value:</span>
-                        <span className="font-medium">R{result.estimatedValue.toLocaleString()}</span>
+                    <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500"
+                        style={{ width: `${result.score}%` }}
+                      />
+                      <div
+                        className="absolute -top-1 h-4 w-4 rounded-full border-2 border-white shadow-sm"
+                        style={{ left: `${result.score}%`, backgroundColor: result.color }}
+                      />
+                      <div className="absolute left-0 right-0 top-4 flex justify-between text-xs text-muted-foreground">
+                        <span>Poor</span>
+                        <span>Average</span>
+                        <span>Good</span>
+                        <span>Great</span>
+                        <span>Excellent</span>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex gap-2">
-                    <Button className="w-full" onClick={resetForm}>
-                      Calculate Another
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      View Full Report
-                    </Button>
+                    <div className="space-y-4 text-left">
+                      <p className="text-sm text-muted-foreground">
+                        This property is{" "}
+                        <span className="font-medium text-primary">
+                          {result.percentageDifference.toFixed(1)}%
+                        </span>
+                        {result.percentageDifference > 0 ? " below" : " above"} the estimated market value.
+                      </p>
+                      <div className="grid gap-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm">Asking Price:</span>
+                          <span className="font-medium">R{result.askingPrice.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Estimated Market Value:</span>
+                          <span className="font-medium">R{result.estimatedValue.toLocaleString()}</span>
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Score based on price difference, property condition, area rates, and rental yields
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button className="w-full" onClick={resetForm}>
+                        Calculate Another
+                      </Button>
+                      <Button variant="outline" className="w-full">
+                        View Full Report
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </Card>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </main>
