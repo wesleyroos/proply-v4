@@ -28,3 +28,20 @@ export const queryClient = new QueryClient({
     }
   },
 });
+
+export const apiRequest = async (method: string, url: string, data?: unknown) => {
+  const response = await fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: data ? JSON.stringify(data) : undefined,
+  });
+
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+
+  return response;
+};
