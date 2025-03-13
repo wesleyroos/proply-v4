@@ -118,7 +118,7 @@ export default function DealScorePublicPage() {
         </div>
       </header>
 
-      <main className="flex-1 relative z-10">
+      <main className="flex-1 relative z-10 flex flex-col items-center justify-center">
         <div className="container flex flex-col items-center px-4 py-16 text-center md:py-24 lg:py-32">
           <div className="mx-auto max-w-[800px] space-y-4">
             <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">Proply Deal Score™</h1>
