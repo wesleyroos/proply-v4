@@ -8,8 +8,8 @@ import { ArrowRight, AlertCircle, CreditCard, Wallet } from "lucide-react";
 import { dealCalculationSchema, type DealCalculation, type DealScoreResult } from "@/types/dealScore";
 import { apiRequest } from "@/lib/queryClient";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
@@ -75,7 +75,7 @@ export default function DealScorePublicPage() {
       {/* Logo */}
       <div className="absolute top-8 left-8 z-20">
         <img
-          src="/Proply Logo 1.png"
+          src="/proply-logo-auth.png"
           alt="Proply Logo"
           className="h-8 w-auto"
         />
