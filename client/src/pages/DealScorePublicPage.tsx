@@ -5,7 +5,6 @@ import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { ArrowRight, AlertCircle } from "lucide-react";
-import { Link } from "wouter";
 import { dealCalculationSchema, type DealCalculation, type DealScoreResult } from "@/types/dealScore";
 import { apiRequest } from "@/lib/queryClient";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -100,26 +99,8 @@ export default function DealScorePublicPage() {
         </svg>
       </div>
 
-      <header className="border-b relative z-10 bg-background/80 backdrop-blur-sm">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <img
-              src="/Proply Logo 1.png"
-              alt="Proply Logo"
-              className="h-8 w-auto"
-            />
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="#" className="text-sm font-medium hover:underline underline-offset-4">
-              Sign In
-            </Link>
-            <Button>Get Started</Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="flex-1 relative z-10 flex flex-col items-center justify-center">
-        <div className="container flex flex-col items-center px-4 py-16 text-center md:py-24 lg:py-32">
+      <main className="flex-1 relative z-10 flex flex-col items-center justify-center pt-8"> {/* Added padding to the top */}
+        <div className="container flex flex-col items-center px-4 py-8 text-center md:py-16 lg:py-24"> {/* Adjusted padding */}
           <div className="mx-auto max-w-[800px] space-y-4">
             <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">Proply Deal Score™</h1>
             <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl">
