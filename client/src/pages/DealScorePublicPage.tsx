@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -123,51 +123,6 @@ export default function DealScorePublicPage() {
       nightlyRate: undefined,
     },
   });
-
-  // Handle prefill with mock data
-  const handlePrefill = () => {
-    form.reset({
-      address: "123 Ocean View Drive, Camps Bay",
-      price: 12500000,
-      propertyType: "house",
-      bedrooms: "4",
-      propertyCondition: "excellent",
-      floorArea: 350,
-      areaRate: 45000,
-      monthlyRental: 85000,
-      occupancyRate: 75,
-      nightlyRate: 5500,
-    });
-  };
-
-  // Triple click detection
-  useEffect(() => {
-    let lastClick: number | null = null;
-    let clickCount: number | null = null;
-    const handleClick = (e: MouseEvent) => {
-      const now = Date.now();
-      if (!lastClick) {
-        lastClick = now;
-        clickCount = 1;
-      } else if (now - lastClick < 500) { // 500ms between clicks
-        clickCount = (clickCount || 0) + 1;
-        if (clickCount === 3) {
-          handlePrefill();
-          clickCount = 0;
-        }
-      } else {
-        clickCount = 1;
-      }
-      lastClick = now;
-    };
-
-    const button = document.getElementById('secret-prefill');
-    button?.addEventListener('click', handleClick);
-
-    return () => {
-      button?.removeEventListener('click', handleClick);
-    };
-  }, []);
 
   const calculateMutation = useMutation({
     mutationFn: async (data: DealCalculation) => {
@@ -706,13 +661,6 @@ export default function DealScorePublicPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Secret prefill button */}
-      <button
-        id="secret-prefill"
-        className="fixed bottom-6 right-6 w-4 h-4 bg-transparent cursor-default opacity-0 hover:opacity-5 transition-opacity"
-        aria-hidden="true"
-      />
     </div>
   );
 }
