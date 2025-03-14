@@ -315,30 +315,6 @@ export default function DealScorePublicPage() {
 
                     <FormField
                       control={form.control}
-                      name="propertyType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Property Type</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select property type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="house">House</SelectItem>
-                              <SelectItem value="apartment">Apartment</SelectItem>
-                              <SelectItem value="townhouse">Townhouse</SelectItem>
-                              <SelectItem value="land">Vacant Land</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
                       name="bedrooms"
                       render={({ field }) => (
                         <FormItem>
