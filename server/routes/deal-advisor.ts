@@ -1,10 +1,51 @@
 import express from 'express';
 import OpenAI from "openai";
+import express from "express";
 
 const router = express.Router();
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Area rate endpoint
+router.post('/area-rate', async (req, res) => {
+  try {
+    const { address, propertyType } = req.body;
+    
+    // First API call for market rate
+    const response1 = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{
+        role: "system",
+        content: "You are a property valuation expert. Analyze the location and provide only a numerical rate per square meter for the given address based on recent market data. Return only the number."
+      }, {
+        role: "user",
+        content: `What is the current rate per square meter for ${propertyType} properties in ${address}?`
+      }]
+    });
+
+    // Second API call for validation
+    const response2 = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{
+        role: "system",
+        content: "You are a real estate market analyst. Return only the numerical average rate per square meter for the specified location. Return only the number."
+      }, {
+        role: "user",
+        content: `What is the average rate per square meter for ${propertyType} properties in ${address}?`
+      }]
+    });
+
+    // Extract rates and calculate average
+    const rate1 = parseFloat(response1.choices[0].message.content.replace(/[^\d.]/g, ''));
+    const rate2 = parseFloat(response2.choices[0].message.content.replace(/[^\d.]/g, ''));
+    const averageRate = Math.round((rate1 + rate2) / 2);
+
+    res.json({ areaRate: averageRate });
+  } catch (error) {
+    console.error('Error fetching area rate:', error);
+    res.status(500).json({ error: 'Failed to fetch area rate' });
+  }
+});
 
 router.post('/', async (req, res) => {
   try {

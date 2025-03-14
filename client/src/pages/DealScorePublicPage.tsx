@@ -418,19 +418,6 @@ export default function DealScorePublicPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
-              <Input
-                id="areaRate"
-                type="text"
-                inputMode="numeric"
-                value={formData.areaRate}
-                onChange={(e) => handleInputChange("areaRate", e.target.value)}
-                placeholder="Enter area rate per square meter"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="bedrooms">Bedrooms</Label>
               <Input
                 id="bedrooms"
