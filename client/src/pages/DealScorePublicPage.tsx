@@ -195,8 +195,15 @@ export default function DealScorePublicPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // For steps 1 and 2, just move to next step
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+      return;
+    }
+
+    // Only calculate on final step
     setIsCalculating(true);
-    // Add 2 second delay
     await new Promise(resolve => setTimeout(resolve, 2000));
     calculateDealScore();
   };
