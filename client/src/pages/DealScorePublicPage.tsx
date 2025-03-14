@@ -744,9 +744,16 @@ export default function DealScorePublicPage() {
                             <div className="font-bold">R{result.askingPrice.toLocaleString()}</div>
                           </div>
 
-                          <div className="flex justify-between items-center mt-2 px-4 mb-6">
+                          <div className="flex justify-between items-center mt-2 px-4">
                             <div className="text-sm">Estimated Market Value:</div>
                             <div className="font-bold">R{result.estimatedValue.toLocaleString()}</div>
+                          </div>
+                          
+                          <div className="text-center mt-2 mb-6">
+                            <span className={`text-sm ${result.askingPrice > result.estimatedValue ? 'text-amber-500' : 'text-green-500'}`}>
+                              This property is {Math.abs(((result.askingPrice - result.estimatedValue) / result.estimatedValue) * 100).toFixed(1)}% 
+                              {result.askingPrice > result.estimatedValue ? ' above' : ' below'} estimated market value
+                            </span>
                           </div>
 
                           <div className={`inline-block px-4 py-1 rounded-full text-white ${result.color}`}>
