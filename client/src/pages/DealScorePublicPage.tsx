@@ -823,7 +823,7 @@ export default function DealScorePublicPage() {
 
                         <div className="text-sm text-gray-600 mt-4">
                           This property is {Math.abs(result.percentageDifference).toFixed(1)}%
-                          {result.percentageDifference > 0 ? " above" : " below"} estimated market value
+                          {result.percentageDifference < 0 ? " below" : " above"} estimated market value
                         </div>
 
                         <div className="flex gap-4 mt-6">
