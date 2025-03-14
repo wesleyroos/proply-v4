@@ -1,9 +1,8 @@
-
 import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export async function getAreaRate(address: string, propertyType: string) {
+export async function getAreaRate(address: string, propertyType: string = 'residential') {
   try {
     // First API call for market rate
     const response1 = await openai.chat.completions.create({
@@ -29,15 +28,30 @@ export async function getAreaRate(address: string, propertyType: string) {
       }]
     });
 
-    // Extract rates and calculate average
-    const rate1 = parseFloat(response1.choices[0].message.content.replace(/[^\d.]/g, ''));
-    const rate2 = parseFloat(response2.choices[0].message.content.replace(/[^\d.]/g, ''));
-    
+    // Extract rates with improved error handling
+    const content1 = response1.choices[0]?.message?.content;
+    const content2 = response2.choices[0]?.message?.content;
+
+    if (!content1 || !content2) {
+      throw new Error('Invalid response from OpenAI API');
+    }
+
+    const rate1 = parseFloat(content1.replace(/[^\d.]/g, ''));
+    const rate2 = parseFloat(content2.replace(/[^\d.]/g, ''));
+
     if (isNaN(rate1) || isNaN(rate2)) {
       throw new Error('Invalid rate returned from API');
     }
 
-    return Math.round((rate1 + rate2) / 2);
+    // Calculate average and ensure it's reasonable
+    const averageRate = Math.round((rate1 + rate2) / 2);
+
+    // Basic validation - rates shouldn't be zero or absurdly high
+    if (averageRate <= 0 || averageRate > 1000000) {
+      throw new Error('Area rate outside reasonable range');
+    }
+
+    return averageRate;
   } catch (error) {
     console.error('Error in getAreaRate:', error);
     throw error;

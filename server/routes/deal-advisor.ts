@@ -1,77 +1,25 @@
 import express from 'express';
-import OpenAI from "openai";
-import express from "express";
+import { getAreaRate } from '../services/areaRateService';
 
 const router = express.Router();
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 // Area rate endpoint - public access
 router.post('/area-rate', async (req, res) => {
-  const { address } = req.body;
-  
+  const { address, propertyType } = req.body;
+
   if (!address) {
     return res.status(400).json({ error: 'Address is required' });
   }
-  
+
   try {
-    // First API call for market rate
-    const response1 = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [{
-        role: "system", 
-        content: "You are a property valuation expert. Analyze the location and provide only a numerical rate per square meter for the given address based on recent market data. Return only the number."
-      }, {
-        role: "user",
-        content: `What is the current rate per square meter for properties in ${address}?`
-      }]
-    });
-
-    // Second API call for validation
-    const response2 = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [{
-        role: "system",
-        content: "You are a real estate market analyst. Return only the numerical average rate per square meter for the specified location. Return only the number."
-      }, {
-        role: "user",
-        content: `What is the average rate per square meter for properties in ${address}?`
-      }]
-    });
-    
-    // First API call for market rate
-    const response1 = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [{
-        role: "system",
-        content: "You are a property valuation expert. Analyze the location and provide only a numerical rate per square meter for the given address based on recent market data. Return only the number."
-      }, {
-        role: "user",
-        content: `What is the current rate per square meter for ${propertyType} properties in ${address}?`
-      }]
-    });
-
-    // Second API call for validation
-    const response2 = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [{
-        role: "system",
-        content: "You are a real estate market analyst. Return only the numerical average rate per square meter for the specified location. Return only the number."
-      }, {
-        role: "user",
-        content: `What is the average rate per square meter for ${propertyType} properties in ${address}?`
-      }]
-    });
-
-    // Extract rates and calculate average
-    const rate1 = parseFloat(response1.choices[0].message.content.replace(/[^\d.]/g, ''));
-    const rate2 = parseFloat(response2.choices[0].message.content.replace(/[^\d.]/g, ''));
-    const averageRate = Math.round((rate1 + rate2) / 2);
-
-    res.json({ areaRate: averageRate });
+    const areaRate = await getAreaRate(address, propertyType);
+    res.json({ areaRate });
   } catch (error) {
-    console.error('Error fetching area rate:', error);
-    res.status(500).json({ error: 'Failed to fetch area rate' });
+    console.error('Error in area rate endpoint:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch area rate',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
