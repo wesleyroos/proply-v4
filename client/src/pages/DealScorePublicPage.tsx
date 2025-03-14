@@ -805,18 +805,16 @@ export default function DealScorePublicPage() {
                       <div className="space-y-6">
                         <div className="text-center">
                           <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div className="text-sm">Asking Price:</div>
+                            <div className="text-sm">Estimated Market Value:</div>
                             <div className="font-bold">
-                              R{result.askingPrice.toLocaleString()}
+                              R{result.estimatedValue.toLocaleString()}
                             </div>
                           </div>
 
                           <div className="grid grid-cols-2 gap-4 mt-2">
-                            <div className="text-sm">
-                              Estimated Market Value:
-                            </div>
+                            <div className="text-sm">Asking Price:</div>
                             <div className="font-bold">
-                              R{result.estimatedValue.toLocaleString()}
+                              R{result.askingPrice.toLocaleString()}
                             </div>
                           </div>
 
@@ -922,7 +920,7 @@ export default function DealScorePublicPage() {
                                         <span
                                           className={`px-2 py-0.5 text-xs rounded ${result.shortTermYield >= 12 ? "bg-green-100 text-green-800" : result.shortTermYield >= 8 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}`}
                                         >
-                                          {result.shortTermYield >= 12
+                                          {           {result.shortTermYield >= 12
                                             ? "EXCELLENT"
                                             : result.shortTermYield >= 8
                                               ? "GOOD"
