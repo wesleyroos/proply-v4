@@ -666,12 +666,18 @@ export default function DealScorePublicPage() {
       <div
         onClick={() => {
           const now = Date.now();
+          console.log('Click detected', { now, lastClick: window.lastClick, clickCount: window.clickCount });
+
           if (!window.lastClick) {
             window.lastClick = now;
             window.clickCount = 1;
+            console.log('First click initialized');
           } else if (now - window.lastClick < 500) {
             window.clickCount = (window.clickCount || 0) + 1;
+            console.log('Click count increased:', window.clickCount);
+
             if (window.clickCount === 3) {
+              console.log('Triple click detected, resetting form');
               // Fill form data
               form.reset({
                 address: "27 Leeuwen St, Cape Town City Centre, 8001",
@@ -686,14 +692,15 @@ export default function DealScorePublicPage() {
                 occupancyRate: 70
               });
               window.clickCount = 0;
+              console.log('Form reset complete');
             }
           } else {
             window.lastClick = now;
             window.clickCount = 1;
+            console.log('Click timeout reset');
           }
         }}
-        className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-400 cursor-default select-none hover:bg-gray-500 transition-all"
-        style={{ opacity: 0.4 }}
+        className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-400 cursor-default select-none hover:bg-gray-500 transition-all opacity-40"
       />
     </div>
   );
