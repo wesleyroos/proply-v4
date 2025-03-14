@@ -571,30 +571,6 @@ export default function DealScorePublicPage() {
               Cancel
             </Button>
             <Button onClick={handlePayment} disabled={processingPayment}>
-              {/* Secret Prefill Button */}
-              <div
-                onClick={() => {
-                  if (!window.clickCount) window.clickCount = 0;
-                  window.clickCount++;
-                  if (window.clickCount === 3) {
-                    form.reset({
-                      address: "27 Leeuwen St, Cape Town City Centre, 8001",
-                      price: 3500000,
-                      propertyType: "apartment",
-                      bedrooms: "2",
-                      propertyCondition: "excellent",
-                      floorArea: 85,
-                      areaRate: 45000,
-                      monthlyRental: 25000,
-                      nightlyRate: 2500,
-                      occupancyRate: 70
-                    });
-                    window.clickCount = 0;
-                  }
-                }}
-                className="fixed bottom-4 right-4 w-3 h-3 rounded-full bg-gray-100/10 cursor-default select-none"
-                style={{ opacity: 0.05 }}
-              />
               {processingPayment ? (
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -607,6 +583,31 @@ export default function DealScorePublicPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Secret Prefill Button */}
+      <div
+        onClick={() => {
+          if (!window.clickCount) window.clickCount = 0;
+          window.clickCount++;
+          if (window.clickCount === 3) {
+            form.reset({
+              address: "27 Leeuwen St, Cape Town City Centre, 8001",
+              price: 3500000,
+              propertyType: "apartment",
+              bedrooms: "2",
+              propertyCondition: "excellent",
+              floorArea: 85,
+              areaRate: 45000,
+              monthlyRental: 25000,
+              nightlyRate: 2500,
+              occupancyRate: 70
+            });
+            window.clickCount = 0;
+          }
+        }}
+        className="fixed bottom-4 right-4 w-3 h-3 rounded-full bg-gray-100/10 cursor-default select-none"
+        style={{ opacity: 0.05 }}
+      />
     </div>
   );
 }
