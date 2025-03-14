@@ -38,6 +38,29 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"; // Assuming these imports are available
 
+// Assuming DealScoreGauge component exists
+const DealScoreGauge = ({ score }: { score: number }) => (
+  <div className="relative h-4 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
+    <div
+      className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
+      style={{ left: `${score}%` }}
+    />
+    <div className="absolute -bottom-6 left-0 text-xs">Poor</div>
+    <div className="absolute -bottom-6 left-1/4 text-xs">Average</div>
+    <div className="absolute -bottom-6 left-1/2 text-xs transform -translate-x-1/2">
+      Good
+    </div>
+    <div className="absolute -bottom-6 left-3/4 text-xs">Great</div>
+    <div className="absolute -bottom-6 right-0 text-xs">Excellent</div>
+  </div>
+);
+
+
+const formatPrice = (price: number): string => {
+  return price.toLocaleString();
+};
+
+
 export default function DealScorePublicPage() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
@@ -803,11 +826,19 @@ export default function DealScorePublicPage() {
                   ) : (
                     <Card className="p-6">
                       <div className="space-y-6">
+                        <div className="flex flex-col items-center justify-center mb-6">
+                          <div
+                            className={`inline-block px-4 py-2 rounded-full text-white ${result?.color}`}
+                          >
+                            {result?.rating} DEAL
+                          </div>
+                          <DealScoreGauge score={result?.score} />
+                        </div>
                         <div className="text-center">
                           <div className="grid grid-cols-2 gap-4 mt-4">
                             <div className="text-sm">Asking Price:</div>
                             <div className="font-bold">
-                              R{result.askingPrice.toLocaleString()}
+                              R{formatPrice(result?.askingPrice)}
                             </div>
                           </div>
 
@@ -816,7 +847,7 @@ export default function DealScorePublicPage() {
                               Estimated Market Value:
                             </div>
                             <div className="font-bold">
-                              R{result.estimatedValue.toLocaleString()}
+                              R{formatPrice(result?.estimatedValue)}
                             </div>
                           </div>
 
@@ -825,52 +856,24 @@ export default function DealScorePublicPage() {
                               This property is{" "}
                               <span
                                 className={
-                                  result.askingPrice > result.estimatedValue
+                                  result?.askingPrice > result?.estimatedValue
                                     ? "text-amber-500"
                                     : "text-green-500"
                                 }
                               >
                                 {Math.abs(
-                                  ((result.askingPrice -
-                                    result.estimatedValue) /
-                                    result.estimatedValue) *
+                                  ((result?.askingPrice -
+                                    result?.estimatedValue) /
+                                    result?.estimatedValue) *
                                     100,
                                 ).toFixed(1)}
                                 %
                               </span>
-                              {result.askingPrice > result.estimatedValue
+                              {result?.askingPrice > result?.estimatedValue
                                 ? " above"
                                 : " below"}{" "}
                               estimated market value
                             </span>
-                          </div>
-
-                          <div
-                            className={`inline-block px-4 py-1 rounded-full text-white ${result.color}`}
-                          >
-                            {result.rating} DEAL
-                          </div>
-                        </div>
-
-                        <div className="relative h-4 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
-                          <div
-                            className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
-                            style={{ left: `${result.score}%` }}
-                          />
-                          <div className="absolute -bottom-6 left-0 text-xs">
-                            Poor
-                          </div>
-                          <div className="absolute -bottom-6 left-1/4 text-xs">
-                            Average
-                          </div>
-                          <div className="absolute -bottom-6 left-1/2 text-xs transform -translate-x-1/2">
-                            Good
-                          </div>
-                          <div className="absolute -bottom-6 left-3/4 text-xs">
-                            Great
-                          </div>
-                          <div className="absolute -bottom-6 right-0 text-xs">
-                            Excellent
                           </div>
                         </div>
 
@@ -891,7 +894,7 @@ export default function DealScorePublicPage() {
                                     <span className="font-medium">
                                       R
                                       {Math.round(
-                                        result.propertyRate,
+                                        result?.propertyRate,
                                       ).toLocaleString()}
                                       /m²
                                     </span>
@@ -901,7 +904,7 @@ export default function DealScorePublicPage() {
                                     <span className="font-medium">
                                       R
                                       {Math.round(
-                                        result.areaRate,
+                                        result?.areaRate,
                                       ).toLocaleString()}
                                       /m²
                                     </span>
@@ -909,41 +912,41 @@ export default function DealScorePublicPage() {
                                   <div className="flex justify-between">
                                     <span>Property condition:</span>
                                     <span className="font-medium capitalize">
-                                      {result.propertyCondition}
+                                      {result?.propertyCondition}
                                     </span>
                                   </div>
-                                  {result.shortTermYield && (
+                                  {result?.shortTermYield && (
                                     <div className="flex justify-between">
                                       <span>Short-Term Yield:</span>
                                       <div className="flex items-center gap-2">
                                         <span className="font-medium">
-                                          {result.shortTermYield.toFixed(1)}%
+                                          {result?.shortTermYield.toFixed(1)}%
                                         </span>
                                         <span
-                                          className={`px-2 py-0.5 text-xs rounded ${result.shortTermYield >= 12 ? "bg-green-100 text-green-800" : result.shortTermYield >= 8 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}`}
+                                         className={`px-2 py-0.5 text-xs rounded ${result?.shortTermYield >= 12 ? "bg-green-100 text-green-800" : result?.shortTermYield >= 8 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}`}
                                         >
-                                          {result.shortTermYield >= 12
+                                          {result?.shortTermYield >= 12
                                             ? "EXCELLENT"
-                                            : result.shortTermYield >= 8
+                                            : result?.shortTermYield >= 8
                                               ? "GOOD"
                                               : "POOR"}
                                         </span>
                                       </div>
                                     </div>
                                   )}
-                                  {result.longTermYield && (
+                                  {result?.longTermYield && (
                                     <div className="flex justify-between">
                                       <span>Long-Term Yield:</span>
                                       <div className="flex items-center gap-2">
                                         <span className="font-medium">
-                                          {result.longTermYield.toFixed(1)}%
+                                          {result?.longTermYield.toFixed(1)}%
                                         </span>
                                         <span
-                                          className={`px-2 py-0.5 text-xs rounded ${result.longTermYield >= 8 ? "bg-green-100 text-green-800" : result.longTermYield >= 6 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}`}
+                                          className={`px-2 py-0.5 text-xs rounded ${result?.longTermYield >= 8 ? "bg-green-100 text-green-800" : result?.longTermYield >= 6 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}`}
                                         >
-                                          {result.longTermYield >= 8
+                                          {result?.longTermYield >= 8
                                             ? "EXCELLENT"
-                                            : result.longTermYield >= 6
+                                            : result?.longTermYield >= 6
                                               ? "GOOD"
                                               : "POOR"}
                                         </span>
@@ -954,7 +957,7 @@ export default function DealScorePublicPage() {
                                     <span>Best Investment Strategy:</span>
                                     <div className="flex items-center gap-2">
                                       <span className="font-medium">
-                                        {result.bestStrategy}
+                                        {result?.bestStrategy}
                                       </span>
                                       <span className="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-800">
                                         AIRBNB
