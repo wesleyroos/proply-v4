@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowRight, ArrowLeft, AlertCircle, CreditCard, Wallet } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowLeft,
+  AlertCircle,
+  CreditCard,
+  Wallet,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +37,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"; // Assuming these imports are available
-
 
 export default function DealScorePublicPage() {
   const { toast } = useToast();
@@ -94,14 +99,14 @@ export default function DealScorePublicPage() {
     // Fetch current prime rate when component mounts
     const fetchPrimeRate = async () => {
       try {
-        const response = await fetch('/api/prime-rate');
+        const response = await fetch("/api/prime-rate");
         const data = await response.json();
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          interestRate: data.primeRate.toString()
+          interestRate: data.primeRate.toString(),
         }));
       } catch (error) {
-        console.error('Failed to fetch prime rate:', error);
+        console.error("Failed to fetch prime rate:", error);
       }
     };
 
@@ -110,16 +115,16 @@ export default function DealScorePublicPage() {
 
   // Format number with thousand separators for display
   const formatWithThousandSeparators = (value: string): string => {
-    const numericValue = value.replace(/[^\d.]/g, '');
-    if (!numericValue) return '';
-    const parts = numericValue.split('.');
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const numericValue = value.replace(/[^\d.]/g, "");
+    if (!numericValue) return "";
+    const parts = numericValue.split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     return parts.length > 1 ? `${parts[0]}.${parts[1]}` : parts[0];
   };
 
   // Parse formatted number to remove separators for calculations
   const parseFormattedNumber = (value: string): string => {
-    return value.replace(/,/g, '');
+    return value.replace(/,/g, "");
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -159,29 +164,33 @@ export default function DealScorePublicPage() {
 
     // Handle deposit calculations
     if (field === "depositAmount") {
-      const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
+      const purchasePrice = Number(
+        parseFormattedNumber(formData.purchasePrice),
+      );
       if (purchasePrice > 0) {
         const numericDeposit = Number(parseFormattedNumber(numericValue));
         const percentage = (numericDeposit / purchasePrice) * 100;
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           [field]: value,
-          depositPercentage: percentage.toFixed(2)
+          depositPercentage: percentage.toFixed(2),
         }));
         return;
       }
     }
 
     if (field === "depositPercentage") {
-      const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
+      const purchasePrice = Number(
+        parseFormattedNumber(formData.purchasePrice),
+      );
       if (purchasePrice > 0) {
         const percentage = Number(numericValue);
         const amount = (percentage / 100) * purchasePrice;
         const formattedAmount = formatWithThousandSeparators(amount.toFixed(2));
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           [field]: value,
-          depositAmount: formattedAmount
+          depositAmount: formattedAmount,
         }));
         return;
       }
@@ -204,7 +213,7 @@ export default function DealScorePublicPage() {
 
     // Only calculate on final step
     setIsCalculating(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     calculateDealScore();
   };
 
@@ -216,8 +225,13 @@ export default function DealScorePublicPage() {
 
   const calculateDealScore = () => {
     // Calculate property rate and area rate difference
-    const propertyRate = Number(parseFormattedNumber(formData.purchasePrice)) / Number(parseFormattedNumber(formData.size));
-    const priceDiff = ((propertyRate - Number(parseFormattedNumber(formData.areaRate))) / Number(parseFormattedNumber(formData.areaRate))) * 100;
+    const propertyRate =
+      Number(parseFormattedNumber(formData.purchasePrice)) /
+      Number(parseFormattedNumber(formData.size));
+    const priceDiff =
+      ((propertyRate - Number(parseFormattedNumber(formData.areaRate))) /
+        Number(parseFormattedNumber(formData.areaRate))) *
+      100;
 
     // Calculate rental yields
     let shortTermYield = null;
@@ -225,12 +239,17 @@ export default function DealScorePublicPage() {
     const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
 
     if (formData.longTermRental) {
-      const monthlyRental = Number(parseFormattedNumber(formData.longTermRental));
-      longTermYield = (monthlyRental * 12 / purchasePrice) * 100;
+      const monthlyRental = Number(
+        parseFormattedNumber(formData.longTermRental),
+      );
+      longTermYield = ((monthlyRental * 12) / purchasePrice) * 100;
     }
 
     if (formData.nightlyRate && formData.occupancy) {
-      const annualRevenue = Number(parseFormattedNumber(formData.nightlyRate)) * 365 * (Number(formData.occupancy) / 100);
+      const annualRevenue =
+        Number(parseFormattedNumber(formData.nightlyRate)) *
+        365 *
+        (Number(formData.occupancy) / 100);
       shortTermYield = (annualRevenue / purchasePrice) * 100;
     }
 
@@ -297,13 +316,16 @@ export default function DealScorePublicPage() {
       color = "bg-red-500";
     }
 
-    const estimatedValue = Number(parseFormattedNumber(formData.areaRate)) * Number(parseFormattedNumber(formData.size));
+    const estimatedValue =
+      Number(parseFormattedNumber(formData.areaRate)) *
+      Number(parseFormattedNumber(formData.size));
 
     setResult({
       score: Math.round(score),
       rating,
       color,
-      percentageDifference: ((estimatedValue - purchasePrice) / purchasePrice) * 100,
+      percentageDifference:
+        ((estimatedValue - purchasePrice) / purchasePrice) * 100,
       askingPrice: purchasePrice,
       estimatedValue,
       propertyRate,
@@ -311,7 +333,8 @@ export default function DealScorePublicPage() {
       propertyCondition: formData.propertyCondition,
       shortTermYield,
       longTermYield,
-      bestStrategy: shortTermYield > (longTermYield || 0) ? "Short-Term" : "Long-Term"
+      bestStrategy:
+        shortTermYield > (longTermYield || 0) ? "Short-Term" : "Long-Term",
     });
     setShowResult(true); //Set showResult to true after calculation
     setIsCalculating(false);
@@ -342,8 +365,8 @@ export default function DealScorePublicPage() {
     const isFieldEmpty = (field: string): boolean => {
       if (!formData[field as keyof typeof formData]) return true;
       const value = formData[field as keyof typeof formData].toString();
-      const numericValue = value.replace(/,/g, '');
-      return numericValue === '' || numericValue === '0';
+      const numericValue = value.replace(/,/g, "");
+      return numericValue === "" || numericValue === "0";
     };
 
     switch (step) {
@@ -357,11 +380,13 @@ export default function DealScorePublicPage() {
       case 2:
         if (isFieldEmpty("nightlyRate")) missingFields.push("Nightly Rate");
         if (isFieldEmpty("occupancy")) missingFields.push("Occupancy Rate");
-        if (isFieldEmpty("longTermRental")) missingFields.push("Long Term Rental");
+        if (isFieldEmpty("longTermRental"))
+          missingFields.push("Long Term Rental");
         break;
       case 3:
         if (isFieldEmpty("depositAmount")) missingFields.push("Deposit Amount");
-        if (isFieldEmpty("depositPercentage")) missingFields.push("Deposit Percentage");
+        if (isFieldEmpty("depositPercentage"))
+          missingFields.push("Deposit Percentage");
         if (isFieldEmpty("interestRate")) missingFields.push("Interest Rate");
         if (isFieldEmpty("loanTerm")) missingFields.push("Loan Term");
         break;
@@ -398,7 +423,9 @@ export default function DealScorePublicPage() {
                 type="text"
                 inputMode="numeric"
                 value={formData.purchasePrice}
-                onChange={(e) => handleInputChange("purchasePrice", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("purchasePrice", e.target.value)
+                }
                 placeholder="Enter purchase price"
                 required
               />
@@ -447,7 +474,9 @@ export default function DealScorePublicPage() {
               <Label htmlFor="propertyCondition">Property Condition</Label>
               <Select
                 value={formData.propertyCondition}
-                onValueChange={(value) => handleInputChange("propertyCondition", value)}
+                onValueChange={(value) =>
+                  handleInputChange("propertyCondition", value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select property condition" />
@@ -474,7 +503,9 @@ export default function DealScorePublicPage() {
                   type="text"
                   inputMode="numeric"
                   value={formData.nightlyRate}
-                  onChange={(e) => handleInputChange("nightlyRate", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("nightlyRate", e.target.value)
+                  }
                   placeholder="Enter nightly rate"
                   required
                 />
@@ -487,20 +518,26 @@ export default function DealScorePublicPage() {
                   type="text"
                   inputMode="numeric"
                   value={formData.occupancy}
-                  onChange={(e) => handleInputChange("occupancy", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("occupancy", e.target.value)
+                  }
                   placeholder="Enter expected occupancy rate"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="longTermRental">Long Term Rental (R/month)</Label>
+                <Label htmlFor="longTermRental">
+                  Long Term Rental (R/month)
+                </Label>
                 <Input
                   id="longTermRental"
                   type="text"
                   inputMode="numeric"
                   value={formData.longTermRental}
-                  onChange={(e) => handleInputChange("longTermRental", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("longTermRental", e.target.value)
+                  }
                   placeholder="Enter long term rental amount"
                   required
                 />
@@ -520,7 +557,9 @@ export default function DealScorePublicPage() {
                   type="text"
                   inputMode="numeric"
                   value={formData.depositAmount}
-                  onChange={(e) => handleInputChange("depositAmount", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("depositAmount", e.target.value)
+                  }
                   placeholder="Enter deposit amount"
                   required
                 />
@@ -533,7 +572,9 @@ export default function DealScorePublicPage() {
                   type="text"
                   inputMode="numeric"
                   value={formData.depositPercentage}
-                  onChange={(e) => handleInputChange("depositPercentage", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("depositPercentage", e.target.value)
+                  }
                   placeholder="Enter deposit percentage"
                   required
                 />
@@ -547,7 +588,9 @@ export default function DealScorePublicPage() {
                 type="text"
                 inputMode="numeric"
                 value={formData.interestRate}
-                onChange={(e) => handleInputChange("interestRate", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("interestRate", e.target.value)
+                }
                 placeholder="Enter interest rate"
                 required
               />
@@ -585,7 +628,7 @@ export default function DealScorePublicPage() {
             key={step}
             className={`flex items-center ${step < 3 ? "flex-1" : ""}`}
             onClick={() => setCurrentStep(step)}
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: "pointer" }}
           >
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center relative ${
@@ -612,9 +655,13 @@ export default function DealScorePublicPage() {
         ))}
       </div>
       <div className="flex justify-between text-sm">
-        <span className={currentStep === 1 ? "text-primary" : ""}>Property</span>
+        <span className={currentStep === 1 ? "text-primary" : ""}>
+          Property
+        </span>
         <span className={currentStep === 2 ? "text-primary" : ""}>Rental</span>
-        <span className={currentStep === 3 ? "text-primary" : ""}>Financing</span>
+        <span className={currentStep === 3 ? "text-primary" : ""}>
+          Financing
+        </span>
       </div>
     </div>
   );
@@ -663,7 +710,10 @@ export default function DealScorePublicPage() {
         <div className="absolute top-[60%] right-[25%] w-12 h-12 border-2 border-primary/20 rotate-45 animate-float animation-delay-2000"></div>
 
         {/* Data Lines */}
-        <svg className="absolute inset-0 w-full h-full opacity-[0.07]" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          className="absolute inset-0 w-full h-full opacity-[0.07]"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <path
             d="M0,100 Q150,50 300,200 T600,100 T900,100"
             fill="none"
@@ -684,10 +734,12 @@ export default function DealScorePublicPage() {
       <main className="flex-1 relative z-10 flex flex-col items-center justify-center pt-8">
         <div className="container flex flex-col items-center px-4 py-8 text-center md:py-16 lg:py-24">
           <div className="mx-auto max-w-[800px] space-y-4">
-            <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">Proply Deal Score™</h1>
+            <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">
+              Proply Deal Score™
+            </h1>
             <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl">
-              Enter the property details below to get an instant deal score based on market data, area rates, and rental
-              yields.
+              Enter the property details below to get an instant deal score
+              based on market data, area rates, and rental yields.
             </p>
           </div>
 
@@ -698,10 +750,18 @@ export default function DealScorePublicPage() {
             <div className="relative bg-background rounded-lg p-1">
               <div className="container mx-auto py-8 px-4">
                 <div className="max-w-2xl mx-auto">
-                  <h1 className="text-3xl font-bold mb-8 text-center">Deal Score: {result?.score}%</h1>
+                  <h1 className="text-3xl font-bold mb-8 text-center">
+                    Deal Score: {result?.score}%
+                  </h1>
 
                   {/* Hidden demo data button - triple click to activate */}
-                  <button type="button" onClick={fillDemoData} className="fixed bottom-4 right-4 opacity-0">Fill Demo Data</button>
+                  <button
+                    type="button"
+                    onClick={fillDemoData}
+                    className="fixed bottom-4 right-4 opacity-0"
+                  >
+                    Fill Demo Data
+                  </button>
 
                   {!showResult ? (
                     <Card className="p-6 border-0">
@@ -711,11 +771,18 @@ export default function DealScorePublicPage() {
 
                         <div className="flex justify-between mt-6">
                           {currentStep > 1 && (
-                            <Button type="button" variant="outline" onClick={handlePrevStep}>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={handlePrevStep}
+                            >
                               <ArrowLeft className="mr-2 h-4 w-4" /> Previous
                             </Button>
                           )}
-                          <Button type="submit" className={`${currentStep === 1 ? "ml-auto" : ""}`}>
+                          <Button
+                            type="submit"
+                            className={`${currentStep === 1 ? "ml-auto" : ""}`}
+                          >
                             {isCalculating ? (
                               <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -739,63 +806,127 @@ export default function DealScorePublicPage() {
                         <div className="text-center">
                           <div className="grid grid-cols-2 gap-4 mt-4">
                             <div className="text-sm">Asking Price:</div>
-                            <div className="font-bold">R{result.askingPrice.toLocaleString()}</div>
+                            <div className="font-bold">
+                              R{result.askingPrice.toLocaleString()}
+                            </div>
                           </div>
 
                           <div className="grid grid-cols-2 gap-4 mt-2">
-                            <div className="text-sm">Estimated Market Value:</div>
-                            <div className="font-bold">R{result.estimatedValue.toLocaleString()}</div>
+                            <div className="text-sm">
+                              Estimated Market Value:
+                            </div>
+                            <div className="font-bold">
+                              R{result.estimatedValue.toLocaleString()}
+                            </div>
                           </div>
 
                           <div className="text-center mt-2 mb-6">
                             <span className="text-sm">
-                              This property is <span className={result.askingPrice > result.estimatedValue ? 'text-amber-500' : 'text-green-500'}>{Math.abs(((result.askingPrice - result.estimatedValue) / result.estimatedValue) * 100).toFixed(1)}%</span>
-                              {result.askingPrice > result.estimatedValue ? ' above' : ' below'} estimated market value
+                              This property is{" "}
+                              <span
+                                className={
+                                  result.askingPrice > result.estimatedValue
+                                    ? "text-amber-500"
+                                    : "text-green-500"
+                                }
+                              >
+                                {Math.abs(
+                                  ((result.askingPrice -
+                                    result.estimatedValue) /
+                                    result.estimatedValue) *
+                                    100,
+                                ).toFixed(1)}
+                                %
+                              </span>
+                              {result.askingPrice > result.estimatedValue
+                                ? " above"
+                                : " below"}{" "}
+                              estimated market value
                             </span>
                           </div>
 
-                          <div className={`inline-block px-4 py-1 rounded-full text-white ${result.color}`}>
+                          <div
+                            className={`inline-block px-4 py-1 rounded-full text-white ${result.color}`}
+                          >
                             {result.rating} DEAL
                           </div>
                         </div>
 
                         <div className="relative h-4 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
-                          <div 
+                          <div
                             className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
                             style={{ left: `${result.score}%` }}
                           />
-                          <div className="absolute -bottom-6 left-0 text-xs">Poor</div>
-                          <div className="absolute -bottom-6 left-1/4 text-xs">Average</div>
-                          <div className="absolute -bottom-6 left-1/2 text-xs transform -translate-x-1/2">Good</div>
-                          <div className="absolute -bottom-6 left-3/4 text-xs">Great</div>
-                          <div className="absolute -bottom-6 right-0 text-xs">Excellent</div>
+                          <div className="absolute -bottom-6 left-0 text-xs">
+                            Poor
+                          </div>
+                          <div className="absolute -bottom-6 left-1/4 text-xs">
+                            Average
+                          </div>
+                          <div className="absolute -bottom-6 left-1/2 text-xs transform -translate-x-1/2">
+                            Good
+                          </div>
+                          <div className="absolute -bottom-6 left-3/4 text-xs">
+                            Great
+                          </div>
+                          <div className="absolute -bottom-6 right-0 text-xs">
+                            Excellent
+                          </div>
                         </div>
 
                         <div className="mt-8">
-                          <Accordion type="single" collapsible className="w-full">
+                          <Accordion
+                            type="single"
+                            collapsible
+                            className="w-full"
+                          >
                             <AccordionItem value="deal-factors">
-                              <AccordionTrigger className="text-xl font-semibold">Key Deal Factors</AccordionTrigger>
+                              <AccordionTrigger className="text-xl font-semibold">
+                                Key Deal Factors
+                              </AccordionTrigger>
                               <AccordionContent>
                                 <div className="space-y-4 pt-2">
                                   <div className="flex justify-between">
                                     <span>Price per m²:</span>
-                                    <span className="font-medium">R{Math.round(result.propertyRate).toLocaleString()}/m²</span>
+                                    <span className="font-medium">
+                                      R
+                                      {Math.round(
+                                        result.propertyRate,
+                                      ).toLocaleString()}
+                                      /m²
+                                    </span>
                                   </div>
                                   <div className="flex justify-between">
                                     <span>Area average:</span>
-                                    <span className="font-medium">R{Math.round(result.areaRate).toLocaleString()}/m²</span>
+                                    <span className="font-medium">
+                                      R
+                                      {Math.round(
+                                        result.areaRate,
+                                      ).toLocaleString()}
+                                      /m²
+                                    </span>
                                   </div>
                                   <div className="flex justify-between">
                                     <span>Property condition:</span>
-                                    <span className="font-medium capitalize">{result.propertyCondition}</span>
+                                    <span className="font-medium capitalize">
+                                      {result.propertyCondition}
+                                    </span>
                                   </div>
                                   {result.shortTermYield && (
                                     <div className="flex justify-between">
                                       <span>Short-Term Yield:</span>
                                       <div className="flex items-center gap-2">
-                                        <span className="font-medium">{result.shortTermYield.toFixed(1)}%</span>
-                                        <span className={`px-2 py-0.5 text-xs rounded ${result.shortTermYield >= 12 ? 'bg-green-100 text-green-800' : result.shortTermYield >= 8 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                                          {result.shortTermYield >= 12 ? 'EXCELLENT' : result.shortTermYield >= 8 ? 'GOOD' : 'POOR'}
+                                        <span className="font-medium">
+                                          {result.shortTermYield.toFixed(1)}%
+                                        </span>
+                                        <span
+                                          className={`px-2 py-0.5 text-xs rounded ${result.shortTermYield >= 12 ? "bg-green-100 text-green-800" : result.shortTermYield >= 8 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}`}
+                                        >
+                                          {result.shortTermYield >= 12
+                                            ? "EXCELLENT"
+                                            : result.shortTermYield >= 8
+                                              ? "GOOD"
+                                              : "POOR"}
                                         </span>
                                       </div>
                                     </div>
@@ -804,17 +935,27 @@ export default function DealScorePublicPage() {
                                     <div className="flex justify-between">
                                       <span>Long-Term Yield:</span>
                                       <div className="flex items-center gap-2">
-                                        <span className="font-medium">{result.longTermYield.toFixed(1)}%</span>
-                                        <span className={`px-2 py-0.5 text-xs rounded ${result.longTermYield >= 8 ? 'bg-green-100 text-green-800' : result.longTermYield >= 6 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                                          {result.longTermYield >= 8 ? 'EXCELLENT' : result.longTermYield >= 6 ? 'GOOD' : 'POOR'}
+                                        <span className="font-medium">
+                                          {result.longTermYield.toFixed(1)}%
+                                        </span>
+                                        <span
+                                          className={`px-2 py-0.5 text-xs rounded ${result.longTermYield >= 8 ? "bg-green-100 text-green-800" : result.longTermYield >= 6 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}`}
+                                        >
+                                          {result.longTermYield >= 8
+                                            ? "EXCELLENT"
+                                            : result.longTermYield >= 6
+                                              ? "GOOD"
+                                              : "POOR"}
                                         </span>
                                       </div>
                                     </div>
                                   )}
                                   <div className="flex justify-between">
-                                    <span>Best Strategy:</span>
+                                    <span>Best Investment Strategy:</span>
                                     <div className="flex items-center gap-2">
-                                      <span className="font-medium">{result.bestStrategy}</span>
+                                      <span className="font-medium">
+                                        {result.bestStrategy}
+                                      </span>
                                       <span className="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-800">
                                         AIRBNB
                                       </span>
@@ -827,10 +968,17 @@ export default function DealScorePublicPage() {
                         </div>
 
                         <div className="flex gap-4 mt-6">
-                          <Button onClick={handleNewCalculation} variant="outline" className="flex-1">
+                          <Button
+                            onClick={handleNewCalculation}
+                            variant="outline"
+                            className="flex-1"
+                          >
                             New Calculation
                           </Button>
-                          <Button onClick={() => setShowPaymentModal(true)} className="flex-1">
+                          <Button
+                            onClick={() => setShowPaymentModal(true)}
+                            className="flex-1"
+                          >
                             View Full Report
                           </Button>
                         </div>
@@ -850,7 +998,8 @@ export default function DealScorePublicPage() {
           <DialogHeader>
             <DialogTitle>Purchase Full Property Report</DialogTitle>
             <DialogDescription>
-              Get detailed insights and analysis for this property            </DialogDescription>
+              Get detailed insights and analysis for this property{" "}
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -874,7 +1023,11 @@ export default function DealScorePublicPage() {
                   htmlFor="instant-eft"
                   className="flex flex-col items-center justify-between rounded-md border-2 border-muted p-4 hover:bg-accent cursor-pointer"
                 >
-                  <RadioGroupItem value="instant-eft" id="instant-eft" className="sr-only" />
+                  <RadioGroupItem
+                    value="instant-eft"
+                    id="instant-eft"
+                    className="sr-only"
+                  />
                   <Wallet className="mb-3 h-6 w-6" />
                   <span>Instant EFT</span>
                 </Label>
@@ -883,7 +1036,10 @@ export default function DealScorePublicPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPaymentModal(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowPaymentModal(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handlePayment} disabled={processingPayment}>
