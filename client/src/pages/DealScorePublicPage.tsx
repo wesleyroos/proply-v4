@@ -34,10 +34,10 @@ export default function DealScorePublicPage() {
     resolver: zodResolver(dealCalculationSchema),
     defaultValues: {
       address: "",
-      price: 0,
+      price: undefined,
       propertyType: undefined,
       bedrooms: undefined,
-      areaRate: 0,
+      areaRate: undefined,
     },
   });
 
