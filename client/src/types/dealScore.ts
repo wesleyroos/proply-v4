@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+declare global {
+  interface Window {
+    lastClick?: number;
+    clickCount?: number;
+  }
+}
+
 export const dealCalculationSchema = z.object({
   address: z.string().min(1, "Address is required"),
   price: z.number().min(1, "Price must be greater than 0"),

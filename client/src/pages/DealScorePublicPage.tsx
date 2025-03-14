@@ -665,32 +665,31 @@ export default function DealScorePublicPage() {
       {/* Secret Prefill Button */}
       <div
         onClick={() => {
-          // Initialize click tracking
           const now = Date.now();
-          const clicks = (window as any).clicks || [];
-          clicks.push(now);
-
-          // Only keep clicks within last 500ms
-          const recentClicks = clicks.filter((click: number) => (now - click) < 500);
-          (window as any).clicks = recentClicks;
-
-          if (recentClicks.length === 3) {
-            // Clear clicks
-            (window as any).clicks = [];
-
-            // Fill form data
-            form.reset({
-              address: "27 Leeuwen St, Cape Town City Centre, 8001",
-              price: 3500000,
-              propertyType: "apartment",
-              bedrooms: "2",
-              propertyCondition: "excellent",
-              floorArea: 85,
-              areaRate: 45000,
-              monthlyRental: 25000,
-              nightlyRate: 2500,
-              occupancyRate: 70
-            });
+          if (!window.lastClick) {
+            window.lastClick = now;
+            window.clickCount = 1;
+          } else if (now - window.lastClick < 500) {
+            window.clickCount = (window.clickCount || 0) + 1;
+            if (window.clickCount === 3) {
+              // Fill form data
+              form.reset({
+                address: "27 Leeuwen St, Cape Town City Centre, 8001",
+                price: 3500000,
+                propertyType: "apartment",
+                bedrooms: "2",
+                propertyCondition: "excellent",
+                floorArea: 85,
+                areaRate: 45000,
+                monthlyRental: 25000,
+                nightlyRate: 2500,
+                occupancyRate: 70
+              });
+              window.clickCount = 0;
+            }
+          } else {
+            window.lastClick = now;
+            window.clickCount = 1;
           }
         }}
         className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-400 cursor-default select-none hover:bg-gray-500 transition-all"
