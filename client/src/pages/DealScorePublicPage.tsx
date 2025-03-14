@@ -317,7 +317,21 @@ export default function DealScorePublicPage() {
   };
 
   const resetForm = () => {
-    // Only reset the result and current step, keep the form data
+    setFormData({
+      address: "",
+      purchasePrice: "",
+      size: "",
+      areaRate: "",
+      bedrooms: "",
+      propertyCondition: "excellent",
+      nightlyRate: "",
+      occupancy: "",
+      longTermRental: "",
+      depositAmount: "",
+      depositPercentage: "",
+      interestRate: "11.75",
+      loanTerm: "20",
+    });
     setResult(null);
     setCurrentStep(1);
   };
@@ -688,7 +702,7 @@ export default function DealScorePublicPage() {
                   <h1 className="text-3xl font-bold mb-8 text-center">Property Deal Score Calculator</h1>
 
                   {!result ? (
-                    <Card className="p-6">
+                    <Card className="p-6 border-0">
                       <form onSubmit={handleSubmit}>
                         {renderStepCounter()}
                         {renderFormStep()}
@@ -729,7 +743,7 @@ export default function DealScorePublicPage() {
                         </div>
 
                         <div className="relative h-4 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
-                          <div
+                          <div 
                             className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
                             style={{ left: `${result.score}%` }}
                           />
@@ -796,7 +810,7 @@ export default function DealScorePublicPage() {
 
                         <div className="flex gap-4 mt-6">
                           <Button onClick={resetForm} variant="outline" className="flex-1">
-                            Recalculate
+                            New Calculation
                           </Button>
                           <Button onClick={() => setShowPaymentModal(true)} className="flex-1">
                             View Full Report
