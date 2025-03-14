@@ -31,7 +31,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"; // Assuming these imports are available
-import {Badge} from "@/components/ui/badge"; //Import Badge
 
 
 export default function DealScorePublicPage() {
@@ -335,14 +334,6 @@ export default function DealScorePublicPage() {
     setShowResult(false);
     setCurrentStep(1);
   };
-
-  const getBadgeInfo = () => {
-    if (!result) return {text: '', color: ''};
-    return {
-      text: `${result.rating} Deal`,
-      color: result.color
-    }
-  }
 
   // Get list of missing field names for validation
   const getMissingFields = (step: number): string[] => {
@@ -707,42 +698,7 @@ export default function DealScorePublicPage() {
             <div className="relative bg-background rounded-lg p-1">
               <div className="container mx-auto py-8 px-4">
                 <div className="max-w-2xl mx-auto">
-                  <h1 className="text-3xl font-bold mb-4 text-center">Deal Score: {result?.score}%</h1>
-
-                  {/* Deal Badge and Gauge */}
-                  {showResult && (
-                    <div className="mb-8 flex flex-col items-center">
-                      <Badge
-                        variant="solid"
-                        className={`
-                          ${getBadgeInfo().color}
-                          text-white px-6 py-2 text-xl mb-4
-                        `}
-                      >
-                        {getBadgeInfo().text}
-                      </Badge>
-
-                      {/* Gauge Visualization */}
-                      <div className="w-full max-w-md">
-                        <div className="relative pt-4">
-                          <div className="h-3 rounded-full bg-gradient-to-r from-red-500 via-orange-500 via-blue-500 via-green-500 to-emerald-500" />
-                          <div
-                            className="absolute -top-1 w-4 h-4 bg-background border-2 border-primary rounded-full transform -translate-x-1/2 z-10"
-                            style={{
-                              left: `${result?.score}%`,
-                            }}
-                          />
-                          <div className="flex justify-between mt-3 text-xs text-muted-foreground">
-                            <div>Poor</div>
-                            <div>Average</div>
-                            <div>Good</div>
-                            <div>Great</div>
-                            <div>Excellent</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <h1 className="text-3xl font-bold mb-8 text-center">Deal Score: {result?.score}%</h1>
 
                   {/* Hidden demo data button - triple click to activate */}
                   <button type="button" onClick={fillDemoData} className="fixed bottom-4 right-4 opacity-0">Fill Demo Data</button>
@@ -798,8 +754,21 @@ export default function DealScorePublicPage() {
                             </span>
                           </div>
 
-                          {/* Removed redundant badge and gauge */}
+                          <div className={`inline-block px-4 py-1 rounded-full text-white ${result.color}`}>
+                            {result.rating} DEAL
+                          </div>
+                        </div>
 
+                        <div className="relative h-4 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
+                          <div 
+                            className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
+                            style={{ left: `${result.score}%` }}
+                          />
+                          <div className="absolute -bottom-6 left-0 text-xs">Poor</div>
+                          <div className="absolute -bottom-6 left-1/4 text-xs">Average</div>
+                          <div className="absolute -bottom-6 left-1/2 text-xs transform -translate-x-1/2">Good</div>
+                          <div className="absolute -bottom-6 left-3/4 text-xs">Great</div>
+                          <div className="absolute -bottom-6 right-0 text-xs">Excellent</div>
                         </div>
 
                         <div className="mt-8">
