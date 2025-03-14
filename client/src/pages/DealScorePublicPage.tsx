@@ -209,16 +209,19 @@ export default function DealScorePublicPage() {
     const propertyRate = Number(parseFormattedNumber(formData.purchasePrice)) / Number(parseFormattedNumber(formData.size));
     const priceDiff = ((propertyRate - Number(parseFormattedNumber(formData.areaRate))) / Number(parseFormattedNumber(formData.areaRate))) * 100;
 
-    // Calculate rental yield
-    let rentalYield = null;
+    // Calculate rental yields
+    let shortTermYield = null;
+    let longTermYield = null;
     const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
 
     if (formData.longTermRental) {
       const monthlyRental = Number(parseFormattedNumber(formData.longTermRental));
-      rentalYield = (monthlyRental * 12 / purchasePrice) * 100;
-    } else if (formData.nightlyRate && formData.occupancy) {
+      longTermYield = (monthlyRental * 12 / purchasePrice) * 100;
+    }
+
+    if (formData.nightlyRate && formData.occupancy) {
       const annualRevenue = Number(parseFormattedNumber(formData.nightlyRate)) * 365 * (Number(formData.occupancy) / 100);
-      rentalYield = (annualRevenue / purchasePrice) * 100;
+      shortTermYield = (annualRevenue / purchasePrice) * 100;
     }
 
     // Calculate score
@@ -240,10 +243,20 @@ export default function DealScorePublicPage() {
         break;
     }
 
-    if (rentalYield !== null) {
-      if (rentalYield >= 8) {
+    if (shortTermYield !== null) {
+      if (shortTermYield >= 18) {
+        score += 15;
+      } else if (shortTermYield >= 12) {
         score += 10;
-      } else if (rentalYield >= 6) {
+      } else if (shortTermYield >= 8) {
+        score += 5;
+      }
+    }
+
+    if (longTermYield !== null) {
+      if (longTermYield >= 8) {
+        score += 10;
+      } else if (longTermYield >= 6) {
         score += 5;
       }
     }
@@ -255,22 +268,22 @@ export default function DealScorePublicPage() {
     let color: string;
 
     if (score >= 90) {
-      rating = "Excellent Deal";
+      rating = "Excellent";
       color = "bg-emerald-500";
     } else if (score >= 75) {
-      rating = "Great Deal";
+      rating = "Great";
       color = "bg-green-500";
     } else if (score >= 60) {
-      rating = "Good Deal";
+      rating = "Good";
       color = "bg-blue-500";
     } else if (score >= 40) {
-      rating = "Fair Deal";
+      rating = "Average";
       color = "bg-yellow-500";
     } else if (score >= 25) {
-      rating = "Poor Deal";
+      rating = "Poor";
       color = "bg-orange-500";
     } else {
-      rating = "Bad Deal";
+      rating = "Bad";
       color = "bg-red-500";
     }
 
@@ -280,9 +293,15 @@ export default function DealScorePublicPage() {
       score: Math.round(score),
       rating,
       color,
-      percentageDifference: ((estimatedValue - Number(parseFormattedNumber(formData.purchasePrice))) / Number(parseFormattedNumber(formData.purchasePrice))) * 100,
-      askingPrice: Number(parseFormattedNumber(formData.purchasePrice)),
-      estimatedValue
+      percentageDifference: ((estimatedValue - purchasePrice) / purchasePrice) * 100,
+      askingPrice: purchasePrice,
+      estimatedValue,
+      propertyRate,
+      areaRate: Number(parseFormattedNumber(formData.areaRate)),
+      propertyCondition: formData.propertyCondition,
+      shortTermYield,
+      longTermYield,
+      bestStrategy: shortTermYield > (longTermYield || 0) ? "Short-Term" : "Long-Term"
     });
 
     setIsCalculating(false);
@@ -715,35 +734,88 @@ export default function DealScorePublicPage() {
                     </Card>
                   ) : (
                     <Card className="p-6">
-                      <div className="text-center mb-6">
-                        <h2 className="text-2xl font-bold mb-2">Deal Score: {result.score}%</h2>
-                        <div className={`inline-block px-4 py-1 rounded-full text-white ${result.color}`}>
-                          {result.rating}
+                      <div className="space-y-6">
+                        <div className="text-center">
+                          <h2 className="text-2xl font-bold mb-2">Deal Score: {result.score}%</h2>
+                          <div className={`inline-block px-4 py-1 rounded-full text-white ${result.color}`}>
+                            {result.rating} DEAL
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="space-y-4">
-                        <div className="flex justify-between">
-                          <span>Asking Price:</span>
-                          <span className="font-medium">R{result.askingPrice.toLocaleString()}</span>
+                        <div className="relative h-4 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
+                          <div 
+                            className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
+                            style={{ left: `${result.score}%` }}
+                          />
+                          <div className="absolute -bottom-6 left-0 text-xs">Poor</div>
+                          <div className="absolute -bottom-6 left-1/4 text-xs">Average</div>
+                          <div className="absolute -bottom-6 left-1/2 text-xs transform -translate-x-1/2">Good</div>
+                          <div className="absolute -bottom-6 left-3/4 text-xs">Great</div>
+                          <div className="absolute -bottom-6 right-0 text-xs">Excellent</div>
                         </div>
-                        <div className="flex justify-between">
-                          <span>Estimated Value:</span>
-                          <span className="font-medium">R{result.estimatedValue.toLocaleString()}</span>
+
+                        <div className="mt-8">
+                          <div className="text-xl font-semibold mb-4">Key Deal Factors</div>
+                          <div className="space-y-4">
+                            <div className="flex justify-between">
+                              <span>Price per m²:</span>
+                              <span className="font-medium">R{Math.round(result.propertyRate).toLocaleString()}/m²</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Area average:</span>
+                              <span className="font-medium">R{Math.round(result.areaRate).toLocaleString()}/m²</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Property condition:</span>
+                              <span className="font-medium capitalize">{result.propertyCondition}</span>
+                            </div>
+                            {result.shortTermYield && (
+                              <div className="flex justify-between">
+                                <span>Short-Term Yield:</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{result.shortTermYield.toFixed(1)}%</span>
+                                  <span className={`px-2 py-0.5 text-xs rounded ${result.shortTermYield >= 12 ? 'bg-green-100 text-green-800' : result.shortTermYield >= 8 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                                    {result.shortTermYield >= 12 ? 'EXCELLENT' : result.shortTermYield >= 8 ? 'GOOD' : 'POOR'}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                            {result.longTermYield && (
+                              <div className="flex justify-between">
+                                <span>Long-Term Yield:</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{result.longTermYield.toFixed(1)}%</span>
+                                  <span className={`px-2 py-0.5 text-xs rounded ${result.longTermYield >= 8 ? 'bg-green-100 text-green-800' : result.longTermYield >= 6 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                                    {result.longTermYield >= 8 ? 'EXCELLENT' : result.longTermYield >= 6 ? 'GOOD' : 'POOR'}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                            <div className="flex justify-between">
+                              <span>Best Strategy:</span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{result.bestStrategy}</span>
+                                <span className="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-800">
+                                  AIRBNB
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-600">
+
+                        <div className="text-sm text-gray-600 mt-4">
                           This property is {Math.abs(result.percentageDifference).toFixed(1)}%
                           {result.percentageDifference > 0 ? " above" : " below"} estimated market value
                         </div>
-                      </div>
 
-                      <div className="flex gap-4 mt-6">
-                        <Button onClick={resetForm} variant="outline" className="flex-1">
-                          New Calculation
-                        </Button>
-                        <Button onClick={() => setShowPaymentModal(true)} className="flex-1">
-                          View Full Report
-                        </Button>
+                        <div className="flex gap-4 mt-6">
+                          <Button onClick={resetForm} variant="outline" className="flex-1">
+                            New Calculation
+                          </Button>
+                          <Button onClick={() => setShowPaymentModal(true)} className="flex-1">
+                            View Full Report
+                          </Button>
+                        </div>
                       </div>
                     </Card>
                   )}
@@ -760,8 +832,7 @@ export default function DealScorePublicPage() {
           <DialogHeader>
             <DialogTitle>Purchase Full Property Report</DialogTitle>
             <DialogDescription>
-              Get detailed insights and analysis for this property
-            </DialogDescription>
+              Get detailed insights and analysis for this property            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
