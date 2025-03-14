@@ -17,22 +17,44 @@ export function AreaRateProgressDialog({
   error
 }: AreaRateProgressDialogProps) {
   const [progress, setProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const steps = [
+    "Analyzing property location...",
+    "Processing market data...",
+    "Comparing recent sales...",
+    "Calculating area rate..."
+  ];
 
   useEffect(() => {
     if (status === "loading") {
-      const timer = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 90) {
-            clearInterval(timer);
-            return 90;
+      const stepInterval = setInterval(() => {
+        setCurrentStep((prev) => {
+          if (prev >= steps.length - 1) {
+            clearInterval(stepInterval);
+            return prev;
           }
-          return prev + 10;
+          return prev + 1;
         });
       }, 1000);
 
-      return () => clearInterval(timer);
+      const progressTimer = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(progressTimer);
+            return 90;
+          }
+          return prev + 2;
+        });
+      }, 200);
+
+      return () => {
+        clearInterval(stepInterval);
+        clearInterval(progressTimer);
+      };
     } else if (status === "success") {
       setProgress(100);
+      setCurrentStep(steps.length - 1);
     }
   }, [status]);
 
@@ -40,16 +62,31 @@ export function AreaRateProgressDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Calculating Area Rate</DialogTitle>
+          <DialogTitle>AI Area Rate Analysis</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <Card className="p-4">
-            <div className="space-y-2">
+            <div className="space-y-4">
               {status === "loading" && (
                 <>
-                  <div className="flex items-center space-x-2">
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                    <p className="text-sm">Analyzing property location...</p>
+                  <div className="space-y-3">
+                    {steps.map((step, index) => (
+                      <div 
+                        key={index} 
+                        className={`flex items-center space-x-2 transition-opacity duration-200 ${
+                          index <= currentStep ? 'opacity-100' : 'opacity-30'
+                        }`}
+                      >
+                        {index === currentStep ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                        ) : index < currentStep ? (
+                          <div className="h-4 w-4 rounded-full bg-primary flex items-center justify-center text-white text-xs">✓</div>
+                        ) : (
+                          <div className="h-4 w-4 rounded-full border border-gray-300" />
+                        )}
+                        <p className="text-sm">{step}</p>
+                      </div>
+                    ))}
                   </div>
                   <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
                     <div 
@@ -57,19 +94,19 @@ export function AreaRateProgressDialog({
                       style={{ width: `${progress}%` }}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Our AI is analyzing recent market data for your area...
+                  <p className="text-xs text-muted-foreground text-center">
+                    Our AI is analyzing recent market data and property values in your area...
                   </p>
                 </>
               )}
-              
+
               {status === "success" && (
                 <div className="text-center space-y-2">
                   <div className="text-green-500 font-semibold">
                     Area rate calculation complete!
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    The rate has been automatically updated in the form.
+                    Our AI has successfully analyzed your location and calculated the market rate.
                   </p>
                 </div>
               )}

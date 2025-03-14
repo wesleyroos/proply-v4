@@ -430,53 +430,7 @@ export default function DealScorePublicPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={async () => {
-                    try {
-                      setAreaRateStatus("loading");
-                      setShowAreaRateDialog(true);
-                      setIsLoading(true);
-
-                      const response = await fetch('/api/deal-advisor/area-rate', {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                          address: formData.address,
-                        }),
-                      });
-
-                      if (!response.ok) {
-                        throw new Error('Failed to fetch area rate');
-                      }
-
-                      const data = await response.json();
-                      setFormData(prev => ({
-                        ...prev,
-                        areaRate: data.areaRate.toString(),
-                      }));
-
-                      setAreaRateStatus("success");
-                      toast({
-                        title: "Success",
-                        description: "Area rate fetched successfully",
-                      });
-                    } catch (error) {
-                      setAreaRateStatus("error");
-                      setAreaRateError(error instanceof Error ? error.message : "Failed to fetch area rate");
-                      toast({
-                        title: "Error",
-                        description: "Failed to fetch area rate. Please try again.",
-                        variant: "destructive",
-                      });
-                    } finally {
-                      setIsLoading(false);
-                      // Keep dialog open for a moment to show success/error state
-                      setTimeout(() => {
-                        setShowAreaRateDialog(false);
-                      }, 2000);
-                    }
-                  }}
+                  onClick={fetchAreaRate}
                   disabled={!formData.address || isLoading}
                 >
                   {isLoading ? (
@@ -689,6 +643,60 @@ export default function DealScorePublicPage() {
     </div>
   );
 
+  // Update the area rate fetching function
+  const fetchAreaRate = async () => {
+    try {
+      setAreaRateStatus("loading");
+      setShowAreaRateDialog(true);
+      setIsLoading(true);
+
+      const response = await fetch('/api/deal-advisor/area-rate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: formData.address,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch area rate');
+      }
+
+      const data = await response.json();
+
+      // Add artificial delay to show the progress dialog
+      await new Promise(resolve => setTimeout(resolve, 4000));
+
+      setFormData(prev => ({
+        ...prev,
+        areaRate: data.areaRate.toString(),
+      }));
+
+      setAreaRateStatus("success");
+      toast({
+        title: "Success",
+        description: "Area rate fetched successfully",
+      });
+    } catch (error) {
+      setAreaRateStatus("error");
+      setAreaRateError(error instanceof Error ? error.message : "Failed to fetch area rate");
+      toast({
+        title: "Error",
+        description: "Failed to fetch area rate. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      // Keep dialog open longer to show success/error state
+      setTimeout(() => {
+        setShowAreaRateDialog(false);
+      }, 2000);
+    }
+  };
+
+
   return (
     <div className="flex min-h-screen flex-col relative overflow-hidden bg-background">
       {/* Logo */}
@@ -849,8 +857,7 @@ export default function DealScorePublicPage() {
                               <AccordionTrigger className="text-xl font-semibold">Key Deal Factors</AccordionTrigger>
                               <AccordionContent>
                                 <div className="space-y-4 pt-2">
-                                  <div className="flex justify-between">
-                                    <span>Price per m²:</span>
+                                  <div className="flex justify-between">                                    <span>Price per m²:</span>
                                     <span className="font-medium">R{Math.round(result.propertyRate).toLocaleString()}/m²</span>
                                   </div>
                                   <div className="flex justify-between">
@@ -971,6 +978,13 @@ export default function DealScorePublicPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Add the AreaRateProgressDialog */}
+      <AreaRateProgressDialog
+        open={showAreaRateDialog}
+        onOpenChange={setShowAreaRateDialog}
+        status={areaRateStatus}
+        error={areaRateError}
+      />
     </div>
   );
 }
