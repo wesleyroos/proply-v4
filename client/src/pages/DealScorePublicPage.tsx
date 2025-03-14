@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react"; // Import Loader2
+
 
 export default function DealScorePublicPage() {
   const { toast } = useToast();
@@ -185,43 +187,11 @@ export default function DealScorePublicPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Always check for required fields before proceeding
-    const missingFields = getMissingFields(currentStep);
-
-    if (missingFields.length > 0) {
-      toast({
-        title: "Missing information",
-        description: `Please fill in: ${missingFields.join(", ")}`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (currentStep < 3) {
-      setCurrentStep(currentStep + 1);
-      return;
-    }
-
-    // Check ALL required fields from all steps before final calculation
-    const allMissingFields = [
-      ...getMissingFields(1),
-      ...getMissingFields(2),
-      ...getMissingFields(3)
-    ];
-
-    if (allMissingFields.length > 0) {
-      toast({
-        title: "Missing information",
-        description: `Please fill in: ${allMissingFields.join(", ")}`,
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsCalculating(true);
+    // Add 2 second delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
     calculateDealScore();
   };
 
@@ -716,7 +686,7 @@ export default function DealScorePublicPage() {
               <div className="container mx-auto py-8 px-4">
                 <div className="max-w-2xl mx-auto">
                   <h1 className="text-3xl font-bold mb-8 text-center">Property Deal Score Calculator</h1>
-                  
+
                   {/* Hidden demo data button - triple click to activate */}
                   <button type="button" onClick={fillDemoData} className="fixed bottom-4 right-4 opacity-0">Fill Demo Data</button>
 
@@ -733,19 +703,18 @@ export default function DealScorePublicPage() {
                             </Button>
                           )}
                           <Button type="submit" className={`${currentStep === 1 ? "ml-auto" : ""}`}>
-                            {currentStep === 3 ? (
-                              isCalculating ? (
-                                <div className="flex items-center">
-                                  <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-                                  Calculating...
-                                </div>
-                              ) : (
-                                "Calculate Score"
-                              )
-                            ) : (
+                            {isCalculating ? (
                               <>
-                                Next <ArrowRight className="ml-2 h-4 w-4" />
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Calculating...
                               </>
+                            ) : currentStep < 3 ? (
+                              <>
+                                Next
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                              </>
+                            ) : (
+                              "Calculate Deal Score"
                             )}
                           </Button>
                         </div>
