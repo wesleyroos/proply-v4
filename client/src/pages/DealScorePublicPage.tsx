@@ -700,8 +700,10 @@ export default function DealScorePublicPage() {
             console.log('Click timeout reset');
           }
         }}
-        className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-400 cursor-default select-none hover:bg-gray-500 transition-all opacity-40"
-      />
+        className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-400/40 cursor-pointer hover:bg-gray-500/40 transition-all flex items-center justify-center"
+      >
+        <div className="w-2 h-2 bg-white rounded-full" />
+      </div>
     </div>
   );
 }
