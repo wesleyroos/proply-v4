@@ -830,7 +830,12 @@ export default function DealScorePublicPage() {
                           <div
                             className={`inline-block px-4 py-2 rounded-full text-white ${result?.color}`}
                           >
-                            {result?.rating} DEAL
+                            <div className="text-center">
+                              <span className="font-medium">{result?.rating}</span>
+                              <span className="text-muted-foreground ml-1">
+                                DEAL
+                              </span>
+                            </div>
                           </div>
                           <DealScoreGauge score={result?.score} />
                         </div>
