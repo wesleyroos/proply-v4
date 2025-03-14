@@ -62,7 +62,8 @@ export function registerRoutes(app: Express): Server {
       req.path === "/login" ||
       req.path === "/register" ||
       req.path === "/user" ||
-      req.path === "/calculate-deal-score"  // Add this exception
+      req.path === "/calculate-deal-score" ||
+      req.path === "/deal-advisor/area-rate"
     ) {
       return next();
     }

@@ -6,9 +6,9 @@ const router = express.Router();
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Area rate endpoint
+// Area rate endpoint - public access
 router.post('/area-rate', async (req, res) => {
-  const { address, propertyType } = req.body;
+  const { address } = req.body;
   
   if (!address || !propertyType) {
     return res.status(400).json({ error: 'Address and property type are required' });
