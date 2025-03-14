@@ -750,8 +750,8 @@ export default function DealScorePublicPage() {
                           </div>
                           
                           <div className="text-center mt-2 mb-6">
-                            <span className={`text-sm ${result.askingPrice > result.estimatedValue ? 'text-amber-500' : 'text-green-500'}`}>
-                              This property is {Math.abs(((result.askingPrice - result.estimatedValue) / result.estimatedValue) * 100).toFixed(1)}% 
+                            <span className="text-sm">
+                              This property is <span className={result.askingPrice > result.estimatedValue ? 'text-amber-500' : 'text-green-500'}>{Math.abs(((result.askingPrice - result.estimatedValue) / result.estimatedValue) * 100).toFixed(1)}%</span>
                               {result.askingPrice > result.estimatedValue ? ' above' : ' below'} estimated market value
                             </span>
                           </div>
