@@ -463,7 +463,7 @@ export default function DealScorePublicPage() {
                       setIsLoading(false);
                     }
                   }}
-                  disabled={!formData.address || !formData.propertyType || isLoading}
+                  disabled={!formData.address || isLoading}
                 >
                   {isLoading ? (
                     <>
