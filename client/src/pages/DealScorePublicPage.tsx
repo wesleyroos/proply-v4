@@ -684,7 +684,7 @@ export default function DealScorePublicPage() {
       <main className="flex-1 relative z-10 flex flex-col items-center justify-center pt-8">
         <div className="container flex flex-col items-center px-4 py-8 text-center md:py-16 lg:py-24">
           <div className="mx-auto max-w-[800px] space-y-4">
-            <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">Proply Deal Score™</h1>
+            <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">Proply Deal Score™: {result.score}%</h1>
             <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl">
               Enter the property details below to get an instant deal score based on market data, area rates, and rental
               yields.
@@ -698,8 +698,6 @@ export default function DealScorePublicPage() {
             <div className="relative bg-background rounded-lg p-1">
               <div className="container mx-auto py-8 px-4">
                 <div className="max-w-2xl mx-auto">
-                  <h1 className="text-3xl font-bold mb-8 text-center">Property Deal Score Calculator</h1>
-
                   {/* Hidden demo data button - triple click to activate */}
                   <button type="button" onClick={fillDemoData} className="fixed bottom-4 right-4 opacity-0">Fill Demo Data</button>
 
