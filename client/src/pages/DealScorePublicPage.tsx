@@ -35,6 +35,7 @@ import {
 
 export default function DealScorePublicPage() {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     // Property Details (Step 1)
@@ -416,7 +417,7 @@ export default function DealScorePublicPage() {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
@@ -437,17 +438,17 @@ export default function DealScorePublicPage() {
                           propertyType: formData.propertyType,
                         }),
                       });
-                      
+
                       if (!response.ok) {
                         throw new Error('Failed to fetch area rate');
                       }
-                      
+
                       const data = await response.json();
                       setFormData(prev => ({
                         ...prev,
                         areaRate: data.areaRate.toString(),
                       }));
-                      
+
                       toast({
                         title: "Success",
                         description: "Area rate fetched successfully",
@@ -803,7 +804,7 @@ export default function DealScorePublicPage() {
                             <div className="text-sm">Estimated Market Value:</div>
                             <div className="font-bold">R{result.estimatedValue.toLocaleString()}</div>
                           </div>
-                          
+
                           <div className="text-center mt-2 mb-6">
                             <span className="text-sm">
                               This property is <span className={result.askingPrice > result.estimatedValue ? 'text-amber-500' : 'text-green-500'}>{Math.abs(((result.askingPrice - result.estimatedValue) / result.estimatedValue) * 100).toFixed(1)}%</span>
@@ -850,7 +851,7 @@ export default function DealScorePublicPage() {
                                     <div className="flex justify-between">
                                       <span>Short-Term Yield:</span>
                                       <div className="flex items-center gap-2">
-                                        <span className="font-medium">{result.shortTermYield.toFixed(1)}%</span>
+                                        <span className="font-medium">{result.shortTermYield.toFixed(1%)</span>
                                         <span className={`px-2 py-0.5 text-xs rounded ${result.shortTermYield >= 12 ? 'bg-green-100 text-green-800' : result.shortTermYield >= 8 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
                                           {result.shortTermYield >= 12 ? 'EXCELLENT' : result.shortTermYield >= 8 ? 'GOOD' : 'POOR'}
                                         </span>
