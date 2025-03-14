@@ -37,8 +37,7 @@ export default function DealScorePublicPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     // Property Details (Step 1)
     address: "",
     purchasePrice: "",
