@@ -25,6 +25,12 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react"; // Import Loader2
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"; // Assuming these imports are available
 
 
 export default function DealScorePublicPage() {
@@ -743,52 +749,58 @@ export default function DealScorePublicPage() {
                         </div>
 
                         <div className="mt-8">
-                          <div className="text-xl font-semibold mb-4">Key Deal Factors</div>
-                          <div className="space-y-4">
-                            <div className="flex justify-between">
-                              <span>Price per m²:</span>
-                              <span className="font-medium">R{Math.round(result.propertyRate).toLocaleString()}/m²</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Area average:</span>
-                              <span className="font-medium">R{Math.round(result.areaRate).toLocaleString()}/m²</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Property condition:</span>
-                              <span className="font-medium capitalize">{result.propertyCondition}</span>
-                            </div>
-                            {result.shortTermYield && (
-                              <div className="flex justify-between">
-                                <span>Short-Term Yield:</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">{result.shortTermYield.toFixed(1)}%</span>
-                                  <span className={`px-2 py-0.5 text-xs rounded ${result.shortTermYield >= 12 ? 'bg-green-100 text-green-800' : result.shortTermYield >= 8 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                                    {result.shortTermYield >= 12 ? 'EXCELLENT' : result.shortTermYield >= 8 ? 'GOOD' : 'POOR'}
-                                  </span>
+                          <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value="deal-factors">
+                              <AccordionTrigger className="text-xl font-semibold">Key Deal Factors</AccordionTrigger>
+                              <AccordionContent>
+                                <div className="space-y-4 pt-2">
+                                  <div className="flex justify-between">
+                                    <span>Price per m²:</span>
+                                    <span className="font-medium">R{Math.round(result.propertyRate).toLocaleString()}/m²</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Area average:</span>
+                                    <span className="font-medium">R{Math.round(result.areaRate).toLocaleString()}/m²</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Property condition:</span>
+                                    <span className="font-medium capitalize">{result.propertyCondition}</span>
+                                  </div>
+                                  {result.shortTermYield && (
+                                    <div className="flex justify-between">
+                                      <span>Short-Term Yield:</span>
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-medium">{result.shortTermYield.toFixed(1)}%</span>
+                                        <span className={`px-2 py-0.5 text-xs rounded ${result.shortTermYield >= 12 ? 'bg-green-100 text-green-800' : result.shortTermYield >= 8 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                                          {result.shortTermYield >= 12 ? 'EXCELLENT' : result.shortTermYield >= 8 ? 'GOOD' : 'POOR'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {result.longTermYield && (
+                                    <div className="flex justify-between">
+                                      <span>Long-Term Yield:</span>
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-medium">{result.longTermYield.toFixed(1)}%</span>
+                                        <span className={`px-2 py-0.5 text-xs rounded ${result.longTermYield >= 8 ? 'bg-green-100 text-green-800' : result.longTermYield >= 6 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                                          {result.longTermYield >= 8 ? 'EXCELLENT' : result.longTermYield >= 6 ? 'GOOD' : 'POOR'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                  <div className="flex justify-between">
+                                    <span>Best Strategy:</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">{result.bestStrategy}</span>
+                                      <span className="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-800">
+                                        AIRBNB
+                                      </span>
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
-                            {result.longTermYield && (
-                              <div className="flex justify-between">
-                                <span>Long-Term Yield:</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">{result.longTermYield.toFixed(1)}%</span>
-                                  <span className={`px-2 py-0.5 text-xs rounded ${result.longTermYield >= 8 ? 'bg-green-100 text-green-800' : result.longTermYield >= 6 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                                    {result.longTermYield >= 8 ? 'EXCELLENT' : result.longTermYield >= 6 ? 'GOOD' : 'POOR'}
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                            <div className="flex justify-between">
-                              <span>Best Strategy:</span>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">{result.bestStrategy}</span>
-                                <span className="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-800">
-                                  AIRBNB
-                                </span>
-                              </div>
-                            </div>
-                          </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
                         </div>
 
                         <div className="text-sm text-gray-600 mt-4">
@@ -805,8 +817,7 @@ export default function DealScorePublicPage() {
                           </Button>
                         </div>
                       </div>
-                    </Card>
-                  )}
+                    </Card                  )}
                 </div>
               </div>
             </div>
