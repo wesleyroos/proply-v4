@@ -1,16 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { ArrowRight, AlertCircle, CreditCard, Wallet } from "lucide-react";
-import { dealCalculationSchema, type DealCalculation, type DealScoreResult } from "@/types/dealScore";
-import { apiRequest } from "@/lib/queryClient";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useState, useEffect } from "react";
+import { ArrowRight, ArrowLeft, AlertCircle, CreditCard, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import {
@@ -22,168 +23,583 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-
-const calculateDealScore = (
-  priceDiff: number,
-  propertyCondition: string,
-  propertyRate: number,
-  areaRate: number,
-  rentalYield: number | null
-): { score: number; rating: string; color: string } => {
-  // Base score starts at 50
-  let score = 50;
-
-  // Price difference impact (-20 to +20 points)
-  // Negative price diff means property is below market value (good)
-  score -= priceDiff * 0.5; // Each percent difference affects score by 0.5 points
-
-  // Property condition impact (-10 to +10 points)
-  switch (propertyCondition) {
-    case "excellent":
-      score += 10;
-      break;
-    case "good":
-      score += 5;
-      break;
-    case "fair":
-      score -= 5;
-      break;
-    case "poor":
-      score -= 10;
-      break;
-  }
-
-  // Area rate comparison impact (-10 to +10 points)
-  const rateDiff = ((propertyRate - areaRate) / areaRate) * 100;
-  score -= rateDiff * 0.2; // Each percent difference affects score by 0.2 points
-
-  // Rental yield impact (0 to +10 points)
-  if (rentalYield !== null) {
-    // Good rental yield is considered 8% or above
-    if (rentalYield >= 8) {
-      score += 10;
-    } else if (rentalYield >= 6) {
-      score += 5;
-    }
-  }
-
-  // Ensure score stays within 0-100 range
-  score = Math.max(0, Math.min(100, score));
-
-  // Determine rating and color based on score
-  let rating: string;
-  let color: string;
-
-  if (score >= 90) {
-    rating = "Excellent Deal";
-    color = "bg-emerald-500";
-  } else if (score >= 75) {
-    rating = "Great Deal";
-    color = "bg-green-500";
-  } else if (score >= 60) {
-    rating = "Good Deal";
-    color = "bg-blue-500";
-  } else if (score >= 40) {
-    rating = "Fair Deal";
-    color = "bg-yellow-500";
-  } else if (score >= 25) {
-    rating = "Poor Deal";
-    color = "bg-orange-500";
-  } else {
-    rating = "Bad Deal";
-    color = "bg-red-500";
-  }
-
-  return {
-    score: Math.round(score),
-    rating,
-    color,
-  };
-};
+import { useToast } from "@/hooks/use-toast";
 
 export default function DealScorePublicPage() {
-  const [result, setResult] = useState<DealScoreResult | null>(null);
+  const { toast } = useToast();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState({
+    // Property Details (Step 1)
+    address: "",
+    purchasePrice: "",
+    size: "",
+    areaRate: "",
+    bedrooms: "",
+    propertyCondition: "excellent",
+
+    // Rental Details (Step 2)
+    nightlyRate: "",
+    occupancy: "",
+    longTermRental: "",
+
+    // Financing Details (Step 3)
+    depositAmount: "",
+    depositPercentage: "",
+    interestRate: "11.75", // Default to current prime rate
+    loanTerm: "20", // Default to 20 years
+  });
+
+  const [result, setResult] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(false);
 
-  const form = useForm<DealCalculation>({
-    resolver: zodResolver(dealCalculationSchema),
-    defaultValues: {
-      address: "",
-      price: undefined,
-      propertyType: undefined,
-      bedrooms: undefined,
-      propertyCondition: undefined,
-      floorArea: undefined,
-      areaRate: undefined,
-      monthlyRental: undefined,
-      occupancyRate: undefined,
-      nightlyRate: undefined,
-    },
-  });
-
-  const calculateMutation = useMutation({
-    mutationFn: async (data: DealCalculation) => {
-      // Calculate property rate and area rate difference
-      const propertyRate = data.price / data.floorArea;
-      const priceDiff = ((propertyRate - data.areaRate) / data.areaRate) * 100;
-
-      // Calculate rental yield if rental data is provided
-      let rentalYield = null;
-      if (data.monthlyRental) {
-        rentalYield = (data.monthlyRental * 12 / data.price) * 100;
-      } else if (data.nightlyRate && data.occupancyRate) {
-        const annualRevenue = data.nightlyRate * 365 * (data.occupancyRate / 100);
-        rentalYield = (annualRevenue / data.price) * 100;
+  useEffect(() => {
+    // Fetch current prime rate when component mounts
+    const fetchPrimeRate = async () => {
+      try {
+        const response = await fetch('/api/prime-rate');
+        const data = await response.json();
+        setFormData(prev => ({
+          ...prev,
+          interestRate: data.primeRate.toString()
+        }));
+      } catch (error) {
+        console.error('Failed to fetch prime rate:', error);
       }
+    };
 
-      // Calculate deal score
-      const { score, rating, color } = calculateDealScore(
-        priceDiff,
-        data.propertyCondition,
-        propertyRate,
-        data.areaRate,
-        rentalYield
-      );
+    fetchPrimeRate();
+  }, []);
 
-      // Calculate estimated market value
-      const estimatedValue = data.areaRate * data.floorArea;
+  // Format number with thousand separators for display
+  const formatWithThousandSeparators = (value: string): string => {
+    const numericValue = value.replace(/[^\d.]/g, '');
+    if (!numericValue) return '';
+    const parts = numericValue.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.length > 1 ? `${parts[0]}.${parts[1]}` : parts[0];
+  };
 
-      return {
-        score,
-        rating,
-        color,
-        percentageDifference: ((estimatedValue - data.price) / data.price) * 100,
-        askingPrice: data.price,
-        estimatedValue
-      };
-    },
-    onSuccess: (data: DealScoreResult) => {
-      setResult(data);
-    },
-  });
+  // Parse formatted number to remove separators for calculations
+  const parseFormattedNumber = (value: string): string => {
+    return value.replace(/,/g, '');
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    // Store the actual numeric value (without formatting)
+    let numericValue = value;
+
+    if (field === "bedrooms") {
+      if (value.toLowerCase() === "studio") {
+        numericValue = "0";
+      } else if (value.toLowerCase() === "room") {
+        numericValue = "-1";
+      } else {
+        numericValue = value.replace(/,/g, "");
+        numericValue = numericValue.replace(/[^0-9.-]/g, "");
+        const decimalCount = (numericValue.match(/\./g) || []).length;
+        if (decimalCount > 1) {
+          numericValue = numericValue.slice(0, numericValue.lastIndexOf("."));
+        }
+      }
+    } else if (
+      field === "purchasePrice" ||
+      field === "size" ||
+      field === "areaRate" ||
+      field === "nightlyRate" ||
+      field === "occupancy" ||
+      field === "longTermRental" ||
+      field === "depositAmount" ||
+      field === "loanTerm"
+    ) {
+      numericValue = parseFormattedNumber(value);
+      numericValue = numericValue.replace(/[^0-9.]/g, "");
+      const formattedValue = formatWithThousandSeparators(numericValue);
+      if (field !== "occupancy") {
+        value = formattedValue;
+      }
+    }
+
+    // Handle deposit calculations
+    if (field === "depositAmount") {
+      const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
+      if (purchasePrice > 0) {
+        const numericDeposit = Number(parseFormattedNumber(numericValue));
+        const percentage = (numericDeposit / purchasePrice) * 100;
+        setFormData(prev => ({
+          ...prev,
+          [field]: value,
+          depositPercentage: percentage.toFixed(2)
+        }));
+        return;
+      }
+    }
+
+    if (field === "depositPercentage") {
+      const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
+      if (purchasePrice > 0) {
+        const percentage = Number(numericValue);
+        const amount = (percentage / 100) * purchasePrice;
+        const formattedAmount = formatWithThousandSeparators(amount.toFixed(2));
+        setFormData(prev => ({
+          ...prev,
+          [field]: value,
+          depositAmount: formattedAmount
+        }));
+        return;
+      }
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Always check for required fields before proceeding
+    const missingFields = getMissingFields(currentStep);
+
+    if (missingFields.length > 0) {
+      toast({
+        title: "Missing information",
+        description: `Please fill in: ${missingFields.join(", ")}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+      return;
+    }
+
+    // Check ALL required fields from all steps before final calculation
+    const allMissingFields = [
+      ...getMissingFields(1),
+      ...getMissingFields(2),
+      ...getMissingFields(3)
+    ];
+
+    if (allMissingFields.length > 0) {
+      toast({
+        title: "Missing information",
+        description: `Please fill in: ${allMissingFields.join(", ")}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCalculating(true);
+    calculateDealScore();
+  };
+
+  const handlePrevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const calculateDealScore = () => {
+    // Calculate property rate and area rate difference
+    const propertyRate = Number(parseFormattedNumber(formData.purchasePrice)) / Number(parseFormattedNumber(formData.size));
+    const priceDiff = ((propertyRate - Number(parseFormattedNumber(formData.areaRate))) / Number(parseFormattedNumber(formData.areaRate))) * 100;
+
+    // Calculate rental yield
+    let rentalYield = null;
+    const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
+
+    if (formData.longTermRental) {
+      const monthlyRental = Number(parseFormattedNumber(formData.longTermRental));
+      rentalYield = (monthlyRental * 12 / purchasePrice) * 100;
+    } else if (formData.nightlyRate && formData.occupancy) {
+      const annualRevenue = Number(parseFormattedNumber(formData.nightlyRate)) * 365 * (Number(formData.occupancy) / 100);
+      rentalYield = (annualRevenue / purchasePrice) * 100;
+    }
+
+    // Calculate score
+    let score = 50;
+    score -= priceDiff * 0.5;
+
+    switch (formData.propertyCondition) {
+      case "excellent":
+        score += 10;
+        break;
+      case "good":
+        score += 5;
+        break;
+      case "fair":
+        score -= 5;
+        break;
+      case "poor":
+        score -= 10;
+        break;
+    }
+
+    if (rentalYield !== null) {
+      if (rentalYield >= 8) {
+        score += 10;
+      } else if (rentalYield >= 6) {
+        score += 5;
+      }
+    }
+
+    score = Math.max(0, Math.min(100, score));
+
+    // Determine rating and color
+    let rating: string;
+    let color: string;
+
+    if (score >= 90) {
+      rating = "Excellent Deal";
+      color = "bg-emerald-500";
+    } else if (score >= 75) {
+      rating = "Great Deal";
+      color = "bg-green-500";
+    } else if (score >= 60) {
+      rating = "Good Deal";
+      color = "bg-blue-500";
+    } else if (score >= 40) {
+      rating = "Fair Deal";
+      color = "bg-yellow-500";
+    } else if (score >= 25) {
+      rating = "Poor Deal";
+      color = "bg-orange-500";
+    } else {
+      rating = "Bad Deal";
+      color = "bg-red-500";
+    }
+
+    const estimatedValue = Number(parseFormattedNumber(formData.areaRate)) * Number(parseFormattedNumber(formData.size));
+
+    setResult({
+      score: Math.round(score),
+      rating,
+      color,
+      percentageDifference: ((estimatedValue - Number(parseFormattedNumber(formData.purchasePrice))) / Number(parseFormattedNumber(formData.purchasePrice))) * 100,
+      askingPrice: Number(parseFormattedNumber(formData.purchasePrice)),
+      estimatedValue
+    });
+
+    setIsCalculating(false);
+  };
 
   const handlePayment = () => {
     setProcessingPayment(true);
-    // Simulate payment processing
     setTimeout(() => {
       setProcessingPayment(false);
       setShowPaymentModal(false);
-      // Here you would normally redirect to the report or show a success message
       alert("Payment successful! Redirecting to full report...");
     }, 2000);
   };
 
-  const onSubmit = (data: DealCalculation) => {
-    calculateMutation.mutate(data);
+  const resetForm = () => {
+    setFormData({
+      address: "",
+      purchasePrice: "",
+      size: "",
+      areaRate: "",
+      bedrooms: "",
+      propertyCondition: "excellent",
+      nightlyRate: "",
+      occupancy: "",
+      longTermRental: "",
+      depositAmount: "",
+      depositPercentage: "",
+      interestRate: "11.75",
+      loanTerm: "20",
+    });
+    setResult(null);
+    setCurrentStep(1);
   };
 
-  const resetForm = () => {
-    form.reset();
-    setResult(null);
+  // Get list of missing field names for validation
+  const getMissingFields = (step: number): string[] => {
+    const missingFields: string[] = [];
+
+    const isFieldEmpty = (field: string): boolean => {
+      if (!formData[field as keyof typeof formData]) return true;
+      const value = formData[field as keyof typeof formData].toString();
+      const numericValue = value.replace(/,/g, '');
+      return numericValue === '' || numericValue === '0';
+    };
+
+    switch (step) {
+      case 1:
+        if (!formData.address) missingFields.push("Property Address");
+        if (isFieldEmpty("purchasePrice")) missingFields.push("Purchase Price");
+        if (isFieldEmpty("size")) missingFields.push("Size");
+        if (isFieldEmpty("areaRate")) missingFields.push("Area Rate");
+        if (isFieldEmpty("bedrooms")) missingFields.push("Bedrooms");
+        break;
+      case 2:
+        if (isFieldEmpty("nightlyRate")) missingFields.push("Nightly Rate");
+        if (isFieldEmpty("occupancy")) missingFields.push("Occupancy Rate");
+        if (isFieldEmpty("longTermRental")) missingFields.push("Long Term Rental");
+        break;
+      case 3:
+        if (isFieldEmpty("depositAmount")) missingFields.push("Deposit Amount");
+        if (isFieldEmpty("depositPercentage")) missingFields.push("Deposit Percentage");
+        if (isFieldEmpty("interestRate")) missingFields.push("Interest Rate");
+        if (isFieldEmpty("loanTerm")) missingFields.push("Loan Term");
+        break;
+    }
+
+    return missingFields;
   };
+
+  const isStepComplete = (step: number): boolean => {
+    return getMissingFields(step).length === 0;
+  };
+
+  // Render form steps
+  const renderFormStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="address">Property Address</Label>
+              <Input
+                id="address"
+                value={formData.address}
+                onChange={(e) => handleInputChange("address", e.target.value)}
+                placeholder="Enter property address"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="purchasePrice">Purchase Price (R)</Label>
+              <Input
+                id="purchasePrice"
+                type="text"
+                inputMode="numeric"
+                value={formData.purchasePrice}
+                onChange={(e) => handleInputChange("purchasePrice", e.target.value)}
+                placeholder="Enter purchase price"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="size">Size (m²)</Label>
+              <Input
+                id="size"
+                type="text"
+                inputMode="numeric"
+                value={formData.size}
+                onChange={(e) => handleInputChange("size", e.target.value)}
+                placeholder="Enter property size"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
+              <Input
+                id="areaRate"
+                type="text"
+                inputMode="numeric"
+                value={formData.areaRate}
+                onChange={(e) => handleInputChange("areaRate", e.target.value)}
+                placeholder="Enter area rate per square meter"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bedrooms">Bedrooms</Label>
+              <Input
+                id="bedrooms"
+                type="text"
+                inputMode="numeric"
+                value={formData.bedrooms}
+                onChange={(e) => handleInputChange("bedrooms", e.target.value)}
+                placeholder="Enter number of bedrooms"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="propertyCondition">Property Condition</Label>
+              <Select
+                value={formData.propertyCondition}
+                onValueChange={(value) => handleInputChange("propertyCondition", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select property condition" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="excellent">Excellent</SelectItem>
+                  <SelectItem value="good">Good</SelectItem>
+                  <SelectItem value="fair">Fair</SelectItem>
+                  <SelectItem value="poor">Poor</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        );
+
+      case 2:
+        return (
+          <>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="nightlyRate">Nightly Rate (R)</Label>
+                <Input
+                  id="nightlyRate"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.nightlyRate}
+                  onChange={(e) => handleInputChange("nightlyRate", e.target.value)}
+                  placeholder="Enter nightly rate"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="occupancy">Occupancy (%)</Label>
+                <Input
+                  id="occupancy"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.occupancy}
+                  onChange={(e) => handleInputChange("occupancy", e.target.value)}
+                  placeholder="Enter expected occupancy rate"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="longTermRental">Long Term Rental (R/month)</Label>
+                <Input
+                  id="longTermRental"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.longTermRental}
+                  onChange={(e) => handleInputChange("longTermRental", e.target.value)}
+                  placeholder="Enter long term rental amount"
+                  required
+                />
+              </div>
+            </div>
+          </>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="depositAmount">Deposit Amount (R)</Label>
+                <Input
+                  id="depositAmount"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.depositAmount}
+                  onChange={(e) => handleInputChange("depositAmount", e.target.value)}
+                  placeholder="Enter deposit amount"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="depositPercentage">Deposit (%)</Label>
+                <Input
+                  id="depositPercentage"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.depositPercentage}
+                  onChange={(e) => handleInputChange("depositPercentage", e.target.value)}
+                  placeholder="Enter deposit percentage"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="interestRate">Interest Rate (%)</Label>
+              <Input
+                id="interestRate"
+                type="text"
+                inputMode="numeric"
+                value={formData.interestRate}
+                onChange={(e) => handleInputChange("interestRate", e.target.value)}
+                placeholder="Enter interest rate"
+                required
+              />
+              <p className="text-sm text-muted-foreground mt-1">
+                Current prime rate: 11%
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="loanTerm">Loan Term (years)</Label>
+              <Input
+                id="loanTerm"
+                type="text"
+                inputMode="numeric"
+                value={formData.loanTerm}
+                onChange={(e) => handleInputChange("loanTerm", e.target.value)}
+                placeholder="Enter loan term"
+                required
+              />
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  // Update the step counter UI
+  const renderStepCounter = () => (
+    <div className="mb-6">
+      <div className="flex justify-between mb-2">
+        {[1, 2, 3].map((step) => (
+          <div
+            key={step}
+            className={`flex items-center ${step < 3 ? "flex-1" : ""}`}
+            onClick={() => setCurrentStep(step)}
+            style={{ cursor: 'pointer' }}
+          >
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center relative ${
+                step <= currentStep
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {step}
+              {isStepComplete(step) && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">
+                  ✓
+                </div>
+              )}
+            </div>
+            {step < 3 && (
+              <div
+                className={`flex-1 h-1 mx-2 ${
+                  step < currentStep ? "bg-primary" : "bg-muted"
+                }`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className={currentStep === 1 ? "text-primary" : ""}>Property</span>
+        <span className={currentStep === 2 ? "text-primary" : ""}>Rental</span>
+        <span className={currentStep === 3 ? "text-primary" : ""}>Financing</span>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex min-h-screen flex-col relative overflow-hidden bg-background">
@@ -262,296 +678,77 @@ export default function DealScorePublicPage() {
             <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-slow"></div>
 
             <div className="relative bg-background rounded-lg p-1">
-              {!result ? (
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 p-5 bg-card rounded-lg shadow-sm">
-                    {calculateMutation.error && (
-                      <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>
-                          {calculateMutation.error instanceof Error
-                            ? calculateMutation.error.message
-                            : "An error occurred while calculating the deal score"}
-                        </AlertDescription>
-                      </Alert>
-                    )}
+              <div className="container mx-auto py-8 px-4">
+                <div className="max-w-2xl mx-auto">
+                  <h1 className="text-3xl font-bold mb-8 text-center">Property Deal Score Calculator</h1>
 
-                    <FormField
-                      control={form.control}
-                      name="address"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Property Address</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter the full property address" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  {!result ? (
+                    <Card className="p-6">
+                      <form onSubmit={handleSubmit}>
+                        {renderStepCounter()}
+                        {renderFormStep()}
 
-                    <FormField
-                      control={form.control}
-                      name="price"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Asking Price</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
-                              <Input
-                                type="number"
-                                placeholder="0"
-                                className="pl-7"
-                                {...field}
-                                onChange={(e) => field.onChange(Number(e.target.value))}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="bedrooms"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Bedrooms</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Number of bedrooms" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="1">1</SelectItem>
-                              <SelectItem value="2">2</SelectItem>
-                              <SelectItem value="3">3</SelectItem>
-                              <SelectItem value="4">4</SelectItem>
-                              <SelectItem value="5+">5+</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="propertyCondition"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Property Condition</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select property condition" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="excellent">Excellent</SelectItem>
-                              <SelectItem value="good">Good</SelectItem>
-                              <SelectItem value="fair">Fair</SelectItem>
-                              <SelectItem value="poor">Poor</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="floorArea"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Floor Area (m²)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder=""
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="areaRate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Area Rate (R/m²)</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
-                              <Input
-                                type="number"
-                                placeholder="0"
-                                className="pl-7"
-                                {...field}
-                                onChange={(e) => field.onChange(Number(e.target.value))}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="monthlyRental"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Long-term Monthly Rental (Optional)</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
-                              <Input
-                                type="number"
-                                placeholder=""
-                                className="pl-7"
-                                {...field}
-                                onChange={(e) => field.onChange(Number(e.target.value))}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="nightlyRate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Short-term Nightly Rate (Optional)</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
-                              <Input
-                                type="number"
-                                placeholder=""
-                                className="pl-7"
-                                {...field}
-                                onChange={(e) => field.onChange(Number(e.target.value))}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="occupancyRate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Annual Occupancy % (Optional)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder=""
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <Button className="mt-2" type="submit" disabled={calculateMutation.isPending}>
-                      {calculateMutation.isPending ? (
-                        <div className="flex items-center gap-2">
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                          Analyzing...
+                        <div className="flex justify-between mt-6">
+                          {currentStep > 1 && (
+                            <Button type="button" variant="outline" onClick={handlePrevStep}>
+                              <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+                            </Button>
+                          )}
+                          <Button type="submit" className={`${currentStep === 1 ? "ml-auto" : ""}`}>
+                            {currentStep === 3 ? (
+                              isCalculating ? (
+                                <div className="flex items-center">
+                                  <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                                  Calculating...
+                                </div>
+                              ) : (
+                                "Calculate Score"
+                              )
+                            ) : (
+                              <>
+                                Next <ArrowRight className="ml-2 h-4 w-4" />
+                              </>
+                            )}
+                          </Button>
                         </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          Calculate Deal Score
-                          <ArrowRight className="h-4 w-4" />
-                        </div>
-                      )}
-                    </Button>
-                  </form>
-                </Form>
-              ) : (
-                <div className="rounded-lg bg-card p-6 text-card-foreground shadow-sm">
-                  <div className="space-y-8">
-                    <div className="space-y-4">
-                      <h2 className="text-2xl font-bold">Deal Assessment</h2>
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">✨ Deal Score:</span>
-                          <span className="text-3xl font-bold text-primary">{result.score}%</span>
-                        </div>
-                        <div className={`rounded-full px-4 py-1 text-sm font-medium text-primary-foreground ${result.color}`}>
+                      </form>
+                    </Card>
+                  ) : (
+                    <Card className="p-6">
+                      <div className="text-center mb-6">
+                        <h2 className="text-2xl font-bold mb-2">Deal Score: {result.score}%</h2>
+                        <div className={`inline-block px-4 py-1 rounded-full text-white ${result.color}`}>
                           {result.rating}
                         </div>
                       </div>
-                    </div>
 
-                    <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500"
-                        style={{ width: `${result.score}%` }}
-                      />
-                      <div
-                        className="absolute -top-1 h-4 w-4 rounded-full border-2 border-white shadow-sm"
-                        style={{ left: `${result.score}%`, backgroundColor: result.color }}
-                      />
-                      <div className="absolute left-0 right-0 top-4 flex justify-between text-xs text-muted-foreground">
-                        <span>Poor</span>
-                        <span>Average</span>
-                        <span>Good</span>
-                        <span>Great</span>
-                        <span>Excellent</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4 text-left">
-                      <p className="text-sm text-muted-foreground">
-                        This property is{" "}
-                        <span className="font-medium text-primary">
-                          {result.percentageDifference.toFixed(1)}%
-                        </span>
-                        {result.percentageDifference > 0 ? " below" : " above"} the estimated market value.
-                      </p>
-                      <div className="grid gap-2">
+                      <div className="space-y-4">
                         <div className="flex justify-between">
-                          <span className="text-sm">Asking Price:</span>
+                          <span>Asking Price:</span>
                           <span className="font-medium">R{result.askingPrice.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm">Estimated Market Value:</span>
+                          <span>Estimated Value:</span>
                           <span className="font-medium">R{result.estimatedValue.toLocaleString()}</span>
                         </div>
+                        <div className="text-sm text-gray-600">
+                          This property is {Math.abs(result.percentageDifference).toFixed(1)}%
+                          {result.percentageDifference > 0 ? " above" : " below"} estimated market value
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Score based on price difference, property condition, area rates, and rental yields
-                      </div>
-                    </div>
 
-                    <div className="flex gap-2">
-                      <Button className="w-full" onClick={resetForm}>
-                        Calculate Another
-                      </Button>
-                      <Button variant="outline" className="w-full" onClick={() => setShowPaymentModal(true)}>
-                        View Full Report
-                      </Button>
-                    </div>
-                  </div>
+                      <div className="flex gap-4 mt-6">
+                        <Button onClick={resetForm} variant="outline" className="flex-1">
+                          New Calculation
+                        </Button>
+                        <Button onClick={() => setShowPaymentModal(true)} className="flex-1">
+                          View Full Report
+                        </Button>
+                      </div>
+                    </Card>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -559,65 +756,41 @@ export default function DealScorePublicPage() {
 
       {/* Payment Modal */}
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Purchase Full Property Report</DialogTitle>
             <DialogDescription>
-              Get detailed insights, comparable properties, and investment projections for this property.
+              Get detailed insights and analysis for this property
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-medium">Full Property Report</div>
-              <div className="font-bold text-lg">R100</div>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span>Report Price:</span>
+              <span className="font-bold">R100</span>
             </div>
 
-            <div className="border-t border-b py-4">
-              <div className="font-medium mb-3">What's included:</div>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <svg className="h-4 w-4 text-primary mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Detailed property valuation analysis</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="h-4 w-4 text-primary mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Comparable property listings in the area</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="h-4 w-4 text-primary mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>5-year investment projection</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="h-4 w-4 text-primary mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Neighborhood growth trends</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="space-y-4">
-              <div className="font-medium">Payment Method</div>
-              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-2 gap-4">
-                <Label htmlFor="card" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+            <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+              <div className="grid grid-cols-2 gap-4">
+                <Label
+                  htmlFor="card"
+                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted p-4 hover:bg-accent cursor-pointer"
+                >
                   <RadioGroupItem value="card" id="card" className="sr-only" />
                   <CreditCard className="mb-3 h-6 w-6" />
-                  <span className="text-sm">Credit Card</span>
+                  <span>Credit Card</span>
                 </Label>
-                <Label htmlFor="instant-eft" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+
+                <Label
+                  htmlFor="instant-eft"
+                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted p-4 hover:bg-accent cursor-pointer"
+                >
                   <RadioGroupItem value="instant-eft" id="instant-eft" className="sr-only" />
                   <Wallet className="mb-3 h-6 w-6" />
-                  <span className="text-sm">Instant EFT</span>
+                  <span>Instant EFT</span>
                 </Label>
-              </RadioGroup>
-            </div>
+              </div>
+            </RadioGroup>
           </div>
 
           <DialogFooter>
@@ -626,8 +799,8 @@ export default function DealScorePublicPage() {
             </Button>
             <Button onClick={handlePayment} disabled={processingPayment}>
               {processingPayment ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                <div className="flex items-center">
+                  <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
                   Processing...
                 </div>
               ) : (
