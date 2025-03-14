@@ -817,7 +817,8 @@ export default function DealScorePublicPage() {
                           </Button>
                         </div>
                       </div>
-                    </Card                  )}
+                    </Card>
+                  )}
                 </div>
               </div>
             </div>
