@@ -48,8 +48,39 @@ export default function DealScorePublicPage() {
 
   const calculateMutation = useMutation({
     mutationFn: async (data: DealCalculation) => {
-      const response = await apiRequest("POST", "/api/calculate-deal-score", data);
-      return response.json();
+      // Calculate property rate and area rate difference
+      const propertyRate = data.price / data.floorArea;
+      const priceDiff = ((propertyRate - data.areaRate) / data.areaRate) * 100;
+
+      // Calculate rental yield if rental data is provided
+      let rentalYield = null;
+      if (data.monthlyRental) {
+        rentalYield = (data.monthlyRental * 12 / data.price) * 100;
+      } else if (data.nightlyRate && data.occupancyRate) {
+        const annualRevenue = data.nightlyRate * 365 * (data.occupancyRate / 100);
+        rentalYield = (annualRevenue / data.price) * 100;
+      }
+
+      // Calculate deal score
+      const { score, rating, color } = calculateDealScore(
+        priceDiff,
+        data.propertyCondition,
+        propertyRate,
+        data.areaRate,
+        rentalYield
+      );
+
+      // Calculate estimated market value
+      const estimatedValue = data.areaRate * data.floorArea;
+
+      return {
+        score,
+        rating,
+        color,
+        percentageDifference: ((estimatedValue - data.price) / data.price) * 100,
+        askingPrice: data.price,
+        estimatedValue
+      };
     },
     onSuccess: (data: DealScoreResult) => {
       setResult(data);
