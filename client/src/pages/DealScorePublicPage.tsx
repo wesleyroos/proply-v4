@@ -737,7 +737,25 @@ export default function DealScorePublicPage() {
                     <Card className="p-6">
                       <div className="space-y-6">
                         <div className="text-center">
-                          <h2 className="text-2xl font-bold mb-2">Deal Score: {result.score}%</h2>
+                          <h2 className="text-2xl font-bold mb-2">Deal Score: {result.score}</h2>
+                          
+                          <p className="text-sm text-muted-foreground mb-4">
+                            This property is <span className={`font-bold text-base ${result.percentageDifference > 0 ? "text-amber-500" : "text-green-500"}`}>
+                              {Math.abs(result.percentageDifference).toFixed(1)}%
+                            </span>
+                            {result.percentageDifference > 0 ? " above " : " below "}
+                            the estimated market value.
+                          </p>
+
+                          <div className="flex justify-between items-center mt-4 px-4">
+                            <div className="text-sm">Asking Price:</div>
+                            <div className="font-bold">R{result.askingPrice.toLocaleString()}</div>
+                          </div>
+
+                          <div className="flex justify-between items-center mt-2 px-4 mb-6">
+                            <div className="text-sm">Estimated Market Value:</div>
+                            <div className="font-bold">R{result.estimatedValue.toLocaleString()}</div>
+                          </div>%</h2>
                           <div className={`inline-block px-4 py-1 rounded-full text-white ${result.color}`}>
                             {result.rating} DEAL
                           </div>
