@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -263,265 +263,251 @@ export default function DealScorePublicPage() {
 
             <div className="relative bg-background rounded-lg p-1">
               {!result ? (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Property Details</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        {calculateMutation.error && (
-                          <Alert variant="destructive">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>
-                              {calculateMutation.error instanceof Error
-                                ? calculateMutation.error.message
-                                : "An error occurred while calculating the deal score"}
-                            </AlertDescription>
-                          </Alert>
-                        )}
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 p-5 bg-card rounded-lg shadow-sm">
+                    {calculateMutation.error && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          {calculateMutation.error instanceof Error
+                            ? calculateMutation.error.message
+                            : "An error occurred while calculating the deal score"}
+                        </AlertDescription>
+                      </Alert>
+                    )}
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="address"
-                            render={({ field }) => (
-                              <FormItem className="col-span-2">
-                                <FormLabel>Property Address</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Enter the full property address" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Property Address</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter the full property address" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                          <FormField
-                            control={form.control}
-                            name="price"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Asking Price</FormLabel>
-                                <FormControl>
-                                  <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
-                                    <Input
-                                      type="number"
-                                      placeholder="0"
-                                      className="pl-7"
-                                      {...field}
-                                      onChange={(e) => field.onChange(Number(e.target.value))}
-                                    />
-                                  </div>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="propertyType"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Property Type</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select property type" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="house">House</SelectItem>
-                                    <SelectItem value="apartment">Apartment</SelectItem>
-                                    <SelectItem value="townhouse">Townhouse</SelectItem>
-                                    <SelectItem value="land">Vacant Land</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="bedrooms"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Bedrooms</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Number of bedrooms" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="1">1</SelectItem>
-                                    <SelectItem value="2">2</SelectItem>
-                                    <SelectItem value="3">3</SelectItem>
-                                    <SelectItem value="4">4</SelectItem>
-                                    <SelectItem value="5+">5+</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="propertyCondition"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Property Condition</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select property condition" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="excellent">Excellent</SelectItem>
-                                    <SelectItem value="good">Good</SelectItem>
-                                    <SelectItem value="fair">Fair</SelectItem>
-                                    <SelectItem value="poor">Poor</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="floorArea"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Floor Area (m²)</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    placeholder="0"
-                                    {...field}
-                                    onChange={(e) => field.onChange(Number(e.target.value))}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="areaRate"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Area Rate (R/m²)</FormLabel>
-                                <FormControl>
-                                  <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
-                                    <Input
-                                      type="number"
-                                      placeholder="0"
-                                      className="pl-7"
-                                      {...field}
-                                      onChange={(e) => field.onChange(Number(e.target.value))}
-                                    />
-                                  </div>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-
-                        <div className="space-y-4 mt-8">
-                          <h3 className="text-lg font-semibold">Rental Details (Optional)</h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="monthlyRental"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Long-term Monthly Rental</FormLabel>
-                                  <FormControl>
-                                    <div className="relative">
-                                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
-                                      <Input
-                                        type="number"
-                                        placeholder="0"
-                                        className="pl-7"
-                                        {...field}
-                                        onChange={(e) => field.onChange(Number(e.target.value))}
-                                      />
-                                    </div>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name="nightlyRate"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Short-term Nightly Rate</FormLabel>
-                                  <FormControl>
-                                    <div className="relative">
-                                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
-                                      <Input
-                                        type="number"
-                                        placeholder="0"
-                                        className="pl-7"
-                                        {...field}
-                                        onChange={(e) => field.onChange(Number(e.target.value))}
-                                      />
-                                    </div>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name="occupancyRate"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Annual Occupancy %</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type="number"
-                                      placeholder="0"
-                                      {...field}
-                                      onChange={(e) => field.onChange(Number(e.target.value))}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </div>
-
-                        <Button className="w-full mt-8" type="submit" disabled={calculateMutation.isPending}>
-                          {calculateMutation.isPending ? (
-                            <div className="flex items-center gap-2">
-                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                              Analyzing...
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Asking Price</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                className="pl-7"
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
                             </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              Calculate Deal Score
-                              <ArrowRight className="h-4 w-4" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="propertyType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Property Type</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select property type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="house">House</SelectItem>
+                              <SelectItem value="apartment">Apartment</SelectItem>
+                              <SelectItem value="townhouse">Townhouse</SelectItem>
+                              <SelectItem value="land">Vacant Land</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="bedrooms"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Bedrooms</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Number of bedrooms" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="1">1</SelectItem>
+                              <SelectItem value="2">2</SelectItem>
+                              <SelectItem value="3">3</SelectItem>
+                              <SelectItem value="4">4</SelectItem>
+                              <SelectItem value="5+">5+</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="propertyCondition"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Property Condition</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select property condition" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="excellent">Excellent</SelectItem>
+                              <SelectItem value="good">Good</SelectItem>
+                              <SelectItem value="fair">Fair</SelectItem>
+                              <SelectItem value="poor">Poor</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="floorArea"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Floor Area (m²)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder=""
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="areaRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Area Rate (R/m²)</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                className="pl-7"
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
                             </div>
-                          )}
-                        </Button>
-                      </form>
-                    </Form>
-                  </CardContent>
-                </Card>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="monthlyRental"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Long-term Monthly Rental (Optional)</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
+                              <Input
+                                type="number"
+                                placeholder=""
+                                className="pl-7"
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="nightlyRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Short-term Nightly Rate (Optional)</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
+                              <Input
+                                type="number"
+                                placeholder=""
+                                className="pl-7"
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="occupancyRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Annual Occupancy % (Optional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder=""
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button className="mt-2" type="submit" disabled={calculateMutation.isPending}>
+                      {calculateMutation.isPending ? (
+                        <div className="flex items-center gap-2">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          Analyzing...
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          Calculate Deal Score
+                          <ArrowRight className="h-4 w-4" />
+                        </div>
+                      )}
+                    </Button>
+                  </form>
+                </Form>
               ) : (
                 <div className="rounded-lg bg-card p-6 text-card-foreground shadow-sm">
                   <div className="space-y-8">
