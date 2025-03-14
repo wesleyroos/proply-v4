@@ -24,6 +24,84 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
+const calculateDealScore = (
+  priceDiff: number,
+  propertyCondition: string,
+  propertyRate: number,
+  areaRate: number,
+  rentalYield: number | null
+): { score: number; rating: string; color: string } => {
+  // Base score starts at 50
+  let score = 50;
+
+  // Price difference impact (-20 to +20 points)
+  // Negative price diff means property is below market value (good)
+  score -= priceDiff * 0.5; // Each percent difference affects score by 0.5 points
+
+  // Property condition impact (-10 to +10 points)
+  switch (propertyCondition) {
+    case "excellent":
+      score += 10;
+      break;
+    case "good":
+      score += 5;
+      break;
+    case "fair":
+      score -= 5;
+      break;
+    case "poor":
+      score -= 10;
+      break;
+  }
+
+  // Area rate comparison impact (-10 to +10 points)
+  const rateDiff = ((propertyRate - areaRate) / areaRate) * 100;
+  score -= rateDiff * 0.2; // Each percent difference affects score by 0.2 points
+
+  // Rental yield impact (0 to +10 points)
+  if (rentalYield !== null) {
+    // Good rental yield is considered 8% or above
+    if (rentalYield >= 8) {
+      score += 10;
+    } else if (rentalYield >= 6) {
+      score += 5;
+    }
+  }
+
+  // Ensure score stays within 0-100 range
+  score = Math.max(0, Math.min(100, score));
+
+  // Determine rating and color based on score
+  let rating: string;
+  let color: string;
+
+  if (score >= 90) {
+    rating = "Excellent Deal";
+    color = "bg-emerald-500";
+  } else if (score >= 75) {
+    rating = "Great Deal";
+    color = "bg-green-500";
+  } else if (score >= 60) {
+    rating = "Good Deal";
+    color = "bg-blue-500";
+  } else if (score >= 40) {
+    rating = "Fair Deal";
+    color = "bg-yellow-500";
+  } else if (score >= 25) {
+    rating = "Poor Deal";
+    color = "bg-orange-500";
+  } else {
+    rating = "Bad Deal";
+    color = "bg-red-500";
+  }
+
+  return {
+    score: Math.round(score),
+    rating,
+    color,
+  };
+};
+
 export default function DealScorePublicPage() {
   const [result, setResult] = useState<DealScoreResult | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -398,7 +476,7 @@ export default function DealScorePublicPage() {
 
                     <FormField
                       control={form.control}
-                      name="occupancyRate" 
+                      name="occupancyRate"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Annual Occupancy % (Optional)</FormLabel>
@@ -591,15 +669,15 @@ export default function DealScorePublicPage() {
           const now = Date.now();
           const clicks = (window as any).clicks || [];
           clicks.push(now);
-          
+
           // Only keep clicks within last 500ms
-          const recentClicks = clicks.filter(click => (now - click) < 500);
+          const recentClicks = clicks.filter((click: number) => (now - click) < 500);
           (window as any).clicks = recentClicks;
-          
+
           if (recentClicks.length === 3) {
             // Clear clicks
             (window as any).clicks = [];
-            
+
             // Fill form data
             form.reset({
               address: "27 Leeuwen St, Cape Town City Centre, 8001",
@@ -613,7 +691,6 @@ export default function DealScorePublicPage() {
               nightlyRate: 2500,
               occupancyRate: 70
             });
-            window.clickCount = 0;
           }
         }}
         className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-400 cursor-default select-none hover:bg-gray-500 transition-all"
