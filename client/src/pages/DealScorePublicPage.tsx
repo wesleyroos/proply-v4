@@ -187,7 +187,7 @@ export default function DealScorePublicPage() {
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
                               <Input
                                 type="number"
-                                placeholder=""
+                                placeholder="0"
                                 className="pl-7"
                                 {...field}
                                 onChange={(e) => field.onChange(Number(e.target.value))}
