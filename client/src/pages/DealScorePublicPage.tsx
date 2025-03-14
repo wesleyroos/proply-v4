@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowRight, ArrowLeft, AlertCircle, CreditCard, Wallet } from "lucide-react";
+import { ArrowRight, ArrowLeft, AlertCircle, CreditCard, Wallet, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,13 +24,14 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react"; // Import Loader2
+import { Loader2 as Loader } from "lucide-react"; // Import Loader2
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"; // Assuming these imports are available
+import { AreaRateProgressDialog } from "@/components/AreaRateProgressDialog";
 
 
 export default function DealScorePublicPage() {
@@ -65,6 +66,10 @@ export default function DealScorePublicPage() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [demoClicks, setDemoClicks] = useState(0);
+  const [areaRateStatus, setAreaRateStatus] = useState<"loading" | "success" | "error">("idle");
+  const [showAreaRateDialog, setShowAreaRateDialog] = useState(false);
+  const [areaRateError, setAreaRateError] = useState<string>();
+
 
   // Handler for demo data
   const fillDemoData = () => {
@@ -427,7 +432,10 @@ export default function DealScorePublicPage() {
                   size="sm"
                   onClick={async () => {
                     try {
+                      setAreaRateStatus("loading");
+                      setShowAreaRateDialog(true);
                       setIsLoading(true);
+
                       const response = await fetch('/api/deal-advisor/area-rate', {
                         method: 'POST',
                         headers: {
@@ -435,7 +443,6 @@ export default function DealScorePublicPage() {
                         },
                         body: JSON.stringify({
                           address: formData.address,
-                          propertyType: formData.propertyType,
                         }),
                       });
 
@@ -449,11 +456,14 @@ export default function DealScorePublicPage() {
                         areaRate: data.areaRate.toString(),
                       }));
 
+                      setAreaRateStatus("success");
                       toast({
                         title: "Success",
                         description: "Area rate fetched successfully",
                       });
                     } catch (error) {
+                      setAreaRateStatus("error");
+                      setAreaRateError(error instanceof Error ? error.message : "Failed to fetch area rate");
                       toast({
                         title: "Error",
                         description: "Failed to fetch area rate. Please try again.",
@@ -461,13 +471,17 @@ export default function DealScorePublicPage() {
                       });
                     } finally {
                       setIsLoading(false);
+                      // Keep dialog open for a moment to show success/error state
+                      setTimeout(() => {
+                        setShowAreaRateDialog(false);
+                      }, 2000);
                     }
                   }}
                   disabled={!formData.address || isLoading}
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader className="mr-2 h-4 w-4 animate-spin" />
                       Fetching...
                     </>
                   ) : (
@@ -774,7 +788,7 @@ export default function DealScorePublicPage() {
                           <Button type="submit" className={`${currentStep === 1 ? "ml-auto" : ""}`}>
                             {isCalculating ? (
                               <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <Loader className="mr-2 h-4 w-4 animate-spin" />
                                 Calculating...
                               </>
                             ) : currentStep < 3 ? (
@@ -818,7 +832,7 @@ export default function DealScorePublicPage() {
                         </div>
 
                         <div className="relative h-4 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
-                          <div 
+                          <div
                             className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
                             style={{ left: `${result.score}%` }}
                           />
