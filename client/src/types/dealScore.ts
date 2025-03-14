@@ -5,6 +5,12 @@ export const dealCalculationSchema = z.object({
   price: z.number().min(1, "Price must be greater than 0"),
   propertyType: z.enum(["house", "apartment", "townhouse", "land"]),
   bedrooms: z.enum(["1", "2", "3", "4", "5+"]),
+  propertyCondition: z.enum(["excellent", "good", "fair", "poor"]),
+  floorArea: z.number().min(1, "Floor area must be greater than 0"),
+  areaRate: z.number().min(1, "Area rate must be greater than 0"),
+  monthlyRental: z.number().optional(),
+  occupancyRate: z.number().optional(),
+  nightlyRate: z.number().optional(),
 });
 
 export type DealCalculation = z.infer<typeof dealCalculationSchema>;

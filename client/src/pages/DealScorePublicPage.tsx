@@ -37,7 +37,12 @@ export default function DealScorePublicPage() {
       price: undefined,
       propertyType: undefined,
       bedrooms: undefined,
+      propertyCondition: undefined,
+      floorArea: undefined,
       areaRate: undefined,
+      monthlyRental: undefined,
+      occupancyRate: undefined,
+      nightlyRate: undefined,
     },
   });
 
@@ -250,6 +255,49 @@ export default function DealScorePublicPage() {
 
                     <FormField
                       control={form.control}
+                      name="propertyCondition"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Property Condition</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select property condition" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="excellent">Excellent</SelectItem>
+                              <SelectItem value="good">Good</SelectItem>
+                              <SelectItem value="fair">Fair</SelectItem>
+                              <SelectItem value="poor">Poor</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="floorArea"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Floor Area (m²)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder=""
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
                       name="areaRate"
                       render={({ field }) => (
                         <FormItem>
@@ -265,6 +313,71 @@ export default function DealScorePublicPage() {
                                 onChange={(e) => field.onChange(Number(e.target.value))}
                               />
                             </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="monthlyRental"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Long-term Monthly Rental (Optional)</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
+                              <Input
+                                type="number"
+                                placeholder=""
+                                className="pl-7"
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="nightlyRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Short-term Nightly Rate (Optional)</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
+                              <Input
+                                type="number"
+                                placeholder=""
+                                className="pl-7"
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="occupancyRate" 
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Annual Occupancy % (Optional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder=""
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
