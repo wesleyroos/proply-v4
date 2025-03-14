@@ -920,7 +920,7 @@ export default function DealScorePage() {
 
     if (!costs) {
       // Fallback to simplified estimation if price is outside the table range
-      const estimatedTransferFee = purchasePrice * 0.025; // Approx. 2.5% for transfer fees
+      const estimatedTransferFee= purchasePrice * 0.025; // Approx. 2.5% for transfer fees
       const estimatedDisbursements = purchasePrice * 0.01; // Approx. 1% for disbursements
       const estimatedDeeds = purchasePrice * 0.005; // Approx. 0.5% for deeds fees
       const transferDutyAmount = includeTransferDuty ? calculateTransferDuty(purchasePrice) : 0;
@@ -1729,15 +1729,17 @@ export default function DealScorePage() {
             dealScore={finalScore || 0} // Pass the calculated score
           />
         )}
+        {/* Developer Prefill Button */}
         <button
           ref={prefillButtonRef}
-          className="fixed bottom-4 right-4 w-3 h-3 bg-transparent hover:bg-transparent focus:outline-none cursor-default"
-          aria-hidden="true"
+          className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 cursor-default opacity-20 transition-opacity duration-200"
+          title="Triple click to prefill form with test data"
+          aria-label="Developer prefill button"
         />
 
         <UpgradeModal
-          open={showUpgradeModal}
-          onOpenChange={setShowUpgradeModal}
+          show={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
         />
 
         <Dialog open={showPercentileDialog} onOpenChange={setShowPercentileDialog}>
@@ -1770,8 +1772,7 @@ export default function DealScorePage() {
                           }).format(data.adr)}
                         </td>
                         <td className="text-right py-2 px-4">
-                          {Math.round(data.occupancy)}%
-                        </td>                        <td className="text-right py-2 px-4">
+                          {Math.round(data.occupancy)}%                        </td>                        <td className="text-right py-2 px-4">
                           <Button
                             size="sm"
                             onClick={() =>
