@@ -67,7 +67,7 @@ export function registerRoutes(app: Express): Server {
     ) {
       return next();
     }
-    if (!req.isAuthenticated()) {
+    if (!req.isAuthenticated() && !req.path.includes("/deal-advisor/area-rate")) {
       return res.status(401).send("Not authenticated");
     }
     next();
