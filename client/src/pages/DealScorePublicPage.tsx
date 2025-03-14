@@ -698,7 +698,7 @@ export default function DealScorePublicPage() {
             <div className="relative bg-background rounded-lg p-1">
               <div className="container mx-auto py-8 px-4">
                 <div className="max-w-2xl mx-auto">
-                  <h1 className="text-3xl font-bold mb-8 text-center">Deal Score: {result.score}%</h1>
+                  <h1 className="text-3xl font-bold mb-8 text-center">Deal Score: {result?.score}%</h1>
 
                   {/* Hidden demo data button - triple click to activate */}
                   <button type="button" onClick={fillDemoData} className="fixed bottom-4 right-4 opacity-0">Fill Demo Data</button>
@@ -737,18 +737,16 @@ export default function DealScorePublicPage() {
                     <Card className="p-6">
                       <div className="space-y-6">
                         <div className="text-center">
-                          <h2 className="text-2xl font-bold mb-2">Deal Score: {result.score}%</h2>
-
-                          <div className="flex justify-between items-center mt-4 px-4">
+                          <div className="grid grid-cols-2 gap-4 mt-4">
                             <div className="text-sm">Asking Price:</div>
                             <div className="font-bold">R{result.askingPrice.toLocaleString()}</div>
                           </div>
 
-                          <div className="flex justify-between items-center mt-2 px-4">
+                          <div className="grid grid-cols-2 gap-4 mt-2">
                             <div className="text-sm">Estimated Market Value:</div>
                             <div className="font-bold">R{result.estimatedValue.toLocaleString()}</div>
                           </div>
-                          
+
                           <div className="text-center mt-2 mb-6">
                             <span className="text-sm">
                               This property is <span className={result.askingPrice > result.estimatedValue ? 'text-amber-500' : 'text-green-500'}>{Math.abs(((result.askingPrice - result.estimatedValue) / result.estimatedValue) * 100).toFixed(1)}%</span>
