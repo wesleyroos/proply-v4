@@ -416,6 +416,74 @@ export default function DealScorePublicPage() {
                 required
               />
             </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    try {
+                      setIsLoading(true);
+                      const response = await fetch('/api/deal-advisor/area-rate', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          address: formData.address,
+                          propertyType: formData.propertyType,
+                        }),
+                      });
+                      
+                      if (!response.ok) {
+                        throw new Error('Failed to fetch area rate');
+                      }
+                      
+                      const data = await response.json();
+                      setFormData(prev => ({
+                        ...prev,
+                        areaRate: data.areaRate.toString(),
+                      }));
+                      
+                      toast({
+                        title: "Success",
+                        description: "Area rate fetched successfully",
+                      });
+                    } catch (error) {
+                      toast({
+                        title: "Error",
+                        description: "Failed to fetch area rate. Please try again.",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }}
+                  disabled={!formData.address || !formData.propertyType || isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Fetching...
+                    </>
+                  ) : (
+                    "Fetch Area Rate"
+                  )}
+                </Button>
+              </div>
+              <Input
+                id="areaRate"
+                type="text"
+                inputMode="numeric"
+                value={formData.areaRate}
+                onChange={(e) => handleInputChange("areaRate", e.target.value)}
+                placeholder="Area rate will be fetched automatically"
+                required
+              />
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="bedrooms">Bedrooms</Label>
