@@ -587,9 +587,18 @@ export default function DealScorePublicPage() {
       {/* Secret Prefill Button */}
       <div
         onClick={() => {
-          if (!window.clickCount) window.clickCount = 0;
-          window.clickCount++;
-          if (window.clickCount === 3) {
+          // Initialize clickCount on window if not exists
+          if (typeof (window as any).clickCount === 'undefined') {
+            (window as any).clickCount = 0;
+          }
+          (window as any).clickCount++;
+          
+          // Reset after 500ms if no triple click
+          setTimeout(() => {
+            (window as any).clickCount = 0;
+          }, 500);
+          
+          if ((window as any).clickCount === 3) {
             form.reset({
               address: "27 Leeuwen St, Cape Town City Centre, 8001",
               price: 3500000,
