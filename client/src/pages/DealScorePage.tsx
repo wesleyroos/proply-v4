@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PageTransition } from "@/components/PageTransition";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -86,6 +86,37 @@ export default function DealScorePage() {
   );
   const [showResults, setShowResults] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [lastClick, setLastClick] = useState(0);
+  const [clickCount, setClickCount] = useState(0);
+  const prefillButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const button = prefillButtonRef.current;
+    if (!button) return;
+
+    const handleClick = () => {
+      const now = Date.now();
+      if (now - lastClick > 500) { // Reset if more than 500ms between clicks
+        setClickCount(1);
+      } else {
+        setClickCount(prev => prev + 1);
+      }
+      setLastClick(now);
+    };
+
+    button.addEventListener('click', handleClick);
+
+    return () => {
+      button.removeEventListener('click', handleClick);
+    };
+  }, [lastClick]);
+
+  useEffect(() => {
+    if (clickCount === 3) {
+      handlePrefill();
+      setClickCount(0);
+    }
+  }, [clickCount]);
 
   useEffect(() => {
     // Fetch current prime rate when component mounts
@@ -1077,7 +1108,7 @@ export default function DealScorePage() {
 
   return (
     <PageTransition>
-      <div className="p-8">
+      <div className="container max-w-3xl mx-auto py-8 px-4">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Deal Score</h1>
         </div>
@@ -1698,27 +1729,10 @@ export default function DealScorePage() {
             dealScore={finalScore || 0} // Pass the calculated score
           />
         )}
-        <div
-          onClick={(e) => {
-            const now = new Date().getTime();
-            if (!window.lastClick) window.lastClick = 0;
-            if (!window.clickCount) window.clickCount = 0;
-
-            if (now - window.lastClick > 500) {
-              window.clickCount = 1;
-            } else {
-              window.clickCount++;
-            }
-
-            window.lastClick = now;
-
-            if (window.clickCount === 3) {
-              handlePrefill();
-              window.clickCount = 0;
-            }
-          }}
-          className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-100/20 cursor-default select-none"
-          style={{ opacity: 0.1 }}
+        <button
+          ref={prefillButtonRef}
+          className="fixed bottom-4 right-4 w-3 h-3 bg-transparent hover:bg-transparent focus:outline-none cursor-default"
+          aria-hidden="true"
         />
 
         <UpgradeModal
@@ -1757,8 +1771,7 @@ export default function DealScorePage() {
                         </td>
                         <td className="text-right py-2 px-4">
                           {Math.round(data.occupancy)}%
-                        </td>
-                        <td className="text-right py-2 px-4">
+                        </td>                        <td className="text-right py-2 px-4">
                           <Button
                             size="sm"
                             onClick={() =>
