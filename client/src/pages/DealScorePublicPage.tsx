@@ -605,8 +605,8 @@ export default function DealScorePublicPage() {
             window.clickCount = 0;
           }
         }}
-        className="fixed bottom-4 right-4 w-4 h-4 rounded-full bg-gray-100/20 cursor-default select-none hover:bg-gray-100/30 transition-opacity"
-        style={{ opacity: 0.15 }}
+        className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-400 cursor-default select-none hover:bg-gray-500 transition-all"
+        style={{ opacity: 0.4 }}
       />
     </div>
   );
