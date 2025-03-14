@@ -54,7 +54,33 @@ export default function DealScorePublicPage() {
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [processingPayment, setProcessingPayment] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
-  const [showResult, setShowResult] = useState(false); // Added state variable
+  const [showResult, setShowResult] = useState(false);
+  const [demoClicks, setDemoClicks] = useState(0);
+
+  // Handler for demo data
+  const fillDemoData = () => {
+    setDemoClicks((prev) => {
+      if (prev === 2) {
+        setFormData({
+          address: "27 Leeuwen St, Cape Town City Centre, 8001",
+          purchasePrice: "3500000",
+          size: "85",
+          areaRate: "45000",
+          bedrooms: "2",
+          propertyCondition: "excellent",
+          nightlyRate: "2500",
+          occupancy: "70",
+          longTermRental: "25000",
+          depositAmount: "350000",
+          depositPercentage: "10",
+          interestRate: "11.75",
+          loanTerm: "20",
+        });
+        return 0;
+      }
+      return prev + 1;
+    });
+  };
 
   useEffect(() => {
     // Fetch current prime rate when component mounts
@@ -690,6 +716,9 @@ export default function DealScorePublicPage() {
               <div className="container mx-auto py-8 px-4">
                 <div className="max-w-2xl mx-auto">
                   <h1 className="text-3xl font-bold mb-8 text-center">Property Deal Score Calculator</h1>
+                  
+                  {/* Hidden demo data button - triple click to activate */}
+                  <button type="button" onClick={fillDemoData} className="fixed bottom-4 right-4 opacity-0">Fill Demo Data</button>
 
                   {!showResult ? (
                     <Card className="p-6 border-0">
