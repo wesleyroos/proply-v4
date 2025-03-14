@@ -54,6 +54,7 @@ export default function DealScorePublicPage() {
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [processingPayment, setProcessingPayment] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [showResult, setShowResult] = useState(false); // Added state variable
 
   useEffect(() => {
     // Fetch current prime rate when component mounts
@@ -303,7 +304,7 @@ export default function DealScorePublicPage() {
       longTermYield,
       bestStrategy: shortTermYield > (longTermYield || 0) ? "Short-Term" : "Long-Term"
     });
-
+    setShowResult(true); //Set showResult to true after calculation
     setIsCalculating(false);
   };
 
@@ -317,22 +318,11 @@ export default function DealScorePublicPage() {
   };
 
   const resetForm = () => {
-    setFormData({
-      address: "",
-      purchasePrice: "",
-      size: "",
-      areaRate: "",
-      bedrooms: "",
-      propertyCondition: "excellent",
-      nightlyRate: "",
-      occupancy: "",
-      longTermRental: "",
-      depositAmount: "",
-      depositPercentage: "",
-      interestRate: "11.75",
-      loanTerm: "20",
-    });
-    setResult(null);
+    setCurrentStep(1); //Only reset the step
+  };
+
+  const handleNewCalculation = () => {
+    setShowResult(false);
     setCurrentStep(1);
   };
 
@@ -701,7 +691,7 @@ export default function DealScorePublicPage() {
                 <div className="max-w-2xl mx-auto">
                   <h1 className="text-3xl font-bold mb-8 text-center">Property Deal Score Calculator</h1>
 
-                  {!result ? (
+                  {!showResult ? (
                     <Card className="p-6 border-0">
                       <form onSubmit={handleSubmit}>
                         {renderStepCounter()}
@@ -809,7 +799,7 @@ export default function DealScorePublicPage() {
                         </div>
 
                         <div className="flex gap-4 mt-6">
-                          <Button onClick={resetForm} variant="outline" className="flex-1">
+                          <Button onClick={handleNewCalculation} variant="outline" className="flex-1">
                             New Calculation
                           </Button>
                           <Button onClick={() => setShowPaymentModal(true)} className="flex-1">
