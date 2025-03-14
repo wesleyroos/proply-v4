@@ -817,7 +817,7 @@ export default function DealScorePublicPage() {
                                   </div>
                                 </div>
                               </AccordionContent>
-                            </</AccordionItem>
+                            </AccordionItem>
                           </Accordion>
                         </div>
 
