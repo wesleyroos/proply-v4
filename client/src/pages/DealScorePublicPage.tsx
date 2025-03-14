@@ -37,6 +37,7 @@ export default function DealScorePublicPage() {
       price: 0,
       propertyType: undefined,
       bedrooms: undefined,
+      areaRate: 0,
     },
   });
 
@@ -242,6 +243,29 @@ export default function DealScorePublicPage() {
                               <SelectItem value="5+">5+</SelectItem>
                             </SelectContent>
                           </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="areaRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Area Rate (R/m²)</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                className="pl-7"
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </div>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
