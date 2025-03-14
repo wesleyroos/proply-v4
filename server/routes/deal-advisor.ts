@@ -12,13 +12,24 @@ router.post('/area-rate', async (req, res) => {
   }
 
   try {
+    console.log(`Processing area rate request for ${address}`);
     const areaRate = await getAreaRate(address, propertyType);
-    res.json({ areaRate });
+
+    if (typeof areaRate !== 'number' || isNaN(areaRate)) {
+      throw new Error('Invalid area rate calculated');
+    }
+
+    console.log(`Successfully calculated area rate: ${areaRate}`);
+    res.json({ 
+      areaRate,
+      message: 'Area rate calculated successfully'
+    });
   } catch (error) {
     console.error('Error in area rate endpoint:', error);
     res.status(500).json({ 
       error: 'Failed to fetch area rate',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
+      message: 'Could not calculate area rate. Please try again.'
     });
   }
 });
