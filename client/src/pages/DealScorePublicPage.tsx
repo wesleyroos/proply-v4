@@ -661,49 +661,6 @@ export default function DealScorePublicPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Secret Prefill Button */}
-      <div
-        onClick={() => {
-          const now = Date.now();
-          console.log('Click detected', { now, lastClick: window.lastClick, clickCount: window.clickCount });
-
-          if (!window.lastClick) {
-            window.lastClick = now;
-            window.clickCount = 1;
-            console.log('First click initialized');
-          } else if (now - window.lastClick < 500) {
-            window.clickCount = (window.clickCount || 0) + 1;
-            console.log('Click count increased:', window.clickCount);
-
-            if (window.clickCount === 3) {
-              console.log('Triple click detected, resetting form');
-              // Fill form data
-              form.reset({
-                address: "27 Leeuwen St, Cape Town City Centre, 8001",
-                price: 3500000,
-                propertyType: "apartment",
-                bedrooms: "2",
-                propertyCondition: "excellent",
-                floorArea: 85,
-                areaRate: 45000,
-                monthlyRental: 25000,
-                nightlyRate: 2500,
-                occupancyRate: 70
-              });
-              window.clickCount = 0;
-              console.log('Form reset complete');
-            }
-          } else {
-            window.lastClick = now;
-            window.clickCount = 1;
-            console.log('Click timeout reset');
-          }
-        }}
-        className="fixed bottom-4 right-4 w-8 h-8 rounded-full bg-gray-400/40 cursor-pointer hover:bg-gray-500/40 transition-all flex items-center justify-center"
-      >
-        <div className="w-2 h-2 bg-white rounded-full" />
-      </div>
     </div>
   );
 }
