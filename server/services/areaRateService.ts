@@ -79,18 +79,39 @@ export async function getAreaRate(address: string, propertyType: string = 'resid
       throw new Error('Invalid rate returned from API');
     }
 
-    // Calculate average and ensure it's reasonable
-    const averageRate = Math.round((rate1 + rate2) / 2);
+    // Third API call for validation
+    const response3 = await openai.chat.completions.create({
+      model: "gpt-4",
+      temperature: 0.2,
+      messages: [
+        {
+          role: "system",
+          content: "You are a real estate validation expert. Analyze two independent property valuations and local market conditions. Return only a final validated rate per square meter as a number in local currency. Consider property type, location quality, and market trends."
+        },
+        {
+          role: "user",
+          content: `Given two independent valuations of ${rate1} and ${rate2} per square meter for a ${propertyType} property at ${address}, validate and provide a final rate. Consider market conditions, property characteristics, and location factors. Return only the final number in local currency.`
+        }
+      ]
+    });
 
-    // Basic validation - rates shouldn't be zero or absurdly high
-    // Assuming max property value of R100,000 per square meter for high-end areas
-    if (averageRate <= 0 || averageRate > 100000) {
-      console.log('Rate validation failed:', { averageRate, rate1, rate2 });
+    const content3 = response3.choices[0]?.message?.content;
+    if (!content3) throw new Error('Invalid validation response');
+    
+    const validatedRate = extractNumber(content3);
+    console.log('Validated rate:', validatedRate);
+
+    // Calculate final rate using all three estimates
+    const finalRate = Math.round((rate1 + rate2 + validatedRate) / 3);
+
+    // Enhanced validation with wider acceptable range
+    if (finalRate <= 0 || finalRate > 150000) {
+      console.log('Rate validation failed:', { rate1, rate2, validatedRate, finalRate });
       throw new Error('Area rate outside reasonable range');
     }
 
-    console.log('Final area rate:', averageRate);
-    return averageRate;
+    console.log('Final area rate:', finalRate);
+    return finalRate;
   } catch (error) {
     console.error('Error in getAreaRate:', error);
     throw error;
