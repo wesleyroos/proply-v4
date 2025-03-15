@@ -29,31 +29,33 @@ export async function getAreaRate(address: string, propertyType: string = 'resid
     // First API call for market rate
     const response1 = await openai.chat.completions.create({
       model: "gpt-4",
-      messages: [{
-        role: "system",
-        content: `You are a property valuation expert. Analyze the location and provide the rate per square meter for the given address based on recent market data. 
-                 Important: Your response must contain only a single number representing Rands per square meter. Do not include any text, currency symbols or units.
-                 Example correct response: "15000"`
-      }, {
-        role: "user",
-        content: `What is the current rate per square meter for ${propertyType} properties in ${address}?`
-      }],
-      temperature: 0.3 // Lower temperature for more consistent numerical responses
+      temperature: 0.2,
+      messages: [
+        {
+          role: "system",
+          content: "You are a global property valuation expert. For the given address, analyze local market data and provide ONLY a numerical rate per square meter in the local currency. Consider property type, location quality, and recent comparable sales. Return only the number, no currency symbols or text."
+        },
+        {
+          role: "user",
+          content: `What is the current rate per square meter for ${propertyType} properties at exactly this address: ${address}? Consider nearby sales, property condition, and local market trends. Return only the number in local currency.`
+        }
+      ]
     });
 
     // Second API call for validation
     const response2 = await openai.chat.completions.create({
       model: "gpt-4",
-      messages: [{
-        role: "system",
-        content: `You are a real estate market analyst. Provide the average rate per square meter for the specified location.
-                 Important: Your response must contain only a single number representing Rands per square meter. Do not include any text, currency symbols or units.
-                 Example correct response: "15000"`
-      }, {
-        role: "user",
-        content: `What is the average rate per square meter for ${propertyType} properties in ${address}?`
-      }],
-      temperature: 0.3
+      temperature: 0.2,
+      messages: [
+        {
+          role: "system",
+          content: "You are a local real estate data analyst. Return ONLY the numerical average rate per square meter for the exact location specified, based on recent comparable sales data. Consider location-specific factors and local market conditions. Return only the number, no currency symbols or text."
+        },
+        {
+          role: "user",
+          content: `What is the current average rate per square meter for ${propertyType} properties at this exact location: ${address}? Focus on similar properties within 1km. Return only the number in local currency.`
+        }
+      ]
     });
 
     // Log raw responses for debugging
