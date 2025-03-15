@@ -86,11 +86,11 @@ export async function getAreaRate(address: string, propertyType: string = 'resid
       messages: [
         {
           role: "system",
-          content: "You are a real estate validation expert. Analyze property valuations considering condition, location, and market trends. Adjust rates based on property condition (excellent: +10%, good: +5%, fair: 0%, poor: -5%, needs-work: -10%). Return only the final validated rate per square meter as a number in local currency."
+          content: "You are a real estate validation expert. Analyze two independent property valuations and local market conditions. Return only a final validated rate per square meter as a number in local currency. Consider property type, location quality, and market trends."
         },
         {
           role: "user",
-          content: `Given two independent valuations of ${rate1} and ${rate2} per square meter for a ${propertyType} property at ${address} in ${propertyCondition} condition, validate and provide a final adjusted rate. Consider the property condition impact on value. Return only the final number in local currency.`
+          content: `Given two independent valuations of ${rate1} and ${rate2} per square meter for a ${propertyType} property at ${address}, validate and provide a final rate. Consider market conditions, property characteristics, and location factors. Return only the final number in local currency.`
         }
       ]
     });
