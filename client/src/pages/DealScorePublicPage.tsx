@@ -934,11 +934,11 @@ export default function DealScorePublicPage() {
                       <Button type="submit" className={currentStep === 1 ? "ml-auto" : ""}>
                         {isCalculating ? (
                           <>
-                            <Loader2<replit_final_file>
-                            className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2
+                              className="mr-2 h-4 w-4 animate-spin" />
                             Calculating...
                           </>
-                        ) : currentStep < 3 ? (
+                        ) : currentStep< 3 ? (
                           <>
                             Next
                             <ArrowRight className="h-4 w-4 ml-2" />
@@ -1091,16 +1091,16 @@ export default function DealScorePublicPage() {
                       {/* AI Analysis Section */}
                       <div className="mt-12 pt-6 border-t">
                         <h3 className="text-xl font-semibold mb-4">AI Investment Analysis</h3>
-                        <div className="relative">
+                        <div className="relative bg-card rounded-lg border shadow-sm">
                           {isLoadingAnalysis ? (
                             <div className="flex items-center justify-center py-8">
                               <Loader2 className="h-8 w-8 animate-spin text-primary" />
                               <span className="ml-3">Generating property analysis...</span>
                             </div>
                           ) : analysis ? (
-                            <div className="prose prose-sm max-w-none">
+                            <div className="h-[300px] overflow-y-auto p-4 prose prose-sm max-w-none scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
                               {analysis.split('\n').map((paragraph, index) => (
-                                <p key={index} className="mb-4">{paragraph}</p>
+                                <p key={index} className="mb-4 last:mb-0">{paragraph}</p>
                               ))}
                             </div>
                           ) : (
