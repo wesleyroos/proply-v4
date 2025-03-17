@@ -5,16 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Loader2, Send, MessageSquare, Info, X, Lock } from "lucide-react";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { UpgradeModal } from "@/components/UpgradeModal";
-import './DealScoreAdvisor.css'; // Import CSS for typing indicator
-
-interface DealScoreAdvisorProps {
-  purchasePrice: number;
-  marketPrice: number;
-  priceDiff: number;
-  rentalYield?: number;
-  condition: string;
-  dealScore: number;
-}
+import './DealScoreAdvisor.css';
 
 // Get score color based on value
 const getScoreColorClass = (score: number): string => {
@@ -28,7 +19,7 @@ const getScoreColorClass = (score: number): string => {
 interface Message {
   type: 'user' | 'assistant';
   content: string;
-  isStreaming?: boolean; // Added isStreaming flag
+  isStreaming?: boolean;
 }
 
 const SAMPLE_QUESTIONS = [
@@ -38,6 +29,15 @@ const SAMPLE_QUESTIONS = [
   "Is this a good investment opportunity?",
   "How does the price compare to market value?"
 ];
+
+interface DealScoreAdvisorProps {
+  purchasePrice: number;
+  marketPrice: number;
+  priceDiff: number;
+  rentalYield?: number;
+  condition: string;
+  dealScore: number;
+}
 
 export function DealScoreAdvisor({
   purchasePrice,
@@ -115,6 +115,13 @@ export function DealScoreAdvisor({
     setIsLoading(true);
     setShowSuggestions(false);
 
+    // Add a streaming message placeholder
+    setMessages(prev => [...prev, {
+      type: 'assistant',
+      content: '',
+      isStreaming: true
+    }]);
+
     try {
       const response = await fetch('/api/deal-advisor', {
         method: 'POST',
@@ -138,18 +145,57 @@ export function DealScoreAdvisor({
         throw new Error('Failed to get AI response');
       }
 
-      const data = await response.json();
-      setMessages(prev => [...prev, {
-        type: 'assistant',
-        content: data.response || "I'm sorry, I couldn't generate advice at this moment.",
-        isStreaming: false // Added isStreaming flag
-      }]);
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('Failed to get response reader');
+      }
+
+      let accumulatedResponse = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // Convert the chunk to text
+        const chunk = new TextDecoder().decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(5)); // Remove 'data: ' prefix
+
+              if (data.done) {
+                // Stream complete, remove streaming flag
+                setMessages(prev => prev.map((msg, idx) =>
+                  idx === prev.length - 1 ? { ...msg, isStreaming: false } : msg
+                ));
+                break;
+              }
+
+              if (data.chunk) {
+                accumulatedResponse += data.chunk;
+                // Update the last message with accumulated content
+                setMessages(prev => prev.map((msg, idx) =>
+                  idx === prev.length - 1 ? { ...msg, content: accumulatedResponse } : msg
+                ));
+              }
+            } catch (e) {
+              console.error('Error parsing SSE data:', e);
+            }
+          }
+        }
+      }
+
     } catch (error) {
       console.error('Error in DealScoreAdvisor:', error);
-      setMessages(prev => [...prev, {
-        type: 'assistant',
-        content: "Sorry, I encountered an error processing your request. Please try again later."
-      }]);
+      setMessages(prev => prev.map((msg, idx) =>
+        idx === prev.length - 1 ? {
+          type: 'assistant',
+          content: "Sorry, I encountered an error processing your request. Please try again later.",
+          isStreaming: false
+        } : msg
+      ));
     } finally {
       setIsLoading(false);
     }
@@ -262,7 +308,7 @@ export function DealScoreAdvisor({
                 }`}
               >
                 {renderMessageContent(message)}
-                {message.isStreaming && ( // Added typing indicator
+                {message.isStreaming && (
                   <span className="typing-indicator">
                     <span className="dot"></span>
                     <span className="dot"></span>
