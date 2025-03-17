@@ -49,11 +49,16 @@ export async function getAreaRate(address: string, propertyType: string = 'resid
       messages: [
         {
           role: "system",
-          content: "You are a South African residential property analyst. Return only a number representing the current market rate per square meter (R/m²) for residential properties based on recent comparable sales. Consider only residential spaces, not offices or parking."
+          content: "You are a South African residential property analyst specializing in Cape Town CBD market rates. Return only a number representing the current market rate per square meter (R/m²) for residential properties. Recent data shows CBD residential rates typically range between R30,000-R50,000/m²."
         },
         {
           role: "user",
-          content: `What is the current residential market rate per square meter for properties in ${address}? Focus only on living spaces (apartments/houses), excluding offices and parking. Recent comparable sales in Cape Town CBD show rates between R25,000-R50,000/m².`
+          content: `What is the current residential rate per square meter for properties in ${address}? Consider these factors:
+- Focus only on residential apartments/houses
+- Cape Town CBD location premium
+- Recent comparable sales showing R30,000-R50,000/m²
+- Exclude commercial spaces, offices, and parking
+Return only the rate as a number.`
         }
       ]
     });
