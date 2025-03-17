@@ -939,12 +939,11 @@ export default function DealScorePublicPage() {
                         >
                           <ArrowLeft className="mr-2 h-4 w-4" /> Previous
                         </Button>
-                      )}
-                      <Button type="submit" className={currentStep === 1 ? "ml-auto" : ""}>
+                      )}<Button type="submit" className={currentStep === 1 ? "ml-auto" : ""}>
                         {isCalculating ? (
                           <>
                             <Loader2
-                              className="mr-2 h-4 w-4 animatespin" />
+                              className="mr-2 h-4 w-4 animate-spin" />
                             Calculating...
                           </>
                         ) : currentStep < 3 ? (
@@ -959,10 +958,9 @@ export default function DealScorePublicPage() {
                     </div>
                   </form>
                 ) : (
-                  <div className="space-y-6">
-                    {/* Result display section */}
-                    <div className="relative">
-                      <div className={`text-center ${!reportUnlocked ? 'blur-sm select-none pointer-events-none' : ''}`}>
+                    <div className="space-y-6">
+                      {/* Result display section - Always visible */}
+                      <div className="text-center">
                         <h2 className="text-2xl font-bold mb-2">
                           Deal Score: {result.score}%
                         </h2>
@@ -991,7 +989,7 @@ export default function DealScorePublicPage() {
                           </div>
                         </div>
 
-                        {/* Score Indicator Bar */}
+                        {/* Score Indicator Bar - Always visible */}
                         <div className="relative h-4 mt-6 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
                           <div
                             className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
@@ -1003,155 +1001,156 @@ export default function DealScorePublicPage() {
                           <div className="absolute -bottom-6 left-3/4 text-xs">Great</div>
                           <div className="absolute -bottom-6 right-0 text-xs">Excellent</div>
                         </div>
+                      </div>
 
-                        {/* Deal Factors Section */}
-                        <div className="mt-12">
-                          <Accordion type="single" collapsible className="w-full">
-                            <AccordionItem value="deal-factors">
-                              <AccordionTrigger className="text-xl font-semibold">
-                                Key Deal Factors
-                              </AccordionTrigger>
-                              <AccordionContent>
-                                <div className="space-y-4 pt-2">
-                                  <div className="flex justify-between">
-                                    <span>Price per m²:</span>
-                                    <span className="font-medium">
-                                      R{Math.round(result.propertyRate).toLocaleString()}/m²
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>Area average:</span>
-                                    <span className="font-medium">
-                                      R{Math.round(result.areaRate).toLocaleString()}/m²
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>Property condition:</span>
-                                    <span className="font-medium capitalize">
-                                      {result.propertyCondition}
-                                    </span>
-                                  </div>
-                                  {result.shortTermYield && (
+                      {/* Detailed Analysis Section - Blurred when locked */}
+                      <div className="relative mt-16">
+                        <div className={`space-y-8 ${!reportUnlocked ? 'blur-sm select-none pointer-events-none' : ''}`}>
+                          {/* Deal Factors Section */}
+                          <div className="mt-8">
+                            <Accordion type="single" collapsible className="w-full">
+                              <AccordionItem value="deal-factors">
+                                <AccordionTrigger className="text-xl font-semibold">
+                                  Key Deal Factors
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                  <div className="space-y-4 pt-2">
                                     <div className="flex justify-between">
-                                      <span>Short-Term Yield:</span>
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-medium">
-                                          {result.shortTermYield.toFixed(1)}%
-                                        </span>
-                                        <span
-                                          className={`px-2 py-0.5 text-xs rounded ${
-                                            result.shortTermYield >= 12
-                                              ? "bg-green-100 text-green-800"
-                                              : result.shortTermYield >= 8
-                                              ? "bg-yellow-100 text-yellow-800"
-                                              : "bg-red-100 text-red-800"
-                                          }`}
-                                        >
-                                          {result.shortTermYield >= 12
-                                            ? "EXCELLENT"
-                                            : result.shortTermYield >= 8
-                                            ? "GOOD"
-                                            : "POOR"}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  )}
-                                  {result.longTermYield && (
-                                    <div className="flex justify-between">
-                                      <span>Long-Term Yield:</span>
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-medium">
-                                          {result.longTermYield.toFixed(1)}%
-                                        </span>
-                                        <span
-                                          className={`px-2 py-0.5 text-xs rounded ${
-                                            result.longTermYield >= 8
-                                              ? "bg-green-100 text-green-800"
-                                              : result.longTermYield >= 6
-                                              ? "bg-yellow-100 text-yellow-800"
-                                              : "bg-red-100 text-red-800"
-                                          }`}
-                                        >
-                                          {result.longTermYield >= 8
-                                            ? "EXCELLENT"
-                                            : result.longTermYield >= 6
-                                            ? "GOOD"
-                                            : "POOR"}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  )}
-                                  <div className="flex justify-between">
-                                    <span>Best Investment Strategy:</span>
-                                    <div className="flex items-center gap-2">
+                                      <span>Price per m²:</span>
                                       <span className="font-medium">
-                                        {result.bestStrategy}
-                                      </span>
-                                      <span className="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-800">
-                                        RECOMMENDED
+                                        R{Math.round(result.propertyRate).toLocaleString()}/m²
                                       </span>
                                     </div>
+                                    <div className="flex justify-between">
+                                      <span>Area average:</span>
+                                      <span className="font-medium">
+                                        R{Math.round(result.areaRate).toLocaleString()}/m²
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Property condition:</span>
+                                      <span className="font-medium capitalize">
+                                        {result.propertyCondition}
+                                      </span>
+                                    </div>
+                                    {result.shortTermYield && (
+                                      <div className="flex justify-between">
+                                        <span>Short-Term Yield:</span>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-medium">
+                                            {result.shortTermYield.toFixed(1)}%
+                                          </span>
+                                          <span
+                                            className={`px-2 py-0.5 text-xs rounded ${
+                                              result.shortTermYield >= 12
+                                                ? "bg-green-100 text-green-800"
+                                                : result.shortTermYield >= 8
+                                                ? "bg-yellow-100 text-yellow-800"
+                                                : "bg-red-100 text-red-800"
+                                            }`}
+                                          >
+                                            {result.shortTermYield >= 12
+                                              ? "EXCELLENT"
+                                              : result.shortTermYield >= 8
+                                              ? "GOOD"
+                                              : "POOR"}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    )}
+                                    {result.longTermYield && (
+                                      <div className="flex justify-between">
+                                        <span>Long-Term Yield:</span>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-medium">
+                                            {result.longTermYield.toFixed(1)}%
+                                          </span>
+                                          <span
+                                            className={`px-2 py-0.5 text-xs rounded ${
+                                              result.longTermYield >= 8
+                                                ? "bg-green-100 text-green-800"
+                                                : result.longTermYield >= 6
+                                                ? "bg-yellow-100 text-yellow-800"
+                                                : "bg-red-100 text-red-800"
+                                            }`}
+                                          >
+                                            {result.longTermYield >= 8
+                                              ? "EXCELLENT"
+                                              : result.longTermYield >= 6
+                                              ? "GOOD"
+                                              : "POOR"}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    )}
+                                    <div className="flex justify-between">
+                                      <span>Best Investment Strategy:</span>
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-medium">
+                                          {result.bestStrategy}
+                                        </span>
+                                        <span className="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-800">
+                                          RECOMMENDED
+                                        </span>
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
-                        </div>
+                                </AccordionContent>
+                              </AccordionItem>
+                            </Accordion>
+                          </div>
 
-                        {/* AI Analysis Section */}
-                        <div className="mt-12 pt-6 border-t">
-                          <h3 className="text-xl font-semibold mb-4">AI Investment Analysis</h3>
-                          <div className="relative bg-card rounded-lg border shadow-sm">
-                            {isLoadingAnalysis ? (
-                              <div className="flex items-center justify-center py-8">
-                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                                <span className="ml-3">Generating property analysis...</span>
-                              </div>
-                            ) : analysis ? (
-                              <div className="h-[300px] overflow-y-auto p-4 prose prose-sm max-w-none scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
-                                {analysis.split('\n').map((paragraph, index) => (
-                                  <p key={index} className="mb-4 last:mb-0">{paragraph}</p>
-                                ))}
-                              </div>
-                            ) : (
-                              <div className="text-center py-8 text-muted-foreground">
-                                Analysis will appear here after calculation
-                              </div>
-                            )}
+                          {/* AI Analysis Section */}
+                          <div className="mt-12 pt-6 border-t">
+                            <h3 className="text-xl font-semibold mb-4">AI Investment Analysis</h3>
+                            <div className="relative bg-card rounded-lg border shadow-sm">
+                              {isLoadingAnalysis ? (
+                                <div className="flex items-center justify-center py-8">
+                                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                  <span className="ml-3">Generating property analysis...</span>
+                                </div>
+                              ) : analysis ? (
+                                <div className="h-[300px] overflow-y-auto p-4 prose prose-sm max-w-none scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
+                                  {analysis.split('\n').map((paragraph, index) => (
+                                    <p key={index} className="mb-4 last:mb-0">{paragraph}</p>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-center py-8 text-muted-foreground">
+                                  Analysis will appear here after calculation
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
 
-                        <div className="flex justify-between mt-8">
-                          <Button
-                            variant="outline"
-                            onClick={handleNewCalculation}
-                          >
-                            New Calculation
-                          </Button>
-                          <Button onClick={() => setShowPaymentModal(true)}>
-                            <CreditCard className="mr-2 h-4 w-4" />
-                            Get Full Report
-                          </Button>
-                        </div>
+                        {/* Payment Overlay - Only covers detailed sections */}
+                        {!reportUnlocked && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background/95 backdrop-blur-sm rounded-lg">
+                            <Lock className="w-12 h-12 text-primary mb-4" />
+                            <h3 className="text-xl font-semibold mb-2">Unlock Full Report</h3>
+                            <p className="text-muted-foreground mb-4 text-center max-w-sm">
+                              Get access to the complete property analysis and investment insights
+                            </p>
+                            <Button onClick={() => setShowPaymentModal(true)} size="lg">
+                              <CreditCard className="mr-2 h-4 w-4" />
+                              Download Full Report for R49
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Payment Overlay */}
-                      {!reportUnlocked && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background/95 backdrop-blur-sm rounded-lg">
-                          <Lock className="w-12 h-12 text-primary mb-4" />
-                          <h3 className="text-xl font-semibold mb-2">Unlock Full Report</h3>
-                          <p className="text-muted-foreground mb-4 text-center max-w-sm">
-                            Get access to the complete property analysis and investment insights
-                          </p>
-                          <Button onClick={() => setShowPaymentModal(true)} size="lg">
-                            <CreditCard className="mr-2 h-4 w-4" />
-                            Unlock for R49
-                          </Button>
-                        </div>
-                      )}
+                      {/* Navigation Buttons */}
+                      <div className="flex justify-between mt-8">
+                        <Button
+                          variant="outline"
+                          onClick={handleNewCalculation}
+                        >
+                          New Calculation
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             </Card>
           </div>
@@ -1164,7 +1163,7 @@ export default function DealScorePublicPage() {
           <DialogHeader>
             <DialogTitle>Unlock Full Report</DialogTitle>
             <DialogDescription>
-              Access the complete property analysis including market insights, 
+              Access the complete property analysis including market insights,
               investment potential, and detailed recommendations.
             </DialogDescription>
           </DialogHeader>
