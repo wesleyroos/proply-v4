@@ -23,18 +23,12 @@ export function calculateDealScore(
   else if (priceDiff <= 20) priceScore = 30;
   else priceScore = 20;
 
-  // Condition & Age Factor (20%): 0-100
-  const conditionScore = (propertyCondition: string, propertyAge: number) => {
-    // New builds (0-2 years) get premium scoring
-    if (propertyAge <= 2) {
-      return 110; // Premium for new builds
-    }
-    
-    return propertyCondition === "excellent" ? 100 :
-           propertyCondition === "good" ? 80 :
-           propertyCondition === "fair" ? 60 :
-           40; // poor
-  };
+  // Condition Factor (20%): 0-100
+  const conditionScore = 
+    propertyCondition === "excellent" ? 100 :
+    propertyCondition === "good" ? 80 :
+    propertyCondition === "fair" ? 60 :
+    40; // poor
 
   // Rate Comparison (20%): 0-100
   let rateScore = 0;
