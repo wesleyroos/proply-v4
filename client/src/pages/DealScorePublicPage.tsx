@@ -942,8 +942,7 @@ export default function DealScorePublicPage() {
 
                     <div className="flex justify-between mt-6">
                       {currentStep > 1 && (
-                        <Button
-                          type="button"
+                        <Button                          type="button"
                           variant="outline"
                           onClick={handlePrevStep}
                         >
