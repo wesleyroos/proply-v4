@@ -4,7 +4,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Helper function to extract number from text with better parsing
 function extractNumber(text: string): number {
-  if (!text) return NaN;
+  if (!text) return 0;
 
   // Remove currency symbols and common words
   const cleaned = text.replace(/[R$€£]/g, '')
@@ -15,109 +15,78 @@ function extractNumber(text: string): number {
 
   // Find numbers in the text (including decimals)
   const matches = cleaned.match(/\d+(?:,\d+)*(?:\.\d+)?/g);
-  if (!matches) return NaN;
+  if (!matches) return 0;
 
   // Parse the first number found, handling comma-separated thousands
   const parsedNumber = parseFloat(matches[0].replace(/,/g, ''));
-  return parsedNumber;
+  return isNaN(parsedNumber) ? 0 : parsedNumber;
 }
 
 export async function getAreaRate(address: string, propertyType: string = 'residential') {
   try {
     console.log(`Fetching area rate for ${propertyType} property at ${address}`);
 
-    // First API call for market rate
+    // First API call with more specific prompt
     const response1 = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o", // Using the latest model
       temperature: 0.1,
       messages: [
         {
           role: "system",
-          content: "You are a residential property data expert in South Africa. Analyze recent sales data and return only a number representing the average rate per square meter (R/m²) for residential properties. Focus on actual transaction data, not listing prices."
+          content: "You are a property valuation expert in South Africa. Your task is to return ONLY a number representing the average rate per square meter (R/m²) for properties. Do not provide disclaimers or explanations. If uncertain, estimate based on similar areas. Example response format: '35000'"
         },
         {
-          role: "user", 
-          content: `What is the average residential rate per square meter (excluding offices, parking, and commercial space) for properties in ${address}? Recent sales in the Cape Town CBD area show rates around R30,000-R35,000/m².`
+          role: "user",
+          content: `What is the current average rate per square meter for residential properties in ${address}? For reference: Cape Town CBD rates range R30,000-R35,000/m². Return only the numeric rate.`
         }
       ]
     });
 
-    // Second API call for validation
+    // Second API call with different context
     const response2 = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o", // Using the latest model
       temperature: 0.1,
       messages: [
         {
           role: "system",
-          content: "You are a global residential property valuation expert. Analyze current market rates per square meter for residential properties in the specified location. Focus exclusively on comparable residential properties (apartments/houses) in similar areas. Consider local market conditions, property standards, and recent sales data. Return only the numerical rate in local currency."
+          content: "You are a real estate data analyst. Return ONLY a numeric value for the rate per square meter (R/m²). Use the format: '35000'. No text, just the number."
         },
         {
           role: "user",
-          content: `What is the current residential rate per square meter for properties in ${address}? Important guidelines:
-- Focus only on prime residential properties in this specific area
-- Consider local market premiums for the exact location
-- Base estimate on recent comparable residential sales only
-- Exclude all commercial spaces, offices, and auxiliary areas
-- For Cape Town CBD, rates typically range R30,000-R35,000/m²
-Return only the numerical rate.`
+          content: `What is the average residential rate per square meter in ${address}? CBD reference: R30,000-R35,000/m². Return only the number.`
         }
       ]
     });
 
-    // Log raw responses for debugging
-    console.log('OpenAI Response 1:', response1.choices[0]?.message?.content);
-    console.log('OpenAI Response 2:', response2.choices[0]?.message?.content);
+    // Extract and validate rates
+    const content1 = response1.choices[0]?.message?.content || '';
+    const content2 = response2.choices[0]?.message?.content || '';
 
-    // Extract rates with improved parsing and validation
-    const content1 = response1.choices[0]?.message?.content;
-    const content2 = response2.choices[0]?.message?.content;
+    console.log('OpenAI Response 1:', content1);
+    console.log('OpenAI Response 2:', content2);
 
-    // Extract initial rates
-    const initialRate1 = content1?.toLowerCase().includes('error') || content1?.toLowerCase().includes('access') ? 
-      0 : extractNumber(content1 || '');
-    const initialRate2 = content2?.toLowerCase().includes('error') || content2?.toLowerCase().includes('access') ? 
-      0 : extractNumber(content2 || '');
+    // Parse rates and handle edge cases
+    let rate1 = extractNumber(content1);
+    let rate2 = extractNumber(content2);
 
-    // Use the highest non-zero rate if one API call failed
-    const validRate = Math.max(initialRate1 || 0, initialRate2 || 0);
+    // If one rate is 0, use the other rate
+    if (rate1 === 0 && rate2 > 0) return rate2;
+    if (rate2 === 0 && rate1 > 0) return rate1;
 
-    if (validRate === 0) {
-      throw new Error('Unable to fetch valid area rate');
+    // If both rates are valid, take the average
+    if (rate1 > 0 && rate2 > 0) {
+      const finalRate = Math.round((rate1 + rate2) / 2);
+
+      // Validate final rate is within reasonable range for SA property market
+      if (finalRate > 0 && finalRate <= 150000) {
+        console.log('Final area rate:', finalRate);
+        return finalRate;
+      }
     }
 
-    // Third API call for validation
-    const response3 = await openai.chat.completions.create({
-      model: "gpt-4",
-      temperature: 0.2,
-      messages: [
-        {
-          role: "system",
-          content: "You are a real estate validation expert. Analyze two independent property valuations and local market conditions. Return only a final validated rate per square meter as a number in local currency. Consider property type, location quality, and market trends."
-        },
-        {
-          role: "user",
-          content: `Given two independent valuations of ${initialRate1} and ${initialRate2} per square meter for a ${propertyType} property at ${address}, validate and provide a final rate. Consider market conditions, property characteristics, and location factors. Return only the final number in local currency.`
-        }
-      ]
-    });
+    // If we get here, we couldn't get a valid rate
+    throw new Error('Could not determine a valid area rate');
 
-    const content3 = response3.choices[0]?.message?.content;
-    if (!content3) throw new Error('Invalid validation response');
-
-    const validatedRate = extractNumber(content3);
-    console.log('Validated rate:', validatedRate);
-
-    // Calculate final rate using all three estimates
-    const finalRate = Math.round((initialRate1 + initialRate2 + validatedRate) / 3);
-
-    // Enhanced validation with wider acceptable range
-    if (finalRate <= 0 || finalRate > 150000) {
-      console.log('Rate validation failed:', { initialRate1, initialRate2, validatedRate, finalRate });
-      throw new Error('Area rate outside reasonable range');
-    }
-
-    console.log('Final area rate:', finalRate);
-    return finalRate;
   } catch (error) {
     console.error('Error in getAreaRate:', error);
     throw error;
