@@ -114,38 +114,36 @@ export async function getDealAnalysis(dealData: {
       messages: [
         {
           role: "system",
-          content: `You are an expert property investment analyst in South Africa. Format your analysis in clear sections with headers.
-Follow these formatting rules:
-1. Use plain double quotes (") instead of smart quotes
-2. Use simple apostrophes (') instead of smart apostrophes
-3. Use simple section headers without special characters
-4. Use regular hyphens (-) instead of em-dashes
-5. Keep paragraphs short and focused
-6. Add a blank line between sections
+          content: `You are an expert property investment analyst in South Africa. Analyze property deals taking into account:
+1. Location context and suburb dynamics
+2. Property specifics (size, condition)
+3. Market rates and valuations
+4. Rental yield potential
+5. Overall investment potential
 
-Structure your analysis with these headers:
-LOCATION ANALYSIS
-PROPERTY VALUATION
-YIELD POTENTIAL
-INVESTMENT RECOMMENDATION
-
-Keep your tone professional but accessible.`
+Provide a structured analysis with clear sections. Be specific about the location and comparable properties. Use actual numbers in your analysis.`
         },
         {
           role: "user",
-          content: `Analyze this property investment opportunity:
+          content: `Please analyze this property deal with the following details:
 
 Address: ${dealData.address}
 Size: ${dealData.propertySize}m²
 Condition: ${dealData.propertyCondition}
 Purchase Price: R${dealData.purchasePrice.toLocaleString()}
-Area Rate: R${dealData.finalAreaRate.toLocaleString()} per m²
+Area Rate Range: ${dealData.areaRateResponses.join(' to ')} per m²
+Final Area Rate: R${dealData.finalAreaRate.toLocaleString()} per m²
 ${dealData.nightlyRate ? `Nightly Rate: R${dealData.nightlyRate}` : ''}
 ${dealData.occupancyRate ? `Expected Occupancy: ${dealData.occupancyRate}%` : ''}
 ${dealData.monthlyRental ? `Monthly Rental: R${dealData.monthlyRental}` : ''}
 Deal Score: ${dealData.dealScore}%
 
-Provide a structured analysis covering location context, valuation analysis, yield potential, and investment recommendation.`
+Provide a detailed analysis of this investment opportunity, including:
+1. Location Analysis (discuss the suburb and its investment potential)
+2. Property Valuation (analyze the price vs market rate)
+3. Yield Analysis (discuss both short-term and long-term rental potential)
+4. Investment Recommendation (explain why the deal got this score)
+`
         }
       ],
       stream: true

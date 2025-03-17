@@ -934,7 +934,7 @@ export default function DealScorePublicPage() {
                       )}
                       <Button type="submit" className={currentStep === 1 ? "ml-auto" : ""}>
                         {isCalculating ? (
-                                                    <>
+                          <>
                             <Loader2
                               className="mr-2 h-4 w-4 animatespin" />
                             Calculating...
@@ -1100,37 +1100,9 @@ export default function DealScorePublicPage() {
                             </div>
                           ) : analysis ? (
                             <div className="h-[300px] overflow-y-auto p-4 prose prose-sm max-w-none scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
-                              {analysis.split('\n\n').map((section, index) => {
-                                // Check if the section starts with a potential header
-                                const isHeader = section.match(/^\*\*(.*?)\*\*|^# (.*?)$/);
-                                if (isHeader) {
-                                  const headerText = isHeader[1] || isHeader[2];
-                                  return (
-                                    <div key={index} className="mb-6">
-                                      <h4 className="text-lg font-semibold mb-2">{headerText.replace(/\*/g, '')}</h4>
-                                      <p className="text-muted-foreground">
-                                        {section.replace(isHeader[0], '').trim()}
-                                      </p>
-                                    </div>
-                                  );
-                                }
-                                // Regular paragraph
-                                return (
-                                  <p 
-                                    key={index} 
-                                    className="mb-4 last:mb-0 text-muted-foreground"
-                                    style={{ whiteSpace: 'pre-line' }}
-                                  >
-                                    {section.trim()
-                                      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove markdown bold
-                                      .replace(/\*(.*?)\*/g, '$1')      // Remove markdown italic
-                                      .replace(/[“”]/g, '"')           // Replace smart quotes
-                                      .replace(/['’]/g, "'")            // Replace smart apostrophes
-                                      .replace(/\n+/g, '\n')            // Normalize line breaks
-                                    }
-                                  </p>
-                                );
-                              })}
+                              {analysis.split('\n').map((paragraph, index) => (
+                                <p key={index} className="mb-4 last:mb-0">{paragraph}</p>
+                              ))}
                             </div>
                           ) : (
                             <div className="text-center py-8 text-muted-foreground">
