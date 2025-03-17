@@ -71,33 +71,18 @@ Return only the numerical rate.`
     // Extract rates with improved parsing and validation
     const content1 = response1.choices[0]?.message?.content;
     const content2 = response2.choices[0]?.message?.content;
-    
-    // If either response contains an error message, try to extract rate from the other response
-    const rate1 = content1?.toLowerCase().includes('error') || content1?.toLowerCase().includes('access') ? 
-      0 : extractNumber(content1);
-    const rate2 = content2?.toLowerCase().includes('error') || content2?.toLowerCase().includes('access') ? 
-      0 : extractNumber(content2);
+
+    // Extract initial rates
+    const initialRate1 = content1?.toLowerCase().includes('error') || content1?.toLowerCase().includes('access') ? 
+      0 : extractNumber(content1 || '');
+    const initialRate2 = content2?.toLowerCase().includes('error') || content2?.toLowerCase().includes('access') ? 
+      0 : extractNumber(content2 || '');
 
     // Use the highest non-zero rate if one API call failed
-    const validRate = Math.max(rate1 || 0, rate2 || 0);
-    
+    const validRate = Math.max(initialRate1 || 0, initialRate2 || 0);
+
     if (validRate === 0) {
       throw new Error('Unable to fetch valid area rate');
-    }
-
-    return validRate;
-
-    if (!content1 || !content2) {
-      throw new Error('Invalid response from OpenAI API');
-    }
-
-    const rate1 = extractNumber(content1);
-    const rate2 = extractNumber(content2);
-
-    console.log('Parsed rates:', { rate1, rate2 });
-
-    if (isNaN(rate1) || isNaN(rate2)) {
-      throw new Error('Invalid rate returned from API');
     }
 
     // Third API call for validation
@@ -111,7 +96,7 @@ Return only the numerical rate.`
         },
         {
           role: "user",
-          content: `Given two independent valuations of ${rate1} and ${rate2} per square meter for a ${propertyType} property at ${address}, validate and provide a final rate. Consider market conditions, property characteristics, and location factors. Return only the final number in local currency.`
+          content: `Given two independent valuations of ${initialRate1} and ${initialRate2} per square meter for a ${propertyType} property at ${address}, validate and provide a final rate. Consider market conditions, property characteristics, and location factors. Return only the final number in local currency.`
         }
       ]
     });
@@ -123,11 +108,11 @@ Return only the numerical rate.`
     console.log('Validated rate:', validatedRate);
 
     // Calculate final rate using all three estimates
-    const finalRate = Math.round((rate1 + rate2 + validatedRate) / 3);
+    const finalRate = Math.round((initialRate1 + initialRate2 + validatedRate) / 3);
 
     // Enhanced validation with wider acceptable range
     if (finalRate <= 0 || finalRate > 150000) {
-      console.log('Rate validation failed:', { rate1, rate2, validatedRate, finalRate });
+      console.log('Rate validation failed:', { initialRate1, initialRate2, validatedRate, finalRate });
       throw new Error('Area rate outside reasonable range');
     }
 

@@ -1,6 +1,8 @@
 import express from 'express';
 import { getAreaRate } from '../services/areaRateService';
+import OpenAI from "openai";
 
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const router = express.Router();
 
 // Area rate endpoint - public access
@@ -70,7 +72,7 @@ Provide professional, concise advice that the agent can use when advising their 
 
     // Create a streaming completion
     const stream = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o", // Using the latest model as per guidelines
       messages: [
         {
           role: "system",
