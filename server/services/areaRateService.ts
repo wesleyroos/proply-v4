@@ -68,9 +68,24 @@ Return only the numerical rate.`
     console.log('OpenAI Response 1:', response1.choices[0]?.message?.content);
     console.log('OpenAI Response 2:', response2.choices[0]?.message?.content);
 
-    // Extract rates with improved parsing
+    // Extract rates with improved parsing and validation
     const content1 = response1.choices[0]?.message?.content;
     const content2 = response2.choices[0]?.message?.content;
+    
+    // If either response contains an error message, try to extract rate from the other response
+    const rate1 = content1?.toLowerCase().includes('error') || content1?.toLowerCase().includes('access') ? 
+      0 : extractNumber(content1);
+    const rate2 = content2?.toLowerCase().includes('error') || content2?.toLowerCase().includes('access') ? 
+      0 : extractNumber(content2);
+
+    // Use the highest non-zero rate if one API call failed
+    const validRate = Math.max(rate1 || 0, rate2 || 0);
+    
+    if (validRate === 0) {
+      throw new Error('Unable to fetch valid area rate');
+    }
+
+    return validRate;
 
     if (!content1 || !content2) {
       throw new Error('Invalid response from OpenAI API');
