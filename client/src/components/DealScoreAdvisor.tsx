@@ -61,9 +61,7 @@ export function DealScoreAdvisor({
     if (isOpen && messages.length === 0) {
       setMessages([{
         type: 'assistant',
-        content: `Hello! I'm your Deal Score Advisor. Based on my analysis, this property has a deal score of `
-          + `${dealScore}%`
-          + `. Ask me anything about the deal's strengths, negotiation points, or potential concerns.`
+        content: `Hello! I'm your Deal Score Advisor. Based on my analysis, this property has a deal score of ${dealScore}%. Ask me anything about the deal's strengths, negotiation points, or potential concerns.`
       }]);
     }
   }, [isOpen, messages.length, dealScore]);
@@ -88,7 +86,7 @@ export function DealScoreAdvisor({
           <p className="text-sm whitespace-pre-wrap">
             {parts.map((part, i) => {
               if (part.includes("deal score of")) {
-                const scoreNumber = part.match(/\d+/)[0];
+                const scoreNumber = part.match(/\d+/)?.[0];
                 return (
                   <span key={i}>
                     deal score of <span className={getScoreColorClass(Number(scoreNumber))}>{scoreNumber}%</span>
@@ -145,43 +143,68 @@ export function DealScoreAdvisor({
         throw new Error('Failed to get AI response');
       }
 
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('Failed to get response reader');
+      if (!response.body) {
+        throw new Error('No response body received');
       }
 
-      let accumulatedResponse = '';
+      const reader = response.body.getReader();
+      let buffer = '';
+      let decoder = new TextDecoder();
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
 
-        // Convert the chunk to text
-        const chunk = new TextDecoder().decode(value);
-        const lines = chunk.split('\n');
+        if (done) {
+          // Process any remaining data in buffer
+          if (buffer) {
+            try {
+              const lines = buffer.split('\n');
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const data = JSON.parse(line.slice(5));
+                  if (data.chunk) {
+                    setMessages(prev => prev.map((msg, idx) =>
+                      idx === prev.length - 1 ? { 
+                        ...msg, 
+                        content: msg.content + data.chunk,
+                        isStreaming: false 
+                      } : msg
+                    ));
+                  }
+                }
+              }
+            } catch (e) {
+              // Ignore parsing errors for incomplete chunks
+              console.debug('Ignored parsing error for incomplete chunk');
+            }
+          }
+          break;
+        }
+
+        // Decode the chunk and add to buffer
+        const chunk = decoder.decode(value, { stream: true });
+        buffer += chunk;
+
+        // Process complete lines from buffer
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep the last incomplete line in buffer
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             try {
-              const data = JSON.parse(line.slice(5)); // Remove 'data: ' prefix
-
+              const data = JSON.parse(line.slice(5));
               if (data.done) {
-                // Stream complete, remove streaming flag
                 setMessages(prev => prev.map((msg, idx) =>
                   idx === prev.length - 1 ? { ...msg, isStreaming: false } : msg
                 ));
-                break;
-              }
-
-              if (data.chunk) {
-                accumulatedResponse += data.chunk;
-                // Update the last message with accumulated content
+              } else if (data.chunk) {
                 setMessages(prev => prev.map((msg, idx) =>
-                  idx === prev.length - 1 ? { ...msg, content: accumulatedResponse } : msg
+                  idx === prev.length - 1 ? { ...msg, content: msg.content + data.chunk } : msg
                 ));
               }
             } catch (e) {
-              console.error('Error parsing SSE data:', e);
+              // Ignore parsing errors for incomplete chunks
+              console.debug('Ignored parsing error for incomplete chunk');
             }
           }
         }
