@@ -365,20 +365,21 @@ export default function DealScorePublicPage() {
         },
         body: JSON.stringify({
           address: formData.address,
-          areaRateResponses: ['R' + formData.areaRate],
+          areaRateResponses: [`Area rate retrieved: R${parseFormattedNumber(formData.areaRate)}`],
           finalAreaRate: Number(parseFormattedNumber(formData.areaRate)),
           propertySize: Number(parseFormattedNumber(formData.size)),
           propertyCondition: formData.propertyCondition,
-          nightlyRate: formData.nightlyRate ? Number(parseFormattedNumber(formData.nightlyRate)) : undefined,
-          occupancyRate: formData.occupancy ? Number(formData.occupancy) : undefined,
-          monthlyRental: formData.longTermRental ? Number(parseFormattedNumber(formData.longTermRental)) : undefined,
+          nightlyRate: formData.nightlyRate ? Number(parseFormattedNumber(formData.nightlyRate)) : null,
+          occupancyRate: formData.occupancy ? Number(formData.occupancy) : null,
+          monthlyRental: formData.longTermRental ? Number(parseFormattedNumber(formData.longTermRental)) : null,
           purchasePrice: Number(parseFormattedNumber(formData.purchasePrice)),
           dealScore: result?.score || 0
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch analysis');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch analysis');
       }
 
       const reader = response.body?.getReader();
@@ -413,7 +414,7 @@ export default function DealScorePublicPage() {
       console.error('Error fetching analysis:', error);
       toast({
         title: "Error",
-        description: "Failed to generate property analysis. Please try again.",
+        description: error.message || "Failed to generate property analysis. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -935,10 +936,10 @@ export default function DealScorePublicPage() {
                         {isCalculating ? (
                           <>
                             <Loader2
-                              className="mr-2 h-4 w-4 animate-spin" />
+                              className="mr-2 h-4 w-4 animatespin" />
                             Calculating...
                           </>
-                        ) : currentStep< 3 ? (
+                        ) : currentStep < 3 ? (
                           <>
                             Next
                             <ArrowRight className="h-4 w-4 ml-2" />

@@ -51,8 +51,25 @@ router.post('/deal-analysis', async (req, res) => {
     dealScore
   } = req.body;
 
-  if (!address || !finalAreaRate || !propertySize || !propertyCondition || !purchasePrice || !dealScore) {
-    return res.status(400).json({ error: 'Missing required deal information' });
+  // Validate required fields
+  const requiredFields = {
+    address,
+    finalAreaRate,
+    propertySize,
+    propertyCondition,
+    purchasePrice,
+    dealScore
+  };
+
+  const missingFields = Object.entries(requiredFields)
+    .filter(([_, value]) => value === undefined || value === null)
+    .map(([key]) => key);
+
+  if (missingFields.length > 0) {
+    return res.status(400).json({ 
+      error: 'Missing required fields',
+      missingFields 
+    });
   }
 
   try {
@@ -63,7 +80,7 @@ router.post('/deal-analysis', async (req, res) => {
 
     const stream = await getDealAnalysis({
       address,
-      areaRateResponses,
+      areaRateResponses: Array.isArray(areaRateResponses) ? areaRateResponses : [],
       finalAreaRate,
       propertySize,
       propertyCondition,
@@ -89,7 +106,10 @@ router.post('/deal-analysis', async (req, res) => {
   } catch (error) {
     console.error('Error in deal analysis endpoint:', error);
     if (!res.headersSent) {
-      res.status(500).json({ error: 'Failed to generate deal analysis' });
+      res.status(500).json({ 
+        error: 'Failed to generate deal analysis',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     } else {
       res.write(`data: ${JSON.stringify({ error: 'Failed to generate deal analysis' })}\n\n`);
       res.end();
