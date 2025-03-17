@@ -36,7 +36,7 @@ router.post('/area-rate', async (req, res) => {
   }
 });
 
-// Deal analysis endpoint
+// Deal analysis endpoint - public access
 router.post('/deal-analysis', async (req, res) => {
   const { 
     address,
@@ -75,12 +75,10 @@ router.post('/deal-analysis', async (req, res) => {
     });
 
     // Stream the response chunks to the client
-    let fullResponse = '';
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content || '';
       if (content) {
-        fullResponse += content;
-        res.write(`data: ${JSON.stringify({ chunk: content, fullResponse })}\n\n`);
+        res.write(`data: ${JSON.stringify({ chunk: content })}\n\n`);
       }
     }
 
@@ -99,6 +97,7 @@ router.post('/deal-analysis', async (req, res) => {
   }
 });
 
+// Private chat endpoint
 router.post('/', async (req, res) => {
   try {
     const { dealDetails, question } = req.body;
@@ -135,7 +134,7 @@ Provide professional, concise advice that the agent can use when advising their 
 
     // Create a streaming completion
     const stream = await openai.chat.completions.create({
-      model: "gpt-4o", // Using the latest model as per guidelines
+      model: "gpt-4o", // Using the latest model
       messages: [
         {
           role: "system",
@@ -152,12 +151,10 @@ Provide professional, concise advice that the agent can use when advising their 
     });
 
     // Stream the response chunks to the client
-    let fullResponse = '';
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content || '';
       if (content) {
-        fullResponse += content;
-        res.write(`data: ${JSON.stringify({ chunk: content, fullResponse })}\n\n`);
+        res.write(`data: ${JSON.stringify({ chunk: content })}\n\n`);
       }
     }
 
