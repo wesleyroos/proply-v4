@@ -8,6 +8,7 @@ import {
   CreditCard,
   Wallet,
   Loader2,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,13 +32,12 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 as Loader } from "lucide-react"; // Import Loader2
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"; // Assuming these imports are available
+} from "@/components/ui/accordion";
 import { AreaRateProgressDialog } from "@/components/AreaRateProgressDialog";
 
 export default function DealScorePublicPage() {
@@ -61,8 +61,8 @@ export default function DealScorePublicPage() {
     // Financing Details (Step 3)
     depositAmount: "",
     depositPercentage: "",
-    interestRate: "11.75", // Default to current prime rate
-    loanTerm: "20", // Default to 20 years
+    interestRate: "11.75",
+    loanTerm: "20",
   });
 
   const [result, setResult] = useState(null);
@@ -73,10 +73,13 @@ export default function DealScorePublicPage() {
   const [showResult, setShowResult] = useState(false);
   const [demoClicks, setDemoClicks] = useState(0);
   const [areaRateStatus, setAreaRateStatus] = useState<
-    "loading" | "success" | "error"
+    "idle" | "loading" | "success" | "error"
   >("idle");
   const [showAreaRateDialog, setShowAreaRateDialog] = useState(false);
   const [areaRateError, setAreaRateError] = useState<string>();
+  const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
+  const [analysis, setAnalysis] = useState<string | null>(null);
+
 
   // Handler for demo data
   const fillDemoData = () => {
@@ -221,6 +224,7 @@ export default function DealScorePublicPage() {
 
     // Only calculate on final step
     setIsCalculating(true);
+    setIsLoadingAnalysis(true); //Set loading state to true
     await new Promise((resolve) => setTimeout(resolve, 2000));
     calculateDealScore();
   };
@@ -346,6 +350,75 @@ export default function DealScorePublicPage() {
     });
     setShowResult(true); //Set showResult to true after calculation
     setIsCalculating(false);
+
+    // Add this line to fetch the analysis after calculating the deal score
+    fetchDealAnalysis();
+  };
+
+  const fetchDealAnalysis = async () => {
+    setIsLoadingAnalysis(true);
+    try {
+      const response = await fetch('/api/deal-advisor/deal-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: formData.address,
+          areaRateResponses: ['R' + formData.areaRate],
+          finalAreaRate: Number(parseFormattedNumber(formData.areaRate)),
+          propertySize: Number(parseFormattedNumber(formData.size)),
+          propertyCondition: formData.propertyCondition,
+          nightlyRate: formData.nightlyRate ? Number(parseFormattedNumber(formData.nightlyRate)) : undefined,
+          occupancyRate: formData.occupancy ? Number(formData.occupancy) : undefined,
+          monthlyRental: formData.longTermRental ? Number(parseFormattedNumber(formData.longTermRental)) : undefined,
+          purchasePrice: Number(parseFormattedNumber(formData.purchasePrice)),
+          dealScore: result?.score || 0
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch analysis');
+      }
+
+      const reader = response.body?.getReader();
+      let analysisText = '';
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) break;
+
+          const chunk = new TextDecoder().decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(5));
+                if (data.chunk) {
+                  analysisText += data.chunk;
+                  setAnalysis(analysisText);
+                }
+              } catch (e) {
+                console.debug('Ignored parsing error for incomplete chunk');
+              }
+            }
+          }
+        }
+      }
+
+    } catch (error) {
+      console.error('Error fetching analysis:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate property analysis. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingAnalysis(false);
+    }
   };
 
   const handlePayment = () => {
@@ -464,7 +537,7 @@ export default function DealScorePublicPage() {
                 >
                   {isLoading ? (
                     <>
-                      <Loader className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Fetching...
                     </>
                   ) : (
@@ -828,320 +901,302 @@ export default function DealScorePublicPage() {
             {/* Card Glow Effect */}
             <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-slow"></div>
 
-            <div className="relative bg-background rounded-lg p-1">
-              <div className="container mx-auto py-8 px-4">
-                <div className="max-w-2xl mx-auto">
-                  <h1 className="text-3xl font-bold mb-8 text-center">
-                    Property Deal Score Calculator
-                  </h1>
+            <Card className="relative bg-background rounded-lg p-6">
+              <div className="max-w-2xl mx-auto">
+                <h1 className="text-3xl font-bold mb-8 text-center">
+                  Property Deal Score Calculator
+                </h1>
 
-                  {/* Hidden demo data button - triple click to activate */}
-                  <button
-                    type="button"
-                    onClick={fillDemoData}
-                    className="fixed bottom-4 right-4 opacity-0"
-                  >
-                    Fill Demo Data
-                  </button>
+                {/* Hidden demo data button */}
+                <button
+                  type="button"
+                  onClick={fillDemoData}
+                  className="fixed bottom-4 right-4 opacity-0"
+                >
+                  Fill Demo Data
+                </button>
 
-                  {!showResult ? (
-                    <Card className="p-6 border-0">
-                      <form onSubmit={handleSubmit}>
-                        {renderStepCounter()}
-                        {renderFormStep()}
+                {!showResult ? (
+                  <form onSubmit={handleSubmit}>
+                    {renderStepCounter()}
+                    {renderFormStep()}
 
-                        <div className="flex justify-between mt-6">
-                          {currentStep > 1 && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={handlePrevStep}
-                            >
-                              <ArrowLeft className="mr-2 h-4 w-4" /> Previous
-                            </Button>
-                          )}
-                          <Button
-                            type="submit"
-                            className={`${currentStep === 1 ? "ml-auto" : ""}`}
-                          >
-                            {isCalculating ? (
-                              <>
-                                <Loader className="mr-2 h-4 w-4 animate-spin" />
-                                Calculating...
-                              </>
-                            ) : currentStep < 3 ? (
-                              <>
-                                Next
-                                <ArrowRight className="h-4 w-4 ml-2" />
-                              </>
-                            ) : (
-                              "Calculate Deal Score"
-                            )}
-                          </Button>
-                        </div>
-                      </form>
-                    </Card>
-                  ) : (
-                    <Card className="p-6">
-                      <div className="space-y-6">
-                        <div className="text-center">
-                          <h2 className="text-2xl font-bold mb-2">
-                            Deal Score: {result.score}%
-                          </h2>
+                    <div className="flex justify-between mt-6">
+                      {currentStep > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handlePrevStep}
+                        >
+                          <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+                        </Button>
+                      )}
+                      <Button type="submit" className={currentStep === 1 ? "ml-auto" : ""}>
+                        {isCalculating ? (
+                          <>
+                            <Loader2<replit_final_file>
+                            className="mr-2 h-4 w-4 animate-spin" />
+                            Calculating...
+                          </>
+                        ) : currentStep < 3 ? (
+                          <>
+                            Next
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </>
+                        ) : (
+                          "Calculate Deal Score"
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Result display section */}
+                    <div className="text-center">
+                      <h2 className="text-2xl font-bold mb-2">
+                        Deal Score: {result.score}%
+                      </h2>
 
-                          <div className="flex justify-between items-center mt-4 px-4">
-                            <div className="text-sm">Asking Price:</div>
-                            <div className="font-bold">
-                              R{result.askingPrice.toLocaleString()}
-                            </div>
-                          </div>
-
-                          <div className="flex justify-between items-center mt-2 px-4">
-                            <div className="text-sm">
-                              Estimated Market Value:
-                            </div>
-                            <div className="font-bold">
-                              R{result.estimatedValue.toLocaleString()}
-                            </div>
-                          </div>
-
-                          <div className="text-center mt-2 mb-6">
-                            <span className="text-sm">
-                              This property is{" "}
-                              <span
-                                className={
-                                  result.askingPrice > result.estimatedValue
-                                    ? "text-amber-500"
-                                    : "text-green-500"
-                                }
-                              >
-                                {Math.abs(
-                                  ((result.askingPrice -
-                                    result.estimatedValue) /
-                                    result.estimatedValue) *
-                                    100,
-                                ).toFixed(1)}
-                                %
-                              </span>
-                              {result.askingPrice > result.estimatedValue
-                                ? " above"
-                                : " below"}{" "}
-                              estimated market value
-                            </span>
-                          </div>
-
-                          <div
-                            className={`inline-block px-4 py-1 rounded-full text-white ${result.color}`}
-                          >
-                            {result.rating} DEAL
-                          </div>
-                        </div>
-
-                        <div className="relative h-4 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
-                          <div
-                            className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
-                            style={{ left: `${result.score}%` }}
-                          />
-                          <div className="absolute -bottom-6 left-0 text-xs">
-                            Poor
-                          </div>
-                          <div className="absolute -bottom-6 left-1/4 text-xs">
-                            Average
-                          </div>
-                          <div className="absolute -bottom-6 left-1/2 text-xs transform -translate-x-1/2">
-                            Good
-                          </div>
-                          <div className="absolute -bottom-6 left-3/4 text-xs">
-                            Great
-                          </div>
-                          <div className="absolute -bottom-6 right-0 text-xs">
-                            Excellent
-                          </div>
-                        </div>
-
-                        <div className="mt-8">
-                          <Accordion
-                            type="single"
-                            collapsible
-                            className="w-full"
-                          >
-                            <AccordionItem value="deal-factors">
-                              <AccordionTrigger className="text-xl font-semibold">
-                                Key Deal Factors
-                              </AccordionTrigger>
-                              <AccordionContent>
-                                <div className="space-y-4 pt-2">
-                                  <div className="flex justify-between">
-                                    {" "}
-                                    <span>Price per m²:</span>
-                                    <span className="font-medium">
-                                      R
-                                      {Math.round(
-                                        result.propertyRate,
-                                      ).toLocaleString()}
-                                      /m²
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>Area average:</span>
-                                    <span className="font-medium">
-                                      R
-                                      {Math.round(
-                                        result.areaRate,
-                                      ).toLocaleString()}
-                                      /m²
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>Property condition:</span>
-                                    <span className="font-medium capitalize">
-                                      {result.propertyCondition}
-                                    </span>
-                                  </div>
-                                  {result.shortTermYield && (
-                                    <div className="flex justify-between">
-                                      <span>Short-Term Yield:</span>
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-medium">
-                                          {result.shortTermYield.toFixed(1)}%
-                                        </span>
-                                        <span
-                                          className={`px-2 py-0.5 text-xs rounded ${result.shortTermYield >= 12 ? "bg-green-100 text-green-800" : result.shortTermYield >= 8 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}`}
-                                        >
-                                          {result.shortTermYield >= 12
-                                            ? "EXCELLENT"
-                                            : result.shortTermYield >= 8
-                                              ? "GOOD"
-                                              : "POOR"}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  )}
-                                  {result.longTermYield && (
-                                    <div className="flex justify-between">
-                                      <span>Long-Term Yield:</span>
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-medium">
-                                          {result.longTermYield.toFixed(1)}%
-                                        </span>
-                                        <span
-                                          className={`px-2 py-0.5 text-xs rounded ${result.longTermYield >= 8 ? "bg-green-100 text-green-800" : result.longTermYield >= 6 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}`}
-                                        >
-                                          {result.longTermYield >= 8
-                                            ? "EXCELLENT"
-                                            : result.longTermYield >= 6
-                                              ? "GOOD"
-                                              : "POOR"}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  )}
-                                  <div className="flex justify-between">
-                                    <span>Best Investment Strategy:</span>
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-medium">
-                                        {result.bestStrategy}
-                                      </span>
-                                      <span className="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-800">
-                                        AIRBNB
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
-                        </div>
-
-                        <div className="flex gap-4 mt-6">
-                          <Button
-                            onClick={handleNewCalculation}
-                            variant="outline"
-                            className="flex-1"
-                          >
-                            New Calculation
-                          </Button>
-                          <Button
-                            onClick={() => setShowPaymentModal(true)}
-                            className="flex-1"
-                          >
-                            View Full Report
-                          </Button>
+                      <div className="flex justify-between items-center mt-4 px-4">
+                        <div className="text-sm">Asking Price:</div>
+                        <div className="font-bold">
+                          R{result.askingPrice.toLocaleString()}
                         </div>
                       </div>
-                    </Card>
-                  )}
-                </div>
+
+                      <div className="flex justify-between items-center mt-2 px-4">
+                        <div className="text-sm">
+                          Estimated Market Value:
+                        </div>
+                        <div className="font-bold">
+                          R{result.estimatedValue.toLocaleString()}
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <div
+                          className={`inline-block px-4 py-1 rounded-full text-white ${result.color}`}
+                        >
+                          {result.rating} DEAL
+                        </div>
+                      </div>
+
+                      {/* Score Indicator Bar */}
+                      <div className="relative h-4 mt-6 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
+                        <div
+                          className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
+                          style={{ left: `${result.score}%` }}
+                        />
+                        <div className="absolute -bottom-6 left-0 text-xs">Poor</div>
+                        <div className="absolute -bottom-6 left-1/4 text-xs">Average</div>
+                        <div className="absolute -bottom-6 left-1/2 text-xs transform -translate-x-1/2">Good</div>
+                        <div className="absolute -bottom-6 left-3/4 text-xs">Great</div>
+                        <div className="absolute -bottom-6 right-0 text-xs">Excellent</div>
+                      </div>
+
+                      {/* Deal Factors Section */}
+                      <div className="mt-12">
+                        <Accordion type="single" collapsible className="w-full">
+                          <AccordionItem value="deal-factors">
+                            <AccordionTrigger className="text-xl font-semibold">
+                              Key Deal Factors
+                            </AccordionTrigger>
+                            <AccordionContent>
+                              <div className="space-y-4 pt-2">
+                                <div className="flex justify-between">
+                                  <span>Price per m²:</span>
+                                  <span className="font-medium">
+                                    R{Math.round(result.propertyRate).toLocaleString()}/m²
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Area average:</span>
+                                  <span className="font-medium">
+                                    R{Math.round(result.areaRate).toLocaleString()}/m²
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Property condition:</span>
+                                  <span className="font-medium capitalize">
+                                    {result.propertyCondition}
+                                  </span>
+                                </div>
+                                {result.shortTermYield && (
+                                  <div className="flex justify-between">
+                                    <span>Short-Term Yield:</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">
+                                        {result.shortTermYield.toFixed(1)}%
+                                      </span>
+                                      <span
+                                        className={`px-2 py-0.5 text-xs rounded ${
+                                          result.shortTermYield >= 12
+                                            ? "bg-green-100 text-green-800"
+                                            : result.shortTermYield >= 8
+                                            ? "bg-yellow-100 text-yellow-800"
+                                            : "bg-red-100 text-red-800"
+                                        }`}
+                                      >
+                                        {result.shortTermYield >= 12
+                                          ? "EXCELLENT"
+                                          : result.shortTermYield >= 8
+                                          ? "GOOD"
+                                          : "POOR"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+                                {result.longTermYield && (
+                                  <div className="flex justify-between">
+                                    <span>Long-Term Yield:</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">
+                                        {result.longTermYield.toFixed(1)}%
+                                      </span>
+                                      <span
+                                        className={`px-2 py-0.5 text-xs rounded ${
+                                          result.longTermYield >= 8
+                                            ? "bg-green-100 text-green-800"
+                                            : result.longTermYield >= 6
+                                            ? "bg-yellow-100 text-yellow-800"
+                                            : "bg-red-100 text-red-800"
+                                        }`}
+                                      >
+                                        {result.longTermYield >= 8
+                                          ? "EXCELLENT"
+                                          : result.longTermYield >= 6
+                                          ? "GOOD"
+                                          : "POOR"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="flex justify-between">
+                                  <span>Best Investment Strategy:</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium">
+                                      {result.bestStrategy}
+                                    </span>
+                                    <span className="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-800">
+                                      RECOMMENDED
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
+                      </div>
+
+                      {/* AI Analysis Section */}
+                      <div className="mt-12 pt-6 border-t">
+                        <h3 className="text-xl font-semibold mb-4">AI Investment Analysis</h3>
+                        <div className="relative">
+                          {isLoadingAnalysis ? (
+                            <div className="flex items-center justify-center py-8">
+                              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                              <span className="ml-3">Generating property analysis...</span>
+                            </div>
+                          ) : analysis ? (
+                            <div className="prose prose-sm max-w-none">
+                              {analysis.split('\n').map((paragraph, index) => (
+                                <p key={index} className="mb-4">{paragraph}</p>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                              Analysis will appear here after calculation
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between mt-8">
+                        <Button
+                          variant="outline"
+                          onClick={handleNewCalculation}
+                        >
+                          New Calculation
+                        </Button>
+                        <Button onClick={() => setShowPaymentModal(true)}>
+                          <CreditCard className="mr-2 h-4 w-4" />
+                          Get Full Report
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </main>
 
       {/* Payment Modal */}
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Purchase Full Property Report</DialogTitle>
+            <DialogTitle>Get Full Property Report</DialogTitle>
             <DialogDescription>
-              Get detailed insights and analysis for this property{" "}
+              Access a comprehensive analysis of this property including market
+              trends, investment projections, and detailed recommendations.
             </DialogDescription>
           </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span>Report Price:</span>
-              <span className="font-bold">R100</span>
-            </div>
-
-            <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-              <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 py-4">
+            <RadioGroup
+              value={paymentMethod}
+              onValueChange={setPaymentMethod}
+              className="grid grid-cols-2 gap-4"
+            >
+              <div>
+                <RadioGroupItem
+                  value="card"
+                  id="card"
+                  className="peer sr-only"
+                />
                 <Label
                   htmlFor="card"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted p-4 hover:bg-accent cursor-pointer"
+                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                 >
-                  <RadioGroupItem value="card" id="card" className="sr-only" />
                   <CreditCard className="mb-3 h-6 w-6" />
-                  <span>Credit Card</span>
+                  Card
                 </Label>
-
+              </div>
+              <div>
+                <RadioGroupItem
+                  value="wallet"
+                  id="wallet"
+                  className="peer sr-only"
+                />
                 <Label
-                  htmlFor="instant-eft"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted p-4 hover:bg-accent cursor-pointer"
+                  htmlFor="wallet"
+                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                 >
-                  <RadioGroupItem
-                    value="instant-eft"
-                    id="instant-eft"
-                    className="sr-only"
-                  />
                   <Wallet className="mb-3 h-6 w-6" />
-                  <span>Instant EFT</span>
+                  Credits
                 </Label>
               </div>
             </RadioGroup>
           </div>
-
           <DialogFooter>
             <Button
-              variant="outline"
-              onClick={() => setShowPaymentModal(false)}
+              onClick={handlePayment}
+              disabled={processingPayment}
+              className="w-full"
             >
-              Cancel
-            </Button>
-            <Button onClick={handlePayment} disabled={processingPayment}>
               {processingPayment ? (
-                <div className="flex items-center">
-                  <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Processing...
-                </div>
+                </>
               ) : (
-                "Pay R100"
+                "Continue"
               )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      {/* Add the AreaRateProgressDialog */}
+
       <AreaRateProgressDialog
         open={showAreaRateDialog}
         onOpenChange={setShowAreaRateDialog}

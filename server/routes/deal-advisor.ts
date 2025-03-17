@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAreaRate } from '../services/areaRateService';
+import { getAreaRate, getDealAnalysis } from '../services/areaRateService';
 import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -33,6 +33,69 @@ router.post('/area-rate', async (req, res) => {
       details: error instanceof Error ? error.message : 'Unknown error',
       message: 'Could not calculate area rate. Please try again.'
     });
+  }
+});
+
+// Deal analysis endpoint
+router.post('/deal-analysis', async (req, res) => {
+  const { 
+    address,
+    areaRateResponses,
+    finalAreaRate,
+    propertySize,
+    propertyCondition,
+    nightlyRate,
+    occupancyRate,
+    monthlyRental,
+    purchasePrice,
+    dealScore
+  } = req.body;
+
+  if (!address || !finalAreaRate || !propertySize || !propertyCondition || !purchasePrice || !dealScore) {
+    return res.status(400).json({ error: 'Missing required deal information' });
+  }
+
+  try {
+    // Set headers for streaming response
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    const stream = await getDealAnalysis({
+      address,
+      areaRateResponses,
+      finalAreaRate,
+      propertySize,
+      propertyCondition,
+      nightlyRate,
+      occupancyRate,
+      monthlyRental,
+      purchasePrice,
+      dealScore
+    });
+
+    // Stream the response chunks to the client
+    let fullResponse = '';
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || '';
+      if (content) {
+        fullResponse += content;
+        res.write(`data: ${JSON.stringify({ chunk: content, fullResponse })}\n\n`);
+      }
+    }
+
+    // End the response
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
+
+  } catch (error) {
+    console.error('Error in deal analysis endpoint:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Failed to generate deal analysis' });
+    } else {
+      res.write(`data: ${JSON.stringify({ error: 'Failed to generate deal analysis' })}\n\n`);
+      res.end();
+    }
   }
 });
 
