@@ -10,6 +10,7 @@ import {
   Loader2,
   Info,
   Lock,
+  Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -446,6 +447,15 @@ export default function DealScorePublicPage() {
     setCurrentStep(1);
     setReportUnlocked(false); // Reset the unlock state
     setAnalysis(null); // Clear previous analysis
+  };
+
+  // Placeholder for the download report functionality
+  const handleDownloadReport = () => {
+    // TODO: Implement PDF download functionality
+    toast({
+      title: "Coming Soon",
+      description: "PDF download functionality will be available soon!",
+    });
   };
 
   // Get list of missing field names for validation
@@ -939,11 +949,14 @@ export default function DealScorePublicPage() {
                         >
                           <ArrowLeft className="mr-2 h-4 w-4" /> Previous
                         </Button>
-                      )}<Button type="submit" className={currentStep === 1 ? "ml-auto" : ""}>
+                      )}
+                      <Button 
+                        type="submit" 
+                        className={currentStep === 1 ? "ml-auto" : ""}
+                      >
                         {isCalculating ? (
                           <>
-                            <Loader2
-                              className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Calculating...
                           </>
                         ) : currentStep < 3 ? (
@@ -957,6 +970,7 @@ export default function DealScorePublicPage() {
                       </Button>
                     </div>
                   </form>
+
                 ) : (
                     <div className="space-y-6">
                       {/* Result display section - Always visible */}
@@ -1008,7 +1022,12 @@ export default function DealScorePublicPage() {
                         <div className={`space-y-8 ${!reportUnlocked ? 'blur-sm select-none pointer-events-none' : ''}`}>
                           {/* Deal Factors Section */}
                           <div className="mt-8">
-                            <Accordion type="single" collapsible className="w-full">
+                            <Accordion 
+                              type="single" 
+                              collapsible 
+                              className="w-full"
+                              defaultValue={reportUnlocked ? "deal-factors" : undefined}
+                            >
                               <AccordionItem value="deal-factors">
                                 <AccordionTrigger className="text-xl font-semibold">
                                   Key Deal Factors
@@ -1122,6 +1141,16 @@ export default function DealScorePublicPage() {
                               )}
                             </div>
                           </div>
+
+                          {/* Report Download Button - Only visible when unlocked */}
+                          {reportUnlocked && (
+                            <div className="mt-8 flex justify-center">
+                              <Button size="lg" onClick={() => handleDownloadReport()}>
+                                <Download className="mr-2 h-4 w-4" />
+                                Download Full Report
+                              </Button>
+                            </div>
+                          )}
                         </div>
 
                         {/* Payment Overlay - Only covers detailed sections */}
