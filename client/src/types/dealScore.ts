@@ -6,6 +6,7 @@ export const dealCalculationSchema = z.object({
   propertyType: z.enum(["house", "apartment", "townhouse", "land"]),
   bedrooms: z.enum(["1", "2", "3", "4", "5+"]),
   propertyCondition: z.enum(["excellent", "good", "fair", "poor"]),
+  propertyAge: z.number().min(0, "Age must be 0 or greater"),
   floorArea: z.number().min(1, "Floor area must be greater than 0"),
   areaRate: z.number().min(1, "Area rate must be greater than 0"),
   monthlyRental: z.number().optional(),
