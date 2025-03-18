@@ -932,8 +932,7 @@ export default function DealScorePublicPage() {
                               </AccordionTrigger>
                               <AccordionContent>
                                 <div className="space-y-4 pt-2">
-                                  <div className="flex justify-between">
-                                    <span>Price per m²:</span>                                    <span className="font-medium">
+                                  <div className="flex justify-between"><span>Price per m²:</span>                                    <span className="font-medium">
                                       R{Math.round(result?.propertyRate || 0).toLocaleString()}/m²
                                     </span>
                                   </div>
@@ -1062,7 +1061,7 @@ export default function DealScorePublicPage() {
           <section className="container px-4">
             <div className="max-w-3xl mx-auto text-center space-y-4">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Stop Guessing If That Property Is Worth Your Investment
+                Stop the guessing game. Make the right offer, the first time.
               </h2>
               <p className="text-xl text-muted-foreground">
                 Property investors like you face these challenges every day. We've built the solution you've been looking
@@ -1157,7 +1156,7 @@ export default function DealScorePublicPage() {
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-lg blur opacity-75"></div>
                   <div className="relative bg-card rounded-lg overflow-hidden">
                     <img
-                      src="/screenshot.png"
+                      src="/images/Deal Score Screenshot.jpg"
                       alt="Property analysis form"
                       className="w-full h-auto"
                     />
