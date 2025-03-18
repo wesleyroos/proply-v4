@@ -824,7 +824,7 @@ export default function DealScorePublicPage() {
             <Card className="relative bg-background rounded-lg p-6">
               <div className="max-w-2xl mx-auto">
                 <h1 className="text-3xl font-bold mb-8 text-center">
-                  Property Deal Score Calculator
+                  Proply Deal Score™
                 </h1>
 
                 <button
@@ -1064,7 +1064,7 @@ export default function DealScorePublicPage() {
                               className="w-full"
                             >
                               <CreditCard className="mr-2 h-4 w-4" />
-                              Download Full Report for R49
+                              Unlock Full Report for R49
                             </Button>
                           </div>
                         </div>
@@ -1086,10 +1086,11 @@ export default function DealScorePublicPage() {
           <section className="container px-4">
             <div className="max-w-3xl mx-auto text-center space-y-4">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Stop the guessing game. Make the right offer, the first time.
+                Stop The Guessing Game
+                <br />Make The Right Offer, The First Time
               </h2>
               <p className="text-xl text-muted-foreground">
-                Property investors like you face these challenges every day.
+                Property buyers like you face these challenges every day.
                 We've built the solution you've been looking for.
               </p>
             </div>
