@@ -1173,10 +1173,10 @@ export default function DealScorePublicPage() {
                               </div>
                             </DialogContent>
                           </Dialog>
-                          </div>
-
-                          {/* Report Download Button - Only visible when unlocked */}
-                          {reportUnlocked && (
+                        </div>
+                        
+                        {/* Report Download Button - Only visible when unlocked */}
+                        {reportUnlocked && (
                             <div className="mt-8 flex justify-center">
                               <Button size="lg" onClick={() => handleDownloadReport()}>
                                 <Download className="mr-2 h-4 w-4" />
