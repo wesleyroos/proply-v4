@@ -924,7 +924,7 @@ export default function DealScorePublicPage() {
                             type="single"
                             collapsible
                             className="w-full"
-                            defaultValue={reportUnlocked ? "deal-factors" : undefined}
+                            defaultValue="deal-factors"
                           >
                             <AccordionItem value="deal-factors">
                               <AccordionTrigger className="text-xl font-semibold">
@@ -932,9 +932,8 @@ export default function DealScorePublicPage() {
                               </AccordionTrigger>
                               <AccordionContent>
                                 <div className="space-y-4 pt-2">
-                                                                    <div className="flex justify-between">
-                                    <span>Price per m²:</span>
-                                    <span className="font-medium">
+                                  <div className="flex justify-between">
+                                    <span>Price per m²:</span>                                    <span className="font-medium">
                                       R{Math.round(result?.propertyRate || 0).toLocaleString()}/m²
                                     </span>
                                   </div>
