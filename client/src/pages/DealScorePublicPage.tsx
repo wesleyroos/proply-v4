@@ -1125,7 +1125,16 @@ export default function DealScorePublicPage() {
                           {/* AI Analysis Section */}
                           <div className="mt-12 pt-6 border-t">
                             <h3 className="text-xl font-semibold mb-4">AI Investment Analysis</h3>
-                            <div className="relative bg-card rounded-lg border shadow-sm">
+                            {!analysis ? (
+                              <Button 
+                                onClick={fetchAnalysis} 
+                                className="w-full"
+                                variant="outline"
+                              >
+                                Generate AI Analysis
+                              </Button>
+                            ) : (
+                              <div className="relative bg-card rounded-lg border shadow-sm">
                               {isLoadingAnalysis ? (
                                 <div className="flex items-center justify-center py-8">
                                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -1142,7 +1151,8 @@ export default function DealScorePublicPage() {
                                   Analysis will appear here after calculation
                                 </div>
                               )}
-                            </div>
+                              </div>
+                            )}
                           </div>
 
                           {/* Report Download Button - Only visible when unlocked */}
