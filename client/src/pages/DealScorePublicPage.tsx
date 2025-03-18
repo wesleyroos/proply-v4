@@ -14,7 +14,7 @@ import {
   Clock,
   BarChart3,
   TrendingUp,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,7 +84,6 @@ export default function DealScorePublicPage() {
   const [showAreaRateDialog, setShowAreaRateDialog] = useState(false);
   const [areaRateError, setAreaRateError] = useState<string>();
   const [reportUnlocked, setReportUnlocked] = useState(false);
-
 
   const fillDemoData = () => {
     setDemoClicks((prev) => {
@@ -886,9 +885,7 @@ export default function DealScorePublicPage() {
                       </div>
 
                       <div className="flex justify-between items-center mt-2 px-4">
-                        <div className="text-sm">
-                          Estimated Market Value:
-                        </div>
+                        <div className="text-sm">Estimated Market Value:</div>
                         <div className="font-bold">
                           R{result?.estimatedValue?.toLocaleString()}
                         </div>
@@ -907,17 +904,29 @@ export default function DealScorePublicPage() {
                           className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
                           style={{ left: `${result?.score}%` }}
                         />
-                        <div className="absolute -bottom-6 left-0 text-xs">Poor</div>
-                        <div className="absolute -bottom-6 left-1/4 text-xs">Average</div>
-                        <div className="absolute -bottom-6 left-1/2 text-xs transform -translate-x-1/2">Good</div>
-                        <div className="absolute -bottom-6 left-3/4 text-xs">Great</div>
-                        <div className="absolute -bottom-6 right-0 text-xs">Excellent</div>
+                        <div className="absolute -bottom-6 left-0 text-xs">
+                          Poor
+                        </div>
+                        <div className="absolute -bottom-6 left-1/4 text-xs">
+                          Average
+                        </div>
+                        <div className="absolute -bottom-6 left-1/2 text-xs transform -translate-x-1/2">
+                          Good
+                        </div>
+                        <div className="absolute -bottom-6 left-3/4 text-xs">
+                          Great
+                        </div>
+                        <div className="absolute -bottom-6 right-0 text-xs">
+                          Excellent
+                        </div>
                       </div>
                     </div>
 
                     {/* Detailed Analysis Section */}
                     <div className="relative mt-8">
-                      <div className={`space-y-6 ${!reportUnlocked ? 'blur-sm select-none pointer-events-none' : ''}`}>
+                      <div
+                        className={`space-y-6 ${!reportUnlocked ? "blur-sm select-none pointer-events-none" : ""}`}
+                      >
                         {/* Deal Factors Section */}
                         <div className="mt-4">
                           <Accordion
@@ -932,14 +941,24 @@ export default function DealScorePublicPage() {
                               </AccordionTrigger>
                               <AccordionContent>
                                 <div className="space-y-4 pt-2">
-                                  <div className="flex justify-between"><span>Price per m²:</span>                                    <span className="font-medium">
-                                      R{Math.round(result?.propertyRate || 0).toLocaleString()}/m²
+                                  <div className="flex justify-between">
+                                    <span>Price per m²:</span>{" "}
+                                    <span className="font-medium">
+                                      R
+                                      {Math.round(
+                                        result?.propertyRate || 0,
+                                      ).toLocaleString()}
+                                      /m²
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
                                     <span>Area average:</span>
                                     <span className="font-medium">
-                                      R{Math.round(result?.areaRate || 0).toLocaleString()}/m²
+                                      R
+                                      {Math.round(
+                                        result?.areaRate || 0,
+                                      ).toLocaleString()}
+                                      /m²
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -960,15 +979,15 @@ export default function DealScorePublicPage() {
                                             result?.shortTermYield >= 12
                                               ? "bg-green-100 text-green-800"
                                               : result?.shortTermYield >= 8
-                                              ? "bg-yellow-100 text-yellow-800"
-                                              : "bg-red-100 text-red-800"
+                                                ? "bg-yellow-100 text-yellow-800"
+                                                : "bg-red-100 text-red-800"
                                           }`}
                                         >
                                           {result?.shortTermYield >= 12
                                             ? "EXCELLENT"
                                             : result?.shortTermYield >= 8
-                                            ? "GOOD"
-                                            : "POOR"}
+                                              ? "GOOD"
+                                              : "POOR"}
                                         </span>
                                       </div>
                                     </div>
@@ -985,15 +1004,15 @@ export default function DealScorePublicPage() {
                                             result?.longTermYield >= 8
                                               ? "bg-green-100 text-green-800"
                                               : result?.longTermYield >= 6
-                                              ? "bg-yellow-100 text-yellow-800"
-                                              : "bg-red-100 text-red-800"
+                                                ? "bg-yellow-100 text-yellow-800"
+                                                : "bg-red-100 text-red-800"
                                           }`}
                                         >
                                           {result?.longTermYield >= 8
                                             ? "EXCELLENT"
                                             : result?.longTermYield >= 6
-                                            ? "GOOD"
-                                            : "POOR"}
+                                              ? "GOOD"
+                                              : "POOR"}
                                         </span>
                                       </div>
                                     </div>
@@ -1017,7 +1036,10 @@ export default function DealScorePublicPage() {
 
                         {reportUnlocked && (
                           <div className="mt-6 flex justify-center">
-                            <Button size="lg" onClick={() => handleDownloadReport()}>
+                            <Button
+                              size="lg"
+                              onClick={() => handleDownloadReport()}
+                            >
                               <Download className="mr-2 h-4 w-4" />
                               Download Full Report
                             </Button>
@@ -1029,11 +1051,18 @@ export default function DealScorePublicPage() {
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background/95 backdrop-blur-sm rounded-lg p-8">
                           <div className="bg-background/95 rounded-xl p-8 shadow-lg border border-border/10 max-w-md mx-auto text-center">
                             <Lock className="w-12 h-12 text-primary mb-6 mx-auto" />
-                            <h3 className="text-2xl font-semibold mb-3">Unlock Full Report</h3>
+                            <h3 className="text-2xl font-semibold mb-3">
+                              Unlock Full Report
+                            </h3>
                             <p className="text-muted-foreground mb-6 text-center max-w-sm mx-auto">
-                              Get access to the complete property analysis and investment insights
+                              Get access to the complete property analysis and
+                              investment insights
                             </p>
-                            <Button onClick={() => setShowPaymentModal(true)} size="lg" className="w-full">
+                            <Button
+                              onClick={() => setShowPaymentModal(true)}
+                              size="lg"
+                              className="w-full"
+                            >
                               <CreditCard className="mr-2 h-4 w-4" />
                               Download Full Report for R49
                             </Button>
@@ -1043,14 +1072,10 @@ export default function DealScorePublicPage() {
                     </div>
 
                     <div className="flex justify-between mt-8">
-                      <Button
-                        variant="outline"
-                        onClick={handleNewCalculation}
-                      >
+                      <Button variant="outline" onClick={handleNewCalculation}>
                         New Calculation
                       </Button>
                     </div>
-
                   </div>
                 )}
               </div>
@@ -1064,8 +1089,8 @@ export default function DealScorePublicPage() {
                 Stop the guessing game. Make the right offer, the first time.
               </h2>
               <p className="text-xl text-muted-foreground">
-                Property investors like you face these challenges every day. We've built the solution you've been looking
-                for.
+                Property investors like you face these challenges every day.
+                We've built the solution you've been looking for.
               </p>
             </div>
 
@@ -1074,10 +1099,12 @@ export default function DealScorePublicPage() {
                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                   <Clock className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Hours Wasted on Research</h3>
+                <h3 className="text-xl font-semibold mb-2">
+                  Hours Wasted on Research
+                </h3>
                 <p className="text-muted-foreground">
-                  You spend countless hours researching properties, comparing prices, and trying to determine if a deal is
-                  worth pursuing.
+                  You spend countless hours researching properties, comparing
+                  prices, and trying to determine if a deal is worth pursuing.
                 </p>
               </div>
 
@@ -1085,10 +1112,12 @@ export default function DealScorePublicPage() {
                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                   <BarChart3 className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Uncertain ROI Calculations</h3>
+                <h3 className="text-xl font-semibold mb-2">
+                  Uncertain ROI Calculations
+                </h3>
                 <p className="text-muted-foreground">
-                  Without accurate data, you're left guessing about potential returns, rental yields, and whether the asking
-                  price is fair.
+                  Without accurate data, you're left guessing about potential
+                  returns, rental yields, and whether the asking price is fair.
                 </p>
               </div>
 
@@ -1096,10 +1125,12 @@ export default function DealScorePublicPage() {
                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                   <TrendingUp className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Missing Great Opportunities</h3>
+                <h3 className="text-xl font-semibold mb-2">
+                  Missing Great Opportunities
+                </h3>
                 <p className="text-muted-foreground">
-                  Analysis paralysis means you might miss out on properties with excellent potential while others snap them
-                  up.
+                  Analysis paralysis means you might miss out on properties with
+                  excellent potential while others snap them up.
                 </p>
               </div>
             </div>
@@ -1112,7 +1143,8 @@ export default function DealScorePublicPage() {
                   Make Confident Investment Decisions in Minutes
                 </h2>
                 <p className="text-xl text-muted-foreground">
-                  Our Deal Score™ gives you the clarity you need to act quickly and confidently.
+                  Our Deal Score™ gives you the clarity you need to act quickly
+                  and confidently.
                 </p>
               </div>
 
@@ -1121,10 +1153,12 @@ export default function DealScorePublicPage() {
                   <div className="flex gap-4">
                     <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                     <div>
-                      <h3 className="text-xl font-semibold mb-1">Instant Property Analysis</h3>
+                      <h3 className="text-xl font-semibold mb-1">
+                        Instant Property Analysis
+                      </h3>
                       <p className="text-muted-foreground">
-                        Get a comprehensive deal score in seconds, not days. Know immediately if a property is worth
-                        pursuing.
+                        Get a comprehensive deal score in seconds, not days.
+                        Know immediately if a property is worth pursuing.
                       </p>
                     </div>
                   </div>
@@ -1132,10 +1166,13 @@ export default function DealScorePublicPage() {
                   <div className="flex gap-4">
                     <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                     <div>
-                      <h3 className="text-xl font-semibold mb-1">Data-Driven Insights</h3>
+                      <h3 className="text-xl font-semibold mb-1">
+                        Data-Driven Insights
+                      </h3>
                       <p className="text-muted-foreground">
-                        Make decisions based on real market data, not hunches. Compare properties against area averages and
-                        historical trends.
+                        Make decisions based on real market data, not hunches.
+                        Compare properties against area averages and historical
+                        trends.
                       </p>
                     </div>
                   </div>
@@ -1143,10 +1180,13 @@ export default function DealScorePublicPage() {
                   <div className="flex gap-4">
                     <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                     <div>
-                      <h3 className="text-xl font-semibold mb-1">Financing Clarity</h3>
+                      <h3 className="text-xl font-semibold mb-1">
+                        Financing Clarity
+                      </h3>
                       <p className="text-muted-foreground">
-                        Understand exactly what a property will cost you monthly and what returns you can expect, both short
-                        and long term.
+                        Understand exactly what a property will cost you monthly
+                        and what returns you can expect, both short and long
+                        term.
                       </p>
                     </div>
                   </div>
@@ -1156,7 +1196,7 @@ export default function DealScorePublicPage() {
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-lg blur opacity-75"></div>
                   <div className="relative bg-card rounded-lg overflow-hidden">
                     <img
-                      src="/images/Deal Score Screenshot.jpg"
+                      src="images/Deal Score Promo Image.png"
                       alt="Property analysis form"
                       className="w-full h-auto"
                     />
@@ -1170,19 +1210,31 @@ export default function DealScorePublicPage() {
             <div className="container px-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">R2.8B+</div>
-                  <p className="text-muted-foreground">Property Value Analyzed</p>
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    R2.8B+
+                  </div>
+                  <p className="text-muted-foreground">
+                    Property Value Analyzed
+                  </p>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">12,500+</div>
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    12,500+
+                  </div>
                   <p className="text-muted-foreground">Investors Helped</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">18.5%</div>
-                  <p className="text-muted-foreground">Average ROI Improvement</p>
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    18.5%
+                  </div>
+                  <p className="text-muted-foreground">
+                    Average ROI Improvement
+                  </p>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">9.2/10</div>
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    9.2/10
+                  </div>
                   <p className="text-muted-foreground">Investor Satisfaction</p>
                 </div>
               </div>
@@ -1195,8 +1247,8 @@ export default function DealScorePublicPage() {
                 Ready to Make Smarter Property Investments?
               </h2>
               <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join thousands of successful investors who are finding better deals, maximizing returns, and building wealth
-                through property.
+                Join thousands of successful investors who are finding better
+                deals, maximizing returns, and building wealth through property.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" className="text-lg px-8">
@@ -1209,7 +1261,6 @@ export default function DealScorePublicPage() {
             </div>
           </section>
         </div>
-
       </main>
 
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
@@ -1234,7 +1285,11 @@ export default function DealScorePublicPage() {
               className="grid grid-cols-2 gap-4"
             >
               <div>
-                <RadioGroupItem value="card" id="card" className="peer sr-only" />
+                <RadioGroupItem
+                  value="card"
+                  id="card"
+                  className="peer sr-only"
+                />
                 <Label
                   htmlFor="card"
                   className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
@@ -1244,7 +1299,11 @@ export default function DealScorePublicPage() {
                 </Label>
               </div>
               <div>
-                <RadioGroupItem value="instant-eft" id="instant-eft" className="peer sr-only" />
+                <RadioGroupItem
+                  value="instant-eft"
+                  id="instant-eft"
+                  className="peer sr-only"
+                />
                 <Label
                   htmlFor="instant-eft"
                   className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
