@@ -443,9 +443,10 @@ export default function DealScorePublicPage() {
     setProcessingPayment(false);
     setShowPaymentModal(false);
     setReportUnlocked(true);
+    setAnalysisRequested(false); // Reset analysis request state
     toast({
       title: "Success",
-      description: "Payment successful! Your report has been unlocked.",
+      description: "Payment successful! Click 'Generate AI Analysis' to view the analysis.",
     });
   };
 
