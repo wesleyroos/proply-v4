@@ -85,7 +85,7 @@ export default function DealScorePublicPage() {
   const [areaRateError, setAreaRateError] = useState<string>();
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   const [analysis, setAnalysis] = useState<string>("");
-
+  const [reportUnlocked, setReportUnlocked] = useState(false);
 
   // Handler for demo data
   const fillDemoData = () => {
