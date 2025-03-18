@@ -83,19 +83,9 @@ export default function DealScorePublicPage() {
   >("idle");
   const [showAreaRateDialog, setShowAreaRateDialog] = useState(false);
   const [areaRateError, setAreaRateError] = useState<string>();
-  const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
-  const [analysis, setAnalysis] = useState<string>("");
   const [reportUnlocked, setReportUnlocked] = useState(false);
-  const [analysisRequested, setAnalysisRequested] = useState(false);
 
-  useEffect(() => {
-    if (reportUnlocked && analysisRequested) {
-      fetchAnalysis();
-      setAnalysisRequested(false);
-    }
-  }, [reportUnlocked, analysisRequested]);
 
-  // Handler for demo data
   const fillDemoData = () => {
     setDemoClicks((prev) => {
       if (prev === 2) {
@@ -121,7 +111,6 @@ export default function DealScorePublicPage() {
   };
 
   useEffect(() => {
-    // Fetch current prime rate when component mounts
     const fetchPrimeRate = async () => {
       try {
         const response = await fetch("/api/prime-rate");
@@ -138,7 +127,6 @@ export default function DealScorePublicPage() {
     fetchPrimeRate();
   }, []);
 
-  // Format number with thousand separators for display
   const formatWithThousandSeparators = (value: string): string => {
     const numericValue = value.replace(/[^\d.]/g, "");
     if (!numericValue) return "";
@@ -147,13 +135,11 @@ export default function DealScorePublicPage() {
     return parts.length > 1 ? `${parts[0]}.${parts[1]}` : parts[0];
   };
 
-  // Parse formatted number to remove separators for calculations
   const parseFormattedNumber = (value: string): string => {
     return value.replace(/,/g, "");
   };
 
   const handleInputChange = (field: string, value: string) => {
-    // Store the actual numeric value (without formatting)
     let numericValue = value;
 
     if (field === "bedrooms") {
@@ -187,7 +173,6 @@ export default function DealScorePublicPage() {
       }
     }
 
-    // Handle deposit calculations
     if (field === "depositAmount") {
       const purchasePrice = Number(
         parseFormattedNumber(formData.purchasePrice),
@@ -230,15 +215,12 @@ export default function DealScorePublicPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // For steps 1 and 2, just move to next step
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
       return;
     }
 
-    // Only calculate on final step
     setIsCalculating(true);
-    setIsLoadingAnalysis(true); //Set loading state to true
     await new Promise((resolve) => setTimeout(resolve, 2000));
     calculateDealScore();
   };
@@ -250,7 +232,6 @@ export default function DealScorePublicPage() {
   };
 
   const calculateDealScore = () => {
-    // Calculate property rate and area rate difference
     const propertyRate =
       Number(parseFormattedNumber(formData.purchasePrice)) /
       Number(parseFormattedNumber(formData.size));
@@ -259,7 +240,6 @@ export default function DealScorePublicPage() {
         Number(parseFormattedNumber(formData.areaRate))) *
       100;
 
-    // Calculate rental yields
     let shortTermYield = null;
     let longTermYield = null;
     const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
@@ -279,7 +259,6 @@ export default function DealScorePublicPage() {
       shortTermYield = (annualRevenue / purchasePrice) * 100;
     }
 
-    // Calculate score
     let score = 50;
     score -= priceDiff * 0.5;
 
@@ -318,7 +297,6 @@ export default function DealScorePublicPage() {
 
     score = Math.max(0, Math.min(100, score));
 
-    // Determine rating and color
     let rating: string;
     let color: string;
 
@@ -362,115 +340,40 @@ export default function DealScorePublicPage() {
       bestStrategy:
         shortTermYield > (longTermYield || 0) ? "Short-Term" : "Long-Term",
     });
-    setShowResult(true); //Set showResult to true after calculation
+    setShowResult(true);
     setIsCalculating(false);
-
-    // Add this line to fetch the analysis after calculating the deal score
-    fetchDealAnalysis();
-  };
-
-  const fetchDealAnalysis = async () => {
-    setIsLoadingAnalysis(true);
-    try {
-      const response = await fetch('/api/deal-advisor/deal-analysis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          address: formData.address,
-          areaRateResponses: [`Area rate retrieved: R${parseFormattedNumber(formData.areaRate)}`],
-          finalAreaRate: Number(parseFormattedNumber(formData.areaRate)),
-          propertySize: Number(parseFormattedNumber(formData.size)),
-          propertyCondition: formData.propertyCondition,
-          nightlyRate: formData.nightlyRate ? Number(parseFormattedNumber(formData.nightlyRate)) : null,
-          occupancyRate: formData.occupancy ? Number(formData.occupancy) : null,
-          monthlyRental: formData.longTermRental ? Number(parseFormattedNumber(formData.longTermRental)) : null,
-          purchasePrice: Number(parseFormattedNumber(formData.purchasePrice)),
-          dealScore: result?.score || 0
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch analysis');
-      }
-
-      const reader = response.body?.getReader();
-      let analysisText = '';
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-
-          if (done) break;
-
-          const chunk = new TextDecoder().decode(value);
-          const lines = chunk.split('\n');
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(line.slice(5));
-                if (data.chunk) {
-                  analysisText += data.chunk;
-                  setAnalysis(analysisText);
-                }
-              } catch (e) {
-                console.debug('Ignored parsing error for incomplete chunk');
-              }
-            }
-          }
-        }
-      }
-
-    } catch (error) {
-      console.error('Error fetching analysis:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to generate property analysis. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoadingAnalysis(false);
-    }
   };
 
   const handlePayment = async () => {
     setProcessingPayment(true);
-    // Simulate payment processing
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setProcessingPayment(false);
     setShowPaymentModal(false);
     setReportUnlocked(true);
-    setAnalysisRequested(false); // Reset analysis request state
     toast({
       title: "Success",
-      description: "Payment successful! Click 'Generate AI Analysis' to view the analysis.",
+      description: "Payment successful! Your report is now unlocked.",
     });
   };
 
   const resetForm = () => {
-    setCurrentStep(1); //Only reset the step
+    setCurrentStep(1);
   };
 
   const handleNewCalculation = () => {
     setShowResult(false);
     setCurrentStep(1);
-    setReportUnlocked(false); // Reset the unlock state
-    setAnalysis(""); // Clear previous analysis
+    setReportUnlocked(false);
+    setResult(null);
   };
 
-  // Placeholder for the download report functionality
   const handleDownloadReport = () => {
-    // TODO: Implement PDF download functionality
     toast({
       title: "Coming Soon",
       description: "PDF download functionality will be available soon!",
     });
   };
 
-  // Get list of missing field names for validation
   const getMissingFields = (step: number): string[] => {
     const missingFields: string[] = [];
 
@@ -511,7 +414,6 @@ export default function DealScorePublicPage() {
     return getMissingFields(step).length === 0;
   };
 
-  // Render form steps
   const renderFormStep = () => {
     switch (currentStep) {
       case 1:
@@ -749,7 +651,6 @@ export default function DealScorePublicPage() {
     }
   };
 
-  // Update the step counter UI
   const renderStepCounter = () => (
     <div className="mb-6">
       <div className="flex justify-between mb-2">
@@ -796,7 +697,6 @@ export default function DealScorePublicPage() {
     </div>
   );
 
-  // Update the area rate fetching function
   const fetchAreaRate = async () => {
     try {
       setAreaRateStatus("loading");
@@ -819,7 +719,6 @@ export default function DealScorePublicPage() {
 
       const data = await response.json();
 
-      // Add artificial delay to show the progress dialog
       await new Promise((resolve) => setTimeout(resolve, 4000));
 
       setFormData((prev) => ({
@@ -844,74 +743,14 @@ export default function DealScorePublicPage() {
       });
     } finally {
       setIsLoading(false);
-      // Keep dialog open longer to show success/error state
       setTimeout(() => {
         setShowAreaRateDialog(false);
       }, 2000);
     }
   };
 
-  const fetchAnalysis = async () => {
-    setIsLoadingAnalysis(true);
-    try {
-      const response = await fetch('/api/deal-advisor/deal-analysis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          dealDetails: {
-            purchasePrice: Number(parseFormattedNumber(formData.purchasePrice)),
-            marketPrice: result?.estimatedValue || 0,
-            priceDiff: result?.percentageDifference || 0,
-            dealScore: result?.score || 0,
-            condition: formData.propertyCondition
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get AI analysis');
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('No response body');
-
-      let analysisText = '';
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(5));
-              if (data.chunk) {
-                analysisText += data.chunk;
-                setAnalysis(analysisText);
-              }
-            } catch (e) {
-              console.debug('Ignored parsing error for incomplete chunk');
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching analysis:', error);
-      setAnalysis("Sorry, there was an error generating the analysis. Please try again later.");
-    } finally {
-      setIsLoadingAnalysis(false);
-    }
-  };
-
   return (
     <div className="flex min-h-screen flex-col relative overflow-hidden bg-background">
-      {/* Logo */}
       <div className="absolute top-8 left-8 z-20">
         <img
           src="/proply-logo-auth.png"
@@ -920,17 +759,13 @@ export default function DealScorePublicPage() {
         />
       </div>
 
-      {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Grid Pattern */}
         <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#8884_1px,transparent_1px),linear-gradient(to_bottom,#8884_1px,transparent_1px)] bg-[size:14px_24px]"></div>
 
-        {/* Animated Circles */}
         <div className="circle-animation absolute -top-[150px] -left-[150px] w-[300px] h-[300px] rounded-full bg-primary/10 blur-3xl"></div>
         <div className="circle-animation animation-delay-1000 absolute top-[20%] -right-[100px] w-[200px] h-[200px] rounded-full bg-blue-400/10 blur-3xl"></div>
         <div className="circle-animation animation-delay-2000 absolute -bottom-[150px] left-[20%] w-[250px] h-[250px] rounded-full bg-primary/10 blur-3xl"></div>
 
-        {/* Data Points */}
         <div className="data-points absolute top-0 left-0 w-full h-full">
           {Array.from({ length: 50 }).map((_, i) => (
             <div
@@ -947,12 +782,10 @@ export default function DealScorePublicPage() {
           ))}
         </div>
 
-        {/* Geometric Shapes */}
         <div className="absolute top-[15%] left-[10%] w-16 h-16 border-2 border-primary/20 rounded-lg rotate-12 animate-float"></div>
         <div className="absolute bottom-[20%] right-[15%] w-20 h-20 border-2 border-primary/20 rounded-full animate-float animation-delay-1000"></div>
         <div className="absolute top-[60%] right-[25%] w-12 h-12 border-2 border-primary/20 rotate-45 animate-float animation-delay-2000"></div>
 
-        {/* Data Lines */}
         <svg
           className="absolute inset-0 w-full h-full opacity-[0.07]"
           xmlns="http://www.w3.org/2000/svg"
@@ -987,7 +820,6 @@ export default function DealScorePublicPage() {
           </div>
 
           <div className="mx-auto mt-12 w-full max-w-[500px] relative">
-            {/* Card Glow Effect */}
             <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-slow"></div>
 
             <Card className="relative bg-background rounded-lg p-6">
@@ -996,7 +828,6 @@ export default function DealScorePublicPage() {
                   Property Deal Score Calculator
                 </h1>
 
-                {/* Hidden demo data button */}
                 <button
                   type="button"
                   onClick={fillDemoData}
@@ -1042,7 +873,6 @@ export default function DealScorePublicPage() {
                   </form>
                 ) : (
                   <div className="space-y-6">
-                    {/* Result display section */}
                     <div className="text-center">
                       <h2 className="text-2xl font-bold mb-2">
                         Deal Score: {result?.score}%
@@ -1072,7 +902,6 @@ export default function DealScorePublicPage() {
                         </div>
                       </div>
 
-                      {/* Score Indicator Bar */}
                       <div className="relative h-4 mt-6 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
                         <div
                           className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
@@ -1086,10 +915,8 @@ export default function DealScorePublicPage() {
                       </div>
                     </div>
 
-                    {/* Detailed Analysis Section */}
                     <div className="relative mt-16">
                       <div className={`space-y-8 ${!reportUnlocked ? 'blur-sm select-none pointer-events-none' : ''}`}>
-                        {/* Deal Factors Section */}
                         <div className="mt-8">
                           <Accordion
                             type="single"
@@ -1099,8 +926,7 @@ export default function DealScorePublicPage() {
                           >
                             <AccordionItem value="deal-factors">
                               <AccordionTrigger className="text-xl font-semibold">
-                                Key Deal Factors
-                              </AccordionTrigger>
+                                Key Deal Factors                              </AccordionTrigger>
                               <AccordionContent>
                                 <div className="space-y-4 pt-2">
                                   <div className="flex justify-between">
@@ -1188,25 +1014,7 @@ export default function DealScorePublicPage() {
                           </Accordion>
                         </div>
 
-                        {/* AI Analysis Section - Only visible when unlocked */}
-                        <div className="mt-8">
-                          {reportUnlocked ? (
-                            <div className="border border-gray-400 p-4 rounded-lg">
-                              <h3 className="text-xl font-semibold mb-4">AI-Powered Property Analysis</h3>
-                              <div className="text-muted-foreground prose prose-a:text-primary prose-p:text-muted-foreground prose-h2:text-xl prose-h2:font-semibold prose-ul:list-disc prose-ul:text-muted-foreground prose-strong:font-semibold">
-                                {analysis.split('\n').map((paragraph, index) => (
-                                  <p key={index} className="mb-4 last:mb-0">{paragraph}</p>
-                                ))}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                              Analysis will appear here after calculation
-                            </div>
-                          )}
-                        </div>
 
-                        {/* Report Download Button - Only visible when unlocked */}
                         {reportUnlocked && (
                           <div className="mt-8 flex justify-center">
                             <Button size="lg" onClick={() => handleDownloadReport()}>
@@ -1217,7 +1025,6 @@ export default function DealScorePublicPage() {
                         )}
                       </div>
 
-                      {/* Payment Overlay */}
                       {!reportUnlocked && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background/95 backdrop-blur-sm rounded-lg">
                           <Lock className="w-12 h-12 text-primary mb-4" />
@@ -1233,7 +1040,6 @@ export default function DealScorePublicPage() {
                       )}
                     </div>
 
-                    {/* Navigation Buttons */}
                     <div className="flex justify-between mt-8">
                       <Button
                         variant="outline"
@@ -1248,9 +1054,7 @@ export default function DealScorePublicPage() {
             </Card>
           </div>
         </div>
-        {/* Add marketing content below calculator */}
         <div className="py-16 space-y-24">
-          {/* Hero Problems Section */}
           <section className="container px-4">
             <div className="max-w-3xl mx-auto text-center space-y-4">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
@@ -1298,7 +1102,6 @@ export default function DealScorePublicPage() {
             </div>
           </section>
 
-          {/* Transformation Section */}
           <section className="bg-muted/30 py-16">
             <div className="container px-4">
               <div className="max-w-3xl mx-auto text-center space-y-4 mb-16">
@@ -1360,7 +1163,6 @@ export default function DealScorePublicPage() {
             </div>
           </section>
 
-          {/* Stats Section */}
           <section className="bg-primary/5 py-16 border-y">
             <div className="container px-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -1384,7 +1186,6 @@ export default function DealScorePublicPage() {
             </div>
           </section>
 
-          {/* CTA Section */}
           <section className="container px-4">
             <div className="max-w-4xl mx-auto bg-card rounded-lg p-8 md:p-12 shadow-lg border border-border/50 text-center">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
@@ -1408,7 +1209,6 @@ export default function DealScorePublicPage() {
 
       </main>
 
-      {/* Payment Modal */}
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -1472,7 +1272,6 @@ export default function DealScorePublicPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Area Rate Progress Dialog remains the same */}
       <AreaRateProgressDialog
         open={showAreaRateDialog}
         onOpenChange={setShowAreaRateDialog}
