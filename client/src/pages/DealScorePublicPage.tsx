@@ -84,8 +84,7 @@ export default function DealScorePublicPage() {
   const [showAreaRateDialog, setShowAreaRateDialog] = useState(false);
   const [areaRateError, setAreaRateError] = useState<string>();
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
-  const [analysis, setAnalysis] = useState<string | null>(null);
-  const [reportUnlocked, setReportUnlocked] = useState(false);
+  const [analysis, setAnalysis] = useState<string>("");
 
 
   // Handler for demo data
@@ -450,7 +449,7 @@ export default function DealScorePublicPage() {
     setShowResult(false);
     setCurrentStep(1);
     setReportUnlocked(false); // Reset the unlock state
-    setAnalysis(null); // Clear previous analysis
+    setAnalysis(""); // Clear previous analysis
   };
 
   // Placeholder for the download report functionality
@@ -840,6 +839,64 @@ export default function DealScorePublicPage() {
       setTimeout(() => {
         setShowAreaRateDialog(false);
       }, 2000);
+    }
+  };
+
+  const fetchAnalysis = async () => {
+    setIsLoadingAnalysis(true);
+    try {
+      const response = await fetch('/api/deal-advisor/deal-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          dealDetails: {
+            purchasePrice: Number(parseFormattedNumber(formData.purchasePrice)),
+            marketPrice: result?.estimatedValue || 0,
+            priceDiff: result?.percentageDifference || 0,
+            dealScore: result?.score || 0,
+            condition: formData.propertyCondition
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI analysis');
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No response body');
+
+      let analysisText = '';
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(5));
+              if (data.chunk) {
+                analysisText += data.chunk;
+                setAnalysis(analysisText);
+              }
+            } catch (e) {
+              console.debug('Ignored parsing error for incomplete chunk');
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching analysis:', error);
+      setAnalysis("Sorry, there was an error generating the analysis. Please try again later.");
+    } finally {
+      setIsLoadingAnalysis(false);
     }
   };
 
