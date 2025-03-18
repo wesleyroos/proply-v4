@@ -1198,7 +1198,7 @@ export default function DealScorePublicPage() {
                     <img
                       src="images/Deal Score Promo Image.png"
                       alt="Property analysis form"
-                      className="w-full h-auto"
+                      className="w-1/2 h-auto mx-auto"
                     />
                   </div>
                 </div>
