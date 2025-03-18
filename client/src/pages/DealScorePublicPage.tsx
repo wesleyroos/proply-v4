@@ -15,6 +15,7 @@ import {
   BarChart3,
   TrendingUp,
   CheckCircle2,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1081,6 +1082,9 @@ export default function DealScorePublicPage() {
               </div>
             </Card>
           </div>
+        </div>
+        <div className="flex justify-center my-8">
+          <ChevronDown className="text-[#1BA3FF] h-8 w-8 animate-bounce" />
         </div>
         <div className="py-16 space-y-24">
           <section className="container px-4">
