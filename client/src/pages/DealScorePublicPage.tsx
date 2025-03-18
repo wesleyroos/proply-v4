@@ -1188,7 +1188,12 @@ export default function DealScorePublicPage() {
                             </Accordion>
                           </div>
 
-                          ray-400">
+                          {/* AI Analysis Section - Only visible when unlocked */}
+                          <div className="mt-8">
+                            {reportUnlocked ? (
+                              <div className="border border-gray-400 p-4 rounded-lg">
+                                <h3 className="text-xl font-semibold mb-4">AI-Powered Property Analysis</h3>
+                                <div className="text-muted-foreground prose prose-a:text-primary prose-p:text-muted-foreground prose-h2:text-xl prose-h2:font-semibold prose-ul:list-disc prose-ul:text-muted-foreground prose-strong:font-semibold">
                                   {analysis.split('\n').map((paragraph, index) => (
                                     <p key={index} className="mb-4 last:mb-0">{paragraph}</p>
                                   ))}
@@ -1198,8 +1203,7 @@ export default function DealScorePublicPage() {
                                   Analysis will appear here after calculation
                                 </div>
                               )}
-                              </div>
-                            )}
+                            </div>
                           </div>
 
                           {/* Report Download Button - Only visible when unlocked */}
