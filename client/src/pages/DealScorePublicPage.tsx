@@ -85,6 +85,16 @@ export default function DealScorePublicPage() {
   const [areaRateError, setAreaRateError] = useState<string>();
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   const [analysis, setAnalysis] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleOpen = async () => {
+    setIsDialogOpen(true);
+    if (!analysis) {
+      setIsLoadingAnalysis(true);
+      await fetchDealAnalysis();
+      setIsLoadingAnalysis(false);
+    }
+  };
   const [reportUnlocked, setReportUnlocked] = useState(false);
 
 
@@ -1122,27 +1132,47 @@ export default function DealScorePublicPage() {
                             </Accordion>
                           </div>
 
-                          {/* AI Analysis Section */}
+                          {/* AI Analysis Button */}
                           <div className="mt-12 pt-6 border-t">
-                            <h3 className="text-xl font-semibold mb-4">AI Investment Analysis</h3>
-                            <div className="relative bg-card rounded-lg border shadow-sm">
+                            <Button
+                              onClick={handleOpen}
+                              variant="outline"
+                              className="w-full"
+                              disabled={isLoadingAnalysis}
+                            >
                               {isLoadingAnalysis ? (
-                                <div className="flex items-center justify-center py-8">
-                                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                                  <span className="ml-3">Generating property analysis...</span>
-                                </div>
-                              ) : analysis ? (
-                                <div className="h-[300px] overflow-y-auto p-4 prose prose-sm max-w-none scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
-                                  {analysis.split('\n').map((paragraph, index) => (
-                                    <p key={index} className="mb-4 last:mb-0">{paragraph}</p>
-                                  ))}
-                                </div>
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  Generating Analysis...
+                                </>
                               ) : (
-                                <div className="text-center py-8 text-muted-foreground">
-                                  Analysis will appear here after calculation
-                                </div>
+                                'View AI Analysis'
                               )}
-                            </div>
+                            </Button>
+                          </div>
+
+                          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>AI Investment Analysis</DialogTitle>
+                              </DialogHeader>
+                              
+                              <div className="mt-4">
+                                {isLoadingAnalysis ? (
+                                  <div className="flex items-center justify-center py-8">
+                                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                    <span className="ml-2">Generating analysis...</span>
+                                  </div>
+                                ) : (
+                                  <div className="prose prose-sm max-w-none">
+                                    {analysis?.split('\n').map((paragraph, index) => (
+                                      <p key={index}>{paragraph}</p>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
                           </div>
 
                           {/* Report Download Button - Only visible when unlocked */}
