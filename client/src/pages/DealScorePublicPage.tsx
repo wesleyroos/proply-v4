@@ -1187,8 +1187,9 @@ export default function DealScorePublicPage() {
                                 onClick={fetchAnalysis} 
                                 className="w-full"
                                 variant="outline"
+                                disabled={isLoadingAnalysis}
                               >
-                                Generate AI Analysis
+                                {isLoadingAnalysis ? 'Generating Analysis...' : 'Generate AI Analysis'}
                               </Button>
                             ) : (
                               <div className="relative bg-card rounded-lg border shadow-sm">
