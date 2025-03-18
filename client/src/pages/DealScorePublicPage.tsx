@@ -1194,11 +1194,11 @@ export default function DealScorePublicPage() {
 
                 <div className="relative rounded-lg overflow-hidden shadow-lg">
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-lg blur opacity-75"></div>
-                  <div className="relative bg-card rounded-lg overflow-hidden flex justify-center">
+                  <div className="relative bg-card rounded-lg overflow-hidden">
                     <img
                       src="images/Deal Score Promo Image.png"
                       alt="Property analysis form"
-                      className="w-1/2 h-auto"
+                      className="w-1/2 h-auto mx-auto"
                     />
                   </div>
                 </div>
