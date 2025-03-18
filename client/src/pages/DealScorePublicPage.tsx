@@ -1204,7 +1204,6 @@ export default function DealScorePublicPage() {
                                 </div>
                               )}
                             </div>
-                          </div>
 
                           {/* Report Download Button - Only visible when unlocked */}
                           {reportUnlocked && (
