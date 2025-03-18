@@ -915,9 +915,11 @@ export default function DealScorePublicPage() {
                       </div>
                     </div>
 
-                    <div className="relative mt-16">
-                      <div className={`space-y-8 ${!reportUnlocked ? 'blur-sm select-none pointer-events-none' : ''}`}>
-                        <div className="mt-8">
+                    {/* Detailed Analysis Section */}
+                    <div className="relative mt-8">
+                      <div className={`space-y-6 ${!reportUnlocked ? 'blur-sm select-none pointer-events-none' : ''}`}>
+                        {/* Deal Factors Section */}
+                        <div className="mt-4">
                           <Accordion
                             type="single"
                             collapsible
@@ -926,10 +928,11 @@ export default function DealScorePublicPage() {
                           >
                             <AccordionItem value="deal-factors">
                               <AccordionTrigger className="text-xl font-semibold">
-                                Key Deal Factors                              </AccordionTrigger>
+                                Key Deal Factors
+                              </AccordionTrigger>
                               <AccordionContent>
                                 <div className="space-y-4 pt-2">
-                                  <div className="flex justify-between">
+                                                                    <div className="flex justify-between">
                                     <span>Price per m²:</span>
                                     <span className="font-medium">
                                       R{Math.round(result?.propertyRate || 0).toLocaleString()}/m²
@@ -1014,9 +1017,8 @@ export default function DealScorePublicPage() {
                           </Accordion>
                         </div>
 
-
                         {reportUnlocked && (
-                          <div className="mt-8 flex justify-center">
+                          <div className="mt-6 flex justify-center">
                             <Button size="lg" onClick={() => handleDownloadReport()}>
                               <Download className="mr-2 h-4 w-4" />
                               Download Full Report
@@ -1026,16 +1028,18 @@ export default function DealScorePublicPage() {
                       </div>
 
                       {!reportUnlocked && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background/95 backdrop-blur-sm rounded-lg">
-                          <Lock className="w-12 h-12 text-primary mb-4" />
-                          <h3 className="text-xl font-semibold mb-2">Unlock Full Report</h3>
-                          <p className="text-muted-foreground mb-4 text-center max-w-sm">
-                            Get access to the complete property analysis and investment insights
-                          </p>
-                          <Button onClick={() => setShowPaymentModal(true)} size="lg">
-                            <CreditCard className="mr-2 h-4 w-4" />
-                            Download Full Report for R49
-                          </Button>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background/95 backdrop-blur-sm rounded-lg p-8">
+                          <div className="bg-background/95 rounded-xl p-8 shadow-lg border border-border/10 max-w-md mx-auto text-center">
+                            <Lock className="w-12 h-12 text-primary mb-6 mx-auto" />
+                            <h3 className="text-2xl font-semibold mb-3">Unlock Full Report</h3>
+                            <p className="text-muted-foreground mb-6 text-center max-w-sm mx-auto">
+                              Get access to the complete property analysis and investment insights
+                            </p>
+                            <Button onClick={() => setShowPaymentModal(true)} size="lg" className="w-full">
+                              <CreditCard className="mr-2 h-4 w-4" />
+                              Download Full Report for R49
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1048,6 +1052,7 @@ export default function DealScorePublicPage() {
                         New Calculation
                       </Button>
                     </div>
+
                   </div>
                 )}
               </div>
