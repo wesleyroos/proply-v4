@@ -1188,27 +1188,7 @@ export default function DealScorePublicPage() {
                             </Accordion>
                           </div>
 
-                          {/* AI Analysis Section */}
-                          <div className="mt-12 pt-6 border-t">
-                            <h3 className="text-xl font-semibold mb-4">AI Investment Analysis</h3>
-                            {!analysis ? (
-                              <Button 
-                                onClick={() => setAnalysisRequested(true)} 
-                                className="w-full"
-                                variant="outline"
-                                disabled={isLoadingAnalysis || !reportUnlocked}
-                              >
-                                {isLoadingAnalysis ? 'Generating Analysis...' : 'Generate AI Analysis'}
-                              </Button>
-                            ) : (
-                              <div className="relative bg-card rounded-lg border shadow-sm">
-                              {isLoadingAnalysis ? (
-                                <div className="flex items-center justify-center py-8">
-                                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                                  <span className="ml-3">Generating property analysis...</span>
-                                </div>
-                              ) : analysis ? (
-                                <div className="h-[300px] overflow-y-auto p-4 prose prose-sm max-w-none scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
+                          ray-400">
                                   {analysis.split('\n').map((paragraph, index) => (
                                     <p key={index} className="mb-4 last:mb-0">{paragraph}</p>
                                   ))}
