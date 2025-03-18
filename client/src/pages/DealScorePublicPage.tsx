@@ -1083,8 +1083,8 @@ export default function DealScorePublicPage() {
             </Card>
           </div>
         </div>
-        <div className="flex justify-center my-8">
-          <ChevronDown className="text-[#1BA3FF] h-8 w-8 animate-bounce" />
+        <div className="flex justify-center my-4">
+          <ChevronDown className="text-[#1BA3FF] h-16 w-16 animate-bounce" />
         </div>
         <div className="py-16 space-y-24">
           <section className="container px-4">
