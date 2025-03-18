@@ -86,6 +86,14 @@ export default function DealScorePublicPage() {
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   const [analysis, setAnalysis] = useState<string>("");
   const [reportUnlocked, setReportUnlocked] = useState(false);
+  const [analysisRequested, setAnalysisRequested] = useState(false);
+
+  useEffect(() => {
+    if (reportUnlocked && analysisRequested) {
+      fetchAnalysis();
+      setAnalysisRequested(false);
+    }
+  }, [reportUnlocked, analysisRequested]);
 
   // Handler for demo data
   const fillDemoData = () => {
@@ -1184,10 +1192,10 @@ export default function DealScorePublicPage() {
                             <h3 className="text-xl font-semibold mb-4">AI Investment Analysis</h3>
                             {!analysis ? (
                               <Button 
-                                onClick={fetchAnalysis} 
+                                onClick={() => setAnalysisRequested(true)} 
                                 className="w-full"
                                 variant="outline"
-                                disabled={isLoadingAnalysis}
+                                disabled={isLoadingAnalysis || !reportUnlocked}
                               >
                                 {isLoadingAnalysis ? 'Generating Analysis...' : 'Generate AI Analysis'}
                               </Button>
