@@ -68,7 +68,7 @@ export default function DealScorePublicPage() {
     // Financing Details (Step 3)
     depositAmount: "",
     depositPercentage: "10", // Default to 10%
-    interestRate: "11.75",
+    interestRate: "11",
     loanTerm: "20",
   });
 
