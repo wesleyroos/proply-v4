@@ -936,7 +936,7 @@ export default function DealScorePublicPage() {
                           className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
                           style={{ left: `${result?.score}%` }}
                         />
-                        <div className="absolute -bottom-6 left-0 textxs">
+                        <div className="absolute -bottom-6 left-0 text-xs">
                           Poor
                         </div>
                         <div className="absolute -bottom-6 left-1/4 text-xs">
@@ -952,6 +952,7 @@ export default function DealScorePublicPage() {
                           Excellent
                         </div>
                       </div>
+                    </div>
 
                     {/* Detailed Analysis Section */}
                     <div className="relative mt-8">
@@ -973,7 +974,7 @@ export default function DealScorePublicPage() {
                               <AccordionContent>
                                 <div className="space-y-4 pt-2">
                                   <div className="flex justify-between">
-                                    <span>Property price/m²:</span>{" "}
+                                    <span>Price per m²:</span>{" "}
                                     <span className="font-medium">
                                       R
                                       {Math.round(
@@ -1102,24 +1103,11 @@ export default function DealScorePublicPage() {
                       )}
                     </div>
 
-                    <div className="mt-8 flex justify-center items-center gap-4">
-                      <Button
-                        onClick={handleDownloadReport}
-                        className="flex-1 max-w-[200px]"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download Full Report
-                      </Button>
-
-                      <Button
-                        onClick={handleNewCalculation}
-                        variant="outline"
-                        className="flex-1 max-w-[200px]"
-                      >
+                    <div className="flex justify-between mt-8">
+                      <Button variant="outline" onClick={handleNewCalculation}>
                         New Calculation
                       </Button>
                     </div>
-
                   </div>
                 )}
               </div>
