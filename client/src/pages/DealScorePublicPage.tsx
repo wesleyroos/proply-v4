@@ -952,7 +952,7 @@ export default function DealScorePublicPage() {
                       </div>
                     </div>
                     
-                    {/** Detailed Analysis Section */}
+                    {/* Detailed Analysis Section */}
                     <div className="relative mt-8">
                       <div
                         className={`space-y-6 ${!reportUnlocked ? "blur-sm select-none pointer-events-none" : ""}`}
