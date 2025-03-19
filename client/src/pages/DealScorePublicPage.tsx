@@ -726,6 +726,44 @@ export default function DealScorePublicPage() {
     </div>
   );
 
+  const fetchRentalAmount = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/deal-advisor/rental-amount", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          address: formData.address,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch rental amount");
+      }
+
+      const data = await response.json();
+      setFormData((prev) => ({
+        ...prev,
+        longTermRental: data.rentalAmount.toString(),
+      }));
+
+      toast({
+        title: "Success",
+        description: "Rental amount fetched successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch rental amount. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const fetchAreaRate = async () => {
     try {
       setAreaRateStatus("loading");
