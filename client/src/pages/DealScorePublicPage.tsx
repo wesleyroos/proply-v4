@@ -67,10 +67,22 @@ export default function DealScorePublicPage() {
 
     // Financing Details (Step 3)
     depositAmount: "",
-    depositPercentage: "",
+    depositPercentage: "10", // Default to 10%
     interestRate: "11.75",
     loanTerm: "20",
   });
+
+  // Auto-calculate deposit when purchase price changes
+  useEffect(() => {
+    if (formData.purchasePrice) {
+      const price = Number(parseFormattedNumber(formData.purchasePrice));
+      const depositAmount = (price * 0.1).toString(); // 10% of purchase price
+      setFormData((prev) => ({
+        ...prev,
+        depositAmount,
+      }));
+    }
+  }, [formData.purchasePrice]);
 
   const [result, setResult] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -931,7 +943,7 @@ export default function DealScorePublicPage() {
                         {/* Deal Factors Section */}
                         <div className="mt-4">
                           <Accordion
-                            type="single"
+                                                        type="single"
                             collapsible
                             className="w-full"
                             defaultValue="deal-factors"
