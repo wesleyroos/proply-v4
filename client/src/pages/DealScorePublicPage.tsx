@@ -1128,7 +1128,7 @@ export default function DealScorePublicPage() {
                                     <span>Recent Area Sales:</span>
                                     <div className="flex items-center gap-2">
                                       <span className="text-sm">R3.4M - R3.7M (last 3 months)</span>
-                                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                      <Badge variant="secondary" className="bg-green-100 text-green-800 font-normal">
                                         WITHIN RANGE
                                       </Badge>
                                     </div>
