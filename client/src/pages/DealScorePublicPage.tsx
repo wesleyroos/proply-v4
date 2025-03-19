@@ -471,12 +471,22 @@ export default function DealScorePublicPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
+              <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="areaRate"
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.areaRate}
+                  onChange={(e) => handleInputChange("areaRate", e.target.value)}
+                  placeholder="Area rate will be fetched automatically"
+                  required
+                  className="flex-1"
+                />
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
+                  size="default"
                   onClick={fetchAreaRate}
                   disabled={!formData.address || isLoading}
                 >
@@ -490,15 +500,6 @@ export default function DealScorePublicPage() {
                   )}
                 </Button>
               </div>
-              <Input
-                id="areaRate"
-                type="text"
-                inputMode="numeric"
-                value={formData.areaRate}
-                onChange={(e) => handleInputChange("areaRate", e.target.value)}
-                placeholder="Area rate will be fetched automatically"
-                required
-              />
             </div>
 
             <div className="space-y-2">
