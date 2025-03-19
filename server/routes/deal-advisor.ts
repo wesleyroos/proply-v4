@@ -40,6 +40,7 @@ router.post('/area-rate', async (req, res) => {
 // Deal analysis endpoint - public access
 router.post('/deal-analysis', async (req, res) => {
 
+// Rental rate endpoint - public access
 router.post('/rental-rate', async (req, res) => {
   try {
     const { address, propertySize, bedrooms, condition } = req.body;
