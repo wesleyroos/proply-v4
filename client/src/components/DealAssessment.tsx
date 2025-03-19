@@ -162,11 +162,6 @@ export function DealAssessment({
                 </div>
                 <div className="font-bold">R{marketPrice.toLocaleString()}</div>
               </div>
-              <p className="text-sm text-center">
-                This property is <span className={`font-bold ${priceDiff > 0 ? "text-amber-500" : "text-green-500"}`}>{Math.abs(priceDiff).toFixed(1)}%</span>
-                {priceDiff > 0 ? " above " : " below "}
-                the estimated market value
-              </p>
             </div>
           </div>
         </div>
