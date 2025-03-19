@@ -24,8 +24,8 @@ import { suburbs } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
 import primeRateRouter from './routes/prime-rate';
-import { dealAdvisorHandler } from "./routes/deal-advisor"; // Added import
-import dealAdvisorRouter from './routes/deal-advisor'; // Added import
+import { dealAdvisorHandler } from "./routes/deal-advisor"; 
+import dealAdvisorRouter from './routes/deal-advisor'; 
 
 // Extend Express.User to include our schema
 declare global {
@@ -64,7 +64,8 @@ export function registerRoutes(app: Express): Server {
       req.path === "/user" ||
       req.path === "/calculate-deal-score" ||
       req.path === "/deal-advisor/area-rate" ||
-      req.path === "/deal-advisor/deal-analysis"
+      req.path === "/deal-advisor/deal-analysis" ||
+      req.path === "/deal-advisor/rental-amount"  
     ) {
       return next();
     }
@@ -1785,7 +1786,7 @@ export function registerRoutes(app: Express): Server {
 
   // Register property scraper routes
   app.use("/api", propertyScraper);
-  app.use('/api/deal-advisor', dealAdvisorRouter); // Added deal advisor endpoint
+  app.use('/api/deal-advisor', dealAdvisorRouter); 
 
   // Add the calculate-deal-score endpoint
   app.post("/api/calculate-deal-score", async (req, res) => {
