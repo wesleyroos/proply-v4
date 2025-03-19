@@ -908,7 +908,7 @@ export default function DealScorePublicPage() {
                         This property is{" "}
                         <span
                           className={`font-bold ${
-                            result?.percentageDifference > 0
+                            result?.percentageDifference < 0
                               ? "text-amber-500"
                               : "text-green-500"
                           }`}
@@ -917,7 +917,7 @@ export default function DealScorePublicPage() {
                             1,
                           )}%
                         </span>{" "}
-                        {result?.percentageDifference > 0
+                        {result?.percentageDifference < 0
                           ? "above"
                           : "below"}{" "}
                         the estimated market value
