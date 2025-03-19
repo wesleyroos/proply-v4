@@ -953,7 +953,7 @@ export default function DealScorePublicPage() {
       <main className="flex-1 relative z-10 flex flex-col items-center justify-center pt-8">
         <div className="container flex flex-col items-center px-4 py-8 text-center md:py-16 lg:py-24">
           <div className="mx-auto max-w-[800px] space-y-4">
-            <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">
+            <h1 className="text-3xl font-bold sm:text-4xl md:text5xl lg:text-6xl">
               Proply Deal Score™
             </h1>
             <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl">
@@ -1290,7 +1290,7 @@ export default function DealScorePublicPage() {
 
               <div className="bg-card rounded-lg p-6 shadow-sm border border-border/50 flex flex-col items-center text-center">
                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <BarChart3 className="h-6 w-6 text-primary" />
+                  <TrendingUp className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">
                   Uncertain ROI Calculations
