@@ -10,9 +10,9 @@ const router = express.Router();
 router.post('/rental-amount', async (req, res) => {
   try {
     const { address, propertySize, bedrooms, condition } = req.body;
-    
-    if (!address || !propertySize || !bedrooms || !condition) {
-      return res.status(400).json({ error: 'Missing required fields' });
+
+    if (!address) {
+      return res.status(400).json({ error: 'Address is required' });
     }
 
     const rentalRate = await getRentalRate(address, propertySize, bedrooms, condition);
@@ -54,59 +54,8 @@ router.post('/area-rate', async (req, res) => {
   }
 });
 
-// Rental amount endpoint - public access
-router.post('/rental-amount', async (req, res) => {
-  try {
-    const { address, propertySize, bedrooms, condition } = req.body;
-
-    if (!address || !propertySize || !bedrooms || !condition) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    const rentalRate = await getRentalRate(address, propertySize, bedrooms, condition);
-    res.json({ rentalRate });
-  } catch (error) {
-    console.error('Error in rental-amount endpoint:', error);
-    res.status(500).json({ error: 'Failed to fetch rental amount' });
-  }
-});
-
 // Deal analysis endpoint - public access
 router.post('/deal-analysis', async (req, res) => {
-
-// Public endpoints
-router.post('/rental-amount', async (req, res) => {
-  try {
-    const { address, propertySize, bedrooms, condition } = req.body;
-    
-    if (!address || !propertySize || !bedrooms || !condition) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    const rentalRate = await getRentalRate(address, propertySize, bedrooms, condition);
-    res.json({ rentalAmount: rentalRate });
-  } catch (error) {
-    console.error('Error in rental-amount endpoint:', error);
-    res.status(500).json({ error: 'Failed to fetch rental amount' });
-  }
-});
-
-router.post('/rental-rate', async (req, res) => {
-  try {
-    const { address, propertySize, bedrooms, condition } = req.body;
-
-    if (!address || !propertySize || !bedrooms || !condition) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    const rentalRate = await getRentalRate(address, propertySize, bedrooms, condition);
-    res.json({ rentalRate });
-  } catch (error) {
-    console.error('Error in rental-rate endpoint:', error);
-    res.status(500).json({ error: 'Failed to fetch rental rate' });
-  }
-});
-
   const { 
     address,
     areaRateResponses,
@@ -186,7 +135,7 @@ router.post('/rental-rate', async (req, res) => {
   }
 });
 
-// Private chat endpoint
+// Chat endpoint
 router.post('/', async (req, res) => {
   try {
     const { dealDetails, question } = req.body;
@@ -223,7 +172,7 @@ Provide professional, concise advice that the agent can use when advising their 
 
     // Create a streaming completion
     const stream = await openai.chat.completions.create({
-      model: "gpt-4o", // Using the latest model
+      model: "gpt-4o",
       messages: [
         {
           role: "system",

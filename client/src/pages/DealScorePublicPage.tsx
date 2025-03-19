@@ -736,6 +736,9 @@ export default function DealScorePublicPage() {
         },
         body: JSON.stringify({
           address: formData.address,
+          propertySize: parseFormattedNumber(formData.size),
+          bedrooms: parseFormattedNumber(formData.bedrooms),
+          condition: formData.propertyCondition
         }),
       });
 
@@ -746,7 +749,7 @@ export default function DealScorePublicPage() {
       const data = await response.json();
       setFormData((prev) => ({
         ...prev,
-        longTermRental: data.rentalAmount.toString(),
+        longTermRental: formatWithThousandSeparators(data.rentalAmount.toString()),
       }));
 
       toast({
