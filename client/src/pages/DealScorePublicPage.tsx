@@ -902,6 +902,24 @@ export default function DealScorePublicPage() {
                         <div className="font-bold">
                           R{result?.estimatedValue?.toLocaleString()}
                         </div>
+                        <p className="text-sm text-center mt-2">
+                          This property is{" "}
+                          <span
+                            className={`font-bold ${
+                              result?.percentageDifference > 0
+                                ? "text-amber-500"
+                                : "text-green-500"
+                            }`}
+                          >
+                            {Math.abs(result?.percentageDifference || 0).toFixed(
+                              1,
+                            )}%
+                          </span>{" "}
+                          {result?.percentageDifference > 0
+                            ? "above"
+                            : "below"}{" "}
+                          the estimated market value
+                        </p>
                       </div>
 
                       <div className="mt-4">
