@@ -12,7 +12,7 @@ import {
   Lock,
   Download,
   Clock,
-  BarChart3,
+  //BarChart3,  Removed as per instruction
   TrendingUp,
   CheckCircle2,
   ChevronDown,
@@ -46,6 +46,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { AreaRateProgressDialog } from "@/components/AreaRateProgressDialog";
+import { Badge } from "@/components/ui/badge";
+
 
 export default function DealScorePublicPage() {
   const { toast } = useToast();
@@ -1091,7 +1093,7 @@ export default function DealScorePublicPage() {
                         {/* Deal Factors Section */}
                         <div className="mt-4">
                           <Accordion
-                                                        type="single"
+                            type="single"
                             collapsible
                             className="w-full"
                             defaultValue="deal-factors"
@@ -1121,6 +1123,15 @@ export default function DealScorePublicPage() {
                                       ).toLocaleString()}
                                       /m²
                                     </span>
+                                  </div>
+                                  <div className="flex justify-between mb-4">
+                                    <span>Recent Area Sales:</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm">R3.4M - R3.7M (last 3 months)</span>
+                                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                        WITHIN RANGE
+                                      </Badge>
+                                    </div>
                                   </div>
                                   <div className="flex justify-between">
                                     <span>Property condition:</span>
