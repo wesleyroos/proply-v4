@@ -1,5 +1,6 @@
 import express from 'express';
 import { getAreaRate, getDealAnalysis } from '../services/areaRateService';
+import { getRentalRate } from '../services/rentalRateService';
 import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -38,6 +39,23 @@ router.post('/area-rate', async (req, res) => {
 
 // Deal analysis endpoint - public access
 router.post('/deal-analysis', async (req, res) => {
+
+router.post('/rental-rate', async (req, res) => {
+  try {
+    const { address, propertySize, bedrooms, condition } = req.body;
+
+    if (!address || !propertySize || !bedrooms || !condition) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const rentalRate = await getRentalRate(address, propertySize, bedrooms, condition);
+    res.json({ rentalRate });
+  } catch (error) {
+    console.error('Error in rental-rate endpoint:', error);
+    res.status(500).json({ error: 'Failed to fetch rental rate' });
+  }
+});
+
   const { 
     address,
     areaRateResponses,
