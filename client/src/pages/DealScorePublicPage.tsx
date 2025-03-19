@@ -575,17 +575,33 @@ export default function DealScorePublicPage() {
                 <Label htmlFor="longTermRental">
                   Long Term Rental (R/month)
                 </Label>
-                <Input
-                  id="longTermRental"
-                  type="text"
-                  inputMode="numeric"
-                  value={formData.longTermRental}
-                  onChange={(e) =>
-                    handleInputChange("longTermRental", e.target.value)
-                  }
-                  placeholder="Enter long term rental amount"
-                  required
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="longTermRental"
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.longTermRental}
+                    onChange={(e) =>
+                      handleInputChange("longTermRental", e.target.value)
+                    }
+                    placeholder="Enter long term rental amount"
+                    required
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="default"
+                    onClick={fetchRentalAmount}
+                    disabled={!formData.address || isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Fetch Rental Amount"
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           </>
