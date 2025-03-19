@@ -97,6 +97,12 @@ export default function DealScorePublicPage() {
   const [showAreaRateDialog, setShowAreaRateDialog] = useState(false);
   const [areaRateError, setAreaRateError] = useState<string>();
   const [reportUnlocked, setReportUnlocked] = useState(false);
+  const [rentalAmountStatus, setRentalAmountStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [showRentalAmountDialog, setShowRentalAmountDialog] = useState(false);
+  const [rentalAmountError, setRentalAmountError] = useState<string>();
+
 
   const fillDemoData = () => {
     setDemoClicks((prev) => {
@@ -728,7 +734,10 @@ export default function DealScorePublicPage() {
 
   const fetchRentalAmount = async () => {
     try {
+      setRentalAmountStatus("loading");
+      setShowRentalAmountDialog(true);
       setIsLoading(true);
+
       const response = await fetch("/api/deal-advisor/rental-amount", {
         method: "POST",
         headers: {
@@ -738,7 +747,7 @@ export default function DealScorePublicPage() {
           address: formData.address,
           propertySize: parseFormattedNumber(formData.size),
           bedrooms: parseFormattedNumber(formData.bedrooms),
-          condition: formData.propertyCondition
+          condition: formData.propertyCondition,
         }),
       });
 
@@ -747,16 +756,25 @@ export default function DealScorePublicPage() {
       }
 
       const data = await response.json();
+
+      // Add a delay to show the progress dialog
+      await new Promise((resolve) => setTimeout(resolve, 4000));
+
       setFormData((prev) => ({
         ...prev,
         longTermRental: formatWithThousandSeparators(data.rentalAmount.toString()),
       }));
 
+      setRentalAmountStatus("success");
       toast({
         title: "Success",
         description: "Rental amount fetched successfully",
       });
     } catch (error) {
+      setRentalAmountStatus("error");
+      setRentalAmountError(
+        error instanceof Error ? error.message : "Failed to fetch rental amount",
+      );
       toast({
         title: "Error",
         description: "Failed to fetch rental amount. Please try again.",
@@ -764,6 +782,9 @@ export default function DealScorePublicPage() {
       });
     } finally {
       setIsLoading(false);
+      setTimeout(() => {
+        setShowRentalAmountDialog(false);
+      }, 2000);
     }
   };
 
@@ -817,6 +838,56 @@ export default function DealScorePublicPage() {
         setShowAreaRateDialog(false);
       }, 2000);
     }
+  };
+
+  const RentalAmountProgressDialog = () => {
+    return (
+      <Dialog open={showRentalAmountDialog} onOpenChange={setShowRentalAmountDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Fetching Rental Amount</DialogTitle>
+            <DialogDescription>
+              Analyzing property details and market data...
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {rentalAmountStatus === "loading" && (
+              <div className="flex items-center space-x-4">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Processing with OpenAI</p>
+                  <p className="text-sm text-muted-foreground">
+                    Calculating optimal rental amount based on property details...
+                  </p>
+                </div>
+              </div>
+            )}
+            {rentalAmountStatus === "success" && (
+              <div className="flex items-center space-x-4">
+                <CheckCircle2 className="h-6 w-6 text-green-500" />
+                <div>
+                  <p className="text-sm font-medium">Rental Amount Retrieved</p>
+                  <p className="text-sm text-muted-foreground">
+                    Successfully calculated the optimal rental amount.
+                  </p>
+                </div>
+              </div>
+            )}
+            {rentalAmountStatus === "error" && (
+              <div className="flex items-center space-x-4">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+                <div>
+                  <p className="text-sm font-medium">Error</p>
+                  <p className="text-sm text-muted-foreground">
+                    {rentalAmountError || "Failed to fetch rental amount"}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   };
 
   return (
@@ -1438,6 +1509,7 @@ export default function DealScorePublicPage() {
         status={areaRateStatus}
         error={areaRateError}
       />
+      <RentalAmountProgressDialog />
     </div>
   );
 }
