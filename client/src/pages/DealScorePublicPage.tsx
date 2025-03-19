@@ -1103,8 +1103,12 @@ export default function DealScorePublicPage() {
                       )}
                     </div>
 
-                    <div className="flex justify-between mt-8">
-                      <Button variant="outline" onClick={handleNewCalculation}>
+                    <div className="flex justify-center mt-8">
+                      <Button 
+                        variant="link" 
+                        className="underline"
+                        onClick={handleNewCalculation}
+                      >
                         New Calculation
                       </Button>
                     </div>
