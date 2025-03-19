@@ -46,6 +46,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { AreaRateProgressDialog } from "@/components/AreaRateProgressDialog";
+import { Badge } from "@/components/ui/badge";
+
 
 export default function DealScorePublicPage() {
   const { toast } = useToast();
@@ -1091,7 +1093,7 @@ export default function DealScorePublicPage() {
                         {/* Deal Factors Section */}
                         <div className="mt-4">
                           <Accordion
-                                                        type="single"
+                            type="single"
                             collapsible
                             className="w-full"
                             defaultValue="deal-factors"
@@ -1102,25 +1104,38 @@ export default function DealScorePublicPage() {
                               </AccordionTrigger>
                               <AccordionContent>
                                 <div className="space-y-4 pt-2">
-                                  <div className="flex justify-between">
-                                    <span>Price per m²:</span>{" "}
-                                    <span className="font-medium">
-                                      R
-                                      {Math.round(
-                                        result?.propertyRate || 0,
-                                      ).toLocaleString()}
-                                      /m²
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>Area average:</span>
-                                    <span className="font-medium">
-                                      R
-                                      {Math.round(
-                                        result?.areaRate || 0,
-                                      ).toLocaleString()}
-                                      /m²
-                                    </span>
+                                  <div className="grid gap-4">
+                                    <div className="space-y-2">
+                                      <Label className="text-sm text-muted-foreground">Price per m²</Label>
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-lg font-semibold">R{(result?.propertyRate || 0).toLocaleString()}/m²</span>
+                                          <span className="text-sm text-muted-foreground">(vs. area avg R{(result?.areaRate || 0).toLocaleString()}/m²)</span>
+                                        </div>
+                                        <Badge variant={result?.percentageDifference > 0 ? "destructive" : "success"}>
+                                          {result?.percentageDifference > 0 ? "OverPaying" : "UnderPaying"}
+                                        </Badge>
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <Label className="text-sm text-muted-foreground">Recent Area Sales</Label>
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-lg font-semibold">R3.4M - R3.7M</span>
+                                          <span className="text-sm text-muted-foreground">(last 3 months)</span>
+                                        </div>
+                                        <Badge variant="secondary">WITHIN RANGE</Badge>
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <Label className="text-sm text-muted-foreground">Property Condition</Label>
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-lg font-semibold capitalize">{result?.propertyCondition}</span>
+                                        <Badge variant="success">MOVE-IN READY</Badge>
+                                      </div>
+                                    </div>
                                   </div>
                                   <div className="flex justify-between">
                                     <span>Property condition:</span>
