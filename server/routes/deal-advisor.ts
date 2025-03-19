@@ -37,6 +37,23 @@ router.post('/area-rate', async (req, res) => {
   }
 });
 
+// Rental amount endpoint - public access
+router.post('/rental-amount', async (req, res) => {
+  try {
+    const { address, propertySize, bedrooms, condition } = req.body;
+
+    if (!address || !propertySize || !bedrooms || !condition) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const rentalRate = await getRentalRate(address, propertySize, bedrooms, condition);
+    res.json({ rentalRate });
+  } catch (error) {
+    console.error('Error in rental-amount endpoint:', error);
+    res.status(500).json({ error: 'Failed to fetch rental amount' });
+  }
+});
+
 // Deal analysis endpoint - public access
 router.post('/deal-analysis', async (req, res) => {
 
