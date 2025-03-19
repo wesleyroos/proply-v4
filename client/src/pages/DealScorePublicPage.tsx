@@ -902,23 +902,24 @@ export default function DealScorePublicPage() {
                         <div className="font-bold">
                           R{result?.estimatedValue?.toLocaleString()}
                         </div>
-                      </div>
-                      <p className="text-sm text-center mt-2">
-                        This property is{" "}
-                        <span
-                          className={`font-bold ${
-                            result?.askingPrice > result?.estimatedValue
-                              ? "text-amber-500"
-                              : "text-green-500"
-                          }`}
-                        >
-                          {Math.abs(result?.percentageDifference || 0).toFixed(1)}%
-                        </span>{" "}
-                        {result?.askingPrice > result?.estimatedValue
-                          ? "above"
-                          : "below"}{" "}
-                        the estimated market value
-                      </p>
+                        <p className="text-sm text-center mt-2">
+                          This property is{" "}
+                          <span
+                            className={`font-bold ${
+                              result?.percentageDifference > 0
+                                ? "text-amber-500"
+                                : "text-green-500"
+                            }`}
+                          >
+                            {Math.abs(result?.percentageDifference || 0).toFixed(
+                              1,
+                            )}%
+                          </span>{" "}
+                          {result?.percentageDifference > 0
+                            ? "above"
+                            : "below"}{" "}
+                          the estimated market value
+                        </p>
                       </div>
 
                       <div className="mt-4">
@@ -951,7 +952,7 @@ export default function DealScorePublicPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Detailed Analysis Section */}
                     <div className="relative mt-8">
                       <div
