@@ -1237,10 +1237,53 @@ export default function DealScorePublicPage() {
                                       /m²
                                     </span>
                                   </div>
+                                  {result?.hasAfriGISData && result?.lastSalePrice && (
+                                    <div className="flex justify-between">
+                                      <span>Last Sale Price:</span>
+                                      <span className="font-medium">
+                                        R{Math.round(result.lastSalePrice).toLocaleString()}
+                                        {result.lastSaleDate && ` (${result.lastSaleDate})`}
+                                      </span>
+                                    </div>
+                                  )}
+                                  
+                                  {result?.hasAfriGISData && result?.erfSize && (
+                                    <div className="flex justify-between">
+                                      <span>Erf Size:</span>
+                                      <span className="font-medium">
+                                        {result.erfSize} m²
+                                      </span>
+                                    </div>
+                                  )}
+                                  
+                                  {result?.hasAfriGISData && result?.buildingSize && (
+                                    <div className="flex justify-between">
+                                      <span>Building Size:</span>
+                                      <span className="font-medium">
+                                        {result.buildingSize} m²
+                                      </span>
+                                    </div>
+                                  )}
+                                  
+                                  {result?.hasAfriGISData && result?.zoning && (
+                                    <div className="flex justify-between">
+                                      <span>Zoning:</span>
+                                      <span className="font-medium">
+                                        {result.zoning}
+                                      </span>
+                                    </div>
+                                  )}
+                                  
                                   <div className="flex justify-between mb-4">
                                     <span>Recent Area Sales:</span>
                                     <div className="flex items-center gap-2">
-                                      <span className="text-sm">R3.4M - R3.7M (last 3 months)</span>
+                                      {result?.hasAfriGISData && result?.historicalSales?.length > 0 ? (
+                                        <span className="text-sm">
+                                          {result.historicalSales.map(sale => `R${Math.round(sale.price).toLocaleString()} (${sale.date})`).join(', ')}
+                                        </span>
+                                      ) : (
+                                        <span className="text-sm">R3.4M - R3.7M (last 3 months)</span>
+                                      )}
                                       <Badge variant="secondary" className="bg-green-100 text-green-800 font-normal">
                                         WITHIN RANGE
                                       </Badge>
