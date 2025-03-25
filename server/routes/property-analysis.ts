@@ -38,6 +38,7 @@ router.post('/', async (req, res) => {
           success: true,
           propertyData: {
             address,
+            hasAfriGISData: false // Flag to indicate data did NOT come from AfriGIS
           },
           areaRate: areaRate || null,
           source: 'area-rate-fallback'
@@ -67,7 +68,8 @@ router.post('/', async (req, res) => {
               latitude: geocodingResult.latitude,
               longitude: geocodingResult.longitude
             },
-            seoid: geocodingResult.seoid
+            seoid: geocodingResult.seoid,
+            hasAfriGISData: false // Flag to indicate data did NOT come from AfriGIS
           },
           areaRate: areaRate || null,
           source: 'geocoding-only'
@@ -97,7 +99,8 @@ router.post('/', async (req, res) => {
           latitude: geocodingResult.latitude,
           longitude: geocodingResult.longitude
         },
-        seoid: geocodingResult.seoid
+        seoid: geocodingResult.seoid,
+        hasAfriGISData: true // Flag to indicate data came from AfriGIS
       },
       areaRate: propertyData.pricePerSquareMeter || areaRate || null,
       source: 'afrigis-full'
