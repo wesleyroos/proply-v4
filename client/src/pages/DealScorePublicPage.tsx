@@ -344,24 +344,88 @@ export default function DealScorePublicPage() {
       Number(parseFormattedNumber(formData.areaRate)) *
       Number(parseFormattedNumber(formData.size));
 
-    setResult({
-      score: Math.round(score),
-      rating,
-      color,
-      percentageDifference:
-        ((estimatedValue - purchasePrice) / purchasePrice) * 100,
-      askingPrice: purchasePrice,
-      estimatedValue,
-      propertyRate,
-      areaRate: Number(parseFormattedNumber(formData.areaRate)),
-      propertyCondition: formData.propertyCondition,
-      shortTermYield,
-      longTermYield,
-      bestStrategy:
-        shortTermYield > (longTermYield || 0) ? "Short-Term" : "Long-Term",
-    });
-    setShowResult(true);
-    setIsCalculating(false);
+    // Try to get property details from AfriGIS
+    const fetchPropertyDetails = async () => {
+      try {
+        // Fetch property analysis data for additional details
+        const response = await fetch('/api/property-analysis', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            address: formData.address,
+          }),
+        });
+
+        if (response.ok) {
+          const propertyData = await response.json();
+          
+          // If the data includes property analysis, add it to the result
+          if (propertyData.success) {
+            const data = propertyData.propertyData;
+            
+            setResult({
+              score: Math.round(score),
+              rating,
+              color,
+              percentageDifference:
+                ((estimatedValue - purchasePrice) / purchasePrice) * 100,
+              askingPrice: purchasePrice,
+              estimatedValue,
+              propertyRate,
+              areaRate: Number(parseFormattedNumber(formData.areaRate)),
+              propertyCondition: formData.propertyCondition,
+              shortTermYield,
+              longTermYield,
+              bestStrategy:
+                shortTermYield > (longTermYield || 0) ? "Short-Term" : "Long-Term",
+              // AfriGIS property data
+              erfSize: data.erfSize,
+              buildingSize: data.buildingSize,
+              lastSalePrice: data.lastSalePrice,
+              lastSaleDate: data.lastSaleDate,
+              zoning: data.zoning,
+              propertyType: data.propertyType,
+              formattedAddress: data.address,
+              hasAfriGISData: true
+            });
+            
+            setShowResult(true);
+            setIsCalculating(false);
+            return;
+          }
+        }
+        
+        // If the API fails or doesn't return data, continue with basic result
+        throw new Error("No AfriGIS property data available");
+      } catch (error) {
+        console.log("Could not fetch AfriGIS property data, using basic score");
+        // Fall back to basic result without AfriGIS data
+        setResult({
+          score: Math.round(score),
+          rating,
+          color,
+          percentageDifference:
+            ((estimatedValue - purchasePrice) / purchasePrice) * 100,
+          askingPrice: purchasePrice,
+          estimatedValue,
+          propertyRate,
+          areaRate: Number(parseFormattedNumber(formData.areaRate)),
+          propertyCondition: formData.propertyCondition,
+          shortTermYield,
+          longTermYield,
+          bestStrategy:
+            shortTermYield > (longTermYield || 0) ? "Short-Term" : "Long-Term",
+          hasAfriGISData: false
+        });
+        
+        setShowResult(true);
+        setIsCalculating(false);
+      }
+    };
+
+    fetchPropertyDetails();
   };
 
   const handlePayment = async () => {
@@ -796,6 +860,54 @@ export default function DealScorePublicPage() {
       setShowAreaRateDialog(true);
       setIsLoading(true);
 
+      // First try the AfriGIS Property Analysis API
+      const propertyAnalysisResponse = await fetch("/api/property-analysis", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          address: formData.address,
+        }),
+      });
+
+      if (propertyAnalysisResponse.ok) {
+        const propertyData = await propertyAnalysisResponse.json();
+        
+        if (propertyData.success && propertyData.areaRate) {
+          // Update form with property data
+          setFormData((prev) => {
+            const updates: any = {
+              ...prev,
+              areaRate: propertyData.areaRate.toString(),
+            };
+            
+            // Add property size if available and not already set
+            if (propertyData.propertyData.erfSize && (!prev.size || prev.size === "")) {
+              updates.size = propertyData.propertyData.erfSize.toString();
+            }
+            
+            return updates;
+          });
+          
+          setAreaRateStatus("success");
+          toast({
+            title: "Success",
+            description: "Property analysis completed successfully",
+          });
+
+          // Short delay to show completion
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          setIsLoading(false);
+          setTimeout(() => {
+            setShowAreaRateDialog(false);
+          }, 1000);
+          
+          return; // Exit early if AfriGIS data was successful
+        }
+      }
+      
+      // Fall back to the original area rate API if AfriGIS data wasn't available
       const response = await fetch("/api/deal-advisor/area-rate", {
         method: "POST",
         headers: {
@@ -812,7 +924,8 @@ export default function DealScorePublicPage() {
 
       const data = await response.json();
 
-      await new Promise((resolve) => setTimeout(resolve, 4000));
+      // Short delay to show process
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       setFormData((prev) => ({
         ...prev,
