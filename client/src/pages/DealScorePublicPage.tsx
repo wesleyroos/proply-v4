@@ -48,6 +48,34 @@ import {
 import { AreaRateProgressDialog } from "@/components/AreaRateProgressDialog";
 import { Badge } from "@/components/ui/badge";
 
+// Result interface to include AfriGIS data properties
+interface DealScoreResult {
+  score: number;
+  rating: string;
+  color: string;
+  percentageDifference: number;
+  askingPrice: number;
+  estimatedValue: number;
+  propertyRate: number;
+  areaRate: number;
+  propertyCondition: string;
+  shortTermYield: number | null;
+  longTermYield: number | null;
+  bestStrategy: string;
+  // AfriGIS property data
+  hasAfriGISData?: boolean;
+  erfSize?: number;
+  buildingSize?: number;
+  lastSalePrice?: number;
+  lastSaleDate?: string;
+  zoning?: string;
+  propertyType?: string;
+  historicalSales?: Array<{
+    date: string;
+    price: number;
+  }>;
+  formattedAddress?: string;
+}
 
 export default function DealScorePublicPage() {
   const { toast } = useToast();
@@ -86,7 +114,7 @@ export default function DealScorePublicPage() {
     }
   }, [formData.purchasePrice]);
 
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<DealScoreResult | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -875,6 +903,9 @@ export default function DealScorePublicPage() {
         const propertyData = await propertyAnalysisResponse.json();
         
         if (propertyData.success && propertyData.areaRate) {
+          // Check if we have AfriGIS data
+          const hasAfriGISData = propertyData.propertyData.hasAfriGISData;
+          
           // Update form with property data
           setFormData((prev) => {
             const updates: any = {
@@ -889,6 +920,16 @@ export default function DealScorePublicPage() {
             
             return updates;
           });
+          
+          // Log that we're using enhanced data if available
+          if (hasAfriGISData) {
+            console.log("Using enhanced property data from AfriGIS");
+            toast({
+              title: "Enhanced Data",
+              description: "Using official property data to improve accuracy",
+              variant: "default",
+            });
+          }
           
           setAreaRateStatus("success");
           toast({
@@ -1133,6 +1174,13 @@ export default function DealScorePublicPage() {
                       <h2 className="text-2xl font-bold mb-2">
                         Deal Score: {result?.score}%
                       </h2>
+                      {result?.hasAfriGISData && (
+                        <div className="flex justify-center mb-3">
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            Enhanced with AfriGIS Property Data
+                          </Badge>
+                        </div>
+                      )}
 
                       <div className="flex justify-between items-center mt-4 px-4">
                         <div className="text-sm">Asking Price:</div>
