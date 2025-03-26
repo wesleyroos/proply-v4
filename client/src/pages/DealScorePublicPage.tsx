@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ArrowRight,
   ArrowLeft,
@@ -12,10 +12,18 @@ import {
   Lock,
   Download,
   Clock,
-  //BarChart3,  Removed as per instruction
+  BarChart3,
   TrendingUp,
   CheckCircle2,
   ChevronDown,
+  MapPin,
+  Home,
+  Calendar,
+  DollarSign,
+  Banknote,
+  Percent,
+  Building,
+  Calculator,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +55,7 @@ import {
 } from "@/components/ui/accordion";
 import { AreaRateProgressDialog } from "@/components/AreaRateProgressDialog";
 import { Badge } from "@/components/ui/badge";
+import { DealScoreReport } from "./DealScoreReportPage";
 
 
 export default function DealScorePublicPage() {
@@ -119,6 +128,7 @@ export default function DealScorePublicPage() {
   >("loading");
   const [showRentalAmountDialog, setShowRentalAmountDialog] = useState(false);
   const [rentalAmountError, setRentalAmountError] = useState<string>();
+  const [dealReport, setDealReport] = useState<DealScoreReport | null>(null);
 
 
   const fillDemoData = () => {
@@ -271,6 +281,8 @@ export default function DealScorePublicPage() {
     const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
     const propertySize = Number(parseFormattedNumber(formData.size));
     const bedrooms = Number(parseFormattedNumber(formData.bedrooms));
+    const bathrooms = Number(parseFormattedNumber(formData.bathrooms));
+    const parking = Number(parseFormattedNumber(formData.parking));
     
     // Default rental yields (based on property value & area)
     let estimatedLongTermRental = purchasePrice * 0.005; // Estimate 0.5% of purchase price as monthly rental
@@ -282,6 +294,7 @@ export default function DealScorePublicPage() {
     const interestRate = 11; // 11% interest rate
     const loanTerm = 20; // 20 year loan term
     const loanAmount = purchasePrice - depositAmount;
+    const monthlyPayment = (loanAmount * (interestRate/100/12) * Math.pow(1 + (interestRate/100/12), loanTerm * 12)) / (Math.pow(1 + (interestRate/100/12), loanTerm * 12) - 1);
     
     // Calculate yields
     let shortTermYield = null;
@@ -294,8 +307,11 @@ export default function DealScorePublicPage() {
     longTermYield = ((estimatedLongTermRental * 12) / purchasePrice) * 100;
     
     // Calculate short term yield
-    const annualRevenue = estimatedNightlyRate * 365 * (occupancyRate / 100);
-    shortTermYield = (annualRevenue / purchasePrice) * 100;
+    const annualRevenueShortTerm = estimatedNightlyRate * 365 * (occupancyRate / 100);
+    shortTermYield = (annualRevenueShortTerm / purchasePrice) * 100;
+    
+    // Calculate annual rental for long term
+    const annualRentalLongTerm = estimatedLongTermRental * 12;
 
     let score = 50;
     score -= priceDiff * 0.5;
@@ -361,13 +377,118 @@ export default function DealScorePublicPage() {
     const estimatedValue =
       Number(parseFormattedNumber(formData.areaRate)) *
       Number(parseFormattedNumber(formData.size));
-
+    
+    // Estimated monthly costs (simplified)
+    const monthlyRates = purchasePrice * 0.001 / 12; // Rough estimate of rates
+    const levy = purchasePrice * 0.0015; // Rough estimate of levy
+    const estimatedMonthlyCosts = monthlyRates + levy;
+    
+    // Calculate cash flow
+    const cashFlowShortTerm = (annualRevenueShortTerm / 12) - monthlyPayment - estimatedMonthlyCosts;
+    const cashFlowLongTerm = estimatedLongTermRental - monthlyPayment - estimatedMonthlyCosts;
+    
+    // Determine best investment strategy
+    const bestInvestmentStrategy = shortTermYield > (longTermYield || 0) ? "Short-Term Rental" : "Long-Term Rental";
+    
+    // Example comparable properties (dummy data)
+    const avgComparableSalesPrice = estimatedValue * 0.98; // Average slightly below the estimated value
+    
+    // Report date
+    const reportDate = new Date().toLocaleDateString('en-ZA', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    // Create the comprehensive report
+    const report: DealScoreReport = {
+      // Property Details
+      address: formData.address,
+      askingPrice: purchasePrice,
+      propertySize: propertySize,
+      bedrooms: bedrooms,
+      bathrooms: bathrooms,
+      parking: parking,
+      propertyCondition: formData.propertyCondition,
+      
+      // Deal Score Metrics
+      score: Math.round(score),
+      rating: rating,
+      color: color,
+      estimatedValue: estimatedValue,
+      percentageDifference: ((estimatedValue - purchasePrice) / purchasePrice) * 100,
+      
+      // Area Information
+      areaRate: Number(parseFormattedNumber(formData.areaRate)),
+      recentSalesRange: `R${Math.round(estimatedValue * 0.9).toLocaleString()} - R${Math.round(estimatedValue * 1.1).toLocaleString()}`,
+      
+      // Rental Information
+      nightlyRate: estimatedNightlyRate,
+      occupancyRate: occupancyRate,
+      monthlyLongTerm: estimatedLongTermRental,
+      
+      // Calculated Financial Metrics
+      pricePerSqM: propertyRate,
+      shortTermYield: shortTermYield || 0,
+      longTermYield: longTermYield || 0,
+      bestInvestmentStrategy: bestInvestmentStrategy,
+      
+      // Municipal Information
+      municipalValue: estimatedValue * 0.9, // Municipal value typically lower than market
+      monthlyRates: monthlyRates,
+      levy: levy,
+      estimatedMonthlyCosts: estimatedMonthlyCosts,
+      
+      // Rental Calculations
+      monthlyRevenue: estimatedLongTermRental,
+      annualRevenueShortTerm: annualRevenueShortTerm,
+      annualRentalLongTerm: annualRentalLongTerm,
+      vacancyRate: 100 - occupancyRate,
+      netAnnualIncome: annualRevenueShortTerm - (estimatedMonthlyCosts * 12),
+      
+      // Mortgage Calculations
+      depositAmount: depositAmount,
+      depositPercentage: depositPercentage,
+      interestRate: interestRate,
+      loanAmount: loanAmount,
+      loanTerm: loanTerm,
+      monthlyPayment: monthlyPayment,
+      cashFlowShortTerm: cashFlowShortTerm,
+      cashFlowLongTerm: cashFlowLongTerm,
+      
+      // Comparable Properties
+      avgComparableSalesPrice: avgComparableSalesPrice,
+      comparableProperties: [
+        {
+          similarity: "Similar",
+          address: `${Math.floor(Math.random() * 100)} ${formData.address.split(',')[0].split(' ').pop()}`,
+          salePrice: Math.round(estimatedValue * (0.95 + Math.random() * 0.1)),
+          size: Math.round(propertySize * (0.9 + Math.random() * 0.2)),
+          pricePerSqM: Math.round(propertyRate * (0.95 + Math.random() * 0.1)),
+          bedrooms: bedrooms,
+          saleDate: new Date(Date.now() - Math.random() * 15552000000).toLocaleDateString('en-ZA'), // Random date in last 6 months
+        },
+        {
+          similarity: "Comparable",
+          address: `${Math.floor(Math.random() * 100)} ${formData.address.split(',')[0].split(' ').pop()}`,
+          salePrice: Math.round(estimatedValue * (0.9 + Math.random() * 0.2)),
+          size: Math.round(propertySize * (0.85 + Math.random() * 0.3)),
+          pricePerSqM: Math.round(propertyRate * (0.9 + Math.random() * 0.2)),
+          bedrooms: bedrooms + (Math.random() > 0.5 ? 1 : -1),
+          saleDate: new Date(Date.now() - Math.random() * 31104000000).toLocaleDateString('en-ZA'), // Random date in last year
+        },
+      ],
+      
+      // Metadata
+      reportDate: reportDate,
+    };
+    
+    // Update both states
     setResult({
       score: Math.round(score),
       rating,
       color,
-      percentageDifference:
-        ((estimatedValue - purchasePrice) / purchasePrice) * 100,
+      percentageDifference: ((estimatedValue - purchasePrice) / purchasePrice) * 100,
       askingPrice: purchasePrice,
       estimatedValue,
       propertyRate,
@@ -375,9 +496,12 @@ export default function DealScorePublicPage() {
       propertyCondition: formData.propertyCondition,
       shortTermYield,
       longTermYield,
-      bestStrategy:
-        shortTermYield > (longTermYield || 0) ? "Short-Term" : "Long-Term",
+      bestStrategy: bestInvestmentStrategy,
     });
+    
+    // Set the comprehensive report
+    setDealReport(report);
+    
     setShowResult(true);
     setIsCalculating(false);
   };
@@ -400,6 +524,7 @@ export default function DealScorePublicPage() {
     setShowResult(false);
     setReportUnlocked(false);
     setResult(null);
+    setDealReport(null);
   };
 
   const handleDownloadReport = () => {
