@@ -836,21 +836,8 @@ export default function DealScorePublicPage() {
       <div
         id="deal-score-report"
         ref={reportRef}
-        className="max-w-[800px] mx-auto bg-white shadow-lg rounded-xl overflow-hidden"
+        className="max-w-[1000px] mx-auto bg-white shadow-lg rounded-xl overflow-hidden"
       >
-        {/* Header */}
-        <div className="bg-gradient-to-r from-primary to-blue-600 p-6 text-white">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <img src="/proply-logo-auth.png" alt="Proply Logo" className="h-8 w-auto" />
-            </div>
-            <div className="text-sm opacity-80">Report generated: {new Date().toLocaleDateString('en-ZA', {day: '2-digit', month: 'long', year: 'numeric'})}</div>
-          </div>
-          <div className="mt-12 mb-6">
-            <h1 className="text-3xl font-bold">Proply Deal Score™</h1>
-            <p className="opacity-80 mt-2">{dealReport?.address}</p>
-          </div>
-        </div>
 
         {/* Deal Score Section */}
         <div className="p-8 border-b">
