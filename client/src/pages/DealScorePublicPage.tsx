@@ -111,7 +111,7 @@ export default function DealScorePublicPage() {
     longTermYield: number | null;
     bestStrategy: string;
   }
-  
+
   const [result, setResult] = useState<DealResult | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card");
@@ -187,7 +187,7 @@ export default function DealScorePublicPage() {
   const parseFormattedNumber = (value: string): string => {
     return value.replace(/,/g, "");
   };
-  
+
   const formatPrice = (value: number, decimals: number = 0): string => {
     return value.toLocaleString('en-ZA', { 
       minimumFractionDigits: decimals,
@@ -292,11 +292,11 @@ export default function DealScorePublicPage() {
     const bedrooms = Number(parseFormattedNumber(formData.bedrooms));
     const bathrooms = Number(parseFormattedNumber(formData.bathrooms));
     const parking = Number(parseFormattedNumber(formData.parking));
-    
+
     // Default rental yields (based on property value & area)
     let estimatedLongTermRental = purchasePrice * 0.005; // Estimate 0.5% of purchase price as monthly rental
     let estimatedNightlyRate = purchasePrice / 1000; // Rough estimate
-    
+
     // Set default values for financing
     const depositPercentage = 10; // 10% deposit
     const depositAmount = purchasePrice * (depositPercentage / 100);
@@ -304,21 +304,21 @@ export default function DealScorePublicPage() {
     const loanTerm = 20; // 20 year loan term
     const loanAmount = purchasePrice - depositAmount;
     const monthlyPayment = (loanAmount * (interestRate/100/12) * Math.pow(1 + (interestRate/100/12), loanTerm * 12)) / (Math.pow(1 + (interestRate/100/12), loanTerm * 12) - 1);
-    
+
     // Calculate yields
     let shortTermYield = null;
     let longTermYield = null;
-    
+
     // Set occupancy to 65% as a default
     const occupancyRate = 65;
-    
+
     // Calculate long term yield
     longTermYield = ((estimatedLongTermRental * 12) / purchasePrice) * 100;
-    
+
     // Calculate short term yield
     const annualRevenueShortTerm = estimatedNightlyRate * 365 * (occupancyRate / 100);
     shortTermYield = (annualRevenueShortTerm / purchasePrice) * 100;
-    
+
     // Calculate annual rental for long term
     const annualRentalLongTerm = estimatedLongTermRental * 12;
 
@@ -386,29 +386,29 @@ export default function DealScorePublicPage() {
     const estimatedValue =
       Number(parseFormattedNumber(formData.areaRate)) *
       Number(parseFormattedNumber(formData.size));
-    
+
     // Estimated monthly costs (simplified)
     const monthlyRates = purchasePrice * 0.001 / 12; // Rough estimate of rates
     const levy = purchasePrice * 0.0015; // Rough estimate of levy
     const estimatedMonthlyCosts = monthlyRates + levy;
-    
+
     // Calculate cash flow
     const cashFlowShortTerm = (annualRevenueShortTerm / 12) - monthlyPayment - estimatedMonthlyCosts;
     const cashFlowLongTerm = estimatedLongTermRental - monthlyPayment - estimatedMonthlyCosts;
-    
+
     // Determine best investment strategy
     const bestInvestmentStrategy = shortTermYield > (longTermYield || 0) ? "Short-Term Rental" : "Long-Term Rental";
-    
+
     // Example comparable properties (dummy data)
     const avgComparableSalesPrice = estimatedValue * 0.98; // Average slightly below the estimated value
-    
+
     // Report date
     const reportDate = new Date().toLocaleDateString('en-ZA', { 
       year: 'numeric', 
       month: 'long', 
       day: 'numeric' 
     });
-    
+
     // Create the comprehensive report
     const report: DealScoreReport = {
       // Property Details
@@ -419,42 +419,42 @@ export default function DealScorePublicPage() {
       bathrooms: bathrooms,
       parking: parking,
       propertyCondition: formData.propertyCondition,
-      
+
       // Deal Score Metrics
       score: Math.round(score),
       rating: rating,
       color: color,
       estimatedValue: estimatedValue,
       percentageDifference: ((estimatedValue - purchasePrice) / purchasePrice) * 100,
-      
+
       // Area Information
       areaRate: Number(parseFormattedNumber(formData.areaRate)),
       recentSalesRange: `R${Math.round(estimatedValue * 0.9).toLocaleString()} - R${Math.round(estimatedValue * 1.1).toLocaleString()}`,
-      
+
       // Rental Information
       nightlyRate: estimatedNightlyRate,
       occupancyRate: occupancyRate,
       monthlyLongTerm: estimatedLongTermRental,
-      
+
       // Calculated Financial Metrics
       pricePerSqM: propertyRate,
       shortTermYield: shortTermYield || 0,
       longTermYield: longTermYield || 0,
       bestInvestmentStrategy: bestInvestmentStrategy,
-      
+
       // Municipal Information
       municipalValue: estimatedValue * 0.9, // Municipal value typically lower than market
       monthlyRates: monthlyRates,
       levy: levy,
       estimatedMonthlyCosts: estimatedMonthlyCosts,
-      
+
       // Rental Calculations
       monthlyRevenue: estimatedLongTermRental,
       annualRevenueShortTerm: annualRevenueShortTerm,
       annualRentalLongTerm: annualRentalLongTerm,
       vacancyRate: 100 - occupancyRate,
       netAnnualIncome: annualRevenueShortTerm - (estimatedMonthlyCosts * 12),
-      
+
       // Mortgage Calculations
       depositAmount: depositAmount,
       depositPercentage: depositPercentage,
@@ -464,7 +464,7 @@ export default function DealScorePublicPage() {
       monthlyPayment: monthlyPayment,
       cashFlowShortTerm: cashFlowShortTerm,
       cashFlowLongTerm: cashFlowLongTerm,
-      
+
       // Comparable Properties
       avgComparableSalesPrice: avgComparableSalesPrice,
       comparableProperties: [
@@ -487,11 +487,11 @@ export default function DealScorePublicPage() {
           saleDate: new Date(Date.now() - Math.random() * 31104000000).toLocaleDateString('en-ZA'), // Random date in last year
         },
       ],
-      
+
       // Metadata
       reportDate: reportDate,
     };
-    
+
     // Update both states
     setResult({
       score: Math.round(score),
@@ -507,10 +507,10 @@ export default function DealScorePublicPage() {
       longTermYield,
       bestStrategy: bestInvestmentStrategy,
     });
-    
+
     // Set the comprehensive report
     setDealReport(report);
-    
+
     setShowResult(true);
     setIsCalculating(false);
   };
@@ -548,7 +548,7 @@ export default function DealScorePublicPage() {
       });
       return;
     }
-    
+
     // The HTML-to-PDF button component will handle the actual PDF generation
     // based on the element ID "deal-score-report"
   };
@@ -661,7 +661,7 @@ export default function DealScorePublicPage() {
             required
           />
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="bathrooms">Bathrooms</Label>
           <Input
@@ -674,7 +674,7 @@ export default function DealScorePublicPage() {
             required
           />
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="parking">Parking Spaces</Label>
           <Input
@@ -831,7 +831,7 @@ export default function DealScorePublicPage() {
   // Function to render the comprehensive report
   const renderComprehensiveReport = () => {
     if (!dealReport) return null;
-    
+
     return (
       <div
         id="deal-score-report"
@@ -909,7 +909,7 @@ export default function DealScorePublicPage() {
             <ChevronDown className="h-5 w-5 text-gray-400" />
           </div>
 
-          <div className="space-y-4">
+          <div<div className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
               <span className="flex items-center gap-2">
                 <Home className="h-4 w-4 text-primary" />
@@ -1369,104 +1369,102 @@ export default function DealScorePublicPage() {
             <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-slow"></div>
 
             <Card className="relative bg-background rounded-lg p-6">
-              <div className="max-w-2xl mx-auto">
-                <h1 className="text-3xl font-bold mb-8 text-center">
-                  Proply Deal Score™
-                </h1>
+              <h1 className="text-3xl font-bold mb-8 text-center">
+                Proply Deal Score™
+              </h1>
 
-                <button
-                  type="button"
-                  onClick={fillDemoData}
-                  className="fixed bottom-4 right-4 opacity-0"
-                >
-                  Fill Demo Data
-                </button>
+              <button
+                type="button"
+                onClick={fillDemoData}
+                className="fixed bottom-4 right-4 opacity-0"
+              >
+                Fill Demo Data
+              </button>
 
-                {!showResult ? (
-                  <form onSubmit={handleSubmit}>
-                    {renderStepCounter()}
-                    {renderFormStep()}
+              {!showResult ? (
+                <form onSubmit={handleSubmit}>
+                  {renderStepCounter()}
+                  {renderFormStep()}
 
-                    <div className="flex justify-end mt-6">
-                      <Button
-                        type="submit"
-                        className="ml-auto"
-                      >
-                        {isCalculating ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Calculating...
-                          </>
-                        ) : (
-                          <>
-                            Calculate Deal Score
-                            <ArrowRight className="h-4 w-4 ml-2" />
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="space-y-6">
-                    {/* Comprehensive Report Container */}
-                    <div className="max-w-6xl mx-auto relative">
-                      
-                      {/* Complete Analysis Section - with payment overlay container */}
-                      <div className="relative">
-                        {/* Render the comprehensive report */}
-                        {renderComprehensiveReport()}
-                        
-                        {/* Download button when report is unlocked */}
-                        {reportUnlocked && (
-                          <div className="mt-8 flex justify-center">
-                            <HTMLToPDFButton
-                              elementId="deal-score-report"
-                              filename={`Proply_Deal_Score_${dealReport?.address?.split(',')[0] || 'Report'}.pdf`}
-                              className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md h-10 py-2 px-4 inline-flex items-center justify-center rounded-md text-sm font-medium"
+                  <div className="flex justify-end mt-6">
+                    <Button
+                      type="submit"
+                      className="ml-auto"
+                    >
+                      {isCalculating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Calculating...
+                        </>
+                      ) : (
+                        <>
+                          Calculate Deal Score
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <div className="space-y-6">
+                  {/* Comprehensive Report Container */}
+                  <div className="max-w-6xl mx-auto relative">
+
+                    {/* Complete Analysis Section - with payment overlay container */}
+                    <div className="relative">
+                      {/* Render the comprehensive report */}
+                      {renderComprehensiveReport()}
+
+                      {/* Download button when report is unlocked */}
+                      {reportUnlocked && (
+                        <div className="mt-8 flex justify-center">
+                          <HTMLToPDFButton
+                            elementId="deal-score-report"
+                            filename={`Proply_Deal_Score_${dealReport?.address?.split(',')[0] || 'Report'}.pdf`}
+                            className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md h-10 py-2 px-4 inline-flex items-center justify-center rounded-md text-sm font-medium"
+                          >
+                            Download Full Report
+                          </HTMLToPDFButton>
+                        </div>
+                      )}
+
+                      {/* Payment overlay when report is not unlocked */}
+                      {!reportUnlocked && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background/95 backdrop-blur-sm rounded-lg p-8">
+                          <div className="bg-background/95 rounded-xl p-8 shadow-lg border border-border/10 max-w-md mx-auto text-center">
+                            <Lock className="w-12 h-12 text-primary mb-6 mx-auto" />
+                            <h3 className="text-2xl font-semibold mb-3">
+                              Unlock Full Report
+                            </h3>
+                            <p className="text-muted-foreground mb-6 text-center max-w-sm mx-auto">
+                              Get access to the complete property analysis and
+                              investment insights
+                            </p>
+                            <Button
+                              onClick={() => setShowPaymentModal(true)}
+                              size="lg"
+                              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                             >
-                              Download Full Report
-                            </HTMLToPDFButton>
+                              <CreditCard className="mr-2 h-4 w-4" />
+                              Unlock Full Report for R49
+                            </Button>
                           </div>
-                        )}
-                        
-                        {/* Payment overlay when report is not unlocked */}
-                        {!reportUnlocked && (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background/95 backdrop-blur-sm rounded-lg p-8">
-                            <div className="bg-background/95 rounded-xl p-8 shadow-lg border border-border/10 max-w-md mx-auto text-center">
-                              <Lock className="w-12 h-12 text-primary mb-6 mx-auto" />
-                              <h3 className="text-2xl font-semibold mb-3">
-                                Unlock Full Report
-                              </h3>
-                              <p className="text-muted-foreground mb-6 text-center max-w-sm mx-auto">
-                                Get access to the complete property analysis and
-                                investment insights
-                              </p>
-                              <Button
-                                onClick={() => setShowPaymentModal(true)}
-                                size="lg"
-                                className="w-full bg-blue-500 hover:bg-blue-600 text-white"
-                              >
-                                <CreditCard className="mr-2 h-4 w-4" />
-                                Unlock Full Report for R49
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex justify-center mt-8">
-                      <Button 
-                        variant="link" 
-                        className="underline"
-                        onClick={handleNewCalculation}
-                      >
-                        New Calculation
-                      </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
-                )}
-              </div>
+
+                  <div className="flex justify-center mt-8">
+                    <Button 
+                      variant="link" 
+                      className="underline"
+                      onClick={handleNewCalculation}
+                    >
+                      New Calculation
+                    </Button>
+                  </div>
+                </div>
+              )}
             </Card>
           </div>
         </div>
@@ -1548,7 +1546,7 @@ export default function DealScorePublicPage() {
                       <h3 className="text-xl font-semibold mb-1">
                         Instant Property Analysis
                       </h3>
-                      <p className="text-muted-foreground">
+                      <p className="textmuted-foreground">
                         Get a comprehensive deal score in seconds, not days.
                         Know immediately if a property is worth pursuing.
                       </p>
