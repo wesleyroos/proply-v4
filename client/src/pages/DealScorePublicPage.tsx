@@ -1263,10 +1263,10 @@ export default function DealScorePublicPage() {
                 deals, maximizing returns, and building wealth through property.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="text-lg px-8">
+                <Button size="lg" className="text-lg px-8 bg-blue-500 hover:bg-blue-600 text-white">
                   Get Started Free
                 </Button>
-                <Button size="lg" variant="outline" className="text-lg px-8">
+                <Button size="lg" variant="outline" className="text-lg px-8 border-blue-500 text-blue-500 hover:bg-blue-50">
                   See How It Works
                 </Button>
               </div>
@@ -1331,7 +1331,7 @@ export default function DealScorePublicPage() {
             <Button
               onClick={handlePayment}
               disabled={processingPayment}
-              className="w-full"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
             >
               {processingPayment ? (
                 <>
