@@ -654,14 +654,14 @@ export default function DealScorePublicPage() {
     return false;
   };
 
-  const validateForm = () => {
+  const validateForm = (showToast = false) => {
     const requiredFields = ['address', 'purchasePrice', 'size', 'areaRate'];
     const missingFields = requiredFields.filter(field => {
       const numericValue = parseFormattedNumber(formData[field as keyof typeof formData] as string);
       return numericValue === "" || numericValue === "0";
     });
     
-    if (missingFields.length > 0) {
+    if (missingFields.length > 0 && showToast) {
       toast({
         title: "Missing Information",
         description: `Please fill in the following fields: ${missingFields.join(', ')}`,
@@ -672,7 +672,8 @@ export default function DealScorePublicPage() {
     return missingFields;
   };
 
-  const missingFields = validateForm();
+  // Initial validation without toast
+  const missingFields = validateForm(false);
 
   const renderStepCounter = () => {
     return (
