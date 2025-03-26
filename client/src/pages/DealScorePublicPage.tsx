@@ -1365,10 +1365,8 @@ export default function DealScorePublicPage() {
             </p>
           </div>
 
-          <div className={`mx-auto mt-12 w-full ${showResult ? 'max-w-[1200px]' : 'max-w-[600px]'} relative`}>
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-slow"></div>
-
-            <Card className="relative bg-background rounded-lg p-6">
+          <div className={`mx-auto mt-12 w-full ${showResult ? 'max-w-[1200px]' : 'max-w-[600px]'}`}>
+            <Card className="bg-background rounded-lg p-6">
               <h1 className="text-3xl font-bold mb-8 text-center">
                 Proply Deal Score™
               </h1>
