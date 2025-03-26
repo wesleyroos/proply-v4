@@ -48,34 +48,6 @@ import {
 import { AreaRateProgressDialog } from "@/components/AreaRateProgressDialog";
 import { Badge } from "@/components/ui/badge";
 
-// Result interface to include AfriGIS data properties
-interface DealScoreResult {
-  score: number;
-  rating: string;
-  color: string;
-  percentageDifference: number;
-  askingPrice: number;
-  estimatedValue: number;
-  propertyRate: number;
-  areaRate: number;
-  propertyCondition: string;
-  shortTermYield: number | null;
-  longTermYield: number | null;
-  bestStrategy: string;
-  // AfriGIS property data
-  hasAfriGISData?: boolean;
-  erfSize?: number;
-  buildingSize?: number;
-  lastSalePrice?: number;
-  lastSaleDate?: string;
-  zoning?: string;
-  propertyType?: string;
-  historicalSales?: Array<{
-    date: string;
-    price: number;
-  }>;
-  formattedAddress?: string;
-}
 
 export default function DealScorePublicPage() {
   const { toast } = useToast();
@@ -114,7 +86,7 @@ export default function DealScorePublicPage() {
     }
   }, [formData.purchasePrice]);
 
-  const [result, setResult] = useState<DealScoreResult | null>(null);
+  const [result, setResult] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -372,88 +344,24 @@ export default function DealScorePublicPage() {
       Number(parseFormattedNumber(formData.areaRate)) *
       Number(parseFormattedNumber(formData.size));
 
-    // Try to get property details from AfriGIS
-    const fetchPropertyDetails = async () => {
-      try {
-        // Fetch property analysis data for additional details
-        const response = await fetch('/api/property-analysis', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            address: formData.address,
-          }),
-        });
-
-        if (response.ok) {
-          const propertyData = await response.json();
-          
-          // If the data includes property analysis, add it to the result
-          if (propertyData.success) {
-            const data = propertyData.propertyData;
-            
-            setResult({
-              score: Math.round(score),
-              rating,
-              color,
-              percentageDifference:
-                ((estimatedValue - purchasePrice) / purchasePrice) * 100,
-              askingPrice: purchasePrice,
-              estimatedValue,
-              propertyRate,
-              areaRate: Number(parseFormattedNumber(formData.areaRate)),
-              propertyCondition: formData.propertyCondition,
-              shortTermYield,
-              longTermYield,
-              bestStrategy:
-                shortTermYield > (longTermYield || 0) ? "Short-Term" : "Long-Term",
-              // AfriGIS property data
-              erfSize: data.erfSize,
-              buildingSize: data.buildingSize,
-              lastSalePrice: data.lastSalePrice,
-              lastSaleDate: data.lastSaleDate,
-              zoning: data.zoning,
-              propertyType: data.propertyType,
-              formattedAddress: data.address,
-              hasAfriGISData: true
-            });
-            
-            setShowResult(true);
-            setIsCalculating(false);
-            return;
-          }
-        }
-        
-        // If the API fails or doesn't return data, continue with basic result
-        throw new Error("No AfriGIS property data available");
-      } catch (error) {
-        console.log("Could not fetch AfriGIS property data, using basic score");
-        // Fall back to basic result without AfriGIS data
-        setResult({
-          score: Math.round(score),
-          rating,
-          color,
-          percentageDifference:
-            ((estimatedValue - purchasePrice) / purchasePrice) * 100,
-          askingPrice: purchasePrice,
-          estimatedValue,
-          propertyRate,
-          areaRate: Number(parseFormattedNumber(formData.areaRate)),
-          propertyCondition: formData.propertyCondition,
-          shortTermYield,
-          longTermYield,
-          bestStrategy:
-            shortTermYield > (longTermYield || 0) ? "Short-Term" : "Long-Term",
-          hasAfriGISData: false
-        });
-        
-        setShowResult(true);
-        setIsCalculating(false);
-      }
-    };
-
-    fetchPropertyDetails();
+    setResult({
+      score: Math.round(score),
+      rating,
+      color,
+      percentageDifference:
+        ((estimatedValue - purchasePrice) / purchasePrice) * 100,
+      askingPrice: purchasePrice,
+      estimatedValue,
+      propertyRate,
+      areaRate: Number(parseFormattedNumber(formData.areaRate)),
+      propertyCondition: formData.propertyCondition,
+      shortTermYield,
+      longTermYield,
+      bestStrategy:
+        shortTermYield > (longTermYield || 0) ? "Short-Term" : "Long-Term",
+    });
+    setShowResult(true);
+    setIsCalculating(false);
   };
 
   const handlePayment = async () => {
@@ -888,67 +796,6 @@ export default function DealScorePublicPage() {
       setShowAreaRateDialog(true);
       setIsLoading(true);
 
-      // First try the AfriGIS Property Analysis API
-      const propertyAnalysisResponse = await fetch("/api/property-analysis", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          address: formData.address,
-        }),
-      });
-
-      if (propertyAnalysisResponse.ok) {
-        const propertyData = await propertyAnalysisResponse.json();
-        
-        if (propertyData.success && propertyData.areaRate) {
-          // Check if we have AfriGIS data
-          const hasAfriGISData = propertyData.propertyData.hasAfriGISData;
-          
-          // Update form with property data
-          setFormData((prev) => {
-            const updates: any = {
-              ...prev,
-              areaRate: propertyData.areaRate.toString(),
-            };
-            
-            // Add property size if available and not already set
-            if (propertyData.propertyData.erfSize && (!prev.size || prev.size === "")) {
-              updates.size = propertyData.propertyData.erfSize.toString();
-            }
-            
-            return updates;
-          });
-          
-          // Log that we're using enhanced data if available
-          if (hasAfriGISData) {
-            console.log("Using enhanced property data from AfriGIS");
-            toast({
-              title: "Enhanced Data",
-              description: "Using official property data to improve accuracy",
-              variant: "default",
-            });
-          }
-          
-          setAreaRateStatus("success");
-          toast({
-            title: "Success",
-            description: "Property analysis completed successfully",
-          });
-
-          // Short delay to show completion
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-          setIsLoading(false);
-          setTimeout(() => {
-            setShowAreaRateDialog(false);
-          }, 1000);
-          
-          return; // Exit early if AfriGIS data was successful
-        }
-      }
-      
-      // Fall back to the original area rate API if AfriGIS data wasn't available
       const response = await fetch("/api/deal-advisor/area-rate", {
         method: "POST",
         headers: {
@@ -965,8 +812,7 @@ export default function DealScorePublicPage() {
 
       const data = await response.json();
 
-      // Short delay to show process
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 4000));
 
       setFormData((prev) => ({
         ...prev,
@@ -1174,13 +1020,6 @@ export default function DealScorePublicPage() {
                       <h2 className="text-2xl font-bold mb-2">
                         Deal Score: {result?.score}%
                       </h2>
-                      {result?.hasAfriGISData && (
-                        <div className="flex justify-center mb-3">
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                            Enhanced with AfriGIS Property Data
-                          </Badge>
-                        </div>
-                      )}
 
                       <div className="flex justify-between items-center mt-4 px-4">
                         <div className="text-sm">Asking Price:</div>
@@ -1285,53 +1124,10 @@ export default function DealScorePublicPage() {
                                       /m²
                                     </span>
                                   </div>
-                                  {result?.hasAfriGISData && result?.lastSalePrice && (
-                                    <div className="flex justify-between">
-                                      <span>Last Sale Price:</span>
-                                      <span className="font-medium">
-                                        R{Math.round(result.lastSalePrice).toLocaleString()}
-                                        {result.lastSaleDate && ` (${result.lastSaleDate})`}
-                                      </span>
-                                    </div>
-                                  )}
-                                  
-                                  {result?.hasAfriGISData && result?.erfSize && (
-                                    <div className="flex justify-between">
-                                      <span>Erf Size:</span>
-                                      <span className="font-medium">
-                                        {result.erfSize} m²
-                                      </span>
-                                    </div>
-                                  )}
-                                  
-                                  {result?.hasAfriGISData && result?.buildingSize && (
-                                    <div className="flex justify-between">
-                                      <span>Building Size:</span>
-                                      <span className="font-medium">
-                                        {result.buildingSize} m²
-                                      </span>
-                                    </div>
-                                  )}
-                                  
-                                  {result?.hasAfriGISData && result?.zoning && (
-                                    <div className="flex justify-between">
-                                      <span>Zoning:</span>
-                                      <span className="font-medium">
-                                        {result.zoning}
-                                      </span>
-                                    </div>
-                                  )}
-                                  
                                   <div className="flex justify-between mb-4">
                                     <span>Recent Area Sales:</span>
                                     <div className="flex items-center gap-2">
-                                      {result?.hasAfriGISData && result?.historicalSales?.length > 0 ? (
-                                        <span className="text-sm">
-                                          {result.historicalSales.map(sale => `R${Math.round(sale.price).toLocaleString()} (${sale.date})`).join(', ')}
-                                        </span>
-                                      ) : (
-                                        <span className="text-sm">R3.4M - R3.7M (last 3 months)</span>
-                                      )}
+                                      <span className="text-sm">R3.4M - R3.7M (last 3 months)</span>
                                       <Badge variant="secondary" className="bg-green-100 text-green-800 font-normal">
                                         WITHIN RANGE
                                       </Badge>
