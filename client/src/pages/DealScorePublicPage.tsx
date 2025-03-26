@@ -836,7 +836,7 @@ export default function DealScorePublicPage() {
       <div
         id="deal-score-report"
         ref={reportRef}
-        className="max-w-[800px] mx-auto bg-white shadow-lg rounded-xl overflow-hidden"
+        className="max-w-[1600px] mx-auto bg-white shadow-lg rounded-xl overflow-hidden"
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-primary to-blue-600 p-6 text-white">
