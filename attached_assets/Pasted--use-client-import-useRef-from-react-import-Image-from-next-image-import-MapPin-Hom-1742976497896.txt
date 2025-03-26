@@ -1,0 +1,477 @@
+"use client"
+
+import { useRef } from "react"
+import Image from "next/image"
+import {
+  MapPin,
+  Home,
+  Calendar,
+  DollarSign,
+  BarChart3,
+  TrendingUp,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Calculator,
+  Building,
+  Banknote,
+  Percent,
+} from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
+import { HTMLToPDFButton } from "@/components/pdf/html-to-pdf-button"
+
+export default function DealScoreReportPage() {
+  const reportRef = useRef<HTMLDivElement>(null)
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4 md:px-0">
+      <div
+        id="deal-score-content"
+        ref={reportRef}
+        className="max-w-[800px] mx-auto bg-white shadow-lg rounded-xl overflow-hidden"
+      >
+        {/* Header */}
+        <div className="bg-gradient-to-r from-primary to-blue-600 p-6 text-white">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <Image src="/proply-logo-auth.png" alt="Proply Logo" width={120} height={40} className="h-8 w-auto" />
+              <Link
+                href="/"
+                className="print:hidden text-sm bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-md transition-colors flex items-center gap-1"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Home
+              </Link>
+            </div>
+            <div className="text-sm opacity-80">Report generated: 20 March 2025</div>
+          </div>
+          <div className="mt-12 mb-6">
+            <h1 className="text-3xl font-bold">Proply Deal Score™</h1>
+            <p className="opacity-80 mt-2">27 Leeuwen St, Cape Town City Centre, 8001</p>
+          </div>
+        </div>
+
+        {/* Deal Score Section */}
+        <div className="p-8 border-b">
+          <div className="text-center mb-8">
+            <div className="flex justify-center mt-6">
+              <div className="relative w-40 h-40">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 to-blue-500/20 animate-pulse-slow"></div>
+                <div className="absolute inset-2 rounded-full bg-white flex items-center justify-center">
+                  <div className="text-6xl font-bold text-primary">89%</div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4">
+              <span className="inline-block px-4 py-1 rounded-full text-white font-medium bg-green-500">
+                GREAT DEAL
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="text-sm text-gray-500">Asking Price</div>
+              <div className="text-xl font-bold">R3,500,000</div>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="text-sm text-gray-500">Estimated Market Value</div>
+              <div className="text-xl font-bold">R3,825,000</div>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 p-4 rounded-lg text-center mb-8">
+            <span className="font-medium">This property is </span>
+            <span className="text-green-600 font-bold">9.3% below</span>
+            <span className="font-medium"> the estimated market value</span>
+          </div>
+
+          <div className="relative h-4 mb-10 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
+            <div
+              className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2 shadow-md"
+              style={{ left: "89%" }}
+            />
+            <div className="absolute -bottom-6 left-0 text-xs">Poor</div>
+            <div className="absolute -bottom-6 left-1/4 text-xs">Average</div>
+            <div className="absolute -bottom-6 left-1/2 text-xs transform -translate-x-1/2">Good</div>
+            <div className="absolute -bottom-6 left-3/4 text-xs">Great</div>
+            <div className="absolute -bottom-6 right-0 text-xs">Excellent</div>
+          </div>
+        </div>
+
+        {/* Key Deal Factors */}
+        <div className="p-8 border-b">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold">Key Deal Factors</h2>
+            <ChevronDown className="h-5 w-5 text-gray-400" />
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="flex items-center gap-2">
+                <Home className="h-4 w-4 text-primary" />
+                Price per m²:
+              </span>
+              <span className="font-medium">R41,176/m²</span>
+            </div>
+
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-primary" />
+                Area average:
+              </span>
+              <span className="font-medium">R45,000/m²</span>
+            </div>
+
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-primary" />
+                Recent Area Sales:
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium">R3.4M - R3.7M (last 3 months)</span>
+                <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200">
+                  WITHIN RANGE
+                </Badge>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                Property condition:
+              </span>
+              <span className="font-medium">Excellent</span>
+            </div>
+
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                Short-Term Yield:
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium">18.3%</span>
+                <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200">
+                  EXCELLENT
+                </Badge>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-primary" />
+                Long-Term Yield:
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium">8.6%</span>
+                <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200">
+                  EXCELLENT
+                </Badge>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-primary" />
+                Best Investment Strategy:
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium">Short-Term</span>
+                <Badge variant="outline" className="bg-purple-50 text-purple-800 border-purple-200">
+                  RECOMMENDED
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Property Details */}
+        <div className="p-8 border-b">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold">Property Details</h2>
+            <ChevronDown className="h-5 w-5 text-gray-400" />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-sm font-medium text-gray-500 mb-3">General Information</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Property Type:</span>
+                  <span className="font-medium">Apartment</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Size:</span>
+                  <span className="font-medium">85 m²</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Bedrooms:</span>
+                  <span className="font-medium">2</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Bathrooms:</span>
+                  <span className="font-medium">2</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Parking:</span>
+                  <span className="font-medium">1</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-medium text-gray-500 mb-3">Financial Information</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Municipal Value:</span>
+                  <span className="font-medium">R3,600,000</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Monthly Rates:</span>
+                  <span className="font-medium">R2,850</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Levy:</span>
+                  <span className="font-medium">R1,950</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Estimated Monthly Costs:</span>
+                  <span className="font-medium">R4,800</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Investment Analysis */}
+        <div className="p-8 border-b">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold">Investment Analysis</h2>
+            <ChevronDown className="h-5 w-5 text-gray-400" />
+          </div>
+
+          <div className="space-y-6">
+            {/* Short-term Rental Analysis */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <Building className="h-5 w-5 text-primary" />
+                <h3 className="font-medium">Short-term Rental Analysis</h3>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Nightly Rate</div>
+                  <div className="text-xl font-bold">R2,500</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Occupancy Rate</div>
+                  <div className="text-xl font-bold">70%</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Monthly Revenue</div>
+                  <div className="text-xl font-bold">R52,500</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Annual Revenue</div>
+                  <div className="text-xl font-bold">R630,000</div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex justify-between items-center p-3 bg-white rounded-lg">
+                <span className="flex items-center gap-2">
+                  <Percent className="h-4 w-4 text-primary" />
+                  Short-Term Yield:
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">18.3%</span>
+                  <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200">
+                    EXCELLENT
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* Long-term Rental Analysis */}
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <Building className="h-5 w-5 text-purple-600" />
+                <h3 className="font-medium">Long-term Rental Analysis</h3>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Monthly Rental</div>
+                  <div className="text-xl font-bold">R25,000</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Annual Rental</div>
+                  <div className="text-xl font-bold">R300,000</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Vacancy Rate</div>
+                  <div className="text-xl font-bold">5%</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Net Annual Income</div>
+                  <div className="text-xl font-bold">R285,000</div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex justify-between items-center p-3 bg-white rounded-lg">
+                <span className="flex items-center gap-2">
+                  <Percent className="h-4 w-4 text-purple-600" />
+                  Long-Term Yield:
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">8.6%</span>
+                  <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200">
+                    EXCELLENT
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* Mortgage Analysis */}
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <Banknote className="h-5 w-5 text-green-600" />
+                <h3 className="font-medium">Mortgage Analysis</h3>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Purchase Price</div>
+                  <div className="text-xl font-bold">R3,500,000</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Deposit (10%)</div>
+                  <div className="text-xl font-bold">R350,000</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Loan Amount</div>
+                  <div className="text-xl font-bold">R3,150,000</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Interest Rate</div>
+                  <div className="text-xl font-bold">11.75%</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Loan Term</div>
+                  <div className="text-xl font-bold">20 years</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="text-sm text-gray-500">Monthly Payment</div>
+                  <div className="text-xl font-bold">R33,850</div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex justify-between items-center p-3 bg-white rounded-lg">
+                <span className="flex items-center gap-2">
+                  <Calculator className="h-4 w-4 text-green-600" />
+                  Cash Flow (Short-term):
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">R18,650/month</span>
+                  <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200">
+                    POSITIVE
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="mt-2 flex justify-between items-center p-3 bg-white rounded-lg">
+                <span className="flex items-center gap-2">
+                  <Calculator className="h-4 w-4 text-green-600" />
+                  Cash Flow (Long-term):
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">-R8,850/month</span>
+                  <Badge variant="outline" className="bg-red-50 text-red-800 border-red-200">
+                    NEGATIVE
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Comparable Properties */}
+        <div className="p-8 border-b">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold">Comparable Properties</h2>
+            <ChevronDown className="h-5 w-5 text-gray-400" />
+          </div>
+
+          <div className="mb-6">
+            <div className="bg-blue-50 p-4 rounded-lg text-center">
+              <span className="font-medium">Average Comparable Sales Price: </span>
+              <span className="text-primary font-bold">R4,943,949</span>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex justify-between mb-2">
+                  <span className="font-medium">Property {item}</span>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+                    {item === 1 ? "MOST SIMILAR" : "COMPARABLE"}
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-gray-500">Address:</div>
+                    <div>123 Main St, Cape Town</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500">Sale Price:</div>
+                    <div className="font-medium">R{(3900000 + item * 500000).toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500">Size:</div>
+                    <div>{85 + item * 10} m²</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500">Price per m²:</div>
+                    <div>R{Math.round(3900000 / (85 + item * 10)).toLocaleString()}/m²</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500">Bedrooms:</div>
+                    <div>{item + 1}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500">Sale Date:</div>
+                    <div>2023/10/{item * 10}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 text-center">
+            <button className="text-primary font-medium flex items-center gap-1 mx-auto">
+              View all 13 comparable properties
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-8 text-center pdf-section">
+          <HTMLToPDFButton
+            elementId="deal-score-content"
+            filename="Proply-Deal-Score-Report.pdf"
+            className="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-full flex items-center gap-2 mx-auto disabled:opacity-70"
+          />
+          <p className="text-sm text-gray-500 mt-6">Report generated by Proply Deal Score™ on 20 March 2025</p>
+          <p className="text-xs text-gray-400 mt-2">
+            The information in this report is based on market data and should be used for informational purposes only.
+            Proply does not guarantee the accuracy of the information provided.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
