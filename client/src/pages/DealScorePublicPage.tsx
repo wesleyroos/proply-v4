@@ -1279,7 +1279,7 @@ export default function DealScorePublicPage() {
                     </div>
 
                     {/* Comprehensive Report Container */}
-                    <div className="max-w-4xl mx-auto">
+                    <div className="max-w-4xl mx-auto relative">
                       {/* Summary Card before the full report */}
                       <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
                         <h3 className="text-xl font-bold mb-4">Property Assessment Summary</h3>
@@ -1330,46 +1330,49 @@ export default function DealScorePublicPage() {
                         </div>
                       </div>
                       
-                      {/* Render the comprehensive report */}
-                      {renderComprehensiveReport()}
-                      
-                      {/* Download button when report is unlocked */}
-                      {reportUnlocked && (
-                        <div className="mt-8 flex justify-center">
-                          <Button
-                            size="lg"
-                            className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md"
-                            onClick={() => handleDownloadReport()}
-                          >
-                            <Download className="mr-2 h-4 w-4" />
-                            Download Full Report
-                          </Button>
-                        </div>
-                      )}
-                      
-                      {/* Payment overlay when report is not unlocked */}
-                      {!reportUnlocked && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background/95 backdrop-blur-sm rounded-lg p-8">
-                          <div className="bg-background/95 rounded-xl p-8 shadow-lg border border-border/10 max-w-md mx-auto text-center">
-                            <Lock className="w-12 h-12 text-primary mb-6 mx-auto" />
-                            <h3 className="text-2xl font-semibold mb-3">
-                              Unlock Full Report
-                            </h3>
-                            <p className="text-muted-foreground mb-6 text-center max-w-sm mx-auto">
-                              Get access to the complete property analysis and
-                              investment insights
-                            </p>
+                      {/* Complete Analysis Section - with payment overlay container */}
+                      <div className="relative">
+                        {/* Render the comprehensive report */}
+                        {renderComprehensiveReport()}
+                        
+                        {/* Download button when report is unlocked */}
+                        {reportUnlocked && (
+                          <div className="mt-8 flex justify-center">
                             <Button
-                              onClick={() => setShowPaymentModal(true)}
                               size="lg"
-                              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                              className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md"
+                              onClick={() => handleDownloadReport()}
                             >
-                              <CreditCard className="mr-2 h-4 w-4" />
-                              Unlock Full Report for R49
+                              <Download className="mr-2 h-4 w-4" />
+                              Download Full Report
                             </Button>
                           </div>
-                        </div>
-                      )}
+                        )}
+                        
+                        {/* Payment overlay when report is not unlocked */}
+                        {!reportUnlocked && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background/95 backdrop-blur-sm rounded-lg p-8">
+                            <div className="bg-background/95 rounded-xl p-8 shadow-lg border border-border/10 max-w-md mx-auto text-center">
+                              <Lock className="w-12 h-12 text-primary mb-6 mx-auto" />
+                              <h3 className="text-2xl font-semibold mb-3">
+                                Unlock Full Report
+                              </h3>
+                              <p className="text-muted-foreground mb-6 text-center max-w-sm mx-auto">
+                                Get access to the complete property analysis and
+                                investment insights
+                              </p>
+                              <Button
+                                onClick={() => setShowPaymentModal(true)}
+                                size="lg"
+                                className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                              >
+                                <CreditCard className="mr-2 h-4 w-4" />
+                                Unlock Full Report for R49
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex justify-center mt-8">
