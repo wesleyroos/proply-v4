@@ -1409,7 +1409,7 @@ export default function DealScorePublicPage() {
                 ) : (
                   <div className="space-y-6">
                     {/* Comprehensive Report Container */}
-                    <div className="max-w-4xl mx-auto relative">
+                    <div className="max-w-6xl mx-auto relative">
                       
                       {/* Complete Analysis Section - with payment overlay container */}
                       <div className="relative">
