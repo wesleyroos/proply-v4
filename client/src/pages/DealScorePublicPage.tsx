@@ -809,6 +809,244 @@ export default function DealScorePublicPage() {
     }
   };
 
+  // Function to render the comprehensive report
+  const renderComprehensiveReport = () => {
+    if (!dealReport) return null;
+    
+    return (
+      <div className="space-y-8 pt-4">
+        {/* Property Details Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center mb-4">
+            <MapPin className="h-5 w-5 text-primary mr-2" />
+            <h3 className="text-xl font-semibold">Property Details</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Address</p>
+              <p className="font-medium">{dealReport.address}</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-muted-foreground">Property Size</p>
+              <p className="font-medium">{dealReport.propertySize} m²</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-muted-foreground">Bedrooms</p>
+              <p className="font-medium">{dealReport.bedrooms}</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-muted-foreground">Bathrooms</p>
+              <p className="font-medium">{dealReport.bathrooms}</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-muted-foreground">Parking Spaces</p>
+              <p className="font-medium">{dealReport.parking}</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-muted-foreground">Condition</p>
+              <p className="font-medium capitalize">{dealReport.propertyCondition}</p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Financial Analysis Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center mb-4">
+            <DollarSign className="h-5 w-5 text-primary mr-2" />
+            <h3 className="text-xl font-semibold">Financial Analysis</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Asking Price</p>
+              <p className="font-medium">R{dealReport.askingPrice.toLocaleString()}</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-muted-foreground">Estimated Market Value</p>
+              <p className="font-medium">R{dealReport.estimatedValue.toLocaleString()}</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-muted-foreground">Price per m²</p>
+              <p className="font-medium">R{Math.round(dealReport.pricePerSqM).toLocaleString()}/m²</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-muted-foreground">Area Average</p>
+              <p className="font-medium">R{Math.round(dealReport.areaRate).toLocaleString()}/m²</p>
+            </div>
+            
+            <div className="col-span-2">
+              <p className="text-sm text-muted-foreground mb-1">Percentage Difference from Market Value</p>
+              <div className="flex items-center">
+                <Badge className={dealReport.percentageDifference < 0 ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"}>
+                  {dealReport.percentageDifference < 0 ? "ABOVE MARKET" : "BELOW MARKET"}
+                </Badge>
+                <span className="ml-2 font-medium">
+                  {Math.abs(dealReport.percentageDifference).toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Rental Yield Analysis Section */}
+        <div className={`bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 ${!reportUnlocked ? "blur-sm" : ""}`}>
+          <div className="flex items-center mb-4">
+            <Banknote className="h-5 w-5 text-primary mr-2" />
+            <h3 className="text-xl font-semibold">Rental Yield Analysis</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Short-Term Yield</p>
+              <p className="font-medium">{dealReport.shortTermYield.toFixed(1)}%</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-muted-foreground">Long-Term Yield</p>
+              <p className="font-medium">{dealReport.longTermYield.toFixed(1)}%</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-muted-foreground">Monthly Long-Term Rental</p>
+              <p className="font-medium">R{Math.round(dealReport.monthlyLongTerm).toLocaleString()}</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-muted-foreground">Nightly Rate (Short-Term)</p>
+              <p className="font-medium">R{Math.round(dealReport.nightlyRate).toLocaleString()}</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-muted-foreground">Annual Revenue (Short-Term)</p>
+              <p className="font-medium">R{Math.round(dealReport.annualRevenueShortTerm).toLocaleString()}</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-muted-foreground">Annual Revenue (Long-Term)</p>
+              <p className="font-medium">R{Math.round(dealReport.annualRentalLongTerm).toLocaleString()}</p>
+            </div>
+            
+            <div className="col-span-2">
+              <p className="text-sm text-muted-foreground mb-1">Recommended Strategy</p>
+              <div className="flex items-center">
+                <Badge className="bg-purple-100 text-purple-800">
+                  RECOMMENDED
+                </Badge>
+                <span className="ml-2 font-medium">
+                  {dealReport.bestInvestmentStrategy}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Financing Section - Only visible when unlocked */}
+        {reportUnlocked && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center mb-4">
+              <Building className="h-5 w-5 text-primary mr-2" />
+              <h3 className="text-xl font-semibold">Financing & Cash Flow</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Deposit Amount</p>
+                <p className="font-medium">R{dealReport.depositAmount.toLocaleString()} ({dealReport.depositPercentage}%)</p>
+              </div>
+              
+              <div>
+                <p className="text-sm text-muted-foreground">Loan Amount</p>
+                <p className="font-medium">R{dealReport.loanAmount.toLocaleString()}</p>
+              </div>
+              
+              <div>
+                <p className="text-sm text-muted-foreground">Interest Rate</p>
+                <p className="font-medium">{dealReport.interestRate}%</p>
+              </div>
+              
+              <div>
+                <p className="text-sm text-muted-foreground">Loan Term</p>
+                <p className="font-medium">{dealReport.loanTerm} years</p>
+              </div>
+              
+              <div>
+                <p className="text-sm text-muted-foreground">Monthly Payment</p>
+                <p className="font-medium">R{Math.round(dealReport.monthlyPayment).toLocaleString()}</p>
+              </div>
+              
+              <div>
+                <p className="text-sm text-muted-foreground">Estimated Monthly Costs</p>
+                <p className="font-medium">R{Math.round(dealReport.estimatedMonthlyCosts).toLocaleString()}</p>
+              </div>
+              
+              <div>
+                <p className="text-sm text-muted-foreground">Monthly Cash Flow (Short-Term)</p>
+                <p className={`font-medium ${dealReport.cashFlowShortTerm < 0 ? "text-red-500" : "text-green-500"}`}>
+                  {dealReport.cashFlowShortTerm < 0 ? "-" : ""}R{Math.abs(Math.round(dealReport.cashFlowShortTerm)).toLocaleString()}
+                </p>
+              </div>
+              
+              <div>
+                <p className="text-sm text-muted-foreground">Monthly Cash Flow (Long-Term)</p>
+                <p className={`font-medium ${dealReport.cashFlowLongTerm < 0 ? "text-red-500" : "text-green-500"}`}>
+                  {dealReport.cashFlowLongTerm < 0 ? "-" : ""}R{Math.abs(Math.round(dealReport.cashFlowLongTerm)).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Comparable Properties Section - Only visible when unlocked */}
+        {reportUnlocked && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center mb-4">
+              <Home className="h-5 w-5 text-primary mr-2" />
+              <h3 className="text-xl font-semibold">Comparable Properties</h3>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-2 px-2 font-medium">Similarity</th>
+                    <th className="text-left py-2 px-2 font-medium">Address</th>
+                    <th className="text-left py-2 px-2 font-medium">Sale Price</th>
+                    <th className="text-left py-2 px-2 font-medium">Size</th>
+                    <th className="text-left py-2 px-2 font-medium">Price/m²</th>
+                    <th className="text-left py-2 px-2 font-medium">Beds</th>
+                    <th className="text-left py-2 px-2 font-medium">Sale Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dealReport.comparableProperties.map((prop, index) => (
+                    <tr key={index} className="border-b border-gray-200 dark:border-gray-700">
+                      <td className="py-2 px-2">{prop.similarity}</td>
+                      <td className="py-2 px-2">{prop.address}</td>
+                      <td className="py-2 px-2">R{prop.salePrice.toLocaleString()}</td>
+                      <td className="py-2 px-2">{prop.size} m²</td>
+                      <td className="py-2 px-2">R{prop.pricePerSqM.toLocaleString()}</td>
+                      <td className="py-2 px-2">{prop.bedrooms}</td>
+                      <td className="py-2 px-2">{prop.saleDate}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const RentalAmountProgressDialog = () => {
     return (
       <Dialog open={showRentalAmountDialog} onOpenChange={setShowRentalAmountDialog}>
@@ -972,15 +1210,45 @@ export default function DealScorePublicPage() {
                   </form>
                 ) : (
                   <div className="space-y-6">
-                    <div className="text-center px-2 py-4 max-w-lg mx-auto">
+                    <div className="text-center px-2 py-4 max-w-md mx-auto mb-8">
                       <h2 className="text-3xl font-bold mb-6">
                         Proply Deal Score™
                       </h2>
                       
-                      <div className="mb-8">
+                      <div className="mb-4">
                         <h3 className="text-xl font-bold mb-2">
                           Deal Score: <span className="text-2xl">{result?.score}%</span>
                         </h3>
+                      </div>
+
+                      <div className="mb-6">
+                        <div
+                          className={`inline-block px-4 py-1 rounded-full text-white ${result?.color || 'bg-blue-500'}`}
+                        >
+                          {result?.rating} DEAL
+                        </div>
+                      </div>
+
+                      <div className="relative h-4 mb-10 bg-gradient-to-r from-red-500 via-yellow-400 to-green-500 rounded-full">
+                        <div
+                          className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
+                          style={{ left: `${result?.score}%` }}
+                        />
+                        <div className="absolute -bottom-6 left-0 text-xs">
+                          Poor
+                        </div>
+                        <div className="absolute -bottom-6 left-1/4 text-xs">
+                          Average
+                        </div>
+                        <div className="absolute -bottom-6 left-1/2 text-xs transform -translate-x-1/2">
+                          Good
+                        </div>
+                        <div className="absolute -bottom-6 left-3/4 text-xs">
+                          Great
+                        </div>
+                        <div className="absolute -bottom-6 right-0 text-xs">
+                          Excellent
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4 mb-2">
@@ -1008,174 +1276,78 @@ export default function DealScorePublicPage() {
                           </div>
                         </div>
                       </div>
-
-                      <div className="text-center mb-4">
-                        This property is{" "}
-                        <span
-                          className={`font-bold ${
-                            (result?.percentageDifference ?? 0) < 0
-                              ? "text-amber-500"
-                              : "text-green-500"
-                          }`}
-                        >
-                          {Math.abs(result?.percentageDifference ?? 0).toFixed(1)}%
-                        </span>{" "}
-                        {(result?.percentageDifference ?? 0) < 0
-                          ? "above"
-                          : "below"}{" "}
-                        the estimated market value
-                      </div>
-
-                      <div className="mb-4">
-                        <div
-                          className="inline-block px-4 py-1 rounded-full text-white bg-green-500"
-                        >
-                          {result?.rating} DEAL
-                        </div>
-                      </div>
-
-                      <div className="relative h-4 mb-8 bg-gradient-to-r from-red-500 via-yellow-400 to-green-500 rounded-full">
-                        <div
-                          className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
-                          style={{ left: `${result?.score}%` }}
-                        />
-                        <div className="absolute -bottom-6 left-0 text-xs">
-                          Poor
-                        </div>
-                        <div className="absolute -bottom-6 left-1/4 text-xs">
-                          Average
-                        </div>
-                        <div className="absolute -bottom-6 left-1/2 text-xs transform -translate-x-1/2">
-                          Good
-                        </div>
-                        <div className="absolute -bottom-6 left-3/4 text-xs">
-                          Great
-                        </div>
-                        <div className="absolute -bottom-6 right-0 text-xs">
-                          Excellent
-                        </div>
-                      </div>
                     </div>
 
-                    {/* Detailed Analysis Section */}
-                    <div className="relative mt-8">
-                      <div
-                        className={`space-y-6 ${!reportUnlocked ? "blur-sm select-none pointer-events-none" : ""}`}
-                      >
-                        {/* Deal Factors Section */}
-                        <div className="mt-4">
-                          <Accordion
-                            type="single"
-                            collapsible
-                            className="w-full"
-                            defaultValue="deal-factors"
+                    {/* Comprehensive Report Container */}
+                    <div className="max-w-4xl mx-auto">
+                      {/* Summary Card before the full report */}
+                      <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                        <h3 className="text-xl font-bold mb-4">Property Assessment Summary</h3>
+                        <div className="text-center mb-4">
+                          This property is{" "}
+                          <span
+                            className={`font-bold ${
+                              (result?.percentageDifference ?? 0) < 0
+                                ? "text-amber-500"
+                                : "text-green-500"
+                            }`}
                           >
-                            <AccordionItem value="deal-factors">
-                              <AccordionTrigger className="text-xl font-semibold">
-                                Key Deal Factors
-                              </AccordionTrigger>
-                              <AccordionContent>
-                                <div className="space-y-4 pt-2">
-                                  <div className="flex justify-between">
-                                    <span>Price per m²:</span>{" "}
-                                    <span className="font-medium">
-                                      R{Math.round(result?.propertyRate || 0).toLocaleString()}/m²
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>Area average:</span>
-                                    <span className="font-medium">
-                                      R{Math.round(result?.areaRate || 0).toLocaleString()}/m²
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between mb-4">
-                                    <span>Recent Area Sales:</span>
-                                    <div className="flex items-center gap-2">
-                                      <span>R3.4M - R3.7M (last 3 months)</span>
-                                      <Badge variant="secondary" className="bg-green-100 text-green-800 font-normal">
-                                        WITHIN RANGE
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>Property condition:</span>
-                                    <span className="font-medium capitalize">
-                                      {result?.propertyCondition}
-                                    </span>
-                                  </div>
-                                  {result?.shortTermYield !== null && (
-                                    <div className="flex justify-between">
-                                      <span>Short-Term Yield:</span>
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-medium">{result?.shortTermYield?.toFixed(1)}%</span>
-                                        <Badge className={`font-normal ${
-                                          (result?.shortTermYield ?? 0) >= 12
-                                            ? "bg-green-100 text-green-800"
-                                            : (result?.shortTermYield ?? 0) >= 8
-                                              ? "bg-yellow-100 text-yellow-800"
-                                              : "bg-red-100 text-red-800"
-                                        }`}>
-                                          {(result?.shortTermYield ?? 0) >= 12
-                                            ? "EXCELLENT"
-                                            : (result?.shortTermYield ?? 0) >= 8
-                                              ? "GOOD"
-                                              : "POOR"}
-                                        </Badge>
-                                      </div>
-                                    </div>
-                                  )}
-                                  {result?.longTermYield !== null && (
-                                    <div className="flex justify-between">
-                                      <span>Long-Term Yield:</span>
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-medium">{result?.longTermYield?.toFixed(1)}%</span>
-                                        <Badge className={`font-normal ${
-                                          (result?.longTermYield ?? 0) >= 8
-                                            ? "bg-green-100 text-green-800"
-                                            : (result?.longTermYield ?? 0) >= 6
-                                              ? "bg-yellow-100 text-yellow-800"
-                                              : "bg-red-100 text-red-800"
-                                        }`}>
-                                          {(result?.longTermYield ?? 0) >= 8
-                                            ? "EXCELLENT"
-                                            : (result?.longTermYield ?? 0) >= 6
-                                              ? "GOOD"
-                                              : "POOR"}
-                                        </Badge>
-                                      </div>
-                                    </div>
-                                  )}
-                                  <div className="flex justify-between">
-                                    <span>Best Investment Strategy:</span>
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-medium">
-                                        {result?.bestStrategy}
-                                      </span>
-                                      <Badge className="bg-purple-100 text-purple-800 font-normal">
-                                        RECOMMENDED
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
+                            {Math.abs(result?.percentageDifference ?? 0).toFixed(1)}%
+                          </span>{" "}
+                          {(result?.percentageDifference ?? 0) < 0
+                            ? "above"
+                            : "below"}{" "}
+                          the estimated market value
                         </div>
-
-                        {reportUnlocked && (
-                          <div className="mt-6 flex justify-center">
-                            <Button
-                              size="lg"
-                              className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md"
-                              onClick={() => handleDownloadReport()}
-                            >
-                              <Download className="mr-2 h-4 w-4" />
-                              Download Full Report
-                            </Button>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                          <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                            <div className="flex items-center mb-2">
+                              <Home className="h-4 w-4 text-primary mr-2" />
+                              <h4 className="font-semibold">Property Details</h4>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{formData.bedrooms} bed, {formData.bathrooms} bath, {formData.size}m²</p>
                           </div>
-                        )}
+                          
+                          <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                            <div className="flex items-center mb-2">
+                              <Percent className="h-4 w-4 text-primary mr-2" />
+                              <h4 className="font-semibold">Yield Potential</h4>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {result?.shortTermYield !== null ? `${result?.shortTermYield?.toFixed(1)}% (short-term)` : ''} 
+                              {result?.longTermYield !== null ? ` / ${result?.longTermYield?.toFixed(1)}% (long-term)` : ''}
+                            </p>
+                          </div>
+                          
+                          <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                            <div className="flex items-center mb-2">
+                              <TrendingUp className="h-4 w-4 text-primary mr-2" />
+                              <h4 className="font-semibold">Best Strategy</h4>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{result?.bestStrategy}</p>
+                          </div>
+                        </div>
                       </div>
-
+                      
+                      {/* Render the comprehensive report */}
+                      {renderComprehensiveReport()}
+                      
+                      {/* Download button when report is unlocked */}
+                      {reportUnlocked && (
+                        <div className="mt-8 flex justify-center">
+                          <Button
+                            size="lg"
+                            className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md"
+                            onClick={() => handleDownloadReport()}
+                          >
+                            <Download className="mr-2 h-4 w-4" />
+                            Download Full Report
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {/* Payment overlay when report is not unlocked */}
                       {!reportUnlocked && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background/95 backdrop-blur-sm rounded-lg p-8">
                           <div className="bg-background/95 rounded-xl p-8 shadow-lg border border-border/10 max-w-md mx-auto text-center">
