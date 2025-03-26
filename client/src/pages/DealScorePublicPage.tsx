@@ -56,6 +56,7 @@ import {
 import { AreaRateProgressDialog } from "@/components/AreaRateProgressDialog";
 import { Badge } from "@/components/ui/badge";
 import { DealScoreReport } from "./DealScoreReportPage";
+import { HTMLToPDFButton } from "@/components/pdf/html-to-pdf-button";
 
 
 export default function DealScorePublicPage() {
@@ -527,11 +528,21 @@ export default function DealScorePublicPage() {
     setDealReport(null);
   };
 
+  // Reference for PDF export
+  const reportRef = useRef<HTMLDivElement>(null);
+
   const handleDownloadReport = () => {
-    toast({
-      title: "Coming Soon",
-      description: "PDF download functionality will be available soon!",
-    });
+    if (!dealReport) {
+      toast({
+        title: "Error",
+        description: "No report data available to download",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // The HTML-to-PDF button component will handle the actual PDF generation
+    // based on the element ID "deal-score-report"
   };
 
   const getMissingFields = (): string[] => {
@@ -814,7 +825,7 @@ export default function DealScorePublicPage() {
     if (!dealReport) return null;
     
     return (
-      <div className="space-y-8 pt-4">
+      <div id="deal-score-report" ref={reportRef} className="space-y-8 pt-4">
         {/* Property Details Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center mb-4">
@@ -1338,14 +1349,13 @@ export default function DealScorePublicPage() {
                         {/* Download button when report is unlocked */}
                         {reportUnlocked && (
                           <div className="mt-8 flex justify-center">
-                            <Button
-                              size="lg"
-                              className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md"
-                              onClick={() => handleDownloadReport()}
+                            <HTMLToPDFButton
+                              elementId="deal-score-report"
+                              filename={`Proply_Deal_Score_${dealReport?.address?.split(',')[0] || 'Report'}.pdf`}
+                              className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md h-10 py-2 px-4 inline-flex items-center justify-center rounded-md text-sm font-medium"
                             >
-                              <Download className="mr-2 h-4 w-4" />
                               Download Full Report
-                            </Button>
+                            </HTMLToPDFButton>
                           </div>
                         )}
                         
