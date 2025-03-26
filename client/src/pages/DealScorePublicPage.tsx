@@ -909,7 +909,7 @@ export default function DealScorePublicPage() {
             <ChevronDown className="h-5 w-5 text-gray-400" />
           </div>
 
-          <div<div className="space-y-4">
+          <div className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
               <span className="flex items-center gap-2">
                 <Home className="h-4 w-4 text-primary" />
