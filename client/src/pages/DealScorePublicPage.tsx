@@ -54,20 +54,20 @@ export default function DealScorePublicPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    // Property Details (Step 1)
+    // Property Details (Step 1 - simplified)
     address: "",
     purchasePrice: "",
     size: "",
     areaRate: "",
     bedrooms: "",
+    bathrooms: "",
+    parking: "",
     propertyCondition: "excellent",
 
-    // Rental Details (Step 2)
+    // Default values for other fields (no longer shown in form)
     nightlyRate: "",
     occupancy: "",
     longTermRental: "",
-
-    // Financing Details (Step 3)
     depositAmount: "",
     depositPercentage: "10", // Default to 10%
     interestRate: "11",
@@ -115,6 +115,8 @@ export default function DealScorePublicPage() {
           size: "85",
           areaRate: "45000",
           bedrooms: "2",
+          bathrooms: "2",
+          parking: "1",
           propertyCondition: "excellent",
           nightlyRate: "2500",
           occupancy: "70",
@@ -235,23 +237,13 @@ export default function DealScorePublicPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (currentStep < 3) {
-      setCurrentStep(currentStep + 1);
-      return;
-    }
-
     setIsCalculating(true);
     await new Promise((resolve) => setTimeout(resolve, 2000));
     calculateDealScore();
   };
 
-  const handlePrevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
   const calculateDealScore = () => {
+    // Get property rate
     const propertyRate =
       Number(parseFormattedNumber(formData.purchasePrice)) /
       Number(parseFormattedNumber(formData.size));
@@ -260,24 +252,35 @@ export default function DealScorePublicPage() {
         Number(parseFormattedNumber(formData.areaRate))) *
       100;
 
+    // Set default values for calculations
+    const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
+    const propertySize = Number(parseFormattedNumber(formData.size));
+    const bedrooms = Number(parseFormattedNumber(formData.bedrooms));
+    
+    // Default rental yields (based on property value & area)
+    let estimatedLongTermRental = purchasePrice * 0.005; // Estimate 0.5% of purchase price as monthly rental
+    let estimatedNightlyRate = purchasePrice / 1000; // Rough estimate
+    
+    // Set default values for financing
+    const depositPercentage = 10; // 10% deposit
+    const depositAmount = purchasePrice * (depositPercentage / 100);
+    const interestRate = 11; // 11% interest rate
+    const loanTerm = 20; // 20 year loan term
+    const loanAmount = purchasePrice - depositAmount;
+    
+    // Calculate yields
     let shortTermYield = null;
     let longTermYield = null;
-    const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
-
-    if (formData.longTermRental) {
-      const monthlyRental = Number(
-        parseFormattedNumber(formData.longTermRental),
-      );
-      longTermYield = ((monthlyRental * 12) / purchasePrice) * 100;
-    }
-
-    if (formData.nightlyRate && formData.occupancy) {
-      const annualRevenue =
-        Number(parseFormattedNumber(formData.nightlyRate)) *
-        365 *
-        (Number(formData.occupancy) / 100);
-      shortTermYield = (annualRevenue / purchasePrice) * 100;
-    }
+    
+    // Set occupancy to 65% as a default
+    const occupancyRate = 65;
+    
+    // Calculate long term yield
+    longTermYield = ((estimatedLongTermRental * 12) / purchasePrice) * 100;
+    
+    // Calculate short term yield
+    const annualRevenue = estimatedNightlyRate * 365 * (occupancyRate / 100);
+    shortTermYield = (annualRevenue / purchasePrice) * 100;
 
     let score = 50;
     score -= priceDiff * 0.5;
@@ -394,7 +397,7 @@ export default function DealScorePublicPage() {
     });
   };
 
-  const getMissingFields = (step: number): string[] => {
+  const getMissingFields = (): string[] => {
     const missingFields: string[] = [];
 
     const isFieldEmpty = (field: string): boolean => {
@@ -404,333 +407,160 @@ export default function DealScorePublicPage() {
       return numericValue === "" || numericValue === "0";
     };
 
-    switch (step) {
-      case 1:
-        if (!formData.address) missingFields.push("Property Address");
-        if (isFieldEmpty("purchasePrice")) missingFields.push("Purchase Price");
-        if (isFieldEmpty("size")) missingFields.push("Size");
-        if (isFieldEmpty("areaRate")) missingFields.push("Area Rate");
-        if (isFieldEmpty("bedrooms")) missingFields.push("Bedrooms");
-        break;
-      case 2:
-        if (isFieldEmpty("nightlyRate")) missingFields.push("Nightly Rate");
-        if (isFieldEmpty("occupancy")) missingFields.push("Occupancy Rate");
-        if (isFieldEmpty("longTermRental"))
-          missingFields.push("Long Term Rental");
-        break;
-      case 3:
-        if (isFieldEmpty("depositAmount")) missingFields.push("Deposit Amount");
-        if (isFieldEmpty("depositPercentage"))
-          missingFields.push("Deposit Percentage");
-        if (isFieldEmpty("interestRate")) missingFields.push("Interest Rate");
-        if (isFieldEmpty("loanTerm")) missingFields.push("Loan Term");
-        break;
-    }
+    if (!formData.address) missingFields.push("Property Address");
+    if (isFieldEmpty("purchasePrice")) missingFields.push("Purchase Price");
+    if (isFieldEmpty("size")) missingFields.push("Size");
+    if (isFieldEmpty("areaRate")) missingFields.push("Area Rate");
+    if (isFieldEmpty("bedrooms")) missingFields.push("Bedrooms");
+    if (isFieldEmpty("bathrooms")) missingFields.push("Bathrooms");
+    if (isFieldEmpty("parking")) missingFields.push("Parking");
+    if (!formData.propertyCondition) missingFields.push("Property Condition");
 
     return missingFields;
   };
 
-  const isStepComplete = (step: number): boolean => {
-    return getMissingFields(step).length === 0;
-  };
-
   const renderFormStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="address">Property Address</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) => handleInputChange("address", e.target.value)}
-                placeholder="Enter property address"
-                required
-              />
-            </div>
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="address">Property Address</Label>
+          <Input
+            id="address"
+            value={formData.address}
+            onChange={(e) => handleInputChange("address", e.target.value)}
+            placeholder="Enter property address"
+            required
+          />
+        </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="purchasePrice">Purchase Price (R)</Label>
-              <Input
-                id="purchasePrice"
-                type="text"
-                inputMode="numeric"
-                value={formData.purchasePrice}
-                onChange={(e) =>
-                  handleInputChange("purchasePrice", e.target.value)
-                }
-                placeholder="Enter purchase price"
-                required
-              />
-            </div>
+        <div className="space-y-2">
+          <Label htmlFor="purchasePrice">Purchase Price (R)</Label>
+          <Input
+            id="purchasePrice"
+            type="text"
+            inputMode="numeric"
+            value={formData.purchasePrice}
+            onChange={(e) =>
+              handleInputChange("purchasePrice", e.target.value)
+            }
+            placeholder="Enter purchase price"
+            required
+          />
+        </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="size">Size (m²)</Label>
-              <Input
-                id="size"
-                type="text"
-                inputMode="numeric"
-                value={formData.size}
-                onChange={(e) => handleInputChange("size", e.target.value)}
-                placeholder="Enter property size"
-                required
-              />
-            </div>
+        <div className="space-y-2">
+          <Label htmlFor="size">Size (m²)</Label>
+          <Input
+            id="size"
+            type="text"
+            inputMode="numeric"
+            value={formData.size}
+            onChange={(e) => handleInputChange("size", e.target.value)}
+            placeholder="Enter property size"
+            required
+          />
+        </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="areaRate"
-                  type="text"
-                  inputMode="numeric"
-                  value={formData.areaRate}
-                  onChange={(e) => handleInputChange("areaRate", e.target.value)}
-                  placeholder="Area rate will be fetched automatically"
-                  required
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="default"
-                  onClick={fetchAreaRate}
-                  disabled={!formData.address || isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Fetching...
-                    </>
-                  ) : (
-                    "Fetch Area Rate"
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bedrooms">Bedrooms</Label>
-              <Input
-                id="bedrooms"
-                type="text"
-                inputMode="numeric"
-                value={formData.bedrooms}
-                onChange={(e) => handleInputChange("bedrooms", e.target.value)}
-                placeholder="Enter number of bedrooms"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="propertyCondition">Property Condition</Label>
-              <Select
-                value={formData.propertyCondition}
-                onValueChange={(value) =>
-                  handleInputChange("propertyCondition", value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select property condition" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        <div className="space-y-2">
+          <Label htmlFor="areaRate">Area Rate (R/m²)</Label>
+          <div className="flex gap-2">
+            <Input
+              id="areaRate"
+              type="text"
+              inputMode="numeric"
+              value={formData.areaRate}
+              onChange={(e) => handleInputChange("areaRate", e.target.value)}
+              placeholder="Area rate will be fetched automatically"
+              required
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              onClick={fetchAreaRate}
+              disabled={!formData.address || isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Fetching...
+                </>
+              ) : (
+                "Fetch Area Rate"
+              )}
+            </Button>
           </div>
-        );
+        </div>
 
-      case 2:
-        return (
-          <>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="nightlyRate">Nightly Rate (R)</Label>
-                <Input
-                  id="nightlyRate"
-                  type="text"
-                  inputMode="numeric"
-                  value={formData.nightlyRate}
-                  onChange={(e) =>
-                    handleInputChange("nightlyRate", e.target.value)
-                  }
-                  placeholder="Enter nightly rate"
-                  required
-                />
-              </div>
+        <div className="space-y-2">
+          <Label htmlFor="bedrooms">Bedrooms</Label>
+          <Input
+            id="bedrooms"
+            type="text"
+            inputMode="numeric"
+            value={formData.bedrooms}
+            onChange={(e) => handleInputChange("bedrooms", e.target.value)}
+            placeholder="Enter number of bedrooms"
+            required
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="bathrooms">Bathrooms</Label>
+          <Input
+            id="bathrooms"
+            type="text"
+            inputMode="numeric"
+            value={formData.bathrooms}
+            onChange={(e) => handleInputChange("bathrooms", e.target.value)}
+            placeholder="Enter number of bathrooms"
+            required
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="parking">Parking Spaces</Label>
+          <Input
+            id="parking"
+            type="text"
+            inputMode="numeric"
+            value={formData.parking}
+            onChange={(e) => handleInputChange("parking", e.target.value)}
+            placeholder="Enter number of parking spaces"
+            required
+          />
+        </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="occupancy">Occupancy (%)</Label>
-                <Input
-                  id="occupancy"
-                  type="text"
-                  inputMode="numeric"
-                  value={formData.occupancy}
-                  onChange={(e) =>
-                    handleInputChange("occupancy", e.target.value)
-                  }
-                  placeholder="Enter expected occupancy rate"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="longTermRental">
-                  Long Term Rental (R/month)
-                </Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="longTermRental"
-                    type="text"
-                    inputMode="numeric"
-                    value={formData.longTermRental}
-                    onChange={(e) =>
-                      handleInputChange("longTermRental", e.target.value)
-                    }
-                    placeholder="Enter long term rental amount"
-                    required
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="default"
-                    onClick={fetchRentalAmount}
-                    disabled={!formData.address || isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      "Fetch Rental Amount"
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="depositAmount">Deposit Amount (R)</Label>
-                <Input
-                  id="depositAmount"
-                  type="text"
-                  inputMode="numeric"
-                  value={formData.depositAmount}
-                  onChange={(e) =>
-                    handleInputChange("depositAmount", e.target.value)
-                  }
-                  placeholder="Enter deposit amount"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="depositPercentage">Deposit (%)</Label>
-                <Input
-                  id="depositPercentage"
-                  type="text"
-                  inputMode="numeric"
-                  value={formData.depositPercentage}
-                  onChange={(e) =>
-                    handleInputChange("depositPercentage", e.target.value)
-                  }
-                  placeholder="Enter deposit percentage"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="interestRate">Interest Rate (%)</Label>
-              <Input
-                id="interestRate"
-                type="text"
-                inputMode="numeric"
-                value={formData.interestRate}
-                onChange={(e) =>
-                  handleInputChange("interestRate", e.target.value)
-                }
-                placeholder="Enter interest rate"
-                required
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                Current prime rate: 11%
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="loanTerm">Loan Term (years)</Label>
-              <Input
-                id="loanTerm"
-                type="text"
-                inputMode="numeric"
-                value={formData.loanTerm}
-                onChange={(e) => handleInputChange("loanTerm", e.target.value)}
-                placeholder="Enter loan term"
-                required
-              />
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
+        <div className="space-y-2">
+          <Label htmlFor="propertyCondition">Property Condition</Label>
+          <Select
+            value={formData.propertyCondition}
+            onValueChange={(value) =>
+              handleInputChange("propertyCondition", value)
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select property condition" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="excellent">Excellent</SelectItem>
+              <SelectItem value="good">Good</SelectItem>
+              <SelectItem value="fair">Fair</SelectItem>
+              <SelectItem value="poor">Poor</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    );
   };
 
   const renderStepCounter = () => (
     <div className="mb-6">
-      <div className="flex justify-between mb-2">
-        {[1, 2, 3].map((step) => (
-          <div
-            key={step}
-            className={`flex items-center ${step < 3 ? "flex-1" : ""}`}
-            onClick={() => setCurrentStep(step)}
-            style={{ cursor: "pointer" }}
-          >
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center relative ${
-                step <= currentStep
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground"
-              }`}
-            >
-              {step}
-              {isStepComplete(step) && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">
-                  ✓
-                </div>
-              )}
-            </div>
-            {step < 3 && (
-              <div
-                className={`flex-1 h-1 mx-2 ${
-                  step < currentStep ? "bg-primary" : "bg-muted"
-                }`}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-      <div className="flex justify-between text-sm">
-        <span className={currentStep === 1 ? "text-primary" : ""}>
-          Property
-        </span>
-        <span className={currentStep === 2 ? "text-primary" : ""}>Rental</span>
-        <span className={currentStep === 3 ? "text-primary" : ""}>
-          Financing
-        </span>
-      </div>
+      <h2 className="text-xl font-semibold text-center mb-2">Property Details</h2>
+      <p className="text-sm text-muted-foreground text-center">
+        Enter your property details below to get an instant deal score
+      </p>
     </div>
   );
 
@@ -984,32 +814,21 @@ export default function DealScorePublicPage() {
                     {renderStepCounter()}
                     {renderFormStep()}
 
-                    <div className="flex justify-between mt-6">
-                      {currentStep > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handlePrevStep}
-                        >
-                          <ArrowLeft className="mr-2 h-4 w-4" /> Previous
-                        </Button>
-                      )}
+                    <div className="flex justify-end mt-6">
                       <Button
                         type="submit"
-                        className={currentStep === 1 ? "ml-auto" : ""}
+                        className="ml-auto"
                       >
                         {isCalculating ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Calculating...
                           </>
-                        ) : currentStep < 3 ? (
+                        ) : (
                           <>
-                            Next
+                            Calculate Deal Score
                             <ArrowRight className="h-4 w-4 ml-2" />
                           </>
-                        ) : (
-                          "Calculate Deal Score"
                         )}
                       </Button>
                     </div>
