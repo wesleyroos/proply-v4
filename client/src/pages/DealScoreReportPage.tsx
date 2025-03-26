@@ -15,25 +15,13 @@ import {
   Building,
   Banknote,
   Percent,
+  Download,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Link } from "wouter"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
-
-// Replace with your specific PDF component
-export const HTMLToPDFButton = ({ elementId, filename, className, children }: any) => {
-  const handleClick = () => {
-    console.log('Generating PDF for', elementId)
-    // Implement PDF generation logic
-  }
-  
-  return (
-    <Button className={className} onClick={handleClick}>
-      {children}
-    </Button>
-  )
-}
+import { HTMLToPDFButton } from "@/components/pdf/html-to-pdf-button"
 
 // Property data types
 export interface DealScoreReport {
