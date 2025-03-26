@@ -847,26 +847,44 @@ export default function DealScorePublicPage() {
                   </form>
                 ) : (
                   <div className="space-y-6">
-                    <div className="text-center">
-                      <h2 className="text-2xl font-bold mb-2">
-                        Deal Score: {result?.score}%
+                    <div className="text-center px-2 py-4 max-w-lg mx-auto">
+                      <h2 className="text-3xl font-bold mb-6">
+                        Proply Deal Score™
                       </h2>
+                      
+                      <div className="mb-8">
+                        <h3 className="text-xl font-bold mb-2">
+                          Deal Score: <span className="text-2xl">{result?.score}%</span>
+                        </h3>
+                      </div>
 
-                      <div className="flex justify-between items-center mt-4 px-4">
-                        <div className="text-sm">Asking Price:</div>
-                        <div className="font-bold">
-                          R{result?.askingPrice?.toLocaleString()}
+                      <div className="grid grid-cols-2 gap-4 mb-2">
+                        <div className="text-left">
+                          <div className="text-sm">
+                            Asking Price:
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold">
+                            R{result?.askingPrice?.toLocaleString()}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex justify-between items-center mt-2 px-4">
-                        <div className="text-sm">Estimated Market Value:</div>
-                        <div className="font-bold">
-                          R{result?.estimatedValue?.toLocaleString()}
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="text-left">
+                          <div className="text-sm">
+                            Estimated Market Value:
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold">
+                            R{result?.estimatedValue?.toLocaleString()}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="text-sm text-center mt-2">
+                      <div className="text-center mb-4">
                         This property is{" "}
                         <span
                           className={`font-bold ${
@@ -875,9 +893,7 @@ export default function DealScorePublicPage() {
                               : "text-green-500"
                           }`}
                         >
-                          {Math.abs(result?.percentageDifference ?? 0).toFixed(
-                            1,
-                          )}%
+                          {Math.abs(result?.percentageDifference ?? 0).toFixed(1)}%
                         </span>{" "}
                         {(result?.percentageDifference ?? 0) < 0
                           ? "above"
@@ -885,15 +901,15 @@ export default function DealScorePublicPage() {
                         the estimated market value
                       </div>
 
-                      <div className="mt-4">
+                      <div className="mb-4">
                         <div
-                          className={`inline-block px-4 py-1 rounded-full text-white ${result?.color}`}
+                          className="inline-block px-4 py-1 rounded-full text-white bg-green-500"
                         >
                           {result?.rating} DEAL
                         </div>
                       </div>
 
-                      <div className="relative h-4 mt-6 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
+                      <div className="relative h-4 mb-8 bg-gradient-to-r from-red-500 via-yellow-400 to-green-500 rounded-full">
                         <div
                           className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-300 rounded-full transform -translate-x-1/2"
                           style={{ left: `${result?.score}%` }}
@@ -938,27 +954,19 @@ export default function DealScorePublicPage() {
                                   <div className="flex justify-between">
                                     <span>Price per m²:</span>{" "}
                                     <span className="font-medium">
-                                      R
-                                      {Math.round(
-                                        result?.propertyRate || 0,
-                                      ).toLocaleString()}
-                                      /m²
+                                      R{Math.round(result?.propertyRate || 0).toLocaleString()}/m²
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
                                     <span>Area average:</span>
                                     <span className="font-medium">
-                                      R
-                                      {Math.round(
-                                        result?.areaRate || 0,
-                                      ).toLocaleString()}
-                                      /m²
+                                      R{Math.round(result?.areaRate || 0).toLocaleString()}/m²
                                     </span>
                                   </div>
                                   <div className="flex justify-between mb-4">
                                     <span>Recent Area Sales:</span>
                                     <div className="flex items-center gap-2">
-                                      <span className="text-sm">R3.4M - R3.7M (last 3 months)</span>
+                                      <span>R3.4M - R3.7M (last 3 months)</span>
                                       <Badge variant="secondary" className="bg-green-100 text-green-800 font-normal">
                                         WITHIN RANGE
                                       </Badge>
@@ -974,24 +982,20 @@ export default function DealScorePublicPage() {
                                     <div className="flex justify-between">
                                       <span>Short-Term Yield:</span>
                                       <div className="flex items-center gap-2">
-                                        <span className="font-medium">
-                                          {result?.shortTermYield?.toFixed(1)}%
-                                        </span>
-                                        <span
-                                          className={`px-2 py-0.5 text-xs rounded ${
-                                            (result?.shortTermYield ?? 0) >= 12
-                                              ? "bg-green-100 text-green-800"
-                                              : (result?.shortTermYield ?? 0) >= 8
-                                                ? "bg-yellow-100 text-yellow-800"
-                                                : "bg-red-100 text-red-800"
-                                          }`}
-                                        >
+                                        <span className="font-medium">{result?.shortTermYield?.toFixed(1)}%</span>
+                                        <Badge className={`font-normal ${
+                                          (result?.shortTermYield ?? 0) >= 12
+                                            ? "bg-green-100 text-green-800"
+                                            : (result?.shortTermYield ?? 0) >= 8
+                                              ? "bg-yellow-100 text-yellow-800"
+                                              : "bg-red-100 text-red-800"
+                                        }`}>
                                           {(result?.shortTermYield ?? 0) >= 12
                                             ? "EXCELLENT"
                                             : (result?.shortTermYield ?? 0) >= 8
                                               ? "GOOD"
                                               : "POOR"}
-                                        </span>
+                                        </Badge>
                                       </div>
                                     </div>
                                   )}
@@ -999,24 +1003,20 @@ export default function DealScorePublicPage() {
                                     <div className="flex justify-between">
                                       <span>Long-Term Yield:</span>
                                       <div className="flex items-center gap-2">
-                                        <span className="font-medium">
-                                          {result?.longTermYield?.toFixed(1)}%
-                                        </span>
-                                        <span
-                                          className={`px-2 py-0.5 text-xs rounded ${
-                                            (result?.longTermYield ?? 0) >= 8
-                                              ? "bg-green-100 text-green-800"
-                                              : (result?.longTermYield ?? 0) >= 6
-                                                ? "bg-yellow-100 text-yellow-800"
-                                                : "bg-red-100 text-red-800"
-                                          }`}
-                                        >
+                                        <span className="font-medium">{result?.longTermYield?.toFixed(1)}%</span>
+                                        <Badge className={`font-normal ${
+                                          (result?.longTermYield ?? 0) >= 8
+                                            ? "bg-green-100 text-green-800"
+                                            : (result?.longTermYield ?? 0) >= 6
+                                              ? "bg-yellow-100 text-yellow-800"
+                                              : "bg-red-100 text-red-800"
+                                        }`}>
                                           {(result?.longTermYield ?? 0) >= 8
                                             ? "EXCELLENT"
                                             : (result?.longTermYield ?? 0) >= 6
                                               ? "GOOD"
                                               : "POOR"}
-                                        </span>
+                                        </Badge>
                                       </div>
                                     </div>
                                   )}
@@ -1026,9 +1026,9 @@ export default function DealScorePublicPage() {
                                       <span className="font-medium">
                                         {result?.bestStrategy}
                                       </span>
-                                      <span className="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-800">
+                                      <Badge className="bg-purple-100 text-purple-800 font-normal">
                                         RECOMMENDED
-                                      </span>
+                                      </Badge>
                                     </div>
                                   </div>
                                 </div>
@@ -1041,6 +1041,7 @@ export default function DealScorePublicPage() {
                           <div className="mt-6 flex justify-center">
                             <Button
                               size="lg"
+                              className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md"
                               onClick={() => handleDownloadReport()}
                             >
                               <Download className="mr-2 h-4 w-4" />
@@ -1064,7 +1065,7 @@ export default function DealScorePublicPage() {
                             <Button
                               onClick={() => setShowPaymentModal(true)}
                               size="lg"
-                              className="w-full"
+                              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                             >
                               <CreditCard className="mr-2 h-4 w-4" />
                               Unlock Full Report for R49
