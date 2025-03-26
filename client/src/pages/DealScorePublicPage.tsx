@@ -159,21 +159,13 @@ export default function DealScorePublicPage() {
     });
   };
 
+  // We're not fetching prime rate due to auth issues in public page
+  // Using default value of 11% instead
   useEffect(() => {
-    const fetchPrimeRate = async () => {
-      try {
-        const response = await fetch("/api/prime-rate");
-        const data = await response.json();
-        setFormData((prev) => ({
-          ...prev,
-          interestRate: data.primeRate.toString(),
-        }));
-      } catch (error) {
-        console.error("Failed to fetch prime rate:", error);
-      }
-    };
-
-    fetchPrimeRate();
+    setFormData((prev) => ({
+      ...prev,
+      interestRate: "11",
+    }));
   }, []);
 
   const formatWithThousandSeparators = (value: string): string => {
