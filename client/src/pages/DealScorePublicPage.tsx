@@ -109,14 +109,14 @@ export default function DealScorePublicPage() {
   const [showResult, setShowResult] = useState(false);
   const [demoClicks, setDemoClicks] = useState(0);
   const [areaRateStatus, setAreaRateStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+    "loading" | "success" | "error"
+  >("loading");
   const [showAreaRateDialog, setShowAreaRateDialog] = useState(false);
   const [areaRateError, setAreaRateError] = useState<string>();
   const [reportUnlocked, setReportUnlocked] = useState(false);
   const [rentalAmountStatus, setRentalAmountStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+    "loading" | "success" | "error"
+  >("loading");
   const [showRentalAmountDialog, setShowRentalAmountDialog] = useState(false);
   const [rentalAmountError, setRentalAmountError] = useState<string>();
 
@@ -870,16 +870,16 @@ export default function DealScorePublicPage() {
                         This property is{" "}
                         <span
                           className={`font-bold ${
-                            result?.percentageDifference < 0
+                            (result?.percentageDifference ?? 0) < 0
                               ? "text-amber-500"
                               : "text-green-500"
                           }`}
                         >
-                          {Math.abs(result?.percentageDifference || 0).toFixed(
+                          {Math.abs(result?.percentageDifference ?? 0).toFixed(
                             1,
                           )}%
                         </span>{" "}
-                        {result?.percentageDifference < 0
+                        {(result?.percentageDifference ?? 0) < 0
                           ? "above"
                           : "below"}{" "}
                         the estimated market value
@@ -979,16 +979,16 @@ export default function DealScorePublicPage() {
                                         </span>
                                         <span
                                           className={`px-2 py-0.5 text-xs rounded ${
-                                            result?.shortTermYield >= 12
+                                            (result?.shortTermYield ?? 0) >= 12
                                               ? "bg-green-100 text-green-800"
-                                              : result?.shortTermYield >= 8
+                                              : (result?.shortTermYield ?? 0) >= 8
                                                 ? "bg-yellow-100 text-yellow-800"
                                                 : "bg-red-100 text-red-800"
                                           }`}
                                         >
-                                          {result?.shortTermYield >= 12
+                                          {(result?.shortTermYield ?? 0) >= 12
                                             ? "EXCELLENT"
-                                            : result?.shortTermYield >= 8
+                                            : (result?.shortTermYield ?? 0) >= 8
                                               ? "GOOD"
                                               : "POOR"}
                                         </span>
@@ -1004,16 +1004,16 @@ export default function DealScorePublicPage() {
                                         </span>
                                         <span
                                           className={`px-2 py-0.5 text-xs rounded ${
-                                            result?.longTermYield >= 8
+                                            (result?.longTermYield ?? 0) >= 8
                                               ? "bg-green-100 text-green-800"
-                                              : result?.longTermYield >= 6
+                                              : (result?.longTermYield ?? 0) >= 6
                                                 ? "bg-yellow-100 text-yellow-800"
                                                 : "bg-red-100 text-red-800"
                                           }`}
                                         >
-                                          {result?.longTermYield >= 8
+                                          {(result?.longTermYield ?? 0) >= 8
                                             ? "EXCELLENT"
-                                            : result?.longTermYield >= 6
+                                            : (result?.longTermYield ?? 0) >= 6
                                               ? "GOOD"
                                               : "POOR"}
                                         </span>
