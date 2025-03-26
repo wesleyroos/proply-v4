@@ -52,7 +52,7 @@ import { Badge } from "@/components/ui/badge";
 export default function DealScorePublicPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
+  // Form is now a single step
   const [formData, setFormData] = useState({
     // Property Details (Step 1 - simplified)
     address: "",
@@ -86,7 +86,22 @@ export default function DealScorePublicPage() {
     }
   }, [formData.purchasePrice]);
 
-  const [result, setResult] = useState(null);
+  interface DealResult {
+    score: number;
+    rating: string;
+    color: string;
+    percentageDifference: number;
+    askingPrice: number;
+    estimatedValue: number;
+    propertyRate: number;
+    areaRate: number;
+    propertyCondition: string;
+    shortTermYield: number | null;
+    longTermYield: number | null;
+    bestStrategy: string;
+  }
+  
+  const [result, setResult] = useState<DealResult | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -379,13 +394,10 @@ export default function DealScorePublicPage() {
     });
   };
 
-  const resetForm = () => {
-    setCurrentStep(1);
-  };
+  // Form reset happens in handleNewCalculation
 
   const handleNewCalculation = () => {
     setShowResult(false);
-    setCurrentStep(1);
     setReportUnlocked(false);
     setResult(null);
   };
