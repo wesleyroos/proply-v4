@@ -1,0 +1,109 @@
+I want to do some work on the public deal score page. Here us the brief:
+
+Deal Score Report Data Points
+User Inputs
+These are data points that would typically be entered by the user:
+
+Property Details
+Property address
+Asking price
+Property size
+Bedrooms
+Bathrooms
+Parking
+Property condition
+Financing Details
+Deposit percentage
+Interest rate
+Loan term
+Calculated or Retrieved Data
+These are data points that would be calculated based on user inputs or retrieved from external sources:
+
+Deal Score Metrics
+Deal Score percentage
+Deal rating
+Estimated market value
+Percentage below/above market value
+Area Information (Retrieved)
+Area average rate
+Recent area sales range
+Rental Information (Retrieved from APIs)
+Nightly rate (fetched from Pricelabs API)
+Occupancy rate (fetched from Pricelabs API)
+Monthly long-term rental (fetched from OpenAI rental service)
+Calculated Financial Metrics
+Price per m²
+Short-term yield
+Long-term yield
+Best investment strategy
+Municipal Information (Retrieved)
+Municipal value
+Monthly rates
+Levy
+Estimated monthly costs
+Rental Calculations
+Monthly revenue (short-term)
+Annual revenue (short-term)
+Annual rental (long-term)
+Vacancy rate
+Net annual income
+Mortgage Calculations
+Deposit amount
+Loan amount
+Monthly payment
+Cash flow (short-term)
+Cash flow (long-term)
+Comparable Properties (Retrieved)
+Average comparable sales price
+
+Individual comparable properties data:
+
+Property designation
+
+Similarity rating
+
+Address
+
+Sale price
+
+Size
+
+Price per m²
+
+Bedrooms
+
+Sale date
+
+Metadata
+Report generation date
+Disclaimer text
+Here is the code for how you can do this:
+import type * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
+
+const badgeVariants = cva(
+"inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+{
+variants: {
+variant: {
+default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+outline: "text-foreground",
+},
+},
+defaultVariants: {
+variant: "default",
+},
+},
+)
+
+export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
+
+function Badge({ className, variant, ...props }: BadgeProps) {
+return <div className={cn(badgeVariants({ variant }), className)} {...props} />
+}
+
+export { Badge, badgeVariants }
