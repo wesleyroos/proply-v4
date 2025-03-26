@@ -1354,8 +1354,8 @@ export default function DealScorePublicPage() {
       </div>
 
       <main className="flex-1 relative z-10 flex flex-col items-center justify-center pt-8">
-        <div className="container flex flex-col items-center px-4 py-8 text-center md:py-16 lg:py-24">
-          <div className="mx-auto max-w-[1200px] space-y-4">
+        <div className="container flex flex-col items-center px-2 py-8 text-center md:py-16 lg:py-24 max-w-[1600px]">
+          <div className="w-full max-w-[1400px] space-y-4">
             <h1 className="text-3xl font-bold sm:text-4xl md:text5xl lg:text-6xl">
               Proply Deal Score™
             </h1>
