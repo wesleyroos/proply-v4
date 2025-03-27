@@ -272,17 +272,20 @@ export default function DealScorePublicPage() {
   const calculateDealScoreWithUpdatedData = (
     nightlyRate: string,
     occupancyRate: string,
+    longTermRental?: string,
   ) => {
-    // This function uses real data from PriceLabs API to recalculate the deal score
+    // This function uses real data from PriceLabs API and rental data to recalculate the deal score
     calculateDealScore(
       Number(parseFormattedNumber(nightlyRate)),
       Number(parseFormattedNumber(occupancyRate)),
+      longTermRental ? Number(parseFormattedNumber(longTermRental)) : undefined,
     );
   };
 
   const calculateDealScore = (
     customNightlyRate?: number,
     customOccupancy?: number,
+    customLongTermRental?: number,
   ) => {
     // Get property rate
     const propertyRate =
@@ -301,7 +304,7 @@ export default function DealScorePublicPage() {
     const parking = Number(parseFormattedNumber(formData.parking));
 
     // Determine whether to use custom data from PriceLabs API or default estimates
-    let estimatedLongTermRental = purchasePrice * 0.005; // Estimate 0.5% of purchase price as monthly rental
+    let estimatedLongTermRental = customLongTermRental || Number(parseFormattedNumber(formData.longTermRental)) || purchasePrice * 0.005; // Use API data if available, otherwise use form data or estimate 0.5% of purchase price
 
     // Use custom nightly rate if provided, otherwise use estimate
     let estimatedNightlyRate = customNightlyRate || purchasePrice / 1000; // Use API data if available, otherwise rough estimate
@@ -657,23 +660,24 @@ export default function DealScorePublicPage() {
       // Simulate payment processing
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Start both API calls in parallel
-      const fetchPricelabsData = async () => {
-        // Fetch revenue data from PriceLabs API
-        const address = formData.address;
-        const bedrooms = formData.bedrooms || "1"; // Default to 1 if not specified
-
-        toast({
-          title: "Fetching Revenue Data",
-          description: "Getting accurate nightly rate and occupancy data...",
-        });
-
-        const formattedBedrooms =
+      // Prepare the bedrooms format first so we can use it later
+      const bedrooms = formData.bedrooms || "1"; // Default to 1 if not specified
+      const formattedBedrooms =
           bedrooms.toLowerCase() === "studio"
             ? "0"
             : bedrooms.toLowerCase() === "room"
               ? "-1"
               : Math.floor(Number(parseFormattedNumber(bedrooms))).toString();
+      
+      // Start both API calls in parallel
+      const fetchPricelabsData = async () => {
+        // Fetch revenue data from PriceLabs API
+        const address = formData.address;
+
+        toast({
+          title: "Fetching Revenue Data",
+          description: "Getting accurate nightly rate and occupancy data...",
+        });
 
         // Add test=true parameter to avoid real API calls during testing
         const response = await fetch(
@@ -756,7 +760,7 @@ export default function DealScorePublicPage() {
       }));
 
       // Recalculate the deal score with the new data
-      calculateDealScoreWithUpdatedData(updatedNightlyRate, updatedOccupancy);
+      calculateDealScoreWithUpdatedData(updatedNightlyRate, updatedOccupancy, updatedLongTermRental);
 
       setProcessingPayment(false);
       setShowPaymentModal(false);
