@@ -1145,6 +1145,14 @@ export default function DealScorePublicPage() {
                   <p className="font-medium">
                     R{formatPrice(dealReport.askingPrice)}
                   </p>
+                  <p className="text-sm mt-1">
+                    This property is{" "}
+                    <span className={dealReport.percentageDifference >= 0 ? "text-green-600" : "text-red-600"}>
+                      {Math.abs(dealReport.percentageDifference).toFixed(1)}%{" "}
+                      {dealReport.percentageDifference >= 0 ? "below" : "above"}
+                    </span>{" "}
+                    the estimated market value
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-500">Estimated Value</p>
