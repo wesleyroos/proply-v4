@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Check, AlertTriangle, CornerDownRight, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { MapPin, Check, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Type definitions for component props
@@ -30,7 +29,7 @@ interface Suggestion {
 }
 
 // Validation status types
-type ValidationStatus = 'valid' | 'partial' | 'invalid' | 'none';
+type ValidationStatus = 'valid' | 'none';
 
 // Extracted address components for parent components
 export interface ValidatedAddressData {
@@ -59,8 +58,6 @@ export default function AddressAutocomplete({
   const [loading, setLoading] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(null);
   const [validationStatus, setValidationStatus] = useState<ValidationStatus>('none');
-  const [validationMessage, setValidationMessage] = useState<string>('');
-  const [additionalData, setAdditionalData] = useState<ValidatedAddressData | null>(null);
   const [validating, setValidating] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -122,7 +119,6 @@ export default function AddressAutocomplete({
         // Reset validation status when user types
         if (validationStatus !== 'none') {
           setValidationStatus('none');
-          setValidationMessage('');
         }
       }
     }, 300);
@@ -157,37 +153,25 @@ export default function AddressAutocomplete({
       
       const data = await response.json();
       
-      // Process the validation result
-      let status: ValidationStatus = 'none';
-      let message = '';
+      // Extract formatted address and components
+      let formattedAddress = address;
       let postalCode = '';
       let city = '';
       let province = '';
       let country = '';
-      let formattedAddress = address;
       
       // Check if the API returned a valid result
-      if (data.result && data.result.verdict) {
-        const { verdict } = data.result;
-        
-        if (verdict.addressComplete && verdict.hasUnconfirmedComponents === false) {
-          status = 'valid';
-          message = 'Address is valid and complete';
-        } else if (verdict.addressComplete && verdict.hasUnconfirmedComponents) {
-          status = 'partial';
-          message = 'Address is valid but some components are unconfirmed';
-        } else {
-          status = 'invalid';
-          message = 'Address is incomplete or invalid';
-        }
+      if (data.result && data.result.address) {
+        // Set validation status to valid
+        setValidationStatus('valid');
         
         // Extract formatted address if available
-        if (data.result.address && data.result.address.formattedAddress) {
+        if (data.result.address.formattedAddress) {
           formattedAddress = data.result.address.formattedAddress;
         }
         
         // Extract address components
-        if (data.result.address && data.result.address.addressComponents) {
+        if (data.result.address.addressComponents) {
           data.result.address.addressComponents.forEach((component: any) => {
             if (component.componentType === 'postal_code') {
               postalCode = component.componentName || '';
@@ -200,36 +184,28 @@ export default function AddressAutocomplete({
             }
           });
         }
-      } else {
-        status = 'invalid';
-        message = 'Could not validate address';
+        
+        // Update the input with the formatted address
+        onChange(formattedAddress);
+        setSelectedSuggestion(formattedAddress);
+        
+        // Prepare data to share with parent component
+        const addressData: ValidatedAddressData = {
+          formattedAddress,
+          postalCode,
+          city,
+          province,
+          country,
+          validationStatus: 'valid'
+        };
+        
+        // If parent provided a callback, pass the data
+        if (onAddressValidated) {
+          onAddressValidated(addressData);
+        }
       }
-      
-      // Update validation state
-      setValidationStatus(status);
-      setValidationMessage(message);
-      
-      // Prepare data to share with parent component
-      const addressData: ValidatedAddressData = {
-        formattedAddress,
-        postalCode,
-        city,
-        province,
-        country,
-        validationStatus: status
-      };
-      
-      setAdditionalData(addressData);
-      
-      // If parent provided a callback, pass the data
-      if (onAddressValidated) {
-        onAddressValidated(addressData);
-      }
-      
     } catch (error) {
       console.error('Error validating address:', error);
-      setValidationStatus('invalid');
-      setValidationMessage('Could not validate address');
     } finally {
       setValidating(false);
     }
@@ -239,39 +215,7 @@ export default function AddressAutocomplete({
     onChange('');
     setSelectedSuggestion(null);
     setValidationStatus('none');
-    setValidationMessage('');
-    setAdditionalData(null);
     setShowSuggestions(false);
-  };
-
-  // Determine the color for the validation status icon
-  const getStatusColor = () => {
-    switch (validationStatus) {
-      case 'valid': return 'text-green-500';
-      case 'partial': return 'text-amber-500';
-      case 'invalid': return 'text-red-500';
-      default: return 'text-gray-400';
-    }
-  };
-
-  // Render the validation status icon
-  const renderStatusIcon = () => {
-    if (validating) {
-      return (
-        <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary"></div>
-      );
-    }
-    
-    switch (validationStatus) {
-      case 'valid':
-        return <Check className={`h-4 w-4 ${getStatusColor()}`} />;
-      case 'partial':
-        return <AlertTriangle className={`h-4 w-4 ${getStatusColor()}`} />;
-      case 'invalid':
-        return <AlertTriangle className={`h-4 w-4 ${getStatusColor()}`} />;
-      default:
-        return null;
-    }
   };
 
   return (
@@ -313,16 +257,16 @@ export default function AddressAutocomplete({
               </button>
             )}
             
-            {validationStatus !== 'none' && (
+            {validationStatus === 'valid' && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="cursor-help">
-                      {renderStatusIcon()}
+                      <Check className="h-4 w-4 text-green-500" />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{validationMessage}</p>
+                    <p>Address validated and standardized</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -346,45 +290,13 @@ export default function AddressAutocomplete({
                   onClick={() => handleSuggestionClick(suggestion)}
                   className="cursor-pointer px-4 py-2 hover:bg-gray-100"
                 >
-                  {suggestion.structured_formatting ? (
-                    <div>
-                      <div className="font-medium">{suggestion.structured_formatting.main_text}</div>
-                      <div className="text-xs text-gray-500 flex items-center">
-                        <CornerDownRight className="h-3 w-3 mr-1" />
-                        {suggestion.structured_formatting.secondary_text}
-                      </div>
-                    </div>
-                  ) : (
-                    suggestion.description
-                  )}
+                  {suggestion.description}
                 </li>
               ))}
             </ul>
           </div>
         )}
       </div>
-      
-      {additionalData && validationStatus !== 'none' && validationStatus !== 'invalid' && (
-        <div className="mt-2">
-          <div className="flex flex-wrap gap-1 text-xs">
-            {additionalData.postalCode && (
-              <Badge variant="outline" className="bg-gray-50">
-                Postal: {additionalData.postalCode}
-              </Badge>
-            )}
-            {additionalData.city && (
-              <Badge variant="outline" className="bg-gray-50">
-                {additionalData.city}
-              </Badge>
-            )}
-            {additionalData.province && (
-              <Badge variant="outline" className="bg-gray-50">
-                {additionalData.province}
-              </Badge>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
