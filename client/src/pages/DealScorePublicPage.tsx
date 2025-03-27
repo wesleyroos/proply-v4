@@ -1643,8 +1643,8 @@ export default function DealScorePublicPage() {
           <div className="flex justify-center my-4">
             <ChevronDown className="text-[#1BA3FF] h-16 w-16 animate-bounce" />
           </div>
-          <div className="py-16 space-y-24">
-            <section className="container px-4">
+          <div className="py-16 space-y-24 flex flex-col items-center justify-center w-full">
+            <section className="container px-4 mx-auto max-w-7xl">
               <div className="max-w-3xl mx-auto text-center space-y-4">
                 <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
                   Stop The Guessing Game
@@ -1698,8 +1698,8 @@ export default function DealScorePublicPage() {
               </div>
             </section>
 
-            <section className="bg-muted/30 py-16">
-              <div className="container px-4">
+            <section className="bg-muted/30 py-16 w-full">
+              <div className="container px-4 mx-auto max-w-7xl">
                 <div className="max-w-3xl mx-auto text-center space-y-4 mb-16">
                   <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
                     Make Confident Investment Decisions in Minutes
@@ -1718,7 +1718,7 @@ export default function DealScorePublicPage() {
                         <h3 className="text-xl font-semibold mb-1">
                           Instant Property Analysis
                         </h3>
-                        <p className="textmuted-foreground">
+                        <p className="text-muted-foreground">
                           Get a comprehensive deal score in seconds, not days.
                           Know immediately if a property is worth pursuing.
                         </p>
@@ -1768,8 +1768,8 @@ export default function DealScorePublicPage() {
               </div>
             </section>
 
-            <section className="bg-primary/5 py-16 border-y">
-              <div className="container px-4">
+            <section className="bg-primary/5 py-16 border-y w-full">
+              <div className="container px-4 mx-auto max-w-7xl">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                   <div className="text-center">
                     <div className="text-4xl font-bold text-primary mb-2">
@@ -1803,7 +1803,7 @@ export default function DealScorePublicPage() {
               </div>
             </section>
 
-            <section className="container px-4">
+            <section className="container px-4 mx-auto max-w-7xl">
               <div className="max-w-4xl mx-auto bg-card rounded-lg p-8 md:p-12 shadow-lg border border-border/50 text-center">
                 <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
                   Ready to Make Smarter Property Investments?
