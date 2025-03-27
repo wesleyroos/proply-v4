@@ -1210,12 +1210,12 @@ export default function DealScorePublicPage() {
           collapsible
           className="w-full flex flex-col items-center"
         >
-          <AccordionItem value="item-1" className="w-full max-w-4xl">
+          <AccordionItem value="item-1" className="w-full">
             <AccordionTrigger className="text-lg font-medium text-center justify-center">
               Property Details
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
-              <div className="mb-6 w-full max-w-4xl">
+              <div className="mb-6 w-full">
                 <h3 className="text-xl font-bold mb-4 text-center">
                   Property Overview
                 </h3>
@@ -1394,7 +1394,7 @@ export default function DealScorePublicPage() {
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="item-2" className="w-full max-w-4xl">
+          <AccordionItem value="item-2" className="w-full">
             <AccordionTrigger className="text-lg font-medium text-center justify-center">
               Rental Analysis
             </AccordionTrigger>
@@ -1555,12 +1555,12 @@ export default function DealScorePublicPage() {
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="item-3" className="w-full max-w-4xl">
+          <AccordionItem value="item-3" className="w-full">
             <AccordionTrigger className="text-lg font-medium text-center justify-center">
               Financial Analysis
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
-              <div className="mb-6 w-full max-w-4xl">
+              <div className="mb-6 w-full">
                 <h3 className="text-xl font-bold mb-4 text-center">
                   Financial Overview
                 </h3>
@@ -1824,12 +1824,12 @@ export default function DealScorePublicPage() {
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="item-4" className="w-full max-w-4xl">
+          <AccordionItem value="item-4" className="w-full">
             <AccordionTrigger className="text-lg font-medium text-center justify-center">
               Comparable Properties
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
-              <div className="mb-6 w-full max-w-4xl">
+              <div className="mb-6 w-full">
                 <h3 className="text-xl font-bold mb-4 text-center">
                   Market Comparisons
                 </h3>
