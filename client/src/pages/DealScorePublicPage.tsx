@@ -306,24 +306,26 @@ export default function DealScorePublicPage() {
     // Determine whether to use custom data from API or default estimates
     let estimatedLongTermRental;
     
-    // First check if direct parameter was passed in
+    console.log("DIRECT PARAMETER - customLongTermRental:", customLongTermRental);
+    console.log("FORM DATA - formData.longTermRental:", formData.longTermRental);
+    
+    // Check each possible source with detailed logging
     if (customLongTermRental) {
+      console.log("USING: Direct parameter:", customLongTermRental);
       estimatedLongTermRental = customLongTermRental;
     } 
-    // Then check if we have a value in the form data
     else if (formData.longTermRental && Number(parseFormattedNumber(formData.longTermRental)) > 0) {
+      console.log("USING: Form data:", formData.longTermRental, "→", Number(parseFormattedNumber(formData.longTermRental)));
       estimatedLongTermRental = Number(parseFormattedNumber(formData.longTermRental));
     } 
-    // Finally fall back to estimate
     else {
-      estimatedLongTermRental = purchasePrice * 0.005; // Estimate 0.5% of purchase price as monthly rental
+      const estimatedValue = purchasePrice * 0.005;
+      console.log("USING: Estimate (0.5% of purchase price):", estimatedValue);
+      estimatedLongTermRental = estimatedValue;
     }
     
     console.log("Purchase price:", purchasePrice, "formData.purchasePrice:", formData.purchasePrice);
-    console.log("Using long term rental amount:", estimatedLongTermRental, "from:", 
-      customLongTermRental ? "API parameter" : 
-      (formData.longTermRental && Number(parseFormattedNumber(formData.longTermRental)) > 0) ? "form data" : 
-      "estimated value (0.5% of purchase price)");
+    console.log("FINAL long term rental choice:", estimatedLongTermRental);
 
     // Use custom nightly rate if provided, otherwise use estimate
     let estimatedNightlyRate = customNightlyRate || purchasePrice / 1000; // Use API data if available, otherwise rough estimate
@@ -477,6 +479,11 @@ export default function DealScorePublicPage() {
       nightlyRate: estimatedNightlyRate,
       occupancyRate: propertyOccupancyRate,
       monthlyLongTerm: estimatedLongTermRental,
+      
+      // DEBUG INFO - remove later
+      _debugRentalSource: customLongTermRental ? "API parameter" : 
+                         (formData.longTermRental && Number(parseFormattedNumber(formData.longTermRental)) > 0) ? "form data" : 
+                         "estimate",
 
       // Calculated Financial Metrics
       pricePerSqM: propertyRate,
@@ -763,10 +770,14 @@ export default function DealScorePublicPage() {
 
       // Process rental amount data
       let updatedLongTermRental = formData.longTermRental;
+      console.log("BEFORE: longTermRental value:", updatedLongTermRental);
+      
       if (rentalData && rentalData.rentalAmount) {
+        console.log("API returned rental amount:", rentalData.rentalAmount);
         updatedLongTermRental = formatWithThousandSeparators(
           rentalData.rentalAmount.toString()
         );
+        console.log("AFTER formatting:", updatedLongTermRental);
         setRentalAmountStatus("success");
       }
 
@@ -779,7 +790,16 @@ export default function DealScorePublicPage() {
       }));
 
       // Recalculate the deal score with the new data
-      calculateDealScoreWithUpdatedData(updatedNightlyRate, updatedOccupancy, updatedLongTermRental);
+      console.log("Calling calculateDealScoreWithUpdatedData with", {
+        updatedNightlyRate,
+        updatedOccupancy,
+        updatedLongTermRental
+      });
+      calculateDealScoreWithUpdatedData(
+        Number(parseFormattedNumber(updatedNightlyRate)), 
+        Number(parseFormattedNumber(updatedOccupancy)), 
+        Number(parseFormattedNumber(updatedLongTermRental))
+      );
 
       setProcessingPayment(false);
       setShowPaymentModal(false);
@@ -1280,6 +1300,7 @@ export default function DealScorePublicPage() {
                   </p>
                   <div className="text-xs text-slate-500">
                     <div>Monthly: R{formatPrice(dealReport.monthlyLongTerm)}</div>
+                    <div className="text-xs text-gray-500">Source: {dealReport._debugRentalSource} | Raw value: {dealReport.monthlyLongTerm}</div>
                     <div>Annual: R{formatPrice(dealReport.monthlyLongTerm * 12)}</div>
                   </div>
                 </div>
