@@ -519,7 +519,7 @@ export default function DealScorePublicPage() {
     setAreaRateStatus("loading");
 
     try {
-      const response = await fetch("/api/deal-advisor/area-rate", {
+      const response = await fetch("/api/area-rate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -570,7 +570,7 @@ export default function DealScorePublicPage() {
     setRentalAmountStatus("loading");
 
     try {
-      const response = await fetch("/api/deal-advisor/rental-amount", {
+      const response = await fetch("/api/rental-rate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
