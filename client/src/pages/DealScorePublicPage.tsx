@@ -29,7 +29,7 @@ import {
   Building,
   Calculator,
 } from "lucide-react";
-import AddressAutocomplete from "../components/AddressAutocomplete";
+import AddressAutocomplete, { ValidatedAddressData } from "../components/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -864,6 +864,13 @@ export default function DealScorePublicPage() {
                 placeholder="Enter the full property address"
                 value={formData.address}
                 onChange={(value) => handleInputChange("address", value)}
+                onAddressValidated={(addressData) => {
+                  console.log("Address validated:", addressData);
+                  // Auto-populate with formatted address for better consistency
+                  if (addressData.validationStatus === 'valid' || addressData.validationStatus === 'partial') {
+                    handleInputChange("address", addressData.formattedAddress);
+                  }
+                }}
                 className={checkRequiredFields("address") ? "border-red-500" : ""}
                 required
               />

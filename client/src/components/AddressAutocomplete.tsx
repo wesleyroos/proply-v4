@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin } from 'lucide-react';
+import { MapPin, Check, AlertTriangle, CornerDownRight, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+// Type definitions for component props
 interface AddressAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
+  onAddressValidated?: (addressData: ValidatedAddressData) => void;
   label?: string;
   placeholder?: string;
   className?: string;
@@ -15,14 +19,33 @@ interface AddressAutocompleteProps {
   name?: string;
 }
 
+// Address suggestion from Google Places API
 interface Suggestion {
   place_id: string;
   description: string;
+  structured_formatting?: {
+    main_text: string;
+    secondary_text: string;
+  };
+}
+
+// Validation status types
+type ValidationStatus = 'valid' | 'partial' | 'invalid' | 'none';
+
+// Extracted address components for parent components
+export interface ValidatedAddressData {
+  formattedAddress: string;
+  postalCode?: string;
+  city?: string;
+  province?: string;
+  country?: string;
+  validationStatus: ValidationStatus;
 }
 
 export default function AddressAutocomplete({
   value,
   onChange,
+  onAddressValidated,
   label = "Address",
   placeholder = "Enter address",
   className = "",
@@ -35,6 +58,10 @@ export default function AddressAutocomplete({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(null);
+  const [validationStatus, setValidationStatus] = useState<ValidationStatus>('none');
+  const [validationMessage, setValidationMessage] = useState<string>('');
+  const [additionalData, setAdditionalData] = useState<ValidatedAddressData | null>(null);
+  const [validating, setValidating] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -64,7 +91,8 @@ export default function AddressAutocomplete({
 
       setLoading(true);
       try {
-        const response = await fetch(`/api/address-validation/autocomplete?input=${encodeURIComponent(value)}`);
+        // Always use test mode for now while Google Maps API key is being configured
+        const response = await fetch(`/api/address-validation/autocomplete?input=${encodeURIComponent(value)}&testMode=true`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch address suggestions');
@@ -90,29 +118,37 @@ export default function AddressAutocomplete({
     const delayDebounce = setTimeout(() => {
       if (value && value.length >= 3 && selectedSuggestion !== value) {
         fetchSuggestions();
+        
+        // Reset validation status when user types
+        if (validationStatus !== 'none') {
+          setValidationStatus('none');
+          setValidationMessage('');
+        }
       }
     }, 300);
 
     return () => clearTimeout(delayDebounce);
-  }, [value, selectedSuggestion]);
+  }, [value, selectedSuggestion, validationStatus]);
 
   const handleSuggestionClick = (suggestion: Suggestion) => {
     onChange(suggestion.description);
     setSelectedSuggestion(suggestion.description);
     setShowSuggestions(false);
     
-    // Optionally validate the selected address
+    // Validate the selected address
     validateAddress(suggestion.description);
   };
 
   const validateAddress = async (address: string) => {
+    setValidating(true);
     try {
+      // Always use test mode for now while Google Maps API key is being configured
       const response = await fetch('/api/address-validation/validate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ address })
+        body: JSON.stringify({ address, testMode: true })
       });
       
       if (!response.ok) {
@@ -120,10 +156,121 @@ export default function AddressAutocomplete({
       }
       
       const data = await response.json();
-      console.log('Validated address:', data);
-      // Here you could handle the validated address data if needed
+      
+      // Process the validation result
+      let status: ValidationStatus = 'none';
+      let message = '';
+      let postalCode = '';
+      let city = '';
+      let province = '';
+      let country = '';
+      let formattedAddress = address;
+      
+      // Check if the API returned a valid result
+      if (data.result && data.result.verdict) {
+        const { verdict } = data.result;
+        
+        if (verdict.addressComplete && verdict.hasUnconfirmedComponents === false) {
+          status = 'valid';
+          message = 'Address is valid and complete';
+        } else if (verdict.addressComplete && verdict.hasUnconfirmedComponents) {
+          status = 'partial';
+          message = 'Address is valid but some components are unconfirmed';
+        } else {
+          status = 'invalid';
+          message = 'Address is incomplete or invalid';
+        }
+        
+        // Extract formatted address if available
+        if (data.result.address && data.result.address.formattedAddress) {
+          formattedAddress = data.result.address.formattedAddress;
+        }
+        
+        // Extract address components
+        if (data.result.address && data.result.address.addressComponents) {
+          data.result.address.addressComponents.forEach((component: any) => {
+            if (component.componentType === 'postal_code') {
+              postalCode = component.componentName || '';
+            } else if (component.componentType === 'locality') {
+              city = component.componentName || '';
+            } else if (component.componentType === 'administrative_area_level_1') {
+              province = component.componentName || '';
+            } else if (component.componentType === 'country') {
+              country = component.componentName || '';
+            }
+          });
+        }
+      } else {
+        status = 'invalid';
+        message = 'Could not validate address';
+      }
+      
+      // Update validation state
+      setValidationStatus(status);
+      setValidationMessage(message);
+      
+      // Prepare data to share with parent component
+      const addressData: ValidatedAddressData = {
+        formattedAddress,
+        postalCode,
+        city,
+        province,
+        country,
+        validationStatus: status
+      };
+      
+      setAdditionalData(addressData);
+      
+      // If parent provided a callback, pass the data
+      if (onAddressValidated) {
+        onAddressValidated(addressData);
+      }
+      
     } catch (error) {
       console.error('Error validating address:', error);
+      setValidationStatus('invalid');
+      setValidationMessage('Could not validate address');
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  const handleClearInput = () => {
+    onChange('');
+    setSelectedSuggestion(null);
+    setValidationStatus('none');
+    setValidationMessage('');
+    setAdditionalData(null);
+    setShowSuggestions(false);
+  };
+
+  // Determine the color for the validation status icon
+  const getStatusColor = () => {
+    switch (validationStatus) {
+      case 'valid': return 'text-green-500';
+      case 'partial': return 'text-amber-500';
+      case 'invalid': return 'text-red-500';
+      default: return 'text-gray-400';
+    }
+  };
+
+  // Render the validation status icon
+  const renderStatusIcon = () => {
+    if (validating) {
+      return (
+        <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary"></div>
+      );
+    }
+    
+    switch (validationStatus) {
+      case 'valid':
+        return <Check className={`h-4 w-4 ${getStatusColor()}`} />;
+      case 'partial':
+        return <AlertTriangle className={`h-4 w-4 ${getStatusColor()}`} />;
+      case 'invalid':
+        return <AlertTriangle className={`h-4 w-4 ${getStatusColor()}`} />;
+      default:
+        return null;
     }
   };
 
@@ -150,10 +297,41 @@ export default function AddressAutocomplete({
             }}
             onFocus={() => value && value.length >= 3 && setShowSuggestions(true)}
             placeholder={placeholder}
-            className={`pl-9 ${className}`}
+            className={`pl-9 pr-12 ${className}`}
             disabled={disabled}
             required={required}
           />
+          
+          <div className="absolute right-3 flex items-center space-x-1">
+            {value && (
+              <button 
+                type="button" 
+                onClick={handleClearInput}
+                className="p-1 rounded-full hover:bg-gray-100"
+              >
+                <X className="h-3 w-3 text-gray-400" />
+              </button>
+            )}
+            
+            {validationStatus !== 'none' && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="cursor-help">
+                      {renderStatusIcon()}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{validationMessage}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            
+            {loading && !validating && (
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary"></div>
+            )}
+          </div>
         </div>
         
         {showSuggestions && suggestions.length > 0 && (
@@ -168,19 +346,45 @@ export default function AddressAutocomplete({
                   onClick={() => handleSuggestionClick(suggestion)}
                   className="cursor-pointer px-4 py-2 hover:bg-gray-100"
                 >
-                  {suggestion.description}
+                  {suggestion.structured_formatting ? (
+                    <div>
+                      <div className="font-medium">{suggestion.structured_formatting.main_text}</div>
+                      <div className="text-xs text-gray-500 flex items-center">
+                        <CornerDownRight className="h-3 w-3 mr-1" />
+                        {suggestion.structured_formatting.secondary_text}
+                      </div>
+                    </div>
+                  ) : (
+                    suggestion.description
+                  )}
                 </li>
               ))}
             </ul>
           </div>
         )}
-        
-        {loading && (
-          <div className="absolute right-3 top-2.5">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary"></div>
-          </div>
-        )}
       </div>
+      
+      {additionalData && validationStatus !== 'none' && validationStatus !== 'invalid' && (
+        <div className="mt-2">
+          <div className="flex flex-wrap gap-1 text-xs">
+            {additionalData.postalCode && (
+              <Badge variant="outline" className="bg-gray-50">
+                Postal: {additionalData.postalCode}
+              </Badge>
+            )}
+            {additionalData.city && (
+              <Badge variant="outline" className="bg-gray-50">
+                {additionalData.city}
+              </Badge>
+            )}
+            {additionalData.province && (
+              <Badge variant="outline" className="bg-gray-50">
+                {additionalData.province}
+              </Badge>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
