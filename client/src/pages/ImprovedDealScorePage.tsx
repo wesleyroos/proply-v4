@@ -554,16 +554,42 @@ export default function ImprovedDealScorePage() {
     setAreaRateStatus("loading");
     setShowAreaRateDialog(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    try {
+      const response = await fetch("/api/deal-advisor/area-rate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          address: formData.address,
+          propertyType: "residential",
+        }),
+      });
 
-    // Set the area rate to a valid amount for demo purposes
-    setFormData((prev) => ({
-      ...prev,
-      areaRate: "45,000", // Example area rate
-    }));
+      if (!response.ok) {
+        throw new Error("Failed to fetch area rate");
+      }
 
-    setAreaRateStatus("success");
+      const data = await response.json();
+      
+      if (data.areaRate) {
+        setFormData((prev) => ({
+          ...prev,
+          areaRate: formatWithThousandSeparators(data.areaRate.toString()),
+        }));
+        setAreaRateStatus("success");
+        
+        setTimeout(() => {
+          setShowAreaRateDialog(false);
+        }, 1500);
+      } else {
+        throw new Error("No area rate returned");
+      }
+    } catch (error) {
+      console.error("Error fetching area rate:", error);
+      setAreaRateStatus("error");
+      setAreaRateError((error instanceof Error) ? error.message : "Failed to fetch area rate");
+    }
   };
 
   const handlePaymentProcessing = async () => {
