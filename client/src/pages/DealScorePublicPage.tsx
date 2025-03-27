@@ -275,6 +275,13 @@ export default function DealScorePublicPage() {
     longTermRental?: string,
   ) => {
     // This function uses real data from PriceLabs API and rental data to recalculate the deal score
+    console.log("Running calculation with values:", {
+      nightlyRate,
+      occupancyRate,
+      longTermRental,
+      parsedLongTermRental: longTermRental ? Number(parseFormattedNumber(longTermRental)) : undefined
+    });
+    
     calculateDealScore(
       Number(parseFormattedNumber(nightlyRate)),
       Number(parseFormattedNumber(occupancyRate)),
@@ -773,12 +780,18 @@ export default function DealScorePublicPage() {
       console.log("BEFORE: longTermRental value:", updatedLongTermRental);
       
       if (rentalData && rentalData.rentalAmount) {
-        console.log("API returned rental amount:", rentalData.rentalAmount);
-        updatedLongTermRental = formatWithThousandSeparators(
-          rentalData.rentalAmount.toString()
-        );
-        console.log("AFTER formatting:", updatedLongTermRental);
-        setRentalAmountStatus("success");
+        try {
+          console.log("API returned rental amount:", rentalData.rentalAmount);
+          // Ensure we have a string before calling toString()
+          const rentalAmountStr = String(rentalData.rentalAmount);
+          updatedLongTermRental = formatWithThousandSeparators(rentalAmountStr);
+          console.log("AFTER formatting:", updatedLongTermRental);
+          setRentalAmountStatus("success");
+        } catch (error) {
+          console.error("Error formatting rental amount:", error);
+          // If there's a formatting error, still use the numeric value directly
+          updatedLongTermRental = String(rentalData.rentalAmount);
+        }
       }
 
       // Update form data with all the new values at once
@@ -792,13 +805,22 @@ export default function DealScorePublicPage() {
       // Recalculate the deal score with the new data
       console.log("Calling calculateDealScoreWithUpdatedData with", {
         updatedNightlyRate,
-        updatedOccupancy,
+        updatedOccupancy, 
         updatedLongTermRental
       });
+      
+      // If we received data from the API, explicitly use the API response value
+      // instead of the formatted string to avoid any formatting issues
+      const rentalAmount = rentalData && rentalData.rentalAmount 
+        ? rentalData.rentalAmount.toString() 
+        : updatedLongTermRental;
+        
+      console.log("Before calculation - rental amount:", rentalAmount);
+      
       calculateDealScoreWithUpdatedData(
-        Number(parseFormattedNumber(updatedNightlyRate)), 
-        Number(parseFormattedNumber(updatedOccupancy)), 
-        Number(parseFormattedNumber(updatedLongTermRental))
+        updatedNightlyRate, 
+        updatedOccupancy, 
+        rentalAmount
       );
 
       setProcessingPayment(false);
