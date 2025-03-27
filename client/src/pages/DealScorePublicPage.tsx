@@ -1216,7 +1216,7 @@ export default function DealScorePublicPage() {
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6 w-full">
-                <h3 className="text-xl font-bold mb-4 text-center">
+                <h3 className="text-xl font-bold mb-4 text-left">
                   Property Overview
                 </h3>
 
