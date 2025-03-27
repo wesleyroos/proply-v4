@@ -1012,7 +1012,7 @@ export default function DealScorePublicPage() {
       <div id="deal-score-report" className="space-y-8">
         {/* Property Title and Summary */}
         <div className="pb-8 text-center">
-          
+
           <h2 className="text-2xl font-medium mb-5">{dealReport.address}</h2>
 
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-6">
@@ -1211,7 +1211,7 @@ export default function DealScorePublicPage() {
           className="w-full flex flex-col items-center"
         >
           <AccordionItem value="item-1" className="w-full">
-            <AccordionTrigger className="text-lg font-medium text-center justify-center">
+            <AccordionTrigger className="text-lg font-medium justify-start">
               Property Details
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
@@ -1395,7 +1395,7 @@ export default function DealScorePublicPage() {
           </AccordionItem>
 
           <AccordionItem value="item-2" className="w-full">
-            <AccordionTrigger className="text-lg font-medium text-center justify-center">
+            <AccordionTrigger className="text-lg font-medium justify-start">
               Rental Analysis
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
@@ -1556,7 +1556,7 @@ export default function DealScorePublicPage() {
           </AccordionItem>
 
           <AccordionItem value="item-3" className="w-full">
-            <AccordionTrigger className="text-lg font-medium text-center justify-center">
+            <AccordionTrigger className="text-lg font-medium justify-start">
               Financial Analysis
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
@@ -1825,7 +1825,7 @@ export default function DealScorePublicPage() {
           </AccordionItem>
 
           <AccordionItem value="item-4" className="w-full">
-            <AccordionTrigger className="text-lg font-medium text-center justify-center">
+            <AccordionTrigger className="text-lg font-medium justify-start">
               Comparable Properties
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
