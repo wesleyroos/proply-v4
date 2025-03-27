@@ -1980,16 +1980,15 @@ export default function DealScorePublicPage() {
         </Accordion>
 
         {/* Report Footer */}
-        <div className="pt-6 border-t flex justify-between items-center text-sm text-muted-foreground">
-          <div className="flex items-center">
+        <div className="pt-6 border-t text-center text-sm text-muted-foreground">
+          <div className="flex items-center justify-center">
             <img
               src="/proply-favicon.png"
               alt="Proply Logo"
               className="h-4 w-4 mr-2"
             />
-            Proply Deal Score™ Report
+            <span>Proply Deal Score™ Report - Generated on {dealReport.reportDate}</span>
           </div>
-          <div>Generated on {dealReport.reportDate}</div>
         </div>
       </div>
     );
