@@ -20,34 +20,93 @@ function getGoogleMapsApiKey(): string {
 
 // Helper function to generate mock validation response
 function getMockValidationResponse(address: string) {
-  const hasPostalCode = /\d{4}/.test(address);
-  const isComplete = address.includes('Cape Town') || address.includes('Johannesburg');
+  // Parse the address components
+  const parts = address.split(',').map(part => part.trim());
+  
+  // Extract street information (first part)
+  const streetPart = parts[0];
+  let streetNumber = '';
+  let streetName = streetPart;
+  
+  // Try to extract street number
+  const numberMatch = streetPart.match(/^(\d+)\s+(.+)$/);
+  if (numberMatch) {
+    streetNumber = numberMatch[1];
+    streetName = numberMatch[2];
+  }
+  
+  // Determine suburb (second part if available)
+  const suburb = parts.length > 1 ? parts[1] : 'Cape Town City Centre';
+  
+  // Determine city (third part if available, otherwise look for keywords)
+  let city = parts.length > 2 ? parts[2] : '';
+  if (!city) {
+    if (address.toLowerCase().includes('cape town')) {
+      city = 'Cape Town';
+    } else if (address.toLowerCase().includes('johannesburg') || address.toLowerCase().includes('joburg')) {
+      city = 'Johannesburg';
+    } else {
+      city = 'Cape Town'; // Default
+    }
+  }
+  
+  // Extract or assign postal code
+  let postalCode = '';
+  const postalCodeMatch = address.match(/\b(\d{4})\b/);
+  if (postalCodeMatch) {
+    postalCode = postalCodeMatch[1];
+  } else {
+    postalCode = city.toLowerCase().includes('cape town') ? '8001' : '2000';
+  }
+  
+  // Determine province based on city
+  const province = city.toLowerCase().includes('cape town') ? 'Western Cape' : 'Gauteng';
+  
+  // Determine if address is complete enough
+  const isComplete = streetName.length > 0 && city.length > 0;
+  const hasPostalCode = postalCode.length > 0;
+  
+  // Format the address nicely
+  const formattedParts = [];
+  if (streetNumber) formattedParts.push(`${streetNumber} ${streetName}`);
+  else formattedParts.push(streetName);
+  
+  if (suburb) formattedParts.push(suburb);
+  if (city) formattedParts.push(city);
+  if (postalCode) formattedParts.push(postalCode);
+  formattedParts.push('South Africa');
+  
+  const formattedAddress = formattedParts.join(', ');
   
   return {
     result: {
       verdict: {
         addressComplete: isComplete,
         hasUnconfirmedComponents: !hasPostalCode,
-        hasInferredComponents: false,
+        hasInferredComponents: parts.length < 3,
         hasReplacedComponents: false
       },
       address: {
-        formattedAddress: address,
+        formattedAddress: formattedAddress,
         addressComponents: [
           {
-            componentName: address.split(',')[0].trim(),
+            componentName: streetNumber ? `${streetNumber} ${streetName}` : streetName,
             componentType: "route"
           },
           {
-            componentName: address.includes('Cape Town') ? 'Cape Town' : 'Johannesburg',
+            componentName: suburb,
+            componentType: "sublocality_level_1"
+          },
+          {
+            componentName: city,
             componentType: "locality"
           },
           {
-            componentName: address.includes('Cape Town') ? 'Western Cape' : 'Gauteng',
+            componentName: province,
             componentType: "administrative_area_level_1"
           },
           {
-            componentName: hasPostalCode ? address.match(/\d{4}/)?.[0] || '8001' : '8001',
+            componentName: postalCode,
             componentType: "postal_code"
           },
           {
@@ -124,11 +183,58 @@ function getMockAddressSuggestions(input: string) {
   const inputLower = input.toLowerCase();
   let suggestions = [];
   
-  // Cape Town addresses
-  if (inputLower.includes('leeuwen') || inputLower.includes('cape')) {
+  // Extract the main parts of the address if possible
+  const parts = inputLower.split(',').map(part => part.trim());
+  const mainPart = parts[0]; // First part of the address (street name + number)
+  
+  // Process the main part to extract street name and number if possible
+  let streetName = mainPart;
+  let streetNumber = '';
+  
+  // Try to extract street number
+  const numberMatch = mainPart.match(/^(\d+)\s+(.+)$/);
+  if (numberMatch) {
+    streetNumber = numberMatch[1];
+    streetName = numberMatch[2];
+  }
+  
+  // Determine the suburb/area
+  let suburb = parts.length > 1 ? parts[1] : 'Cape Town City Centre';
+  
+  // Determine the city
+  let city = 'Cape Town';
+  if (inputLower.includes('johannesburg') || inputLower.includes('joburg')) {
+    city = 'Johannesburg';
+  }
+  
+  // Determine postal code based on city
+  let postalCode = city.includes('Cape Town') ? '8001' : '2000';
+  
+  // Generate suggestions based on the input
+  suggestions = [
+    {
+      place_id: "mock_place_id_1",
+      description: `${streetNumber} ${streetName}, ${suburb}, ${city}, ${postalCode}, South Africa`,
+      structured_formatting: {
+        main_text: `${streetNumber} ${streetName}`,
+        secondary_text: `${suburb}, ${city}, ${postalCode}, South Africa`
+      }
+    },
+    {
+      place_id: "mock_place_id_2",
+      description: `${parseInt(streetNumber || '1') + 2} ${streetName}, ${suburb}, ${city}, ${postalCode}, South Africa`,
+      structured_formatting: {
+        main_text: `${parseInt(streetNumber || '1') + 2} ${streetName}`,
+        secondary_text: `${suburb}, ${city}, ${postalCode}, South Africa`
+      }
+    }
+  ];
+  
+  // Special case for well-known Cape Town addresses
+  if (inputLower.includes('leeuwen')) {
     suggestions = [
       {
-        place_id: "mock_place_id_1",
+        place_id: "mock_place_id_3",
         description: "27 Leeuwen St, Cape Town City Centre, Cape Town, 8001, South Africa",
         structured_formatting: {
           main_text: "27 Leeuwen St",
@@ -136,31 +242,11 @@ function getMockAddressSuggestions(input: string) {
         }
       },
       {
-        place_id: "mock_place_id_2",
+        place_id: "mock_place_id_4",
         description: "25 Leeuwen St, Cape Town City Centre, Cape Town, 8001, South Africa",
         structured_formatting: {
           main_text: "25 Leeuwen St",
           secondary_text: "Cape Town City Centre, Cape Town, 8001, South Africa"
-        }
-      }
-    ];
-  } else {
-    // Default suggestions
-    suggestions = [
-      {
-        place_id: "mock_place_id_3",
-        description: inputLower + " Street, Cape Town, 8000, South Africa",
-        structured_formatting: {
-          main_text: inputLower + " Street",
-          secondary_text: "Cape Town, 8000, South Africa"
-        }
-      },
-      {
-        place_id: "mock_place_id_4",
-        description: inputLower + " Avenue, Johannesburg, 2000, South Africa",
-        structured_formatting: {
-          main_text: inputLower + " Avenue",
-          secondary_text: "Johannesburg, 2000, South Africa"
         }
       }
     ];
