@@ -1130,12 +1130,12 @@ export default function DealScorePublicPage() {
         </div>
 
         {/* Accordion for detailed sections */}
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="item-1">
-            <AccordionTrigger className="text-lg font-medium">
+        <Accordion type="single" collapsible className="w-full flex flex-col items-center">
+          <AccordionItem value="item-1" className="w-full max-w-4xl">
+            <AccordionTrigger className="text-lg font-medium text-center justify-center">
               Property Details
             </AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent className="flex flex-col items-center">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
                 <div className="space-y-4">
                   <div>
@@ -1200,91 +1200,116 @@ export default function DealScorePublicPage() {
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="item-2">
-            <AccordionTrigger className="text-lg font-medium">
+          <AccordionItem value="item-2" className="w-full max-w-4xl">
+            <AccordionTrigger className="text-lg font-medium text-center justify-center">
               Rental Analysis
             </AccordionTrigger>
-            <AccordionContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Short-Term Rental</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Nightly Rate</p>
-                      <p className="font-medium">R{formatPrice(dealReport.nightlyRate)}</p>
+            <AccordionContent className="flex flex-col items-center">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold mb-4 text-center">Rental Potential</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Short-Term Rental Card */}
+                  <div className={`rounded-xl overflow-hidden shadow-md transition-all hover:shadow-lg ${dealReport.bestInvestmentStrategy === 'Short-Term Rental' ? 'border-2 border-primary ring-2 ring-primary/20' : 'border border-gray-200'}`}>
+                    <div className="bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-3 flex justify-between items-center">
+                      <div className="flex items-center">
+                        <Calendar className="h-5 w-5 text-white mr-2" />
+                        <h4 className="font-semibold text-white">Short-Term (Airbnb)</h4>
+                      </div>
+                      {dealReport.bestInvestmentStrategy === 'Short-Term Rental' && (
+                        <Badge className="bg-white text-blue-600 hover:bg-gray-100">RECOMMENDED</Badge>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Occupancy Rate</p>
-                      <p className="font-medium">{dealReport.occupancyRate}%</p>
+                    <div className="p-5">
+                      <div className="mb-4">
+                        <h3 className="text-2xl font-bold text-slate-800">R{formatPrice(dealReport.annualRevenueShortTerm / 12)}<span className="text-base font-normal text-slate-500">/month</span></h3>
+                        <p className="text-sm text-slate-500">Based on {dealReport.occupancyRate}% occupancy & R{formatPrice(dealReport.nightlyRate)} avg nightly rate</p>
+                      </div>
+                      
+                      <div className="space-y-3 mb-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-slate-600">Annual yield:</span>
+                          <span className="font-medium text-emerald-600">{dealReport.shortTermYield.toFixed(1)}%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-slate-600">Yearly income:</span>
+                          <span className="font-medium">R{formatPrice(dealReport.annualRevenueShortTerm)}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-slate-600">Management fee:</span>
+                          <span className="font-medium">15-20%</span>
+                        </div>
+                      </div>
+                      
+                      {dealReport.bestInvestmentStrategy === 'Short-Term Rental' && (
+                        <div className="text-xs text-blue-600 italic">
+                          Best option for this property ✓
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-                      <p className="font-medium">R{formatPrice(dealReport.annualRevenueShortTerm / 12)}</p>
+                  
+                  {/* Long-Term Rental Card */}
+                  <div className={`rounded-xl overflow-hidden shadow-md transition-all hover:shadow-lg ${dealReport.bestInvestmentStrategy === 'Long-Term Rental' ? 'border-2 border-primary ring-2 ring-primary/20' : 'border border-gray-200'}`}>
+                    <div className="bg-gradient-to-r from-indigo-500 to-purple-400 px-4 py-3 flex justify-between items-center">
+                      <div className="flex items-center">
+                        <Home className="h-5 w-5 text-white mr-2" />
+                        <h4 className="font-semibold text-white">Long-Term Rental</h4>
+                      </div>
+                      {dealReport.bestInvestmentStrategy === 'Long-Term Rental' && (
+                        <Badge className="bg-white text-indigo-600 hover:bg-gray-100">RECOMMENDED</Badge>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Annual Revenue</p>
-                      <p className="font-medium">R{formatPrice(dealReport.annualRevenueShortTerm)}</p>
+                    <div className="p-5">
+                      <div className="mb-4">
+                        <h3 className="text-2xl font-bold text-slate-800">R{formatPrice(dealReport.monthlyLongTerm)}<span className="text-base font-normal text-slate-500">/month</span></h3>
+                        <p className="text-sm text-slate-500">Standard 12-month lease</p>
+                      </div>
+                      
+                      <div className="space-y-3 mb-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-slate-600">Annual yield:</span>
+                          <span className="font-medium text-emerald-600">{dealReport.longTermYield.toFixed(1)}%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-slate-600">Yearly income:</span>
+                          <span className="font-medium">R{formatPrice(dealReport.annualRentalLongTerm)}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-slate-600">Management fee:</span>
+                          <span className="font-medium">8-10%</span>
+                        </div>
+                      </div>
+                      
+                      {dealReport.bestInvestmentStrategy === 'Long-Term Rental' && (
+                        <div className="text-xs text-indigo-600 italic">
+                          Best option for this property ✓
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Gross Yield</p>
-                    <p className="font-medium">{dealReport.shortTermYield.toFixed(1)}%</p>
                   </div>
                 </div>
                 
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Long-Term Rental</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Monthly Rental</p>
-                      <p className="font-medium">R{formatPrice(dealReport.monthlyLongTerm)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Vacancy Rate</p>
-                      <p className="font-medium">8%</p>
-                    </div>
+                <div className="mt-6 p-5 bg-gray-50 rounded-xl border border-gray-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <TrendingUp className={`h-5 w-5 ${dealReport.bestInvestmentStrategy === 'Short-Term Rental' ? 'text-blue-500' : 'text-indigo-500'}`} />
+                    <h4 className="font-semibold text-lg">Investment Strategy Analysis</h4>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Annual Revenue</p>
-                      <p className="font-medium">R{formatPrice(dealReport.annualRentalLongTerm)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Effective Monthly</p>
-                      <p className="font-medium">R{formatPrice(dealReport.annualRentalLongTerm * 0.92 / 12)}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Gross Yield</p>
-                    <p className="font-medium">{dealReport.longTermYield.toFixed(1)}%</p>
-                  </div>
-                </div>
-                
-                <div className="col-span-1 md:col-span-2 pt-4">
-                  <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Info className="h-4 w-4 text-primary" />
-                      <span className="font-medium">Investment Strategy Recommendation</span>
-                    </div>
-                    <p className="text-sm">
-                      {dealReport.bestInvestmentStrategy === 'Short-Term Rental' 
-                        ? `This property offers better returns as a short-term rental, with a yield of ${dealReport.shortTermYield.toFixed(1)}% compared to ${dealReport.longTermYield.toFixed(1)}% for long-term. The premium location and amenities make it attractive for holiday or business travelers.`
-                        : `This property is best suited for long-term rental, offering stable returns of ${dealReport.longTermYield.toFixed(1)}% compared to ${dealReport.shortTermYield.toFixed(1)}% for short-term. The location and property characteristics appeal more to residential tenants seeking stability.`
-                      }
-                    </p>
-                  </div>
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    {dealReport.bestInvestmentStrategy === 'Short-Term Rental' 
+                      ? `This property offers better returns as a short-term rental, with a yield of ${dealReport.shortTermYield.toFixed(1)}% compared to ${dealReport.longTermYield.toFixed(1)}% for long-term. The premium location and amenities make it attractive for holiday or business travelers.`
+                      : `This property is best suited for long-term rental, offering stable returns of ${dealReport.longTermYield.toFixed(1)}% compared to ${dealReport.shortTermYield.toFixed(1)}% for short-term. The location and property characteristics appeal more to residential tenants seeking stability.`
+                    }
+                  </p>
                 </div>
               </div>
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="item-3">
-            <AccordionTrigger className="text-lg font-medium">
+          <AccordionItem value="item-3" className="w-full max-w-4xl">
+            <AccordionTrigger className="text-lg font-medium text-center justify-center">
               Financial Analysis
             </AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent className="flex flex-col items-center">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
                 <div className="space-y-4">
                   <h4 className="font-semibold">Financing Details</h4>
@@ -1416,11 +1441,11 @@ export default function DealScorePublicPage() {
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="item-4">
-            <AccordionTrigger className="text-lg font-medium">
+          <AccordionItem value="item-4" className="w-full max-w-4xl">
+            <AccordionTrigger className="text-lg font-medium text-center justify-center">
               Comparable Properties
             </AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent className="flex flex-col items-center">
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h4 className="font-semibold">Recently Sold Properties</h4>
