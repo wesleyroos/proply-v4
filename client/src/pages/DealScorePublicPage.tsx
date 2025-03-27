@@ -1011,11 +1011,11 @@ export default function DealScorePublicPage() {
     return (
       <div id="deal-score-report" className="space-y-8">
         {/* Property Title and Summary */}
-        <div className="pb-8 text-center">
+        <div className="pb-8 text-left">
 
           <h2 className="text-2xl font-medium mb-5">{dealReport.address}</h2>
 
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-6">
+          <div className="flex flex-wrap justify-start gap-x-4 gap-y-2 mb-6">
             <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
               {dealReport.bedrooms} Beds
             </Badge>
@@ -1033,35 +1033,35 @@ export default function DealScorePublicPage() {
             </Badge>
           </div>
 
-          <div className="grid grid-cols-4 max-w-3xl mx-auto mb-6">
-            <div className="flex flex-col items-center">
+          <div className="grid grid-cols-4 max-w-3xl mb-6">
+            <div className="flex flex-col items-start">
               <span className="text-sm text-slate-500">Asking Price</span>
               <span className="text-xl font-bold">
                 R{formatPrice(dealReport.askingPrice)}
               </span>
             </div>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-start">
               <span className="text-sm text-slate-500">Price per m²</span>
               <span className="text-xl font-bold">
                 R{formatPrice(dealReport.pricePerSqM)}
               </span>
             </div>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-start">
               <span className="text-sm text-slate-500">Area Rate</span>
               <span className="text-xl font-bold">
                 R{formatPrice(dealReport.areaRate)}
               </span>
             </div>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-start">
               <span className="text-sm text-slate-500">
                 Estimated Market Value
               </span>
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-start">
                 <span className="text-xl font-bold">
                   R{formatPrice(dealReport.estimatedValue)}
                 </span>
                 <span
-                  className={`px-2 text-xs ${dealReport.percentageDifference >= 0 ? "text-green-600" : "text-red-600"}`}
+                  className={`text-xs ${dealReport.percentageDifference >= 0 ? "text-green-600" : "text-red-600"}`}
                 >
                   {dealReport.percentageDifference >= 0 ? "+" : ""}
                   {dealReport.percentageDifference.toFixed(1)}%
