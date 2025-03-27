@@ -58,9 +58,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { AreaRateProgressDialog } from "@/components/AreaRateProgressDialog";
+import { RentalAmountProgressDialog } from "@/components/RentalAmountProgressDialog";
 import { Badge } from "@/components/ui/badge";
 import { DealScoreReport } from "./DealScoreReportPage";
-import { HTMLToPDFButton } from "@/components/pdf/html-to-pdf-button";
+import { EmailPDFButton } from "@/components/pdf/email-pdf-button";
 
 export default function DealScorePublicPage() {
   const { toast } = useToast();
@@ -1126,7 +1127,7 @@ export default function DealScorePublicPage() {
           {/* Deal Score Card */}
           <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
             <div className="p-6 flex flex-col items-center">
-              <h3 className="text-slate-700 font-medium mb-4">Deal Score</h3>
+              <h3 className="text-slate-700 font-medium mb-4">Proply Deal Score™</h3>
               <div className="relative mb-3 w-36 h-36">
                 <svg className="w-36 h-36" viewBox="0 0 128 128">
                   <circle
@@ -1269,10 +1270,6 @@ export default function DealScorePublicPage() {
                   <div className="text-xs text-slate-500">
                     <div>
                       Monthly: R{formatPrice(dealReport.monthlyLongTerm)}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {/* All debugging removed */}
-                      {dealReport.monthlyLongTerm}
                     </div>
                     <div>
                       Annual: R{formatPrice(dealReport.monthlyLongTerm * 12)}
@@ -2077,67 +2074,7 @@ export default function DealScorePublicPage() {
     );
   };
 
-  // Rental Amount Progress Dialog Component
-  const RentalAmountProgressDialog = () => {
-    return (
-      <Dialog
-        open={showRentalAmountDialog}
-        onOpenChange={setShowRentalAmountDialog}
-      >
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Fetching Rental Amount</DialogTitle>
-            <DialogDescription>
-              {rentalAmountStatus === "loading" &&
-                "Analyzing rental data for similar properties in the area..."}
-              {rentalAmountStatus === "success" &&
-                "Successfully retrieved rental data!"}
-              {rentalAmountStatus === "error" &&
-                `Error fetching data: ${rentalAmountError || "Unknown error"}`}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-6 flex flex-col items-center justify-center">
-            {rentalAmountStatus === "loading" && (
-              <div className="flex flex-col items-center gap-4">
-                <Loader2 className="h-16 w-16 animate-spin text-primary" />
-                <p className="text-center text-sm text-muted-foreground">
-                  This may take a few moments as we analyze comparable
-                  properties
-                </p>
-              </div>
-            )}
-
-            {rentalAmountStatus === "success" && (
-              <div className="flex flex-col items-center gap-4">
-                <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center">
-                  <CheckCircle2 className="h-10 w-10 text-green-600" />
-                </div>
-                <p className="text-center text-green-600 font-medium">
-                  Rental data updated successfully!
-                </p>
-              </div>
-            )}
-
-            {rentalAmountStatus === "error" && (
-              <div className="flex flex-col items-center gap-4">
-                <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertCircle className="h-10 w-10 text-red-600" />
-                </div>
-                <p className="text-center text-red-600 font-medium">
-                  Failed to fetch rental data.
-                </p>
-                <p className="text-center text-sm text-muted-foreground">
-                  {rentalAmountError ||
-                    "An unknown error occurred. Please try again."}
-                </p>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  };
+  // No need for inline component anymore as we're using the imported one
 
   return (
     <>
@@ -2254,13 +2191,14 @@ export default function DealScorePublicPage() {
                   {/* Download button when report is unlocked */}
                   {reportUnlocked && (
                     <div className="mt-8 flex justify-center">
-                      <HTMLToPDFButton
+                      <EmailPDFButton
                         elementId="deal-score-report"
                         filename={`Proply_Deal_Score_${dealReport?.address?.split(",")[0] || "Report"}.pdf`}
                         className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md h-10 py-2 px-4 inline-flex items-center justify-center rounded-md text-sm font-medium"
+                        propertyAddress={dealReport?.address}
                       >
                         Download Full Report
-                      </HTMLToPDFButton>
+                      </EmailPDFButton>
                     </div>
                   )}
 
@@ -2573,7 +2511,12 @@ export default function DealScorePublicPage() {
         error={areaRateError}
       />
 
-      <RentalAmountProgressDialog />
+      <RentalAmountProgressDialog 
+        open={showRentalAmountDialog}
+        onOpenChange={setShowRentalAmountDialog}
+        status={rentalAmountStatus}
+        error={rentalAmountError}
+      />
     </>
   );
 }

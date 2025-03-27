@@ -2,9 +2,35 @@ import express from 'express';
 import { getAreaRate, getDealAnalysis } from '../services/areaRateService';
 import { getRentalRate } from '../services/rentalRateService';
 import OpenAI from "openai";
+import { db } from 'db';
+import { dealScoreLeads } from '@db/schema';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const router = express.Router();
+
+// Email collection endpoint for deal score leads
+router.post('/collect-email', async (req, res) => {
+  try {
+    const { email, propertyAddress, reportType, date } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+    
+    // Save the email to the database
+    await db.insert(dealScoreLeads).values({
+      email,
+      propertyAddress,
+      reportType: reportType || 'Deal Score',
+      createdAt: date ? new Date(date) : new Date(),
+    });
+    
+    res.status(200).json({ success: true, message: 'Email saved successfully' });
+  } catch (error) {
+    console.error('Error collecting email:', error);
+    res.status(500).json({ error: 'Failed to save email address' });
+  }
+});
 
 // Public endpoints
 router.post('/rental-amount', async (req, res) => {

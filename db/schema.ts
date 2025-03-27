@@ -163,6 +163,15 @@ export const apiUsage = pgTable("api_usage", {
   success: boolean("success").default(true).notNull(),
 });
 
+// Table for collecting emails from Deal Score report downloads
+export const dealScoreLeads = pgTable("deal_score_leads", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull(),
+  propertyAddress: text("property_address"),
+  reportType: text("report_type").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Add invoices table
 export const invoices = pgTable("invoices", {
   id: serial("id").primaryKey(),
@@ -383,6 +392,8 @@ export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTo
 export const selectPasswordResetTokenSchema = createSelectSchema(passwordResetTokens);
 export const insertInvoiceSchema = createInsertSchema(invoices);
 export const selectInvoiceSchema = createSelectSchema(invoices);
+export const insertDealScoreLeadSchema = createInsertSchema(dealScoreLeads);
+export const selectDealScoreLeadSchema = createSelectSchema(dealScoreLeads);
 
 
 // Types
@@ -411,3 +422,5 @@ export type InsertInvoice = typeof invoices.$inferInsert;
 export type SelectInvoice = typeof invoices.$inferSelect;
 export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
 export type SelectPasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type InsertDealScoreLead = typeof dealScoreLeads.$inferInsert;
+export type SelectDealScoreLead = typeof dealScoreLeads.$inferSelect;
