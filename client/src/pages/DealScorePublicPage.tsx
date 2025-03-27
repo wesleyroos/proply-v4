@@ -1409,7 +1409,7 @@ export default function DealScorePublicPage() {
         </Accordion>
         
         {/* Report Footer */}
-        <div className="pt-6 border-t flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
+        <div className="pt-6 border-t flex flex-col items-center justify-center text-center text-sm text-muted-foreground space-y-2">
           <div>
             Generated on {dealReport.reportDate}
           </div>
