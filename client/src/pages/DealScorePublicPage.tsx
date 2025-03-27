@@ -303,8 +303,26 @@ export default function DealScorePublicPage() {
     const bathrooms = Number(parseFormattedNumber(formData.bathrooms));
     const parking = Number(parseFormattedNumber(formData.parking));
 
-    // Determine whether to use custom data from PriceLabs API or default estimates
-    let estimatedLongTermRental = customLongTermRental || Number(parseFormattedNumber(formData.longTermRental)) || purchasePrice * 0.005; // Use API data if available, otherwise use form data or estimate 0.5% of purchase price
+    // Determine whether to use custom data from API or default estimates
+    let estimatedLongTermRental;
+    
+    // First check if direct parameter was passed in
+    if (customLongTermRental) {
+      estimatedLongTermRental = customLongTermRental;
+    } 
+    // Then check if we have a value in the form data
+    else if (formData.longTermRental && Number(parseFormattedNumber(formData.longTermRental)) > 0) {
+      estimatedLongTermRental = Number(parseFormattedNumber(formData.longTermRental));
+    } 
+    // Finally fall back to estimate
+    else {
+      estimatedLongTermRental = purchasePrice * 0.005; // Estimate 0.5% of purchase price as monthly rental
+    }
+    
+    console.log("Using long term rental amount:", estimatedLongTermRental, "from:", 
+      customLongTermRental ? "API parameter" : 
+      (formData.longTermRental && Number(parseFormattedNumber(formData.longTermRental)) > 0) ? "form data" : 
+      "estimated value");
 
     // Use custom nightly rate if provided, otherwise use estimate
     let estimatedNightlyRate = customNightlyRate || purchasePrice / 1000; // Use API data if available, otherwise rough estimate
