@@ -94,7 +94,8 @@ function getMockValidationResponse(address: string) {
   if (streetNumber) formattedParts.push(`${streetNumber} ${streetName}`);
   else formattedParts.push(streetName);
   
-  if (suburb) formattedParts.push(suburb);
+  // Always include suburb if available
+  if (suburb && suburb !== city) formattedParts.push(suburb);
   if (city) formattedParts.push(city);
   if (postalCode) formattedParts.push(postalCode);
   formattedParts.push('South Africa');
@@ -252,9 +253,23 @@ function getMockAddressSuggestions(input: string) {
     suggestions = [
       {
         place_id: "mock_place_id_3",
-        description: "27 Leeuwen St, Cape Town City Centre, Cape Town, 8001, South Africa",
+        description: "27 Leeuwen St, Gardens, Cape Town, 8001, South Africa",
         structured_formatting: {
-          main_text: "27 Leeuwen St, Cape Town City Centre, Cape Town, 8001",
+          main_text: "27 Leeuwen St, Gardens, Cape Town, 8001",
+          secondary_text: "South Africa"
+        }
+      }
+    ];
+  }
+  
+  // Special case for Platteklip and Derwent Road
+  if (inputLower.includes('platteklip') || (inputLower.includes('derwent') && inputLower.includes('road'))) {
+    suggestions = [
+      {
+        place_id: "mock_place_id_4",
+        description: "19 Platteklip, 05 Derwent Road, Gardens, Cape Town, 8001, South Africa",
+        structured_formatting: {
+          main_text: "19 Platteklip, 05 Derwent Road, Gardens, Cape Town, 8001",
           secondary_text: "South Africa"
         }
       }
