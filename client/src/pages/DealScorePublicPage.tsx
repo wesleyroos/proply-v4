@@ -268,7 +268,15 @@ export default function DealScorePublicPage() {
     calculateDealScore();
   };
 
-  const calculateDealScore = () => {
+  const calculateDealScoreWithUpdatedData = (nightlyRate: string, occupancyRate: string) => {
+    // This function uses real data from PriceLabs API to recalculate the deal score
+    calculateDealScore(
+      Number(parseFormattedNumber(nightlyRate)), 
+      Number(parseFormattedNumber(occupancyRate))
+    );
+  };
+
+  const calculateDealScore = (customNightlyRate?: number, customOccupancy?: number) => {
     // Get property rate
     const propertyRate =
       Number(parseFormattedNumber(formData.purchasePrice)) /
@@ -285,9 +293,14 @@ export default function DealScorePublicPage() {
     const bathrooms = Number(parseFormattedNumber(formData.bathrooms));
     const parking = Number(parseFormattedNumber(formData.parking));
 
-    // Default rental yields (based on property value & area)
+    // Determine whether to use custom data from PriceLabs API or default estimates
     let estimatedLongTermRental = purchasePrice * 0.005; // Estimate 0.5% of purchase price as monthly rental
-    let estimatedNightlyRate = purchasePrice / 1000; // Rough estimate
+    
+    // Use custom nightly rate if provided, otherwise use estimate
+    let estimatedNightlyRate = customNightlyRate || purchasePrice / 1000; // Use API data if available, otherwise rough estimate
+    
+    // Use custom occupancy if provided, otherwise use default (65%)
+    const propertyOccupancyRate = customOccupancy || 65; 
 
     // Set default values for financing
     const depositPercentage = 10; // 10% deposit
@@ -301,14 +314,11 @@ export default function DealScorePublicPage() {
     let shortTermYield = null;
     let longTermYield = null;
 
-    // Set occupancy to 65% as a default
-    const occupancyRate = 65;
-
     // Calculate long term yield
     longTermYield = ((estimatedLongTermRental * 12) / purchasePrice) * 100;
 
     // Calculate short term yield
-    const annualRevenueShortTerm = estimatedNightlyRate * 365 * (occupancyRate / 100);
+    const annualRevenueShortTerm = estimatedNightlyRate * 365 * (propertyOccupancyRate / 100);
     shortTermYield = (annualRevenueShortTerm / purchasePrice) * 100;
 
     // Calculate annual rental for long term
@@ -425,7 +435,7 @@ export default function DealScorePublicPage() {
 
       // Rental Information
       nightlyRate: estimatedNightlyRate,
-      occupancyRate: occupancyRate,
+      occupancyRate: propertyOccupancyRate,
       monthlyLongTerm: estimatedLongTermRental,
 
       // Calculated Financial Metrics
@@ -444,7 +454,7 @@ export default function DealScorePublicPage() {
       monthlyRevenue: estimatedLongTermRental,
       annualRevenueShortTerm: annualRevenueShortTerm,
       annualRentalLongTerm: annualRentalLongTerm,
-      vacancyRate: 100 - occupancyRate,
+      vacancyRate: 100 - propertyOccupancyRate,
       netAnnualIncome: annualRevenueShortTerm - (estimatedMonthlyCosts * 12),
 
       // Mortgage Calculations
@@ -611,15 +621,77 @@ export default function DealScorePublicPage() {
 
   const handlePayment = async () => {
     setProcessingPayment(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setProcessingPayment(false);
-    setShowPaymentModal(false);
-    setReportUnlocked(true);
     
-    toast({
-      title: "Payment Successful",
-      description: "You now have full access to the comprehensive property report.",
-    });
+    try {
+      // Simulate payment processing
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // Fetch revenue data from PriceLabs API
+      const address = formData.address;
+      const bedrooms = formData.bedrooms || "1"; // Default to 1 if not specified
+      
+      toast({
+        title: "Fetching Revenue Data",
+        description: "Getting accurate nightly rate and occupancy data...",
+      });
+      
+      const formattedBedrooms = bedrooms.toLowerCase() === "studio" ? "0" : 
+                              bedrooms.toLowerCase() === "room" ? "-1" : 
+                              Math.floor(Number(parseFormattedNumber(bedrooms))).toString();
+      
+      const response = await fetch(
+        `/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      // Update the occupancy and nightly rate with real data
+      let updatedNightlyRate = formData.nightlyRate;
+      let updatedOccupancy = formData.occupancy;
+      
+      if (data.KPIsByBedroomCategory && data.KPIsByBedroomCategory[formattedBedrooms]) {
+        const kpiData = data.KPIsByBedroomCategory[formattedBedrooms];
+        // Use 75th percentile for nightly rate as default (good properties)
+        updatedNightlyRate = kpiData.ADR75PercentileAvg.toString();
+        updatedOccupancy = kpiData.AvgAdjustedOccupancy.toString();
+        
+        // Update form data with the new values
+        setFormData(prev => ({
+          ...prev,
+          nightlyRate: formatWithThousandSeparators(updatedNightlyRate),
+          occupancy: updatedOccupancy
+        }));
+        
+        // Recalculate the deal score with the new data
+        calculateDealScoreWithUpdatedData(updatedNightlyRate, updatedOccupancy);
+      }
+      
+      setProcessingPayment(false);
+      setShowPaymentModal(false);
+      setReportUnlocked(true);
+      
+      toast({
+        title: "Payment Successful",
+        description: "You now have full access to the comprehensive property report with real revenue data.",
+      });
+    } catch (error) {
+      console.error("Error during payment or data fetching:", error);
+      setProcessingPayment(false);
+      
+      toast({
+        title: "Error",
+        description: "We couldn't fetch revenue data. Using estimated values instead.",
+        variant: "destructive",
+      });
+      
+      // Still unlock the report but use estimated values
+      setShowPaymentModal(false);
+      setReportUnlocked(true);
+    }
   };
 
   const handleNewCalculation = () => {
