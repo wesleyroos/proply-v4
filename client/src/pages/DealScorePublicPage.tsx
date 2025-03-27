@@ -1228,12 +1228,12 @@ export default function DealScorePublicPage() {
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6 w-full">
                 <h3 className="text-xl font-bold mb-4 text-left">
-                  Property Details
+                  Property Overview
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Address and Location Card */}
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
+                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
                     <div className="bg-gradient-to-r from-purple-600 to-violet-500 px-4 py-3">
                       <div className="flex items-center">
                         <MapPin className="h-5 w-5 text-white mr-2" />
@@ -1265,7 +1265,7 @@ export default function DealScorePublicPage() {
                   </div>
 
                   {/* Property Specifications Card */}
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
+                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
                     <div className="bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-3">
                       <div className="flex items-center">
                         <Home className="h-5 w-5 text-white mr-2" />
@@ -1313,20 +1313,24 @@ export default function DealScorePublicPage() {
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Market Position Card */}
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
-                    <div className="bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-3">
-                      <div className="flex items-center">
-                        <CircleDollarSign className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">
-                          Market Position
-                        </h4>
-                      </div>
+                <h3 className="text-xl font-bold mt-8 mb-4 text-left">
+                  Pricing Analysis
+                </h3>
+                <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
+                  <div className="bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-3">
+                    <div className="flex items-center">
+                      <CircleDollarSign className="h-5 w-5 text-white mr-2" />
+                      <h4 className="font-semibold text-white">
+                        Market Position
+                      </h4>
                     </div>
-                    <div className="p-5">
-                      <div className="space-y-4">
-                        <div>
+                  </div>
+                  <div className="p-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                      <div>
+                        <div className="mb-4">
                           <p className="text-sm text-muted-foreground">
                             Asking Price
                           </p>
@@ -1342,12 +1346,22 @@ export default function DealScorePublicPage() {
                             R{formatPrice(dealReport.estimatedValue)}
                           </p>
                         </div>
-                        <div>
+                      </div>
+                      <div>
+                        <div className="mb-4">
                           <p className="text-sm text-muted-foreground">
                             Price per m²
                           </p>
                           <p className="font-medium">
                             R{formatPrice(dealReport.pricePerSqM)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Area Average Rate
+                          </p>
+                          <p className="font-medium">
+                            R{formatPrice(dealReport.areaRate)}/m²
                           </p>
                           <Badge
                             className={`w-fit mt-1 ${dealReport.pricePerSqM <= dealReport.areaRate ? "bg-green-500" : "bg-red-500"}`}
@@ -1358,39 +1372,32 @@ export default function DealScorePublicPage() {
                             Area Average
                           </Badge>
                         </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">
-                            Area Average Rate
-                          </p>
-                          <p className="font-medium">
-                            R{formatPrice(dealReport.areaRate)}/m²
-                          </p>
-                          
-                        </div>
                       </div>
-                      
-                      <div className="p-4 bg-muted/20 rounded-lg mt-4">
-                        <div className="flex items-center mb-2">
-                          <Info className="h-4 w-4 text-primary mr-2" />
-                          <span className="font-medium">Price Evaluation</span>
-                        </div>
-                        <p className="text-sm">
-                          This property is priced{" "}
-                          <span
-                            className={`font-semibold ${dealReport.percentageDifference >= 0 ? "text-green-600" : "text-red-600"}`}
-                          >
-                            {Math.abs(dealReport.percentageDifference).toFixed(1)}
-                            %{" "}
-                            {dealReport.percentageDifference >= 0
-                              ? "below"
-                              : "above"}
-                          </span>{" "}
-                          its estimated market value.
+                    </div>
+
+                    <div className="p-4 bg-muted/20 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <Info className="h-4 w-4 text-primary mr-2" />
+                        <span className="font-medium">Price Evaluation</span>
+                      </div>
+                      <p className="text-sm">
+                        This property is priced{" "}
+                        <span
+                          className={`font-semibold ${dealReport.percentageDifference >= 0 ? "text-green-600" : "text-red-600"}`}
+                        >
+                          {Math.abs(dealReport.percentageDifference).toFixed(1)}
+                          %{" "}
                           {dealReport.percentageDifference >= 0
-                            ? " This indicates a potential value opportunity."
-                            : " This premium may be justified by unique features."}
-                        </p>
-                      </div>
+                            ? "below"
+                            : "above"}
+                        </span>{" "}
+                        its estimated market value of R
+                        {formatPrice(dealReport.estimatedValue)} based on the
+                        average price per square meter in the area.
+                        {dealReport.percentageDifference >= 0
+                          ? " This indicates a potential value opportunity."
+                          : " This premium may be justified by unique property features or location advantages."}
+                      </p>
                     </div>
                   </div>
                 </div>
