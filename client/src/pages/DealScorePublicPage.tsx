@@ -657,56 +657,106 @@ export default function DealScorePublicPage() {
       // Simulate payment processing
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Fetch revenue data from PriceLabs API
-      const address = formData.address;
-      const bedrooms = formData.bedrooms || "1"; // Default to 1 if not specified
+      // Start both API calls in parallel
+      const fetchPricelabsData = async () => {
+        // Fetch revenue data from PriceLabs API
+        const address = formData.address;
+        const bedrooms = formData.bedrooms || "1"; // Default to 1 if not specified
 
-      toast({
-        title: "Fetching Revenue Data",
-        description: "Getting accurate nightly rate and occupancy data...",
-      });
+        toast({
+          title: "Fetching Revenue Data",
+          description: "Getting accurate nightly rate and occupancy data...",
+        });
 
-      const formattedBedrooms =
-        bedrooms.toLowerCase() === "studio"
-          ? "0"
-          : bedrooms.toLowerCase() === "room"
-            ? "-1"
-            : Math.floor(Number(parseFormattedNumber(bedrooms))).toString();
+        const formattedBedrooms =
+          bedrooms.toLowerCase() === "studio"
+            ? "0"
+            : bedrooms.toLowerCase() === "room"
+              ? "-1"
+              : Math.floor(Number(parseFormattedNumber(bedrooms))).toString();
 
-      // Add test=true parameter to avoid real API calls during testing
-      const response = await fetch(
-        `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}&test=true`,
-      );
+        // Add test=true parameter to avoid real API calls during testing
+        const response = await fetch(
+          `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}&test=true`,
+        );
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
-      }
+        if (!response.ok) {
+          throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
+        }
 
-      const data = await response.json();
+        return await response.json();
+      };
 
-      // Update the occupancy and nightly rate with real data
+      const fetchRentalData = async () => {
+        // Don't show the rental amount dialog, we'll handle it silently
+        setRentalAmountStatus("loading");
+
+        try {
+          const response = await fetch("/api/deal-advisor/rental-amount", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              address: formData.address,
+              propertySize: Number(parseFormattedNumber(formData.size)),
+              bedrooms: Number(parseFormattedNumber(formData.bedrooms)),
+              condition: formData.propertyCondition,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch rental amount");
+          }
+
+          return await response.json();
+        } catch (error) {
+          console.error("Error fetching rental amount:", error);
+          setRentalAmountStatus("error");
+          setRentalAmountError((error as Error).message);
+          return null;
+        }
+      };
+
+      // Execute both API calls in parallel
+      const [pricelabsData, rentalData] = await Promise.all([
+        fetchPricelabsData(),
+        fetchRentalData()
+      ]);
+
+      // Process PriceLabs data
       let updatedNightlyRate = formData.nightlyRate;
       let updatedOccupancy = formData.occupancy;
 
       if (
-        data.KPIsByBedroomCategory &&
-        data.KPIsByBedroomCategory[formattedBedrooms]
+        pricelabsData.KPIsByBedroomCategory &&
+        pricelabsData.KPIsByBedroomCategory[formattedBedrooms]
       ) {
-        const kpiData = data.KPIsByBedroomCategory[formattedBedrooms];
+        const kpiData = pricelabsData.KPIsByBedroomCategory[formattedBedrooms];
         // Use 75th percentile for nightly rate as default (good properties)
         updatedNightlyRate = kpiData.ADR75PercentileAvg.toString();
         updatedOccupancy = kpiData.AvgAdjustedOccupancy.toString();
-
-        // Update form data with the new values
-        setFormData((prev) => ({
-          ...prev,
-          nightlyRate: formatWithThousandSeparators(updatedNightlyRate),
-          occupancy: updatedOccupancy,
-        }));
-
-        // Recalculate the deal score with the new data
-        calculateDealScoreWithUpdatedData(updatedNightlyRate, updatedOccupancy);
       }
+
+      // Process rental amount data
+      let updatedLongTermRental = formData.longTermRental;
+      if (rentalData && rentalData.rentalAmount) {
+        updatedLongTermRental = formatWithThousandSeparators(
+          rentalData.rentalAmount.toString()
+        );
+        setRentalAmountStatus("success");
+      }
+
+      // Update form data with all the new values at once
+      setFormData((prev) => ({
+        ...prev,
+        nightlyRate: formatWithThousandSeparators(updatedNightlyRate),
+        occupancy: updatedOccupancy,
+        longTermRental: updatedLongTermRental,
+      }));
+
+      // Recalculate the deal score with the new data
+      calculateDealScoreWithUpdatedData(updatedNightlyRate, updatedOccupancy);
 
       setProcessingPayment(false);
       setShowPaymentModal(false);
