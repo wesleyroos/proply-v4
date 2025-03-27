@@ -140,6 +140,14 @@ export default function ImprovedDealScorePage() {
   >("idle");
   const [showAreaRateDialog, setShowAreaRateDialog] = useState(false);
   const [areaRateError, setAreaRateError] = useState<string>();
+  
+  const [rentalAmountStatus, setRentalAmountStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [showRentalAmountDialog, setShowRentalAmountDialog] = useState(false);
+  const [rentalAmountError, setRentalAmountError] = useState<string>();
+  const [fetchedRentalAmount, setFetchedRentalAmount] = useState<number | null>(null);
+  
   const [reportUnlocked, setReportUnlocked] = useState(false);
   const [dealReport, setDealReport] = useState<DealScoreReport | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
@@ -592,6 +600,59 @@ export default function ImprovedDealScorePage() {
     }
   };
 
+  const handleFetchRentalAmount = async () => {
+    if (!formData.address || !formData.size || !formData.bedrooms || !formData.propertyCondition) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter the property address, size, bedrooms, and condition first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setRentalAmountStatus("loading");
+    setShowRentalAmountDialog(true);
+
+    try {
+      const response = await fetch("/api/deal-advisor/rental-amount", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          address: formData.address,
+          propertySize: Number(parseFormattedNumber(formData.size)),
+          bedrooms: Number(parseFormattedNumber(formData.bedrooms)),
+          condition: formData.propertyCondition,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch rental amount");
+      }
+
+      const data = await response.json();
+      
+      if (data.rentalRate) {
+        setFormData((prev) => ({
+          ...prev,
+          longTermRental: formatWithThousandSeparators(data.rentalRate.toString()),
+        }));
+        setRentalAmountStatus("success");
+        
+        setTimeout(() => {
+          setShowRentalAmountDialog(false);
+        }, 1500);
+      } else {
+        throw new Error("No rental rate returned");
+      }
+    } catch (error) {
+      console.error("Error fetching rental amount:", error);
+      setRentalAmountStatus("error");
+      setRentalAmountError((error instanceof Error) ? error.message : "Failed to fetch rental amount");
+    }
+  };
+
   const handlePaymentProcessing = async () => {
     setProcessingPayment(true);
 
@@ -682,6 +743,82 @@ export default function ImprovedDealScorePage() {
               onClick={() => setShowAreaRateDialog(false)}
             >
               {areaRateStatus === "error" ? "Try Manual Input" : "Continue"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+  
+  const renderRentalAmountDialog = () => {
+    return (
+      <Dialog open={showRentalAmountDialog} onOpenChange={setShowRentalAmountDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {rentalAmountStatus === "error"
+                ? "Error Finding Rental Amount"
+                : rentalAmountStatus === "success"
+                ? "Rental Amount Found"
+                : "Finding Rental Amount..."}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {rentalAmountStatus === "loading" ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-center">
+                  <div className="w-16 h-16 relative">
+                    <div className="absolute inset-0 rounded-full border-4 border-primary/30"></div>
+                    <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <p className="font-medium">Analyzing rental market for</p>
+                  <p className="text-muted-foreground">{formData.address}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {formData.bedrooms} bedroom, {formData.size}m²
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-center text-muted-foreground">This may take a moment...</p>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-primary animate-progress-indeterminate"></div>
+                  </div>
+                </div>
+              </div>
+            ) : rentalAmountStatus === "error" ? (
+              <div className="space-y-4">
+                <div className="flex justify-center">
+                  <AlertCircle className="h-16 w-16 text-destructive" />
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="font-medium">We couldn't find rental data for this property</p>
+                  <p className="text-sm text-muted-foreground">{rentalAmountError}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-center">
+                  <CheckCircle2 className="h-16 w-16 text-green-500" />
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="font-medium">Rental Amount Found!</p>
+                  <p className="text-2xl font-bold">R{formatWithThousandSeparators(formData.longTermRental)} / month</p>
+                  <p className="text-sm text-muted-foreground">
+                    Estimated monthly rental for a {formData.bedrooms} bedroom property in this area.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant={rentalAmountStatus === "error" ? "outline" : "default"}
+              onClick={() => setShowRentalAmountDialog(false)}
+            >
+              {rentalAmountStatus === "error" ? "Try Manual Input" : "Continue"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -917,6 +1054,33 @@ export default function ImprovedDealScorePage() {
             </p>
           </div>
         </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <Label htmlFor="longTermRental" className="block">
+                Monthly Rental Estimate
+              </Label>
+              <Button variant="link" size="sm" className="px-0 h-6" onClick={handleFetchRentalAmount}>
+                Find Rental Amount
+              </Button>
+            </div>
+            <div className="relative">
+              <div className="absolute left-2.5 top-2.5 text-muted-foreground/70">R</div>
+              <Input
+                id="longTermRental"
+                placeholder="0"
+                value={formData.longTermRental}
+                onChange={(e) => handleInputChange("longTermRental", e.target.value)}
+                className="pl-7"
+              />
+              <div className="absolute right-2.5 top-2.5 text-xs text-muted-foreground">/month</div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Estimated monthly rental for this property
+            </p>
+          </div>
+        </div>
       </div>
     );
   };
@@ -1073,7 +1237,7 @@ export default function ImprovedDealScorePage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Value Difference</span>
-                      <Badge variant={dealReport.percentageDifference >= 0 ? "success" : "destructive"}>
+                      <Badge variant={dealReport.percentageDifference >= 0 ? "outline" : "destructive"} className={dealReport.percentageDifference >= 0 ? "bg-green-100 text-green-800" : ""}>
                         {dealReport.percentageDifference >= 0 ? '+' : ''}{dealReport.percentageDifference.toFixed(1)}%
                       </Badge>
                     </div>
@@ -1951,8 +2115,7 @@ export default function ImprovedDealScorePage() {
                       <HTMLToPDFButton
                         elementId="deal-score-report"
                         filename={`Proply_Deal_Score_${dealReport?.address?.split(',')[0] || 'Report'}.pdf`}
-                        className="w-full bg-primary hover:bg-primary/90 text-white"
-                        size="lg"
+                        className="w-full bg-primary hover:bg-primary/90 text-white py-2 h-10 px-4 rounded-md text-base"
                       >
                         <Download className="mr-2 h-4 w-4" />
                         Download Full Report
@@ -2120,6 +2283,7 @@ export default function ImprovedDealScorePage() {
       </div>
       
       {renderAreaRateDialog()}
+      {renderRentalAmountDialog()}
       {renderPaymentModal()}
     </>
   );
