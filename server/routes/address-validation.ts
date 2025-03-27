@@ -18,6 +18,27 @@ function getGoogleMapsApiKey(): string {
   return apiKey;
 }
 
+// Helper function to properly capitalize address components
+function capitalizeAddress(text: string): string {
+  // Skip capitalization for postal codes and numbers
+  if (/^\d+$/.test(text)) return text;
+  
+  // Words that should remain lowercase (prepositions, articles, etc.)
+  const lowercaseWords = ['of', 'the', 'in', 'on', 'at', 'by', 'for', 'with', 'and', 'or', 'a', 'an'];
+  
+  return text
+    .split(' ')
+    .map((word, index) => {
+      // Check if the word is a lowercase word and not at the beginning
+      if (lowercaseWords.includes(word.toLowerCase()) && index !== 0) {
+        return word.toLowerCase();
+      }
+      // Capitalize the first letter of each word
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
+}
+
 // Helper function to generate mock validation response
 function getMockValidationResponse(address: string) {
   // Parse the address components
@@ -32,14 +53,16 @@ function getMockValidationResponse(address: string) {
   const numberMatch = streetPart.match(/^(\d+)\s+(.+)$/);
   if (numberMatch) {
     streetNumber = numberMatch[1];
-    streetName = numberMatch[2];
+    streetName = capitalizeAddress(numberMatch[2]);
+  } else {
+    streetName = capitalizeAddress(streetName);
   }
   
   // Determine suburb (second part if available)
-  const suburb = parts.length > 1 ? parts[1] : 'Cape Town City Centre';
+  const suburb = parts.length > 1 ? capitalizeAddress(parts[1]) : 'Cape Town City Centre';
   
   // Determine city (third part if available, otherwise look for keywords)
-  let city = parts.length > 2 ? parts[2] : '';
+  let city = parts.length > 2 ? capitalizeAddress(parts[2]) : '';
   if (!city) {
     if (address.toLowerCase().includes('cape town')) {
       city = 'Cape Town';
@@ -195,11 +218,13 @@ function getMockAddressSuggestions(input: string) {
   const numberMatch = mainPart.match(/^(\d+)\s+(.+)$/);
   if (numberMatch) {
     streetNumber = numberMatch[1];
-    streetName = numberMatch[2];
+    streetName = capitalizeAddress(numberMatch[2]);
+  } else {
+    streetName = capitalizeAddress(streetName);
   }
   
   // Determine the suburb/area
-  let suburb = parts.length > 1 ? parts[1] : 'Cape Town City Centre';
+  let suburb = parts.length > 1 ? capitalizeAddress(parts[1]) : 'Cape Town City Centre';
   
   // Determine the city
   let city = 'Cape Town';
