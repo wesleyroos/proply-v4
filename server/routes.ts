@@ -65,7 +65,8 @@ export function registerRoutes(app: Express): Server {
       req.path === "/calculate-deal-score" ||
       req.path === "/deal-advisor/area-rate" ||
       req.path === "/deal-advisor/deal-analysis" ||
-      req.path === "/deal-advisor/rental-amount"  
+      req.path === "/deal-advisor/rental-amount" ||
+      req.path === "/public-revenue-data"
     ) {
       return next();
     }
@@ -948,6 +949,44 @@ export function registerRoutes(app: Express): Server {
       } catch (error) {
         console.error("Error logging API usage:", error);
       }
+    }
+  });
+
+  // Public PriceLabs API proxy endpoint for the Deal Score page
+  app.get("/api/public-revenue-data", async (req, res) => {
+    const { address, bedrooms } = req.query;
+
+    if (!address || !bedrooms) {
+      return res
+        .status(400)
+        .json({ error: "Address and bedrooms are required" });
+    }
+
+    const startTime = Date.now();
+    let success = false;
+
+    try {
+      const response = await fetch(
+        `https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(String(address))}&currency=ZAR&bedroom_category=${bedrooms}`,
+        {
+          headers: {
+            "X-API-Key": "sNYmBNptl4gcLSlDl5GXuUtkGVVGIxiMcUjQI1MV",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`PriceLabs API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      success = true;
+
+      // We don't track usage for public API calls
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching from PriceLabs (public):", error);
+      res.status(500).json({ error: "Failed to fetch revenue data" });
     }
   });
 

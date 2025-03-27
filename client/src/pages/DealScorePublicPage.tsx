@@ -640,7 +640,7 @@ export default function DealScorePublicPage() {
                               Math.floor(Number(parseFormattedNumber(bedrooms))).toString();
       
       const response = await fetch(
-        `/api/revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}`
+        `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}`
       );
       
       if (!response.ok) {
