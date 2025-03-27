@@ -673,8 +673,9 @@ export default function DealScorePublicPage() {
             ? "-1"
             : Math.floor(Number(parseFormattedNumber(bedrooms))).toString();
 
+      // Add test=true parameter to avoid real API calls during testing
       const response = await fetch(
-        `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}`,
+        `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}&test=true`,
       );
 
       if (!response.ok) {

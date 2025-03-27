@@ -954,7 +954,10 @@ export function registerRoutes(app: Express): Server {
 
   // Public PriceLabs API proxy endpoint for the Deal Score page
   app.get("/api/public-revenue-data", async (req, res) => {
-    const { address, bedrooms } = req.query;
+    const { address, bedrooms, test } = req.query;
+    
+    // Feature flag for testing - if test=true is in query params, return mock data instead of calling the API
+    const isTestMode = test === 'true';
 
     if (!address || !bedrooms) {
       return res
@@ -966,6 +969,28 @@ export function registerRoutes(app: Express): Server {
     let success = false;
 
     try {
+      // Skip API call if in test mode
+      if (isTestMode) {
+        console.log("Test mode enabled - returning mock data instead of calling PriceLabs API");
+        
+        // Return the mock data response - this matches the structure of the real API
+        return res.json({
+          KPIsByBedroomCategory: {
+            [String(bedrooms)]: {
+              adr: 2500,
+              occupancy: 65,
+              market_occupancy: 65,
+              market_adr: 2500,
+              sample_size: 20
+            }
+          },
+          address: String(address),
+          destination_id: "test-destination",
+          destination_name: "Cape Town, South Africa",
+          bedroom_category: Number(bedrooms)
+        });
+      }
+      
       const response = await fetch(
         `https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(String(address))}&currency=ZAR&bedroom_category=${bedrooms}`,
         {
