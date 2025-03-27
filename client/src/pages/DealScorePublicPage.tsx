@@ -1012,7 +1012,6 @@ export default function DealScorePublicPage() {
       <div id="deal-score-report" className="space-y-8">
         {/* Property Title and Summary */}
         <div className="pb-8 text-center">
-
           <h2 className="text-2xl font-medium mb-5">{dealReport.address}</h2>
 
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-6">
@@ -1202,8 +1201,6 @@ export default function DealScorePublicPage() {
           </div>
         </div>
 
-
-
         {/* Accordion for detailed sections */}
         <Accordion
           type="single"
@@ -1304,7 +1301,7 @@ export default function DealScorePublicPage() {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold mt-8 mb-4 text-center">
+                <h3 className="text-xl font-bold mt-8 mb-4 text-left">
                   Pricing Analysis
                 </h3>
                 <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
@@ -1400,7 +1397,7 @@ export default function DealScorePublicPage() {
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6">
-                <h3 className="text-xl font-bold mb-4 text-center">
+                <h3 className="text-xl font-bold mb-4 text-left">
                   Rental Potential
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1561,7 +1558,7 @@ export default function DealScorePublicPage() {
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6 w-full">
-                <h3 className="text-xl font-bold mb-4 text-center">
+                <h3 className="text-xl font-bold mb-4 text-left">
                   Financial Overview
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1687,7 +1684,7 @@ export default function DealScorePublicPage() {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold mt-8 mb-4 text-center">
+                <h3 className="text-xl font-bold mt-8 mb-4 text-left">
                   Cash Flow Analysis
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1830,7 +1827,7 @@ export default function DealScorePublicPage() {
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6 w-full">
-                <h3 className="text-xl font-bold mb-4 text-center">
+                <h3 className="text-xl font-bold mb-4 text-left">
                   Market Comparisons
                 </h3>
 
