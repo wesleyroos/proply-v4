@@ -29,6 +29,7 @@ import {
   Building,
   Calculator,
 } from "lucide-react";
+import AddressAutocomplete from "../components/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -855,29 +856,23 @@ export default function DealScorePublicPage() {
       <div className="space-y-4">
         <div className="grid grid-cols-1 gap-4">
           <div>
-            <Label
-              htmlFor="address"
-              className="mb-1 block"
-              data-error={checkRequiredFields("address")}
-            >
-              Property Address
-              <span className="text-red-500">*</span>
-            </Label>
-            <div className="flex">
-              <Input
+            <div className="flex flex-col w-full">
+              <AddressAutocomplete
                 id="address"
+                name="address"
+                label="Property Address"
                 placeholder="Enter the full property address"
                 value={formData.address}
-                onChange={(e) => handleInputChange("address", e.target.value)}
-                className={`flex-1 ${checkRequiredFields("address") ? "border-red-500" : ""}`}
+                onChange={(value) => handleInputChange("address", value)}
+                className={checkRequiredFields("address") ? "border-red-500" : ""}
                 required
               />
+              {checkRequiredFields("address") && (
+                <p className="text-red-500 text-xs mt-1">
+                  Please enter the property address
+                </p>
+              )}
             </div>
-            {checkRequiredFields("address") && (
-              <p className="text-red-500 text-xs mt-1">
-                Please enter the property address
-              </p>
-            )}
           </div>
         </div>
 
