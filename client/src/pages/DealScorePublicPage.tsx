@@ -18,7 +18,7 @@ import {
   ChevronDown,
   ChevronRight,
   MapPin,
-  CircleDollarSign, 
+  CircleDollarSign,
   Landmark,
   Receipt,
   Home,
@@ -27,7 +27,7 @@ import {
   Banknote,
   Percent,
   Building,
-  Calculator
+  Calculator,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,7 +61,6 @@ import { AreaRateProgressDialog } from "@/components/AreaRateProgressDialog";
 import { Badge } from "@/components/ui/badge";
 import { DealScoreReport } from "./DealScoreReportPage";
 import { HTMLToPDFButton } from "@/components/pdf/html-to-pdf-button";
-
 
 export default function DealScorePublicPage() {
   const { toast } = useToast();
@@ -135,7 +134,6 @@ export default function DealScorePublicPage() {
   const [rentalAmountError, setRentalAmountError] = useState<string>();
   const [dealReport, setDealReport] = useState<DealScoreReport | null>(null);
 
-
   const fillDemoData = () => {
     setDemoClicks((prev) => {
       if (prev === 2) {
@@ -184,9 +182,9 @@ export default function DealScorePublicPage() {
   };
 
   const formatPrice = (value: number, decimals: number = 0): string => {
-    return value.toLocaleString('en-ZA', { 
+    return value.toLocaleString("en-ZA", {
       minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
+      maximumFractionDigits: decimals,
     });
   };
 
@@ -271,15 +269,21 @@ export default function DealScorePublicPage() {
     calculateDealScore();
   };
 
-  const calculateDealScoreWithUpdatedData = (nightlyRate: string, occupancyRate: string) => {
+  const calculateDealScoreWithUpdatedData = (
+    nightlyRate: string,
+    occupancyRate: string,
+  ) => {
     // This function uses real data from PriceLabs API to recalculate the deal score
     calculateDealScore(
-      Number(parseFormattedNumber(nightlyRate)), 
-      Number(parseFormattedNumber(occupancyRate))
+      Number(parseFormattedNumber(nightlyRate)),
+      Number(parseFormattedNumber(occupancyRate)),
     );
   };
 
-  const calculateDealScore = (customNightlyRate?: number, customOccupancy?: number) => {
+  const calculateDealScore = (
+    customNightlyRate?: number,
+    customOccupancy?: number,
+  ) => {
     // Get property rate
     const propertyRate =
       Number(parseFormattedNumber(formData.purchasePrice)) /
@@ -298,12 +302,12 @@ export default function DealScorePublicPage() {
 
     // Determine whether to use custom data from PriceLabs API or default estimates
     let estimatedLongTermRental = purchasePrice * 0.005; // Estimate 0.5% of purchase price as monthly rental
-    
+
     // Use custom nightly rate if provided, otherwise use estimate
     let estimatedNightlyRate = customNightlyRate || purchasePrice / 1000; // Use API data if available, otherwise rough estimate
-    
+
     // Use custom occupancy if provided, otherwise use default (65%)
-    const propertyOccupancyRate = customOccupancy || 65; 
+    const propertyOccupancyRate = customOccupancy || 65;
 
     // Set default values for financing
     const depositPercentage = 10; // 10% deposit
@@ -311,7 +315,11 @@ export default function DealScorePublicPage() {
     const interestRate = 11; // 11% interest rate
     const loanTerm = 20; // 20 year loan term
     const loanAmount = purchasePrice - depositAmount;
-    const monthlyPayment = (loanAmount * (interestRate/100/12) * Math.pow(1 + (interestRate/100/12), loanTerm * 12)) / (Math.pow(1 + (interestRate/100/12), loanTerm * 12) - 1);
+    const monthlyPayment =
+      (loanAmount *
+        (interestRate / 100 / 12) *
+        Math.pow(1 + interestRate / 100 / 12, loanTerm * 12)) /
+      (Math.pow(1 + interestRate / 100 / 12, loanTerm * 12) - 1);
 
     // Calculate yields
     let shortTermYield = null;
@@ -321,7 +329,8 @@ export default function DealScorePublicPage() {
     longTermYield = ((estimatedLongTermRental * 12) / purchasePrice) * 100;
 
     // Calculate short term yield
-    const annualRevenueShortTerm = estimatedNightlyRate * 365 * (propertyOccupancyRate / 100);
+    const annualRevenueShortTerm =
+      estimatedNightlyRate * 365 * (propertyOccupancyRate / 100);
     shortTermYield = (annualRevenueShortTerm / purchasePrice) * 100;
 
     // Calculate annual rental for long term
@@ -393,25 +402,30 @@ export default function DealScorePublicPage() {
       Number(parseFormattedNumber(formData.size));
 
     // Estimated monthly costs (simplified)
-    const monthlyRates = purchasePrice * 0.001 / 12; // Rough estimate of rates
+    const monthlyRates = (purchasePrice * 0.001) / 12; // Rough estimate of rates
     const levy = purchasePrice * 0.0015; // Rough estimate of levy
     const estimatedMonthlyCosts = monthlyRates + levy;
 
     // Calculate cash flow
-    const cashFlowShortTerm = (annualRevenueShortTerm / 12) - monthlyPayment - estimatedMonthlyCosts;
-    const cashFlowLongTerm = estimatedLongTermRental - monthlyPayment - estimatedMonthlyCosts;
+    const cashFlowShortTerm =
+      annualRevenueShortTerm / 12 - monthlyPayment - estimatedMonthlyCosts;
+    const cashFlowLongTerm =
+      estimatedLongTermRental - monthlyPayment - estimatedMonthlyCosts;
 
     // Determine best investment strategy
-    const bestInvestmentStrategy = shortTermYield > (longTermYield || 0) ? "Short-Term Rental" : "Long-Term Rental";
+    const bestInvestmentStrategy =
+      shortTermYield > (longTermYield || 0)
+        ? "Short-Term Rental"
+        : "Long-Term Rental";
 
     // Example comparable properties (dummy data)
     const avgComparableSalesPrice = estimatedValue * 0.98; // Average slightly below the estimated value
 
     // Report date
-    const reportDate = new Date().toLocaleDateString('en-ZA', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    const reportDate = new Date().toLocaleDateString("en-ZA", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
 
     // Create the comprehensive report
@@ -430,7 +444,8 @@ export default function DealScorePublicPage() {
       rating: rating,
       color: color,
       estimatedValue: estimatedValue,
-      percentageDifference: ((estimatedValue - purchasePrice) / purchasePrice) * 100,
+      percentageDifference:
+        ((estimatedValue - purchasePrice) / purchasePrice) * 100,
 
       // Area Information
       areaRate: Number(parseFormattedNumber(formData.areaRate)),
@@ -458,7 +473,7 @@ export default function DealScorePublicPage() {
       annualRevenueShortTerm: annualRevenueShortTerm,
       annualRentalLongTerm: annualRentalLongTerm,
       vacancyRate: 100 - propertyOccupancyRate,
-      netAnnualIncome: annualRevenueShortTerm - (estimatedMonthlyCosts * 12),
+      netAnnualIncome: annualRevenueShortTerm - estimatedMonthlyCosts * 12,
 
       // Mortgage Calculations
       depositAmount: depositAmount,
@@ -475,21 +490,25 @@ export default function DealScorePublicPage() {
       comparableProperties: [
         {
           similarity: "Similar",
-          address: `${Math.floor(Math.random() * 100)} ${formData.address.split(',')[0].split(' ').pop()}`,
+          address: `${Math.floor(Math.random() * 100)} ${formData.address.split(",")[0].split(" ").pop()}`,
           salePrice: Math.round(estimatedValue * (0.95 + Math.random() * 0.1)),
           size: Math.round(propertySize * (0.9 + Math.random() * 0.2)),
           pricePerSqM: Math.round(propertyRate * (0.95 + Math.random() * 0.1)),
           bedrooms: bedrooms,
-          saleDate: new Date(Date.now() - Math.random() * 15552000000).toLocaleDateString('en-ZA'), // Random date in last 6 months
+          saleDate: new Date(
+            Date.now() - Math.random() * 15552000000,
+          ).toLocaleDateString("en-ZA"), // Random date in last 6 months
         },
         {
           similarity: "Comparable",
-          address: `${Math.floor(Math.random() * 100)} ${formData.address.split(',')[0].split(' ').pop()}`,
+          address: `${Math.floor(Math.random() * 100)} ${formData.address.split(",")[0].split(" ").pop()}`,
           salePrice: Math.round(estimatedValue * (0.9 + Math.random() * 0.2)),
           size: Math.round(propertySize * (0.85 + Math.random() * 0.3)),
           pricePerSqM: Math.round(propertyRate * (0.9 + Math.random() * 0.2)),
           bedrooms: bedrooms + (Math.random() > 0.5 ? 1 : -1),
-          saleDate: new Date(Date.now() - Math.random() * 31104000000).toLocaleDateString('en-ZA'), // Random date in last year
+          saleDate: new Date(
+            Date.now() - Math.random() * 31104000000,
+          ).toLocaleDateString("en-ZA"), // Random date in last year
         },
       ],
 
@@ -502,7 +521,8 @@ export default function DealScorePublicPage() {
       score: Math.round(score),
       rating,
       color,
-      percentageDifference: ((estimatedValue - purchasePrice) / purchasePrice) * 100,
+      percentageDifference:
+        ((estimatedValue - purchasePrice) / purchasePrice) * 100,
       askingPrice: purchasePrice,
       estimatedValue,
       propertyRate,
@@ -548,14 +568,14 @@ export default function DealScorePublicPage() {
       }
 
       const data = await response.json();
-      
+
       if (data.areaRate) {
         setFormData((prev) => ({
           ...prev,
           areaRate: formatWithThousandSeparators(data.areaRate.toString()),
         }));
         setAreaRateStatus("success");
-        
+
         setTimeout(() => {
           setShowAreaRateDialog(false);
         }, 1500);
@@ -570,10 +590,16 @@ export default function DealScorePublicPage() {
   };
 
   const handleFetchRentalAmount = async () => {
-    if (!formData.address || !formData.size || !formData.bedrooms || !formData.propertyCondition) {
+    if (
+      !formData.address ||
+      !formData.size ||
+      !formData.bedrooms ||
+      !formData.propertyCondition
+    ) {
       toast({
         title: "Missing Information",
-        description: "Please enter the property address, size, bedrooms, and condition first.",
+        description:
+          "Please enter the property address, size, bedrooms, and condition first.",
         variant: "destructive",
       });
       return;
@@ -601,14 +627,16 @@ export default function DealScorePublicPage() {
       }
 
       const data = await response.json();
-      
+
       if (data.rentalAmount) {
         setFormData((prev) => ({
           ...prev,
-          longTermRental: formatWithThousandSeparators(data.rentalAmount.toString()),
+          longTermRental: formatWithThousandSeparators(
+            data.rentalAmount.toString(),
+          ),
         }));
         setRentalAmountStatus("success");
-        
+
         setTimeout(() => {
           setShowRentalAmountDialog(false);
         }, 1500);
@@ -624,73 +652,81 @@ export default function DealScorePublicPage() {
 
   const handlePayment = async () => {
     setProcessingPayment(true);
-    
+
     try {
       // Simulate payment processing
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      
+
       // Fetch revenue data from PriceLabs API
       const address = formData.address;
       const bedrooms = formData.bedrooms || "1"; // Default to 1 if not specified
-      
+
       toast({
         title: "Fetching Revenue Data",
         description: "Getting accurate nightly rate and occupancy data...",
       });
-      
-      const formattedBedrooms = bedrooms.toLowerCase() === "studio" ? "0" : 
-                              bedrooms.toLowerCase() === "room" ? "-1" : 
-                              Math.floor(Number(parseFormattedNumber(bedrooms))).toString();
-      
+
+      const formattedBedrooms =
+        bedrooms.toLowerCase() === "studio"
+          ? "0"
+          : bedrooms.toLowerCase() === "room"
+            ? "-1"
+            : Math.floor(Number(parseFormattedNumber(bedrooms))).toString();
+
       const response = await fetch(
-        `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}`
+        `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}`,
       );
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
-      
+
       // Update the occupancy and nightly rate with real data
       let updatedNightlyRate = formData.nightlyRate;
       let updatedOccupancy = formData.occupancy;
-      
-      if (data.KPIsByBedroomCategory && data.KPIsByBedroomCategory[formattedBedrooms]) {
+
+      if (
+        data.KPIsByBedroomCategory &&
+        data.KPIsByBedroomCategory[formattedBedrooms]
+      ) {
         const kpiData = data.KPIsByBedroomCategory[formattedBedrooms];
         // Use 75th percentile for nightly rate as default (good properties)
         updatedNightlyRate = kpiData.ADR75PercentileAvg.toString();
         updatedOccupancy = kpiData.AvgAdjustedOccupancy.toString();
-        
+
         // Update form data with the new values
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           nightlyRate: formatWithThousandSeparators(updatedNightlyRate),
-          occupancy: updatedOccupancy
+          occupancy: updatedOccupancy,
         }));
-        
+
         // Recalculate the deal score with the new data
         calculateDealScoreWithUpdatedData(updatedNightlyRate, updatedOccupancy);
       }
-      
+
       setProcessingPayment(false);
       setShowPaymentModal(false);
       setReportUnlocked(true);
-      
+
       toast({
         title: "Payment Successful",
-        description: "You now have full access to the comprehensive property report with real revenue data.",
+        description:
+          "You now have full access to the comprehensive property report with real revenue data.",
       });
     } catch (error) {
       console.error("Error during payment or data fetching:", error);
       setProcessingPayment(false);
-      
+
       toast({
         title: "Error",
-        description: "We couldn't fetch revenue data. Using estimated values instead.",
+        description:
+          "We couldn't fetch revenue data. Using estimated values instead.",
         variant: "destructive",
       });
-      
+
       // Still unlock the report but use estimated values
       setShowPaymentModal(false);
       setReportUnlocked(true);
@@ -722,28 +758,37 @@ export default function DealScorePublicPage() {
   };
 
   const checkRequiredFields = (field: string) => {
-    if (field === 'address' || field === 'purchasePrice' || field === 'size' || field === 'areaRate') {
-      const numericValue = parseFormattedNumber(formData[field as keyof typeof formData] as string);
+    if (
+      field === "address" ||
+      field === "purchasePrice" ||
+      field === "size" ||
+      field === "areaRate"
+    ) {
+      const numericValue = parseFormattedNumber(
+        formData[field as keyof typeof formData] as string,
+      );
       return missingFields.includes(field);
     }
     return false;
   };
 
   const validateForm = (showToast = false) => {
-    const requiredFields = ['address', 'purchasePrice', 'size', 'areaRate'];
-    const missingFields = requiredFields.filter(field => {
-      const numericValue = parseFormattedNumber(formData[field as keyof typeof formData] as string);
+    const requiredFields = ["address", "purchasePrice", "size", "areaRate"];
+    const missingFields = requiredFields.filter((field) => {
+      const numericValue = parseFormattedNumber(
+        formData[field as keyof typeof formData] as string,
+      );
       return numericValue === "" || numericValue === "0";
     });
-    
+
     if (missingFields.length > 0 && showToast) {
       toast({
         title: "Missing Information",
-        description: `Please fill in the following fields: ${missingFields.join(', ')}`,
+        description: `Please fill in the following fields: ${missingFields.join(", ")}`,
         variant: "destructive",
       });
     }
-    
+
     return missingFields;
   };
 
@@ -768,10 +813,10 @@ export default function DealScorePublicPage() {
       <div className="space-y-4">
         <div className="grid grid-cols-1 gap-4">
           <div>
-            <Label 
-              htmlFor="address" 
+            <Label
+              htmlFor="address"
               className="mb-1 block"
-              data-error={checkRequiredFields('address')}
+              data-error={checkRequiredFields("address")}
             >
               Property Address
               <span className="text-red-500">*</span>
@@ -782,11 +827,11 @@ export default function DealScorePublicPage() {
                 placeholder="Enter the full property address"
                 value={formData.address}
                 onChange={(e) => handleInputChange("address", e.target.value)}
-                className={`flex-1 ${checkRequiredFields('address') ? 'border-red-500' : ''}`}
+                className={`flex-1 ${checkRequiredFields("address") ? "border-red-500" : ""}`}
                 required
               />
             </div>
-            {checkRequiredFields('address') && (
+            {checkRequiredFields("address") && (
               <p className="text-red-500 text-xs mt-1">
                 Please enter the property address
               </p>
@@ -796,10 +841,10 @@ export default function DealScorePublicPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label 
-              htmlFor="purchasePrice" 
+            <Label
+              htmlFor="purchasePrice"
               className="mb-1 block"
-              data-error={checkRequiredFields('purchasePrice')}
+              data-error={checkRequiredFields("purchasePrice")}
             >
               Asking Price
               <span className="text-red-500">*</span>
@@ -815,11 +860,11 @@ export default function DealScorePublicPage() {
                 onChange={(e) =>
                   handleInputChange("purchasePrice", e.target.value)
                 }
-                className={`pl-7 ${checkRequiredFields('purchasePrice') ? 'border-red-500' : ''}`}
+                className={`pl-7 ${checkRequiredFields("purchasePrice") ? "border-red-500" : ""}`}
                 required
               />
             </div>
-            {checkRequiredFields('purchasePrice') && (
+            {checkRequiredFields("purchasePrice") && (
               <p className="text-red-500 text-xs mt-1">
                 Please enter the asking price
               </p>
@@ -827,10 +872,10 @@ export default function DealScorePublicPage() {
           </div>
 
           <div>
-            <Label 
-              htmlFor="size" 
+            <Label
+              htmlFor="size"
               className="mb-1 block"
-              data-error={checkRequiredFields('size')}
+              data-error={checkRequiredFields("size")}
             >
               Property Size
               <span className="text-red-500">*</span>
@@ -841,14 +886,14 @@ export default function DealScorePublicPage() {
                 placeholder="0"
                 value={formData.size}
                 onChange={(e) => handleInputChange("size", e.target.value)}
-                className={`pr-10 ${checkRequiredFields('size') ? 'border-red-500' : ''}`}
+                className={`pr-10 ${checkRequiredFields("size") ? "border-red-500" : ""}`}
                 required
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <span className="text-muted-foreground">m²</span>
               </div>
             </div>
-            {checkRequiredFields('size') && (
+            {checkRequiredFields("size") && (
               <p className="text-red-500 text-xs mt-1">
                 Please enter the property size
               </p>
@@ -859,9 +904,9 @@ export default function DealScorePublicPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="flex items-center justify-between mb-1">
-              <Label 
-                htmlFor="areaRate" 
-                data-error={checkRequiredFields('areaRate')}
+              <Label
+                htmlFor="areaRate"
+                data-error={checkRequiredFields("areaRate")}
               >
                 Area Rate per m²
                 <span className="text-red-500">*</span>
@@ -885,11 +930,11 @@ export default function DealScorePublicPage() {
                 placeholder="0"
                 value={formData.areaRate}
                 onChange={(e) => handleInputChange("areaRate", e.target.value)}
-                className={`pl-7 ${checkRequiredFields('areaRate') ? 'border-red-500' : ''}`}
+                className={`pl-7 ${checkRequiredFields("areaRate") ? "border-red-500" : ""}`}
                 required
               />
             </div>
-            {checkRequiredFields('areaRate') && (
+            {checkRequiredFields("areaRate") && (
               <p className="text-red-500 text-xs mt-1">
                 Please enter the area rate per square meter
               </p>
@@ -967,9 +1012,9 @@ export default function DealScorePublicPage() {
       <div id="deal-score-report" className="space-y-8">
         {/* Property Title and Summary */}
         <div className="pb-8 text-center">
-          <h1 className="text-3xl font-bold mb-4">Proply Deal Score™</h1>
-          <h2 className="text-2xl font-medium mb-5">{dealReport.address}</h2>
           
+          <h2 className="text-2xl font-medium mb-5">{dealReport.address}</h2>
+
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-6">
             <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
               {dealReport.bedrooms} Beds
@@ -987,26 +1032,39 @@ export default function DealScorePublicPage() {
               {dealReport.propertyCondition} Condition
             </Badge>
           </div>
-          
+
           <div className="grid grid-cols-4 max-w-3xl mx-auto mb-6">
             <div className="flex flex-col items-center">
               <span className="text-sm text-slate-500">Asking Price</span>
-              <span className="text-xl font-bold">R{formatPrice(dealReport.askingPrice)}</span>
+              <span className="text-xl font-bold">
+                R{formatPrice(dealReport.askingPrice)}
+              </span>
             </div>
             <div className="flex flex-col items-center">
               <span className="text-sm text-slate-500">Price per m²</span>
-              <span className="text-xl font-bold">R{formatPrice(dealReport.pricePerSqM)}</span>
+              <span className="text-xl font-bold">
+                R{formatPrice(dealReport.pricePerSqM)}
+              </span>
             </div>
             <div className="flex flex-col items-center">
               <span className="text-sm text-slate-500">Area Rate</span>
-              <span className="text-xl font-bold">R{formatPrice(dealReport.areaRate)}</span>
+              <span className="text-xl font-bold">
+                R{formatPrice(dealReport.areaRate)}
+              </span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-sm text-slate-500">Estimated Value</span>
+              <span className="text-sm text-slate-500">
+                Estimated Market Value
+              </span>
               <div className="flex flex-col items-center">
-                <span className="text-xl font-bold">R{formatPrice(dealReport.estimatedValue)}</span>
-                <span className={`px-2 text-xs ${dealReport.percentageDifference >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {dealReport.percentageDifference >= 0 ? '+' : ''}{dealReport.percentageDifference.toFixed(1)}%
+                <span className="text-xl font-bold">
+                  R{formatPrice(dealReport.estimatedValue)}
+                </span>
+                <span
+                  className={`px-2 text-xs ${dealReport.percentageDifference >= 0 ? "text-green-600" : "text-red-600"}`}
+                >
+                  {dealReport.percentageDifference >= 0 ? "+" : ""}
+                  {dealReport.percentageDifference.toFixed(1)}%
                 </span>
               </div>
             </div>
@@ -1031,7 +1089,7 @@ export default function DealScorePublicPage() {
                     cy="64"
                   />
                   <circle
-                    className={`${dealReport.score >= 75 ? 'text-green-500' : dealReport.score >= 60 ? 'text-blue-500' : dealReport.score >= 40 ? 'text-amber-500' : 'text-red-500'} stroke-current`}
+                    className={`${dealReport.score >= 75 ? "text-green-500" : dealReport.score >= 60 ? "text-blue-500" : dealReport.score >= 40 ? "text-amber-500" : "text-red-500"} stroke-current`}
                     strokeWidth="12"
                     strokeLinecap="round"
                     stroke="currentColor"
@@ -1048,7 +1106,9 @@ export default function DealScorePublicPage() {
                   {dealReport.score}
                 </div>
               </div>
-              <div className={`text-xl font-semibold ${dealReport.score >= 75 ? 'text-green-600' : dealReport.score >= 60 ? 'text-blue-600' : dealReport.score >= 40 ? 'text-amber-600' : 'text-red-600'}`}>
+              <div
+                className={`text-xl font-semibold ${dealReport.score >= 75 ? "text-green-600" : dealReport.score >= 60 ? "text-blue-600" : dealReport.score >= 40 ? "text-amber-600" : "text-red-600"}`}
+              >
                 {dealReport.rating}
               </div>
             </div>
@@ -1062,23 +1122,36 @@ export default function DealScorePublicPage() {
                   <DollarSign className="h-5 w-5 text-white mr-2" />
                   <h4 className="font-semibold text-white">Market Value</h4>
                 </div>
-                <Badge className={dealReport.percentageDifference >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                  {dealReport.percentageDifference >= 0 ? 'Undervalued' : 'Overvalued'}
+                <Badge
+                  className={
+                    dealReport.percentageDifference >= 0
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }
+                >
+                  {dealReport.percentageDifference >= 0
+                    ? "Undervalued"
+                    : "Overvalued"}
                 </Badge>
               </div>
             </div>
             <div className="p-5">
               <p className="text-sm text-slate-500 mb-4">
-                Based on area rate of R{formatPrice(dealReport.areaRate)}/m² for properties in this area
+                Based on area rate of R{formatPrice(dealReport.areaRate)}/m² for
+                properties in this area
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-slate-500">Asking Price</p>
-                  <p className="font-medium">R{formatPrice(dealReport.askingPrice)}</p>
+                  <p className="font-medium">
+                    R{formatPrice(dealReport.askingPrice)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-500">Estimated Value</p>
-                  <p className="font-medium">R{formatPrice(dealReport.estimatedValue)}</p>
+                  <p className="font-medium">
+                    R{formatPrice(dealReport.estimatedValue)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -1092,180 +1165,227 @@ export default function DealScorePublicPage() {
                   <TrendingUp className="h-5 w-5 text-white mr-2" />
                   <h4 className="font-semibold text-white">Rental Yield</h4>
                 </div>
-                <Badge className={dealReport.bestInvestmentStrategy === 'Short-Term Rental' ? 'bg-blue-100 text-blue-800' : 'bg-indigo-100 text-indigo-800'}>
-                  {dealReport.bestInvestmentStrategy === 'Short-Term Rental' ? 'Short-Term' : 'Long-Term'}
+                <Badge
+                  className={
+                    dealReport.bestInvestmentStrategy === "Short-Term Rental"
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-indigo-100 text-indigo-800"
+                  }
+                >
+                  {dealReport.bestInvestmentStrategy === "Short-Term Rental"
+                    ? "Short-Term"
+                    : "Long-Term"}
                 </Badge>
               </div>
             </div>
             <div className="p-5">
               <p className="text-sm text-slate-500 mb-4">
-                {dealReport.bestInvestmentStrategy === 'Short-Term Rental' 
-                  ? 'Short-term rental offers the best returns for this property'
-                  : 'Long-term rental is the optimal strategy for this property'}
+                {dealReport.bestInvestmentStrategy === "Short-Term Rental"
+                  ? "Short-term rental offers the best returns for this property"
+                  : "Long-term rental is the optimal strategy for this property"}
               </p>
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div>
                   <p className="text-sm text-slate-500">Short-Term Yield</p>
-                  <p className="font-medium text-lg">{dealReport.shortTermYield.toFixed(1)}%</p>
+                  <p className="font-medium text-lg">
+                    {dealReport.shortTermYield.toFixed(1)}%
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-500">Long-Term Yield</p>
-                  <p className="font-medium text-lg">{dealReport.longTermYield.toFixed(1)}%</p>
+                  <p className="font-medium text-lg">
+                    {dealReport.longTermYield.toFixed(1)}%
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Monthly Cash Flow Card */}
-        <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white mb-10">
-          <div className="bg-gradient-to-r from-emerald-600 to-teal-500 px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Banknote className="h-5 w-5 text-white mr-2" />
-                <h4 className="font-semibold text-white">Monthly Cash Flow</h4>
-              </div>
-              <Badge className={dealReport.cashFlowShortTerm >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                {dealReport.cashFlowShortTerm >= 0 ? 'Positive' : 'Negative'}
-              </Badge>
-            </div>
-          </div>
-          <div className="p-5">
-            <p className="text-sm text-slate-500 mb-4">
-              Based on 10% deposit, {dealReport.interestRate}% interest rate over {dealReport.loanTerm} years
-            </p>
-            <div className="grid grid-cols-2 gap-6 text-center">
-              <div>
-                <p className="text-sm text-slate-500 mb-1">Short-Term Strategy</p>
-                <p className={`font-medium text-lg ${dealReport.cashFlowShortTerm >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  R{formatPrice(dealReport.cashFlowShortTerm)}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-500 mb-1">Long-Term Strategy</p>
-                <p className={`font-medium text-lg ${dealReport.cashFlowLongTerm >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  R{formatPrice(dealReport.cashFlowLongTerm)}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+
 
         {/* Accordion for detailed sections */}
-        <Accordion type="single" collapsible className="w-full flex flex-col items-center">
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full flex flex-col items-center"
+        >
           <AccordionItem value="item-1" className="w-full max-w-4xl">
             <AccordionTrigger className="text-lg font-medium text-center justify-center">
               Property Details
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6 w-full max-w-4xl">
-                <h3 className="text-xl font-bold mb-4 text-center">Property Overview</h3>
-                
+                <h3 className="text-xl font-bold mb-4 text-center">
+                  Property Overview
+                </h3>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Address and Location Card */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
                     <div className="bg-gradient-to-r from-purple-600 to-violet-500 px-4 py-3">
                       <div className="flex items-center">
                         <MapPin className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">Location Details</h4>
+                        <h4 className="font-semibold text-white">
+                          Location Details
+                        </h4>
                       </div>
                     </div>
                     <div className="p-5">
                       <div className="space-y-4">
                         <div>
-                          <p className="text-sm text-muted-foreground">Full Address</p>
-                          <p className="font-medium text-lg">{dealReport.address}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Full Address
+                          </p>
+                          <p className="font-medium text-lg">
+                            {dealReport.address}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Neighborhood</p>
+                          <p className="text-sm text-muted-foreground">
+                            Neighborhood
+                          </p>
                           <p className="font-medium">
-                            {dealReport.address.split(',')[1]?.trim() || 'N/A'}
+                            {dealReport.address.split(",")[1]?.trim() || "N/A"}
                           </p>
                         </div>
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Property Specifications Card */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
                     <div className="bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-3">
                       <div className="flex items-center">
                         <Home className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">Property Specifications</h4>
+                        <h4 className="font-semibold text-white">
+                          Property Specifications
+                        </h4>
                       </div>
                     </div>
                     <div className="p-5">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-sm text-muted-foreground">Size</p>
-                          <p className="font-medium">{dealReport.propertySize} m²</p>
+                          <p className="font-medium">
+                            {dealReport.propertySize} m²
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Condition</p>
-                          <p className="font-medium capitalize">{dealReport.propertyCondition}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Condition
+                          </p>
+                          <p className="font-medium capitalize">
+                            {dealReport.propertyCondition}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Bedrooms</p>
+                          <p className="text-sm text-muted-foreground">
+                            Bedrooms
+                          </p>
                           <p className="font-medium">{dealReport.bedrooms}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Bathrooms</p>
+                          <p className="text-sm text-muted-foreground">
+                            Bathrooms
+                          </p>
                           <p className="font-medium">{dealReport.bathrooms}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Parking</p>
-                          <p className="font-medium">{dealReport.parking} spaces</p>
+                          <p className="text-sm text-muted-foreground">
+                            Parking
+                          </p>
+                          <p className="font-medium">
+                            {dealReport.parking} spaces
+                          </p>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                
-                <h3 className="text-xl font-bold mt-8 mb-4 text-center">Pricing Analysis</h3>
+
+                <h3 className="text-xl font-bold mt-8 mb-4 text-center">
+                  Pricing Analysis
+                </h3>
                 <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
                   <div className="bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-3">
                     <div className="flex items-center">
                       <CircleDollarSign className="h-5 w-5 text-white mr-2" />
-                      <h4 className="font-semibold text-white">Market Position</h4>
+                      <h4 className="font-semibold text-white">
+                        Market Position
+                      </h4>
                     </div>
                   </div>
                   <div className="p-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                       <div>
                         <div className="mb-4">
-                          <p className="text-sm text-muted-foreground">Asking Price</p>
-                          <p className="font-medium text-lg">R{formatPrice(dealReport.askingPrice)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Asking Price
+                          </p>
+                          <p className="font-medium text-lg">
+                            R{formatPrice(dealReport.askingPrice)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Estimated Value</p>
-                          <p className="font-medium text-lg">R{formatPrice(dealReport.estimatedValue)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Estimated Value
+                          </p>
+                          <p className="font-medium text-lg">
+                            R{formatPrice(dealReport.estimatedValue)}
+                          </p>
                         </div>
                       </div>
                       <div>
                         <div className="mb-4">
-                          <p className="text-sm text-muted-foreground">Price per m²</p>
-                          <p className="font-medium">R{formatPrice(dealReport.pricePerSqM)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Price per m²
+                          </p>
+                          <p className="font-medium">
+                            R{formatPrice(dealReport.pricePerSqM)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Area Average Rate</p>
-                          <p className="font-medium">R{formatPrice(dealReport.areaRate)}/m²</p>
-                          <Badge className={`w-fit mt-1 ${dealReport.pricePerSqM <= dealReport.areaRate ? 'bg-green-500' : 'bg-red-500'}`}>
-                            {dealReport.pricePerSqM <= dealReport.areaRate ? 'Below' : 'Above'} Area Average
+                          <p className="text-sm text-muted-foreground">
+                            Area Average Rate
+                          </p>
+                          <p className="font-medium">
+                            R{formatPrice(dealReport.areaRate)}/m²
+                          </p>
+                          <Badge
+                            className={`w-fit mt-1 ${dealReport.pricePerSqM <= dealReport.areaRate ? "bg-green-500" : "bg-red-500"}`}
+                          >
+                            {dealReport.pricePerSqM <= dealReport.areaRate
+                              ? "Below"
+                              : "Above"}{" "}
+                            Area Average
                           </Badge>
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="p-4 bg-muted/20 rounded-lg">
                       <div className="flex items-center mb-2">
                         <Info className="h-4 w-4 text-primary mr-2" />
                         <span className="font-medium">Price Evaluation</span>
                       </div>
                       <p className="text-sm">
-                        This property is priced <span className={`font-semibold ${dealReport.percentageDifference >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {Math.abs(dealReport.percentageDifference).toFixed(1)}% {dealReport.percentageDifference >= 0 ? 'below' : 'above'}
-                        </span> its estimated market value of R{formatPrice(dealReport.estimatedValue)} based on the average price per square meter in the area.
-                        {dealReport.percentageDifference >= 0 ? ' This indicates a potential value opportunity.' : ' This premium may be justified by unique property features or location advantages.'}
+                        This property is priced{" "}
+                        <span
+                          className={`font-semibold ${dealReport.percentageDifference >= 0 ? "text-green-600" : "text-red-600"}`}
+                        >
+                          {Math.abs(dealReport.percentageDifference).toFixed(1)}
+                          %{" "}
+                          {dealReport.percentageDifference >= 0
+                            ? "below"
+                            : "above"}
+                        </span>{" "}
+                        its estimated market value of R
+                        {formatPrice(dealReport.estimatedValue)} based on the
+                        average price per square meter in the area.
+                        {dealReport.percentageDifference >= 0
+                          ? " This indicates a potential value opportunity."
+                          : " This premium may be justified by unique property features or location advantages."}
                       </p>
                     </div>
                   </div>
@@ -1280,81 +1400,134 @@ export default function DealScorePublicPage() {
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6">
-                <h3 className="text-xl font-bold mb-4 text-center">Rental Potential</h3>
+                <h3 className="text-xl font-bold mb-4 text-center">
+                  Rental Potential
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Short-Term Rental Card */}
-                  <div className={`rounded-xl overflow-hidden shadow-md transition-all hover:shadow-lg ${dealReport.bestInvestmentStrategy === 'Short-Term Rental' ? 'border-2 border-primary ring-2 ring-primary/20' : 'border border-gray-200'}`}>
+                  <div
+                    className={`rounded-xl overflow-hidden shadow-md transition-all hover:shadow-lg ${dealReport.bestInvestmentStrategy === "Short-Term Rental" ? "border-2 border-primary ring-2 ring-primary/20" : "border border-gray-200"}`}
+                  >
                     <div className="bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-3 flex justify-between items-center">
                       <div className="flex items-center">
                         <Calendar className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">Short-Term (Airbnb)</h4>
+                        <h4 className="font-semibold text-white">
+                          Short-Term (Airbnb)
+                        </h4>
                       </div>
-                      {dealReport.bestInvestmentStrategy === 'Short-Term Rental' && (
-                        <Badge className="bg-white text-blue-600 hover:bg-gray-100">RECOMMENDED</Badge>
+                      {dealReport.bestInvestmentStrategy ===
+                        "Short-Term Rental" && (
+                        <Badge className="bg-white text-blue-600 hover:bg-gray-100">
+                          RECOMMENDED
+                        </Badge>
                       )}
                     </div>
                     <div className="p-5">
                       <div className="mb-4">
-                        <h3 className="text-2xl font-bold text-slate-800">R{formatPrice(dealReport.annualRevenueShortTerm / 12)}<span className="text-base font-normal text-slate-500">/month</span></h3>
-                        <p className="text-sm text-slate-500">Based on {dealReport.occupancyRate}% occupancy & R{formatPrice(dealReport.nightlyRate)} avg nightly rate</p>
+                        <h3 className="text-2xl font-bold text-slate-800">
+                          R{formatPrice(dealReport.annualRevenueShortTerm / 12)}
+                          <span className="text-base font-normal text-slate-500">
+                            /month
+                          </span>
+                        </h3>
+                        <p className="text-sm text-slate-500">
+                          Based on {dealReport.occupancyRate}% occupancy & R
+                          {formatPrice(dealReport.nightlyRate)} avg nightly rate
+                        </p>
                       </div>
-                      
+
                       <div className="space-y-3 mb-4">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-slate-600">Annual yield:</span>
-                          <span className="font-medium text-emerald-600">{dealReport.shortTermYield.toFixed(1)}%</span>
+                          <span className="text-sm text-slate-600">
+                            Annual yield:
+                          </span>
+                          <span className="font-medium text-emerald-600">
+                            {dealReport.shortTermYield.toFixed(1)}%
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-slate-600">Yearly income:</span>
-                          <span className="font-medium">R{formatPrice(dealReport.annualRevenueShortTerm)}</span>
+                          <span className="text-sm text-slate-600">
+                            Yearly income:
+                          </span>
+                          <span className="font-medium">
+                            R{formatPrice(dealReport.annualRevenueShortTerm)}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-slate-600">Management fee:</span>
+                          <span className="text-sm text-slate-600">
+                            Management fee:
+                          </span>
                           <span className="font-medium">15-20%</span>
                         </div>
                       </div>
-                      
-                      {dealReport.bestInvestmentStrategy === 'Short-Term Rental' && (
+
+                      {dealReport.bestInvestmentStrategy ===
+                        "Short-Term Rental" && (
                         <div className="text-xs text-blue-600 italic">
                           Best option for this property ✓
                         </div>
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Long-Term Rental Card */}
-                  <div className={`rounded-xl overflow-hidden shadow-md transition-all hover:shadow-lg ${dealReport.bestInvestmentStrategy === 'Long-Term Rental' ? 'border-2 border-primary ring-2 ring-primary/20' : 'border border-gray-200'}`}>
+                  <div
+                    className={`rounded-xl overflow-hidden shadow-md transition-all hover:shadow-lg ${dealReport.bestInvestmentStrategy === "Long-Term Rental" ? "border-2 border-primary ring-2 ring-primary/20" : "border border-gray-200"}`}
+                  >
                     <div className="bg-gradient-to-r from-indigo-500 to-purple-400 px-4 py-3 flex justify-between items-center">
                       <div className="flex items-center">
                         <Home className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">Long-Term Rental</h4>
+                        <h4 className="font-semibold text-white">
+                          Long-Term Rental
+                        </h4>
                       </div>
-                      {dealReport.bestInvestmentStrategy === 'Long-Term Rental' && (
-                        <Badge className="bg-white text-indigo-600 hover:bg-gray-100">RECOMMENDED</Badge>
+                      {dealReport.bestInvestmentStrategy ===
+                        "Long-Term Rental" && (
+                        <Badge className="bg-white text-indigo-600 hover:bg-gray-100">
+                          RECOMMENDED
+                        </Badge>
                       )}
                     </div>
                     <div className="p-5">
                       <div className="mb-4">
-                        <h3 className="text-2xl font-bold text-slate-800">R{formatPrice(dealReport.monthlyLongTerm)}<span className="text-base font-normal text-slate-500">/month</span></h3>
-                        <p className="text-sm text-slate-500">Standard 12-month lease</p>
+                        <h3 className="text-2xl font-bold text-slate-800">
+                          R{formatPrice(dealReport.monthlyLongTerm)}
+                          <span className="text-base font-normal text-slate-500">
+                            /month
+                          </span>
+                        </h3>
+                        <p className="text-sm text-slate-500">
+                          Standard 12-month lease
+                        </p>
                       </div>
-                      
+
                       <div className="space-y-3 mb-4">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-slate-600">Annual yield:</span>
-                          <span className="font-medium text-emerald-600">{dealReport.longTermYield.toFixed(1)}%</span>
+                          <span className="text-sm text-slate-600">
+                            Annual yield:
+                          </span>
+                          <span className="font-medium text-emerald-600">
+                            {dealReport.longTermYield.toFixed(1)}%
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-slate-600">Yearly income:</span>
-                          <span className="font-medium">R{formatPrice(dealReport.annualRentalLongTerm)}</span>
+                          <span className="text-sm text-slate-600">
+                            Yearly income:
+                          </span>
+                          <span className="font-medium">
+                            R{formatPrice(dealReport.annualRentalLongTerm)}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-slate-600">Management fee:</span>
+                          <span className="text-sm text-slate-600">
+                            Management fee:
+                          </span>
                           <span className="font-medium">8-10%</span>
                         </div>
                       </div>
-                      
-                      {dealReport.bestInvestmentStrategy === 'Long-Term Rental' && (
+
+                      {dealReport.bestInvestmentStrategy ===
+                        "Long-Term Rental" && (
                         <div className="text-xs text-indigo-600 italic">
                           Best option for this property ✓
                         </div>
@@ -1362,17 +1535,20 @@ export default function DealScorePublicPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="mt-6 p-5 bg-gray-50 rounded-xl border border-gray-200">
                   <div className="flex items-center gap-2 mb-3">
-                    <TrendingUp className={`h-5 w-5 ${dealReport.bestInvestmentStrategy === 'Short-Term Rental' ? 'text-blue-500' : 'text-indigo-500'}`} />
-                    <h4 className="font-semibold text-lg">Investment Strategy Analysis</h4>
+                    <TrendingUp
+                      className={`h-5 w-5 ${dealReport.bestInvestmentStrategy === "Short-Term Rental" ? "text-blue-500" : "text-indigo-500"}`}
+                    />
+                    <h4 className="font-semibold text-lg">
+                      Investment Strategy Analysis
+                    </h4>
                   </div>
                   <p className="text-sm text-slate-700 leading-relaxed">
-                    {dealReport.bestInvestmentStrategy === 'Short-Term Rental' 
+                    {dealReport.bestInvestmentStrategy === "Short-Term Rental"
                       ? `This property offers better returns as a short-term rental, with a yield of ${dealReport.shortTermYield.toFixed(1)}% compared to ${dealReport.longTermYield.toFixed(1)}% for long-term. The premium location and amenities make it attractive for holiday or business travelers.`
-                      : `This property is best suited for long-term rental, offering stable returns of ${dealReport.longTermYield.toFixed(1)}% compared to ${dealReport.shortTermYield.toFixed(1)}% for short-term. The location and property characteristics appeal more to residential tenants seeking stability.`
-                    }
+                      : `This property is best suited for long-term rental, offering stable returns of ${dealReport.longTermYield.toFixed(1)}% compared to ${dealReport.shortTermYield.toFixed(1)}% for short-term. The location and property characteristics appeal more to residential tenants seeking stability.`}
                   </p>
                 </div>
               </div>
@@ -1385,156 +1561,254 @@ export default function DealScorePublicPage() {
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6 w-full max-w-4xl">
-                <h3 className="text-xl font-bold mb-4 text-center">Financial Overview</h3>
+                <h3 className="text-xl font-bold mb-4 text-center">
+                  Financial Overview
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Financing Card */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
                     <div className="bg-gradient-to-r from-amber-500 to-yellow-400 px-4 py-3">
                       <div className="flex items-center">
                         <Landmark className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">Financing Details</h4>
+                        <h4 className="font-semibold text-white">
+                          Financing Details
+                        </h4>
                       </div>
                     </div>
                     <div className="p-5 space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-muted-foreground">Purchase Price</p>
-                          <p className="font-medium">R{formatPrice(dealReport.askingPrice)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Purchase Price
+                          </p>
+                          <p className="font-medium">
+                            R{formatPrice(dealReport.askingPrice)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Deposit</p>
-                          <p className="font-medium">R{formatPrice(dealReport.depositAmount)} ({dealReport.depositPercentage}%)</p>
+                          <p className="text-sm text-muted-foreground">
+                            Deposit
+                          </p>
+                          <p className="font-medium">
+                            R{formatPrice(dealReport.depositAmount)} (
+                            {dealReport.depositPercentage}%)
+                          </p>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-muted-foreground">Loan Amount</p>
-                          <p className="font-medium">R{formatPrice(dealReport.loanAmount)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Loan Amount
+                          </p>
+                          <p className="font-medium">
+                            R{formatPrice(dealReport.loanAmount)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Interest Rate</p>
-                          <p className="font-medium">{dealReport.interestRate}%</p>
+                          <p className="text-sm text-muted-foreground">
+                            Interest Rate
+                          </p>
+                          <p className="font-medium">
+                            {dealReport.interestRate}%
+                          </p>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-muted-foreground">Loan Term</p>
-                          <p className="font-medium">{dealReport.loanTerm} years</p>
+                          <p className="text-sm text-muted-foreground">
+                            Loan Term
+                          </p>
+                          <p className="font-medium">
+                            {dealReport.loanTerm} years
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Monthly Payment</p>
-                          <p className="font-medium">R{formatPrice(dealReport.monthlyPayment)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Monthly Payment
+                          </p>
+                          <p className="font-medium">
+                            R{formatPrice(dealReport.monthlyPayment)}
+                          </p>
                         </div>
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Monthly Expenses Card */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
                     <div className="bg-gradient-to-r from-rose-500 to-pink-400 px-4 py-3">
                       <div className="flex items-center">
                         <Receipt className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">Monthly Expenses</h4>
+                        <h4 className="font-semibold text-white">
+                          Monthly Expenses
+                        </h4>
                       </div>
                     </div>
                     <div className="p-5 space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-muted-foreground">Bond Payment</p>
-                          <p className="font-medium">R{formatPrice(dealReport.monthlyPayment)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Bond Payment
+                          </p>
+                          <p className="font-medium">
+                            R{formatPrice(dealReport.monthlyPayment)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Rates & Taxes</p>
-                          <p className="font-medium">R{formatPrice(dealReport.monthlyRates)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Rates & Taxes
+                          </p>
+                          <p className="font-medium">
+                            R{formatPrice(dealReport.monthlyRates)}
+                          </p>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-sm text-muted-foreground">Levy</p>
-                          <p className="font-medium">R{formatPrice(dealReport.levy)}</p>
+                          <p className="font-medium">
+                            R{formatPrice(dealReport.levy)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Total Fixed Costs</p>
-                          <p className="font-medium">R{formatPrice(dealReport.monthlyPayment + dealReport.estimatedMonthlyCosts)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Total Fixed Costs
+                          </p>
+                          <p className="font-medium">
+                            R
+                            {formatPrice(
+                              dealReport.monthlyPayment +
+                                dealReport.estimatedMonthlyCosts,
+                            )}
+                          </p>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                
-                <h3 className="text-xl font-bold mt-8 mb-4 text-center">Cash Flow Analysis</h3>
+
+                <h3 className="text-xl font-bold mt-8 mb-4 text-center">
+                  Cash Flow Analysis
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Short-Term Cash Flow Card */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
                     <div className="bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-3">
                       <div className="flex items-center">
                         <Calendar className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">Short-Term Rental</h4>
+                        <h4 className="font-semibold text-white">
+                          Short-Term Rental
+                        </h4>
                       </div>
                     </div>
                     <div className="p-5 space-y-3">
                       <div className="flex justify-between items-center">
-                        <p className="text-sm text-slate-600">Monthly Revenue</p>
-                        <p className="font-medium">R{formatPrice(dealReport.annualRevenueShortTerm / 12)}</p>
+                        <p className="text-sm text-slate-600">
+                          Monthly Revenue
+                        </p>
+                        <p className="font-medium">
+                          R{formatPrice(dealReport.annualRevenueShortTerm / 12)}
+                        </p>
                       </div>
                       <div className="flex justify-between items-center">
-                        <p className="text-sm text-slate-600">Monthly Expenses</p>
-                        <p className="font-medium">R{formatPrice(dealReport.monthlyPayment + dealReport.estimatedMonthlyCosts)}</p>
+                        <p className="text-sm text-slate-600">
+                          Monthly Expenses
+                        </p>
+                        <p className="font-medium">
+                          R
+                          {formatPrice(
+                            dealReport.monthlyPayment +
+                              dealReport.estimatedMonthlyCosts,
+                          )}
+                        </p>
                       </div>
                       <div className="pt-2 border-t flex justify-between items-center">
                         <p className="font-medium">Monthly Cash Flow</p>
-                        <p className={`font-medium ${dealReport.cashFlowShortTerm >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <p
+                          className={`font-medium ${dealReport.cashFlowShortTerm >= 0 ? "text-green-600" : "text-red-600"}`}
+                        >
                           R{formatPrice(dealReport.cashFlowShortTerm)}
                         </p>
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Long-Term Cash Flow Card */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
                     <div className="bg-gradient-to-r from-indigo-500 to-purple-400 px-4 py-3">
                       <div className="flex items-center">
                         <Home className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">Long-Term Rental</h4>
+                        <h4 className="font-semibold text-white">
+                          Long-Term Rental
+                        </h4>
                       </div>
                     </div>
                     <div className="p-5 space-y-3">
                       <div className="flex justify-between items-center">
-                        <p className="text-sm text-slate-600">Monthly Revenue</p>
-                        <p className="font-medium">R{formatPrice(dealReport.monthlyLongTerm)}</p>
+                        <p className="text-sm text-slate-600">
+                          Monthly Revenue
+                        </p>
+                        <p className="font-medium">
+                          R{formatPrice(dealReport.monthlyLongTerm)}
+                        </p>
                       </div>
                       <div className="flex justify-between items-center">
-                        <p className="text-sm text-slate-600">Monthly Expenses</p>
-                        <p className="font-medium">R{formatPrice(dealReport.monthlyPayment + dealReport.estimatedMonthlyCosts)}</p>
+                        <p className="text-sm text-slate-600">
+                          Monthly Expenses
+                        </p>
+                        <p className="font-medium">
+                          R
+                          {formatPrice(
+                            dealReport.monthlyPayment +
+                              dealReport.estimatedMonthlyCosts,
+                          )}
+                        </p>
                       </div>
                       <div className="pt-2 border-t flex justify-between items-center">
                         <p className="font-medium">Monthly Cash Flow</p>
-                        <p className={`font-medium ${dealReport.cashFlowLongTerm >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <p
+                          className={`font-medium ${dealReport.cashFlowLongTerm >= 0 ? "text-green-600" : "text-red-600"}`}
+                        >
                           R{formatPrice(dealReport.cashFlowLongTerm)}
                         </p>
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Return on Investment Card */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
                     <div className="bg-gradient-to-r from-emerald-500 to-green-400 px-4 py-3">
                       <div className="flex items-center">
                         <TrendingUp className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">Return on Investment</h4>
+                        <h4 className="font-semibold text-white">
+                          Return on Investment
+                        </h4>
                       </div>
                     </div>
                     <div className="p-5 space-y-3">
                       <div className="flex justify-between items-center">
-                        <p className="text-sm text-slate-600">Cash on Cash Return</p>
+                        <p className="text-sm text-slate-600">
+                          Cash on Cash Return
+                        </p>
                         <p className="font-medium">
-                          {(dealReport.cashFlowShortTerm * 12 / dealReport.depositAmount * 100).toFixed(1)}%
+                          {(
+                            ((dealReport.cashFlowShortTerm * 12) /
+                              dealReport.depositAmount) *
+                            100
+                          ).toFixed(1)}
+                          %
                         </p>
                       </div>
                       <div className="flex justify-between items-center">
                         <p className="text-sm text-slate-600">Cap Rate</p>
                         <p className="font-medium">
-                          {((dealReport.annualRevenueShortTerm - (dealReport.estimatedMonthlyCosts * 12)) / dealReport.askingPrice * 100).toFixed(1)}%
+                          {(
+                            ((dealReport.annualRevenueShortTerm -
+                              dealReport.estimatedMonthlyCosts * 12) /
+                              dealReport.askingPrice) *
+                            100
+                          ).toFixed(1)}
+                          %
                         </p>
                       </div>
                       <div className="pt-2 border-t flex justify-between items-center">
@@ -1556,18 +1830,23 @@ export default function DealScorePublicPage() {
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6 w-full max-w-4xl">
-                <h3 className="text-xl font-bold mb-4 text-center">Market Comparisons</h3>
-                
+                <h3 className="text-xl font-bold mb-4 text-center">
+                  Market Comparisons
+                </h3>
+
                 <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 mb-6">
                   <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <BarChart3 className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">Recently Sold Properties</h4>
+                        <h4 className="font-semibold text-white">
+                          Recently Sold Properties
+                        </h4>
                       </div>
                       <div>
                         <Badge className="bg-white text-slate-700 hover:bg-gray-100">
-                          Average: R{formatPrice(dealReport.avgComparableSalesPrice)}
+                          Average: R
+                          {formatPrice(dealReport.avgComparableSalesPrice)}
                         </Badge>
                       </div>
                     </div>
@@ -1577,67 +1856,123 @@ export default function DealScorePublicPage() {
                       <table className="min-w-full divide-y divide-border">
                         <thead>
                           <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">Address</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">Sale Price</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">Size</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">Price/m²</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">Beds</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">Sale Date</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">Similarity</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                              Address
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                              Sale Price
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                              Size
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                              Price/m²
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                              Beds
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                              Sale Date
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                              Similarity
+                            </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
-                          {dealReport.comparableProperties.map((property, index) => (
-                            <tr key={index} className={index % 2 === 0 ? 'bg-muted/20' : ''}>
-                              <td className="px-4 py-3 text-sm">{property.address}</td>
-                              <td className="px-4 py-3 text-sm">R{formatPrice(property.salePrice)}</td>
-                              <td className="px-4 py-3 text-sm">{property.size} m²</td>
-                              <td className="px-4 py-3 text-sm">R{formatPrice(property.pricePerSqM)}</td>
-                              <td className="px-4 py-3 text-sm">{property.bedrooms}</td>
-                              <td className="px-4 py-3 text-sm">{property.saleDate}</td>
-                              <td className="px-4 py-3 text-sm">
-                                <Badge className={property.similarity === 'Similar' ? 'bg-green-500' : 'bg-blue-500'}>
-                                  {property.similarity}
-                                </Badge>
-                              </td>
-                            </tr>
-                          ))}
+                          {dealReport.comparableProperties.map(
+                            (property, index) => (
+                              <tr
+                                key={index}
+                                className={index % 2 === 0 ? "bg-muted/20" : ""}
+                              >
+                                <td className="px-4 py-3 text-sm">
+                                  {property.address}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  R{formatPrice(property.salePrice)}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {property.size} m²
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  R{formatPrice(property.pricePerSqM)}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {property.bedrooms}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {property.saleDate}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  <Badge
+                                    className={
+                                      property.similarity === "Similar"
+                                        ? "bg-green-500"
+                                        : "bg-blue-500"
+                                    }
+                                  >
+                                    {property.similarity}
+                                  </Badge>
+                                </td>
+                              </tr>
+                            ),
+                          )}
                         </tbody>
                       </table>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
                   <div className="bg-gradient-to-r from-cyan-600 to-sky-500 px-4 py-3">
                     <div className="flex items-center">
                       <Info className="h-5 w-5 text-white mr-2" />
-                      <h4 className="font-semibold text-white">Market Position Analysis</h4>
+                      <h4 className="font-semibold text-white">
+                        Market Position Analysis
+                      </h4>
                     </div>
                   </div>
                   <div className="p-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                       <div className="rounded-lg bg-muted/20 p-4">
-                        <h5 className="font-medium mb-2">Price Range in Area</h5>
+                        <h5 className="font-medium mb-2">
+                          Price Range in Area
+                        </h5>
                         <p className="text-sm text-slate-700">
-                          Properties similar to this one are typically selling in the range of {dealReport.recentSalesRange}
+                          Properties similar to this one are typically selling
+                          in the range of {dealReport.recentSalesRange}
                         </p>
                       </div>
                       <div className="rounded-lg bg-muted/20 p-4">
                         <h5 className="font-medium mb-2">Value Assessment</h5>
                         <p className="text-sm text-slate-700">
-                          This property is <span className={dealReport.percentageDifference >= 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-                            {Math.abs(dealReport.percentageDifference).toFixed(1)}% {dealReport.percentageDifference >= 0 ? 'below' : 'above'}</span> the estimated market value
+                          This property is{" "}
+                          <span
+                            className={
+                              dealReport.percentageDifference >= 0
+                                ? "text-green-600 font-medium"
+                                : "text-red-600 font-medium"
+                            }
+                          >
+                            {Math.abs(dealReport.percentageDifference).toFixed(
+                              1,
+                            )}
+                            %{" "}
+                            {dealReport.percentageDifference >= 0
+                              ? "below"
+                              : "above"}
+                          </span>{" "}
+                          the estimated market value
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="p-4 bg-muted/20 rounded-lg">
                       <p className="text-sm">
-                        {dealReport.percentageDifference >= 0 
+                        {dealReport.percentageDifference >= 0
                           ? `The current asking price of R${formatPrice(dealReport.askingPrice)} positions this property as a potential value buy, being ${Math.abs(dealReport.percentageDifference).toFixed(1)}% below the estimated market value of R${formatPrice(dealReport.estimatedValue)}. This represents a promising investment opportunity if the property condition aligns with your inspection.`
-                          : `The current asking price of R${formatPrice(dealReport.askingPrice)} is ${Math.abs(dealReport.percentageDifference).toFixed(1)}% higher than the estimated market value of R${formatPrice(dealReport.estimatedValue)}. This premium pricing may warrant negotiation based on comparable properties in the area and current market conditions.`
-                        }
+                          : `The current asking price of R${formatPrice(dealReport.askingPrice)} is ${Math.abs(dealReport.percentageDifference).toFixed(1)}% higher than the estimated market value of R${formatPrice(dealReport.estimatedValue)}. This premium pricing may warrant negotiation based on comparable properties in the area and current market conditions.`}
                       </p>
                     </div>
                   </div>
@@ -1646,14 +1981,16 @@ export default function DealScorePublicPage() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-        
+
         {/* Report Footer */}
         <div className="pt-6 border-t flex flex-col items-center justify-center text-center text-sm text-muted-foreground space-y-2">
-          <div>
-            Generated on {dealReport.reportDate}
-          </div>
+          <div>Generated on {dealReport.reportDate}</div>
           <div className="flex items-center">
-            <img src="/proply-favicon.png" alt="Proply Logo" className="h-4 w-4 mr-2" />
+            <img
+              src="/proply-favicon.png"
+              alt="Proply Logo"
+              className="h-4 w-4 mr-2"
+            />
             Proply Deal Score™ Report
           </div>
         </div>
@@ -1664,14 +2001,20 @@ export default function DealScorePublicPage() {
   // Rental Amount Progress Dialog Component
   const RentalAmountProgressDialog = () => {
     return (
-      <Dialog open={showRentalAmountDialog} onOpenChange={setShowRentalAmountDialog}>
+      <Dialog
+        open={showRentalAmountDialog}
+        onOpenChange={setShowRentalAmountDialog}
+      >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Fetching Rental Amount</DialogTitle>
             <DialogDescription>
-              {rentalAmountStatus === "loading" && "Analyzing rental data for similar properties in the area..."}
-              {rentalAmountStatus === "success" && "Successfully retrieved rental data!"}
-              {rentalAmountStatus === "error" && `Error fetching data: ${rentalAmountError || "Unknown error"}`}
+              {rentalAmountStatus === "loading" &&
+                "Analyzing rental data for similar properties in the area..."}
+              {rentalAmountStatus === "success" &&
+                "Successfully retrieved rental data!"}
+              {rentalAmountStatus === "error" &&
+                `Error fetching data: ${rentalAmountError || "Unknown error"}`}
             </DialogDescription>
           </DialogHeader>
 
@@ -1680,7 +2023,8 @@ export default function DealScorePublicPage() {
               <div className="flex flex-col items-center gap-4">
                 <Loader2 className="h-16 w-16 animate-spin text-primary" />
                 <p className="text-center text-sm text-muted-foreground">
-                  This may take a few moments as we analyze comparable properties
+                  This may take a few moments as we analyze comparable
+                  properties
                 </p>
               </div>
             )}
@@ -1705,7 +2049,8 @@ export default function DealScorePublicPage() {
                   Failed to fetch rental data.
                 </p>
                 <p className="text-center text-sm text-muted-foreground">
-                  {rentalAmountError || "An unknown error occurred. Please try again."}
+                  {rentalAmountError ||
+                    "An unknown error occurred. Please try again."}
                 </p>
               </div>
             )}
@@ -1786,284 +2131,291 @@ export default function DealScorePublicPage() {
               </p>
             </div>
 
-            <Card className={`mx-auto mt-12 w-full ${showResult ? 'max-w-[1200px]' : 'max-w-[600px]'} bg-background rounded-lg p-6`}>
-                <h1 className="text-3xl font-bold mb-8 text-center">
-                  Proply Deal Score™
-                </h1>
+            <Card
+              className={`mx-auto mt-12 w-full ${showResult ? "max-w-[1200px]" : "max-w-[600px]"} bg-background rounded-lg p-6`}
+            >
+              <h1 className="text-3xl font-bold mb-8 text-center">
+                Proply Deal Score™
+              </h1>
 
-                <button
-                  type="button"
-                  onClick={fillDemoData}
-                  className="fixed bottom-4 right-4 opacity-0"
-                >
-                  Fill Demo Data
-                </button>
+              <button
+                type="button"
+                onClick={fillDemoData}
+                className="fixed bottom-4 right-4 opacity-0"
+              >
+                Fill Demo Data
+              </button>
 
-                {!showResult ? (
-                  <form onSubmit={handleSubmit}>
-                    {renderStepCounter()}
-                    {renderFormStep()}
+              {!showResult ? (
+                <form onSubmit={handleSubmit}>
+                  {renderStepCounter()}
+                  {renderFormStep()}
 
-                    <div className="flex justify-end mt-6">
-                      <Button
-                        type="submit"
-                        className="ml-auto"
+                  <div className="flex justify-end mt-6">
+                    <Button type="submit" className="ml-auto">
+                      {isCalculating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Calculating...
+                        </>
+                      ) : (
+                        <>
+                          Calculate Deal Score
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <div className="space-y-6">
+                  {/* Render the comprehensive report */}
+                  {renderComprehensiveReport()}
+
+                  {/* Download button when report is unlocked */}
+                  {reportUnlocked && (
+                    <div className="mt-8 flex justify-center">
+                      <HTMLToPDFButton
+                        elementId="deal-score-report"
+                        filename={`Proply_Deal_Score_${dealReport?.address?.split(",")[0] || "Report"}.pdf`}
+                        className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md h-10 py-2 px-4 inline-flex items-center justify-center rounded-md text-sm font-medium"
                       >
-                        {isCalculating ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Calculating...
-                          </>
-                        ) : (
-                          <>
-                            Calculate Deal Score
-                            <ArrowRight className="h-4 w-4 ml-2" />
-                          </>
-                        )}
-                      </Button>
+                        Download Full Report
+                      </HTMLToPDFButton>
                     </div>
-                  </form>
-                ) : (
-                  <div className="space-y-6">
-                    {/* Render the comprehensive report */}
-                    {renderComprehensiveReport()}
+                  )}
 
-                    {/* Download button when report is unlocked */}
-                    {reportUnlocked && (
-                      <div className="mt-8 flex justify-center">
-                        <HTMLToPDFButton
-                          elementId="deal-score-report"
-                          filename={`Proply_Deal_Score_${dealReport?.address?.split(',')[0] || 'Report'}.pdf`}
-                          className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md h-10 py-2 px-4 inline-flex items-center justify-center rounded-md text-sm font-medium"
+                  {/* Payment overlay when report is not unlocked */}
+                  {!reportUnlocked && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background/95 backdrop-blur-sm rounded-lg p-8">
+                      <div className="bg-background/95 rounded-xl p-8 shadow-lg border border-border/10 max-w-md mx-auto text-center">
+                        <Lock className="w-12 h-12 text-primary mb-6 mx-auto" />
+                        <h3 className="text-2xl font-semibold mb-3">
+                          Unlock Full Report
+                        </h3>
+                        <p className="text-muted-foreground mb-6 text-center max-w-sm mx-auto">
+                          Get access to the complete property analysis and
+                          investment insights
+                        </p>
+                        <Button
+                          onClick={() => setShowPaymentModal(true)}
+                          size="lg"
+                          className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                         >
-                          Download Full Report
-                        </HTMLToPDFButton>
-                      </div>
-                    )}
-
-                    {/* Payment overlay when report is not unlocked */}
-                    {!reportUnlocked && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background/95 backdrop-blur-sm rounded-lg p-8">
-                        <div className="bg-background/95 rounded-xl p-8 shadow-lg border border-border/10 max-w-md mx-auto text-center">
-                          <Lock className="w-12 h-12 text-primary mb-6 mx-auto" />
-                          <h3 className="text-2xl font-semibold mb-3">
-                            Unlock Full Report
-                          </h3>
-                          <p className="text-muted-foreground mb-6 text-center max-w-sm mx-auto">
-                            Get access to the complete property analysis and
-                            investment insights
-                          </p>
-                          <Button
-                            onClick={() => setShowPaymentModal(true)}
-                            size="lg"
-                            className="w-full bg-blue-500 hover:bg-blue-600 text-white"
-                          >
-                            <CreditCard className="mr-2 h-4 w-4" />
-                            Unlock Full Report for R49
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex justify-center mt-8">
-                      <Button 
-                        variant="link" 
-                        className="underline"
-                        onClick={handleNewCalculation}
-                      >
-                        New Calculation
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </Card>
-            </div>
-          </div>
-          <div className="flex justify-center my-4">
-            <ChevronDown className="text-[#1BA3FF] h-16 w-16 animate-bounce" />
-          </div>
-          <div className="py-16 space-y-24 flex flex-col items-center justify-center w-full">
-            <section className="container px-4 mx-auto max-w-7xl">
-              <div className="max-w-3xl mx-auto text-center space-y-4">
-                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                  Stop The Guessing Game
-                  <br />Make The Right Offer, The First Time
-                </h2>
-                <p className="text-xl text-muted-foreground">
-                  Property buyers like you face these challenges every day.
-                  We've built the solution you've been looking for.
-                </p>
-              </div>
-
-              <div className="mt-16 grid gap-8 md:grid-cols-3">
-                <div className="bg-card rounded-lg p-6 shadow-sm border border-border/50 flex flex-col items-center text-center">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <Clock className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">
-                    Hours Wasted on Research
-                  </h3>
-                  <p className="text-muted-foreground">
-                    You spend countless hours researching properties, comparing
-                    prices, and trying to determine if a deal is worth pursuing.
-                  </p>
-                </div>
-
-                <div className="bg-card rounded-lg p-6 shadow-sm border border-border/50 flex flex-col items-center text-center">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <TrendingUp className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">
-                    Uncertain ROI Calculations
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Without accurate data, you're left guessing about potential
-                    returns, rental yields, and whether the asking price is fair.
-                  </p>
-                </div>
-
-                <div className="bg-card rounded-lg p-6 shadow-sm border border-border/50 flex flex-col items-center text-center">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <TrendingUp className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">
-                    Missing Great Opportunities
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Analysis paralysis means you might miss out on properties with
-                    excellent potential while others snap them up.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            <section className="bg-muted/30 py-16 w-full">
-              <div className="container px-4 mx-auto max-w-7xl">
-                <div className="max-w-3xl mx-auto text-center space-y-4 mb-16">
-                  <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                    Make Confident Investment Decisions in Minutes
-                  </h2>
-                  <p className="text-xl text-muted-foreground">
-                    Our Deal Score™ gives you the clarity you need to act quickly
-                    and confidently.
-                  </p>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-12 items-center">
-                  <div className="space-y-6">
-                    <div className="flex gap-4">
-                      <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                      <div>
-                        <h3 className="text-xl font-semibold mb-1">
-                          Instant Property Analysis
-                        </h3>
-                        <p className="text-muted-foreground">
-                          Get a comprehensive deal score in seconds, not days.
-                          Know immediately if a property is worth pursuing.
-                        </p>
+                          <CreditCard className="mr-2 h-4 w-4" />
+                          Unlock Full Report for R49
+                        </Button>
                       </div>
                     </div>
+                  )}
 
-                    <div className="flex gap-4">
-                      <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                      <div>
-                        <h3 className="text-xl font-semibold mb-1">
-                          Data-Driven Insights
-                        </h3>
-                        <p className="text-muted-foreground">
-                          Make decisions based on real market data, not hunches.
-                          Compare properties against area averages and historical
-                          trends.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4">
-                      <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                      <div>
-                        <h3 className="text-xl font-semibold mb-1">
-                          Financing Clarity
-                        </h3>
-                        <p className="text-muted-foreground">
-                          Understand exactly what a property will cost you monthly
-                          and what returns you can expect, both short and long
-                          term.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="relative rounded-lg overflow-hidden shadow-lg w-1/2 mx-auto">
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-lg blur opacity-75"></div>
-                    <div className="relative bg-transparent rounded-lg overflow-hidden">
-                      <img
-                        src="images/Deal Score Promo Image.png"
-                        alt="Property analysis form"
-                        className="w-full h-auto"
-                      />
-                    </div>
+                  <div className="flex justify-center mt-8">
+                    <Button
+                      variant="link"
+                      className="underline"
+                      onClick={handleNewCalculation}
+                    >
+                      New Calculation
+                    </Button>
                   </div>
                 </div>
-              </div>
-            </section>
-
-            <section className="bg-primary/5 py-16 border-y w-full">
-              <div className="container px-4 mx-auto max-w-7xl">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-primary mb-2">
-                      R2.8B+
-                    </div>
-                    <p className="text-muted-foreground">
-                      Property Value Analyzed
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-primary mb-2">
-                      12,500+
-                    </div>
-                    <p className="text-muted-foreground">Investors Helped</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-primary mb-2">
-                      18.5%
-                    </div>
-                    <p className="text-muted-foreground">
-                      Average ROI Improvement
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-primary mb-2">
-                      9.2/10
-                    </div>
-                    <p className="text-muted-foreground">Investor Satisfaction</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className="container px-4 mx-auto max-w-7xl">
-              <div className="max-w-4xl mx-auto bg-card rounded-lg p-8 md:p-12 shadow-lg border border-border/50 text-center">
-                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-                  Ready to Make Smarter Property Investments?
-                </h2>
-                <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                  Join thousands of successful investors who are finding better
-                  deals, maximizing returns, and building wealth through property.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button size="lg" className="text-lg px-8 bg-blue-500 hover:bg-blue-600 text-white">
-                    Get Started Free
-                  </Button>
-                  <Button size="lg" variant="outline" className="text-lg px-8 border-blue-500 text-blue-500 hover:bg-blue-50">
-                    See How It Works
-                  </Button>
-                </div>
-              </div>
-            </section>
+              )}
+            </Card>
           </div>
         </div>
-      
+        <div className="flex justify-center my-4">
+          <ChevronDown className="text-[#1BA3FF] h-16 w-16 animate-bounce" />
+        </div>
+        <div className="py-16 space-y-24 flex flex-col items-center justify-center w-full">
+          <section className="container px-4 mx-auto max-w-7xl">
+            <div className="max-w-3xl mx-auto text-center space-y-4">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Stop The Guessing Game
+                <br />
+                Make The Right Offer, The First Time
+              </h2>
+              <p className="text-xl text-muted-foreground">
+                Property buyers like you face these challenges every day. We've
+                built the solution you've been looking for.
+              </p>
+            </div>
+
+            <div className="mt-16 grid gap-8 md:grid-cols-3">
+              <div className="bg-card rounded-lg p-6 shadow-sm border border-border/50 flex flex-col items-center text-center">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <Clock className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">
+                  Hours Wasted on Research
+                </h3>
+                <p className="text-muted-foreground">
+                  You spend countless hours researching properties, comparing
+                  prices, and trying to determine if a deal is worth pursuing.
+                </p>
+              </div>
+
+              <div className="bg-card rounded-lg p-6 shadow-sm border border-border/50 flex flex-col items-center text-center">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <TrendingUp className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">
+                  Uncertain ROI Calculations
+                </h3>
+                <p className="text-muted-foreground">
+                  Without accurate data, you're left guessing about potential
+                  returns, rental yields, and whether the asking price is fair.
+                </p>
+              </div>
+
+              <div className="bg-card rounded-lg p-6 shadow-sm border border-border/50 flex flex-col items-center text-center">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <TrendingUp className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">
+                  Missing Great Opportunities
+                </h3>
+                <p className="text-muted-foreground">
+                  Analysis paralysis means you might miss out on properties with
+                  excellent potential while others snap them up.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-muted/30 py-16 w-full">
+            <div className="container px-4 mx-auto max-w-7xl">
+              <div className="max-w-3xl mx-auto text-center space-y-4 mb-16">
+                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                  Make Confident Investment Decisions in Minutes
+                </h2>
+                <p className="text-xl text-muted-foreground">
+                  Our Deal Score™ gives you the clarity you need to act quickly
+                  and confidently.
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-12 items-center">
+                <div className="space-y-6">
+                  <div className="flex gap-4">
+                    <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="text-xl font-semibold mb-1">
+                        Instant Property Analysis
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Get a comprehensive deal score in seconds, not days.
+                        Know immediately if a property is worth pursuing.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="text-xl font-semibold mb-1">
+                        Data-Driven Insights
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Make decisions based on real market data, not hunches.
+                        Compare properties against area averages and historical
+                        trends.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="text-xl font-semibold mb-1">
+                        Financing Clarity
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Understand exactly what a property will cost you monthly
+                        and what returns you can expect, both short and long
+                        term.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative rounded-lg overflow-hidden shadow-lg w-1/2 mx-auto">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-lg blur opacity-75"></div>
+                  <div className="relative bg-transparent rounded-lg overflow-hidden">
+                    <img
+                      src="images/Deal Score Promo Image.png"
+                      alt="Property analysis form"
+                      className="w-full h-auto"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-primary/5 py-16 border-y w-full">
+            <div className="container px-4 mx-auto max-w-7xl">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    R2.8B+
+                  </div>
+                  <p className="text-muted-foreground">
+                    Property Value Analyzed
+                  </p>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    12,500+
+                  </div>
+                  <p className="text-muted-foreground">Investors Helped</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    18.5%
+                  </div>
+                  <p className="text-muted-foreground">
+                    Average ROI Improvement
+                  </p>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    9.2/10
+                  </div>
+                  <p className="text-muted-foreground">Investor Satisfaction</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="container px-4 mx-auto max-w-7xl">
+            <div className="max-w-4xl mx-auto bg-card rounded-lg p-8 md:p-12 shadow-lg border border-border/50 text-center">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
+                Ready to Make Smarter Property Investments?
+              </h2>
+              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Join thousands of successful investors who are finding better
+                deals, maximizing returns, and building wealth through property.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  size="lg"
+                  className="text-lg px-8 bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  Get Started Free
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-lg px-8 border-blue-500 text-blue-500 hover:bg-blue-50"
+                >
+                  See How It Works
+                </Button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -2134,14 +2486,14 @@ export default function DealScorePublicPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       <AreaRateProgressDialog
         open={showAreaRateDialog}
         onOpenChange={setShowAreaRateDialog}
         status={areaRateStatus}
         error={areaRateError}
       />
-      
+
       <RentalAmountProgressDialog />
     </>
   );
