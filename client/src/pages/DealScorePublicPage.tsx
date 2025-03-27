@@ -965,61 +965,64 @@ export default function DealScorePublicPage() {
 
     return (
       <div id="deal-score-report" className="space-y-8">
-        {/* Property Title and Summary */}
-        <div className="border-b pb-6">
-          <h2 className="text-2xl font-bold mb-2">{dealReport.address}</h2>
-          <div className="flex flex-wrap gap-2 mb-4">
-            <Badge className="bg-slate-200 text-slate-800 hover:bg-slate-300">
+        {/* Property Title and Summary - Matched to screenshot design */}
+        <div className="text-center pb-6">
+          <h1 className="text-3xl font-bold mb-4">Proply Deal Score™</h1>
+          <h2 className="text-2xl font-medium mb-5">{dealReport.address}</h2>
+          
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-6">
+            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
               {dealReport.bedrooms} Beds
             </Badge>
-            <Badge className="bg-slate-200 text-slate-800 hover:bg-slate-300">
+            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
               {dealReport.bathrooms} Baths
             </Badge>
-            <Badge className="bg-slate-200 text-slate-800 hover:bg-slate-300">
+            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
               {dealReport.propertySize} m²
             </Badge>
-            <Badge className="bg-slate-200 text-slate-800 hover:bg-slate-300">
+            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
               {dealReport.parking} Parking
             </Badge>
-            <Badge className="bg-slate-200 text-slate-800 hover:bg-slate-300 capitalize">
+            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm capitalize">
               {dealReport.propertyCondition} Condition
             </Badge>
           </div>
           
-          <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
-            <div className="flex flex-col">
-              <span className="text-sm text-muted-foreground">Asking Price</span>
-              <span className="text-xl font-semibold">R{formatPrice(dealReport.askingPrice)}</span>
+          <div className="grid grid-cols-4 max-w-3xl mx-auto mb-8">
+            <div className="flex flex-col items-center">
+              <span className="text-sm text-slate-500">Asking Price</span>
+              <span className="text-xl font-bold">R{formatPrice(dealReport.askingPrice)}</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm text-muted-foreground">Price per m²</span>
-              <span className="text-xl font-semibold">R{formatPrice(dealReport.pricePerSqM)}</span>
+            <div className="flex flex-col items-center">
+              <span className="text-sm text-slate-500">Price per m²</span>
+              <span className="text-xl font-bold">R{formatPrice(dealReport.pricePerSqM)}</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm text-muted-foreground">Area Rate</span>
-              <span className="text-xl font-semibold">R{formatPrice(dealReport.areaRate)}</span>
+            <div className="flex flex-col items-center">
+              <span className="text-sm text-slate-500">Area Rate</span>
+              <span className="text-xl font-bold">R{formatPrice(dealReport.areaRate)}</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm text-muted-foreground">Estimated Value</span>
-              <span className="text-xl font-semibold">
-                R{formatPrice(dealReport.estimatedValue)}
-                <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${dealReport.percentageDifference >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                  {dealReport.percentageDifference >= 0 ? '+' : ''}{dealReport.percentageDifference.toFixed(1)}%
+            <div className="flex flex-col items-center">
+              <span className="text-sm text-slate-500">Estimated Value</span>
+              <div className="flex flex-col items-center">
+                <span className="text-xl font-bold">R{formatPrice(dealReport.estimatedValue)}</span>
+                <span className={`px-2 text-xs rounded-full ${dealReport.percentageDifference >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  {dealReport.percentageDifference >= 0 ? '' : '+'}{dealReport.percentageDifference.toFixed(1)}%
                 </span>
-              </span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Deal Score */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-          <div className="col-span-1 flex flex-col items-center justify-center p-4 rounded-lg border border-primary/20 bg-primary/5">
-            <div className="mb-2 text-sm font-medium text-center text-muted-foreground">Deal Score</div>
-            <div className="relative mb-3">
-              <svg className="w-32 h-32">
+        {/* Deal Score & Info Cards - Matched to screenshot design */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+          {/* Deal Score Card */}
+          <div className="rounded-xl shadow-sm border bg-white p-6 flex flex-col items-center">
+            <div className="text-slate-500 font-medium mb-2">Deal Score</div>
+            <div className="relative mb-3 w-40 h-40 flex items-center justify-center">
+              <svg className="w-40 h-40" viewBox="0 0 128 128">
                 <circle
-                  className="text-muted stroke-current"
-                  strokeWidth="8"
+                  className="text-slate-100 stroke-current"
+                  strokeWidth="12"
                   stroke="currentColor"
                   fill="transparent"
                   r="56"
@@ -1027,8 +1030,8 @@ export default function DealScorePublicPage() {
                   cy="64"
                 />
                 <circle
-                  className={`${dealReport.color} stroke-current`}
-                  strokeWidth="8"
+                  className={`${dealReport.score >= 75 ? 'text-green-500' : dealReport.score >= 60 ? 'text-blue-500' : dealReport.score >= 40 ? 'text-yellow-500' : 'text-red-500'} stroke-current`}
+                  strokeWidth="12"
                   strokeLinecap="round"
                   stroke="currentColor"
                   fill="transparent"
@@ -1037,96 +1040,96 @@ export default function DealScorePublicPage() {
                   cy="64"
                   strokeDasharray={`${dealReport.score * 3.51} 351`}
                   strokeDashoffset="0"
+                  transform="rotate(-90 64 64)"
                 />
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center text-4xl font-bold">
+              <div className="absolute text-5xl font-bold">
                 {dealReport.score}
               </div>
             </div>
-            <div className={`text-xl font-semibold ${dealReport.color.replace('bg-', 'text-')}`}>{dealReport.rating}</div>
+            <div className={`text-xl font-medium ${dealReport.score >= 75 ? 'text-green-600' : dealReport.score >= 60 ? 'text-blue-600' : dealReport.score >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>{dealReport.rating}</div>
           </div>
 
-          <div className="col-span-2 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-lg border p-4 hover:border-primary/50 transition-all">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="text-lg font-semibold flex items-center">
-                    <DollarSign className="h-5 w-5 mr-2 text-primary" />
-                    Market Value
-                  </div>
-                  <Badge className={dealReport.percentageDifference >= 0 ? 'bg-green-500' : 'bg-red-500'}>
-                    {dealReport.percentageDifference >= 0 ? 'Undervalued' : 'Overvalued'}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Based on area rate of R{formatPrice(dealReport.areaRate)}/m² for properties in this area
-                </p>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <div className="flex flex-col">
-                    <span className="text-xs text-muted-foreground">Asking Price</span>
-                    <span className="font-medium">R{formatPrice(dealReport.askingPrice)}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs text-muted-foreground">Estimated Value</span>
-                    <span className="font-medium">R{formatPrice(dealReport.estimatedValue)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-lg border p-4 hover:border-primary/50 transition-all">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="text-lg font-semibold flex items-center">
-                    <Percent className="h-5 w-5 mr-2 text-primary" />
-                    Rental Yield
-                  </div>
-                  <Badge className="bg-blue-500">
-                    {dealReport.bestInvestmentStrategy}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {dealReport.bestInvestmentStrategy === 'Short-Term Rental' 
-                    ? 'Short-term rental offers the best returns for this property'
-                    : 'Long-term rental is the optimal strategy for this property'}
-                </p>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <div className="flex flex-col">
-                    <span className="text-xs text-muted-foreground">Short-Term Yield</span>
-                    <span className="font-medium">{dealReport.shortTermYield.toFixed(1)}%</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs text-muted-foreground">Long-Term Yield</span>
-                    <span className="font-medium">{dealReport.longTermYield.toFixed(1)}%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-lg border p-4 hover:border-primary/50 transition-all">
-              <div className="flex justify-between items-start mb-2">
-                <div className="text-lg font-semibold flex items-center">
-                  <Banknote className="h-5 w-5 mr-2 text-primary" />
-                  Monthly Cash Flow
-                </div>
-                <Badge className={dealReport.cashFlowShortTerm >= 0 ? 'bg-green-500' : 'bg-red-500'}>
-                  {dealReport.cashFlowShortTerm >= 0 ? 'Positive' : 'Negative'}
+          {/* Market Value Card */}
+          <div className="rounded-xl shadow-sm border bg-white p-6">
+            <div className="flex items-center mb-4">
+              <DollarSign className="h-5 w-5 text-blue-500 mr-2" />
+              <h3 className="text-slate-700 font-medium">Market Value</h3>
+              <div className="ml-auto">
+                <Badge className={`${dealReport.percentageDifference >= 0 ? 'bg-red-500' : 'bg-green-500'} uppercase`}>
+                  {dealReport.percentageDifference >= 0 ? 'Overvalued' : 'Undervalued'}
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground mb-2">
-                Based on 10% deposit, {dealReport.interestRate}% interest rate over {dealReport.loanTerm} years
-              </p>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">Short-Term Strategy</span>
-                  <span className={`font-medium ${dealReport.cashFlowShortTerm >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    R{formatPrice(dealReport.cashFlowShortTerm)}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">Long-Term Strategy</span>
-                  <span className={`font-medium ${dealReport.cashFlowLongTerm >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    R{formatPrice(dealReport.cashFlowLongTerm)}
-                  </span>
-                </div>
+            </div>
+            <p className="text-sm text-slate-500 mb-4">
+              Based on area rate of R{formatPrice(dealReport.areaRate)}/m² for properties in this area
+            </p>
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <div>
+                <div className="text-sm text-slate-500">Asking Price</div>
+                <div className="font-medium">R{formatPrice(dealReport.askingPrice)}</div>
+              </div>
+              <div>
+                <div className="text-sm text-slate-500">Estimated Value</div>
+                <div className="font-medium">R{formatPrice(dealReport.estimatedValue)}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Rental Yield Card */}
+          <div className="rounded-xl shadow-sm border bg-white p-6">
+            <div className="flex items-center mb-4">
+              <TrendingUp className="h-5 w-5 text-blue-500 mr-2" />
+              <h3 className="text-slate-700 font-medium">Rental Yield</h3>
+              <div className="ml-auto">
+                <Badge className="bg-blue-500 uppercase">
+                  {dealReport.bestInvestmentStrategy === 'Short-Term Rental' ? 'Short-Term Rental' : 'Long-Term Rental'}
+                </Badge>
+              </div>
+            </div>
+            <p className="text-sm text-slate-500 mb-4">
+              {dealReport.bestInvestmentStrategy === 'Short-Term Rental' 
+                ? 'Short-term rental offers the best returns for this property'
+                : 'Long-term rental is the optimal strategy for this property'}
+            </p>
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <div>
+                <div className="text-sm text-slate-500">Short-Term Yield</div>
+                <div className="font-medium">{dealReport.shortTermYield.toFixed(1)}%</div>
+              </div>
+              <div>
+                <div className="text-sm text-slate-500">Long-Term Yield</div>
+                <div className="font-medium">{dealReport.longTermYield.toFixed(1)}%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Monthly Cash Flow Card */}
+        <div className="rounded-xl shadow-sm border bg-white p-6">
+          <div className="flex items-center mb-4">
+            <Banknote className="h-5 w-5 text-blue-500 mr-2" />
+            <h3 className="text-slate-700 font-medium">Monthly Cash Flow</h3>
+            <div className="ml-auto">
+              <Badge className={`${dealReport.cashFlowShortTerm >= 0 ? 'bg-green-500' : 'bg-red-500'} uppercase`}>
+                {dealReport.cashFlowShortTerm >= 0 ? 'Positive' : 'Negative'}
+              </Badge>
+            </div>
+          </div>
+          <p className="text-sm text-slate-500 mb-4">
+            Based on 10% deposit, {dealReport.interestRate}% interest rate over {dealReport.loanTerm} years
+          </p>
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div>
+              <div className="text-sm text-slate-500">Short-Term Strategy</div>
+              <div className={`font-medium ${dealReport.cashFlowShortTerm >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                R{formatPrice(dealReport.cashFlowShortTerm)}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-slate-500">Long-Term Strategy</div>
+              <div className={`font-medium ${dealReport.cashFlowLongTerm >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                R{formatPrice(dealReport.cashFlowLongTerm)}
               </div>
             </div>
           </div>
