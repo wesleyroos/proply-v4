@@ -1248,7 +1248,7 @@ export default function DealScorePublicPage() {
                           <p className="text-sm text-muted-foreground">
                             Full Address
                           </p>
-                          <p className="font-medium text-lg">
+                          <p className="font-medium">
                             {dealReport.address}
                           </p>
                         </div>
@@ -1334,7 +1334,7 @@ export default function DealScorePublicPage() {
                           <p className="text-sm text-muted-foreground">
                             Asking Price
                           </p>
-                          <p className="font-medium text-lg">
+                          <p className="font-medium">
                             R{formatPrice(dealReport.askingPrice)}
                           </p>
                         </div>
@@ -1342,7 +1342,7 @@ export default function DealScorePublicPage() {
                           <p className="text-sm text-muted-foreground">
                             Estimated Value
                           </p>
-                          <p className="font-medium text-lg">
+                          <p className="font-medium">
                             R{formatPrice(dealReport.estimatedValue)}
                           </p>
                         </div>
@@ -1355,14 +1355,6 @@ export default function DealScorePublicPage() {
                           <p className="font-medium">
                             R{formatPrice(dealReport.pricePerSqM)}
                           </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">
-                            Area Average Rate
-                          </p>
-                          <p className="font-medium">
-                            R{formatPrice(dealReport.areaRate)}/m²
-                          </p>
                           <Badge
                             className={`w-fit mt-1 ${dealReport.pricePerSqM <= dealReport.areaRate ? "bg-green-500" : "bg-red-500"}`}
                           >
@@ -1371,6 +1363,15 @@ export default function DealScorePublicPage() {
                               : "Above"}{" "}
                             Area Average
                           </Badge>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Area Average Rate
+                          </p>
+                          <p className="font-medium">
+                            R{formatPrice(dealReport.areaRate)}/m²
+                          </p>
+                          
                         </div>
                       </div>
                     </div>
