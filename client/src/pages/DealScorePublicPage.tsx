@@ -1068,6 +1068,16 @@ export default function DealScorePublicPage() {
               </div>
             </div>
           </div>
+          <div className="mt-4">
+            <p className="text-sm text-slate-700">
+              This property is{" "}
+              <span className={dealReport.percentageDifference >= 0 ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                {Math.abs(dealReport.percentageDifference).toFixed(1)}%{" "}
+                {dealReport.percentageDifference >= 0 ? "below" : "above"}
+              </span>{" "}
+              the estimated market value
+            </p>
+          </div>
         </div>
 
         {/* Deal Score and Analysis Cards */}
