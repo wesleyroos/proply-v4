@@ -1059,12 +1059,7 @@ export default function DealScorePublicPage() {
                 <span className="text-xl font-bold">
                   R{formatPrice(dealReport.estimatedValue)}
                 </span>
-                <span
-                  className={`px-2 text-xs ${dealReport.percentageDifference >= 0 ? "text-green-600" : "text-red-600"}`}
-                >
-                  {dealReport.percentageDifference >= 0 ? "+" : ""}
-                  {dealReport.percentageDifference.toFixed(1)}%
-                </span>
+                
               </div>
             </div>
           </div>
@@ -1193,18 +1188,26 @@ export default function DealScorePublicPage() {
                   ? "Short-term rental offers the best returns for this property"
                   : "Long-term rental is the optimal strategy for this property"}
               </p>
-              <div className="grid grid-cols-2 gap-4 text-center">
-                <div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col space-y-1">
                   <p className="text-sm text-slate-500">Short-Term Yield</p>
                   <p className="font-medium text-lg">
                     {dealReport.shortTermYield.toFixed(1)}%
                   </p>
+                  <div className="text-xs text-slate-500">
+                    <div>Monthly: R{formatPrice((dealReport.nightlyRate * 30 * dealReport.occupancyRate / 100))}</div>
+                    <div>Annual: R{formatPrice((dealReport.nightlyRate * 365 * dealReport.occupancyRate / 100))}</div>
+                  </div>
                 </div>
-                <div>
+                <div className="flex flex-col space-y-1">
                   <p className="text-sm text-slate-500">Long-Term Yield</p>
                   <p className="font-medium text-lg">
                     {dealReport.longTermYield.toFixed(1)}%
                   </p>
+                  <div className="text-xs text-slate-500">
+                    <div>Monthly: R{formatPrice(dealReport.monthlyLongTerm)}</div>
+                    <div>Annual: R{formatPrice(dealReport.monthlyLongTerm * 12)}</div>
+                  </div>
                 </div>
               </div>
             </div>
