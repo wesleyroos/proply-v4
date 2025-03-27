@@ -319,10 +319,11 @@ export default function DealScorePublicPage() {
       estimatedLongTermRental = purchasePrice * 0.005; // Estimate 0.5% of purchase price as monthly rental
     }
     
+    console.log("Purchase price:", purchasePrice, "formData.purchasePrice:", formData.purchasePrice);
     console.log("Using long term rental amount:", estimatedLongTermRental, "from:", 
       customLongTermRental ? "API parameter" : 
       (formData.longTermRental && Number(parseFormattedNumber(formData.longTermRental)) > 0) ? "form data" : 
-      "estimated value");
+      "estimated value (0.5% of purchase price)");
 
     // Use custom nightly rate if provided, otherwise use estimate
     let estimatedNightlyRate = customNightlyRate || purchasePrice / 1000; // Use API data if available, otherwise rough estimate
