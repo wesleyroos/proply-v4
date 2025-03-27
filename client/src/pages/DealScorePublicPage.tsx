@@ -772,7 +772,7 @@ export default function DealScorePublicPage() {
     return false;
   };
 
-  const validateForm = (showToast: boolean) => {
+  const validateForm = (showToast = false) => {
     const requiredFields = ["address", "purchasePrice", "size", "areaRate"];
     const missingFields = requiredFields.filter((field) => {
       const numericValue = parseFormattedNumber(
@@ -965,7 +965,7 @@ export default function DealScorePublicPage() {
               value={formData.bathrooms}
               onChange={(e) => handleInputChange("bathrooms", e.target.value)}
             />
-          </</div>
+          </div>
 
           <div>
             <Label htmlFor="parking" className="mb-1 block">
@@ -1068,20 +1068,6 @@ export default function DealScorePublicPage() {
               </div>
             </div>
           </div>
-          <p className="text-sm mt-3">
-            This property is{" "}
-            <span
-              className={
-                dealReport.percentageDifference >= 0
-                  ? "text-green-600"
-                  : "text-red-600"
-              }
-            >
-              {Math.abs(dealReport.percentageDifference).toFixed(1)}%{" "}
-              {dealReport.percentageDifference >= 0 ? "below" : "above"}
-            </span>{" "}
-            the estimated market value
-          </p>
         </div>
 
         {/* Deal Score and Analysis Cards */}
@@ -1760,7 +1746,8 @@ export default function DealScorePublicPage() {
                           Monthly Revenue
                         </p>
                         <p className="font-medium">
-                          R{formatPrice(dealReport.monthlyLongTerm)}                        </p>
+                          R{formatPrice(dealReport.monthlyLongTerm)}
+                        </p>
                       </div>
                       <div className="flex justify-between items-center">
                         <p className="text-sm text-slate-600">
