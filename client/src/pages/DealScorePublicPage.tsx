@@ -1980,8 +1980,7 @@ export default function DealScorePublicPage() {
         </Accordion>
 
         {/* Report Footer */}
-        <div className="pt-6 border-t flex flex-col items-center justify-center text-center text-sm text-muted-foreground space-y-2">
-          <div>Generated on {dealReport.reportDate}</div>
+        <div className="pt-6 border-t flex justify-between items-center text-sm text-muted-foreground">
           <div className="flex items-center">
             <img
               src="/proply-favicon.png"
@@ -1990,6 +1989,7 @@ export default function DealScorePublicPage() {
             />
             Proply Deal Score™ Report
           </div>
+          <div>Generated on {dealReport.reportDate}</div>
         </div>
       </div>
     );
