@@ -210,22 +210,14 @@ function getMockAddressSuggestions(input: string) {
   // Determine postal code based on city
   let postalCode = city.includes('Cape Town') ? '8001' : '2000';
   
-  // Generate suggestions based on the input
+  // Generate just one suggestion based on the input
   suggestions = [
     {
       place_id: "mock_place_id_1",
       description: `${streetNumber} ${streetName}, ${suburb}, ${city}, ${postalCode}, South Africa`,
       structured_formatting: {
-        main_text: `${streetNumber} ${streetName}`,
-        secondary_text: `${suburb}, ${city}, ${postalCode}, South Africa`
-      }
-    },
-    {
-      place_id: "mock_place_id_2",
-      description: `${parseInt(streetNumber || '1') + 2} ${streetName}, ${suburb}, ${city}, ${postalCode}, South Africa`,
-      structured_formatting: {
-        main_text: `${parseInt(streetNumber || '1') + 2} ${streetName}`,
-        secondary_text: `${suburb}, ${city}, ${postalCode}, South Africa`
+        main_text: `${streetNumber} ${streetName}, ${suburb}, ${city}, ${postalCode}`,
+        secondary_text: `South Africa`
       }
     }
   ];
@@ -237,16 +229,8 @@ function getMockAddressSuggestions(input: string) {
         place_id: "mock_place_id_3",
         description: "27 Leeuwen St, Cape Town City Centre, Cape Town, 8001, South Africa",
         structured_formatting: {
-          main_text: "27 Leeuwen St",
-          secondary_text: "Cape Town City Centre, Cape Town, 8001, South Africa"
-        }
-      },
-      {
-        place_id: "mock_place_id_4",
-        description: "25 Leeuwen St, Cape Town City Centre, Cape Town, 8001, South Africa",
-        structured_formatting: {
-          main_text: "25 Leeuwen St",
-          secondary_text: "Cape Town City Centre, Cape Town, 8001, South Africa"
+          main_text: "27 Leeuwen St, Cape Town City Centre, Cape Town, 8001",
+          secondary_text: "South Africa"
         }
       }
     ];
