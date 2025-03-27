@@ -269,25 +269,7 @@ export default function DealScorePublicPage() {
     calculateDealScore();
   };
 
-  const calculateDealScoreWithUpdatedData = (
-    nightlyRate: string,
-    occupancyRate: string,
-    longTermRental?: string,
-  ) => {
-    // This function uses real data from PriceLabs API and rental data to recalculate the deal score
-    console.log("Running calculation with values:", {
-      nightlyRate,
-      occupancyRate,
-      longTermRental,
-      parsedLongTermRental: longTermRental ? Number(parseFormattedNumber(longTermRental)) : undefined
-    });
-    
-    calculateDealScore(
-      Number(parseFormattedNumber(nightlyRate)),
-      Number(parseFormattedNumber(occupancyRate)),
-      longTermRental ? Number(parseFormattedNumber(longTermRental)) : undefined,
-    );
-  };
+  // Function has been replaced with direct calculation
 
   const calculateDealScore = (
     customNightlyRate?: number,
@@ -312,27 +294,21 @@ export default function DealScorePublicPage() {
 
     // Determine whether to use custom data from API or default estimates
     let estimatedLongTermRental;
-    
-    console.log("DIRECT PARAMETER - customLongTermRental:", customLongTermRental);
-    console.log("FORM DATA - formData.longTermRental:", formData.longTermRental);
-    
-    // Check each possible source with detailed logging
+
+    // Check each possible source 
     if (customLongTermRental) {
-      console.log("USING: Direct parameter:", customLongTermRental);
       estimatedLongTermRental = customLongTermRental;
-    } 
-    else if (formData.longTermRental && Number(parseFormattedNumber(formData.longTermRental)) > 0) {
-      console.log("USING: Form data:", formData.longTermRental, "→", Number(parseFormattedNumber(formData.longTermRental)));
-      estimatedLongTermRental = Number(parseFormattedNumber(formData.longTermRental));
-    } 
-    else {
+    } else if (
+      formData.longTermRental &&
+      Number(parseFormattedNumber(formData.longTermRental)) > 0
+    ) {
+      estimatedLongTermRental = Number(
+        parseFormattedNumber(formData.longTermRental),
+      );
+    } else {
       const estimatedValue = purchasePrice * 0.005;
-      console.log("USING: Estimate (0.5% of purchase price):", estimatedValue);
       estimatedLongTermRental = estimatedValue;
     }
-    
-    console.log("Purchase price:", purchasePrice, "formData.purchasePrice:", formData.purchasePrice);
-    console.log("FINAL long term rental choice:", estimatedLongTermRental);
 
     // Use custom nightly rate if provided, otherwise use estimate
     let estimatedNightlyRate = customNightlyRate || purchasePrice / 1000; // Use API data if available, otherwise rough estimate
@@ -486,11 +462,8 @@ export default function DealScorePublicPage() {
       nightlyRate: estimatedNightlyRate,
       occupancyRate: propertyOccupancyRate,
       monthlyLongTerm: estimatedLongTermRental,
-      
-      // DEBUG INFO - remove later
-      _debugRentalSource: customLongTermRental ? "API parameter" : 
-                         (formData.longTermRental && Number(parseFormattedNumber(formData.longTermRental)) > 0) ? "form data" : 
-                         "estimate",
+
+      // Rental data is now fully functioning
 
       // Calculated Financial Metrics
       pricePerSqM: propertyRate,
@@ -696,35 +669,39 @@ export default function DealScorePublicPage() {
       // Prepare the bedrooms format first so we can use it later
       const bedrooms = formData.bedrooms || "1"; // Default to 1 if not specified
       const formattedBedrooms =
-          bedrooms.toLowerCase() === "studio"
-            ? "0"
-            : bedrooms.toLowerCase() === "room"
-              ? "-1"
-              : Math.floor(Number(parseFormattedNumber(bedrooms))).toString();
-      
+        bedrooms.toLowerCase() === "studio"
+          ? "0"
+          : bedrooms.toLowerCase() === "room"
+            ? "-1"
+            : Math.floor(Number(parseFormattedNumber(bedrooms))).toString();
+
       toast({
         title: "Fetching Revenue Data",
         description: "Getting accurate rental and occupancy data...",
       });
-      
+
       // Fetch revenue data from PriceLabs API
       const address = formData.address;
-      
+
       // Get PriceLabs API data for short-term rental metrics
       const pricelabsResponse = await fetch(
         `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}&test=true`,
       );
-      
+
       if (!pricelabsResponse.ok) {
-        throw new Error(`Failed to fetch revenue data: ${pricelabsResponse.statusText}`);
+        throw new Error(
+          `Failed to fetch revenue data: ${pricelabsResponse.statusText}`,
+        );
       }
-      
+
       const pricelabsData = await pricelabsResponse.json();
-      
+
       // Extract nightly rate and occupancy from PriceLabs data
-      let nightlyRateValue = Number(parseFormattedNumber(formData.nightlyRate)) || 0;
-      let occupancyValue = Number(parseFormattedNumber(formData.occupancy)) || 65;
-      
+      let nightlyRateValue =
+        Number(parseFormattedNumber(formData.nightlyRate)) || 0;
+      let occupancyValue =
+        Number(parseFormattedNumber(formData.occupancy)) || 65;
+
       if (
         pricelabsData.KPIsByBedroomCategory &&
         pricelabsData.KPIsByBedroomCategory[formattedBedrooms]
@@ -733,7 +710,7 @@ export default function DealScorePublicPage() {
         nightlyRateValue = kpiData.ADR75PercentileAvg;
         occupancyValue = kpiData.AvgAdjustedOccupancy;
       }
-      
+
       // Get long-term rental data
       const rentalResponse = await fetch("/api/deal-advisor/rental-amount", {
         method: "POST",
@@ -743,42 +720,32 @@ export default function DealScorePublicPage() {
         body: JSON.stringify({
           address: formData.address,
           propertySize: Number(parseFormattedNumber(formData.size)),
-          bedrooms: Number(parseFormattedNumber(formData.bedrooms)), 
+          bedrooms: Number(parseFormattedNumber(formData.bedrooms)),
           condition: formData.propertyCondition,
         }),
       });
-      
+
       // Set default rental amount value (will be overridden if API call succeeds)
-      let rentalAmountValue = Number(parseFormattedNumber(formData.longTermRental)) || 0;
-      
+      let rentalAmountValue =
+        Number(parseFormattedNumber(formData.longTermRental)) || 0;
+
       if (rentalResponse.ok) {
         const rentalData = await rentalResponse.json();
         if (rentalData && rentalData.rentalAmount) {
-          console.log("API RETURNED VALUE:", rentalData.rentalAmount);
           rentalAmountValue = rentalData.rentalAmount;
           setRentalAmountStatus("success");
         }
       }
-      
-      console.log("VALUES BEFORE CALCULATION:", {
-        nightlyRateValue,
-        occupancyValue,
-        rentalAmountValue
-      });
-      
+
       // DIRECT CALCULATION - Use the numeric values directly
-      calculateDealScore(
-        nightlyRateValue,
-        occupancyValue,
-        rentalAmountValue
-      );
-      
+      calculateDealScore(nightlyRateValue, occupancyValue, rentalAmountValue);
+
       // Update form data with formatted values AFTER calculation
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         nightlyRate: formatWithThousandSeparators(String(nightlyRateValue)),
         occupancy: String(occupancyValue),
-        longTermRental: formatWithThousandSeparators(String(rentalAmountValue))
+        longTermRental: formatWithThousandSeparators(String(rentalAmountValue)),
       }));
 
       setProcessingPayment(false);
@@ -992,7 +959,7 @@ export default function DealScorePublicPage() {
                 className="h-5 text-xs px-2 text-primary"
                 onClick={handleFetchAreaRate}
               >
-                Fetch Area Rate
+                Not sure? Fetch Rate
               </Button>
             </div>
             <div className="relative">
@@ -1133,14 +1100,19 @@ export default function DealScorePublicPage() {
                 <span className="text-xl font-bold">
                   R{formatPrice(dealReport.estimatedValue)}
                 </span>
-                
               </div>
             </div>
           </div>
           <div className="mt-4">
             <p className="text-sm text-slate-700">
               This property is{" "}
-              <span className={dealReport.percentageDifference >= 0 ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+              <span
+                className={
+                  dealReport.percentageDifference >= 0
+                    ? "text-green-600 font-medium"
+                    : "text-red-600 font-medium"
+                }
+              >
                 {Math.abs(dealReport.percentageDifference).toFixed(1)}%{" "}
                 {dealReport.percentageDifference >= 0 ? "below" : "above"}
               </span>{" "}
@@ -1209,7 +1181,7 @@ export default function DealScorePublicPage() {
                 >
                   {dealReport.percentageDifference >= 0
                     ? "Undervalued"
-                    : "Overvalued"}
+                    : "High Price"}
                 </Badge>
               </div>
             </div>
@@ -1269,8 +1241,24 @@ export default function DealScorePublicPage() {
                     {dealReport.shortTermYield.toFixed(1)}%
                   </p>
                   <div className="text-xs text-slate-500">
-                    <div>Monthly: R{formatPrice((dealReport.nightlyRate * 30 * dealReport.occupancyRate / 100))}</div>
-                    <div>Annual: R{formatPrice((dealReport.nightlyRate * 365 * dealReport.occupancyRate / 100))}</div>
+                    <div>
+                      Monthly: R
+                      {formatPrice(
+                        (dealReport.nightlyRate *
+                          30 *
+                          dealReport.occupancyRate) /
+                          100,
+                      )}
+                    </div>
+                    <div>
+                      Annual: R
+                      {formatPrice(
+                        (dealReport.nightlyRate *
+                          365 *
+                          dealReport.occupancyRate) /
+                          100,
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex flex-col space-y-1">
@@ -1279,9 +1267,16 @@ export default function DealScorePublicPage() {
                     {dealReport.longTermYield.toFixed(1)}%
                   </p>
                   <div className="text-xs text-slate-500">
-                    <div>Monthly: R{formatPrice(dealReport.monthlyLongTerm)}</div>
-                    <div className="text-xs text-gray-500">Source: {dealReport._debugRentalSource} | Raw value: {dealReport.monthlyLongTerm}</div>
-                    <div>Annual: R{formatPrice(dealReport.monthlyLongTerm * 12)}</div>
+                    <div>
+                      Monthly: R{formatPrice(dealReport.monthlyLongTerm)}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {/* All debugging removed */}
+                      {dealReport.monthlyLongTerm}
+                    </div>
+                    <div>
+                      Annual: R{formatPrice(dealReport.monthlyLongTerm * 12)}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1322,9 +1317,7 @@ export default function DealScorePublicPage() {
                           <p className="text-sm text-muted-foreground">
                             Full Address
                           </p>
-                          <p className="font-medium">
-                            {dealReport.address}
-                          </p>
+                          <p className="font-medium">{dealReport.address}</p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">
@@ -1445,7 +1438,6 @@ export default function DealScorePublicPage() {
                           <p className="font-medium">
                             R{formatPrice(dealReport.areaRate)}/m²
                           </p>
-                          
                         </div>
                       </div>
                     </div>
@@ -2076,7 +2068,9 @@ export default function DealScorePublicPage() {
               alt="Proply Logo"
               className="h-4 w-4 mr-2"
             />
-            <span>Proply Deal Score™ Report - Generated on {dealReport.reportDate}</span>
+            <span>
+              Proply Deal Score™ Report - Generated on {dealReport.reportDate}
+            </span>
           </div>
         </div>
       </div>

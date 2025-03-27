@@ -49,7 +49,6 @@ export interface DealScoreReport {
   nightlyRate: number;
   occupancyRate: number;
   monthlyLongTerm: number;
-  _debugRentalSource?: string; // Debug field to track rental data source
   
   // Calculated Financial Metrics
   pricePerSqM: number;
