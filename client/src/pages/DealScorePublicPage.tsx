@@ -143,6 +143,7 @@ export default function DealScorePublicPage() {
     interestRate: "",
     loanTerm: "",
   });
+  const [financingUpdated, setFinancingUpdated] = useState(false);
 
   const fillDemoData = () => {
     setDemoClicks((prev) => {
@@ -1651,7 +1652,7 @@ export default function DealScorePublicPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Financing Card */}
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
+                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-pulse' : 'border-gray-200'} transition-all duration-300`}>
                     <div className="bg-gradient-to-r from-amber-500 to-yellow-400 px-4 py-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
@@ -1737,7 +1738,7 @@ export default function DealScorePublicPage() {
                   </div>
 
                   {/* Affordability Card */}
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
+                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-pulse' : 'border-gray-200'} transition-all duration-300`}>
                     <div className="bg-gradient-to-r from-indigo-600 to-violet-500 px-4 py-3">
                       <div className="flex items-center">
                         <Wallet className="h-5 w-5 text-white mr-2" />
@@ -1810,7 +1811,7 @@ export default function DealScorePublicPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Short-Term Cash Flow Card */}
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
+                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-pulse' : 'border-gray-200'} transition-all duration-300`}>
                     <div className="bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-3">
                       <div className="flex items-center">
                         <Calendar className="h-5 w-5 text-white mr-2" />
@@ -1852,7 +1853,7 @@ export default function DealScorePublicPage() {
                   </div>
 
                   {/* Long-Term Cash Flow Card */}
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
+                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-pulse' : 'border-gray-200'} transition-all duration-300`}>
                     <div className="bg-gradient-to-r from-indigo-500 to-purple-400 px-4 py-3">
                       <div className="flex items-center">
                         <Home className="h-5 w-5 text-white mr-2" />
@@ -1894,7 +1895,7 @@ export default function DealScorePublicPage() {
                   </div>
 
                   {/* Return on Investment Card */}
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
+                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-pulse' : 'border-gray-200'} transition-all duration-300`}>
                     <div className="bg-gradient-to-r from-emerald-500 to-green-400 px-4 py-3">
                       <div className="flex items-center">
                         <TrendingUp className="h-5 w-5 text-white mr-2" />
@@ -1941,7 +1942,7 @@ export default function DealScorePublicPage() {
 
                 {/* Loan Paydown and Equity Buildup Chart */}
                 <div className="w-full mt-8">
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
+                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-pulse' : 'border-gray-200'} transition-all duration-300`}>
                     <div className="bg-gradient-to-r from-violet-500 to-purple-400 px-4 py-3">
                       <div className="flex items-center">
                         <TrendingUp className="h-5 w-5 text-white mr-2" />
@@ -2650,69 +2651,54 @@ export default function DealScorePublicPage() {
               Cancel
             </Button>
             <Button 
-              onClick={() => {
+              onClick={async () => {
+                // Get the updated values from the form
+                const newDepositPercentage = Number(financingForm.depositPercentage) || 10;
+                const newInterestRate = Number(financingForm.interestRate) || 11; 
+                const newLoanTerm = Number(financingForm.loanTerm) || 20;
+                
+                // Update form data first
+                setFormData(prev => ({
+                  ...prev,
+                  depositPercentage: newDepositPercentage.toString(),
+                  interestRate: newInterestRate.toString(),
+                  loanTerm: newLoanTerm.toString()
+                }));
+                
+                // Show a loading toast to indicate changes are being applied
+                toast({
+                  title: "Updating financing details",
+                  description: "Recalculating investment metrics...",
+                });
+                
+                // Give React time to process the state update
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Force recalculation
+                setIsCalculating(true);
+                
                 // Close the dialog
                 setShowFinancingDialog(false);
                 
-                // For immediate UI update, we'll directly modify the dealReport state
-                if (dealReport) {
-                  const depositPercentage = Number(financingForm.depositPercentage) || 10;
-                  const interestRate = Number(financingForm.interestRate) || 11;
-                  const loanTerm = Number(financingForm.loanTerm) || 20;
-                  
-                  // Calculate new values
-                  const purchasePrice = dealReport.askingPrice;
-                  const depositAmount = purchasePrice * (depositPercentage / 100);
-                  const loanAmount = purchasePrice - depositAmount;
-                  
-                  // Calculate new monthly payment
-                  const monthlyPayment = 
-                    (loanAmount *
-                      (interestRate / 100 / 12) *
-                      Math.pow(1 + interestRate / 100 / 12, loanTerm * 12)) /
-                    (Math.pow(1 + interestRate / 100 / 12, loanTerm * 12) - 1);
-                  
-                  // Calculate new cash flows
-                  const estimatedMonthlyCosts = dealReport.estimatedMonthlyCosts;
-                  const cashFlowShortTerm = 
-                    dealReport.annualRevenueShortTerm / 12 - monthlyPayment - estimatedMonthlyCosts;
-                  const cashFlowLongTerm = 
-                    dealReport.monthlyLongTerm - monthlyPayment - estimatedMonthlyCosts;
-                  
-                  // Update the dealReport with new values
-                  setDealReport({
-                    ...dealReport,
-                    depositPercentage,
-                    depositAmount,
-                    interestRate,
-                    loanTerm,
-                    loanAmount,
-                    monthlyPayment,
-                    cashFlowShortTerm,
-                    cashFlowLongTerm
-                  });
-                }
+                // Signal that financing was updated to trigger the highlighting effect
+                setFinancingUpdated(true);
                 
-                // Update form data with new financing details
-                setFormData(prev => ({
-                  ...prev,
-                  depositPercentage: financingForm.depositPercentage,
-                  interestRate: financingForm.interestRate,
-                  loanTerm: financingForm.loanTerm
-                }));
-                
-                // Still recalculate for complete accuracy
-                if (result) {
-                  setIsCalculating(true);
-                  setTimeout(() => {
-                    calculateDealScore();
-                  }, 100);
+                // Wait a moment before recalculating to ensure state updates are processed
+                setTimeout(() => {
+                  // Recalculate everything
+                  calculateDealScore();
                   
+                  // Notify the user
                   toast({
                     title: "Financing details updated",
-                    description: "Investment metrics have been recalculated with new financing parameters.",
+                    description: "Investment metrics have been recalculated.",
                   });
-                }
+                  
+                  // Remove the highlight effect after 2 seconds
+                  setTimeout(() => {
+                    setFinancingUpdated(false);
+                  }, 2000);
+                }, 300);
               }}
             >
               Apply Changes
