@@ -1712,13 +1712,13 @@ export default function DealScorePublicPage() {
                     </div>
                   </div>
 
-                  {/* Monthly Expenses Card */}
+                  {/* Affordability Card */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
-                    <div className="bg-gradient-to-r from-rose-500 to-pink-400 px-4 py-3">
+                    <div className="bg-gradient-to-r from-indigo-600 to-violet-500 px-4 py-3">
                       <div className="flex items-center">
-                        <Receipt className="h-5 w-5 text-white mr-2" />
+                        <Wallet className="h-5 w-5 text-white mr-2" />
                         <h4 className="font-semibold text-white">
-                          Monthly Expenses
+                          Affordability Analysis
                         </h4>
                       </div>
                     </div>
@@ -1734,32 +1734,48 @@ export default function DealScorePublicPage() {
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">
-                            Rates & Taxes
+                            If Rates Drop 1%
                           </p>
                           <p className="font-medium">
-                            R{formatPrice(dealReport.monthlyRates)}
+                            R{formatPrice(
+                              (dealReport.loanAmount *
+                                ((dealReport.interestRate - 1) / 100 / 12) *
+                                Math.pow(1 + (dealReport.interestRate - 1) / 100 / 12, dealReport.loanTerm * 12)) /
+                              (Math.pow(1 + (dealReport.interestRate - 1) / 100 / 12, dealReport.loanTerm * 12) - 1)
+                            )}
                           </p>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-muted-foreground">Levy</p>
+                          <p className="text-sm text-muted-foreground">
+                            Total Monthly Cost
+                          </p>
                           <p className="font-medium">
-                            R{formatPrice(dealReport.levy)}
+                            R{formatPrice(
+                              dealReport.monthlyPayment +
+                                dealReport.estimatedMonthlyCosts
+                            )}
                           </p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">
-                            Total Fixed Costs
+                            Required Household Income
                           </p>
                           <p className="font-medium">
-                            R
-                            {formatPrice(
-                              dealReport.monthlyPayment +
-                                dealReport.estimatedMonthlyCosts,
+                            R{formatPrice(
+                              (dealReport.monthlyPayment + dealReport.estimatedMonthlyCosts) / 0.3
                             )}
+                            <span className="text-xs text-muted-foreground ml-1">
+                              (30% DTI)
+                            </span>
                           </p>
                         </div>
+                      </div>
+                      <div className="mt-2 pt-2 border-t">
+                        <p className="text-xs text-muted-foreground">
+                          DTI = Debt-to-Income ratio. Banks typically require your monthly housing costs to be less than 30% of your gross income.
+                        </p>
                       </div>
                     </div>
                   </div>
