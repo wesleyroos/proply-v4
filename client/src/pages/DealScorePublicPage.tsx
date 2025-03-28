@@ -1789,12 +1789,14 @@ export default function DealScorePublicPage() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-sm text-muted-foreground">
-                            Total Monthly Cost
+                            If Rates Increase 1%
                           </p>
                           <p className="font-medium">
                             R{formatPrice(
-                              dealReport.monthlyPayment +
-                                dealReport.estimatedMonthlyCosts
+                              (dealReport.loanAmount *
+                                ((dealReport.interestRate + 1) / 100 / 12) *
+                                Math.pow(1 + (dealReport.interestRate + 1) / 100 / 12, dealReport.loanTerm * 12)) /
+                              (Math.pow(1 + (dealReport.interestRate + 1) / 100 / 12, dealReport.loanTerm * 12) - 1)
                             )}
                           </p>
                         </div>
