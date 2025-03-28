@@ -41,12 +41,6 @@ export interface DealScoreReport {
   estimatedValue: number;
   percentageDifference: number;
   
-  // Factor Scores (for multi-ring visualization)
-  priceFactorScore?: number;
-  conditionFactorScore?: number;
-  rateComparisonScore?: number;
-  yieldFactorScore?: number;
-  
   // Area Information
   areaRate: number;
   recentSalesRange: string;
@@ -230,141 +224,13 @@ export default function DealScoreReportPage({ report }: { report?: DealScoreRepo
         <div className="p-8 border-b">
           <div className="text-center mb-8">
             <div className="flex justify-center mt-6">
-              <div className="relative w-60 h-60">
-                <svg className="w-60 h-60" viewBox="0 0 128 128">
-                  {/* Background Circles */}
-                  <circle
-                    className="text-slate-100 stroke-current"
-                    strokeWidth="3"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="60"
-                    cx="64"
-                    cy="64"
-                  />
-                  <circle
-                    className="text-slate-100 stroke-current"
-                    strokeWidth="3"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="50"
-                    cx="64"
-                    cy="64"
-                  />
-                  <circle
-                    className="text-slate-100 stroke-current"
-                    strokeWidth="3"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="40"
-                    cx="64"
-                    cy="64"
-                  />
-                  <circle
-                    className="text-slate-100 stroke-current"
-                    strokeWidth="3"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="30"
-                    cx="64"
-                    cy="64"
-                  />
-                  
-                  {/* Factor Rings */}
-                  {/* Price Factor Ring (40%) - Outermost */}
-                  <circle
-                    className="text-blue-500 stroke-current"
-                    strokeWidth="5"
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="60"
-                    cx="64"
-                    cy="64"
-                    strokeDasharray={`${(data.priceFactorScore || 70) * 3.77} 377`}
-                    strokeDashoffset="0"
-                    transform="rotate(-90 64 64)"
-                  />
-                  
-                  {/* Condition Factor Ring (20%) */}
-                  <circle
-                    className="text-green-500 stroke-current"
-                    strokeWidth="5"
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="50"
-                    cx="64"
-                    cy="64"
-                    strokeDasharray={`${(data.conditionFactorScore || 80) * 3.14} 314`}
-                    strokeDashoffset="0"
-                    transform="rotate(-90 64 64)"
-                  />
-                  
-                  {/* Rate Comparison Ring (20%) */}
-                  <circle
-                    className="text-purple-500 stroke-current"
-                    strokeWidth="5"
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="40"
-                    cx="64"
-                    cy="64"
-                    strokeDasharray={`${(data.rateComparisonScore || 70) * 2.51} 251`}
-                    strokeDashoffset="0"
-                    transform="rotate(-90 64 64)"
-                  />
-                  
-                  {/* Yield Factor Ring (20%) - Innermost */}
-                  <circle
-                    className="text-orange-500 stroke-current"
-                    strokeWidth="5"
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="30"
-                    cx="64"
-                    cy="64"
-                    strokeDasharray={`${(data.yieldFactorScore || 60) * 1.88} 188`}
-                    strokeDashoffset="0"
-                    transform="rotate(-90 64 64)"
-                  />
-                  
-                  {/* Central Score Circle */}
-                  <circle
-                    className="fill-white"
-                    r="24"
-                    cx="64"
-                    cy="64"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-5xl font-bold text-primary">{data.score}</div>
+              <div className="relative w-40 h-40">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 to-blue-500/20 animate-pulse-slow"></div>
+                <div className="absolute inset-2 rounded-full bg-white flex items-center justify-center">
+                  <div className="text-6xl font-bold text-primary">{data.score}%</div>
                 </div>
               </div>
             </div>
-            
-            {/* Legend */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 w-full max-w-[280px] text-sm mx-auto mt-4 mb-2">
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
-                <span>Price (40%)</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                <span>Condition (20%)</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>
-                <span>Rate Comp (20%)</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-orange-500 mr-2"></div>
-                <span>Yield (20%)</span>
-              </div>
-            </div>
-            
             <div className="mt-4">
               <span className={`inline-block px-4 py-1 rounded-full text-white font-medium ${data.color}`}>
                 {data.rating}

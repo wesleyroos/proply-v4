@@ -369,71 +369,43 @@ export default function DealScorePublicPage() {
     // Calculate annual rental for long term
     const annualRentalLongTerm = estimatedLongTermRental * 12;
 
-    // Calculate factor scores separately for multi-ring visualization
-    
-    // Price Factor (40%) - Calculate based on price difference from market rate
-    let priceFactorScore = 0;
-    if (priceDiff <= -15) priceFactorScore = 100;
-    else if (priceDiff <= -10) priceFactorScore = 90;
-    else if (priceDiff <= -5) priceFactorScore = 80;
-    else if (priceDiff <= 0) priceFactorScore = 70;
-    else if (priceDiff <= 5) priceFactorScore = 60;
-    else if (priceDiff <= 10) priceFactorScore = 50;
-    else if (priceDiff <= 15) priceFactorScore = 40;
-    else if (priceDiff <= 20) priceFactorScore = 30;
-    else priceFactorScore = 20;
-    
-    // Condition Factor (20%) - Based on property condition
-    let conditionFactorScore = 0;
+    let score = 50;
+    score -= priceDiff * 0.5;
+
     switch (formData.propertyCondition) {
       case "excellent":
-        conditionFactorScore = 100;
+        score += 10;
         break;
       case "good":
-        conditionFactorScore = 80;
+        score += 5;
         break;
       case "fair":
-        conditionFactorScore = 60;
+        score -= 5;
         break;
       case "poor":
-        conditionFactorScore = 40;
+        score -= 10;
         break;
     }
-    
-    // Rate Comparison Factor (20%) - Based on price per square meter vs area rate
-    let rateComparisonScore = 0;
-    const rateDiff = ((propertyRate - Number(parseFormattedNumber(formData.areaRate))) / 
-                      Number(parseFormattedNumber(formData.areaRate))) * 100;
-    
-    if (rateDiff <= -15) rateComparisonScore = 100;
-    else if (rateDiff <= -10) rateComparisonScore = 90;
-    else if (rateDiff <= -5) rateComparisonScore = 80;
-    else if (rateDiff <= 0) rateComparisonScore = 70;
-    else if (rateDiff <= 5) rateComparisonScore = 60;
-    else if (rateDiff <= 10) rateComparisonScore = 50;
-    else if (rateDiff <= 15) rateComparisonScore = 40;
-    else rateComparisonScore = 30;
-    
-    // Yield Factor (20%) - Based on better of short-term or long-term yield
-    let yieldFactorScore = 0;
-    const bestYield = Math.max(shortTermYield || 0, longTermYield || 0);
-    
-    if (bestYield >= 8) yieldFactorScore = 100;
-    else if (bestYield >= 7) yieldFactorScore = 80;
-    else if (bestYield >= 6) yieldFactorScore = 60;
-    else if (bestYield >= 5) yieldFactorScore = 40;
-    else yieldFactorScore = 20;
-    
-    // Calculate final score as weighted average of factors
-    const score = Math.round(
-      (priceFactorScore * 0.4) + 
-      (conditionFactorScore * 0.2) + 
-      (rateComparisonScore * 0.2) + 
-      (yieldFactorScore * 0.2)
-    );
-    
-    // Ensure score is within 0-100 range (just in case)
-    const finalScore = Math.max(0, Math.min(100, score));
+
+    if (shortTermYield !== null) {
+      if (shortTermYield >= 18) {
+        score += 15;
+      } else if (shortTermYield >= 12) {
+        score += 10;
+      } else if (shortTermYield >= 8) {
+        score += 5;
+      }
+    }
+
+    if (longTermYield !== null) {
+      if (longTermYield >= 8) {
+        score += 10;
+      } else if (longTermYield >= 6) {
+        score += 5;
+      }
+    }
+
+    score = Math.max(0, Math.min(100, score));
 
     let rating: string;
     let color: string;
@@ -507,12 +479,6 @@ export default function DealScorePublicPage() {
       estimatedValue: estimatedValue,
       percentageDifference:
         ((estimatedValue - purchasePrice) / purchasePrice) * 100,
-      
-      // Factor Scores for multi-ring visualization
-      priceFactorScore: priceFactorScore,
-      conditionFactorScore: conditionFactorScore,
-      rateComparisonScore: rateComparisonScore,
-      yieldFactorScore: yieldFactorScore,
 
       // Area Information
       areaRate: Number(parseFormattedNumber(formData.areaRate)),
@@ -1188,142 +1154,37 @@ export default function DealScorePublicPage() {
           <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
             <div className="p-6 flex flex-col items-center">
               <h3 className="text-slate-700 font-medium mb-4">Proply Deal Score™</h3>
-              <div className="relative mb-3 w-52 h-52">
-                <svg className="w-52 h-52" viewBox="0 0 128 128">
-                  {/* Background Circles */}
+              <div className="relative mb-3 w-36 h-36">
+                <svg className="w-36 h-36" viewBox="0 0 128 128">
                   <circle
                     className="text-slate-100 stroke-current"
-                    strokeWidth="3"
+                    strokeWidth="12"
                     stroke="currentColor"
                     fill="transparent"
-                    r="60"
+                    r="56"
                     cx="64"
                     cy="64"
                   />
                   <circle
-                    className="text-slate-100 stroke-current"
-                    strokeWidth="3"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="50"
-                    cx="64"
-                    cy="64"
-                  />
-                  <circle
-                    className="text-slate-100 stroke-current"
-                    strokeWidth="3"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="40"
-                    cx="64"
-                    cy="64"
-                  />
-                  <circle
-                    className="text-slate-100 stroke-current"
-                    strokeWidth="3"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="30"
-                    cx="64"
-                    cy="64"
-                  />
-                  
-                  {/* Factor Rings */}
-                  {/* Price Factor Ring (40%) - Outermost */}
-                  <circle
-                    className="text-blue-500 stroke-current"
-                    strokeWidth="5"
+                    className={`${dealReport.score >= 75 ? "text-green-500" : dealReport.score >= 60 ? "text-blue-500" : dealReport.score >= 40 ? "text-amber-500" : "text-red-500"} stroke-current`}
+                    strokeWidth="12"
                     strokeLinecap="round"
                     stroke="currentColor"
                     fill="transparent"
-                    r="60"
+                    r="56"
                     cx="64"
                     cy="64"
-                    strokeDasharray={`${(dealReport.priceFactorScore || 70) * 3.77} 377`}
+                    strokeDasharray={`${dealReport.score * 3.51} 351`}
                     strokeDashoffset="0"
                     transform="rotate(-90 64 64)"
-                  />
-                  
-                  {/* Condition Factor Ring (20%) */}
-                  <circle
-                    className="text-green-500 stroke-current"
-                    strokeWidth="5"
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="50"
-                    cx="64"
-                    cy="64"
-                    strokeDasharray={`${(dealReport.conditionFactorScore || 80) * 3.14} 314`}
-                    strokeDashoffset="0"
-                    transform="rotate(-90 64 64)"
-                  />
-                  
-                  {/* Rate Comparison Ring (20%) */}
-                  <circle
-                    className="text-purple-500 stroke-current"
-                    strokeWidth="5"
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="40"
-                    cx="64"
-                    cy="64"
-                    strokeDasharray={`${(dealReport.rateComparisonScore || 70) * 2.51} 251`}
-                    strokeDashoffset="0"
-                    transform="rotate(-90 64 64)"
-                  />
-                  
-                  {/* Yield Factor Ring (20%) - Innermost */}
-                  <circle
-                    className="text-orange-500 stroke-current"
-                    strokeWidth="5"
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="30"
-                    cx="64"
-                    cy="64"
-                    strokeDasharray={`${(dealReport.yieldFactorScore || 60) * 1.88} 188`}
-                    strokeDashoffset="0"
-                    transform="rotate(-90 64 64)"
-                  />
-                  
-                  {/* Central Score Circle */}
-                  <circle
-                    className="fill-white"
-                    r="24"
-                    cx="64"
-                    cy="64"
                   />
                 </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-4xl font-bold">{dealReport.score}</div>
+                <div className="absolute inset-0 flex items-center justify-center text-5xl font-bold">
+                  {dealReport.score}
                 </div>
               </div>
-              
-              {/* Legend */}
-              <div className="grid grid-cols-2 gap-x-2 gap-y-1 w-full max-w-[200px] text-xs mb-2">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-blue-500 mr-1"></div>
-                  <span>Price (40%)</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-green-500 mr-1"></div>
-                  <span>Condition (20%)</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-purple-500 mr-1"></div>
-                  <span>Rate Comp (20%)</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-orange-500 mr-1"></div>
-                  <span>Yield (20%)</span>
-                </div>
-              </div>
-              
               <div
-                className={`text-xl font-semibold mt-1 ${dealReport.score >= 75 ? "text-green-600" : dealReport.score >= 60 ? "text-blue-600" : dealReport.score >= 40 ? "text-amber-600" : "text-red-600"}`}
+                className={`text-xl font-semibold ${dealReport.score >= 75 ? "text-green-600" : dealReport.score >= 60 ? "text-blue-600" : dealReport.score >= 40 ? "text-amber-600" : "text-red-600"}`}
               >
                 {dealReport.rating}
               </div>
