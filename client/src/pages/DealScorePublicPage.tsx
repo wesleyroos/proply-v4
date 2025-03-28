@@ -2654,6 +2654,45 @@ export default function DealScorePublicPage() {
                 // Close the dialog
                 setShowFinancingDialog(false);
                 
+                // For immediate UI update, we'll directly modify the dealReport state
+                if (dealReport) {
+                  const depositPercentage = Number(financingForm.depositPercentage) || 10;
+                  const interestRate = Number(financingForm.interestRate) || 11;
+                  const loanTerm = Number(financingForm.loanTerm) || 20;
+                  
+                  // Calculate new values
+                  const purchasePrice = dealReport.askingPrice;
+                  const depositAmount = purchasePrice * (depositPercentage / 100);
+                  const loanAmount = purchasePrice - depositAmount;
+                  
+                  // Calculate new monthly payment
+                  const monthlyPayment = 
+                    (loanAmount *
+                      (interestRate / 100 / 12) *
+                      Math.pow(1 + interestRate / 100 / 12, loanTerm * 12)) /
+                    (Math.pow(1 + interestRate / 100 / 12, loanTerm * 12) - 1);
+                  
+                  // Calculate new cash flows
+                  const estimatedMonthlyCosts = dealReport.estimatedMonthlyCosts;
+                  const cashFlowShortTerm = 
+                    dealReport.annualRevenueShortTerm / 12 - monthlyPayment - estimatedMonthlyCosts;
+                  const cashFlowLongTerm = 
+                    dealReport.monthlyLongTerm - monthlyPayment - estimatedMonthlyCosts;
+                  
+                  // Update the dealReport with new values
+                  setDealReport({
+                    ...dealReport,
+                    depositPercentage,
+                    depositAmount,
+                    interestRate,
+                    loanTerm,
+                    loanAmount,
+                    monthlyPayment,
+                    cashFlowShortTerm,
+                    cashFlowLongTerm
+                  });
+                }
+                
                 // Update form data with new financing details
                 setFormData(prev => ({
                   ...prev,
@@ -2662,16 +2701,16 @@ export default function DealScorePublicPage() {
                   loanTerm: financingForm.loanTerm
                 }));
                 
-                // Recalculate deal score with updated financing
+                // Still recalculate for complete accuracy
                 if (result) {
                   setIsCalculating(true);
                   setTimeout(() => {
                     calculateDealScore();
-                  }, 500);
+                  }, 100);
                   
                   toast({
                     title: "Financing details updated",
-                    description: "Recalculating investment metrics with new financing parameters.",
+                    description: "Investment metrics have been recalculated with new financing parameters.",
                   });
                 }
               }}
