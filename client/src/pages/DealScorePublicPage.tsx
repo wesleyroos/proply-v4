@@ -1806,7 +1806,7 @@ export default function DealScorePublicPage() {
                           </p>
                           <p className="font-medium">
                             R{formatPrice(
-                              (dealReport.monthlyPayment + dealReport.estimatedMonthlyCosts) / 0.3
+                              dealReport.monthlyPayment / 0.3
                             )}
                             <span className="text-xs text-muted-foreground ml-1">
                               (30% DTI)
@@ -1816,7 +1816,7 @@ export default function DealScorePublicPage() {
                       </div>
                       <div className="mt-2 pt-2 border-t">
                         <p className="text-xs text-muted-foreground">
-                          DTI = Debt-to-Income ratio. Banks typically require your monthly housing costs to be less than 30% of your gross income.
+                          DTI = Debt-to-Income ratio. Banks typically require your bond payment to be less than 30% of your gross income.
                         </p>
                       </div>
                     </div>
