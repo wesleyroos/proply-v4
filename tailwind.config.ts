@@ -79,10 +79,16 @@ export default {
             height: "0",
           },
         },
+        "single-pulse": {
+          "0%": { borderColor: "rgba(59, 130, 246, 0.5)", boxShadow: "0 0 0 0 rgba(59, 130, 246, 0.2)" },
+          "50%": { borderColor: "rgba(59, 130, 246, 1)", boxShadow: "0 0 0 8px rgba(59, 130, 246, 0)" },
+          "100%": { borderColor: "rgba(59, 130, 246, 0.5)", boxShadow: "0 0 0 0 rgba(59, 130, 246, 0)" }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "single-pulse": "single-pulse 3s ease-in-out",
       },
     },
   },

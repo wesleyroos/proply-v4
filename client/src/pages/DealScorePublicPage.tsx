@@ -1667,7 +1667,7 @@ export default function DealScorePublicPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Financing Card */}
-                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-pulse' : 'border-gray-200'} transition-all duration-300`}>
+                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-single-pulse' : 'border-gray-200'} transition-all duration-300`}>
                     <div className="bg-gradient-to-r from-amber-500 to-yellow-400 px-4 py-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
@@ -1753,7 +1753,7 @@ export default function DealScorePublicPage() {
                   </div>
 
                   {/* Affordability Card */}
-                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-pulse' : 'border-gray-200'} transition-all duration-300`}>
+                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-single-pulse' : 'border-gray-200'} transition-all duration-300`}>
                     <div className="bg-gradient-to-r from-indigo-600 to-violet-500 px-4 py-3">
                       <div className="flex items-center">
                         <Wallet className="h-5 w-5 text-white mr-2" />
@@ -1826,7 +1826,7 @@ export default function DealScorePublicPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Short-Term Cash Flow Card */}
-                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-pulse' : 'border-gray-200'} transition-all duration-300`}>
+                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-single-pulse' : 'border-gray-200'} transition-all duration-300`}>
                     <div className="bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-3">
                       <div className="flex items-center">
                         <Calendar className="h-5 w-5 text-white mr-2" />
@@ -1868,7 +1868,7 @@ export default function DealScorePublicPage() {
                   </div>
 
                   {/* Long-Term Cash Flow Card */}
-                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-pulse' : 'border-gray-200'} transition-all duration-300`}>
+                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-single-pulse' : 'border-gray-200'} transition-all duration-300`}>
                     <div className="bg-gradient-to-r from-indigo-500 to-purple-400 px-4 py-3">
                       <div className="flex items-center">
                         <Home className="h-5 w-5 text-white mr-2" />
@@ -1910,7 +1910,7 @@ export default function DealScorePublicPage() {
                   </div>
 
                   {/* Return on Investment Card */}
-                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-pulse' : 'border-gray-200'} transition-all duration-300`}>
+                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-single-pulse' : 'border-gray-200'} transition-all duration-300`}>
                     <div className="bg-gradient-to-r from-emerald-500 to-green-400 px-4 py-3">
                       <div className="flex items-center">
                         <TrendingUp className="h-5 w-5 text-white mr-2" />
@@ -1957,7 +1957,7 @@ export default function DealScorePublicPage() {
 
                 {/* Loan Paydown and Equity Buildup Chart */}
                 <div className="w-full mt-8">
-                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-pulse' : 'border-gray-200'} transition-all duration-300`}>
+                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-single-pulse' : 'border-gray-200'} transition-all duration-300`}>
                     <div className="bg-gradient-to-r from-violet-500 to-purple-400 px-4 py-3">
                       <div className="flex items-center">
                         <TrendingUp className="h-5 w-5 text-white mr-2" />
@@ -2732,10 +2732,10 @@ export default function DealScorePublicPage() {
                     description: "Investment metrics have been recalculated.",
                   });
                   
-                  // Remove highlighting after 2 seconds
+                  // Remove highlighting after 3 seconds to match single-pulse animation
                   setTimeout(() => {
                     setFinancingUpdated(false);
-                  }, 2000);
+                  }, 3000);
                 }
               }}
             >
