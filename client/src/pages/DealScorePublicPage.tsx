@@ -63,6 +63,7 @@ import { RentalAmountProgressDialog } from "@/components/RentalAmountProgressDia
 import { Badge } from "@/components/ui/badge";
 import { DealScoreReport } from "./DealScoreReportPage";
 import { EmailPDFButton } from "@/components/pdf/email-pdf-button";
+import LoanEquityChart from "@/components/LoanEquityChart";
 
 export default function DealScorePublicPage() {
   const { toast } = useToast();
@@ -1894,6 +1895,34 @@ export default function DealScorePublicPage() {
                           {dealReport.bestInvestmentStrategy}
                         </p>
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Loan Paydown and Equity Buildup Chart */}
+                <div className="w-full mt-8">
+                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
+                    <div className="bg-gradient-to-r from-violet-500 to-purple-400 px-4 py-3">
+                      <div className="flex items-center">
+                        <TrendingUp className="h-5 w-5 text-white mr-2" />
+                        <h4 className="font-semibold text-white">
+                          Loan Paydown & Equity Buildup
+                        </h4>
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      <p className="text-sm text-slate-600 mb-3">
+                        This chart shows how your loan balance decreases and your equity grows over the loan term.
+                      </p>
+                      {dealReport && (
+                        <LoanEquityChart
+                          loanAmount={dealReport.loanAmount}
+                          interestRate={dealReport.interestRate}
+                          loanTerm={dealReport.loanTerm}
+                          purchasePrice={dealReport.askingPrice}
+                          annualAppreciation={5}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
