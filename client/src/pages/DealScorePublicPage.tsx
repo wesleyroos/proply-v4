@@ -1231,6 +1231,22 @@ export default function DealScorePublicPage() {
                   </p>
                 </div>
               </div>
+
+              {/* Contextual explanation based on price difference */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-sm text-slate-600">
+                  {dealReport.percentageDifference > 0 ? (
+                    /* Property is undervalued */
+                    `This property appears to be priced ${Math.abs(dealReport.percentageDifference).toFixed(1)}% below estimated market value, suggesting potential value.`
+                  ) : dealReport.percentageDifference >= -10 ? (
+                    /* Price is slightly above market value (up to 10%) */
+                    `The asking price is ${Math.abs(dealReport.percentageDifference).toFixed(1)}% above estimated market value, which can be acceptable for properties with good appreciation potential.`
+                  ) : (
+                    /* Price is significantly above market value (more than 10%) */
+                    `The asking price is ${Math.abs(dealReport.percentageDifference).toFixed(1)}% above estimated market value. This could still be justified by unique features, superior finishes, exceptional views, or recent upgrades not reflected in comparable sales data. Always conduct your own research.`
+                  )}
+                </p>
+              </div>
             </div>
           </div>
 
