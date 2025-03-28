@@ -144,6 +144,21 @@ export default function DealScorePublicPage() {
     loanTerm: "",
   });
   const [financingUpdated, setFinancingUpdated] = useState(false);
+  
+  // Helper function to calculate monthly bond payment
+  const calculateMonthlyPayment = (
+    loanAmount: number,
+    interestRate: number,
+    loanTerm: number
+  ): number => {
+    const monthlyRate = interestRate / 100 / 12;
+    const numberOfPayments = loanTerm * 12;
+    if (monthlyRate === 0) return loanAmount / numberOfPayments;
+    return (
+      (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
+      (Math.pow(1 + monthlyRate, numberOfPayments) - 1)
+    );
+  };
 
   const fillDemoData = () => {
     setDemoClicks((prev) => {
@@ -876,7 +891,7 @@ export default function DealScorePublicPage() {
                 onAddressValidated={(addressData) => {
                   console.log("Address validated:", addressData);
                   // Auto-populate with formatted address for better consistency
-                  if (addressData.validationStatus === 'valid' || addressData.validationStatus === 'partial') {
+                  if (addressData.validationStatus === 'valid') {
                     handleInputChange("address", addressData.formattedAddress);
                   }
                 }}
@@ -2651,13 +2666,22 @@ export default function DealScorePublicPage() {
               Cancel
             </Button>
             <Button 
-              onClick={async () => {
-                // Get the updated values from the form
+              onClick={() => {
+                // Get updated values
                 const newDepositPercentage = Number(financingForm.depositPercentage) || 10;
                 const newInterestRate = Number(financingForm.interestRate) || 11; 
                 const newLoanTerm = Number(financingForm.loanTerm) || 20;
                 
-                // Update form data first
+                // Show a toast
+                toast({
+                  title: "Updating financing details",
+                  description: "Recalculating investment metrics...",
+                });
+                
+                // Close dialog
+                setShowFinancingDialog(false);
+                
+                // Update form data state
                 setFormData(prev => ({
                   ...prev,
                   depositPercentage: newDepositPercentage.toString(),
@@ -2665,40 +2689,54 @@ export default function DealScorePublicPage() {
                   loanTerm: newLoanTerm.toString()
                 }));
                 
-                // Show a loading toast to indicate changes are being applied
-                toast({
-                  title: "Updating financing details",
-                  description: "Recalculating investment metrics...",
-                });
-                
-                // Give React time to process the state update
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
-                // Force recalculation
-                setIsCalculating(true);
-                
-                // Close the dialog
-                setShowFinancingDialog(false);
-                
-                // Signal that financing was updated to trigger the highlighting effect
+                // Enable highlighting effect
                 setFinancingUpdated(true);
                 
-                // Wait a moment before recalculating to ensure state updates are processed
-                setTimeout(() => {
-                  // Recalculate everything
-                  calculateDealScore();
+                // Calculate new values and update report
+                if (dealReport) {
+                  const purchasePrice = dealReport.askingPrice;
+                  const depositAmount = purchasePrice * (newDepositPercentage / 100);
+                  const loanAmount = purchasePrice - depositAmount;
+                  const monthlyPayment = calculateMonthlyPayment(loanAmount, newInterestRate, newLoanTerm);
                   
-                  // Notify the user
+                  // Update cash flows
+                  const shortTermMonthlyRevenue = dealReport.annualRevenueShortTerm 
+                    ? dealReport.annualRevenueShortTerm / 12 
+                    : 0;
+                  
+                  const shortTermCashFlow = shortTermMonthlyRevenue - 
+                    (monthlyPayment + dealReport.estimatedMonthlyCosts);
+                    
+                  const longTermCashFlow = (dealReport.monthlyLongTerm || 0) - 
+                    (monthlyPayment + dealReport.estimatedMonthlyCosts);
+                  
+                  // Create new report object
+                  const updatedReport = {
+                    ...dealReport,
+                    depositPercentage: newDepositPercentage,
+                    interestRate: newInterestRate,
+                    loanTerm: newLoanTerm,
+                    depositAmount: depositAmount,
+                    loanAmount: loanAmount,
+                    monthlyPayment: monthlyPayment,
+                    cashFlowShortTerm: shortTermCashFlow,
+                    cashFlowLongTerm: longTermCashFlow
+                  };
+                  
+                  // Update state
+                  setDealReport(updatedReport);
+                  
+                  // Success toast
                   toast({
                     title: "Financing details updated",
                     description: "Investment metrics have been recalculated.",
                   });
                   
-                  // Remove the highlight effect after 2 seconds
+                  // Remove highlighting after 2 seconds
                   setTimeout(() => {
                     setFinancingUpdated(false);
                   }, 2000);
-                }, 300);
+                }
               }}
             >
               Apply Changes
