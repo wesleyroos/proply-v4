@@ -28,6 +28,7 @@ import {
   Percent,
   Building,
   Calculator,
+  Pencil,
 } from "lucide-react";
 import AddressAutocomplete, { ValidatedAddressData } from "../components/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
@@ -136,6 +137,12 @@ export default function DealScorePublicPage() {
   const [showRentalAmountDialog, setShowRentalAmountDialog] = useState(false);
   const [rentalAmountError, setRentalAmountError] = useState<string>();
   const [dealReport, setDealReport] = useState<DealScoreReport | null>(null);
+  const [showFinancingDialog, setShowFinancingDialog] = useState(false);
+  const [financingForm, setFinancingForm] = useState({
+    depositPercentage: "",
+    interestRate: "",
+    loanTerm: "",
+  });
 
   const fillDemoData = () => {
     setDemoClicks((prev) => {
@@ -319,11 +326,11 @@ export default function DealScorePublicPage() {
     // Use custom occupancy if provided, otherwise use default (65%)
     const propertyOccupancyRate = customOccupancy || 65;
 
-    // Set default values for financing
-    const depositPercentage = 10; // 10% deposit
+    // Use form data for financing values
+    const depositPercentage = Number(formData.depositPercentage) || 10; // Default to 10% if not set
     const depositAmount = purchasePrice * (depositPercentage / 100);
-    const interestRate = 11; // 11% interest rate
-    const loanTerm = 20; // 20 year loan term
+    const interestRate = Number(formData.interestRate) || 11; // Default to 11% if not set
+    const loanTerm = Number(formData.loanTerm) || 20; // Default to 20 years if not set
     const loanAmount = purchasePrice - depositAmount;
     const monthlyPayment =
       (loanAmount *
@@ -1646,11 +1653,28 @@ export default function DealScorePublicPage() {
                   {/* Financing Card */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
                     <div className="bg-gradient-to-r from-amber-500 to-yellow-400 px-4 py-3">
-                      <div className="flex items-center">
-                        <Landmark className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">
-                          Financing Details
-                        </h4>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Landmark className="h-5 w-5 text-white mr-2" />
+                          <h4 className="font-semibold text-white">
+                            Financing Details
+                          </h4>
+                        </div>
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            // Initialize the form with current values
+                            setFinancingForm({
+                              depositPercentage: dealReport?.depositPercentage.toString() || "10",
+                              interestRate: dealReport?.interestRate.toString() || "11",
+                              loanTerm: dealReport?.loanTerm.toString() || "20",
+                            });
+                            setShowFinancingDialog(true);
+                          }}
+                          className="text-white hover:text-gray-100"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                     <div className="p-5 space-y-4">
@@ -2564,6 +2588,99 @@ export default function DealScorePublicPage() {
         status={rentalAmountStatus}
         error={rentalAmountError}
       />
+
+      {/* Financing Details Dialog */}
+      <Dialog open={showFinancingDialog} onOpenChange={setShowFinancingDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Financing Details</DialogTitle>
+            <DialogDescription>
+              Adjust your financing parameters to see how they affect your investment metrics.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-1 gap-2">
+              <Label htmlFor="depositPercentage">Deposit Percentage (%)</Label>
+              <Input
+                id="depositPercentage"
+                value={financingForm.depositPercentage}
+                onChange={(e) => 
+                  setFinancingForm(prev => ({
+                    ...prev,
+                    depositPercentage: e.target.value.replace(/[^0-9.]/g, "")
+                  }))
+                }
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              <Label htmlFor="interestRate">Interest Rate (%)</Label>
+              <Input
+                id="interestRate"
+                value={financingForm.interestRate}
+                onChange={(e) => 
+                  setFinancingForm(prev => ({
+                    ...prev,
+                    interestRate: e.target.value.replace(/[^0-9.]/g, "")
+                  }))
+                }
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              <Label htmlFor="loanTerm">Loan Term (Years)</Label>
+              <Input
+                id="loanTerm"
+                value={financingForm.loanTerm}
+                onChange={(e) => 
+                  setFinancingForm(prev => ({
+                    ...prev,
+                    loanTerm: e.target.value.replace(/[^0-9]/g, "")
+                  }))
+                }
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowFinancingDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                // Close the dialog
+                setShowFinancingDialog(false);
+                
+                // Update form data with new financing details
+                setFormData(prev => ({
+                  ...prev,
+                  depositPercentage: financingForm.depositPercentage,
+                  interestRate: financingForm.interestRate,
+                  loanTerm: financingForm.loanTerm
+                }));
+                
+                // Recalculate deal score with updated financing
+                if (result) {
+                  setIsCalculating(true);
+                  setTimeout(() => {
+                    calculateDealScore();
+                  }, 500);
+                  
+                  toast({
+                    title: "Financing details updated",
+                    description: "Recalculating investment metrics with new financing parameters.",
+                  });
+                }
+              }}
+            >
+              Apply Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
