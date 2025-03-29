@@ -33,6 +33,7 @@ export interface DealScoreReport {
   bathrooms: number;
   parking: number;
   propertyCondition: string;
+  propertyType?: string; // Making it optional to not break existing code
   
   // Deal Score Metrics
   score: number;
@@ -108,6 +109,7 @@ export default function DealScoreReportPage({ report }: { report?: DealScoreRepo
     bathrooms: 2,
     parking: 1,
     propertyCondition: "excellent",
+    propertyType: "apartment",
     
     // Deal Score Metrics
     score: 89,
@@ -367,7 +369,7 @@ export default function DealScoreReportPage({ report }: { report?: DealScoreRepo
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Property Type:</span>
-                  <span className="font-medium">Apartment</span>
+                  <span className="font-medium">{data.propertyType === 'apartment' ? 'Apartment/Flat' : data.propertyType === 'house' ? 'House' : 'Apartment/Flat'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Size:</span>

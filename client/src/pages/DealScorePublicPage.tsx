@@ -80,6 +80,7 @@ export default function DealScorePublicPage() {
     bathrooms: "",
     parking: "",
     propertyCondition: "excellent",
+    propertyType: "apartment", // Default to apartment
 
     // Default values for other fields (no longer shown in form)
     nightlyRate: "",
@@ -172,6 +173,7 @@ export default function DealScorePublicPage() {
           bathrooms: "2",
           parking: "1",
           propertyCondition: "excellent",
+          propertyType: "apartment",
           nightlyRate: "2500",
           occupancy: "70",
           longTermRental: "25000",
@@ -471,6 +473,7 @@ export default function DealScorePublicPage() {
       bathrooms: bathrooms,
       parking: parking,
       propertyCondition: formData.propertyCondition,
+      propertyType: formData.propertyType,
 
       // Deal Score Metrics
       score: Math.round(score),
@@ -811,6 +814,7 @@ export default function DealScorePublicPage() {
       bathrooms: "",
       parking: "",
       propertyCondition: "excellent",
+      propertyType: "apartment", // Add propertyType field
       nightlyRate: "",
       occupancy: "",
       longTermRental: "",
@@ -1048,26 +1052,47 @@ export default function DealScorePublicPage() {
           </div>
         </div>
 
-        <div>
-          <Label htmlFor="propertyCondition" className="mb-1 block">
-            Property Condition
-          </Label>
-          <Select
-            value={formData.propertyCondition}
-            onValueChange={(value) =>
-              handleInputChange("propertyCondition", value)
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select condition" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="excellent">Excellent</SelectItem>
-              <SelectItem value="good">Good</SelectItem>
-              <SelectItem value="fair">Fair</SelectItem>
-              <SelectItem value="poor">Poor</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="propertyCondition" className="mb-1 block">
+              Property Condition
+            </Label>
+            <Select
+              value={formData.propertyCondition}
+              onValueChange={(value) =>
+                handleInputChange("propertyCondition", value)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select condition" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="excellent">Excellent</SelectItem>
+                <SelectItem value="good">Good</SelectItem>
+                <SelectItem value="fair">Fair</SelectItem>
+                <SelectItem value="poor">Poor</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="propertyType" className="mb-1 block">
+              Property Type
+            </Label>
+            <Select
+              value={formData.propertyType}
+              onValueChange={(value) =>
+                handleInputChange("propertyType", value)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="apartment">Apartment/Flat</SelectItem>
+                <SelectItem value="house">House</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
     );
