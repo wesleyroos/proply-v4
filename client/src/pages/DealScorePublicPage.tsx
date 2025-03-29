@@ -597,7 +597,7 @@ export default function DealScorePublicPage() {
         },
         body: JSON.stringify({
           address: formData.address,
-          propertyType: "residential",
+          propertyType: formData.propertyType, // Use the actual property type (apartment or house)
         }),
       });
 
@@ -980,7 +980,7 @@ export default function DealScorePublicPage() {
                 htmlFor="areaRate"
                 data-error={checkRequiredFields("areaRate")}
               >
-                Area Rate per m²
+                {formData.propertyType === 'apartment' ? 'Area Rate per m² (living space)' : 'Area Rate per m² (erf size)'}
                 <span className="text-red-500">*</span>
               </Label>
               <Button
@@ -990,7 +990,7 @@ export default function DealScorePublicPage() {
                 className="h-5 text-xs px-2 text-primary"
                 onClick={handleFetchAreaRate}
               >
-                Not sure? Fetch Rate
+                Not sure? Fetch {formData.propertyType === 'apartment' ? 'Apartment' : 'House'} Rate
               </Button>
             </div>
             <div className="relative">
@@ -1123,6 +1123,9 @@ export default function DealScorePublicPage() {
             <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm capitalize">
               {dealReport.propertyCondition} Condition
             </Badge>
+            <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 text-sm capitalize">
+              {dealReport.propertyType || 'Apartment'}
+            </Badge>
           </div>
 
           <div className="grid grid-cols-4 max-w-3xl mx-auto mb-6">
@@ -1240,7 +1243,9 @@ export default function DealScorePublicPage() {
             <div className="p-5">
               <p className="text-sm text-slate-500 mb-4">
                 Based on area rate of R{formatPrice(dealReport.areaRate)}/m² for
-                properties in this area
+                {dealReport.propertyType === 'apartment' 
+                  ? ' apartment living space in this area' 
+                  : ' house erf sizes in this area'}
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -1408,9 +1413,9 @@ export default function DealScorePublicPage() {
                     <div className="p-5">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-muted-foreground">Size</p>
-                          <p className="font-medium">
-                            {dealReport.propertySize} m²
+                          <p className="text-sm text-muted-foreground">Property Type</p>
+                          <p className="font-medium capitalize">
+                            {dealReport.propertyType || 'Apartment'}
                           </p>
                         </div>
                         <div>
@@ -1419,6 +1424,15 @@ export default function DealScorePublicPage() {
                           </p>
                           <p className="font-medium capitalize">
                             {dealReport.propertyCondition}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Size</p>
+                          <p className="font-medium">
+                            {dealReport.propertySize} m²
+                            <span className="text-xs text-slate-500 block">
+                              {dealReport.propertyType === 'apartment' ? '(Internal living space)' : '(Erf size)'}
+                            </span>
                           </p>
                         </div>
                         <div>
@@ -1501,6 +1515,9 @@ export default function DealScorePublicPage() {
                           </p>
                           <p className="font-medium">
                             R{formatPrice(dealReport.areaRate)}/m²
+                            <span className="text-xs text-slate-500 block">
+                              {dealReport.propertyType === 'apartment' ? 'For apartment living space' : 'For house erf size'}
+                            </span>
                           </p>
                         </div>
                       </div>

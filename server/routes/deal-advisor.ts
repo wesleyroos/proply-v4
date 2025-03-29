@@ -88,6 +88,7 @@ router.post('/deal-analysis', async (req, res) => {
     finalAreaRate,
     propertySize,
     propertyCondition,
+    propertyType,
     nightlyRate,
     occupancyRate,
     monthlyRental,
@@ -128,6 +129,7 @@ router.post('/deal-analysis', async (req, res) => {
       finalAreaRate,
       propertySize,
       propertyCondition,
+      propertyType: propertyType || 'apartment', // Default to apartment if not specified
       nightlyRate,
       occupancyRate,
       monthlyRental,

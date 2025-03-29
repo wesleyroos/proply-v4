@@ -22,10 +22,23 @@ function extractNumber(text: string): number {
   return isNaN(parsedNumber) ? 0 : parsedNumber;
 }
 
-export async function getAreaRate(address: string, propertyType: string = 'residential') {
+export async function getAreaRate(address: string, propertyType: string = 'apartment') {
   try {
     console.log(`Fetching area rate for ${propertyType} property at ${address}`);
-
+    
+    // Determine if we're dealing with an apartment or house
+    const isApartment = propertyType === 'apartment';
+    const rateType = isApartment ? 'living area (internal space)' : 'erf size (land area)';
+    
+    // Customize our prompts based on property type
+    const systemPrompt = isApartment 
+      ? "You are a property valuation expert in South Africa. Your task is to return ONLY a number representing the average rate per square meter (R/m²) for APARTMENT UNITS based on internal living space. Do not provide disclaimers or explanations. Example response format: '35000'"
+      : "You are a property valuation expert in South Africa. Your task is to return ONLY a number representing the average rate per square meter (R/m²) for HOUSES based on total ERF SIZE (land area). Do not provide disclaimers or explanations. Example response format: '15000'";
+      
+    const userPrompt = isApartment
+      ? `What is the current average rate per square meter (internal living space) for apartments/flats in ${address}? For reference: Cape Town CBD rates range R30,000-R35,000/m². Return only the numeric rate.`
+      : `What is the current average rate per square meter based on erf size (land area) for houses in ${address}? For reference: Houses in suburban Cape Town might range R10,000-R25,000/m² for land. Return only the numeric rate.`;
+    
     // First API call with more specific prompt
     const response1 = await openai.chat.completions.create({
       model: "gpt-4o", // Using the latest model
@@ -33,27 +46,27 @@ export async function getAreaRate(address: string, propertyType: string = 'resid
       messages: [
         {
           role: "system",
-          content: "You are a property valuation expert in South Africa. Your task is to return ONLY a number representing the average rate per square meter (R/m²) for properties. Do not provide disclaimers or explanations. If uncertain, estimate based on similar areas. Example response format: '35000'"
+          content: systemPrompt
         },
         {
           role: "user",
-          content: `What is the current average rate per square meter for residential properties in ${address}? For reference: Cape Town CBD rates range R30,000-R35,000/m². Return only the numeric rate.`
+          content: userPrompt
         }
       ]
     });
 
-    // Second API call with different context
+    // Second API call with different context but still property-type aware
     const response2 = await openai.chat.completions.create({
       model: "gpt-4o", // Using the latest model
       temperature: 0.1,
       messages: [
         {
           role: "system",
-          content: "You are a real estate data analyst. Return ONLY a numeric value for the rate per square meter (R/m²). Use the format: '35000'. No text, just the number."
+          content: `You are a real estate data analyst. Return ONLY a numeric value for the rate per square meter (R/m²) for ${propertyType} properties based on ${rateType}. Use the format: '35000'. No text, just the number.`
         },
         {
           role: "user",
-          content: `What is the average residential rate per square meter in ${address}? CBD reference: R30,000-R35,000/m². Return only the number.`
+          content: `What is the average rate per square meter for ${propertyType} properties in ${address} based on ${rateType}? Return only the number.`
         }
       ]
     });
@@ -99,6 +112,7 @@ export async function getDealAnalysis(dealData: {
   finalAreaRate: number;
   propertySize: number;
   propertyCondition: string;
+  propertyType?: string;
   nightlyRate?: number;
   occupancyRate?: number;
   monthlyRental?: number;
@@ -128,11 +142,12 @@ Provide a structured analysis with clear sections. Be specific about the locatio
           content: `Please analyze this property deal with the following details:
 
 Address: ${dealData.address}
-Size: ${dealData.propertySize}m²
+Property Type: ${dealData.propertyType === 'apartment' ? 'Apartment/Flat' : 'House'}
+Size: ${dealData.propertySize}m² ${dealData.propertyType === 'apartment' ? '(living space)' : '(erf size)'}
 Condition: ${dealData.propertyCondition}
 Purchase Price: R${dealData.purchasePrice.toLocaleString()}
 Area Rate Range: ${dealData.areaRateResponses.join(' to ')} per m²
-Final Area Rate: R${dealData.finalAreaRate.toLocaleString()} per m²
+Final Area Rate: R${dealData.finalAreaRate.toLocaleString()} per m² ${dealData.propertyType === 'apartment' ? 'for apartments' : 'for houses'}
 ${dealData.nightlyRate ? `Nightly Rate: R${dealData.nightlyRate}` : ''}
 ${dealData.occupancyRate ? `Expected Occupancy: ${dealData.occupancyRate}%` : ''}
 ${dealData.monthlyRental ? `Monthly Rental: R${dealData.monthlyRental}` : ''}
