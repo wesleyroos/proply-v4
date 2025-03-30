@@ -67,6 +67,7 @@ export function registerRoutes(app: Express): Server {
       req.path === "/deal-advisor/area-rate" ||
       req.path === "/deal-advisor/deal-analysis" ||
       req.path === "/deal-advisor/rental-amount" ||
+      req.path === "/deal-advisor/suburb-sentiment" ||
       req.path === "/public-revenue-data" ||
       req.path === "/address-validation/validate" ||
       req.path === "/address-validation/autocomplete"
