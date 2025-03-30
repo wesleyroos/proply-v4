@@ -858,12 +858,14 @@ export default function DealScorePublicPage() {
     }
   };
 
-  const handlePayment = async () => {
+  const handlePayment = async (freeMode = false) => {
     setProcessingPayment(true);
 
     try {
-      // Simulate payment processing
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Simulate payment processing (skip if free mode)
+      if (!freeMode) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
 
       // Prepare the bedrooms format first so we can use it later
       const bedrooms = formData.bedrooms || "1"; // Default to 1 if not specified
@@ -875,16 +877,19 @@ export default function DealScorePublicPage() {
             : Math.floor(Number(parseFormattedNumber(bedrooms))).toString();
 
       toast({
-        title: "Fetching Revenue Data",
-        description: "Getting accurate rental and occupancy data...",
+        title: freeMode ? "Processing" : "Fetching Revenue Data",
+        description: freeMode ? "Preparing your report..." : "Getting accurate rental and occupancy data...",
       });
+
+      // Determine if we should use the test mode for PriceLabs API
+      const useMockData = freeMode; // Use mock data in free mode
 
       // Fetch revenue data from PriceLabs API
       const address = formData.address;
 
       // Get PriceLabs API data for short-term rental metrics
       const pricelabsResponse = await fetch(
-        `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}&test=true`,
+        `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}&test=${useMockData}`,
       );
 
       if (!pricelabsResponse.ok) {
@@ -963,9 +968,10 @@ export default function DealScorePublicPage() {
       setReportUnlocked(true);
 
       toast({
-        title: "Payment Successful",
-        description:
-          "You now have full access to the comprehensive property report with real revenue data.",
+        title: freeMode ? "Report Ready" : "Payment Successful",
+        description: freeMode 
+          ? "Your property report is now available."
+          : "You now have full access to the comprehensive property report with real revenue data.",
       });
     } catch (error) {
       console.error("Error during payment or data fetching:", error);
@@ -3157,72 +3163,122 @@ export default function DealScorePublicPage() {
       </div>
 
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Unlock Full Report</DialogTitle>
+            <DialogTitle>Access Property Report</DialogTitle>
             <DialogDescription>
-              Access the complete property analysis including market insights,
-              investment potential, and detailed recommendations.
+              Choose how you'd like to access the comprehensive property analysis with market insights and investment recommendations.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <div className="flex items-center justify-between">
-              <span className="text-16px font-medium">Report Price:</span>
-              <span className="text-xl font-bold">R49</span>
+          <div className="grid gap-6 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Premium Option */}
+              <div className="flex flex-col p-4 border-2 border-blue-100 rounded-md bg-blue-50 relative">
+                <div className="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/3">
+                  <Badge className="bg-blue-500 text-white">RECOMMENDED</Badge>
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Premium Report</h3>
+                <p className="text-sm text-muted-foreground mb-2">Access to accurate real-time data from PriceLabs and rental market APIs</p>
+                <div className="mt-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm font-medium">Report Price:</span>
+                    <span className="text-lg font-bold">R49</span>
+                  </div>
+                  <RadioGroup
+                    value={paymentMethod}
+                    onValueChange={setPaymentMethod}
+                    className="grid grid-cols-2 gap-2"
+                  >
+                    <div>
+                      <RadioGroupItem
+                        value="card"
+                        id="card"
+                        className="peer sr-only"
+                      />
+                      <Label
+                        htmlFor="card"
+                        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                      >
+                        <CreditCard className="mb-1 h-4 w-4" />
+                        <span className="text-xs">Card</span>
+                      </Label>
+                    </div>
+                    <div>
+                      <RadioGroupItem
+                        value="instant-eft"
+                        id="instant-eft"
+                        className="peer sr-only"
+                      />
+                      <Label
+                        htmlFor="instant-eft"
+                        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                      >
+                        <Wallet className="mb-1 h-4 w-4" />
+                        <span className="text-xs">Instant EFT</span>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                  <Button
+                    onClick={() => handlePayment()}
+                    disabled={processingPayment}
+                    className="w-full mt-3 bg-blue-500 hover:bg-blue-600 text-white"
+                  >
+                    {processingPayment ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      `Pay R49`
+                    )}
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Free Option */}
+              <div className="flex flex-col p-4 border-2 border-slate-200 rounded-md">
+                <h3 className="font-semibold text-lg mb-2">Free Report</h3>
+                <p className="text-sm text-muted-foreground mb-2">Access to basic report with estimated data (no API integration)</p>
+                <div className="mt-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm font-medium">Report Price:</span>
+                    <span className="text-lg font-bold">Free</span>
+                  </div>
+                  <ul className="text-xs text-muted-foreground space-y-1 mb-4">
+                    <li className="flex items-center">
+                      <AlertCircle className="h-3 w-3 mr-1 text-amber-500" />
+                      Uses estimated rental data
+                    </li>
+                    <li className="flex items-center">
+                      <AlertCircle className="h-3 w-3 mr-1 text-amber-500" />
+                      Limited accuracy
+                    </li>
+                  </ul>
+                  <Button 
+                    variant="outline"
+                    onClick={() => handlePayment(true)}
+                    disabled={processingPayment}
+                    className="w-full"
+                  >
+                    {processingPayment ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      `Access Free Report`
+                    )}
+                  </Button>
+                </div>
+              </div>
             </div>
-
-            <RadioGroup
-              value={paymentMethod}
-              onValueChange={setPaymentMethod}
-              className="grid grid-cols-2 gap-4"
-            >
-              <div>
-                <RadioGroupItem
-                  value="card"
-                  id="card"
-                  className="peer sr-only"
-                />
-                <Label
-                  htmlFor="card"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                >
-                  <CreditCard className="mb-3 h-6 w-6" />
-                  Card
-                </Label>
-              </div>
-              <div>
-                <RadioGroupItem
-                  value="instant-eft"
-                  id="instant-eft"
-                  className="peer sr-only"
-                />
-                <Label
-                  htmlFor="instant-eft"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                >
-                  <Wallet className="mb-3 h-6 w-6" />
-                  Instant EFT
-                </Label>
-              </div>
-            </RadioGroup>
           </div>
 
-          <DialogFooter>
-            <Button
-              onClick={handlePayment}
-              disabled={processingPayment}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              {processingPayment ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                `Pay R49`
-              )}
-            </Button>
+          <DialogFooter className="flex flex-col space-y-2">
+            <p className="text-xs text-center text-muted-foreground w-full">
+              By accessing this report, you agree to our terms and conditions.
+            </p>
           </DialogFooter>
         </DialogContent>
       </Dialog>
