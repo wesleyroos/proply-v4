@@ -50,6 +50,8 @@ router.post('/rental-amount', async (req, res) => {
 
 // Suburb sentiment endpoint - public access
 router.post('/suburb-sentiment', async (req, res) => {
+  // Skip authentication for this public endpoint
+  res.setHeader('Access-Control-Allow-Origin', '*');
   const { suburb } = req.body;
 
   if (!suburb) {
