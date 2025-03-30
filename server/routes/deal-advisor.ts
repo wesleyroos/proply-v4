@@ -6,7 +6,9 @@ import OpenAI from "openai";
 import { db } from 'db';
 import { dealScoreLeads } from '@db/schema';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY
+});
 const router = express.Router();
 
 // Email collection endpoint for deal score leads
