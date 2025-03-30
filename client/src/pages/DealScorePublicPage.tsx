@@ -990,7 +990,7 @@ export default function DealScorePublicPage() {
                 className="h-5 text-xs px-2 text-primary"
                 onClick={handleFetchAreaRate}
               >
-                Not sure? Fetch Rate
+                Not sure? Fetch {formData.propertyType === 'apartment' ? 'Apartment' : 'House'} Rate
               </Button>
             </div>
             <div className="relative">
@@ -2656,8 +2656,6 @@ export default function DealScorePublicPage() {
         onOpenChange={setShowAreaRateDialog}
         status={areaRateStatus}
         error={areaRateError}
-        propertyType={formData.propertyType}
-        address={formData.address}
       />
 
       <RentalAmountProgressDialog 

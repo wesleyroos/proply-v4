@@ -8,45 +8,26 @@ interface AreaRateProgressDialogProps {
   onOpenChange: (open: boolean) => void;
   status: "loading" | "success" | "error";
   error?: string;
-  propertyType?: string;
-  address?: string;
 }
 
 export function AreaRateProgressDialog({
   open,
   onOpenChange,
   status,
-  error,
-  propertyType = 'apartment',
-  address = ''
+  error
 }: AreaRateProgressDialogProps) {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
 
-  // Different steps for different property types
-  const apartmentSteps = [
+  const steps = [
     "Analyzing property location...",
     "Processing market data...",
     "Comparing recent sales...",
     "Calculating area rate..."
   ];
-  
-  const houseSteps = [
-    "Analyzing property location...",
-    "Characterizing neighborhood market...",
-    "Processing multiple valuation approaches...",
-    "Analyzing comparable land values...",
-    "Cross-referencing with recent sales...",
-    "Validating rate accuracy...",
-    "Finalizing erf rate calculation..."
-  ];
-
-  const steps = propertyType === 'house' ? houseSteps : apartmentSteps;
 
   useEffect(() => {
     if (status === "loading") {
-      // Use different timing based on property type
-      const stepTime = propertyType === 'house' ? 1700 : 1000; // Slower for houses
       const stepInterval = setInterval(() => {
         setCurrentStep((prev) => {
           if (prev >= steps.length - 1) {
@@ -55,17 +36,15 @@ export function AreaRateProgressDialog({
           }
           return prev + 1;
         });
-      }, stepTime);
+      }, 1000);
 
-      // Progress timer also adjusted for property type
-      const progressIncrement = propertyType === 'house' ? 1 : 2; // Slower for houses
       const progressTimer = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 90) {
             clearInterval(progressTimer);
             return 90;
           }
-          return prev + progressIncrement;
+          return prev + 2;
         });
       }, 200);
 
@@ -83,11 +62,7 @@ export function AreaRateProgressDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {propertyType === 'house' 
-              ? "Enhanced Erf Rate Analysis" 
-              : "AI Area Rate Analysis"}
-          </DialogTitle>
+          <DialogTitle>AI Area Rate Analysis</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <Card className="p-4">
@@ -120,15 +95,8 @@ export function AreaRateProgressDialog({
                     />
                   </div>
                   <p className="text-xs text-muted-foreground text-center">
-                    {propertyType === 'house' 
-                      ? "Our enhanced AI system is applying multiple valuation approaches to calculate accurate erf rates..." 
-                      : "Our AI is analyzing recent market data and property values in your area..."}
+                    Our AI is analyzing recent market data and property values in your area...
                   </p>
-                  {propertyType === 'house' && (
-                    <p className="text-xs text-muted-foreground text-center mt-1 italic">
-                      Using triangulation and self-correction for improved accuracy
-                    </p>
-                  )}
                 </>
               )}
 
@@ -138,15 +106,8 @@ export function AreaRateProgressDialog({
                     Area rate calculation complete!
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {propertyType === 'house'
-                      ? "Our enhanced AI system has successfully analyzed your location and calculated the erf rate using multiple valuation approaches."
-                      : "Our AI has successfully analyzed your location and calculated the market rate."}
+                    Our AI has successfully analyzed your location and calculated the market rate.
                   </p>
-                  {propertyType === 'house' && (
-                    <p className="text-xs text-muted-foreground">
-                      Rate based on land (erf) value, not building value
-                    </p>
-                  )}
                 </div>
               )}
 
