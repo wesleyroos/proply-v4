@@ -1,1 +1,0 @@
-` tag is needed.  The task is to remove the file, not to modify it.
