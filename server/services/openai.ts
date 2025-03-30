@@ -64,6 +64,57 @@ interface SuburbAnalysisResult {
   }>;
 }
 
+// Interface for suburb sentiment data used in Deal Score
+export interface SuburbSentimentResult {
+  description: string;
+  investmentPotential: string; // HIGH, MEDIUM, LOW
+  developmentActivity: string; // ACTIVE, MODERATE, MINIMAL
+  trend: string; // "Trending Up", "Stable", "Trending Down"
+}
+
+// Simplified version focused on sentiment for Deal Score
+export async function getSuburbSentiment(suburb: string): Promise<SuburbSentimentResult> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are a property market analysis expert. Provide a concise assessment of the given suburb, focusing on investment potential. 
+          
+Your response must be formatted as a strict JSON object with these fields:
+- description: A 2-3 sentence description of the suburb focusing on its character and investment outlook
+- investmentPotential: A single value of "HIGH", "MEDIUM", or "LOW"
+- developmentActivity: A single value of "ACTIVE", "MODERATE", or "MINIMAL"
+- trend: A single value of "Trending Up", "Stable", or "Trending Down"
+
+Base your analysis on recent development, economic trends, and market data. Keep the description factual and objective.`
+        },
+        {
+          role: "user",
+          content: `Analyze the investment outlook for the suburb: ${suburb}.`
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    if (!response.choices[0].message.content) {
+      throw new Error('OpenAI API returned empty response');
+    }
+
+    return JSON.parse(response.choices[0].message.content) as SuburbSentimentResult;
+  } catch (error) {
+    console.error('OpenAI API Error:', error);
+    // Return a fallback with clear indication of error
+    return {
+      description: "Unable to retrieve suburb data at this time.",
+      investmentPotential: "MEDIUM",
+      developmentActivity: "MODERATE",
+      trend: "Stable"
+    };
+  }
+}
+
 export async function analyzeSuburb(suburb: string): Promise<SuburbAnalysisResult> {
   try {
     const response = await openai.chat.completions.create({

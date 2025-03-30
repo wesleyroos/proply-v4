@@ -110,6 +110,23 @@ export interface DealScoreReport {
     takealot: boolean;
     checkersSixty60: boolean;
   };
+  
+  // Suburb Sentiment
+  suburbSentiment?: {
+    description: string;
+    investmentPotential: string; // HIGH, MEDIUM, LOW
+    developmentActivity: string; // ACTIVE, MODERATE, MINIMAL
+    trend: string; // "Trending Up", "Stable", "Trending Down"
+  };
+  
+  // Safety Analysis
+  safetyAnalysis?: {
+    score: number; // 1-10
+    rating: string; // "Above Average Safety", "Average Safety", "Below Average Safety"
+    comparedToCity: string; // "20% LOWER", "10% HIGHER", etc.
+    propertyRisk: string; // LOW, MODERATE, HIGH
+    violentRisk: string; // LOW, MODERATE, HIGH
+  };
 }
 
 export default function DealScoreReportPage({ report }: { report?: DealScoreReport }) {
@@ -221,6 +238,23 @@ export default function DealScoreReportPage({ report }: { report?: DealScoreRepo
       mrD: true,
       takealot: true,
       checkersSixty60: true
+    },
+    
+    // Suburb Sentiment
+    suburbSentiment: {
+      description: "Cape Town City Centre is considered a highly desirable area with a vibrant mix of residential and commercial properties. The area has seen significant revitalization in recent years, with many historic buildings being converted into modern apartments and offices.",
+      investmentPotential: "HIGH",
+      developmentActivity: "ACTIVE",
+      trend: "Trending Up"
+    },
+    
+    // Safety Analysis
+    safetyAnalysis: {
+      score: 7.2,
+      rating: "Above Average Safety",
+      comparedToCity: "20% LOWER",
+      propertyRisk: "MODERATE",
+      violentRisk: "LOW"
     }
   }
   
@@ -655,6 +689,217 @@ export default function DealScoreReportPage({ report }: { report?: DealScoreRepo
               View all {data.comparableProperties.length + 10} comparable properties
               <ChevronRight className="h-4 w-4" />
             </button>
+          </div>
+        </div>
+
+        {/* Miscellaneous Information Section */}
+        <div className="p-8 border-b">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="h-10 w-10 rounded-full flex items-center justify-center bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+              <BarChart3 className="h-5 w-5" />
+            </div>
+            <h2 className="text-2xl font-semibold">Area Insights</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            {/* Traffic Density Index */}
+            {data.trafficDensity && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-4 text-white">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold">Traffic Density Index</h3>
+                    <Badge className="bg-blue-500">{data.trafficDensity.overallRating}</Badge>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Morning Rush Hour</span>
+                        <span className="font-medium">{data.trafficDensity.morningRushHour}/10</span>
+                      </div>
+                      <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-green-500 to-red-500"
+                          style={{ width: `${data.trafficDensity.morningRushHour * 10}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Evening Rush Hour</span>
+                        <span className="font-medium">{data.trafficDensity.eveningRushHour}/10</span>
+                      </div>
+                      <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-green-500 to-red-500"
+                          style={{ width: `${data.trafficDensity.eveningRushHour * 10}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Weekend Traffic</span>
+                        <span className="font-medium">{data.trafficDensity.weekendTraffic}/10</span>
+                      </div>
+                      <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-green-500 to-red-500"
+                          style={{ width: `${data.trafficDensity.weekendTraffic * 10}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Delivery Services */}
+            {data.deliveryServices && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-4 text-white">
+                  <h3 className="font-semibold">Delivery Services Available</h3>
+                </div>
+                <div className="p-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className={`h-5 w-5 rounded-full flex items-center justify-center ${data.deliveryServices.uberEats ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                        {data.deliveryServices.uberEats ? <CheckCircle2 className="h-4 w-4" /> : <span className="h-3 w-3 bg-gray-300 rounded-full"></span>}
+                      </div>
+                      <span>Uber Eats</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className={`h-5 w-5 rounded-full flex items-center justify-center ${data.deliveryServices.mrD ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                        {data.deliveryServices.mrD ? <CheckCircle2 className="h-4 w-4" /> : <span className="h-3 w-3 bg-gray-300 rounded-full"></span>}
+                      </div>
+                      <span>Mr D</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className={`h-5 w-5 rounded-full flex items-center justify-center ${data.deliveryServices.takealot ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                        {data.deliveryServices.takealot ? <CheckCircle2 className="h-4 w-4" /> : <span className="h-3 w-3 bg-gray-300 rounded-full"></span>}
+                      </div>
+                      <span>Takealot</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className={`h-5 w-5 rounded-full flex items-center justify-center ${data.deliveryServices.checkersSixty60 ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                        {data.deliveryServices.checkersSixty60 ? <CheckCircle2 className="h-4 w-4" /> : <span className="h-3 w-3 bg-gray-300 rounded-full"></span>}
+                      </div>
+                      <span>Checkers Sixty60</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Suburb Sentiment */}
+            {data.suburbSentiment && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-4 text-white">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold">Suburb Sentiment</h3>
+                    <Badge 
+                      className={`${
+                        data.suburbSentiment.investmentPotential === 'HIGH' ? 'bg-green-500' :
+                        data.suburbSentiment.investmentPotential === 'MEDIUM' ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}
+                    >
+                      {data.suburbSentiment.investmentPotential}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <p className="text-sm mb-4">{data.suburbSentiment.description}</p>
+                  
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Development Activity</span>
+                      <Badge 
+                        variant="outline" 
+                        className={`${
+                          data.suburbSentiment.developmentActivity === 'ACTIVE' ? 'bg-blue-50 text-blue-800 border-blue-200' :
+                          data.suburbSentiment.developmentActivity === 'MODERATE' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' :
+                          'bg-gray-50 text-gray-800 border-gray-200'
+                        }`}
+                      >
+                        {data.suburbSentiment.developmentActivity}
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Market Trend</span>
+                      <div className="flex items-center gap-1">
+                        {data.suburbSentiment.trend === "Trending Up" ? (
+                          <TrendingUp className="h-4 w-4 text-green-500" />
+                        ) : data.suburbSentiment.trend === "Trending Down" ? (
+                          <TrendingUp className="h-4 w-4 text-red-500 rotate-180" />
+                        ) : (
+                          <span className="h-4 w-4 bg-gray-200 rounded-full"></span>
+                        )}
+                        <span className="text-sm font-medium">{data.suburbSentiment.trend}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Safety Analysis */}
+            {data.safetyAnalysis && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-4 text-white">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold">Safety Analysis</h3>
+                    <Badge 
+                      className={`${
+                        data.safetyAnalysis.score >= 7 ? 'bg-green-500' :
+                        data.safetyAnalysis.score >= 5 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}
+                    >
+                      {data.safetyAnalysis.score}/10
+                    </Badge>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <div className="mb-4">
+                    <div className="text-sm text-gray-500 mb-1">Area Safety</div>
+                    <div className="font-medium">{data.safetyAnalysis.rating}</div>
+                    <div className="text-sm text-gray-600">
+                      {data.safetyAnalysis.comparedToCity} crime than city average
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm text-gray-500 mb-1">Property Crime</div>
+                      <Badge 
+                        variant="outline" 
+                        className={`${
+                          data.safetyAnalysis.propertyRisk === 'LOW' ? 'bg-green-50 text-green-800 border-green-200' :
+                          data.safetyAnalysis.propertyRisk === 'MODERATE' ? 'bg-yellow-50 text-yellow-800 border-yellow-200' :
+                          'bg-red-50 text-red-800 border-red-200'
+                        }`}
+                      >
+                        {data.safetyAnalysis.propertyRisk} RISK
+                      </Badge>
+                    </div>
+                    
+                    <div>
+                      <div className="text-sm text-gray-500 mb-1">Violent Crime</div>
+                      <Badge 
+                        variant="outline" 
+                        className={`${
+                          data.safetyAnalysis.violentRisk === 'LOW' ? 'bg-green-50 text-green-800 border-green-200' :
+                          data.safetyAnalysis.violentRisk === 'MODERATE' ? 'bg-yellow-50 text-yellow-800 border-yellow-200' :
+                          'bg-red-50 text-red-800 border-red-200'
+                        }`}
+                      >
+                        {data.safetyAnalysis.violentRisk} RISK
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

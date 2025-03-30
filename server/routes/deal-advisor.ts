@@ -1,6 +1,7 @@
 import express from 'express';
 import { getAreaRate, getDealAnalysis } from '../services/areaRateService';
 import { getRentalRate } from '../services/rentalRateService';
+import { getSuburbSentiment } from '../services/openai';
 import OpenAI from "openai";
 import { db } from 'db';
 import { dealScoreLeads } from '@db/schema';
@@ -46,6 +47,33 @@ router.post('/rental-amount', async (req, res) => {
   } catch (error) {
     console.error('Error in rental-amount endpoint:', error);
     res.status(500).json({ error: 'Failed to fetch rental amount' });
+  }
+});
+
+// Suburb sentiment endpoint - public access
+router.post('/suburb-sentiment', async (req, res) => {
+  const { suburb } = req.body;
+  
+  if (!suburb) {
+    return res.status(400).json({ error: 'Suburb is required' });
+  }
+  
+  try {
+    console.log(`Processing suburb sentiment request for ${suburb}`);
+    const sentimentData = await getSuburbSentiment(suburb);
+    
+    console.log(`Successfully generated suburb sentiment for ${suburb}`);
+    res.json({ 
+      success: true,
+      data: sentimentData
+    });
+  } catch (error) {
+    console.error('Error in suburb sentiment endpoint:', error);
+    res.status(500).json({ 
+      error: 'Failed to analyze suburb sentiment',
+      details: error instanceof Error ? error.message : 'Unknown error',
+      message: 'Could not analyze suburb sentiment. Please try again.'
+    });
   }
 });
 

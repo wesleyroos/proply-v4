@@ -144,6 +144,18 @@ export default function DealScorePublicPage() {
   const [rentalAmountError, setRentalAmountError] = useState<string>();
   const [dealReport, setDealReport] = useState<DealScoreReport | null>(null);
   const [showFinancingDialog, setShowFinancingDialog] = useState(false);
+  
+  // Suburb sentiment state
+  const [suburbSentimentStatus, setSuburbSentimentStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [suburbSentimentError, setSuburbSentimentError] = useState<string>();
+  const [suburbSentimentData, setSuburbSentimentData] = useState<{
+    description: string;
+    investmentPotential: string;
+    developmentActivity: string;
+    trend: string;
+  } | null>(null);
   const [financingForm, setFinancingForm] = useState({
     depositPercentage: "",
     interestRate: "",
@@ -299,7 +311,7 @@ export default function DealScorePublicPage() {
 
     setIsCalculating(true);
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    calculateDealScore();
+    calculateDealScore(undefined, undefined, undefined, null);
   };
 
   // Function has been replaced with direct calculation
@@ -308,6 +320,12 @@ export default function DealScorePublicPage() {
     customNightlyRate?: number,
     customOccupancy?: number,
     customLongTermRental?: number,
+    suburbSentiment?: {
+      description: string;
+      investmentPotential: string;
+      developmentActivity: string;
+      trend: string;
+    } | null,
   ) => {
     // Get property rate
     const propertyRate =
@@ -573,6 +591,23 @@ export default function DealScorePublicPage() {
         takealot: true,
         checkersSixty60: true,
       },
+      
+      // Suburb Sentiment (dynamically fetched)
+      suburbSentiment: suburbSentiment || {
+        description: "This area has seen stable property values with moderate growth potential. It's a balanced market with a mix of long-term residents and new buyers.",
+        investmentPotential: "MEDIUM",
+        developmentActivity: "MODERATE",
+        trend: "Stable",
+      },
+      
+      // Safety Analysis (placeholder - will be dynamically generated in future)
+      safetyAnalysis: {
+        score: 7.5,
+        rating: "Above Average Safety",
+        comparedToCity: "15% HIGHER",
+        propertyRisk: "LOW",
+        violentRisk: "LOW",
+      },
     };
 
     // Update both states
@@ -645,6 +680,47 @@ export default function DealScorePublicPage() {
       console.error("Error fetching area rate:", error);
       setAreaRateStatus("error");
       setAreaRateError((error as Error).message);
+    }
+  };
+
+  const fetchSuburbSentiment = async () => {
+    // Extract suburb from address
+    const addressParts = formData.address.split(',');
+    if (addressParts.length < 2) {
+      console.error("Cannot extract suburb from address");
+      return null;
+    }
+    
+    const suburb = addressParts[1].trim();
+    setSuburbSentimentStatus("loading");
+    
+    try {
+      const response = await fetch("/api/deal-advisor/suburb-sentiment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ suburb }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch suburb sentiment");
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        setSuburbSentimentData(data.data);
+        setSuburbSentimentStatus("success");
+        return data.data;
+      } else {
+        throw new Error("Invalid suburb sentiment data");
+      }
+    } catch (error) {
+      console.error("Error fetching suburb sentiment:", error);
+      setSuburbSentimentStatus("error");
+      setSuburbSentimentError((error as Error).message);
+      return null;
     }
   };
 
@@ -787,8 +863,19 @@ export default function DealScorePublicPage() {
         }
       }
 
+      // In parallel, fetch suburb sentiment data
+      let suburbData = null;
+      if (formData.address.includes(',')) {
+        try {
+          // Use the fetchSuburbSentiment function to get suburb data
+          suburbData = await fetchSuburbSentiment();
+        } catch (error) {
+          console.error("Error fetching suburb sentiment:", error);
+        }
+      }
+
       // DIRECT CALCULATION - Use the numeric values directly
-      calculateDealScore(nightlyRateValue, occupancyValue, rentalAmountValue);
+      calculateDealScore(nightlyRateValue, occupancyValue, rentalAmountValue, suburbData);
 
       // Update form data with formatted values AFTER calculation
       setFormData((prev) => ({
