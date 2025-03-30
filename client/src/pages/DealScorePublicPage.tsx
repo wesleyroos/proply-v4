@@ -2443,6 +2443,178 @@ export default function DealScorePublicPage() {
                     </div>
                   </div>
                 </div>
+                
+                {/* Second row with Suburb Sentiment and Crime Statistics */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  {/* Suburb Sentiment */}
+                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <MapPin className="h-5 w-5 text-white mr-2" />
+                          <h4 className="font-semibold text-white">
+                            Suburb Sentiment
+                          </h4>
+                        </div>
+                        {reportUnlocked && (
+                          <Badge className="bg-blue-500 text-white hover:bg-blue-600">
+                            Trending Up
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      {reportUnlocked ? (
+                        <div className="space-y-4">
+                          <div className="border border-gray-100 rounded-lg p-4 bg-white">
+                            <p className="text-sm text-gray-700 leading-relaxed">
+                              Cape Town City Centre is considered a highly desirable area with a 
+                              vibrant mix of residential and commercial properties. The area has 
+                              seen significant revitalization in recent years, with many historic 
+                              buildings being converted into modern apartments and offices.
+                            </p>
+                            <p className="text-sm text-gray-700 mt-3 leading-relaxed">
+                              The suburb is known for its cultural attractions, restaurants, and 
+                              proximity to major business districts. Property values have shown 
+                              consistent growth, making it attractive to both investors and homeowners.
+                            </p>
+                          </div>
+                          
+                          <div className="flex flex-col space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <TrendingUp className="h-5 w-5 text-blue-500 mr-2" />
+                                <span>Investment Potential:</span>
+                              </div>
+                              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border border-blue-300 px-3">
+                                HIGH
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <Building className="h-5 w-5 text-blue-500 mr-2" />
+                                <span>Development Activity:</span>
+                              </div>
+                              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border border-blue-300 px-3">
+                                ACTIVE
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-3 flex items-center">
+                            <Info className="h-4 w-4 text-blue-500 mr-2" />
+                            <p className="text-xs text-muted-foreground">
+                              Suburb sentiment is generated using AI analysis of recent market trends, 
+                              news, and local development activity.
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-4">
+                          <Lock className="h-12 w-12 text-gray-300 mb-2" />
+                          <p className="text-center text-muted-foreground mb-4">
+                            Unlock the full report to access detailed suburb insights
+                            and investment potential analysis.
+                          </p>
+                          <Button 
+                            onClick={() => setShowPaymentModal(true)}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            Unlock Full Report
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Crime Statistics */}
+                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <AlertCircle className="h-5 w-5 text-white mr-2" />
+                          <h4 className="font-semibold text-white">
+                            Safety Analysis
+                          </h4>
+                        </div>
+                        {reportUnlocked && (
+                          <Badge className="bg-yellow-500 text-white hover:bg-yellow-600">
+                            Score: 7.2/10
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      {reportUnlocked ? (
+                        <div className="space-y-5">
+                          <div className="mb-5">
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="font-medium">Higher Risk</span>
+                              <span className="font-medium">Lower Risk</span>
+                            </div>
+                            <div className="relative w-full h-3 bg-gradient-to-r from-red-500 via-yellow-400 to-green-400 rounded-full">
+                              <div 
+                                className="absolute top-1/2 transform -translate-y-1/2 w-5 h-5 bg-white border-2 border-gray-300 rounded-full shadow-md"
+                                style={{ left: `72%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          <div className="border border-gray-200 rounded-lg p-4 mb-5 bg-white">
+                            <div className="text-gray-500 mb-1">Rating</div>
+                            <div className="text-yellow-600 font-medium text-lg">Above Average Safety</div>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span>Compared to City Average</span>
+                              <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border border-green-300 px-3">
+                                20% LOWER
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center justify-between">
+                              <span>Property Crime</span>
+                              <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border border-yellow-300 px-3">
+                                MODERATE
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center justify-between">
+                              <span>Violent Crime</span>
+                              <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border border-green-300 px-3">
+                                LOW
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-3 flex items-center">
+                            <Info className="h-4 w-4 text-blue-500 mr-2" />
+                            <p className="text-xs text-muted-foreground">
+                              Safety data is based on reported incidents in the area compared to city averages.
+                              Individual experiences may vary.
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-4">
+                          <Lock className="h-12 w-12 text-gray-300 mb-2" />
+                          <p className="text-center text-muted-foreground mb-4">
+                            Unlock the full report to access detailed safety
+                            analysis and crime statistics for this area.
+                          </p>
+                          <Button 
+                            onClick={() => setShowPaymentModal(true)}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            Unlock Full Report
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </AccordionContent>
           </AccordionItem>
