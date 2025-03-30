@@ -79,17 +79,17 @@ export async function getSuburbSentiment(suburb: string): Promise<SuburbSentimen
   try {
     // Create a new OpenAI instance directly in this function
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    
+
     console.log(`Processing suburb sentiment for "${suburb}"`);
-    
+
     const response = await client.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4",
       temperature: 0.3,
       messages: [
         {
           role: "system",
           content: `You are a property market analysis expert. Provide a concise assessment of the given suburb, focusing on investment potential.
-          
+
 Your response must be formatted as a strict JSON object with these fields:
 - description: A 2-3 sentence description of the suburb focusing on its character and investment outlook
 - investmentPotential: A single value of "HIGH", "MEDIUM", or "LOW"
@@ -115,7 +115,7 @@ Your response must be formatted as a strict JSON object with these fields:
     return result;
   } catch (error) {
     console.error('OpenAI API Error:', error);
-    
+
     // Return a fallback with clear indication of error
     return {
       description: `Unable to retrieve data for ${suburb} at this time.`,
@@ -130,11 +130,11 @@ export async function analyzeSuburb(suburb: string): Promise<SuburbAnalysisResul
   try {
     // Create a new OpenAI instance directly in this function
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    
+
     console.log(`Processing detailed suburb analysis for "${suburb}"`);
-    
+
     const response = await client.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4",
       temperature: 0.3,
       messages: [
         {
@@ -193,7 +193,7 @@ Structure your response as JSON with this exact format:
     });
 
     const content = response.choices[0]?.message?.content || '';
-    
+
     if (!content) {
       throw new Error('OpenAI API returned empty response');
     }
