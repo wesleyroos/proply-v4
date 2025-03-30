@@ -2279,93 +2279,72 @@ export default function DealScorePublicPage() {
 
                 {/* Grid layout for Traffic and Delivery Services */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  {/* Traffic Density Index */}
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
-                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <Car className="h-5 w-5 text-white mr-2" />
-                          <h4 className="font-semibold text-white">
-                            Traffic Density Index
-                          </h4>
-                        </div>
-                        <div>
-                          <Badge 
-                            className={
-                              reportUnlocked 
-                                ? "bg-amber-500 text-white hover:bg-amber-600"
-                                : "bg-gray-400 text-white hover:bg-gray-500"
-                            }
-                          >
-                            {reportUnlocked ? "Medium Traffic" : "Unlock Report"}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-5">
+                  {/* Traffic Density Index - Redesigned */}
+                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full bg-amber-50">
+                    <div className="p-6">
                       {reportUnlocked ? (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <span>Morning Rush Hour (7AM-9AM)</span>
-                            <div className="flex items-center">
-                              <div className="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
-                                <div 
-                                  className="bg-amber-500 h-2.5 rounded-full" 
-                                  style={{ width: "65%" }}
-                                ></div>
-                              </div>
-                              <span className="text-sm">65%</span>
+                        <div className="space-y-5">
+                          <div className="flex items-center mb-4">
+                            <AlertTriangle className="h-6 w-6 text-amber-500 mr-2" />
+                            <h4 className="text-xl font-semibold">
+                              Traffic Index
+                            </h4>
+                          </div>
+                          
+                          <div className="mb-5">
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="font-medium">Low Traffic</span>
+                              <span className="font-medium">High Traffic</span>
+                            </div>
+                            <div className="relative w-full h-3 bg-gradient-to-r from-green-400 via-amber-400 to-red-500 rounded-full">
+                              <div 
+                                className="absolute top-1/2 transform -translate-y-1/2 w-5 h-5 bg-white border-2 border-gray-300 rounded-full shadow-md"
+                                style={{ left: `65%` }}
+                              ></div>
                             </div>
                           </div>
                           
-                          <div className="flex items-center justify-between mb-2">
-                            <span>Evening Rush Hour (4PM-6PM)</span>
-                            <div className="flex items-center">
-                              <div className="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
-                                <div 
-                                  className="bg-red-500 h-2.5 rounded-full" 
-                                  style={{ width: "85%" }}
-                                ></div>
+                          <div className="bg-white rounded-lg p-4 mb-5">
+                            <div className="text-gray-500 mb-1">Area Traffic Score</div>
+                            <div className="text-3xl font-bold mb-1">6.5/10</div>
+                            <div className="text-amber-500 font-medium">Moderate to High</div>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <Clock className="h-5 w-5 text-amber-500 mr-2" />
+                                <span>Morning Rush Hour:</span>
                               </div>
-                              <span className="text-sm">85%</span>
+                              <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300 rounded-full px-3">
+                                HIGH
+                              </Badge>
                             </div>
-                          </div>
-                          
-                          <div className="flex items-center justify-between mb-2">
-                            <span>Weekend Traffic</span>
-                            <div className="flex items-center">
-                              <div className="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
-                                <div 
-                                  className="bg-green-500 h-2.5 rounded-full" 
-                                  style={{ width: "30%" }}
-                                ></div>
+                            
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <Clock className="h-5 w-5 text-amber-500 mr-2" />
+                                <span>Evening Rush Hour:</span>
                               </div>
-                              <span className="text-sm">30%</span>
+                              <Badge className="bg-red-100 text-red-800 hover:bg-red-200 border border-red-300 rounded-full px-3">
+                                SEVERE
+                              </Badge>
                             </div>
-                          </div>
-                          
-                          <div className="pt-4 border-t border-gray-100">
-                            <h5 className="font-medium mb-2">Traffic Summary</h5>
-                            <p className="text-sm text-muted-foreground">
-                              This property experiences medium traffic density,
-                              with notable congestion during evening rush hours.
-                              Weekend traffic is generally light, making it
-                              suitable for residents who value quieter weekends.
-                            </p>
-                          </div>
-                          
-                          <div className="mt-3 flex items-center">
-                            <AlertTriangle className="h-4 w-4 text-amber-500 mr-2" />
-                            <p className="text-xs text-muted-foreground">
-                              Traffic data is based on historical patterns and may
-                              vary. For precise information, we recommend visiting
-                              the property at different times.
-                            </p>
+                            
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <Clock className="h-5 w-5 text-amber-500 mr-2" />
+                                <span>Weekend Traffic:</span>
+                              </div>
+                              <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border border-yellow-300 rounded-full px-3">
+                                MODERATE
+                              </Badge>
+                            </div>
                           </div>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center p-4">
-                          <Lock className="h-12 w-12 text-gray-300 mb-2" />
+                          <Lock className="h-12 w-12 text-amber-300 mb-2" />
                           <p className="text-center text-muted-foreground mb-4">
                             Unlock the full report to access detailed traffic
                             information including peak hours and traffic intensity.
