@@ -1407,7 +1407,7 @@ export default function DealScorePublicPage() {
 
           {/* Market Value Card */}
           <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
-            <div className="bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-3">
+            <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <DollarSign className="h-5 w-5 text-white mr-2" />
@@ -1466,7 +1466,7 @@ export default function DealScorePublicPage() {
 
           {/* Rental Yield Card */}
           <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
-            <div className="bg-gradient-to-r from-purple-600 to-violet-500 px-4 py-3">
+            <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <TrendingUp className="h-5 w-5 text-white mr-2" />
@@ -1556,7 +1556,7 @@ export default function DealScorePublicPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Address and Location Card */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
-                    <div className="bg-gradient-to-r from-purple-600 to-violet-500 px-4 py-3">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                       <div className="flex items-center">
                         <MapPin className="h-5 w-5 text-white mr-2" />
                         <h4 className="font-semibold text-white">
@@ -1586,7 +1586,7 @@ export default function DealScorePublicPage() {
 
                   {/* Property Specifications Card */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
-                    <div className="bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-3">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                       <div className="flex items-center">
                         <Home className="h-5 w-5 text-white mr-2" />
                         <h4 className="font-semibold text-white">
@@ -1652,7 +1652,7 @@ export default function DealScorePublicPage() {
                   Pricing Analysis
                 </h3>
                 <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
-                  <div className="bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-3">
+                  <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                     <div className="flex items-center">
                       <CircleDollarSign className="h-5 w-5 text-white mr-2" />
                       <h4 className="font-semibold text-white">
@@ -1757,7 +1757,7 @@ export default function DealScorePublicPage() {
                   <div
                     className={`rounded-xl overflow-hidden shadow-md transition-all hover:shadow-lg ${dealReport.bestInvestmentStrategy === "Short-Term Rental" ? "border-2 border-primary ring-2 ring-primary/20" : "border border-gray-200"}`}
                   >
-                    <div className="bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-3 flex justify-between items-center">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3 flex justify-between items-center">
                       <div className="flex items-center">
                         <Calendar className="h-5 w-5 text-white mr-2" />
                         <h4 className="font-semibold text-white">
@@ -1823,7 +1823,7 @@ export default function DealScorePublicPage() {
                   <div
                     className={`rounded-xl overflow-hidden shadow-md transition-all hover:shadow-lg ${dealReport.bestInvestmentStrategy === "Long-Term Rental" ? "border-2 border-primary ring-2 ring-primary/20" : "border border-gray-200"}`}
                   >
-                    <div className="bg-gradient-to-r from-indigo-500 to-purple-400 px-4 py-3 flex justify-between items-center">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3 flex justify-between items-center">
                       <div className="flex items-center">
                         <Home className="h-5 w-5 text-white mr-2" />
                         <h4 className="font-semibold text-white">
@@ -1918,7 +1918,7 @@ export default function DealScorePublicPage() {
                   <div
                     className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? "border-blue-500 animate-single-pulse" : "border-gray-200"} transition-all duration-300`}
                   >
-                    <div className="bg-gradient-to-r from-amber-500 to-yellow-400 px-4 py-3">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <Landmark className="h-5 w-5 text-white mr-2" />
@@ -2009,7 +2009,7 @@ export default function DealScorePublicPage() {
                   <div
                     className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? "border-blue-500 animate-single-pulse" : "border-gray-200"} transition-all duration-300`}
                   >
-                    <div className="bg-gradient-to-r from-indigo-600 to-violet-500 px-4 py-3">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                       <div className="flex items-center">
                         <Wallet className="h-5 w-5 text-white mr-2" />
                         <h4 className="font-semibold text-white">
@@ -2102,7 +2102,7 @@ export default function DealScorePublicPage() {
                   <div
                     className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? "border-blue-500 animate-single-pulse" : "border-gray-200"} transition-all duration-300`}
                   >
-                    <div className="bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-3">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                       <div className="flex items-center">
                         <Calendar className="h-5 w-5 text-white mr-2" />
                         <h4 className="font-semibold text-white">
@@ -2146,7 +2146,7 @@ export default function DealScorePublicPage() {
                   <div
                     className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? "border-blue-500 animate-single-pulse" : "border-gray-200"} transition-all duration-300`}
                   >
-                    <div className="bg-gradient-to-r from-indigo-500 to-purple-400 px-4 py-3">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                       <div className="flex items-center">
                         <Home className="h-5 w-5 text-white mr-2" />
                         <h4 className="font-semibold text-white">
@@ -2190,7 +2190,7 @@ export default function DealScorePublicPage() {
                   <div
                     className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? "border-blue-500 animate-single-pulse" : "border-gray-200"} transition-all duration-300`}
                   >
-                    <div className="bg-gradient-to-r from-emerald-500 to-green-400 px-4 py-3">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                       <div className="flex items-center">
                         <TrendingUp className="h-5 w-5 text-white mr-2" />
                         <h4 className="font-semibold text-white">
@@ -2239,7 +2239,7 @@ export default function DealScorePublicPage() {
                   <div
                     className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? "border-blue-500 animate-single-pulse" : "border-gray-200"} transition-all duration-300`}
                   >
-                    <div className="bg-gradient-to-r from-violet-500 to-purple-400 px-4 py-3">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                       <div className="flex items-center">
                         <TrendingUp className="h-5 w-5 text-white mr-2" />
                         <h4 className="font-semibold text-white">
@@ -2369,7 +2369,7 @@ export default function DealScorePublicPage() {
                 </div>
 
                 <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
-                  <div className="bg-gradient-to-r from-cyan-600 to-sky-500 px-4 py-3">
+                  <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                     <div className="flex items-center">
                       <Info className="h-5 w-5 text-white mr-2" />
                       <h4 className="font-semibold text-white">
