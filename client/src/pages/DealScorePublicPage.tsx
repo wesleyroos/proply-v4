@@ -29,6 +29,9 @@ import {
   Building,
   Calculator,
   Pencil,
+  AlertTriangle,
+  Car,
+  Package2,
 } from "lucide-react";
 import AddressAutocomplete, { ValidatedAddressData } from "../components/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
@@ -552,6 +555,22 @@ export default function DealScorePublicPage() {
 
       // Metadata
       reportDate: reportDate,
+      
+      // Traffic & Convenience Information
+      trafficDensity: {
+        morningRushHour: 65,
+        eveningRushHour: 85,
+        weekendTraffic: 30,
+        overallRating: "Medium Traffic"
+      },
+      
+      // Delivery Services
+      deliveryServices: {
+        uberEats: true,
+        mrD: true,
+        takealot: true,
+        checkersSixty60: true
+      },
     };
 
     // Update both states
@@ -2199,6 +2218,152 @@ export default function DealScorePublicPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+          
+          {/* Miscellaneous Accordion */}
+          <AccordionItem value="item-5" className="w-full">
+            <AccordionTrigger className="text-lg font-medium justify-start">
+              Miscellaneous Information
+            </AccordionTrigger>
+            <AccordionContent className="flex flex-col items-center">
+              <div className="mb-6 w-full">
+                <h3 className="text-xl font-bold mb-4 text-left">
+                  Additional Property Insights
+                </h3>
+
+                {/* Traffic Density Index */}
+                <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 mb-6">
+                  <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <Car className="h-5 w-5 text-white mr-2" />
+                        <h4 className="font-semibold text-white">
+                          Traffic Density Index
+                        </h4>
+                      </div>
+                      <div>
+                        <Badge 
+                          className={
+                            reportUnlocked 
+                              ? "bg-amber-500 text-white hover:bg-amber-600"
+                              : "bg-gray-400 text-white hover:bg-gray-500"
+                          }
+                        >
+                          {reportUnlocked ? "Medium Traffic" : "Unlock Report"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    {reportUnlocked ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span>Morning Rush Hour (7AM-9AM)</span>
+                          <div className="flex items-center">
+                            <div className="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
+                              <div 
+                                className="bg-amber-500 h-2.5 rounded-full" 
+                                style={{width: '65%'}}
+                              ></div>
+                            </div>
+                            <span className="text-sm">65%</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between mb-2">
+                          <span>Evening Rush Hour (4PM-6PM)</span>
+                          <div className="flex items-center">
+                            <div className="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
+                              <div 
+                                className="bg-red-500 h-2.5 rounded-full" 
+                                style={{width: '85%'}}
+                              ></div>
+                            </div>
+                            <span className="text-sm">85%</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between mb-2">
+                          <span>Weekend Traffic</span>
+                          <div className="flex items-center">
+                            <div className="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
+                              <div 
+                                className="bg-green-500 h-2.5 rounded-full" 
+                                style={{width: '30%'}}
+                              ></div>
+                            </div>
+                            <span className="text-sm">30%</span>
+                          </div>
+                        </div>
+                        
+                        <div className="pt-4 border-t border-gray-100">
+                          <h5 className="font-medium mb-2">Traffic Summary</h5>
+                          <p className="text-sm text-muted-foreground">
+                            This property experiences medium traffic density, with notable congestion during evening rush hours.
+                            Weekend traffic is generally light, making it suitable for residents who value quieter weekends.
+                          </p>
+                        </div>
+                        
+                        <div className="mt-3 flex items-center">
+                          <AlertTriangle className="h-4 w-4 text-amber-500 mr-2" />
+                          <p className="text-xs text-muted-foreground">
+                            Traffic data is based on historical patterns and may vary. For precise information, we recommend visiting the property at different times.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-4">
+                        <Lock className="h-12 w-12 text-gray-300 mb-2" />
+                        <p className="text-center text-muted-foreground mb-4">
+                          Unlock the full report to access detailed traffic information including peak hours, 
+                          traffic intensity, and how it might affect your property value.
+                        </p>
+                        <Button 
+                          onClick={() => setShowPaymentModal(true)}
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          Unlock Full Report
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Delivery Services Availability - can be added in future */}
+                {reportUnlocked && (
+                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 mb-6">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
+                      <div className="flex items-center">
+                        <Package2 className="h-5 w-5 text-white mr-2" />
+                        <h4 className="font-semibold text-white">
+                          Delivery Services Availability
+                        </h4>
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-center">
+                          <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                          <span>Uber Eats</span>
+                        </div>
+                        <div className="flex items-center">
+                          <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                          <span>Mr. D Food</span>
+                        </div>
+                        <div className="flex items-center">
+                          <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                          <span>Takealot</span>
+                        </div>
+                        <div className="flex items-center">
+                          <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                          <span>Checkers Sixty60</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </AccordionContent>
           </AccordionItem>

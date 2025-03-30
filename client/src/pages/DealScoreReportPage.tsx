@@ -94,6 +94,22 @@ export interface DealScoreReport {
   
   // Metadata
   reportDate: string;
+  
+  // Traffic & Convenience Information
+  trafficDensity?: {
+    morningRushHour: number;
+    eveningRushHour: number;
+    weekendTraffic: number;
+    overallRating: string;
+  };
+  
+  // Delivery Services
+  deliveryServices?: {
+    uberEats: boolean;
+    mrD: boolean;
+    takealot: boolean;
+    checkersSixty60: boolean;
+  };
 }
 
 export default function DealScoreReportPage({ report }: { report?: DealScoreReport }) {
@@ -189,7 +205,23 @@ export default function DealScoreReportPage({ report }: { report?: DealScoreRepo
     ],
     
     // Metadata
-    reportDate: "20 March 2025"
+    reportDate: "20 March 2025",
+    
+    // Traffic & Convenience Information
+    trafficDensity: {
+      morningRushHour: 65,
+      eveningRushHour: 85,
+      weekendTraffic: 30,
+      overallRating: "Medium Traffic"
+    },
+    
+    // Delivery Services
+    deliveryServices: {
+      uberEats: true,
+      mrD: true,
+      takealot: true,
+      checkersSixty60: true
+    }
   }
   
   const data = report || demoReport
