@@ -1,7 +1,6 @@
 import express from 'express';
 import { getAreaRate, getDealAnalysis } from '../services/areaRateService';
-import { getRentalRate } from '../services/rentalRateService';
-import { getSuburbSentiment } from '../services/openai';
+import { getRentalRate, getSuburbSentiment } from '../services/rentalRateService';
 import OpenAI from "openai";
 import { db } from 'db';
 import { dealScoreLeads } from '@db/schema';

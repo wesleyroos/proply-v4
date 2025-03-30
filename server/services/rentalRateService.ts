@@ -68,3 +68,93 @@ export async function getRentalRate(address: string, propertySize: number, bedro
     throw error;
   }
 }
+
+// Interface for suburb sentiment data
+export interface SuburbSentimentResult {
+  description: string;
+  investmentPotential: string;
+  developmentActivity: string;
+  trend: string;
+}
+
+export async function getSuburbSentiment(suburb: string): Promise<SuburbSentimentResult> {
+  console.log(`Getting suburb sentiment for: ${suburb}`);
+  
+  try {
+    // Use the same OpenAI instance that works for rental rate
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      temperature: 0.7,
+      messages: [
+        {
+          role: "system",
+          content: `You are a South African real estate expert with deep knowledge of local property markets and suburbs. Analyze the provided suburb and produce a structured report on its investment potential.`
+        },
+        {
+          role: "user",
+          content: `Please analyze the suburb of ${suburb} in South Africa and provide insights in JSON format with these fields:
+          1. description: A 1-2 sentence description of the area
+          2. investmentPotential: Rating as "HIGH", "MEDIUM", or "LOW" 
+          3. developmentActivity: Rating as "ACTIVE", "MODERATE", or "MINIMAL"
+          4. trend: "Trending Up", "Stable", or "Declining"
+          
+          Return only valid JSON without backticks or additional text.`
+        }
+      ]
+    });
+
+    const content = response.choices[0]?.message?.content || '';
+    console.log('OpenAI Suburb Response:', content);
+
+    // Try to extract the JSON from the response
+    try {
+      // First, try to parse the entire response as JSON
+      const result = JSON.parse(content);
+      
+      // Validate the expected fields
+      if (
+        typeof result.description === 'string' &&
+        typeof result.investmentPotential === 'string' &&
+        typeof result.developmentActivity === 'string' &&
+        typeof result.trend === 'string'
+      ) {
+        console.log('Parsed suburb sentiment:', result);
+        return result;
+      } else {
+        throw new Error('Response missing required fields');
+      }
+    } catch (jsonError) {
+      console.error('Error parsing JSON from OpenAI response:', jsonError);
+      
+      // If we can't parse JSON directly, try to extract JSON using regex
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          const extractedJson = JSON.parse(jsonMatch[0]);
+          if (
+            typeof extractedJson.description === 'string' &&
+            typeof extractedJson.investmentPotential === 'string' &&
+            typeof extractedJson.developmentActivity === 'string' &&
+            typeof extractedJson.trend === 'string'
+          ) {
+            console.log('Extracted suburb sentiment from text:', extractedJson);
+            return extractedJson;
+          }
+        } catch (e) {
+          console.error('Error parsing extracted JSON:', e);
+        }
+      }
+      
+      // Fallback to default values if JSON parsing fails
+      return {
+        description: `${suburb} is a residential area in South Africa with typical local amenities and services.`,
+        investmentPotential: "MEDIUM",
+        developmentActivity: "MODERATE",
+        trend: "Stable"
+      };
+    }
+  } catch (error) {
+    console.error('Error in getSuburbSentiment:', error);
+    throw error;
+  }
+}

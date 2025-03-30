@@ -752,6 +752,14 @@ export default function DealScorePublicPage() {
     }
   };
   
+  // Interface for suburb sentiment data
+  interface SuburbSentimentResult {
+    description: string;
+    investmentPotential: string;
+    developmentActivity: string;
+    trend: string;
+  }
+  
   // Function to generate fallback sentiment data for when API calls fail
   const getFallbackSentimentData = (location: string): SuburbSentimentResult => {
     // Extract suburb or use original location
