@@ -2280,17 +2280,27 @@ export default function DealScorePublicPage() {
                 {/* Grid layout for Traffic and Delivery Services */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   {/* Traffic Density Index - Redesigned */}
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full bg-amber-50">
-                    <div className="p-6">
+                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <AlertTriangle className="h-5 w-5 text-white mr-2" />
+                          <h4 className="font-semibold text-white">
+                            Traffic Index
+                          </h4>
+                        </div>
+                        <div>
+                          {reportUnlocked && (
+                            <Badge className="bg-amber-500 text-white hover:bg-amber-600">
+                              Score: 6.5/10
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-5">
                       {reportUnlocked ? (
                         <div className="space-y-5">
-                          <div className="flex items-center mb-4">
-                            <AlertTriangle className="h-6 w-6 text-amber-500 mr-2" />
-                            <h4 className="text-xl font-semibold">
-                              Traffic Index
-                            </h4>
-                          </div>
-                          
                           <div className="mb-5">
                             <div className="flex justify-between text-sm mb-2">
                               <span className="font-medium">Low Traffic</span>
@@ -2304,10 +2314,9 @@ export default function DealScorePublicPage() {
                             </div>
                           </div>
                           
-                          <div className="bg-white rounded-lg p-4 mb-5">
-                            <div className="text-gray-500 mb-1">Area Traffic Score</div>
-                            <div className="text-3xl font-bold mb-1">6.5/10</div>
-                            <div className="text-amber-500 font-medium">Moderate to High</div>
+                          <div className="border border-gray-200 rounded-lg p-4 mb-5 bg-white">
+                            <div className="text-gray-500 mb-1">Rating</div>
+                            <div className="text-amber-500 font-medium text-lg">Moderate to High</div>
                           </div>
                           
                           <div className="space-y-3">
@@ -2344,7 +2353,7 @@ export default function DealScorePublicPage() {
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center p-4">
-                          <Lock className="h-12 w-12 text-amber-300 mb-2" />
+                          <Lock className="h-12 w-12 text-gray-300 mb-2" />
                           <p className="text-center text-muted-foreground mb-4">
                             Unlock the full report to access detailed traffic
                             information including peak hours and traffic intensity.
