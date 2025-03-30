@@ -62,15 +62,35 @@ router.post('/suburb-sentiment', async (req, res) => {
   
   try {
     console.log(`Processing suburb sentiment request for ${suburb}`);
-    const sentimentData = await getSuburbSentiment(suburb);
+    console.log(`Using OpenAI API key (partial): ${process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 5) + '...' : 'NOT SET'}`);
     
-    console.log(`Successfully generated suburb sentiment for ${suburb}`);
+    // Validate suburb and clean it
+    const cleanedSuburb = suburb.trim().replace(/[^\w\s,-]/g, '');
+    console.log(`Cleaned suburb for API request: "${cleanedSuburb}"`);
+    
+    // Generate sentiment data
+    const sentimentData = await getSuburbSentiment(cleanedSuburb);
+    
+    console.log(`Successfully generated suburb sentiment for ${cleanedSuburb}`);
+    console.log(`Sentiment data:`, JSON.stringify(sentimentData, null, 2));
+    
     res.json({ 
       success: true,
       data: sentimentData
     });
   } catch (error) {
     console.error('Error in suburb sentiment endpoint:', error);
+    
+    // Check if it's an OpenAI API error
+    if (error instanceof Error && error.message.includes('401')) {
+      console.error('OpenAI API authentication error. Please check your API key.');
+      return res.status(401).json({ 
+        error: 'OpenAI API authentication failed',
+        details: 'The OpenAI API key may be invalid or expired.',
+        message: 'We encountered an issue with our AI service. Please try again later.'
+      });
+    }
+    
     res.status(500).json({ 
       error: 'Failed to analyze suburb sentiment',
       details: error instanceof Error ? error.message : 'Unknown error',

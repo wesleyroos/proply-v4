@@ -1,9 +1,31 @@
 import OpenAI from "openai";
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY 
-});
+// Initialize the OpenAI client more robustly with better error handling
+let openai: OpenAI;
+
+try {
+  if (!process.env.OPENAI_API_KEY) {
+    console.error('CRITICAL ERROR: OPENAI_API_KEY environment variable is not set');
+    throw new Error('OpenAI API key not found in environment variables');
+  }
+  
+  // Log a shortened version of the key for debugging (first 5 chars only)
+  const keyPreview = process.env.OPENAI_API_KEY.substring(0, 5) + '...';
+  console.log(`Initializing OpenAI client with API key starting with: ${keyPreview}`);
+  
+  // Initialize the client with API key from environment variables
+  openai = new OpenAI({ 
+    apiKey: process.env.OPENAI_API_KEY
+  });
+  
+  console.log('OpenAI client initialized successfully');
+} catch (error) {
+  console.error('Failed to initialize OpenAI client:', error);
+  // Create a dummy client that will throw appropriate errors when used
+  openai = new OpenAI({ 
+    apiKey: 'invalid-key-error-will-be-caught'
+  });
+}
 
 // Analysis Categories with weights
 const ANALYSIS_CATEGORIES = [
@@ -77,6 +99,13 @@ export interface SuburbSentimentResult {
 // Simplified version focused on sentiment for Deal Score
 export async function getSuburbSentiment(suburb: string): Promise<SuburbSentimentResult> {
   try {
+    console.log(`OpenAI Service: Generating sentiment for suburb "${suburb}"`);
+    console.log(`OpenAI API Key (partial): ${process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 5) + '...' : 'NOT SET'}`);
+    
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OpenAI API key is not set');
+    }
+    
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -90,7 +119,7 @@ Your response must be formatted as a strict JSON object with these fields:
 - developmentActivity: A single value of "ACTIVE", "MODERATE", or "MINIMAL"
 - trend: A single value of "Trending Up", "Stable", or "Trending Down"
 
-Base your analysis on recent development, economic trends, and market data. Keep the description factual and objective.`
+Base your analysis on recent development, economic trends, and market data. Make the assessment specific to the suburb name provided. Keep the description factual and objective.`
         },
         {
           role: "user",
@@ -100,16 +129,32 @@ Base your analysis on recent development, economic trends, and market data. Keep
       response_format: { type: "json_object" }
     });
 
+    console.log(`OpenAI API returned a response for suburb "${suburb}"`);
+
     if (!response.choices[0].message.content) {
       throw new Error('OpenAI API returned empty response');
     }
 
-    return JSON.parse(response.choices[0].message.content) as SuburbSentimentResult;
+    const content = response.choices[0].message.content;
+    console.log(`OpenAI API raw response: ${content.substring(0, 50)}...`);
+
+    const result = JSON.parse(content) as SuburbSentimentResult;
+    console.log(`Successfully parsed sentiment data for ${suburb} with investment potential: ${result.investmentPotential}`);
+
+    return result;
   } catch (error) {
     console.error('OpenAI API Error:', error);
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error details:', errorMsg);
+    
+    if (errorMsg.includes('401')) {
+      console.error('Authentication error with OpenAI API - please check your API key');
+      throw new Error('OpenAI API authentication failed (401)');
+    }
+    
     // Return a fallback with clear indication of error
     return {
-      description: "Unable to retrieve suburb data at this time.",
+      description: `Unable to retrieve data for ${suburb} at this time. Our AI service is temporarily unavailable.`,
       investmentPotential: "MEDIUM",
       developmentActivity: "MODERATE",
       trend: "Stable"

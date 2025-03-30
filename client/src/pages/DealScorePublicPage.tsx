@@ -684,17 +684,29 @@ export default function DealScorePublicPage() {
   };
 
   const fetchSuburbSentiment = async () => {
-    // Extract suburb from address
+    // Extract suburb from address - more robust extraction
     const addressParts = formData.address.split(',');
-    if (addressParts.length < 2) {
-      console.error("Cannot extract suburb from address");
+    let suburb = '';
+    
+    // Get the most likely suburb part (usually the second part, but sometimes could be third)
+    if (addressParts.length >= 2) {
+      // Try to get the suburb which is typically the second part
+      suburb = addressParts[1].trim();
+      
+      // If the second part is very short or looks like a number, try the next part
+      if ((suburb.length < 3 || /^\d+$/.test(suburb)) && addressParts.length >= 3) {
+        suburb = addressParts[2].trim();
+      }
+    } else {
+      console.error("Address format doesn't contain suburb information");
       return null;
     }
     
-    const suburb = addressParts[1].trim();
+    console.log(`Extracted suburb from address: "${suburb}"`);
     setSuburbSentimentStatus("loading");
     
     try {
+      console.log(`Sending suburb sentiment request for: ${suburb}`);
       const response = await fetch("/api/deal-advisor/suburb-sentiment", {
         method: "POST",
         headers: {
@@ -703,11 +715,17 @@ export default function DealScorePublicPage() {
         body: JSON.stringify({ suburb }),
       });
 
+      const statusCode = response.status;
+      console.log(`Suburb sentiment API response status: ${statusCode}`);
+
       if (!response.ok) {
-        throw new Error("Failed to fetch suburb sentiment");
+        const errorText = await response.text();
+        console.error(`Suburb sentiment API error (${statusCode}):`, errorText);
+        throw new Error(`Failed to fetch suburb sentiment: ${statusCode}`);
       }
 
       const data = await response.json();
+      console.log("Suburb sentiment API response:", data);
       
       if (data.success && data.data) {
         setSuburbSentimentData(data.data);
