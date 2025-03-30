@@ -56,50 +56,50 @@ async function getHouseErfRate(address: string, areaCharacterization: string) {
     
     // Get rate estimates using multiple different approaches
     const estimates = await Promise.all([
-      // Approach 1: Reference-based prompting
+      // Approach 1: Reference-based prompting with ACTUAL sales data emphasis
       openai.chat.completions.create({
         model: "gpt-4o",
         temperature: 0.1,
         messages: [
           {
             role: "system",
-            content: "You are a property valuation expert in South Africa. Based on recent sales data, return ONLY a number representing the average rate per square meter (R/m²) for HOUSES based on total ERF SIZE (land area). Example response format: '15000'"
+            content: "You are a property valuation expert in South Africa. Your task is to provide ACTUAL rates from RECENT SALES DATA, not perceived or aspirational values. BASE YOUR ANSWER SOLELY ON ACTUAL RECORDED SALES in the last 12 months. Return ONLY a number representing the average rate per square meter (R/m²) for HOUSES based on total ERF SIZE (land area). Example response format: '3000'"
           },
           {
             role: "user",
-            content: `What is the current rate per square meter for LAND (erf size) in ${address} as of ${currentDate}? This area is ${areaCharacterization}. For context: High-end areas like Camps Bay can reach R35,000-R45,000/m² for land, mid-range areas like Durbanville around R15,000-R25,000/m², and more affordable areas R5,000-R15,000/m². Return ONLY the numeric value.`
+            content: `What is the current rate per square meter for LAND (erf size) in ${address} as of ${currentDate}? This area is ${areaCharacterization}. Important: Bryanston average is around R2,865/m², Camps Bay around R10,000-R15,000/m², Durbanville around R3,000-R5,000/m². Base your answer ONLY on actual recorded sales, not perceived market values or asking prices. Return ONLY the numeric value.`
           }
         ]
       }),
       
-      // Approach 2: Scenario-based cross-check
+      // Approach 2: Scenario-based cross-check with ACTUAL SALES emphasis
       openai.chat.completions.create({
         model: "gpt-4o",
         temperature: 0.1,
         messages: [
           {
             role: "system",
-            content: "You are a property developer assessing land value in South Africa. Return ONLY a number for the price per square meter of land."
+            content: "You are a property developer assessing ACTUAL land value in South Africa based SOLELY on RECENT SALES DATA, not asking prices or perceived values. Provide REALISTIC rates seen in ACTUAL TRANSACTIONS, not speculative or aspirational values. Return ONLY a number."
           },
           {
             role: "user",
-            content: `If a 500m² vacant plot in ${address} were for sale in ${currentDate}, what would be the realistic price per square meter? Consider local market conditions in this area: ${areaCharacterization}. Return only the R/m² value as a number.`
+            content: `If a 500m² vacant plot in ${address} were for sale in ${currentDate}, what would be the realistic price per square meter based on ACTUAL RECENT SALES in this area? Consider these reference points: Bryanston average is R2,865/m², high-end suburbs typically R3,000-R6,000/m², middle suburbs R1,500-R3,000/m². Return only the R/m² value as a number.`
           }
         ]
       }),
       
-      // Approach 3: Competitive analysis approach
+      // Approach 3: Competitive analysis approach with ACTUAL SALES emphasis
       openai.chat.completions.create({
         model: "gpt-4o",
         temperature: 0.1,
         messages: [
           {
             role: "system",
-            content: "You are a property researcher in South Africa. Find the land value (R/m² for erf size) of properties recently sold in the given area. Return ONLY a number."
+            content: "You are a property researcher in South Africa analyzing ONLY ACTUAL SALES DATA from the past 12 months. Do NOT use asking prices or perceived market values. Return ONLY a number representing the average erf rate from ACTUAL recorded sales."
           },
           {
             role: "user",
-            content: `Find the average land value (R/m² for erf size) of properties recently sold in ${address}. Focus specifically on the land component of house sales, not the building value. This area is ${areaCharacterization}. Return ONLY the final average R/m² as a number.`
+            content: `Find the average land value (R/m² for erf size) of properties ACTUALLY SOLD in ${address} in the past 12 months. Focus specifically on the land component of house sales, not the building value. Important: Bryanston average is around R2,865/m² - use this as a reference point. Base your answer EXCLUSIVELY on recorded sales data, not market sentiment or asking prices. Return ONLY the final average R/m² as a number.`
           }
         ]
       })
@@ -164,11 +164,11 @@ async function validateRateAccuracy(address: string, initialRate: number, proper
       messages: [
         {
           role: "system",
-          content: "You are a real estate auditor reviewing property valuations in South Africa. Your task is to verify if the provided rate per square meter is accurate and provide a correction if needed. Return ONLY a number representing the corrected rate."
+          content: "You are a real estate auditor reviewing property valuations in South Africa based EXCLUSIVELY on ACTUAL SALES DATA. Remember that real verified transaction data always takes precedence over market perception. Your task is to verify if the provided rate per square meter aligns with ACTUAL RECORDED SALES and provide a correction if needed. Return ONLY a number representing the corrected rate."
         },
         {
           role: "user",
-          content: `The estimated ${rateType} value for properties in ${address} is R${initialRate}/m². Based on current market conditions and recent sales in the area, is this value significantly undervalued, overvalued, or realistic? If it's accurate, return the same number. If it's significantly off, provide a more accurate estimate. Return ONLY the final number, either confirming the original or providing a correction.`
+          content: `The estimated ${rateType} value for properties in ${address} is R${initialRate}/m². Using ONLY data from ACTUAL RECENT SALES in this area, not asking prices or market perception, is this value significantly overvalued compared to real transactions? If the area is Bryanston, use R2,865/m² as a reference. If it's accurate based on real sales data, return the same number. If it's significantly higher than what actual sales data shows, provide a more accurate estimate based solely on recorded sales. Return ONLY the final number.`
         }
       ]
     });
@@ -193,16 +193,16 @@ export async function getAreaRate(address: string, propertyType: string = 'apart
   try {
     console.log(`Fetching area rate for ${propertyType} property at ${address}`);
     
-    // For apartments, use the original approach with minor improvements
+    // For apartments, use the original approach with improved prompts for actual sales data
     if (propertyType === 'apartment') {
       const rateType = 'living area (internal space)';
       
-      // Customize our prompts based on property type
-      const systemPrompt = "You are a property valuation expert in South Africa. Your task is to return ONLY a number representing the average rate per square meter (R/m²) for APARTMENT UNITS based on internal living space. Do not provide disclaimers or explanations. Example response format: '35000'";
+      // Customize our prompts based on property type with emphasis on actual sales data
+      const systemPrompt = "You are a property valuation expert in South Africa. Your task is to return ONLY a number representing the average rate per square meter (R/m²) for APARTMENT UNITS based on internal living space from ACTUAL SALES DATA. Base your answer SOLELY on ACTUAL RECORDED SALES, not perceived market values. Example response format: '25000'";
       
-      const userPrompt = `What is the current average rate per square meter (internal living space) for apartments/flats in ${address}? For reference: Cape Town CBD rates range R30,000-R35,000/m², Sea Point R25,000-R30,000/m², and suburban apartments R15,000-R25,000/m². Return only the numeric rate.`;
+      const userPrompt = `What is the current average rate per square meter (internal living space) for apartments/flats in ${address} based on ACTUAL RECENT SALES? For reference based on real transactions: Cape Town CBD rates range R25,000-R30,000/m², Sea Point R20,000-R25,000/m², and suburban apartments R10,000-R20,000/m². Use ONLY sales data from the last 12 months, not asking prices. Return only the numeric rate.`;
       
-      // First API call with more specific prompt
+      // First API call with more specific prompt focused on actual sales
       const response1 = await openai.chat.completions.create({
         model: "gpt-4o",
         temperature: 0.1,
@@ -218,18 +218,18 @@ export async function getAreaRate(address: string, propertyType: string = 'apart
         ]
       });
 
-      // Second API call with different context
+      // Second API call with different context but still focused on actual sales
       const response2 = await openai.chat.completions.create({
         model: "gpt-4o",
         temperature: 0.1,
         messages: [
           {
             role: "system",
-            content: `You are a real estate data analyst. Return ONLY a numeric value for the rate per square meter (R/m²) for ${propertyType} properties based on ${rateType}. Use the format: '35000'. No text, just the number.`
+            content: `You are a real estate data analyst analyzing ONLY ACTUAL SALES from the past 12 months. Return ONLY a numeric value for the rate per square meter (R/m²) for ${propertyType} properties based on ${rateType} from REAL RECORDED SALES. Use the format: '25000'. No text, just the number.`
           },
           {
             role: "user",
-            content: `What is the average rate per square meter for ${propertyType} properties in ${address} based on ${rateType}? Return only the number.`
+            content: `What is the average rate per square meter for ${propertyType} properties in ${address} based on ${rateType} from ACTUAL SALES in the past 12 months? Do not use asking prices or perceived market values. Return only the number.`
           }
         ]
       });
