@@ -32,7 +32,6 @@ import {
   AlertTriangle,
   Car,
   Package2,
-  Star,
 } from "lucide-react";
 import AddressAutocomplete, {
   ValidatedAddressData,
@@ -1601,36 +1600,17 @@ export default function DealScorePublicPage() {
                           <p className="text-sm text-muted-foreground">
                             Property Type
                           </p>
-                          <Badge 
-                            className={`font-medium ${(dealReport.propertyType || "").toLowerCase().includes("apartment") 
-                              ? "bg-blue-500 hover:bg-blue-600" 
-                              : "bg-green-500 hover:bg-green-600"}`}>
+                          <p className="font-medium capitalize">
                             {dealReport.propertyType || "Apartment"}
-                          </Badge>
+                          </p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">
                             Condition
                           </p>
-                          <div className="flex items-center">
-                            {(() => {
-                              const condition = dealReport.propertyCondition?.toLowerCase() || "";
-                              const rating = 
-                                condition.includes("excellent") ? 5 :
-                                condition.includes("good") ? 4 :
-                                condition.includes("average") ? 3 :
-                                condition.includes("fair") ? 2 : 1;
-                              
-                              return Array(5).fill(0).map((_, i) => (
-                                <Star key={i} 
-                                  className={`h-4 w-4 ${i < rating ? "text-amber-400 fill-amber-400" : "text-gray-300"}`} 
-                                />
-                              ));
-                            })()}
-                            <span className="ml-2 text-xs text-muted-foreground">
-                              ({dealReport.propertyCondition})
-                            </span>
-                          </div>
+                          <p className="font-medium capitalize">
+                            {dealReport.propertyCondition}
+                          </p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Size</p>
@@ -1698,33 +1678,6 @@ export default function DealScorePublicPage() {
                           <p className="font-medium">
                             R{formatPrice(dealReport.estimatedValue)}
                           </p>
-                        </div>
-                        
-                        {/* Mini Price Comparison Chart */}
-                        <div className="mt-4 bg-white p-3 rounded-lg border border-gray-100">
-                          <div className="mb-2 flex justify-between text-xs text-muted-foreground">
-                            <span>Asking vs Market Value</span>
-                            <span>R{formatPrice(Math.max(dealReport.askingPrice, dealReport.estimatedValue))}</span>
-                          </div>
-                          <div className="relative h-6 bg-gray-100 rounded-full overflow-hidden">
-                            <div 
-                              className={`absolute top-0 left-0 h-full rounded-l-full ${dealReport.percentageDifference >= 0 ? "bg-green-500" : "bg-red-500"}`} 
-                              style={{ 
-                                width: `${Math.min(dealReport.askingPrice, dealReport.estimatedValue) / Math.max(dealReport.askingPrice, dealReport.estimatedValue) * 100}%` 
-                              }}
-                            ></div>
-                            <div className="absolute inset-0 flex items-center justify-center text-xs font-medium">
-                              <span className={dealReport.percentageDifference >= 0 ? "text-green-800" : "text-red-800"}>
-                                {Math.abs(dealReport.percentageDifference).toFixed(1)}% {dealReport.percentageDifference >= 0 ? "below" : "above"}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="mt-1 flex justify-between text-xs text-muted-foreground">
-                            <span>R0</span>
-                            <span className="font-medium">
-                              R{formatPrice(Math.min(dealReport.askingPrice, dealReport.estimatedValue))}
-                            </span>
-                          </div>
                         </div>
                       </div>
                       <div>
