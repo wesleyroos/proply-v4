@@ -33,7 +33,9 @@ import {
   Car,
   Package2,
 } from "lucide-react";
-import AddressAutocomplete, { ValidatedAddressData } from "../components/AddressAutocomplete";
+import AddressAutocomplete, {
+  ValidatedAddressData,
+} from "../components/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -148,12 +150,12 @@ export default function DealScorePublicPage() {
     loanTerm: "",
   });
   const [financingUpdated, setFinancingUpdated] = useState(false);
-  
+
   // Helper function to calculate monthly bond payment
   const calculateMonthlyPayment = (
     loanAmount: number,
     interestRate: number,
-    loanTerm: number
+    loanTerm: number,
   ): number => {
     const monthlyRate = interestRate / 100 / 12;
     const numberOfPayments = loanTerm * 12;
@@ -326,7 +328,7 @@ export default function DealScorePublicPage() {
     // Determine whether to use custom data from API or default estimates
     let estimatedLongTermRental;
 
-    // Check each possible source 
+    // Check each possible source
     if (customLongTermRental) {
       estimatedLongTermRental = customLongTermRental;
     } else if (
@@ -555,21 +557,21 @@ export default function DealScorePublicPage() {
 
       // Metadata
       reportDate: reportDate,
-      
+
       // Traffic & Convenience Information
       trafficDensity: {
         morningRushHour: 65,
         eveningRushHour: 85,
         weekendTraffic: 30,
-        overallRating: "Medium Traffic"
+        overallRating: "Medium Traffic",
       },
-      
+
       // Delivery Services
       deliveryServices: {
         uberEats: true,
         mrD: true,
         takealot: true,
-        checkersSixty60: true
+        checkersSixty60: true,
       },
     };
 
@@ -914,11 +916,13 @@ export default function DealScorePublicPage() {
                 onAddressValidated={(addressData) => {
                   console.log("Address validated:", addressData);
                   // Auto-populate with formatted address for better consistency
-                  if (addressData.validationStatus === 'valid') {
+                  if (addressData.validationStatus === "valid") {
                     handleInputChange("address", addressData.formattedAddress);
                   }
                 }}
-                className={checkRequiredFields("address") ? "border-red-500" : ""}
+                className={
+                  checkRequiredFields("address") ? "border-red-500" : ""
+                }
                 required
               />
               {checkRequiredFields("address") && (
@@ -999,7 +1003,9 @@ export default function DealScorePublicPage() {
                 htmlFor="areaRate"
                 data-error={checkRequiredFields("areaRate")}
               >
-                {formData.propertyType === 'apartment' ? 'Area Rate per m² (living space)' : 'Area Rate per m² (erf size)'}
+                {formData.propertyType === "apartment"
+                  ? "Area Rate per m² (living space)"
+                  : "Area Rate per m² (erf size)"}
                 <span className="text-red-500">*</span>
               </Label>
               <Button
@@ -1009,7 +1015,7 @@ export default function DealScorePublicPage() {
                 className="h-5 text-xs px-2 text-primary"
                 onClick={handleFetchAreaRate}
               >
-                Not sure? Fetch {formData.propertyType === 'apartment' ? 'Apartment' : 'House'} Rate
+                Not sure? Fetch Rate
               </Button>
             </div>
             <div className="relative">
@@ -1143,7 +1149,7 @@ export default function DealScorePublicPage() {
               {dealReport.propertyCondition} Condition
             </Badge>
             <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 text-sm capitalize">
-              {dealReport.propertyType || 'Apartment'}
+              {dealReport.propertyType || "Apartment"}
             </Badge>
           </div>
 
@@ -1200,7 +1206,9 @@ export default function DealScorePublicPage() {
           {/* Deal Score Card */}
           <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
             <div className="p-6 flex flex-col items-center">
-              <h3 className="text-slate-700 font-medium mb-4">Proply Deal Score™</h3>
+              <h3 className="text-slate-700 font-medium mb-4">
+                Proply Deal Score™
+              </h3>
               <div className="relative mb-3 w-36 h-36">
                 <svg className="w-36 h-36" viewBox="0 0 128 128">
                   <circle
@@ -1262,9 +1270,9 @@ export default function DealScorePublicPage() {
             <div className="p-5">
               <p className="text-sm text-slate-500 mb-4">
                 Based on area rate of R{formatPrice(dealReport.areaRate)}/m² for
-                {dealReport.propertyType === 'apartment' 
-                  ? ' apartment living space in this area' 
-                  : ' house erf sizes in this area'}
+                {dealReport.propertyType === "apartment"
+                  ? " apartment living space in this area"
+                  : " house erf sizes in this area"}
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -1284,16 +1292,14 @@ export default function DealScorePublicPage() {
               {/* Contextual explanation based on price difference */}
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <p className="text-sm text-slate-600">
-                  {dealReport.percentageDifference > 0 ? (
-                    /* Property is undervalued */
-                    `This property appears to be priced ${Math.abs(dealReport.percentageDifference).toFixed(1)}% below estimated market value, suggesting potential value.`
-                  ) : dealReport.percentageDifference >= -10 ? (
-                    /* Price is slightly above market value (up to 10%) */
-                    `The asking price is ${Math.abs(dealReport.percentageDifference).toFixed(1)}% above estimated market value, which can be acceptable for properties with good appreciation potential.`
-                  ) : (
-                    /* Price is significantly above market value (more than 10%) */
-                    `The asking price is ${Math.abs(dealReport.percentageDifference).toFixed(1)}% above estimated market value. This could still be justified by unique features, superior finishes, exceptional views, or recent upgrades not reflected in comparable sales data. Always conduct your own research.`
-                  )}
+                  {dealReport.percentageDifference > 0
+                    ? /* Property is undervalued */
+                      `This property appears to be priced ${Math.abs(dealReport.percentageDifference).toFixed(1)}% below estimated market value, suggesting potential value.`
+                    : dealReport.percentageDifference >= -10
+                      ? /* Price is slightly above market value (up to 10%) */
+                        `The asking price is ${Math.abs(dealReport.percentageDifference).toFixed(1)}% above estimated market value, which can be acceptable for properties with good appreciation potential.`
+                      : /* Price is significantly above market value (more than 10%) */
+                        `The asking price is ${Math.abs(dealReport.percentageDifference).toFixed(1)}% above estimated market value. This could still be justified by unique features, superior finishes, exceptional views, or recent upgrades not reflected in comparable sales data. Always conduct your own research.`}
                 </p>
               </div>
             </div>
@@ -1432,9 +1438,11 @@ export default function DealScorePublicPage() {
                     <div className="p-5">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-muted-foreground">Property Type</p>
+                          <p className="text-sm text-muted-foreground">
+                            Property Type
+                          </p>
                           <p className="font-medium capitalize">
-                            {dealReport.propertyType || 'Apartment'}
+                            {dealReport.propertyType || "Apartment"}
                           </p>
                         </div>
                         <div>
@@ -1450,7 +1458,9 @@ export default function DealScorePublicPage() {
                           <p className="font-medium">
                             {dealReport.propertySize} m²
                             <span className="text-xs text-slate-500 block">
-                              {dealReport.propertyType === 'apartment' ? '(Internal living space)' : '(Erf size)'}
+                              {dealReport.propertyType === "apartment"
+                                ? "(Internal living space)"
+                                : "(Erf size)"}
                             </span>
                           </p>
                         </div>
@@ -1535,7 +1545,9 @@ export default function DealScorePublicPage() {
                           <p className="font-medium">
                             R{formatPrice(dealReport.areaRate)}/m²
                             <span className="text-xs text-slate-500 block">
-                              {dealReport.propertyType === 'apartment' ? 'For apartment living space' : 'For house erf size'}
+                              {dealReport.propertyType === "apartment"
+                                ? "For apartment living space"
+                                : "For house erf size"}
                             </span>
                           </p>
                         </div>
@@ -1744,7 +1756,9 @@ export default function DealScorePublicPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Financing Card */}
-                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-single-pulse' : 'border-gray-200'} transition-all duration-300`}>
+                  <div
+                    className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? "border-blue-500 animate-single-pulse" : "border-gray-200"} transition-all duration-300`}
+                  >
                     <div className="bg-gradient-to-r from-amber-500 to-yellow-400 px-4 py-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
@@ -1753,13 +1767,16 @@ export default function DealScorePublicPage() {
                             Financing Details
                           </h4>
                         </div>
-                        <button 
+                        <button
                           onClick={(e) => {
                             e.preventDefault();
                             // Initialize the form with current values
                             setFinancingForm({
-                              depositPercentage: dealReport?.depositPercentage.toString() || "10",
-                              interestRate: dealReport?.interestRate.toString() || "11",
+                              depositPercentage:
+                                dealReport?.depositPercentage.toString() ||
+                                "10",
+                              interestRate:
+                                dealReport?.interestRate.toString() || "11",
                               loanTerm: dealReport?.loanTerm.toString() || "20",
                             });
                             setShowFinancingDialog(true);
@@ -1830,7 +1847,9 @@ export default function DealScorePublicPage() {
                   </div>
 
                   {/* Affordability Card */}
-                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-single-pulse' : 'border-gray-200'} transition-all duration-300`}>
+                  <div
+                    className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? "border-blue-500 animate-single-pulse" : "border-gray-200"} transition-all duration-300`}
+                  >
                     <div className="bg-gradient-to-r from-indigo-600 to-violet-500 px-4 py-3">
                       <div className="flex items-center">
                         <Wallet className="h-5 w-5 text-white mr-2" />
@@ -1854,11 +1873,19 @@ export default function DealScorePublicPage() {
                             If Rates Drop 1%
                           </p>
                           <p className="font-medium">
-                            R{formatPrice(
+                            R
+                            {formatPrice(
                               (dealReport.loanAmount *
                                 ((dealReport.interestRate - 1) / 100 / 12) *
-                                Math.pow(1 + (dealReport.interestRate - 1) / 100 / 12, dealReport.loanTerm * 12)) /
-                              (Math.pow(1 + (dealReport.interestRate - 1) / 100 / 12, dealReport.loanTerm * 12) - 1)
+                                Math.pow(
+                                  1 + (dealReport.interestRate - 1) / 100 / 12,
+                                  dealReport.loanTerm * 12,
+                                )) /
+                                (Math.pow(
+                                  1 + (dealReport.interestRate - 1) / 100 / 12,
+                                  dealReport.loanTerm * 12,
+                                ) -
+                                  1),
                             )}
                           </p>
                         </div>
@@ -1869,11 +1896,19 @@ export default function DealScorePublicPage() {
                             If Rates Increase 1%
                           </p>
                           <p className="font-medium">
-                            R{formatPrice(
+                            R
+                            {formatPrice(
                               (dealReport.loanAmount *
                                 ((dealReport.interestRate + 1) / 100 / 12) *
-                                Math.pow(1 + (dealReport.interestRate + 1) / 100 / 12, dealReport.loanTerm * 12)) /
-                              (Math.pow(1 + (dealReport.interestRate + 1) / 100 / 12, dealReport.loanTerm * 12) - 1)
+                                Math.pow(
+                                  1 + (dealReport.interestRate + 1) / 100 / 12,
+                                  dealReport.loanTerm * 12,
+                                )) /
+                                (Math.pow(
+                                  1 + (dealReport.interestRate + 1) / 100 / 12,
+                                  dealReport.loanTerm * 12,
+                                ) -
+                                  1),
                             )}
                           </p>
                         </div>
@@ -1882,9 +1917,7 @@ export default function DealScorePublicPage() {
                             Required Household Income
                           </p>
                           <p className="font-medium">
-                            R{formatPrice(
-                              dealReport.monthlyPayment / 0.3
-                            )}
+                            R{formatPrice(dealReport.monthlyPayment / 0.3)}
                             <span className="text-xs text-muted-foreground ml-1">
                               (30% DTI)
                             </span>
@@ -1893,7 +1926,9 @@ export default function DealScorePublicPage() {
                       </div>
                       <div className="mt-2 pt-2 border-t">
                         <p className="text-xs text-muted-foreground">
-                          DTI = Debt-to-Income ratio. Banks typically require your bond payment to be less than 30% of your gross income.
+                          DTI = Debt-to-Income ratio. Banks typically require
+                          your bond payment to be less than 30% of your gross
+                          income.
                         </p>
                       </div>
                     </div>
@@ -1905,7 +1940,9 @@ export default function DealScorePublicPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Short-Term Cash Flow Card */}
-                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-single-pulse' : 'border-gray-200'} transition-all duration-300`}>
+                  <div
+                    className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? "border-blue-500 animate-single-pulse" : "border-gray-200"} transition-all duration-300`}
+                  >
                     <div className="bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-3">
                       <div className="flex items-center">
                         <Calendar className="h-5 w-5 text-white mr-2" />
@@ -1947,7 +1984,9 @@ export default function DealScorePublicPage() {
                   </div>
 
                   {/* Long-Term Cash Flow Card */}
-                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-single-pulse' : 'border-gray-200'} transition-all duration-300`}>
+                  <div
+                    className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? "border-blue-500 animate-single-pulse" : "border-gray-200"} transition-all duration-300`}
+                  >
                     <div className="bg-gradient-to-r from-indigo-500 to-purple-400 px-4 py-3">
                       <div className="flex items-center">
                         <Home className="h-5 w-5 text-white mr-2" />
@@ -1989,7 +2028,9 @@ export default function DealScorePublicPage() {
                   </div>
 
                   {/* Return on Investment Card */}
-                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-single-pulse' : 'border-gray-200'} transition-all duration-300`}>
+                  <div
+                    className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? "border-blue-500 animate-single-pulse" : "border-gray-200"} transition-all duration-300`}
+                  >
                     <div className="bg-gradient-to-r from-emerald-500 to-green-400 px-4 py-3">
                       <div className="flex items-center">
                         <TrendingUp className="h-5 w-5 text-white mr-2" />
@@ -2036,7 +2077,9 @@ export default function DealScorePublicPage() {
 
                 {/* Loan Paydown and Equity Buildup Chart */}
                 <div className="w-full mt-8">
-                  <div className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? 'border-blue-500 animate-single-pulse' : 'border-gray-200'} transition-all duration-300`}>
+                  <div
+                    className={`rounded-xl overflow-hidden shadow-md border ${financingUpdated ? "border-blue-500 animate-single-pulse" : "border-gray-200"} transition-all duration-300`}
+                  >
                     <div className="bg-gradient-to-r from-violet-500 to-purple-400 px-4 py-3">
                       <div className="flex items-center">
                         <TrendingUp className="h-5 w-5 text-white mr-2" />
@@ -2047,7 +2090,8 @@ export default function DealScorePublicPage() {
                     </div>
                     <div className="p-5">
                       <p className="text-sm text-slate-600 mb-3">
-                        This chart shows how your loan balance decreases and your equity grows over the loan term.
+                        This chart shows how your loan balance decreases and
+                        your equity grows over the loan term.
                       </p>
                       {dealReport && (
                         <LoanEquityChart
@@ -2221,7 +2265,7 @@ export default function DealScorePublicPage() {
               </div>
             </AccordionContent>
           </AccordionItem>
-          
+
           {/* Miscellaneous Accordion */}
           <AccordionItem value="item-5" className="w-full">
             <AccordionTrigger className="text-lg font-medium justify-start">
@@ -2233,137 +2277,184 @@ export default function DealScorePublicPage() {
                   Additional Property Insights
                 </h3>
 
-                {/* Traffic Density Index */}
-                <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 mb-6">
-                  <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <Car className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">
-                          Traffic Density Index
-                        </h4>
-                      </div>
-                      <div>
-                        <Badge 
-                          className={
-                            reportUnlocked 
-                              ? "bg-amber-500 text-white hover:bg-amber-600"
-                              : "bg-gray-400 text-white hover:bg-gray-500"
-                          }
-                        >
-                          {reportUnlocked ? "Medium Traffic" : "Unlock Report"}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    {reportUnlocked ? (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span>Morning Rush Hour (7AM-9AM)</span>
-                          <div className="flex items-center">
-                            <div className="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
-                              <div 
-                                className="bg-amber-500 h-2.5 rounded-full" 
-                                style={{width: '65%'}}
-                              ></div>
-                            </div>
-                            <span className="text-sm">65%</span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between mb-2">
-                          <span>Evening Rush Hour (4PM-6PM)</span>
-                          <div className="flex items-center">
-                            <div className="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
-                              <div 
-                                className="bg-red-500 h-2.5 rounded-full" 
-                                style={{width: '85%'}}
-                              ></div>
-                            </div>
-                            <span className="text-sm">85%</span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between mb-2">
-                          <span>Weekend Traffic</span>
-                          <div className="flex items-center">
-                            <div className="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
-                              <div 
-                                className="bg-green-500 h-2.5 rounded-full" 
-                                style={{width: '30%'}}
-                              ></div>
-                            </div>
-                            <span className="text-sm">30%</span>
-                          </div>
-                        </div>
-                        
-                        <div className="pt-4 border-t border-gray-100">
-                          <h5 className="font-medium mb-2">Traffic Summary</h5>
-                          <p className="text-sm text-muted-foreground">
-                            This property experiences medium traffic density, with notable congestion during evening rush hours.
-                            Weekend traffic is generally light, making it suitable for residents who value quieter weekends.
-                          </p>
-                        </div>
-                        
-                        <div className="mt-3 flex items-center">
-                          <AlertTriangle className="h-4 w-4 text-amber-500 mr-2" />
-                          <p className="text-xs text-muted-foreground">
-                            Traffic data is based on historical patterns and may vary. For precise information, we recommend visiting the property at different times.
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center p-4">
-                        <Lock className="h-12 w-12 text-gray-300 mb-2" />
-                        <p className="text-center text-muted-foreground mb-4">
-                          Unlock the full report to access detailed traffic information including peak hours, 
-                          traffic intensity, and how it might affect your property value.
-                        </p>
-                        <Button 
-                          onClick={() => setShowPaymentModal(true)}
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          Unlock Full Report
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Delivery Services Availability - can be added in future */}
-                {reportUnlocked && (
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 mb-6">
+                {/* Grid layout for Traffic and Delivery Services */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  {/* Traffic Density Index */}
+                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
                     <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
-                      <div className="flex items-center">
-                        <Package2 className="h-5 w-5 text-white mr-2" />
-                        <h4 className="font-semibold text-white">
-                          Delivery Services Availability
-                        </h4>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Car className="h-5 w-5 text-white mr-2" />
+                          <h4 className="font-semibold text-white">
+                            Traffic Density Index
+                          </h4>
+                        </div>
+                        <div>
+                          <Badge 
+                            className={
+                              reportUnlocked 
+                                ? "bg-amber-500 text-white hover:bg-amber-600"
+                                : "bg-gray-400 text-white hover:bg-gray-500"
+                            }
+                          >
+                            {reportUnlocked ? "Medium Traffic" : "Unlock Report"}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                     <div className="p-5">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="flex items-center">
-                          <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
-                          <span>Uber Eats</span>
+                      {reportUnlocked ? (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span>Morning Rush Hour (7AM-9AM)</span>
+                            <div className="flex items-center">
+                              <div className="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                <div 
+                                  className="bg-amber-500 h-2.5 rounded-full" 
+                                  style={{ width: "65%" }}
+                                ></div>
+                              </div>
+                              <span className="text-sm">65%</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between mb-2">
+                            <span>Evening Rush Hour (4PM-6PM)</span>
+                            <div className="flex items-center">
+                              <div className="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                <div 
+                                  className="bg-red-500 h-2.5 rounded-full" 
+                                  style={{ width: "85%" }}
+                                ></div>
+                              </div>
+                              <span className="text-sm">85%</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between mb-2">
+                            <span>Weekend Traffic</span>
+                            <div className="flex items-center">
+                              <div className="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                <div 
+                                  className="bg-green-500 h-2.5 rounded-full" 
+                                  style={{ width: "30%" }}
+                                ></div>
+                              </div>
+                              <span className="text-sm">30%</span>
+                            </div>
+                          </div>
+                          
+                          <div className="pt-4 border-t border-gray-100">
+                            <h5 className="font-medium mb-2">Traffic Summary</h5>
+                            <p className="text-sm text-muted-foreground">
+                              This property experiences medium traffic density,
+                              with notable congestion during evening rush hours.
+                              Weekend traffic is generally light, making it
+                              suitable for residents who value quieter weekends.
+                            </p>
+                          </div>
+                          
+                          <div className="mt-3 flex items-center">
+                            <AlertTriangle className="h-4 w-4 text-amber-500 mr-2" />
+                            <p className="text-xs text-muted-foreground">
+                              Traffic data is based on historical patterns and may
+                              vary. For precise information, we recommend visiting
+                              the property at different times.
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex items-center">
-                          <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
-                          <span>Mr. D Food</span>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-4">
+                          <Lock className="h-12 w-12 text-gray-300 mb-2" />
+                          <p className="text-center text-muted-foreground mb-4">
+                            Unlock the full report to access detailed traffic
+                            information including peak hours and traffic intensity.
+                          </p>
+                          <Button 
+                            onClick={() => setShowPaymentModal(true)}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            Unlock Full Report
+                          </Button>
                         </div>
-                        <div className="flex items-center">
-                          <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
-                          <span>Takealot</span>
-                        </div>
-                        <div className="flex items-center">
-                          <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
-                          <span>Checkers Sixty60</span>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
-                )}
+                  
+                  {/* Delivery Services Availability */}
+                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Package2 className="h-5 w-5 text-white mr-2" />
+                          <h4 className="font-semibold text-white">
+                            Delivery Services Availability
+                          </h4>
+                        </div>
+                        {reportUnlocked && (
+                          <Badge className="bg-green-500 text-white hover:bg-green-600">
+                            All Available
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      {reportUnlocked ? (
+                        <>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="flex items-center">
+                              <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                              <span>Uber Eats</span>
+                            </div>
+                            <div className="flex items-center">
+                              <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                              <span>Mr. D Food</span>
+                            </div>
+                            <div className="flex items-center">
+                              <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                              <span>Takealot</span>
+                            </div>
+                            <div className="flex items-center">
+                              <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                              <span>Checkers Sixty60</span>
+                            </div>
+                          </div>
+                          
+                          <div className="pt-4 mt-4 border-t border-gray-100">
+                            <h5 className="font-medium mb-2">Convenience Summary</h5>
+                            <p className="text-sm text-muted-foreground">
+                              This property is well-served by all major delivery services, 
+                              making it convenient for residents who value on-demand food, 
+                              groceries, and shopping deliveries.
+                            </p>
+                          </div>
+                          
+                          <div className="mt-3 flex items-center">
+                            <Info className="h-4 w-4 text-blue-500 mr-2" />
+                            <p className="text-xs text-muted-foreground">
+                              Delivery availability may change over time. This information 
+                              is accurate as of the report date.
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-4">
+                          <Lock className="h-12 w-12 text-gray-300 mb-2" />
+                          <p className="text-center text-muted-foreground mb-4">
+                            Unlock the full report to see which food and shopping 
+                            delivery services are available at this property.
+                          </p>
+                          <Button 
+                            onClick={() => setShowPaymentModal(true)}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            Unlock Full Report
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -2823,7 +2914,7 @@ export default function DealScorePublicPage() {
         error={areaRateError}
       />
 
-      <RentalAmountProgressDialog 
+      <RentalAmountProgressDialog
         open={showRentalAmountDialog}
         onOpenChange={setShowRentalAmountDialog}
         status={rentalAmountStatus}
@@ -2836,7 +2927,8 @@ export default function DealScorePublicPage() {
           <DialogHeader>
             <DialogTitle>Edit Financing Details</DialogTitle>
             <DialogDescription>
-              Adjust your financing parameters to see how they affect your investment metrics.
+              Adjust your financing parameters to see how they affect your
+              investment metrics.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -2845,10 +2937,10 @@ export default function DealScorePublicPage() {
               <Input
                 id="depositPercentage"
                 value={financingForm.depositPercentage}
-                onChange={(e) => 
-                  setFinancingForm(prev => ({
+                onChange={(e) =>
+                  setFinancingForm((prev) => ({
                     ...prev,
-                    depositPercentage: e.target.value.replace(/[^0-9.]/g, "")
+                    depositPercentage: e.target.value.replace(/[^0-9.]/g, ""),
                   }))
                 }
                 className="col-span-3"
@@ -2859,10 +2951,10 @@ export default function DealScorePublicPage() {
               <Input
                 id="interestRate"
                 value={financingForm.interestRate}
-                onChange={(e) => 
-                  setFinancingForm(prev => ({
+                onChange={(e) =>
+                  setFinancingForm((prev) => ({
                     ...prev,
-                    interestRate: e.target.value.replace(/[^0-9.]/g, "")
+                    interestRate: e.target.value.replace(/[^0-9.]/g, ""),
                   }))
                 }
                 className="col-span-3"
@@ -2873,10 +2965,10 @@ export default function DealScorePublicPage() {
               <Input
                 id="loanTerm"
                 value={financingForm.loanTerm}
-                onChange={(e) => 
-                  setFinancingForm(prev => ({
+                onChange={(e) =>
+                  setFinancingForm((prev) => ({
                     ...prev,
-                    loanTerm: e.target.value.replace(/[^0-9]/g, "")
+                    loanTerm: e.target.value.replace(/[^0-9]/g, ""),
                   }))
                 }
                 className="col-span-3"
@@ -2884,57 +2976,67 @@ export default function DealScorePublicPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowFinancingDialog(false)}
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={() => {
                 // Get updated values
-                const newDepositPercentage = Number(financingForm.depositPercentage) || 10;
-                const newInterestRate = Number(financingForm.interestRate) || 11; 
+                const newDepositPercentage =
+                  Number(financingForm.depositPercentage) || 10;
+                const newInterestRate =
+                  Number(financingForm.interestRate) || 11;
                 const newLoanTerm = Number(financingForm.loanTerm) || 20;
-                
+
                 // Show a toast
                 toast({
                   title: "Updating financing details",
                   description: "Recalculating investment metrics...",
                 });
-                
+
                 // Close dialog
                 setShowFinancingDialog(false);
-                
+
                 // Update form data state
-                setFormData(prev => ({
+                setFormData((prev) => ({
                   ...prev,
                   depositPercentage: newDepositPercentage.toString(),
                   interestRate: newInterestRate.toString(),
-                  loanTerm: newLoanTerm.toString()
+                  loanTerm: newLoanTerm.toString(),
                 }));
-                
+
                 // Enable highlighting effect
                 setFinancingUpdated(true);
-                
+
                 // Calculate new values and update report
                 if (dealReport) {
                   const purchasePrice = dealReport.askingPrice;
-                  const depositAmount = purchasePrice * (newDepositPercentage / 100);
+                  const depositAmount =
+                    purchasePrice * (newDepositPercentage / 100);
                   const loanAmount = purchasePrice - depositAmount;
-                  const monthlyPayment = calculateMonthlyPayment(loanAmount, newInterestRate, newLoanTerm);
-                  
+                  const monthlyPayment = calculateMonthlyPayment(
+                    loanAmount,
+                    newInterestRate,
+                    newLoanTerm,
+                  );
+
                   // Update cash flows
-                  const shortTermMonthlyRevenue = dealReport.annualRevenueShortTerm 
-                    ? dealReport.annualRevenueShortTerm / 12 
-                    : 0;
-                  
-                  const shortTermCashFlow = shortTermMonthlyRevenue - 
+                  const shortTermMonthlyRevenue =
+                    dealReport.annualRevenueShortTerm
+                      ? dealReport.annualRevenueShortTerm / 12
+                      : 0;
+
+                  const shortTermCashFlow =
+                    shortTermMonthlyRevenue -
                     (monthlyPayment + dealReport.estimatedMonthlyCosts);
-                    
-                  const longTermCashFlow = (dealReport.monthlyLongTerm || 0) - 
+
+                  const longTermCashFlow =
+                    (dealReport.monthlyLongTerm || 0) -
                     (monthlyPayment + dealReport.estimatedMonthlyCosts);
-                  
+
                   // Create new report object
                   const updatedReport = {
                     ...dealReport,
@@ -2945,18 +3047,18 @@ export default function DealScorePublicPage() {
                     loanAmount: loanAmount,
                     monthlyPayment: monthlyPayment,
                     cashFlowShortTerm: shortTermCashFlow,
-                    cashFlowLongTerm: longTermCashFlow
+                    cashFlowLongTerm: longTermCashFlow,
                   };
-                  
+
                   // Update state
                   setDealReport(updatedReport);
-                  
+
                   // Success toast
                   toast({
                     title: "Financing details updated",
                     description: "Investment metrics have been recalculated.",
                   });
-                  
+
                   // Remove highlighting after 3 seconds to match single-pulse animation
                   setTimeout(() => {
                     setFinancingUpdated(false);
