@@ -6,9 +6,6 @@ import OpenAI from "openai";
 import { db } from 'db';
 import { dealScoreLeads } from '@db/schema';
 
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY
-});
 const router = express.Router();
 
 // Email collection endpoint for deal score leads
@@ -61,18 +58,13 @@ router.post('/suburb-sentiment', async (req, res) => {
   }
   
   try {
-    console.log(`Processing suburb sentiment request for ${suburb}`);
-    console.log(`Using OpenAI API key (partial): ${process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 5) + '...' : 'NOT SET'}`);
+    console.log(`Processing suburb sentiment request for suburb: "${suburb}"`);
     
-    // Validate suburb and clean it
+    // Validate and clean the suburb name
     const cleanedSuburb = suburb.trim().replace(/[^\w\s,-]/g, '');
-    console.log(`Cleaned suburb for API request: "${cleanedSuburb}"`);
     
-    // Generate sentiment data
+    // Generate sentiment data 
     const sentimentData = await getSuburbSentiment(cleanedSuburb);
-    
-    console.log(`Successfully generated suburb sentiment for ${cleanedSuburb}`);
-    console.log(`Sentiment data:`, JSON.stringify(sentimentData, null, 2));
     
     res.json({ 
       success: true,
@@ -80,21 +72,9 @@ router.post('/suburb-sentiment', async (req, res) => {
     });
   } catch (error) {
     console.error('Error in suburb sentiment endpoint:', error);
-    
-    // Check if it's an OpenAI API error
-    if (error instanceof Error && error.message.includes('401')) {
-      console.error('OpenAI API authentication error. Please check your API key.');
-      return res.status(401).json({ 
-        error: 'OpenAI API authentication failed',
-        details: 'The OpenAI API key may be invalid or expired.',
-        message: 'We encountered an issue with our AI service. Please try again later.'
-      });
-    }
-    
     res.status(500).json({ 
       error: 'Failed to analyze suburb sentiment',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      message: 'Could not analyze suburb sentiment. Please try again.'
+      details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -230,6 +210,9 @@ router.post('/', async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
+    // Create a new OpenAI instance directly in this function
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
     const systemPrompt = `You are an AI real estate advisor helping agents provide informed guidance to their clients. You're analyzing a property with the following details:
 
 Purchase Price: R${dealDetails.purchasePrice.toLocaleString()}
@@ -249,7 +232,7 @@ Your role is to help the real estate agent:
 Provide professional, concise advice that the agent can use when advising their clients.`;
 
     // Create a streaming completion
-    const stream = await openai.chat.completions.create({
+    const stream = await client.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {

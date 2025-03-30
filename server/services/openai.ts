@@ -1,31 +1,9 @@
 import OpenAI from "openai";
 
-// Initialize the OpenAI client more robustly with better error handling
-let openai: OpenAI;
-
-try {
-  if (!process.env.OPENAI_API_KEY) {
-    console.error('CRITICAL ERROR: OPENAI_API_KEY environment variable is not set');
-    throw new Error('OpenAI API key not found in environment variables');
-  }
-  
-  // Log a shortened version of the key for debugging (first 5 chars only)
-  const keyPreview = process.env.OPENAI_API_KEY.substring(0, 5) + '...';
-  console.log(`Initializing OpenAI client with API key starting with: ${keyPreview}`);
-  
-  // Initialize the client with API key from environment variables
-  openai = new OpenAI({ 
-    apiKey: process.env.OPENAI_API_KEY
-  });
-  
-  console.log('OpenAI client initialized successfully');
-} catch (error) {
-  console.error('Failed to initialize OpenAI client:', error);
-  // Create a dummy client that will throw appropriate errors when used
-  openai = new OpenAI({ 
-    apiKey: 'invalid-key-error-will-be-caught'
-  });
-}
+// Initialize the OpenAI client directly
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 // Analysis Categories with weights
 const ANALYSIS_CATEGORIES = [
@@ -99,27 +77,24 @@ export interface SuburbSentimentResult {
 // Simplified version focused on sentiment for Deal Score
 export async function getSuburbSentiment(suburb: string): Promise<SuburbSentimentResult> {
   try {
-    console.log(`OpenAI Service: Generating sentiment for suburb "${suburb}"`);
-    console.log(`OpenAI API Key (partial): ${process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 5) + '...' : 'NOT SET'}`);
+    // Create a new OpenAI instance directly in this function
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OpenAI API key is not set');
-    }
+    console.log(`Processing suburb sentiment for "${suburb}"`);
     
-    const response = await openai.chat.completions.create({
+    const response = await client.chat.completions.create({
       model: "gpt-4o",
+      temperature: 0.3,
       messages: [
         {
           role: "system",
-          content: `You are a property market analysis expert. Provide a concise assessment of the given suburb, focusing on investment potential. 
+          content: `You are a property market analysis expert. Provide a concise assessment of the given suburb, focusing on investment potential.
           
 Your response must be formatted as a strict JSON object with these fields:
 - description: A 2-3 sentence description of the suburb focusing on its character and investment outlook
 - investmentPotential: A single value of "HIGH", "MEDIUM", or "LOW"
 - developmentActivity: A single value of "ACTIVE", "MODERATE", or "MINIMAL"
-- trend: A single value of "Trending Up", "Stable", or "Trending Down"
-
-Base your analysis on recent development, economic trends, and market data. Make the assessment specific to the suburb name provided. Keep the description factual and objective.`
+- trend: A single value of "Trending Up", "Stable", or "Trending Down"`
         },
         {
           role: "user",
@@ -129,32 +104,21 @@ Base your analysis on recent development, economic trends, and market data. Make
       response_format: { type: "json_object" }
     });
 
-    console.log(`OpenAI API returned a response for suburb "${suburb}"`);
+    const content = response.choices[0]?.message?.content || '';
+    console.log(`OpenAI API raw response: ${content.substring(0, 50)}...`);
 
-    if (!response.choices[0].message.content) {
+    if (!content) {
       throw new Error('OpenAI API returned empty response');
     }
 
-    const content = response.choices[0].message.content;
-    console.log(`OpenAI API raw response: ${content.substring(0, 50)}...`);
-
     const result = JSON.parse(content) as SuburbSentimentResult;
-    console.log(`Successfully parsed sentiment data for ${suburb} with investment potential: ${result.investmentPotential}`);
-
     return result;
   } catch (error) {
     console.error('OpenAI API Error:', error);
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error details:', errorMsg);
-    
-    if (errorMsg.includes('401')) {
-      console.error('Authentication error with OpenAI API - please check your API key');
-      throw new Error('OpenAI API authentication failed (401)');
-    }
     
     // Return a fallback with clear indication of error
     return {
-      description: `Unable to retrieve data for ${suburb} at this time. Our AI service is temporarily unavailable.`,
+      description: `Unable to retrieve data for ${suburb} at this time.`,
       investmentPotential: "MEDIUM",
       developmentActivity: "MODERATE",
       trend: "Stable"
@@ -164,8 +128,14 @@ Base your analysis on recent development, economic trends, and market data. Make
 
 export async function analyzeSuburb(suburb: string): Promise<SuburbAnalysisResult> {
   try {
-    const response = await openai.chat.completions.create({
+    // Create a new OpenAI instance directly in this function
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    
+    console.log(`Processing detailed suburb analysis for "${suburb}"`);
+    
+    const response = await client.chat.completions.create({
       model: "gpt-4o",
+      temperature: 0.3,
       messages: [
         {
           role: "system",
@@ -222,11 +192,13 @@ Structure your response as JSON with this exact format:
       response_format: { type: "json_object" }
     });
 
-    if (!response.choices[0].message.content) {
+    const content = response.choices[0]?.message?.content || '';
+    
+    if (!content) {
       throw new Error('OpenAI API returned empty response');
     }
 
-    const result = JSON.parse(response.choices[0].message.content) as SuburbAnalysisResult;
+    const result = JSON.parse(content) as SuburbAnalysisResult;
 
     // Validate that dataPoints matches rawDataPoints length
     if (result.dataPoints !== result.rawDataPoints.length) {
