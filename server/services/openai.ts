@@ -2,7 +2,8 @@ import OpenAI from "openai";
 
 // Initialize the OpenAI client directly
 const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
+  dangerouslyAllowBrowser: false
 });
 
 // Analysis Categories with weights
@@ -78,7 +79,10 @@ export interface SuburbSentimentResult {
 export async function getSuburbSentiment(suburb: string): Promise<SuburbSentimentResult> {
   try {
     // Create a new OpenAI instance directly in this function
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const client = new OpenAI({ 
+      apiKey: process.env.OPENAI_API_KEY,
+      dangerouslyAllowBrowser: false 
+    });
 
     console.log(`Processing suburb sentiment for "${suburb}"`);
 
@@ -129,7 +133,10 @@ Your response must be formatted as a strict JSON object with these fields:
 export async function analyzeSuburb(suburb: string): Promise<SuburbAnalysisResult> {
   try {
     // Create a new OpenAI instance directly in this function
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const client = new OpenAI({ 
+      apiKey: process.env.OPENAI_API_KEY,
+      dangerouslyAllowBrowser: false 
+    });
 
     console.log(`Processing detailed suburb analysis for "${suburb}"`);
 
