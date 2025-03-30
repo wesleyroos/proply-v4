@@ -11,11 +11,11 @@ const router = express.Router();
 router.post('/collect-email', async (req, res) => {
   try {
     const { email, propertyAddress, reportType, date } = req.body;
-    
+
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
     }
-    
+
     // Save the email to the database
     await db.insert(dealScoreLeads).values({
       email,
@@ -23,7 +23,7 @@ router.post('/collect-email', async (req, res) => {
       reportType: reportType || 'Deal Score',
       createdAt: date ? new Date(date) : new Date(),
     });
-    
+
     res.status(200).json({ success: true, message: 'Email saved successfully' });
   } catch (error) {
     console.error('Error collecting email:', error);
@@ -51,22 +51,22 @@ router.post('/rental-amount', async (req, res) => {
 // Suburb sentiment endpoint - public access
 router.post('/suburb-sentiment', async (req, res) => {
   const { suburb } = req.body;
-  
+
   if (!suburb) {
     return res.status(400).json({ error: 'Suburb is required' });
   }
-  
+
   try {
     console.log(`Processing suburb sentiment request for suburb: "${suburb}"`);
     console.log(`OPENAI_API_KEY available: ${process.env.OPENAI_API_KEY ? 'YES' : 'NO'}`);
     console.log(`OPENAI_API_KEY length: ${process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0}`);
-    
+
     // Validate and clean the suburb name
     const cleanedSuburb = suburb.trim().replace(/[^\w\s,-]/g, '');
-    
+
     // Generate sentiment data 
     const sentimentData = await getSuburbSentiment(cleanedSuburb);
-    
+    console.log('Suburb sentiment result:', sentimentData); // Added logging
     res.json({ 
       success: true,
       data: sentimentData
