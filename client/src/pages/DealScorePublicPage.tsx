@@ -2622,9 +2622,12 @@ export default function DealScorePublicPage() {
                             Suburb Sentiment
                           </h4>
                         </div>
-                        {reportUnlocked && (
-                          <Badge className="bg-blue-500 text-white hover:bg-blue-600">
-                            Trending Up
+                        {reportUnlocked && dealReport?.suburbSentiment && (
+                          <Badge className={`${
+                            dealReport.suburbSentiment.trend === "Trending Up" ? "bg-blue-500" :
+                            dealReport.suburbSentiment.trend === "Stable" ? "bg-green-500" : "bg-amber-500"
+                          } text-white hover:bg-opacity-90`}>
+                            {dealReport.suburbSentiment.trend}
                           </Badge>
                         )}
                       </div>
@@ -2632,41 +2635,55 @@ export default function DealScorePublicPage() {
                     <div className="p-5">
                       {reportUnlocked ? (
                         <div className="space-y-4">
-                          <div className="border border-gray-100 rounded-lg p-4 bg-white">
-                            <p className="text-sm text-gray-700 leading-relaxed">
-                              Cape Town City Centre is considered a highly desirable area with a 
-                              vibrant mix of residential and commercial properties. The area has 
-                              seen significant revitalization in recent years, with many historic 
-                              buildings being converted into modern apartments and offices.
-                            </p>
-                            <p className="text-sm text-gray-700 mt-3 leading-relaxed">
-                              The suburb is known for its cultural attractions, restaurants, and 
-                              proximity to major business districts. Property values have shown 
-                              consistent growth, making it attractive to both investors and homeowners.
-                            </p>
-                          </div>
-                          
-                          <div className="flex flex-col space-y-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <TrendingUp className="h-5 w-5 text-blue-500 mr-2" />
-                                <span>Investment Potential:</span>
-                              </div>
-                              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border border-blue-300 px-3">
-                                HIGH
-                              </Badge>
+                          {suburbSentimentStatus === "loading" ? (
+                            <div className="flex justify-center items-center p-6">
+                              <Loader2 className="h-8 w-8 animate-spin text-primary" />
                             </div>
-                            
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <Building className="h-5 w-5 text-blue-500 mr-2" />
-                                <span>Development Activity:</span>
+                          ) : dealReport?.suburbSentiment ? (
+                            <>
+                              <div className="border border-gray-100 rounded-lg p-4 bg-white">
+                                <p className="text-sm text-gray-700 leading-relaxed">
+                                  {dealReport.suburbSentiment.description}
+                                </p>
                               </div>
-                              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border border-blue-300 px-3">
-                                ACTIVE
-                              </Badge>
+                              
+                              <div className="flex flex-col space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <TrendingUp className="h-5 w-5 text-blue-500 mr-2" />
+                                    <span>Investment Potential:</span>
+                                  </div>
+                                  <Badge className={`${
+                                    dealReport.suburbSentiment.investmentPotential === "HIGH" ? "bg-blue-100 text-blue-800 border-blue-300" :
+                                    dealReport.suburbSentiment.investmentPotential === "MEDIUM" ? "bg-green-100 text-green-800 border-green-300" :
+                                    "bg-amber-100 text-amber-800 border-amber-300"
+                                  } hover:bg-opacity-90 border px-3`}>
+                                    {dealReport.suburbSentiment.investmentPotential}
+                                  </Badge>
+                                </div>
+                                
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <Building className="h-5 w-5 text-blue-500 mr-2" />
+                                    <span>Development Activity:</span>
+                                  </div>
+                                  <Badge className={`${
+                                    dealReport.suburbSentiment.developmentActivity === "ACTIVE" ? "bg-blue-100 text-blue-800 border-blue-300" :
+                                    dealReport.suburbSentiment.developmentActivity === "MODERATE" ? "bg-green-100 text-green-800 border-green-300" :
+                                    "bg-amber-100 text-amber-800 border-amber-300"
+                                  } hover:bg-opacity-90 border px-3`}>
+                                    {dealReport.suburbSentiment.developmentActivity}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="border border-gray-100 rounded-lg p-4 bg-white">
+                              <p className="text-sm text-gray-700 leading-relaxed">
+                                Suburb sentiment data is not available for this location.
+                              </p>
                             </div>
-                          </div>
+                          )}
                           
                           <div className="mt-3 flex items-center">
                             <Info className="h-4 w-4 text-blue-500 mr-2" />
