@@ -119,8 +119,9 @@ Your response must be formatted as a strict JSON object with these fields:
     return result;
   } catch (error) {
     console.error('OpenAI API Error:', error);
-
-    // Return a fallback with clear indication of error
+    if (error instanceof Error && error.message.includes('API key')) {
+      throw error; // Let the route handler deal with auth errors
+    }
     return {
       description: `Unable to retrieve data for ${suburb} at this time.`,
       investmentPotential: "MEDIUM",
