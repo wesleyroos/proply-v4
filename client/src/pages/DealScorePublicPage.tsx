@@ -1001,6 +1001,7 @@ export default function DealScorePublicPage() {
           propertySize: Number(parseFormattedNumber(formData.size)),
           bedrooms: Number(parseFormattedNumber(formData.bedrooms)),
           condition: formData.propertyCondition,
+          luxuryRating: Number(formData.luxuryRating) || 5,
         }),
       });
 
@@ -1095,6 +1096,7 @@ export default function DealScorePublicPage() {
           propertySize: Number(parseFormattedNumber(formData.size)),
           bedrooms: Number(parseFormattedNumber(formData.bedrooms)),
           condition: formData.propertyCondition,
+          luxuryRating: Number(formData.luxuryRating) || 5,
         }),
       });
 

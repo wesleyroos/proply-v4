@@ -34,13 +34,13 @@ router.post('/collect-email', async (req, res) => {
 // Public endpoints
 router.post('/rental-amount', async (req, res) => {
   try {
-    const { address, propertySize, bedrooms, condition } = req.body;
+    const { address, propertySize, bedrooms, condition, luxuryRating } = req.body;
 
     if (!address) {
       return res.status(400).json({ error: 'Address is required' });
     }
 
-    const rentalRate = await getRentalRate(address, propertySize, bedrooms, condition);
+    const rentalRate = await getRentalRate(address, propertySize, bedrooms, condition, luxuryRating);
     res.json({ rentalAmount: rentalRate });
   } catch (error) {
     console.error('Error in rental-amount endpoint:', error);

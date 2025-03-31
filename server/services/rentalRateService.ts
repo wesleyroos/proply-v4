@@ -3,8 +3,29 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export async function getRentalRate(address: string, propertySize: number, bedrooms: number, condition: string): Promise<number> {
+// Function to generate luxury context based on rating
+function getLuxuryContext(luxuryRating: number): string {
+  // Validate the luxury rating
+  const rating = Math.max(1, Math.min(10, luxuryRating));
+  
+  if (rating >= 8) {
+    return ` The property has high-end luxury finishes, premium appliances, and exclusive amenities. It would be considered a luxurious rental.`;
+  } else if (rating >= 6) {
+    return ` The property has above-average finishes and some upscale features that would appeal to discerning tenants.`;
+  } else if (rating >= 4) {
+    return ` The property has standard finishes and typical amenities for its area.`;
+  } else {
+    return ` The property has basic finishes and minimal amenities.`;
+  }
+}
+
+export async function getRentalRate(address: string, propertySize: number, bedrooms: number, condition: string, luxuryRating?: number): Promise<number> {
   try {
+    // Create luxury context based on the rating
+    const luxuryContext = luxuryRating 
+      ? getLuxuryContext(luxuryRating) 
+      : '';
+    
     // First API call - rental market expert perspective
     const response1 = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -16,7 +37,7 @@ export async function getRentalRate(address: string, propertySize: number, bedro
         },
         {
           role: "user",
-          content: `What would be the current market rental rate for a ${propertySize}m² ${bedrooms} bedroom property in ${condition} condition located at ${address}? Return only the numeric amount.`
+          content: `What would be the current market rental rate for a ${propertySize}m² ${bedrooms} bedroom property in ${condition} condition located at ${address}?${luxuryContext} Return only the numeric amount.`
         }
       ]
     });
@@ -32,7 +53,7 @@ export async function getRentalRate(address: string, propertySize: number, bedro
         },
         {
           role: "user",
-          content: `What monthly rental could we achieve for a ${propertySize}m² ${bedrooms} bedroom property in ${condition} condition at ${address}? Return only the numeric amount.`
+          content: `What monthly rental could we achieve for a ${propertySize}m² ${bedrooms} bedroom property in ${condition} condition at ${address}?${luxuryContext} Return only the numeric amount.`
         }
       ]
     });
