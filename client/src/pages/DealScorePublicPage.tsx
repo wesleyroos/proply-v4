@@ -32,6 +32,7 @@ import {
   AlertTriangle,
   Car,
   Package2,
+  Star,
 } from "lucide-react";
 import AddressAutocomplete, {
   ValidatedAddressData,
@@ -162,6 +163,22 @@ export default function DealScorePublicPage() {
     loanTerm: "",
   });
   const [financingUpdated, setFinancingUpdated] = useState(false);
+
+  // Helper function to convert property condition to star rating
+  const conditionToStars = (condition: string): number => {
+    switch (condition.toLowerCase()) {
+      case "excellent":
+        return 4;
+      case "good":
+        return 3;
+      case "fair":
+        return 2;
+      case "poor":
+        return 1;
+      default:
+        return 0;
+    }
+  };
 
   // Helper function to calculate monthly bond payment
   const calculateMonthlyPayment = (
@@ -1304,8 +1321,13 @@ export default function DealScorePublicPage() {
             <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
               {dealReport.parking} Parking
             </Badge>
-            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm capitalize">
+            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm capitalize flex items-center gap-1">
               {dealReport.propertyCondition} Condition
+              <span className="ml-1 flex">
+                {Array.from({ length: conditionToStars(dealReport.propertyCondition) }).map((_, i) => (
+                  <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                ))}
+              </span>
             </Badge>
             <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 text-sm capitalize">
               {dealReport.propertyType || "Apartment"}
@@ -1608,9 +1630,23 @@ export default function DealScorePublicPage() {
                           <p className="text-sm text-muted-foreground">
                             Condition
                           </p>
-                          <p className="font-medium capitalize">
-                            {dealReport.propertyCondition}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium capitalize">
+                              {dealReport.propertyCondition}
+                            </p>
+                            <div className="flex">
+                              {/* Star rating based on condition */}
+                              {Array.from({ length: 4 }).map((_, i) => (
+                                <span key={i}>
+                                  {conditionToStars(dealReport.propertyCondition) > i ? (
+                                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                                  ) : (
+                                    <Star className="h-4 w-4 text-gray-300" />
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Size</p>
