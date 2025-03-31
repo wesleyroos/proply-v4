@@ -88,11 +88,16 @@ export default function AddressAutocomplete({
 
       setLoading(true);
       try {
-        // Use the Google Maps API with testMode as fallback if needed
-        const response = await fetch(`/api/address-validation/autocomplete?input=${encodeURIComponent(value)}&testMode=true`);
+        // Try real Google Maps API first
+        let response = await fetch(`/api/address-validation/autocomplete?input=${encodeURIComponent(value)}`);
         
-        if (!response.ok) {
-          throw new Error('Failed to fetch address suggestions');
+        // If API fails, fall back to test mode
+        if (!response.ok || response.status !== 200) {
+          console.log('Falling back to test mode for autocomplete');
+          response = await fetch(`/api/address-validation/autocomplete?input=${encodeURIComponent(value)}&testMode=true`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch address suggestions');
+          }
         }
         
         const data = await response.json();
@@ -138,14 +143,26 @@ export default function AddressAutocomplete({
   const validateAddress = async (address: string) => {
     setValidating(true);
     try {
-      // Use testMode as fallback until API key issues are resolved
-      const response = await fetch('/api/address-validation/validate', {
+      // Try real Google Maps API first
+      let response = await fetch('/api/address-validation/validate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ address, testMode: true })
+        body: JSON.stringify({ address })
       });
+      
+      // If API fails, fall back to test mode
+      if (!response.ok || response.status !== 200) {
+        console.log('Falling back to test mode for address validation');
+        response = await fetch('/api/address-validation/validate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ address, testMode: true })
+        });
+      }
       
       if (!response.ok) {
         throw new Error('Failed to validate address');
