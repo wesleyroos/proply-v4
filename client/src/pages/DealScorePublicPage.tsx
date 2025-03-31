@@ -1778,8 +1778,11 @@ export default function DealScorePublicPage() {
           className="w-full flex flex-col items-center"
         >
           <AccordionItem value="item-1" className="w-full">
-            <AccordionTrigger className="text-lg font-medium justify-start">
-              Property Details
+            <AccordionTrigger className="text-lg font-medium justify-start bg-gradient-to-r from-slate-100 to-gray-100 px-4 py-3 rounded-lg border border-gray-200 hover:from-slate-200 hover:to-gray-200">
+              <div className="flex items-center gap-2">
+                <Home className="h-5 w-5 text-slate-600" />
+                <span>Property Details</span>
+              </div>
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6 w-full">
@@ -2010,8 +2013,11 @@ export default function DealScorePublicPage() {
           </AccordionItem>
 
           <AccordionItem value="item-2" className="w-full">
-            <AccordionTrigger className="text-lg font-medium justify-start">
-              Rental Analysis
+            <AccordionTrigger className="text-lg font-medium justify-start bg-gradient-to-r from-slate-100 to-gray-100 px-4 py-3 rounded-lg border border-gray-200 hover:from-slate-200 hover:to-gray-200">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-slate-600" />
+                <span>Rental Analysis</span>
+              </div>
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6">
@@ -2171,8 +2177,11 @@ export default function DealScorePublicPage() {
           </AccordionItem>
 
           <AccordionItem value="item-3" className="w-full">
-            <AccordionTrigger className="text-lg font-medium justify-start">
-              Financial Analysis
+            <AccordionTrigger className="text-lg font-medium justify-start bg-gradient-to-r from-slate-100 to-gray-100 px-4 py-3 rounded-lg border border-gray-200 hover:from-slate-200 hover:to-gray-200">
+              <div className="flex items-center gap-2">
+                <CircleDollarSign className="h-5 w-5 text-slate-600" />
+                <span>Financial Analysis</span>
+              </div>
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6 w-full">
@@ -2397,8 +2406,11 @@ export default function DealScorePublicPage() {
           </AccordionItem>
 
           <AccordionItem value="item-4" className="w-full">
-            <AccordionTrigger className="text-lg font-medium justify-start">
-              Comparable Properties
+            <AccordionTrigger className="text-lg font-medium justify-start bg-gradient-to-r from-slate-100 to-gray-100 px-4 py-3 rounded-lg border border-gray-200 hover:from-slate-200 hover:to-gray-200">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-slate-600" />
+                <span>Comparable Properties</span>
+              </div>
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6 w-full">
@@ -2555,8 +2567,11 @@ export default function DealScorePublicPage() {
 
           {/* Miscellaneous Accordion */}
           <AccordionItem value="item-5" className="w-full">
-            <AccordionTrigger className="text-lg font-medium justify-start">
-              Neighbourhood Insights
+            <AccordionTrigger className="text-lg font-medium justify-start bg-gradient-to-r from-slate-100 to-gray-100 px-4 py-3 rounded-lg border border-gray-200 hover:from-slate-200 hover:to-gray-200">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-slate-600" />
+                <span>Neighbourhood Insights</span>
+              </div>
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6 w-full">
