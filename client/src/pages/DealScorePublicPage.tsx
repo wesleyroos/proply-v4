@@ -68,6 +68,7 @@ import {
 import { AreaRateProgressDialog } from "@/components/AreaRateProgressDialog";
 import { RentalAmountProgressDialog } from "@/components/RentalAmountProgressDialog";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import { DealScoreReport } from "./DealScoreReportPage";
 import { EmailPDFButton } from "@/components/pdf/email-pdf-button";
 import LoanEquityChart from "@/components/LoanEquityChart";
@@ -1344,32 +1345,33 @@ export default function DealScorePublicPage() {
             How luxury is this property? (1-10)
           </Label>
 
-          <div className="flex flex-col space-y-2">
+          <div className="flex flex-col space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Basic</span>
-              <span className="text-xs text-muted-foreground">Luxury</span>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">Basic</span>
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold">1</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold">10</span>
+                <span className="text-xs text-muted-foreground">Luxury</span>
+              </div>
             </div>
 
-            <div className="flex justify-between gap-1">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
-                <button
-                  key={rating}
-                  type="button"
-                  onClick={() =>
-                    handleInputChange("luxuryRating", rating.toString())
-                  }
-                  className={`
-                    flex-1 h-10 rounded-md border transition-all
-                    ${
-                      Number(formData.luxuryRating) === rating
-                        ? "bg-primary text-white border-primary"
-                        : "border-input bg-background hover:bg-muted"
-                    }
-                  `}
-                >
-                  {rating}
-                </button>
-              ))}
+            <div className="space-y-2">
+              <Slider 
+                defaultValue={[Number(formData.luxuryRating)]} 
+                min={1} 
+                max={10} 
+                step={1} 
+                onValueChange={(value) => handleInputChange("luxuryRating", value[0].toString())}
+                className="mt-2"
+              />
+              <div className="flex justify-center">
+                <div className="flex items-center gap-1 bg-primary/10 px-3 py-1 rounded-full">
+                  <span className="font-medium text-sm text-primary">{formData.luxuryRating}</span>
+                  <span className="text-xs text-gray-500">/10</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1703,7 +1705,7 @@ export default function DealScorePublicPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <TrendingUp className="h-5 w-5 text-white mr-2" />
-                  <h4 className="font-semibold text-white">Rental Yield</h4>
+                  <h4 className="font-semibold text-white">Rental Performance</h4>
                 </div>
                 <Badge
                   className={
