@@ -165,7 +165,7 @@ export default function DealScorePublicPage() {
     loanTerm: "",
   });
   const [financingUpdated, setFinancingUpdated] = useState(false);
-  const [showAreaRateEdit, setShowAreaRateEdit] = useState(false);
+  const [showAreaRateModal, setShowAreaRateModal] = useState(false);
   const [editedAreaRate, setEditedAreaRate] = useState("");
 
   // Helper function to convert property condition to star rating
@@ -339,7 +339,7 @@ export default function DealScorePublicPage() {
   const handleAreaRateEdit = () => {
     if (dealReport) {
       setEditedAreaRate(dealReport.areaRate.toString());
-      setShowAreaRateEdit(true);
+      setShowAreaRateModal(true);
     }
   };
   
@@ -360,8 +360,8 @@ export default function DealScorePublicPage() {
     // Recalculate the deal score with the new area rate
     calculateDealScore(undefined, undefined, undefined, null);
     
-    // Reset the edit mode
-    setShowAreaRateEdit(false);
+    // Close the modal
+    setShowAreaRateModal(false);
   };
 
   // Function has been replaced with direct calculation
@@ -1589,42 +1589,17 @@ export default function DealScorePublicPage() {
             </div>
             <div className="flex flex-col items-center">
               <span className="text-sm text-slate-500">Area Rate</span>
-              {showAreaRateEdit ? (
-                <div className="flex items-center gap-2 mt-1">
-                  <input 
-                    type="text" 
-                    value={editedAreaRate}
-                    onChange={(e) => setEditedAreaRate(e.target.value)}
-                    className="w-20 px-2 py-1 border border-slate-300 rounded text-sm"
-                  />
-                  <div className="flex gap-1">
-                    <button 
-                      onClick={handleAreaRateUpdate}
-                      className="text-xs bg-green-100 text-green-700 hover:bg-green-200 px-2 py-1 rounded"
-                    >
-                      Save
-                    </button>
-                    <button 
-                      onClick={() => setShowAreaRateEdit(false)}
-                      className="text-xs bg-slate-100 text-slate-700 hover:bg-slate-200 px-2 py-1 rounded"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center">
-                  <span className="text-xl font-bold">
-                    R{formatPrice(dealReport.areaRate)}
-                  </span>
-                  <button 
-                    onClick={handleAreaRateEdit} 
-                    className="text-xs text-blue-600 hover:text-blue-800 mt-1"
-                  >
-                    Edit
-                  </button>
-                </div>
-              )}
+              <div className="flex flex-col items-center">
+                <span className="text-xl font-bold">
+                  R{formatPrice(dealReport.areaRate)}
+                </span>
+                <button 
+                  onClick={handleAreaRateEdit} 
+                  className="text-xs text-blue-600 hover:text-blue-800 mt-1"
+                >
+                  Edit
+                </button>
+              </div>
             </div>
             <div className="flex flex-col items-center">
               <span className="text-sm text-slate-500">
@@ -3646,6 +3621,40 @@ export default function DealScorePublicPage() {
               }}
             >
               Apply Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Area Rate Edit Modal */}
+      <Dialog open={showAreaRateModal} onOpenChange={setShowAreaRateModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Area Rate</DialogTitle>
+            <DialogDescription>
+              The AI has estimated the area rate based on available data, but you may have better local knowledge. 
+              Enter your own area rate below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="areaRate" className="text-right">
+                Rate per m²
+              </Label>
+              <Input
+                id="areaRate"
+                value={editedAreaRate}
+                onChange={(e) => setEditedAreaRate(e.target.value)}
+                className="col-span-3"
+                placeholder="Enter area rate..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setShowAreaRateModal(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleAreaRateUpdate}>
+              Update Area Rate
             </Button>
           </DialogFooter>
         </DialogContent>
