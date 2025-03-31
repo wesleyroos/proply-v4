@@ -34,6 +34,7 @@ export interface DealScoreReport {
   parking: number;
   propertyCondition: string;
   propertyType?: string; // Making it optional to not break existing code
+  luxuryRating?: number; // Luxury rating from 1-10 scale
   
   // Deal Score Metrics
   score: number;
@@ -143,6 +144,7 @@ export default function DealScoreReportPage({ report }: { report?: DealScoreRepo
     parking: 1,
     propertyCondition: "excellent",
     propertyType: "apartment",
+    luxuryRating: 7,
     
     // Deal Score Metrics
     score: 89,
@@ -453,6 +455,12 @@ export default function DealScoreReportPage({ report }: { report?: DealScoreRepo
                   <span className="text-gray-600">Parking:</span>
                   <span className="font-medium">{data.parking}</span>
                 </div>
+                {data.luxuryRating && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Luxury Rating:</span>
+                    <span className="font-medium">{data.luxuryRating}/10</span>
+                  </div>
+                )}
               </div>
             </div>
 

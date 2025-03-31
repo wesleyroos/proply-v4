@@ -87,6 +87,7 @@ export default function DealScorePublicPage() {
     parking: "",
     propertyCondition: "excellent",
     propertyType: "apartment", // Default to apartment
+    luxuryRating: "5", // Default to middle of scale (1-10)
 
     // Default values for other fields (no longer shown in form)
     nightlyRate: "",
@@ -208,6 +209,7 @@ export default function DealScorePublicPage() {
           parking: "1",
           propertyCondition: "excellent",
           propertyType: "apartment",
+          luxuryRating: "7",
           nightlyRate: "2500",
           occupancy: "70",
           longTermRental: "25000",
@@ -414,6 +416,7 @@ export default function DealScorePublicPage() {
     let score = 50;
     score -= priceDiff * 0.5;
 
+    // Add property condition to score
     switch (formData.propertyCondition) {
       case "excellent":
         score += 10;
@@ -427,6 +430,14 @@ export default function DealScorePublicPage() {
       case "poor":
         score -= 10;
         break;
+    }
+    
+    // Add luxury rating to score (1-10 scale, convert to -5 to +5 adjustment)
+    const luxuryRating = Number(formData.luxuryRating);
+    if (!isNaN(luxuryRating) && luxuryRating >= 1 && luxuryRating <= 10) {
+      // Convert 1-10 scale to -5 to +5 adjustment
+      const luxuryAdjustment = (luxuryRating - 5.5) * 1.5;
+      score += luxuryAdjustment;
     }
 
     if (shortTermYield !== null) {
@@ -514,6 +525,7 @@ export default function DealScorePublicPage() {
       parking: parking,
       propertyCondition: formData.propertyCondition,
       propertyType: formData.propertyType,
+      luxuryRating: Number(formData.luxuryRating),
 
       // Deal Score Metrics
       score: Math.round(score),
@@ -1159,6 +1171,7 @@ export default function DealScorePublicPage() {
       parking: "",
       propertyCondition: "excellent",
       propertyType: "apartment", // Add propertyType field
+      luxuryRating: "5", // Default to middle of scale (1-10)
       nightlyRate: "",
       occupancy: "",
       longTermRental: "",
@@ -1443,6 +1456,43 @@ export default function DealScorePublicPage() {
             </Select>
           </div>
         </div>
+
+        {/* Luxury Rating Likert Scale */}
+        <div className="mt-6">
+          <Label htmlFor="luxuryRating" className="mb-3 block">
+            How luxury is this property? (1-10)
+          </Label>
+          
+          <div className="flex flex-col space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground">Basic</span>
+              <span className="text-xs text-muted-foreground">Luxury</span>
+            </div>
+            
+            <div className="flex justify-between gap-1">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
+                <button
+                  key={rating}
+                  type="button"
+                  onClick={() => handleInputChange("luxuryRating", rating.toString())}
+                  className={`
+                    flex-1 h-10 rounded-md border transition-all
+                    ${Number(formData.luxuryRating) === rating 
+                      ? "bg-primary text-white border-primary" 
+                      : "border-input bg-background hover:bg-muted"}
+                  `}
+                >
+                  {rating}
+                </button>
+              ))}
+            </div>
+            
+            <div className="flex justify-between">
+              <span className="text-xs text-muted-foreground">1</span>
+              <span className="text-xs text-muted-foreground">10</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   };
@@ -1593,15 +1643,15 @@ export default function DealScorePublicPage() {
                     dealReport.percentageDifference >= 0
                       ? "bg-green-100 text-green-800"
                       : dealReport.percentageDifference >= -10
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-red-100 text-red-800"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-red-100 text-red-800"
                   }
                 >
                   {dealReport.percentageDifference >= 0
-                    ? "Undervalued"
+                    ? "Great Price"
                     : dealReport.percentageDifference >= -10
-                    ? "Fair Price"
-                    : "High Price"}
+                      ? "Fair Price"
+                      : "High Price"}
                 </Badge>
               </div>
             </div>
