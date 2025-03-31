@@ -346,41 +346,44 @@ export default function DealScorePublicPage() {
   };
   
   const handleAreaRateUpdate = () => {
-    if (!editedAreaRate || isNaN(Number(editedAreaRate))) {
-      // Invalid input
+    if (!editedAreaRate || isNaN(Number(editedAreaRate)) || !dealReport) {
+      // Invalid input or no report yet
       return;
     }
     
     const newAreaRate = Number(editedAreaRate);
     
-    // Update the form data with the new area rate and then recalculate
-    setFormData(prev => {
-      const updatedFormData = {
-        ...prev,
-        areaRate: newAreaRate.toString()
-      };
-      
-      // We need to delay the calculation slightly to ensure state is updated
-      setTimeout(() => {
-        if (dealReport) {
-          // Also directly update the dealReport to ensure UI is immediately updated
-          setDealReport(prevReport => ({
-            ...prevReport!,
-            areaRate: newAreaRate,
-            estimatedValue: newAreaRate * Number(parseFormattedNumber(updatedFormData.size)),
-            percentageDifference: ((newAreaRate * Number(parseFormattedNumber(updatedFormData.size)) - 
-                                    Number(parseFormattedNumber(updatedFormData.purchasePrice))) /
-                                   Number(parseFormattedNumber(updatedFormData.purchasePrice))) * 100
-          }));
-          calculateDealScore(undefined, undefined, undefined, null);
-        }
-      }, 50);
-      
-      return updatedFormData;
+    // Update the form data with the new area rate
+    const updatedFormData = {
+      ...formData,
+      areaRate: newAreaRate.toString()
+    };
+    
+    // First update the form data
+    setFormData(updatedFormData);
+    
+    // Calculate key values for the report update
+    const propertySize = Number(parseFormattedNumber(updatedFormData.size));
+    const askingPrice = Number(parseFormattedNumber(updatedFormData.purchasePrice));
+    const estimatedValue = newAreaRate * propertySize;
+    const percentageDifference = ((estimatedValue - askingPrice) / askingPrice) * 100;
+    
+    // Directly update specific display values in the report
+    setDealReport({
+      ...dealReport,
+      areaRate: newAreaRate,
+      estimatedValue: estimatedValue,
+      percentageDifference: percentageDifference,
+      recentSalesRange: `R${Math.round(estimatedValue * 0.9).toLocaleString()} - R${Math.round(estimatedValue * 1.1).toLocaleString()}`
     });
     
-    // Close the modal
+    // Close the modal first to ensure good UX
     setShowAreaRateModal(false);
+    
+    // Then trigger a full recalculation with a minimal delay
+    setTimeout(() => {
+      calculateDealScore(undefined, undefined, undefined, null);
+    }, 100);
   };
   
   const handleAskingPriceEdit = () => {
@@ -391,47 +394,43 @@ export default function DealScorePublicPage() {
   };
   
   const handleAskingPriceUpdate = () => {
-    if (!editedAskingPrice || isNaN(Number(editedAskingPrice))) {
-      // Invalid input
+    if (!editedAskingPrice || isNaN(Number(editedAskingPrice)) || !dealReport) {
+      // Invalid input or no report yet
       return;
     }
     
     const newAskingPrice = Number(editedAskingPrice);
     
-    // Update the form data with the new asking price and then recalculate
-    setFormData(prev => {
-      const updatedFormData = {
-        ...prev,
-        purchasePrice: newAskingPrice.toString()
-      };
-      
-      // We need to delay the calculation slightly to ensure state is updated
-      setTimeout(() => {
-        if (dealReport) {
-          // Calculate property rate with new asking price
-          const propertyRate = newAskingPrice / Number(parseFormattedNumber(updatedFormData.size));
-          
-          // Also directly update the dealReport to ensure UI is immediately updated
-          setDealReport(prevReport => {
-            const estimatedValue = prevReport!.areaRate * Number(parseFormattedNumber(updatedFormData.size));
-            
-            return {
-              ...prevReport!,
-              askingPrice: newAskingPrice,
-              pricePerSqM: propertyRate,
-              percentageDifference: ((estimatedValue - newAskingPrice) / newAskingPrice) * 100
-            };
-          });
-          
-          calculateDealScore(undefined, undefined, undefined, null);
-        }
-      }, 50);
-      
-      return updatedFormData;
+    // Update the form data with the new asking price
+    const updatedFormData = {
+      ...formData,
+      purchasePrice: newAskingPrice.toString()
+    };
+    
+    // First update the form data
+    setFormData(updatedFormData);
+    
+    // Calculate key values for the report update
+    const propertySize = Number(parseFormattedNumber(updatedFormData.size));
+    const propertyRate = newAskingPrice / propertySize;
+    const estimatedValue = dealReport.areaRate * propertySize;
+    const percentageDifference = ((estimatedValue - newAskingPrice) / newAskingPrice) * 100;
+    
+    // Directly update specific display values in the report
+    setDealReport({
+      ...dealReport,
+      askingPrice: newAskingPrice,
+      pricePerSqM: propertyRate,
+      percentageDifference: percentageDifference
     });
     
-    // Close the modal
+    // Close the modal first to ensure good UX
     setShowAskingPriceModal(false);
+    
+    // Then trigger a full recalculation with a minimal delay
+    setTimeout(() => {
+      calculateDealScore(undefined, undefined, undefined, null);
+    }, 100);
   };
 
   // Function has been replaced with direct calculation
