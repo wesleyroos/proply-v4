@@ -88,7 +88,7 @@ export default function DealScorePublicPage() {
     parking: "",
     propertyCondition: "excellent",
     propertyType: "apartment", // Default to apartment
-    luxuryRating: "5", // Default to middle of scale (1-10)
+    luxuryRating: "3", // Default to middle of scale (1-5)
 
     // Default values for other fields (no longer shown in form)
     nightlyRate: "",
@@ -210,7 +210,7 @@ export default function DealScorePublicPage() {
           parking: "1",
           propertyCondition: "excellent",
           propertyType: "apartment",
-          luxuryRating: "7",
+          luxuryRating: "4",
           nightlyRate: "2500",
           occupancy: "70",
           longTermRental: "25000",
@@ -433,11 +433,11 @@ export default function DealScorePublicPage() {
         break;
     }
 
-    // Add luxury rating to score (1-10 scale, convert to -5 to +5 adjustment)
+    // Add luxury rating to score (1-5 scale, convert to -5 to +5 adjustment)
     const luxuryRating = Number(formData.luxuryRating);
-    if (!isNaN(luxuryRating) && luxuryRating >= 1 && luxuryRating <= 10) {
-      // Convert 1-10 scale to -5 to +5 adjustment
-      const luxuryAdjustment = (luxuryRating - 5.5) * 1.5;
+    if (!isNaN(luxuryRating) && luxuryRating >= 1 && luxuryRating <= 5) {
+      // Convert 1-5 scale to -4 to +4 adjustment
+      const luxuryAdjustment = (luxuryRating - 3) * 2;
       score += luxuryAdjustment;
     }
 
@@ -1339,10 +1339,10 @@ export default function DealScorePublicPage() {
           </div>
         </div>
 
-        {/* Luxury Rating Likert Scale - Moved higher up in the form */}
+        {/* Luxury Rating Slider - Reduced to 5 points */}
         <div className="mt-4">
           <Label htmlFor="luxuryRating" className="mb-3 block">
-            How luxury is this property? (1-10)
+            How luxury is this property?
           </Label>
 
           <div className="flex flex-col space-y-4">
@@ -1352,7 +1352,7 @@ export default function DealScorePublicPage() {
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold">1</span>
               </div>
               <div className="flex items-center gap-1">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold">10</span>
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold">5</span>
                 <span className="text-xs text-muted-foreground">Luxury</span>
               </div>
             </div>
@@ -1361,7 +1361,7 @@ export default function DealScorePublicPage() {
               <Slider 
                 defaultValue={[Number(formData.luxuryRating)]} 
                 min={1} 
-                max={10} 
+                max={5} 
                 step={1} 
                 onValueChange={(value) => handleInputChange("luxuryRating", value[0].toString())}
                 className="mt-2"
@@ -1369,7 +1369,7 @@ export default function DealScorePublicPage() {
               <div className="flex justify-center">
                 <div className="flex items-center gap-1 bg-primary/10 px-3 py-1 rounded-full">
                   <span className="font-medium text-sm text-primary">{formData.luxuryRating}</span>
-                  <span className="text-xs text-gray-500">/10</span>
+                  <span className="text-xs text-gray-500">/5</span>
                 </div>
               </div>
             </div>

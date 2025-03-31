@@ -6,30 +6,20 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // Function to generate luxury context based on rating
 function getLuxuryContext(luxuryRating: number): string {
   // Validate the luxury rating
-  const rating = Math.max(1, Math.min(10, luxuryRating));
+  const rating = Math.max(1, Math.min(5, luxuryRating));
   
   // Create a more granular description based on exact rating
   switch(rating) {
-    case 10:
-      return ` The property is ultra-luxury with exceptional finishes, state-of-the-art appliances, premium building amenities (like concierge, spa, etc.), and spectacular views. It would command top-tier rental rates in this market.`;
-    case 9:
-      return ` The property is very high-end luxury with designer finishes, premium brand appliances, exclusive amenities, and superior quality throughout. It would be considered among the most premium rental options available.`;
-    case 8:
-      return ` The property has luxury finishes, high-end appliances, and excellent amenities. It would be considered a luxury rental appealing to affluent tenants.`;
-    case 7:
-      return ` The property has upscale finishes, quality appliances, and desirable amenities that elevate it well above average properties in the area.`;
-    case 6:
-      return ` The property has above-average finishes, good quality appliances, and some attractive amenities that would appeal to discerning tenants.`;
     case 5:
-      return ` The property has modern, standard finishes and typical amenities expected in this area, with touches of quality.`;
+      return ` The property is ultra-luxury (rated 5/5) with exceptional finishes, state-of-the-art appliances, premium building amenities (like concierge, spa, etc.), and spectacular views. It would command the absolute highest rental rates in this market, potentially 40-60% above standard properties.`;
     case 4:
-      return ` The property has standard finishes and basic amenities typical for the area, generally well-maintained.`;
+      return ` The property features high-end luxury finishes (rated 4/5) with quality brand appliances, excellent amenities, and superior quality throughout. It would attract discerning tenants willing to pay a significant premium, typically 20-40% above standard rates.`;
     case 3:
-      return ` The property has basic finishes, older but functional amenities, and meets minimum standards for the rental market.`;
+      return ` The property has standard modern finishes (rated 3/5) with good quality appliances and typical amenities expected in this area. It would achieve average market rental rates for the location.`;
     case 2:
-      return ` The property has dated finishes, minimal amenities, and shows signs of wear and tear.`;
+      return ` The property has basic but functional finishes (rated 2/5), modest amenities, and meets minimum market standards. It would typically achieve rental rates 10-20% below the area average.`;
     case 1:
-      return ` The property has very basic finishes, outdated features, minimal to no amenities, and may require improvements to meet market standards.`;
+      return ` The property has very basic finishes (rated 1/5), outdated features, minimal to no amenities, and may require improvements to meet modern standards. It would typically achieve rental rates 20-30% below the area average.`;
     default:
       return ` The property has standard finishes and typical amenities for its area.`;
   }

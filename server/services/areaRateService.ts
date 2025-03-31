@@ -27,34 +27,24 @@ function extractNumber(text: string): number {
 }
 
 // Function to generate detailed luxury context based on rating
-function getAreaRateLuxuryContext(rating: number = 5): string {
+function getAreaRateLuxuryContext(rating: number = 3): string {
   // Default to middle rating if no rating provided
-  rating = rating || 5;
+  rating = rating || 3;
   
-  // Validate rating is between 1-10
-  rating = Math.max(1, Math.min(10, rating));
+  // Validate rating is between 1-5
+  rating = Math.max(1, Math.min(5, rating));
   
   switch(rating) {
-    case 10:
-      return ` This is an ultra-premium luxury property rated 10/10. It features exceptional architectural design, the highest quality finishes, state-of-the-art systems, premium imported materials, and exclusive amenities. Properties of this caliber command the absolute top prices in their respective areas.`;
-    case 9:
-      return ` This is a very high-end luxury property rated 9/10. It offers designer finishes, premium brand fixtures, superior quality throughout, and exclusive features. Such properties sit in the top-tier pricing segment, just below the ultra-premium category.`;
-    case 8:
-      return ` This is a luxury property rated 8/10. It has high-end finishes, quality appliances, and excellent amenities. This property would be considered premium and priced accordingly in its market.`;
-    case 7:
-      return ` This is an upscale property rated 7/10. It features above-average finishes, good quality fixtures, and desirable amenities that elevate it well above standard properties in the area.`;
-    case 6:
-      return ` This is a property rated 6/10 for luxury. It offers above-average finishes and some attractive features that would appeal to discerning buyers, positioning it in the above-median price range.`;
     case 5:
-      return ` This is a standard quality property rated 5/10. It features typical finishes and amenities expected for properties in this area.`;
+      return ` This is an ultra-premium luxury property rated 5/5. It features exceptional architectural design, the highest quality finishes, state-of-the-art systems, premium imported materials, and exclusive amenities. Such properties command the absolute top prices in their respective areas, typically 30-50% above standard market rates.`;
     case 4:
-      return ` This is a property rated 4/10 for luxury. It has basic, functional finishes that meet market expectations but offers no premium features.`;
+      return ` This is a high-end luxury property rated 4/5. It offers premium finishes, high-quality fixtures, superior construction, and desirable amenities. Properties at this level are positioned in the upper tier of the market, commanding prices significantly above average.`;
     case 3:
-      return ` This is a basic property rated 3/10 for luxury. It features older but functional finishes and meets minimum standards for the market.`;
+      return ` This is a standard quality property rated 3/5 for luxury. It features typical contemporary finishes and amenities expected for properties in this area, with good construction quality and some desirable features, priced at the market average.`;
     case 2:
-      return ` This is a below-average property rated 2/10 for luxury. It has dated finishes, minimal amenities, and shows signs of wear, likely positioning it in the lower price range for its area.`;
+      return ` This is a basic property rated 2/5 for luxury. It has functional but modest finishes, limited amenities, and meets minimum market standards. Such properties typically sell at 10-20% below the area average.`;
     case 1:
-      return ` This is a very basic property rated 1/10 for luxury. It features outdated finishes, minimal to no amenities, and may require significant improvements to meet market standards.`;
+      return ` This is a very basic property rated 1/5 for luxury. It features outdated finishes, minimal to no amenities, and may require significant improvements to meet market standards. Such properties typically sell at 20-30% below the area average.`;
     default:
       return ` This is a standard property with typical finishes for its area.`;
   }
@@ -68,8 +58,8 @@ export async function getAreaRate(address: string, propertyType: string = 'apart
     const isApartment = propertyType === 'apartment';
     const rateType = isApartment ? 'living area (internal space)' : 'erf size (land area)';
     
-    // Determine if this is a luxury property (rating 8-10) for the prompts that still need this flag
-    const isLuxury = luxuryRating ? luxuryRating >= 8 : false;
+    // Determine if this is a luxury property (rating 4-5) for the prompts that still need this flag
+    const isLuxury = luxuryRating ? luxuryRating >= 4 : false;
     
     // Get luxury context based on rating
     const luxuryContext = luxuryRating ? getAreaRateLuxuryContext(luxuryRating) : '';
@@ -190,7 +180,7 @@ Address: ${dealData.address}
 Property Type: ${dealData.propertyType === 'apartment' ? 'Apartment/Flat' : 'House'}
 Size: ${dealData.propertySize}m² ${dealData.propertyType === 'apartment' ? '(living space)' : '(erf size)'}
 Condition: ${dealData.propertyCondition}
-${dealData.luxuryRating ? `Luxury Rating: ${dealData.luxuryRating}/10` : ''}
+${dealData.luxuryRating ? `Luxury Rating: ${dealData.luxuryRating}/5` : ''}
 Purchase Price: R${dealData.purchasePrice.toLocaleString()}
 Area Rate Range: ${dealData.areaRateResponses.join(' to ')} per m²
 Final Area Rate: R${dealData.finalAreaRate.toLocaleString()} per m² ${dealData.propertyType === 'apartment' ? 'for apartments' : 'for houses'}
