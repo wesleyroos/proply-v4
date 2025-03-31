@@ -351,39 +351,129 @@ export default function DealScorePublicPage() {
       return;
     }
     
+    // Get the new area rate
     const newAreaRate = Number(editedAreaRate);
     
-    // Update the form data with the new area rate
-    const updatedFormData = {
-      ...formData,
-      areaRate: newAreaRate.toString()
-    };
+    // Show a toast
+    toast({
+      title: "Updating area rate",
+      description: "Recalculating deal metrics..."
+    });
     
-    // First update the form data
-    setFormData(updatedFormData);
+    // Close the modal first for better UX
+    setShowAreaRateModal(false);
     
-    // Calculate key values for the report update
-    const propertySize = Number(parseFormattedNumber(updatedFormData.size));
-    const askingPrice = Number(parseFormattedNumber(updatedFormData.purchasePrice));
+    // Calculate key values for the update
+    const propertySize = Number(parseFormattedNumber(formData.size));
+    const askingPrice = Number(parseFormattedNumber(formData.purchasePrice));
     const estimatedValue = newAreaRate * propertySize;
     const percentageDifference = ((estimatedValue - askingPrice) / askingPrice) * 100;
     
-    // Directly update specific display values in the report
+    // Update form data
+    setFormData(prev => ({
+      ...prev,
+      areaRate: newAreaRate.toString()
+    }));
+    
+    // Calculate property rate
+    const propertyRate = askingPrice / propertySize;
+    
+    // Price diff for score calculation 
+    const priceDiff = ((propertyRate - newAreaRate) / newAreaRate) * 100;
+    
+    // Recalculate score with the price difference 
+    let score = 50;
+    score -= priceDiff * 0.5;
+    
+    // Add other factors that affect score
+    // Check property condition
+    switch (formData.propertyCondition) {
+      case "excellent":
+        score += 10;
+        break;
+      case "good":
+        score += 5;
+        break;
+      case "fair":
+        score -= 5;
+        break;
+      case "poor":
+        score -= 10;
+        break;
+    }
+    
+    // Add luxury rating to score
+    const luxuryRating = Number(formData.luxuryRating);
+    if (!isNaN(luxuryRating) && luxuryRating >= 1 && luxuryRating <= 5) {
+      const luxuryAdjustment = (luxuryRating - 3) * 2;
+      score += luxuryAdjustment;
+    }
+    
+    // Add yield adjustments as in calculateDealScore
+    if (dealReport.shortTermYield !== null) {
+      const shortTermYield = dealReport.shortTermYield;
+      if (shortTermYield >= 18) {
+        score += 15;
+      } else if (shortTermYield >= 12) {
+        score += 10;
+      } else if (shortTermYield >= 8) {
+        score += 5;
+      }
+    }
+    
+    if (dealReport.longTermYield !== null) {
+      const longTermYield = dealReport.longTermYield;
+      if (longTermYield >= 8) {
+        score += 10;
+      } else if (longTermYield >= 6) {
+        score += 5;
+      }
+    }
+    
+    // Cap score between 0 and 100
+    score = Math.max(0, Math.min(100, score));
+    
+    // Determine rating and color based on score
+    let rating: string;
+    let color: string;
+    
+    if (score >= 90) {
+      rating = "Excellent";
+      color = "bg-emerald-500";
+    } else if (score >= 75) {
+      rating = "Great";
+      color = "bg-green-500";
+    } else if (score >= 60) {
+      rating = "Good";
+      color = "bg-blue-500";
+    } else if (score >= 40) {
+      rating = "Average";
+      color = "bg-yellow-500";
+    } else if (score >= 25) {
+      rating = "Poor";
+      color = "bg-orange-500";
+    } else {
+      rating = "Bad";
+      color = "bg-red-500";
+    }
+    
+    // Update the report
     setDealReport({
       ...dealReport,
       areaRate: newAreaRate,
       estimatedValue: estimatedValue,
       percentageDifference: percentageDifference,
-      recentSalesRange: `R${Math.round(estimatedValue * 0.9).toLocaleString()} - R${Math.round(estimatedValue * 1.1).toLocaleString()}`
+      recentSalesRange: `R${Math.round(estimatedValue * 0.9).toLocaleString()} - R${Math.round(estimatedValue * 1.1).toLocaleString()}`,
+      score: Math.round(score),
+      rating: rating,
+      color: color
     });
     
-    // Close the modal first to ensure good UX
-    setShowAreaRateModal(false);
-    
-    // Then trigger a full recalculation with a minimal delay
-    setTimeout(() => {
-      calculateDealScore(undefined, undefined, undefined, null);
-    }, 100);
+    // Success toast
+    toast({
+      title: "Area rate updated",
+      description: "Deal metrics have been recalculated."
+    });
   };
   
   const handleAskingPriceEdit = () => {
@@ -399,38 +489,168 @@ export default function DealScorePublicPage() {
       return;
     }
     
+    // Get the new asking price
     const newAskingPrice = Number(editedAskingPrice);
     
-    // Update the form data with the new asking price
-    const updatedFormData = {
-      ...formData,
-      purchasePrice: newAskingPrice.toString()
-    };
+    // Show a toast
+    toast({
+      title: "Updating asking price",
+      description: "Recalculating deal metrics..."
+    });
     
-    // First update the form data
-    setFormData(updatedFormData);
+    // Close the modal first for better UX
+    setShowAskingPriceModal(false);
     
-    // Calculate key values for the report update
-    const propertySize = Number(parseFormattedNumber(updatedFormData.size));
+    // Calculate key values for the update
+    const propertySize = Number(parseFormattedNumber(formData.size));
     const propertyRate = newAskingPrice / propertySize;
-    const estimatedValue = dealReport.areaRate * propertySize;
+    const areaRate = Number(parseFormattedNumber(formData.areaRate));
+    const estimatedValue = areaRate * propertySize;
     const percentageDifference = ((estimatedValue - newAskingPrice) / newAskingPrice) * 100;
     
-    // Directly update specific display values in the report
+    // Update form data 
+    setFormData(prev => ({
+      ...prev,
+      purchasePrice: newAskingPrice.toString()
+    }));
+    
+    // Price diff for score calculation 
+    const priceDiff = ((propertyRate - areaRate) / areaRate) * 100;
+    
+    // Recalculate score with the price difference
+    let score = 50;
+    score -= priceDiff * 0.5;
+    
+    // Add other factors that affect score
+    // Check property condition
+    switch (formData.propertyCondition) {
+      case "excellent":
+        score += 10;
+        break;
+      case "good":
+        score += 5;
+        break;
+      case "fair":
+        score -= 5;
+        break;
+      case "poor":
+        score -= 10;
+        break;
+    }
+    
+    // Add luxury rating to score
+    const luxuryRating = Number(formData.luxuryRating);
+    if (!isNaN(luxuryRating) && luxuryRating >= 1 && luxuryRating <= 5) {
+      const luxuryAdjustment = (luxuryRating - 3) * 2;
+      score += luxuryAdjustment;
+    }
+    
+    // Recalculate yields
+    // First, estimate monthly costs
+    const monthlyRates = (newAskingPrice * 0.001) / 12; // Rough estimate of rates
+    const levy = newAskingPrice * 0.0015; // Rough estimate of levy
+    const estimatedMonthlyCosts = monthlyRates + levy;
+    
+    // Calculate financing values
+    const depositPercentage = Number(formData.depositPercentage) || 10;
+    const depositAmount = newAskingPrice * (depositPercentage / 100);
+    const interestRate = Number(formData.interestRate) || 11;
+    const loanTerm = Number(formData.loanTerm) || 20;
+    const loanAmount = newAskingPrice - depositAmount;
+    const monthlyPayment = calculateMonthlyPayment(loanAmount, interestRate, loanTerm);
+    
+    // Calculate new yields
+    const estimatedLongTermRental = dealReport.monthlyLongTerm || (newAskingPrice * 0.005);
+    const longTermYield = ((estimatedLongTermRental * 12) / newAskingPrice) * 100;
+    
+    // Calculate short term yield
+    const estimatedNightlyRate = dealReport.nightlyRate || (newAskingPrice / 1000);
+    const propertyOccupancyRate = dealReport.occupancyRate || 65;
+    const annualRevenueShortTerm = estimatedNightlyRate * 365 * (propertyOccupancyRate / 100);
+    const shortTermYield = (annualRevenueShortTerm / newAskingPrice) * 100;
+    
+    // Calculate cash flows
+    const cashFlowShortTerm = (annualRevenueShortTerm / 12) - monthlyPayment - estimatedMonthlyCosts;
+    const cashFlowLongTerm = estimatedLongTermRental - monthlyPayment - estimatedMonthlyCosts;
+    
+    // Add yield adjustments as in calculateDealScore
+    if (shortTermYield !== null) {
+      if (shortTermYield >= 18) {
+        score += 15;
+      } else if (shortTermYield >= 12) {
+        score += 10;
+      } else if (shortTermYield >= 8) {
+        score += 5;
+      }
+    }
+    
+    if (longTermYield !== null) {
+      if (longTermYield >= 8) {
+        score += 10;
+      } else if (longTermYield >= 6) {
+        score += 5;
+      }
+    }
+    
+    // Cap score between 0 and 100
+    score = Math.max(0, Math.min(100, score));
+    
+    // Determine rating and color based on score
+    let rating: string;
+    let color: string;
+    
+    if (score >= 90) {
+      rating = "Excellent";
+      color = "bg-emerald-500";
+    } else if (score >= 75) {
+      rating = "Great";
+      color = "bg-green-500";
+    } else if (score >= 60) {
+      rating = "Good";
+      color = "bg-blue-500";
+    } else if (score >= 40) {
+      rating = "Average";
+      color = "bg-yellow-500";
+    } else if (score >= 25) {
+      rating = "Poor";
+      color = "bg-orange-500";
+    } else {
+      rating = "Bad";
+      color = "bg-red-500";
+    }
+    
+    // Determine best investment strategy
+    const bestInvestmentStrategy = shortTermYield > longTermYield 
+      ? "Short-Term Rental" 
+      : "Long-Term Rental";
+    
+    // Update the report with comprehensive changes
     setDealReport({
       ...dealReport,
       askingPrice: newAskingPrice,
       pricePerSqM: propertyRate,
-      percentageDifference: percentageDifference
+      percentageDifference: percentageDifference,
+      score: Math.round(score),
+      rating: rating,
+      color: color,
+      shortTermYield: shortTermYield,
+      longTermYield: longTermYield,
+      bestInvestmentStrategy: bestInvestmentStrategy,
+      monthlyPayment: monthlyPayment,
+      depositAmount: depositAmount,
+      loanAmount: loanAmount,
+      cashFlowShortTerm: cashFlowShortTerm,
+      cashFlowLongTerm: cashFlowLongTerm,
+      monthlyRates: monthlyRates,
+      levy: levy,
+      estimatedMonthlyCosts: estimatedMonthlyCosts
     });
     
-    // Close the modal first to ensure good UX
-    setShowAskingPriceModal(false);
-    
-    // Then trigger a full recalculation with a minimal delay
-    setTimeout(() => {
-      calculateDealScore(undefined, undefined, undefined, null);
-    }, 100);
+    // Success toast
+    toast({
+      title: "Asking price updated",
+      description: "Deal metrics have been recalculated."
+    });
   };
 
   // Function has been replaced with direct calculation
