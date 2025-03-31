@@ -167,6 +167,8 @@ export default function DealScorePublicPage() {
   const [financingUpdated, setFinancingUpdated] = useState(false);
   const [showAreaRateModal, setShowAreaRateModal] = useState(false);
   const [editedAreaRate, setEditedAreaRate] = useState("");
+  const [showAskingPriceModal, setShowAskingPriceModal] = useState(false);
+  const [editedAskingPrice, setEditedAskingPrice] = useState("");
 
   // Helper function to convert property condition to star rating
   const conditionToStars = (condition: string): number => {
@@ -362,6 +364,34 @@ export default function DealScorePublicPage() {
     
     // Close the modal
     setShowAreaRateModal(false);
+  };
+  
+  const handleAskingPriceEdit = () => {
+    if (dealReport) {
+      setEditedAskingPrice(dealReport.askingPrice.toString());
+      setShowAskingPriceModal(true);
+    }
+  };
+  
+  const handleAskingPriceUpdate = () => {
+    if (!editedAskingPrice || isNaN(Number(editedAskingPrice))) {
+      // Invalid input
+      return;
+    }
+    
+    const newAskingPrice = Number(editedAskingPrice);
+    
+    // Update the form data with the new asking price
+    setFormData(prev => ({
+      ...prev,
+      purchasePrice: newAskingPrice.toString()
+    }));
+    
+    // Recalculate the deal score with the new asking price
+    calculateDealScore(undefined, undefined, undefined, null);
+    
+    // Close the modal
+    setShowAskingPriceModal(false);
   };
 
   // Function has been replaced with direct calculation
@@ -1577,9 +1607,17 @@ export default function DealScorePublicPage() {
           <div className="grid grid-cols-4 max-w-3xl mx-auto mb-6">
             <div className="flex flex-col items-center">
               <span className="text-sm text-slate-500">Asking Price</span>
-              <span className="text-xl font-bold">
-                R{formatPrice(dealReport.askingPrice)}
-              </span>
+              <div className="flex flex-col items-center">
+                <span className="text-xl font-bold">
+                  R{formatPrice(dealReport.askingPrice)}
+                </span>
+                <button 
+                  onClick={handleAskingPriceEdit} 
+                  className="text-xs text-blue-600 hover:text-blue-800 mt-1"
+                >
+                  Edit
+                </button>
+              </div>
             </div>
             <div className="flex flex-col items-center">
               <span className="text-sm text-slate-500">Price per m²</span>
@@ -3655,6 +3693,40 @@ export default function DealScorePublicPage() {
             </Button>
             <Button type="button" onClick={handleAreaRateUpdate}>
               Update Area Rate
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Asking Price Edit Modal */}
+      <Dialog open={showAskingPriceModal} onOpenChange={setShowAskingPriceModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Asking Price</DialogTitle>
+            <DialogDescription>
+              Update the asking price to see how it affects the deal score and financial metrics.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="askingPrice" className="text-right">
+                Asking Price
+              </Label>
+              <Input
+                id="askingPrice"
+                value={editedAskingPrice}
+                onChange={(e) => setEditedAskingPrice(e.target.value)}
+                className="col-span-3"
+                placeholder="Enter asking price..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setShowAskingPriceModal(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleAskingPriceUpdate}>
+              Update Asking Price
             </Button>
           </DialogFooter>
         </DialogContent>
