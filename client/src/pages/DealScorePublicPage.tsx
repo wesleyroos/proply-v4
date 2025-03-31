@@ -1407,13 +1407,25 @@ export default function DealScorePublicPage() {
 
           <div className="flex flex-col space-y-4">
             <div className="flex justify-between items-center">
-              <div className="flex items-center gap-1">
+              <div className="flex flex-col items-center gap-1">
                 <span className="text-xs text-muted-foreground">Basic</span>
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold">1</span>
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">1</span>
               </div>
-              <div className="flex items-center gap-1">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold">5</span>
-                <span className="text-xs text-muted-foreground">Luxury</span>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-muted-foreground mb-1">Simple</span>
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">2</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-muted-foreground mb-1">Average</span>
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">3</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-muted-foreground mb-1">Upscale</span>
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">4</span>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs text-muted-foreground">Premium</span>
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">5</span>
               </div>
             </div>
 
@@ -1431,6 +1443,15 @@ export default function DealScorePublicPage() {
                   <span className="font-medium text-sm text-primary">{formData.luxuryRating}</span>
                   <span className="text-xs text-gray-500">/5</span>
                 </div>
+              </div>
+              
+              {/* Indicator for selected value */}
+              <div className="flex justify-between items-center px-[10px] mt-1">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <div key={value} className={`flex justify-center ${Number(formData.luxuryRating) === value ? 'visible' : 'invisible'}`}>
+                    <div className="h-0 w-0 border-x-4 border-x-transparent border-b-[6px] border-b-primary"></div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
