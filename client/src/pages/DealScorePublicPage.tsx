@@ -145,7 +145,7 @@ export default function DealScorePublicPage() {
   const [rentalAmountError, setRentalAmountError] = useState<string>();
   const [dealReport, setDealReport] = useState<DealScoreReport | null>(null);
   const [showFinancingDialog, setShowFinancingDialog] = useState(false);
-  
+
   // Suburb sentiment state
   const [suburbSentimentStatus, setSuburbSentimentStatus] = useState<
     "idle" | "loading" | "success" | "error"
@@ -608,15 +608,16 @@ export default function DealScorePublicPage() {
         takealot: true,
         checkersSixty60: true,
       },
-      
+
       // Suburb Sentiment (dynamically fetched)
       suburbSentiment: suburbSentiment || {
-        description: "This area has seen stable property values with moderate growth potential. It's a balanced market with a mix of long-term residents and new buyers.",
+        description:
+          "This area has seen stable property values with moderate growth potential. It's a balanced market with a mix of long-term residents and new buyers.",
         investmentPotential: "MEDIUM",
         developmentActivity: "MODERATE",
         trend: "Stable",
       },
-      
+
       // Safety Analysis (placeholder - will be dynamically generated in future)
       safetyAnalysis: {
         score: 7.5,
@@ -702,26 +703,29 @@ export default function DealScorePublicPage() {
 
   const fetchSuburbSentiment = async () => {
     // Extract suburb from address - more robust extraction
-    const addressParts = formData.address.split(',');
-    let suburb = '';
-    
+    const addressParts = formData.address.split(",");
+    let suburb = "";
+
     // Get the most likely suburb part (usually the second part, but sometimes could be third)
     if (addressParts.length >= 2) {
       // Try to get the suburb which is typically the second part
       suburb = addressParts[1].trim();
-      
+
       // If the second part is very short or looks like a number, try the next part
-      if ((suburb.length < 3 || /^\d+$/.test(suburb)) && addressParts.length >= 3) {
+      if (
+        (suburb.length < 3 || /^\d+$/.test(suburb)) &&
+        addressParts.length >= 3
+      ) {
         suburb = addressParts[2].trim();
       }
     } else {
       console.error("Address format doesn't contain suburb information");
       return getFallbackSentimentData(formData.address);
     }
-    
+
     console.log(`Extracted suburb from address: "${suburb}"`);
     setSuburbSentimentStatus("loading");
-    
+
     try {
       console.log(`Sending suburb sentiment request for: ${suburb}`);
       const response = await fetch("/api/deal-advisor/suburb-sentiment", {
@@ -737,7 +741,9 @@ export default function DealScorePublicPage() {
 
       if (!response.ok) {
         // If we get a 401 Unauthorized or any other API error, use fallback data
-        console.error(`Suburb sentiment API error (${statusCode}): Using fallback data`);
+        console.error(
+          `Suburb sentiment API error (${statusCode}): Using fallback data`,
+        );
         const fallbackData = getFallbackSentimentData(suburb);
         setSuburbSentimentData(fallbackData);
         setSuburbSentimentStatus("success"); // Still show as success
@@ -746,7 +752,7 @@ export default function DealScorePublicPage() {
 
       const data = await response.json();
       console.log("Suburb sentiment API response:", data);
-      
+
       if (data.success && data.data) {
         setSuburbSentimentData(data.data);
         setSuburbSentimentStatus("success");
@@ -761,14 +767,14 @@ export default function DealScorePublicPage() {
     } catch (error) {
       console.error("Error fetching suburb sentiment:", error);
       setSuburbSentimentStatus("success"); // Use success to show the fallback data
-      
+
       // Generate fallback sentiment data
       const fallbackData = getFallbackSentimentData(suburb);
       setSuburbSentimentData(fallbackData);
       return fallbackData;
     }
   };
-  
+
   // Interface for suburb sentiment data
   interface SuburbSentimentResult {
     description: string;
@@ -776,21 +782,23 @@ export default function DealScorePublicPage() {
     developmentActivity: string;
     trend: string;
   }
-  
+
   // Function to generate fallback sentiment data for when API calls fail
-  const getFallbackSentimentData = (location: string): SuburbSentimentResult => {
+  const getFallbackSentimentData = (
+    location: string,
+  ): SuburbSentimentResult => {
     // Extract suburb or use original location
-    const parts = location.split(',');
+    const parts = location.split(",");
     const suburb = parts.length >= 2 ? parts[1].trim() : location;
-    
+
     console.log(`Using fallback sentiment data for: ${suburb}`);
-    
+
     // Generate data based on the location
     const firstChar = suburb.charAt(0).toLowerCase();
     let rating = "MEDIUM";
     let development = "MODERATE";
     let trend = "Stable";
-    
+
     // Use simple deterministic "pseudo-random" approach based on location name
     if ("abcdef".includes(firstChar)) {
       rating = "HIGH";
@@ -805,12 +813,12 @@ export default function DealScorePublicPage() {
       development = "MODERATE";
       trend = "Stable";
     }
-    
+
     return {
       description: `${suburb} is located in a well-established area with a mix of residential and commercial properties. The area offers good amenities and has shown consistent property values over time.`,
       investmentPotential: rating,
       developmentActivity: development,
-      trend: trend
+      trend: trend,
     };
   };
 
@@ -955,7 +963,7 @@ export default function DealScorePublicPage() {
 
       // In parallel, fetch suburb sentiment data
       let suburbData = null;
-      if (formData.address.includes(',')) {
+      if (formData.address.includes(",")) {
         try {
           // Use the fetchSuburbSentiment function to get suburb data
           suburbData = await fetchSuburbSentiment();
@@ -965,7 +973,12 @@ export default function DealScorePublicPage() {
       }
 
       // DIRECT CALCULATION - Use the numeric values directly
-      calculateDealScore(nightlyRateValue, occupancyValue, rentalAmountValue, suburbData);
+      calculateDealScore(
+        nightlyRateValue,
+        occupancyValue,
+        rentalAmountValue,
+        suburbData,
+      );
 
       // Update form data with formatted values AFTER calculation
       setFormData((prev) => ({
@@ -981,7 +994,8 @@ export default function DealScorePublicPage() {
 
       toast({
         title: "Payment Successful",
-        description: "You now have full access to the comprehensive property report with real revenue data.",
+        description:
+          "You now have full access to the comprehensive property report with real revenue data.",
       });
     } catch (error) {
       console.error("Error during payment or data fetching:", error);
@@ -1273,7 +1287,7 @@ export default function DealScorePublicPage() {
               onChange={(e) => handleInputChange("parking", e.target.value)}
             />
           </div>
-          
+
           <div>
             <Label htmlFor="propertyCondition" className="mb-1 block">
               Property Condition
@@ -1296,8 +1310,6 @@ export default function DealScorePublicPage() {
             </Select>
           </div>
         </div>
-
-
       </div>
     );
   };
@@ -1327,8 +1339,13 @@ export default function DealScorePublicPage() {
             <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm capitalize flex items-center gap-1">
               {dealReport.propertyCondition} Condition
               <span className="ml-1 flex">
-                {Array.from({ length: conditionToStars(dealReport.propertyCondition) }).map((_, i) => (
-                  <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                {Array.from({
+                  length: conditionToStars(dealReport.propertyCondition),
+                }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className="h-3 w-3 fill-amber-400 text-amber-400"
+                  />
                 ))}
               </span>
             </Badge>
@@ -1610,9 +1627,9 @@ export default function DealScorePublicPage() {
                             Map Location
                           </p>
                           <div className="flex justify-center">
-                            <a 
+                            <a
                               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dealReport.address)}`}
-                              target="_blank" 
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center text-blue-600 hover:text-blue-800 hover:underline"
                             >
@@ -1657,7 +1674,9 @@ export default function DealScorePublicPage() {
                               {/* Star rating based on condition */}
                               {Array.from({ length: 4 }).map((_, i) => (
                                 <span key={i}>
-                                  {conditionToStars(dealReport.propertyCondition) > i ? (
+                                  {conditionToStars(
+                                    dealReport.propertyCondition,
+                                  ) > i ? (
                                     <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                                   ) : (
                                     <Star className="h-4 w-4 text-gray-300" />
@@ -2483,7 +2502,7 @@ export default function DealScorePublicPage() {
           {/* Miscellaneous Accordion */}
           <AccordionItem value="item-5" className="w-full">
             <AccordionTrigger className="text-lg font-medium justify-start">
-              Miscellaneous Information
+              Neighbourhood Insights
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
               <div className="mb-6 w-full">
@@ -2521,18 +2540,20 @@ export default function DealScorePublicPage() {
                               <span className="font-medium">High Traffic</span>
                             </div>
                             <div className="relative w-full h-3 bg-gradient-to-r from-green-400 via-amber-400 to-red-500 rounded-full">
-                              <div 
+                              <div
                                 className="absolute top-1/2 transform -translate-y-1/2 w-5 h-5 bg-white border-2 border-gray-300 rounded-full shadow-md"
                                 style={{ left: `65%` }}
                               ></div>
                             </div>
                           </div>
-                          
+
                           <div className="border border-gray-200 rounded-lg p-4 mb-5 bg-white">
                             <div className="text-gray-500 mb-1">Rating</div>
-                            <div className="text-amber-500 font-medium text-lg">Moderate to High</div>
+                            <div className="text-amber-500 font-medium text-lg">
+                              Moderate to High
+                            </div>
                           </div>
-                          
+
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
@@ -2543,7 +2564,7 @@ export default function DealScorePublicPage() {
                                 HIGH
                               </Badge>
                             </div>
-                            
+
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
                                 <Clock className="h-5 w-5 text-amber-500 mr-2" />
@@ -2553,7 +2574,7 @@ export default function DealScorePublicPage() {
                                 SEVERE
                               </Badge>
                             </div>
-                            
+
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
                                 <Clock className="h-5 w-5 text-amber-500 mr-2" />
@@ -2570,9 +2591,10 @@ export default function DealScorePublicPage() {
                           <Lock className="h-12 w-12 text-gray-300 mb-2" />
                           <p className="text-center text-muted-foreground mb-4">
                             Unlock the full report to access detailed traffic
-                            information including peak hours and traffic intensity.
+                            information including peak hours and traffic
+                            intensity.
                           </p>
-                          <Button 
+                          <Button
                             onClick={() => setShowPaymentModal(true)}
                             className="bg-primary hover:bg-primary/90"
                           >
@@ -2582,7 +2604,7 @@ export default function DealScorePublicPage() {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Delivery Services Availability */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
                     <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
@@ -2621,21 +2643,24 @@ export default function DealScorePublicPage() {
                               <span>Checkers Sixty60</span>
                             </div>
                           </div>
-                          
+
                           <div className="pt-4 mt-4 border-t border-gray-100">
-                            <h5 className="font-medium mb-2">Convenience Summary</h5>
+                            <h5 className="font-medium mb-2">
+                              Convenience Summary
+                            </h5>
                             <p className="text-sm text-muted-foreground">
-                              This property is well-served by all major delivery services, 
-                              making it convenient for residents who value on-demand food, 
-                              groceries, and shopping deliveries.
+                              This property is well-served by all major delivery
+                              services, making it convenient for residents who
+                              value on-demand food, groceries, and shopping
+                              deliveries.
                             </p>
                           </div>
-                          
+
                           <div className="mt-3 flex items-center">
                             <Info className="h-4 w-4 text-blue-500 mr-2" />
                             <p className="text-xs text-muted-foreground">
-                              Delivery availability may change over time. This information 
-                              is accurate as of the report date.
+                              Delivery availability may change over time. This
+                              information is accurate as of the report date.
                             </p>
                           </div>
                         </>
@@ -2643,10 +2668,11 @@ export default function DealScorePublicPage() {
                         <div className="flex flex-col items-center justify-center p-4">
                           <Lock className="h-12 w-12 text-gray-300 mb-2" />
                           <p className="text-center text-muted-foreground mb-4">
-                            Unlock the full report to see which food and shopping 
-                            delivery services are available at this property.
+                            Unlock the full report to see which food and
+                            shopping delivery services are available at this
+                            property.
                           </p>
-                          <Button 
+                          <Button
                             onClick={() => setShowPaymentModal(true)}
                             className="bg-primary hover:bg-primary/90"
                           >
@@ -2657,7 +2683,7 @@ export default function DealScorePublicPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Second row with Suburb Sentiment and Crime Statistics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   {/* Suburb Sentiment */}
@@ -2671,10 +2697,15 @@ export default function DealScorePublicPage() {
                           </h4>
                         </div>
                         {reportUnlocked && dealReport?.suburbSentiment && (
-                          <Badge className={`${
-                            dealReport.suburbSentiment.trend === "Trending Up" ? "bg-blue-500" :
-                            dealReport.suburbSentiment.trend === "Stable" ? "bg-green-500" : "bg-amber-500"
-                          } text-white hover:bg-opacity-90`}>
+                          <Badge
+                            className={`${
+                              dealReport.suburbSentiment.trend === "Trending Up"
+                                ? "bg-blue-500"
+                                : dealReport.suburbSentiment.trend === "Stable"
+                                  ? "bg-green-500"
+                                  : "bg-amber-500"
+                            } text-white hover:bg-opacity-90`}
+                          >
                             {dealReport.suburbSentiment.trend}
                           </Badge>
                         )}
@@ -2694,33 +2725,52 @@ export default function DealScorePublicPage() {
                                   {dealReport.suburbSentiment.description}
                                 </p>
                               </div>
-                              
+
                               <div className="flex flex-col space-y-3">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center">
                                     <TrendingUp className="h-5 w-5 text-blue-500 mr-2" />
                                     <span>Investment Potential:</span>
                                   </div>
-                                  <Badge className={`${
-                                    dealReport.suburbSentiment.investmentPotential === "HIGH" ? "bg-blue-100 text-blue-800 border-blue-300" :
-                                    dealReport.suburbSentiment.investmentPotential === "MEDIUM" ? "bg-green-100 text-green-800 border-green-300" :
-                                    "bg-amber-100 text-amber-800 border-amber-300"
-                                  } hover:bg-opacity-90 border px-3`}>
-                                    {dealReport.suburbSentiment.investmentPotential}
+                                  <Badge
+                                    className={`${
+                                      dealReport.suburbSentiment
+                                        .investmentPotential === "HIGH"
+                                        ? "bg-blue-100 text-blue-800 border-blue-300"
+                                        : dealReport.suburbSentiment
+                                              .investmentPotential === "MEDIUM"
+                                          ? "bg-green-100 text-green-800 border-green-300"
+                                          : "bg-amber-100 text-amber-800 border-amber-300"
+                                    } hover:bg-opacity-90 border px-3`}
+                                  >
+                                    {
+                                      dealReport.suburbSentiment
+                                        .investmentPotential
+                                    }
                                   </Badge>
                                 </div>
-                                
+
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center">
                                     <Building className="h-5 w-5 text-blue-500 mr-2" />
                                     <span>Development Activity:</span>
                                   </div>
-                                  <Badge className={`${
-                                    dealReport.suburbSentiment.developmentActivity === "ACTIVE" ? "bg-blue-100 text-blue-800 border-blue-300" :
-                                    dealReport.suburbSentiment.developmentActivity === "MODERATE" ? "bg-green-100 text-green-800 border-green-300" :
-                                    "bg-amber-100 text-amber-800 border-amber-300"
-                                  } hover:bg-opacity-90 border px-3`}>
-                                    {dealReport.suburbSentiment.developmentActivity}
+                                  <Badge
+                                    className={`${
+                                      dealReport.suburbSentiment
+                                        .developmentActivity === "ACTIVE"
+                                        ? "bg-blue-100 text-blue-800 border-blue-300"
+                                        : dealReport.suburbSentiment
+                                              .developmentActivity ===
+                                            "MODERATE"
+                                          ? "bg-green-100 text-green-800 border-green-300"
+                                          : "bg-amber-100 text-amber-800 border-amber-300"
+                                    } hover:bg-opacity-90 border px-3`}
+                                  >
+                                    {
+                                      dealReport.suburbSentiment
+                                        .developmentActivity
+                                    }
                                   </Badge>
                                 </div>
                               </div>
@@ -2728,16 +2778,18 @@ export default function DealScorePublicPage() {
                           ) : (
                             <div className="border border-gray-100 rounded-lg p-4 bg-white">
                               <p className="text-sm text-gray-700 leading-relaxed">
-                                Suburb sentiment data is not available for this location.
+                                Suburb sentiment data is not available for this
+                                location.
                               </p>
                             </div>
                           )}
-                          
+
                           <div className="mt-3 flex items-center">
                             <Info className="h-4 w-4 text-blue-500 mr-2" />
                             <p className="text-xs text-muted-foreground">
-                              Suburb sentiment is generated using AI analysis of recent market trends, 
-                              news, and local development activity.
+                              Suburb sentiment is generated using AI analysis of
+                              recent market trends, news, and local development
+                              activity.
                             </p>
                           </div>
                         </div>
@@ -2745,10 +2797,10 @@ export default function DealScorePublicPage() {
                         <div className="flex flex-col items-center justify-center p-4">
                           <Lock className="h-12 w-12 text-gray-300 mb-2" />
                           <p className="text-center text-muted-foreground mb-4">
-                            Unlock the full report to access detailed suburb insights
-                            and investment potential analysis.
+                            Unlock the full report to access detailed suburb
+                            insights and investment potential analysis.
                           </p>
-                          <Button 
+                          <Button
                             onClick={() => setShowPaymentModal(true)}
                             className="bg-primary hover:bg-primary/90"
                           >
@@ -2758,7 +2810,7 @@ export default function DealScorePublicPage() {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Crime Statistics */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
                     <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
@@ -2785,18 +2837,20 @@ export default function DealScorePublicPage() {
                               <span className="font-medium">Lower Risk</span>
                             </div>
                             <div className="relative w-full h-3 bg-gradient-to-r from-red-500 via-yellow-400 to-green-400 rounded-full">
-                              <div 
+                              <div
                                 className="absolute top-1/2 transform -translate-y-1/2 w-5 h-5 bg-white border-2 border-gray-300 rounded-full shadow-md"
                                 style={{ left: `72%` }}
                               ></div>
                             </div>
                           </div>
-                          
+
                           <div className="border border-gray-200 rounded-lg p-4 mb-5 bg-white">
                             <div className="text-gray-500 mb-1">Rating</div>
-                            <div className="text-yellow-600 font-medium text-lg">Above Average Safety</div>
+                            <div className="text-yellow-600 font-medium text-lg">
+                              Above Average Safety
+                            </div>
                           </div>
-                          
+
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
                               <span>Compared to City Average</span>
@@ -2804,14 +2858,14 @@ export default function DealScorePublicPage() {
                                 20% LOWER
                               </Badge>
                             </div>
-                            
+
                             <div className="flex items-center justify-between">
                               <span>Property Crime</span>
                               <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border border-yellow-300 px-3">
                                 MODERATE
                               </Badge>
                             </div>
-                            
+
                             <div className="flex items-center justify-between">
                               <span>Violent Crime</span>
                               <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border border-green-300 px-3">
@@ -2819,12 +2873,13 @@ export default function DealScorePublicPage() {
                               </Badge>
                             </div>
                           </div>
-                          
+
                           <div className="mt-3 flex items-center">
                             <Info className="h-4 w-4 text-blue-500 mr-2" />
                             <p className="text-xs text-muted-foreground">
-                              Safety data is based on reported incidents in the area compared to city averages.
-                              Individual experiences may vary.
+                              Safety data is based on reported incidents in the
+                              area compared to city averages. Individual
+                              experiences may vary.
                             </p>
                           </div>
                         </div>
@@ -2835,7 +2890,7 @@ export default function DealScorePublicPage() {
                             Unlock the full report to access detailed safety
                             analysis and crime statistics for this area.
                           </p>
-                          <Button 
+                          <Button
                             onClick={() => setShowPaymentModal(true)}
                             className="bg-primary hover:bg-primary/90"
                           >

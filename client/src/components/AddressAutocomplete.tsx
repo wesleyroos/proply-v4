@@ -88,8 +88,8 @@ export default function AddressAutocomplete({
 
       setLoading(true);
       try {
-        // Always use test mode for now while Google Maps API key is being configured
-        const response = await fetch(`/api/address-validation/autocomplete?input=${encodeURIComponent(value)}&testMode=true`);
+        // Use the real Google Maps API for address autocomplete
+        const response = await fetch(`/api/address-validation/autocomplete?input=${encodeURIComponent(value)}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch address suggestions');
@@ -138,13 +138,13 @@ export default function AddressAutocomplete({
   const validateAddress = async (address: string) => {
     setValidating(true);
     try {
-      // Always use test mode for now while Google Maps API key is being configured
+      // Use the real Google Maps API for address validation
       const response = await fetch('/api/address-validation/validate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ address, testMode: true })
+        body: JSON.stringify({ address })
       });
       
       if (!response.ok) {
