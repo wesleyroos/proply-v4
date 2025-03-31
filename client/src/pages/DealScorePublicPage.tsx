@@ -353,14 +353,31 @@ export default function DealScorePublicPage() {
     
     const newAreaRate = Number(editedAreaRate);
     
-    // Update the form data with the new area rate
-    setFormData(prev => ({
-      ...prev,
-      areaRate: newAreaRate.toString()
-    }));
-    
-    // Recalculate the deal score with the new area rate
-    calculateDealScore(undefined, undefined, undefined, null);
+    // Update the form data with the new area rate and then recalculate
+    setFormData(prev => {
+      const updatedFormData = {
+        ...prev,
+        areaRate: newAreaRate.toString()
+      };
+      
+      // We need to delay the calculation slightly to ensure state is updated
+      setTimeout(() => {
+        if (dealReport) {
+          // Also directly update the dealReport to ensure UI is immediately updated
+          setDealReport(prevReport => ({
+            ...prevReport!,
+            areaRate: newAreaRate,
+            estimatedValue: newAreaRate * Number(parseFormattedNumber(updatedFormData.size)),
+            percentageDifference: ((newAreaRate * Number(parseFormattedNumber(updatedFormData.size)) - 
+                                    Number(parseFormattedNumber(updatedFormData.purchasePrice))) /
+                                   Number(parseFormattedNumber(updatedFormData.purchasePrice))) * 100
+          }));
+          calculateDealScore(undefined, undefined, undefined, null);
+        }
+      }, 50);
+      
+      return updatedFormData;
+    });
     
     // Close the modal
     setShowAreaRateModal(false);
@@ -381,14 +398,37 @@ export default function DealScorePublicPage() {
     
     const newAskingPrice = Number(editedAskingPrice);
     
-    // Update the form data with the new asking price
-    setFormData(prev => ({
-      ...prev,
-      purchasePrice: newAskingPrice.toString()
-    }));
-    
-    // Recalculate the deal score with the new asking price
-    calculateDealScore(undefined, undefined, undefined, null);
+    // Update the form data with the new asking price and then recalculate
+    setFormData(prev => {
+      const updatedFormData = {
+        ...prev,
+        purchasePrice: newAskingPrice.toString()
+      };
+      
+      // We need to delay the calculation slightly to ensure state is updated
+      setTimeout(() => {
+        if (dealReport) {
+          // Calculate property rate with new asking price
+          const propertyRate = newAskingPrice / Number(parseFormattedNumber(updatedFormData.size));
+          
+          // Also directly update the dealReport to ensure UI is immediately updated
+          setDealReport(prevReport => {
+            const estimatedValue = prevReport!.areaRate * Number(parseFormattedNumber(updatedFormData.size));
+            
+            return {
+              ...prevReport!,
+              askingPrice: newAskingPrice,
+              pricePerSqM: propertyRate,
+              percentageDifference: ((estimatedValue - newAskingPrice) / newAskingPrice) * 100
+            };
+          });
+          
+          calculateDealScore(undefined, undefined, undefined, null);
+        }
+      }, 50);
+      
+      return updatedFormData;
+    });
     
     // Close the modal
     setShowAskingPriceModal(false);
