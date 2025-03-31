@@ -170,6 +170,7 @@ router.post("/validate", async (req, res) => {
     }
     
     // Format the request according to Google's Address Validation API
+    // Specify regionCode as ZA (South Africa) to ensure proper validation
     const response = await fetch(
       `https://addressvalidation.googleapis.com/v1:validateAddress?key=${apiKey}`,
       {
@@ -179,9 +180,10 @@ router.post("/validate", async (req, res) => {
         },
         body: JSON.stringify({
           address: {
-            addressLines: [address]
+            addressLines: [address],
+            regionCode: "ZA" // South Africa region code
           },
-          enableUspsCass: true
+          enableUspsCass: false // Disable USPS validation since it's for US addresses
         })
       }
     );
@@ -308,11 +310,11 @@ router.get("/autocomplete", async (req, res) => {
       return res.json(getMockAddressSuggestions(input as string));
     }
     
-    // Call the Google Places Autocomplete API
+    // Call the Google Places Autocomplete API with South Africa as region bias
     const response = await fetch(
       `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
         input as string
-      )}&types=address&key=${apiKey}`
+      )}&types=address&components=country:za&key=${apiKey}`
     );
 
     const data = await response.json() as any;
