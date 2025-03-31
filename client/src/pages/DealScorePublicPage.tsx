@@ -1335,6 +1335,38 @@ export default function DealScorePublicPage() {
             )}
           </div>
         </div>
+        
+        {/* Luxury Rating Likert Scale - Moved higher up in the form */}
+        <div className="mt-4">
+          <Label htmlFor="luxuryRating" className="mb-3 block">
+            How luxury is this property? (1-10)
+          </Label>
+          
+          <div className="flex flex-col space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground">Basic</span>
+              <span className="text-xs text-muted-foreground">Luxury</span>
+            </div>
+            
+            <div className="flex justify-between gap-1">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
+                <button
+                  key={rating}
+                  type="button"
+                  onClick={() => handleInputChange("luxuryRating", rating.toString())}
+                  className={`
+                    flex-1 h-10 rounded-md border transition-all
+                    ${Number(formData.luxuryRating) === rating 
+                      ? "bg-primary text-white border-primary" 
+                      : "border-input bg-background hover:bg-muted"}
+                  `}
+                >
+                  {rating}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -1461,42 +1493,7 @@ export default function DealScorePublicPage() {
           </div>
         </div>
 
-        {/* Luxury Rating Likert Scale */}
-        <div className="mt-6">
-          <Label htmlFor="luxuryRating" className="mb-3 block">
-            How luxury is this property? (1-10)
-          </Label>
-          
-          <div className="flex flex-col space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Basic</span>
-              <span className="text-xs text-muted-foreground">Luxury</span>
-            </div>
-            
-            <div className="flex justify-between gap-1">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
-                <button
-                  key={rating}
-                  type="button"
-                  onClick={() => handleInputChange("luxuryRating", rating.toString())}
-                  className={`
-                    flex-1 h-10 rounded-md border transition-all
-                    ${Number(formData.luxuryRating) === rating 
-                      ? "bg-primary text-white border-primary" 
-                      : "border-input bg-background hover:bg-muted"}
-                  `}
-                >
-                  {rating}
-                </button>
-              ))}
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-xs text-muted-foreground">1</span>
-              <span className="text-xs text-muted-foreground">10</span>
-            </div>
-          </div>
-        </div>
+
       </div>
     );
   };
