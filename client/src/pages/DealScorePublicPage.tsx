@@ -1627,14 +1627,14 @@ export default function DealScorePublicPage() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground text-center">
                             Condition
                           </p>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col items-center justify-center">
                             <p className="font-medium capitalize">
                               {dealReport.propertyCondition}
                             </p>
-                            <div className="flex">
+                            <div className="flex mt-1">
                               {/* Star rating based on condition */}
                               {Array.from({ length: 4 }).map((_, i) => (
                                 <span key={i}>
