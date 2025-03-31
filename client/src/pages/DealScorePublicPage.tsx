@@ -1297,27 +1297,7 @@ export default function DealScorePublicPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-          <div>
-            <Label htmlFor="propertyType" className="mb-1 block">
-              Property Type
-            </Label>
-            <Select
-              value={formData.propertyType}
-              onValueChange={(value) =>
-                handleInputChange("propertyType", value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="apartment">Apartment/Flat</SelectItem>
-                <SelectItem value="house">House</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+
       </div>
     );
   };
