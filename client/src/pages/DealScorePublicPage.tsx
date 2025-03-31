@@ -431,7 +431,7 @@ export default function DealScorePublicPage() {
         score -= 10;
         break;
     }
-    
+
     // Add luxury rating to score (1-10 scale, convert to -5 to +5 adjustment)
     const luxuryRating = Number(formData.luxuryRating);
     if (!isNaN(luxuryRating) && luxuryRating >= 1 && luxuryRating <= 10) {
@@ -811,7 +811,7 @@ export default function DealScorePublicPage() {
     try {
       // Get luxury rating value - only include if 8 or higher (high luxury properties)
       const luxuryRating = Number(formData.luxuryRating);
-      
+
       const response = await fetch("/api/deal-advisor/area-rate", {
         method: "POST",
         headers: {
@@ -1337,30 +1337,34 @@ export default function DealScorePublicPage() {
             )}
           </div>
         </div>
-        
+
         {/* Luxury Rating Likert Scale - Moved higher up in the form */}
         <div className="mt-4">
           <Label htmlFor="luxuryRating" className="mb-3 block">
             How luxury is this property? (1-10)
           </Label>
-          
+
           <div className="flex flex-col space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-xs text-muted-foreground">Basic</span>
               <span className="text-xs text-muted-foreground">Luxury</span>
             </div>
-            
+
             <div className="flex justify-between gap-1">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
                 <button
                   key={rating}
                   type="button"
-                  onClick={() => handleInputChange("luxuryRating", rating.toString())}
+                  onClick={() =>
+                    handleInputChange("luxuryRating", rating.toString())
+                  }
                   className={`
                     flex-1 h-10 rounded-md border transition-all
-                    ${Number(formData.luxuryRating) === rating 
-                      ? "bg-primary text-white border-primary" 
-                      : "border-input bg-background hover:bg-muted"}
+                    ${
+                      Number(formData.luxuryRating) === rating
+                        ? "bg-primary text-white border-primary"
+                        : "border-input bg-background hover:bg-muted"
+                    }
                   `}
                 >
                   {rating}
@@ -1494,8 +1498,6 @@ export default function DealScorePublicPage() {
             </Select>
           </div>
         </div>
-
-
       </div>
     );
   };
@@ -1651,7 +1653,7 @@ export default function DealScorePublicPage() {
                   }
                 >
                   {dealReport.percentageDifference >= 0
-                    ? "Undervalued"
+                    ? "Great Price"
                     : dealReport.percentageDifference >= -10
                       ? "Fair Price"
                       : "High Price"}

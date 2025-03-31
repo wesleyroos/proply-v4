@@ -26,6 +26,40 @@ function extractNumber(text: string): number {
   return isNaN(parsedNumber) ? 0 : parsedNumber;
 }
 
+// Function to generate detailed luxury context based on rating
+function getAreaRateLuxuryContext(rating: number = 5): string {
+  // Default to middle rating if no rating provided
+  rating = rating || 5;
+  
+  // Validate rating is between 1-10
+  rating = Math.max(1, Math.min(10, rating));
+  
+  switch(rating) {
+    case 10:
+      return ` This is an ultra-premium luxury property rated 10/10. It features exceptional architectural design, the highest quality finishes, state-of-the-art systems, premium imported materials, and exclusive amenities. Properties of this caliber command the absolute top prices in their respective areas.`;
+    case 9:
+      return ` This is a very high-end luxury property rated 9/10. It offers designer finishes, premium brand fixtures, superior quality throughout, and exclusive features. Such properties sit in the top-tier pricing segment, just below the ultra-premium category.`;
+    case 8:
+      return ` This is a luxury property rated 8/10. It has high-end finishes, quality appliances, and excellent amenities. This property would be considered premium and priced accordingly in its market.`;
+    case 7:
+      return ` This is an upscale property rated 7/10. It features above-average finishes, good quality fixtures, and desirable amenities that elevate it well above standard properties in the area.`;
+    case 6:
+      return ` This is a property rated 6/10 for luxury. It offers above-average finishes and some attractive features that would appeal to discerning buyers, positioning it in the above-median price range.`;
+    case 5:
+      return ` This is a standard quality property rated 5/10. It features typical finishes and amenities expected for properties in this area.`;
+    case 4:
+      return ` This is a property rated 4/10 for luxury. It has basic, functional finishes that meet market expectations but offers no premium features.`;
+    case 3:
+      return ` This is a basic property rated 3/10 for luxury. It features older but functional finishes and meets minimum standards for the market.`;
+    case 2:
+      return ` This is a below-average property rated 2/10 for luxury. It has dated finishes, minimal amenities, and shows signs of wear, likely positioning it in the lower price range for its area.`;
+    case 1:
+      return ` This is a very basic property rated 1/10 for luxury. It features outdated finishes, minimal to no amenities, and may require significant improvements to meet market standards.`;
+    default:
+      return ` This is a standard property with typical finishes for its area.`;
+  }
+}
+
 export async function getAreaRate(address: string, propertyType: string = 'apartment', luxuryRating?: number) {
   try {
     console.log(`Fetching area rate for ${propertyType} property at ${address}${luxuryRating ? ` with luxury rating: ${luxuryRating}` : ''}`);
@@ -34,10 +68,11 @@ export async function getAreaRate(address: string, propertyType: string = 'apart
     const isApartment = propertyType === 'apartment';
     const rateType = isApartment ? 'living area (internal space)' : 'erf size (land area)';
     
-    // Determine if this is a luxury property (rating 8-10)
-    const isLuxury = luxuryRating && luxuryRating >= 8;
-    const luxuryContext = isLuxury ? 
-      ` This is a high-end luxury property rated ${luxuryRating}/10. Consider premium finishes, exclusive amenities, and prime location factors in your valuation.` : '';
+    // Determine if this is a luxury property (rating 8-10) for the prompts that still need this flag
+    const isLuxury = luxuryRating ? luxuryRating >= 8 : false;
+    
+    // Get luxury context based on rating
+    const luxuryContext = luxuryRating ? getAreaRateLuxuryContext(luxuryRating) : '';
     
     // Customize our prompts based on property type and luxury status
     const systemPrompt = isApartment 
@@ -45,8 +80,8 @@ export async function getAreaRate(address: string, propertyType: string = 'apart
       : `You are a property valuation expert in South Africa specializing in high-end properties. Your task is to return ONLY a number representing the average rate per square meter (R/m²) for HOUSES based on total ERF SIZE (land area).${luxuryContext} Do not provide disclaimers or explanations. Example response format: '15000'`;
       
     const userPrompt = isApartment
-      ? `What is the current average rate per square meter (internal living space) for ${isLuxury ? 'luxury ' : ''}apartments/flats in ${address}? ${isLuxury ? 'Consider high-end finishes, premium amenities, and exclusive features in the valuation. ' : ''}For reference: Cape Town CBD rates range R30,000-R35,000/m² for standard apartments and up to R60,000/m² for luxury units. Return only the numeric rate.`
-      : `What is the current average rate per square meter based on erf size (land area) for ${isLuxury ? 'luxury ' : ''}houses in ${address}? ${isLuxury ? 'Consider premium locations, high-end finishes, and exclusive features in the valuation. ' : ''}For reference: Houses in suburban Cape Town might range R10,000-R25,000/m² for land, with luxury properties commanding significantly higher rates. Return only the numeric rate.`;
+      ? `What is the current average rate per square meter (internal living space) for apartments/flats in ${address}? Consider the property's luxury level in your valuation. For reference: Cape Town CBD rates range R30,000-R35,000/m² for standard apartments and up to R60,000/m² for luxury units. Return only the numeric rate.`
+      : `What is the current average rate per square meter based on erf size (land area) for houses in ${address}? Consider the property's luxury level in your valuation. For reference: Houses in suburban Cape Town might range R10,000-R25,000/m² for land, with luxury properties commanding significantly higher rates. Return only the numeric rate.`;
     
     // First API call with more specific prompt
     const response1 = await openai.chat.completions.create({

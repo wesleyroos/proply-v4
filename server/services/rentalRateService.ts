@@ -8,14 +8,30 @@ function getLuxuryContext(luxuryRating: number): string {
   // Validate the luxury rating
   const rating = Math.max(1, Math.min(10, luxuryRating));
   
-  if (rating >= 8) {
-    return ` The property has high-end luxury finishes, premium appliances, and exclusive amenities. It would be considered a luxurious rental.`;
-  } else if (rating >= 6) {
-    return ` The property has above-average finishes and some upscale features that would appeal to discerning tenants.`;
-  } else if (rating >= 4) {
-    return ` The property has standard finishes and typical amenities for its area.`;
-  } else {
-    return ` The property has basic finishes and minimal amenities.`;
+  // Create a more granular description based on exact rating
+  switch(rating) {
+    case 10:
+      return ` The property is ultra-luxury with exceptional finishes, state-of-the-art appliances, premium building amenities (like concierge, spa, etc.), and spectacular views. It would command top-tier rental rates in this market.`;
+    case 9:
+      return ` The property is very high-end luxury with designer finishes, premium brand appliances, exclusive amenities, and superior quality throughout. It would be considered among the most premium rental options available.`;
+    case 8:
+      return ` The property has luxury finishes, high-end appliances, and excellent amenities. It would be considered a luxury rental appealing to affluent tenants.`;
+    case 7:
+      return ` The property has upscale finishes, quality appliances, and desirable amenities that elevate it well above average properties in the area.`;
+    case 6:
+      return ` The property has above-average finishes, good quality appliances, and some attractive amenities that would appeal to discerning tenants.`;
+    case 5:
+      return ` The property has modern, standard finishes and typical amenities expected in this area, with touches of quality.`;
+    case 4:
+      return ` The property has standard finishes and basic amenities typical for the area, generally well-maintained.`;
+    case 3:
+      return ` The property has basic finishes, older but functional amenities, and meets minimum standards for the rental market.`;
+    case 2:
+      return ` The property has dated finishes, minimal amenities, and shows signs of wear and tear.`;
+    case 1:
+      return ` The property has very basic finishes, outdated features, minimal to no amenities, and may require improvements to meet market standards.`;
+    default:
+      return ` The property has standard finishes and typical amenities for its area.`;
   }
 }
 
