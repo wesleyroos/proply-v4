@@ -1602,6 +1602,20 @@ export default function DealScorePublicPage() {
                             {dealReport.address.split(",")[1]?.trim() || "N/A"}
                           </p>
                         </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Map Location
+                          </p>
+                          <a 
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dealReport.address)}`}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            <MapPin className="h-4 w-4 mr-1" />
+                            View on Google Maps
+                          </a>
+                        </div>
                       </div>
                     </div>
                   </div>
