@@ -85,15 +85,15 @@ router.post('/suburb-sentiment', async (req, res) => {
 
 // Area rate endpoint - public access
 router.post('/area-rate', async (req, res) => {
-  const { address, propertyType } = req.body;
+  const { address, propertyType, luxuryRating } = req.body;
 
   if (!address) {
     return res.status(400).json({ error: 'Address is required' });
   }
 
   try {
-    console.log(`Processing area rate request for ${address}`);
-    const areaRate = await getAreaRate(address, propertyType);
+    console.log(`Processing area rate request for ${address}${luxuryRating ? ` with luxury rating: ${luxuryRating}` : ''}`);
+    const areaRate = await getAreaRate(address, propertyType, luxuryRating);
 
     if (typeof areaRate !== 'number' || isNaN(areaRate)) {
       throw new Error('Invalid area rate calculated');
@@ -127,7 +127,8 @@ router.post('/deal-analysis', async (req, res) => {
     occupancyRate,
     monthlyRental,
     purchasePrice,
-    dealScore
+    dealScore,
+    luxuryRating // Add luxury rating parameter
   } = req.body;
 
   // Validate required fields
@@ -168,7 +169,8 @@ router.post('/deal-analysis', async (req, res) => {
       occupancyRate,
       monthlyRental,
       purchasePrice,
-      dealScore
+      dealScore,
+      luxuryRating: luxuryRating ? Number(luxuryRating) : undefined // Pass luxury rating if available
     });
 
     // Stream the response chunks to the client
@@ -224,6 +226,7 @@ Market Value: R${dealDetails.marketPrice.toLocaleString()}
 Price Difference: ${dealDetails.priceDiff.toFixed(1)}% ${dealDetails.priceDiff > 0 ? 'above' : 'below'} market value
 Deal Score: ${dealDetails.dealScore}/100
 Property Condition: ${dealDetails.condition}
+${dealDetails.luxuryRating ? `Luxury Rating: ${dealDetails.luxuryRating}/10` : ''}
 ${dealDetails.rentalYield ? `Rental Yield: ${dealDetails.rentalYield.toFixed(1)}%` : ''}
 
 Your role is to help the real estate agent:
