@@ -2995,8 +2995,8 @@ export default function DealScorePublicPage() {
                 Proply Deal Score™
               </h1>
               <p className="mx-auto max-w-[800px] text-muted-foreground md:text-xl">
-                 Get an instant deal score
-                based on market data, area rates, and rental yields.
+                Get an instant deal score based on market data, area rates, and
+                rental yields.
               </p>
             </div>
 
