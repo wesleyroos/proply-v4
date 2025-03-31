@@ -87,7 +87,6 @@ export default function DealScorePublicPage() {
     parking: "",
     propertyCondition: "excellent",
     propertyType: "apartment", // Default to apartment
-    financingType: "mortgage", // Default to mortgage
 
     // Default values for other fields (no longer shown in form)
     nightlyRate: "",
@@ -209,7 +208,6 @@ export default function DealScorePublicPage() {
           parking: "1",
           propertyCondition: "excellent",
           propertyType: "apartment",
-          financingType: "mortgage",
           nightlyRate: "2500",
           occupancy: "70",
           longTermRental: "25000",
@@ -1013,8 +1011,7 @@ export default function DealScorePublicPage() {
       bathrooms: "",
       parking: "",
       propertyCondition: "excellent",
-      propertyType: "apartment",
-      financingType: "mortgage",
+      propertyType: "apartment", // Add propertyType field
       nightlyRate: "",
       occupancy: "",
       longTermRental: "",
@@ -1177,40 +1174,6 @@ export default function DealScorePublicPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="propertyType" className="mb-1 block">
-              Property Type
-            </Label>
-            <Select
-              value={formData.propertyType}
-              onValueChange={(value) =>
-                handleInputChange("propertyType", value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="apartment">Apartment/Flat</SelectItem>
-                <SelectItem value="house">House</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="bedrooms" className="mb-1 block">
-              Bedrooms
-            </Label>
-            <Input
-              id="bedrooms"
-              placeholder="0"
-              value={formData.bedrooms}
-              onChange={(e) => handleInputChange("bedrooms", e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
             <div className="flex items-center justify-between mb-1">
               <Label
                 htmlFor="areaRate"
@@ -1252,14 +1215,14 @@ export default function DealScorePublicPage() {
           </div>
 
           <div>
-            <Label htmlFor="bathrooms" className="mb-1 block">
-              Bathrooms
+            <Label htmlFor="bedrooms" className="mb-1 block">
+              Bedrooms
             </Label>
             <Input
-              id="bathrooms"
+              id="bedrooms"
               placeholder="0"
-              value={formData.bathrooms}
-              onChange={(e) => handleInputChange("bathrooms", e.target.value)}
+              value={formData.bedrooms}
+              onChange={(e) => handleInputChange("bedrooms", e.target.value)}
             />
           </div>
         </div>
@@ -1313,21 +1276,21 @@ export default function DealScorePublicPage() {
             </Select>
           </div>
           <div>
-            <Label htmlFor="financingType" className="mb-1 block">
-              Financing Type
+            <Label htmlFor="propertyType" className="mb-1 block">
+              Property Type
             </Label>
             <Select
-              value={formData.financingType || "mortgage"}
+              value={formData.propertyType}
               onValueChange={(value) =>
-                handleInputChange("financingType", value)
+                handleInputChange("propertyType", value)
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select financing" />
+                <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="mortgage">Mortgage</SelectItem>
-                <SelectItem value="cash">Cash Purchase</SelectItem>
+                <SelectItem value="apartment">Apartment/Flat</SelectItem>
+                <SelectItem value="house">House</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1640,20 +1603,18 @@ export default function DealScorePublicPage() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground text-center">
+                          <p className="text-sm text-muted-foreground">
                             Map Location
                           </p>
-                          <div className="flex justify-center">
-                            <a 
-                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dealReport.address)}`}
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="flex items-center text-blue-600 hover:text-blue-800 hover:underline"
-                            >
-                              <MapPin className="h-4 w-4 mr-1" />
-                              View on Google Maps
-                            </a>
-                          </div>
+                          <a 
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dealReport.address)}`}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            <MapPin className="h-4 w-4 mr-1" />
+                            View on Google Maps
+                          </a>
                         </div>
                       </div>
                     </div>
