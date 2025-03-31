@@ -811,7 +811,6 @@ export default function DealScorePublicPage() {
     try {
       // Get luxury rating value - only include if 8 or higher (high luxury properties)
       const luxuryRating = Number(formData.luxuryRating);
-      const isLuxuryProperty = !isNaN(luxuryRating) && luxuryRating >= 8;
       
       const response = await fetch("/api/deal-advisor/area-rate", {
         method: "POST",
@@ -821,7 +820,7 @@ export default function DealScorePublicPage() {
         body: JSON.stringify({
           address: formData.address,
           propertyType: formData.propertyType, // Use the actual property type (apartment or house)
-          luxuryRating: isLuxuryProperty ? luxuryRating : undefined, // Only send if it's 8 or higher
+          luxuryRating: !isNaN(luxuryRating) ? luxuryRating : undefined, // Always pass luxury rating if valid
         }),
       });
 
