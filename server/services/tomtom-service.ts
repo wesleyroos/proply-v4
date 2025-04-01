@@ -99,8 +99,8 @@ async function fetchTrafficDensity(
     throw new Error('TomTom API key is not set in environment variables');
   }
 
-  // Use Traffic Flow API endpoint
-  const url = `${TOMTOM_API_BASE_URL}/traffic/${TRAFFIC_FLOW_API_VERSION}/flowSegmentData/${latitude},${longitude}/json?key=${apiKey}`;
+  // Use the Traffic API v5 Incidents endpoint which is more stable and documented
+  const url = `${TOMTOM_API_BASE_URL}/traffic/services/5/incidentDetails?key=${apiKey}&bbox=${longitude-0.15},${latitude-0.15},${longitude+0.15},${latitude+0.15}&fields=incidents,geometry`;
   
   try {
     const response = await fetch(url);
@@ -111,18 +111,47 @@ async function fetchTrafficDensity(
     
     const data = await response.json();
     
-    // Extract traffic flow information and convert to density equivalent
-    const flowData = data as any; // Type assertion to avoid TypeScript errors
-    const currentSpeed = flowData?.flowSegmentData?.currentSpeed || 0;
-    const freeFlowSpeed = flowData?.flowSegmentData?.freeFlowSpeed || 1; // Prevent division by zero
+    // Extract traffic incidents information from the response
+    const responseData = data as any; // Type assertion for TypeScript
     
-    // Calculate congestion level - higher means more congested
-    // Convert to a scale that mimics density (0-10 where 10 is completely congested)
+    // Get the incidents from the response (different structure in the incidents.json endpoint)
+    const incidents = responseData?.incidents || [];
+    console.log(`Found ${incidents.length} traffic incidents nearby`);
+    
+    // Calculate a density value based on number and type of incidents
     let congestionLevel = 0;
-    if (freeFlowSpeed > 0) {
-      // Calculate as percentage of speed reduction from free flow
-      congestionLevel = Math.max(0, Math.min(10, 10 * (1 - (currentSpeed / freeFlowSpeed))));
+    
+    if (incidents.length > 0) {
+      // Base density on incident count (max 6 points for many incidents)
+      const incidentCountFactor = Math.min(6, incidents.length * 0.6);
+      congestionLevel += incidentCountFactor;
+      
+      // Add density based on types of incidents (up to 4 points)
+      let severityPoints = 0;
+      
+      incidents.forEach((incident: any) => {
+        // Extract type info from the incident
+        const incidentType = incident?.type || '';
+        const incidentCategory = incident?.category || '';
+        const delaySeconds = incident?.delay?.seconds || 0;
+        
+        // Add points based on incident type and severity
+        if (incidentType.includes('ACCIDENT') || incidentCategory.includes('ROAD_CLOSED')) {
+          severityPoints += 1.0; // Major incidents
+        } else if (incidentType.includes('CONGESTION') || incidentType.includes('JAM') || delaySeconds > 300) {
+          severityPoints += 0.7; // Medium impact incidents
+        } else if (incidentType.includes('CONSTRUCTION') || incidentType.includes('LANE_RESTRICTION')) {
+          severityPoints += 0.5; // Minor but impactful incidents
+        } else {
+          severityPoints += 0.2; // Minor incidents
+        }
+      });
+      
+      congestionLevel += Math.min(4, severityPoints);
     }
+    
+    // Ensure the density is within 0-10 range
+    congestionLevel = Math.max(0, Math.min(10, congestionLevel));
     
     return { 
       density: congestionLevel,
