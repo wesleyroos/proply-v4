@@ -2046,37 +2046,28 @@ export default function DealScorePublicPage() {
               </div>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-sm text-slate-500">Strategic Offer Range</span>
+              <span className="text-sm text-slate-500">Negotiation Zone</span>
               <div className="flex flex-col items-center">
                 <span className="text-xl font-bold">
                   {(() => {
-                    // If asking price is below market value (good deal)
-                    if (dealReport.percentageDifference > 0) {
-                      const lowerBound = formatPrice(Math.round(dealReport.askingPrice * 0.95));
-                      const upperBound = formatPrice(Math.round(dealReport.askingPrice * 1.02));
-                      return `R${lowerBound}-R${upperBound}`;
-                    } 
-                    // If asking price is 0-10% above market value (fair deal)
-                    else if (dealReport.percentageDifference >= -10) {
-                      const lowerBound = formatPrice(Math.round(dealReport.askingPrice * 0.9));
-                      const upperBound = formatPrice(Math.round(dealReport.askingPrice * 0.97));
-                      return `R${lowerBound}-R${upperBound}`;
-                    }
-                    // If asking price is significantly above market value (poor deal)
-                    else {
-                      const lowerBound = formatPrice(Math.round(dealReport.estimatedValue * 1.05));
-                      const upperBound = formatPrice(Math.round(dealReport.estimatedValue * 1.15));
-                      return `R${lowerBound}-R${upperBound}`;
-                    }
+                    // Simple formula: Estimated value - 5% to Asking price
+                    // This gives a sensible negotiation zone in most cases
+                    const lowerBound = Math.min(
+                      dealReport.estimatedValue * 0.95,
+                      dealReport.askingPrice * 0.9
+                    );
+                    return `R${formatPrice(Math.round(lowerBound))}-R${formatPrice(dealReport.askingPrice)}`;
                   })()}
                 </span>
               </div>
-              <div className="text-xs text-gray-500 mt-1 text-center max-w-[140px]">
-                {dealReport.percentageDifference > 0 ? 
-                  "Move quickly at/near asking" : 
-                  dealReport.percentageDifference >= -10 ? 
-                    "Negotiate below asking" : 
-                    "Base on market value"}
+              <div className={`text-xs ${
+                dealReport.percentageDifference >= 0 ? "text-green-600 font-medium" : "text-blue-600"
+              } mt-1 text-center`}>
+                {dealReport.percentageDifference >= 5 ? 
+                  "Great value - consider offering asking price" : 
+                  dealReport.percentageDifference >= 0 ? 
+                    "Good value - minimal negotiation needed" : 
+                    "Room to negotiate - consider starting low"}
               </div>
             </div>
           </div>
