@@ -2047,27 +2047,35 @@ export default function DealScorePublicPage() {
             </div>
             <div className="flex flex-col items-center">
               <span className="text-sm text-slate-500">Negotiation Zone</span>
-              <div className="flex flex-col items-center">
-                <span className="text-xl font-bold">
+              <div className="flex flex-col items-center px-1">
+                <span className="text-base font-bold whitespace-nowrap">
                   {(() => {
                     // Simple formula: Estimated value - 5% to Asking price
                     // This gives a sensible negotiation zone in most cases
                     const lowerBound = Math.min(
                       dealReport.estimatedValue * 0.95,
-                      dealReport.askingPrice * 0.9
+                      dealReport.askingPrice * 0.9,
                     );
-                    return `R${formatPrice(Math.round(lowerBound))}-R${formatPrice(dealReport.askingPrice)}`;
+                    return `R${formatPrice(Math.round(lowerBound))}`;
                   })()}
                 </span>
+                <span className="text-xs text-slate-500 my-0.5">to</span>
+                <span className="text-base font-bold whitespace-nowrap">
+                  R{formatPrice(dealReport.askingPrice)}
+                </span>
               </div>
-              <div className={`text-xs ${
-                dealReport.percentageDifference >= 0 ? "text-green-600 font-medium" : "text-blue-600"
-              } mt-1 text-center`}>
-                {dealReport.percentageDifference >= 5 ? 
-                  "Great value - consider offering asking price" : 
-                  dealReport.percentageDifference >= 0 ? 
-                    "Good value - minimal negotiation needed" : 
-                    "Room to negotiate - consider starting low"}
+              <div
+                className={`text-xs ${
+                  dealReport.percentageDifference >= 0
+                    ? "text-green-600 font-medium"
+                    : "text-blue-600"
+                } mt-1 text-center max-w-[140px]`}
+              >
+                {dealReport.percentageDifference >= 5
+                  ? "Great value - consider offering asking price"
+                  : dealReport.percentageDifference >= 0
+                    ? "Good value - minimal negotiation needed"
+                    : "Room to negotiate - consider starting low"}
               </div>
             </div>
           </div>
@@ -2680,7 +2688,7 @@ export default function DealScorePublicPage() {
             <AccordionTrigger className="text-lg font-medium justify-start px-4 py-3">
               <div className="flex items-center gap-2">
                 <CircleDollarSign className="h-5 w-5 text-slate-600" />
-                <span>Financial Analysis</span>
+                <span>Financial Analysis & Afforability</span>
               </div>
             </AccordionTrigger>
             <AccordionContent className="flex flex-col items-center">
