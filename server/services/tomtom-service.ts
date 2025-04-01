@@ -133,18 +133,9 @@ async function fetchTrafficDensity(
     throw new Error('TomTom API key is not set in environment variables');
   }
 
-  // Use the Traffic Flow API with the correct format
-  // According to 2023 API docs, we need to use bbox parameter (not point)
-  // Create a small bounding box around the given point (approximately a 1km area)
-  const latOffset = 0.01; // Approximately 1km in latitude
-  const lonOffset = 0.01; // Approximately 1km in longitude
-  
-  const minLat = latitude - latOffset;
-  const minLon = longitude - lonOffset;
-  const maxLat = latitude + latOffset;
-  const maxLon = longitude + lonOffset;
-  
-  const url = `${TOMTOM_API_BASE_URL}/traffic/services/${TRAFFIC_FLOW_API_VERSION}/flowSegmentData/relative0/10/json?key=${apiKey}&bbox=${minLon},${minLat},${maxLon},${maxLat}&zoom=10`;
+  // Use the Traffic Flow API with the point parameter as required by the API error message
+  // The error shows we need 'point' parameter rather than 'bbox'
+  const url = `${TOMTOM_API_BASE_URL}/traffic/services/${TRAFFIC_FLOW_API_VERSION}/flowSegmentData/relative0/10/json?key=${apiKey}&point=${latitude},${longitude}&zoom=10`;
   
   try {
     console.log(`Fetching traffic data from TomTom at coordinates: ${latitude}, ${longitude}`);

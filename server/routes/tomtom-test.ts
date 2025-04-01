@@ -168,16 +168,8 @@ router.get('/', async (req, res) => {
         };
         
         try {
-          // Create a small bounding box around the given point
-          const latOffset = 0.01;
-          const lonOffset = 0.01;
-          const minLat = latitude - latOffset;
-          const minLon = longitude - lonOffset;
-          const maxLat = latitude + latOffset;
-          const maxLon = longitude + lonOffset;
-          
           const apiKey = process.env.TOMTOM_API_KEY;
-          const trafficFlowUrl = `https://api.tomtom.com/traffic/services/${TRAFFIC_FLOW_API_VERSION}/flowSegmentData/relative0/10/json?key=${apiKey}&bbox=${minLon},${minLat},${maxLon},${maxLat}&zoom=10`;
+          const trafficFlowUrl = `https://api.tomtom.com/traffic/services/${TRAFFIC_FLOW_API_VERSION}/flowSegmentData/relative0/10/json?key=${apiKey}&point=${latitude},${longitude}&zoom=10`;
           
           console.log(`Testing direct Traffic Flow API at: ${trafficFlowUrl.substring(0, trafficFlowUrl.indexOf('?') + 30)}...`);
           
