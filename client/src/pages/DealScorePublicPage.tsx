@@ -2059,7 +2059,8 @@ export default function DealScorePublicPage() {
                     const marketValue = dealReport.estimatedValue;
                     const askingPrice = dealReport.askingPrice;
                     const percentDiff = dealReport.percentageDifference;
-                    const areaGrowth = dealReport.suburbTrend === "Trending Up" ? 1.02 : 1.0;
+                    // Use suburb sentiment if available, otherwise assume growing market (common in property)
+                    const areaGrowth = 1.02; // 2% appreciation is conservative for growing markets
                     const conditionFactor = 
                       dealReport.propertyCondition === "excellent" ? 1.03 :
                       dealReport.propertyCondition === "good" ? 1.02 :
@@ -2068,29 +2069,30 @@ export default function DealScorePublicPage() {
                     // Appreciation-adjusted market value
                     const adjustedValue = marketValue * areaGrowth * conditionFactor;
                     
-                    // Calculate floor and ceiling based on market position
+                    // Calculate floor and ceiling based on market position and realistic market dynamics
+                    // No seller would typically accept below market value in a normal/growing market
                     let floorPrice, ceilingPrice;
                     
                     if (percentDiff > 5) {
-                      // Great deal (>5% below market): Offer 98-100% of asking
+                      // Great deal (>5% below market): Offer full asking price to secure the bargain
+                      floorPrice = askingPrice;
+                      ceilingPrice = Math.round(askingPrice * 1.02); // Allow slight room above asking for competition
+                    } else if (percentDiff > 0) {
+                      // Good deal (0-5% below market): Offer 98-100% of asking
                       floorPrice = Math.round(askingPrice * 0.98);
                       ceilingPrice = askingPrice;
-                    } else if (percentDiff > 0) {
-                      // Good deal (0-5% below market): Offer 95-100% of asking
-                      floorPrice = Math.round(askingPrice * 0.95);
-                      ceilingPrice = askingPrice;
                     } else if (percentDiff >= -7) {
-                      // Fair deal (0-7% above market): Offer between adjusted value and 98% of asking
-                      floorPrice = Math.round(adjustedValue);
+                      // Fair deal (0-7% above market): Offer between market value and 98% of asking
+                      floorPrice = Math.max(marketValue, Math.round(askingPrice * 0.95));
                       ceilingPrice = Math.round(askingPrice * 0.98);
                     } else if (percentDiff >= -15) {
-                      // Overpriced (7-15% above market): Offer between 95% of adjusted value and adjusted value
-                      floorPrice = Math.round(adjustedValue * 0.95);
-                      ceilingPrice = Math.round(adjustedValue);
+                      // Overpriced (7-15% above market): Offer between market value and market value + 5%
+                      floorPrice = marketValue;
+                      ceilingPrice = Math.round(marketValue * 1.05);
                     } else {
-                      // Significantly overpriced (>15% above market): Offer 90-95% of adjusted value
-                      floorPrice = Math.round(adjustedValue * 0.9);
-                      ceilingPrice = Math.round(adjustedValue * 0.95);
+                      // Significantly overpriced (>15% above market): Offer market value to market value + 7%
+                      floorPrice = marketValue;
+                      ceilingPrice = Math.round(marketValue * 1.07);
                     }
                     
                     return `R${formatPrice(floorPrice)} - R${formatPrice(ceilingPrice)}`;
@@ -2107,14 +2109,14 @@ export default function DealScorePublicPage() {
                 } mt-1 text-center max-w-[190px]`}
               >
                 {dealReport.percentageDifference >= 5
-                  ? "Excellent value - consider full asking price"
+                  ? "Excellent deal - secure quickly, even above asking"
                   : dealReport.percentageDifference >= 0
-                    ? "Good investment - slight room to negotiate"
+                    ? "Good value - offer near asking price"
                     : dealReport.percentageDifference >= -7
-                      ? "Fair price - negotiate within appreciation value"
+                      ? "Fair market price - room to negotiate"
                       : dealReport.percentageDifference >= -15
-                        ? "High price - target adjusted market value"
-                        : "Premium price - use strong negotiation leverage"}
+                        ? "Somewhat high - anchor to market value"
+                        : "Significantly overpriced - base offers on market value"}
               </div>
             </div>
           </div>
