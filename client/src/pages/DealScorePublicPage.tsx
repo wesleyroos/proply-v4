@@ -2047,8 +2047,8 @@ export default function DealScorePublicPage() {
             </div>
             <div className="flex flex-col items-center">
               <span className="text-sm text-slate-500">Negotiation Zone</span>
-              <div className="flex flex-col items-center px-1">
-                <span className="text-base font-bold whitespace-nowrap">
+              <div className="px-1 w-full max-w-[170px]">
+                <span className="text-sm font-bold whitespace-nowrap block text-center">
                   {(() => {
                     // Simple formula: Estimated value - 5% to Asking price
                     // This gives a sensible negotiation zone in most cases
@@ -2056,12 +2056,8 @@ export default function DealScorePublicPage() {
                       dealReport.estimatedValue * 0.95,
                       dealReport.askingPrice * 0.9,
                     );
-                    return `R${formatPrice(Math.round(lowerBound))}`;
+                    return `R${formatPrice(Math.round(lowerBound))} - R${formatPrice(dealReport.askingPrice)}`;
                   })()}
-                </span>
-                <span className="text-xs text-slate-500 my-0.5">to</span>
-                <span className="text-base font-bold whitespace-nowrap">
-                  R{formatPrice(dealReport.askingPrice)}
                 </span>
               </div>
               <div
