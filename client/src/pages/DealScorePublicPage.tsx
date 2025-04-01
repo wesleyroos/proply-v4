@@ -678,21 +678,8 @@ export default function DealScorePublicPage() {
       trend: string;
     } | null,
   ) => {
-    // Fetch traffic data if we have a valid address
-    if (formData.address && formData.address.trim() !== "") {
-      try {
-        // Attempt to fetch traffic data from our API
-        const trafficResponse = await fetchTrafficData();
-        
-        if (trafficResponse) {
-          console.log("Successfully fetched traffic data:", trafficResponse);
-        } else {
-          console.warn("Failed to fetch traffic data, will use fallback");
-        }
-      } catch (error) {
-        console.error("Error fetching traffic data:", error);
-      }
-    }
+    // Traffic data is now only fetched after payment completion
+    // to reduce API calls and improve initial calculation speed
     // Get property rate
     const propertyRate =
       Number(parseFormattedNumber(formData.purchasePrice)) /

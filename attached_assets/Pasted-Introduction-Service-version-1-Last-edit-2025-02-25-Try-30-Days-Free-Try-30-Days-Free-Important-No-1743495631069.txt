@@ -1,0 +1,63 @@
+Introduction
+Service version: 1
+Last edit: 2025.02.25
+Try 30 Days Free
+Try 30 Days Free
+Important Note
+Explore ready-to-use traffic reports and data visualizations immediately by signing up for a 30-day free trial on the MOVE Portal. Once registered, you'll receive an API key to start using the Traffic Analytics APIs right away. Alternatively, you may contact our Sales team for a tailored solution.
+
+What is Traffic Stats?
+Traffic Stats is a suite of web services designed for developers to create web applications which analyse historical traffic data. These web services are RESTful APIs. The Traffic Stats APIs are based on the collection of Floating Car Data (FCD), which is a proven and innovative method of measuring what is happening on the road.
+
+Millions of TomTom navigation devices, in-dash systems and apps are already in use and the number is growing every day. These devices all send anonymised FCD data to our servers in real-time, from which we derive historical traffic information. This information gives valuable insight into the traffic situation on the road network throughout the day.
+
+Traffic Stats API enables users to monitor, analyze and report on traffic stats. It is possible to review specific routes (Route Analysis) or defined areas (Area Analysis, Traffic Density). Traffic Stats is besides the API also available as a reference implementation, the Traffic Stats Portal. When you want to do limited queries on our traffic database we suggest to use the Traffic Stats Portal. Please go to move.tomtom.com for evaluation access.
+
+Getting Started
+Request access to TrafficStats via your local partner or TomTom account manager.
+Read the API documentation and start coding.
+Common use-cases you can implement
+Measure the stability in travel time on a defined route.
+Analyze speed on every road segment to determine congestion bottlenecks and their effects.
+Measure the travel time before and after a change in the road network in order to assess the change.
+Detect the impact on traffic of seasons, events and incidents.
+Measure the accessibility of a route or area, year on year.
+Identify and prioritize congestion bottlenecks in an area.
+Display speeds (V85, Average, Median) on a map.
+Measure the attractiveness of a location by reviewing the relative car volume.
+Use the speeds and travel times in transportation models as the actual driven ground truth.
+Feature list
+Harness the power of TomTom Historical Traffic for your application! The TomTom Traffic Stats API provides the user with a defined route or area, date range and time slices, and all speed and travel time statistics that you require, and contains the following services.
+
+Route Analysis service
+The Route Analysis service returns both route-based and segment-based statistics in XLS, SHAPE, and JSON format. Route statistics you receive:
+
+The average route sample size
+The average travel time
+The median travel time
+The average speed (kilometers or miles per hour)
+The 15th and 85th percentile speed
+The travel time ratio
+The 5th - 95 percentile travel time
+As part of Route Analysis you also receive for each road segment in your route the following statistics:
+
+The average speed
+The speed limit
+The street name
+The median speed
+The standard deviation
+The travel time ratio
+The Speed percentiles
+The Speed Limit and Road Name of each segment
+Area Analysis service
+The Area Analysis service returns statistics for each road segment in each open direction in SHAPE and JSON format. For each segment you obtain the following statistics:
+
+Average travel time
+Average speed
+Median speed
+Standard deviation speed
+Sample size
+5 - 95 percentile speed
+The Speed Limit, Road Name, and Functional Road Class
+Traffic Density service
+The Traffic Density API returns the amount of data available for each road segment in each open direction in SHAPE and JSON format. For each segment you obtain the number of probes that can be used for further calculations.
