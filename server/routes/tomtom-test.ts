@@ -2,8 +2,12 @@ import { Router } from 'express';
 import { geocodeAddress, getTrafficData, GEOCODING_API_VERSION } from '../services/tomtom-service';
 import fetch from 'node-fetch';
 
-// Traffic Flow API version (same as in tomtom-service.ts)
+// API versions (same as in tomtom-service.ts)
 const TRAFFIC_FLOW_API_VERSION = '4';
+const TRAFFIC_STATS_API_VERSION = '1';
+
+// TomTom Traffic Statistics API time periods
+const MORNING_RUSH_HOUR = "0700-0900"; // 7-9 AM
 
 // Interface for raw TomTom Traffic Flow API response
 interface RawTrafficFlowResponse {
@@ -13,6 +17,27 @@ interface RawTrafficFlowResponse {
     confidence?: number;
     roadClosure?: boolean;
     [key: string]: any;
+  };
+  [key: string]: any;
+}
+
+// Interface for raw TomTom Traffic Statistics API response
+interface RawTrafficStatsResponse {
+  typicalSpeeds?: {
+    weekday?: {
+      hours?: {
+        hour?: number;
+        speed?: number;
+        travelTimeMinutes?: number;
+      }[];
+    };
+    weekend?: {
+      hours?: {
+        hour?: number;
+        speed?: number;
+        travelTimeMinutes?: number;
+      }[];
+    };
   };
   [key: string]: any;
 }
@@ -204,6 +229,60 @@ router.get('/', async (req, res) => {
         } catch (error: any) {
           testResults.tests.rawTrafficFlowAPI = {
             name: "Raw Traffic Flow API Test",
+            coordinates: { latitude, longitude },
+            status: "Error",
+            error: error.message
+          };
+        }
+        
+        // Additional test: Direct call to TomTom Traffic Statistics API
+        testResults.tests.rawTrafficStatsAPI = {
+          name: "Traffic Statistics API Test",
+          coordinates: { latitude, longitude },
+          status: "Running",
+          timePeriod: MORNING_RUSH_HOUR,
+          dayType: "weekday"
+        };
+        
+        try {
+          const apiKey = process.env.TOMTOM_API_KEY;
+          const trafficStatsUrl = `https://api.tomtom.com/traffic/services/${TRAFFIC_STATS_API_VERSION}/speed/relative0/json?key=${apiKey}&point=${latitude},${longitude}`;
+          
+          console.log(`Testing Traffic Statistics API at: ${trafficStatsUrl.substring(0, trafficStatsUrl.indexOf('?') + 30)}...`);
+          
+          const headers = {
+            'Referer': 'http://localhost:5000',
+            'Origin': 'http://localhost:5000'
+          };
+          
+          const response = await fetch(trafficStatsUrl, { headers });
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            testResults.tests.rawTrafficStatsAPI = {
+              name: "Traffic Statistics API Test",
+              coordinates: { latitude, longitude },
+              status: "Failed",
+              statusCode: response.status,
+              statusText: response.statusText,
+              errorDetail: errorText
+            };
+          } else {
+            const data = await response.json() as RawTrafficStatsResponse;
+            testResults.tests.rawTrafficStatsAPI = {
+              name: "Traffic Statistics API Test",
+              coordinates: { latitude, longitude },
+              status: "Success",
+              statusCode: response.status,
+              hasTypicalSpeeds: !!data.typicalSpeeds,
+              hasWeekdayData: !!data.typicalSpeeds?.weekday,
+              hasWeekendData: !!data.typicalSpeeds?.weekend,
+              dataPreview: JSON.stringify(data).substring(0, 300) + '...'
+            };
+          }
+        } catch (error: any) {
+          testResults.tests.rawTrafficStatsAPI = {
+            name: "Traffic Statistics API Test",
             coordinates: { latitude, longitude },
             status: "Error",
             error: error.message
