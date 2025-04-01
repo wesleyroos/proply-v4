@@ -169,7 +169,7 @@ export default function DealScorePublicPage() {
   const [editedAreaRate, setEditedAreaRate] = useState("");
   const [showAskingPriceModal, setShowAskingPriceModal] = useState(false);
   const [editedAskingPrice, setEditedAskingPrice] = useState("");
-  
+
   // Traffic data state
   const [trafficDataStatus, setTrafficDataStatus] = useState<
     "idle" | "loading" | "success" | "error"
@@ -349,54 +349,55 @@ export default function DealScorePublicPage() {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     calculateDealScore(undefined, undefined, undefined, null);
   };
-  
+
   const handleAreaRateEdit = () => {
     if (dealReport) {
       setEditedAreaRate(dealReport.areaRate.toString());
       setShowAreaRateModal(true);
     }
   };
-  
+
   const handleAreaRateUpdate = () => {
     if (!editedAreaRate || isNaN(Number(editedAreaRate)) || !dealReport) {
       // Invalid input or no report yet
       return;
     }
-    
+
     // Get the new area rate
     const newAreaRate = Number(editedAreaRate);
-    
+
     // Show a toast
     toast({
       title: "Updating area rate",
-      description: "Recalculating deal metrics..."
+      description: "Recalculating deal metrics...",
     });
-    
+
     // Close the modal first for better UX
     setShowAreaRateModal(false);
-    
+
     // Calculate key values for the update
     const propertySize = Number(parseFormattedNumber(formData.size));
     const askingPrice = Number(parseFormattedNumber(formData.purchasePrice));
     const estimatedValue = newAreaRate * propertySize;
-    const percentageDifference = ((estimatedValue - askingPrice) / askingPrice) * 100;
-    
+    const percentageDifference =
+      ((estimatedValue - askingPrice) / askingPrice) * 100;
+
     // Update form data
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      areaRate: newAreaRate.toString()
+      areaRate: newAreaRate.toString(),
     }));
-    
+
     // Calculate property rate
     const propertyRate = askingPrice / propertySize;
-    
-    // Price diff for score calculation 
+
+    // Price diff for score calculation
     const priceDiff = ((propertyRate - newAreaRate) / newAreaRate) * 100;
-    
-    // Recalculate score with the price difference 
+
+    // Recalculate score with the price difference
     let score = 50;
     score -= priceDiff * 0.5;
-    
+
     // Add other factors that affect score
     // Check property condition
     switch (formData.propertyCondition) {
@@ -413,14 +414,14 @@ export default function DealScorePublicPage() {
         score -= 10;
         break;
     }
-    
+
     // Add luxury rating to score
     const luxuryRating = Number(formData.luxuryRating);
     if (!isNaN(luxuryRating) && luxuryRating >= 1 && luxuryRating <= 5) {
       const luxuryAdjustment = (luxuryRating - 3) * 2;
       score += luxuryAdjustment;
     }
-    
+
     // Add yield adjustments as in calculateDealScore
     if (dealReport.shortTermYield !== null) {
       const shortTermYield = dealReport.shortTermYield;
@@ -432,7 +433,7 @@ export default function DealScorePublicPage() {
         score += 5;
       }
     }
-    
+
     if (dealReport.longTermYield !== null) {
       const longTermYield = dealReport.longTermYield;
       if (longTermYield >= 8) {
@@ -441,14 +442,14 @@ export default function DealScorePublicPage() {
         score += 5;
       }
     }
-    
+
     // Cap score between 0 and 100
     score = Math.max(0, Math.min(100, score));
-    
+
     // Determine rating and color based on score
     let rating: string;
     let color: string;
-    
+
     if (score >= 90) {
       rating = "Excellent";
       color = "bg-emerald-500";
@@ -468,7 +469,7 @@ export default function DealScorePublicPage() {
       rating = "Bad";
       color = "bg-red-500";
     }
-    
+
     // Update the report
     setDealReport({
       ...dealReport,
@@ -478,61 +479,62 @@ export default function DealScorePublicPage() {
       recentSalesRange: `R${Math.round(estimatedValue * 0.9).toLocaleString()} - R${Math.round(estimatedValue * 1.1).toLocaleString()}`,
       score: Math.round(score),
       rating: rating,
-      color: color
+      color: color,
     });
-    
+
     // Success toast
     toast({
       title: "Area rate updated",
-      description: "Deal metrics have been recalculated."
+      description: "Deal metrics have been recalculated.",
     });
   };
-  
+
   const handleAskingPriceEdit = () => {
     if (dealReport) {
       setEditedAskingPrice(dealReport.askingPrice.toString());
       setShowAskingPriceModal(true);
     }
   };
-  
+
   const handleAskingPriceUpdate = () => {
     if (!editedAskingPrice || isNaN(Number(editedAskingPrice)) || !dealReport) {
       // Invalid input or no report yet
       return;
     }
-    
+
     // Get the new asking price
     const newAskingPrice = Number(editedAskingPrice);
-    
+
     // Show a toast
     toast({
       title: "Updating asking price",
-      description: "Recalculating deal metrics..."
+      description: "Recalculating deal metrics...",
     });
-    
+
     // Close the modal first for better UX
     setShowAskingPriceModal(false);
-    
+
     // Calculate key values for the update
     const propertySize = Number(parseFormattedNumber(formData.size));
     const propertyRate = newAskingPrice / propertySize;
     const areaRate = Number(parseFormattedNumber(formData.areaRate));
     const estimatedValue = areaRate * propertySize;
-    const percentageDifference = ((estimatedValue - newAskingPrice) / newAskingPrice) * 100;
-    
-    // Update form data 
-    setFormData(prev => ({
+    const percentageDifference =
+      ((estimatedValue - newAskingPrice) / newAskingPrice) * 100;
+
+    // Update form data
+    setFormData((prev) => ({
       ...prev,
-      purchasePrice: newAskingPrice.toString()
+      purchasePrice: newAskingPrice.toString(),
     }));
-    
-    // Price diff for score calculation 
+
+    // Price diff for score calculation
     const priceDiff = ((propertyRate - areaRate) / areaRate) * 100;
-    
+
     // Recalculate score with the price difference
     let score = 50;
     score -= priceDiff * 0.5;
-    
+
     // Add other factors that affect score
     // Check property condition
     switch (formData.propertyCondition) {
@@ -549,42 +551,52 @@ export default function DealScorePublicPage() {
         score -= 10;
         break;
     }
-    
+
     // Add luxury rating to score
     const luxuryRating = Number(formData.luxuryRating);
     if (!isNaN(luxuryRating) && luxuryRating >= 1 && luxuryRating <= 5) {
       const luxuryAdjustment = (luxuryRating - 3) * 2;
       score += luxuryAdjustment;
     }
-    
+
     // Recalculate yields
     // First, estimate monthly costs
     const monthlyRates = (newAskingPrice * 0.001) / 12; // Rough estimate of rates
     const levy = newAskingPrice * 0.0015; // Rough estimate of levy
     const estimatedMonthlyCosts = monthlyRates + levy;
-    
+
     // Calculate financing values
     const depositPercentage = Number(formData.depositPercentage) || 10;
     const depositAmount = newAskingPrice * (depositPercentage / 100);
     const interestRate = Number(formData.interestRate) || 11;
     const loanTerm = Number(formData.loanTerm) || 20;
     const loanAmount = newAskingPrice - depositAmount;
-    const monthlyPayment = calculateMonthlyPayment(loanAmount, interestRate, loanTerm);
-    
+    const monthlyPayment = calculateMonthlyPayment(
+      loanAmount,
+      interestRate,
+      loanTerm,
+    );
+
     // Calculate new yields
-    const estimatedLongTermRental = dealReport.monthlyLongTerm || (newAskingPrice * 0.005);
-    const longTermYield = ((estimatedLongTermRental * 12) / newAskingPrice) * 100;
-    
+    const estimatedLongTermRental =
+      dealReport.monthlyLongTerm || newAskingPrice * 0.005;
+    const longTermYield =
+      ((estimatedLongTermRental * 12) / newAskingPrice) * 100;
+
     // Calculate short term yield
-    const estimatedNightlyRate = dealReport.nightlyRate || (newAskingPrice / 1000);
+    const estimatedNightlyRate =
+      dealReport.nightlyRate || newAskingPrice / 1000;
     const propertyOccupancyRate = dealReport.occupancyRate || 65;
-    const annualRevenueShortTerm = estimatedNightlyRate * 365 * (propertyOccupancyRate / 100);
+    const annualRevenueShortTerm =
+      estimatedNightlyRate * 365 * (propertyOccupancyRate / 100);
     const shortTermYield = (annualRevenueShortTerm / newAskingPrice) * 100;
-    
+
     // Calculate cash flows
-    const cashFlowShortTerm = (annualRevenueShortTerm / 12) - monthlyPayment - estimatedMonthlyCosts;
-    const cashFlowLongTerm = estimatedLongTermRental - monthlyPayment - estimatedMonthlyCosts;
-    
+    const cashFlowShortTerm =
+      annualRevenueShortTerm / 12 - monthlyPayment - estimatedMonthlyCosts;
+    const cashFlowLongTerm =
+      estimatedLongTermRental - monthlyPayment - estimatedMonthlyCosts;
+
     // Add yield adjustments as in calculateDealScore
     if (shortTermYield !== null) {
       if (shortTermYield >= 18) {
@@ -595,7 +607,7 @@ export default function DealScorePublicPage() {
         score += 5;
       }
     }
-    
+
     if (longTermYield !== null) {
       if (longTermYield >= 8) {
         score += 10;
@@ -603,14 +615,14 @@ export default function DealScorePublicPage() {
         score += 5;
       }
     }
-    
+
     // Cap score between 0 and 100
     score = Math.max(0, Math.min(100, score));
-    
+
     // Determine rating and color based on score
     let rating: string;
     let color: string;
-    
+
     if (score >= 90) {
       rating = "Excellent";
       color = "bg-emerald-500";
@@ -630,12 +642,11 @@ export default function DealScorePublicPage() {
       rating = "Bad";
       color = "bg-red-500";
     }
-    
+
     // Determine best investment strategy
-    const bestInvestmentStrategy = shortTermYield > longTermYield 
-      ? "Short-Term Rental" 
-      : "Long-Term Rental";
-    
+    const bestInvestmentStrategy =
+      shortTermYield > longTermYield ? "Short-Term Rental" : "Long-Term Rental";
+
     // Update the report with comprehensive changes
     setDealReport({
       ...dealReport,
@@ -655,13 +666,13 @@ export default function DealScorePublicPage() {
       cashFlowLongTerm: cashFlowLongTerm,
       monthlyRates: monthlyRates,
       levy: levy,
-      estimatedMonthlyCosts: estimatedMonthlyCosts
+      estimatedMonthlyCosts: estimatedMonthlyCosts,
     });
-    
+
     // Success toast
     toast({
       title: "Asking price updated",
-      description: "Deal metrics have been recalculated."
+      description: "Deal metrics have been recalculated.",
     });
   };
 
@@ -1257,7 +1268,7 @@ export default function DealScorePublicPage() {
       return fallbackData;
     }
   };
-  
+
   // Function to fetch traffic data from our API
   const fetchTrafficData = async () => {
     // Only proceed if we have a valid address
@@ -1265,36 +1276,41 @@ export default function DealScorePublicPage() {
       console.error("Cannot fetch traffic data without a valid address");
       return null;
     }
-    
+
     setTrafficDataStatus("loading");
-    
+
     try {
       console.log(`Fetching traffic data for address: ${formData.address}`);
-      
+
       // Call our traffic data API endpoint with the address as a query parameter
-      const response = await fetch(`/api/traffic-data?address=${encodeURIComponent(formData.address)}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      });
-      
+      const response = await fetch(
+        `/api/traffic-data?address=${encodeURIComponent(formData.address)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
       // Check if the request was successful
       if (!response.ok) {
         console.error(`Traffic data API returned status: ${response.status}`);
         setTrafficDataStatus("error");
-        setTrafficDataError(`Failed to fetch traffic data: ${response.statusText}`);
+        setTrafficDataError(
+          `Failed to fetch traffic data: ${response.statusText}`,
+        );
         return null;
       }
-      
+
       // Parse the JSON response
       const data = await response.json();
       console.log("Traffic data received:", data);
-      
+
       // Update state with the received data
       setTrafficData(data);
       setTrafficDataStatus("success");
-      
+
       return data;
     } catch (error) {
       console.error("Error fetching traffic data:", error);
@@ -1495,25 +1511,28 @@ export default function DealScorePublicPage() {
       // In parallel, fetch suburb sentiment data and traffic data
       let suburbData = null;
       let traffic = null;
-      
+
       if (formData.address.includes(",")) {
         try {
           // Use the fetchSuburbSentiment function to get suburb data
           suburbData = await fetchSuburbSentiment();
-          
+
           // Fetch traffic data
           toast({
             title: "Analyzing traffic patterns",
-            description: "Retrieving traffic density data for this location..."
+            description: "Retrieving traffic density data for this location...",
           });
-          
+
           traffic = await fetchTrafficData();
-          
+
           if (traffic) {
             console.log("Successfully fetched traffic data:", traffic);
           }
         } catch (error) {
-          console.error("Error fetching suburb sentiment or traffic data:", error);
+          console.error(
+            "Error fetching suburb sentiment or traffic data:",
+            error,
+          );
         }
       }
 
@@ -1742,46 +1761,69 @@ export default function DealScorePublicPage() {
             <div className="flex justify-between items-center">
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs text-muted-foreground">Basic</span>
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">1</span>
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">
+                  1
+                </span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-xs text-muted-foreground mb-1">Simple</span>
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">2</span>
+                <span className="text-xs text-muted-foreground mb-1">
+                  Simple
+                </span>
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">
+                  2
+                </span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-xs text-muted-foreground mb-1">Average</span>
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">3</span>
+                <span className="text-xs text-muted-foreground mb-1">
+                  Average
+                </span>
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">
+                  3
+                </span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-xs text-muted-foreground mb-1">Upscale</span>
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">4</span>
+                <span className="text-xs text-muted-foreground mb-1">
+                  Upscale
+                </span>
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">
+                  4
+                </span>
               </div>
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs text-muted-foreground">Premium</span>
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">5</span>
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 border border-gray-300 text-xs font-semibold shadow-sm">
+                  5
+                </span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Slider 
-                defaultValue={[Number(formData.luxuryRating)]} 
-                min={1} 
-                max={5} 
-                step={1} 
-                onValueChange={(value) => handleInputChange("luxuryRating", value[0].toString())}
+              <Slider
+                defaultValue={[Number(formData.luxuryRating)]}
+                min={1}
+                max={5}
+                step={1}
+                onValueChange={(value) =>
+                  handleInputChange("luxuryRating", value[0].toString())
+                }
                 className="mt-2"
               />
               <div className="flex justify-center">
                 <div className="flex items-center gap-1 bg-primary/10 px-3 py-1 rounded-full">
-                  <span className="font-medium text-sm text-primary">{formData.luxuryRating}</span>
+                  <span className="font-medium text-sm text-primary">
+                    {formData.luxuryRating}
+                  </span>
                   <span className="text-xs text-gray-500">/5</span>
                 </div>
               </div>
-              
+
               {/* Indicator for selected value */}
               <div className="flex justify-between items-center px-[10px] mt-1">
                 {[1, 2, 3, 4, 5].map((value) => (
-                  <div key={value} className={`flex justify-center ${Number(formData.luxuryRating) === value ? 'visible' : 'invisible'}`}>
+                  <div
+                    key={value}
+                    className={`flex justify-center ${Number(formData.luxuryRating) === value ? "visible" : "invisible"}`}
+                  >
                     <div className="h-0 w-0 border-x-4 border-x-transparent border-b-[6px] border-b-primary"></div>
                   </div>
                 ))}
@@ -1965,8 +2007,8 @@ export default function DealScorePublicPage() {
                 <span className="text-xl font-bold">
                   R{formatPrice(dealReport.askingPrice)}
                 </span>
-                <button 
-                  onClick={handleAskingPriceEdit} 
+                <button
+                  onClick={handleAskingPriceEdit}
                   className="text-xs text-blue-600 hover:text-blue-800 mt-1"
                 >
                   Edit
@@ -1985,8 +2027,8 @@ export default function DealScorePublicPage() {
                 <span className="text-xl font-bold">
                   R{formatPrice(dealReport.areaRate)}
                 </span>
-                <button 
-                  onClick={handleAreaRateEdit} 
+                <button
+                  onClick={handleAreaRateEdit}
                   className="text-xs text-blue-600 hover:text-blue-800 mt-1"
                 >
                   Edit
@@ -2135,7 +2177,9 @@ export default function DealScorePublicPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <TrendingUp className="h-5 w-5 text-white mr-2" />
-                  <h4 className="font-semibold text-white">Rental Performance</h4>
+                  <h4 className="font-semibold text-white">
+                    Rental Performance
+                  </h4>
                 </div>
                 <Badge
                   className={
@@ -2800,8 +2844,6 @@ export default function DealScorePublicPage() {
                   </div>
                 </div>
 
-
-
                 {/* Loan Paydown and Equity Buildup Chart */}
                 <div className="w-full mt-8">
                   <div
@@ -3009,9 +3051,7 @@ export default function DealScorePublicPage() {
                 <h3 className="text-xl font-bold mb-4 text-left">
                   Additional Property Insights
                 </h3>
-
-                {/* Grid layout for Traffic and Delivery Services */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="mb-6 w-full">
                   {/* Traffic Density Index - Redesigned */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
                     <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
@@ -3025,7 +3065,8 @@ export default function DealScorePublicPage() {
                         <div>
                           {reportUnlocked && (
                             <Badge className="bg-amber-500 text-white hover:bg-amber-600">
-                              {dealReport?.trafficDensity?.overallRating || "Medium Traffic"}
+                              {dealReport?.trafficDensity?.overallRating ||
+                                "Medium Traffic"}
                             </Badge>
                           )}
                         </div>
@@ -3039,46 +3080,61 @@ export default function DealScorePublicPage() {
                             <div className="flex items-start space-x-2">
                               <Info className="h-5 w-5 mt-0.5 flex-shrink-0" />
                               <div>
-                                <h4 className="font-medium mb-1">About Traffic Analytics</h4>
+                                <h4 className="font-medium mb-1">
+                                  About Traffic Analytics
+                                </h4>
                                 <p className="text-sm">
-                                  Data shows typical traffic patterns in this area based on historical trends. 
-                                  Lower traffic congestion (0-40%) is better for commuters, while higher values (60-100%) 
-                                  indicate significant delays during those periods.
+                                  Data shows typical traffic patterns in this
+                                  area based on historical trends. Lower traffic
+                                  congestion (0-40%) is better for commuters,
+                                  while higher values (60-100%) indicate
+                                  significant delays during those periods.
                                 </p>
                               </div>
                             </div>
                           </div>
-                          
+
                           {/* Traffic Meter */}
                           <div className="mb-6">
-                            <h4 className="font-medium mb-3">Overall Traffic Index</h4>
+                            <h4 className="font-medium mb-3">
+                              Overall Traffic Index
+                            </h4>
                             <div className="flex justify-between items-center text-sm text-gray-500 mb-1">
                               <div className="flex gap-2">
                                 <Car className="h-4 w-4 text-green-500" />
                                 <span className="font-medium">Low Traffic</span>
                               </div>
                               <div className="flex gap-2">
-                                <span className="font-medium">High Traffic</span>
+                                <span className="font-medium">
+                                  High Traffic
+                                </span>
                                 <Car className="h-4 w-4 text-red-500" />
                               </div>
                             </div>
                             <div className="relative w-full h-4 bg-gradient-to-r from-green-400 via-amber-400 to-red-500 rounded-full mb-2">
                               <div
                                 className="absolute top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white border-2 border-gray-800 rounded-full shadow-md flex items-center justify-center text-[10px] font-bold"
-                                style={{ 
+                                style={{
                                   // Set position based on the highest traffic value
                                   left: `${Math.max(
-                                    dealReport?.trafficDensity?.morningRushHour || 0,
-                                    dealReport?.trafficDensity?.eveningRushHour || 0,
-                                    dealReport?.trafficDensity?.weekendTraffic || 0
+                                    dealReport?.trafficDensity
+                                      ?.morningRushHour || 0,
+                                    dealReport?.trafficDensity
+                                      ?.eveningRushHour || 0,
+                                    dealReport?.trafficDensity
+                                      ?.weekendTraffic || 0,
                                   )}%`,
-                                  transform: 'translateX(-50%) translateY(-50%)'
+                                  transform:
+                                    "translateX(-50%) translateY(-50%)",
                                 }}
                               >
                                 {Math.max(
-                                  dealReport?.trafficDensity?.morningRushHour || 0,
-                                  dealReport?.trafficDensity?.eveningRushHour || 0,
-                                  dealReport?.trafficDensity?.weekendTraffic || 0
+                                  dealReport?.trafficDensity?.morningRushHour ||
+                                    0,
+                                  dealReport?.trafficDensity?.eveningRushHour ||
+                                    0,
+                                  dealReport?.trafficDensity?.weekendTraffic ||
+                                    0,
                                 )}
                               </div>
                               {/* Markers */}
@@ -3103,47 +3159,74 @@ export default function DealScorePublicPage() {
                           <div className="border border-gray-200 rounded-lg p-4 mb-5 bg-white">
                             <div className="flex justify-between items-center">
                               <div>
-                                <div className="text-gray-500 mb-1">Overall Rating</div>
-                                <div className={`font-medium text-lg ${
-                                  dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
-                                    ? "text-red-500" 
-                                    : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
-                                      ? "text-amber-500" 
-                                      : "text-green-500"
-                                }`}>
-                                  {dealReport?.trafficDensity?.overallRating || "Medium Traffic"}
+                                <div className="text-gray-500 mb-1">
+                                  Overall Rating
+                                </div>
+                                <div
+                                  className={`font-medium text-lg ${
+                                    dealReport?.trafficDensity?.overallRating
+                                      ?.toLowerCase()
+                                      .includes("high")
+                                      ? "text-red-500"
+                                      : dealReport?.trafficDensity?.overallRating
+                                            ?.toLowerCase()
+                                            .includes("medium")
+                                        ? "text-amber-500"
+                                        : "text-green-500"
+                                  }`}
+                                >
+                                  {dealReport?.trafficDensity?.overallRating ||
+                                    "Medium Traffic"}
                                 </div>
                               </div>
-                              <div className={`rounded-full p-2 ${
-                                dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
-                                  ? "bg-red-100" 
-                                  : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
-                                    ? "bg-amber-100" 
-                                    : "bg-green-100"
-                              }`}>
-                                <Car className={`h-6 w-6 ${
-                                  dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
-                                    ? "text-red-500" 
-                                    : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
-                                      ? "text-amber-500" 
-                                      : "text-green-500"
-                                }`} />
+                              <div
+                                className={`rounded-full p-2 ${
+                                  dealReport?.trafficDensity?.overallRating
+                                    ?.toLowerCase()
+                                    .includes("high")
+                                    ? "bg-red-100"
+                                    : dealReport?.trafficDensity?.overallRating
+                                          ?.toLowerCase()
+                                          .includes("medium")
+                                      ? "bg-amber-100"
+                                      : "bg-green-100"
+                                }`}
+                              >
+                                <Car
+                                  className={`h-6 w-6 ${
+                                    dealReport?.trafficDensity?.overallRating
+                                      ?.toLowerCase()
+                                      .includes("high")
+                                      ? "text-red-500"
+                                      : dealReport?.trafficDensity?.overallRating
+                                            ?.toLowerCase()
+                                            .includes("medium")
+                                        ? "text-amber-500"
+                                        : "text-green-500"
+                                  }`}
+                                />
                               </div>
                             </div>
-                            
+
                             <div className="mt-3 text-sm text-gray-600">
-                              {dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
-                                ? "This area generally experiences high traffic congestion. Consider impact on commuting and accessibility." 
-                                : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
-                                  ? "This area has moderate traffic congestion. Expect some delays during peak hours." 
+                              {dealReport?.trafficDensity?.overallRating
+                                ?.toLowerCase()
+                                .includes("high")
+                                ? "This area generally experiences high traffic congestion. Consider impact on commuting and accessibility."
+                                : dealReport?.trafficDensity?.overallRating
+                                      ?.toLowerCase()
+                                      .includes("medium")
+                                  ? "This area has moderate traffic congestion. Expect some delays during peak hours."
                                   : "This area typically has low traffic congestion, offering easier commuting and accessibility."}
                             </div>
                           </div>
 
                           {/* Time-based Traffic Analysis */}
                           <div className="space-y-3">
-                            <h4 className="font-medium mb-2">Detailed Traffic Analysis</h4>
-                            
+                            <h4 className="font-medium mb-2">
+                              Detailed Traffic Analysis
+                            </h4>
+
                             {/* Morning Rush Hour */}
                             <div className="border border-gray-100 rounded-lg p-3 bg-white shadow-sm">
                               <div className="flex items-center justify-between mb-2">
@@ -3152,31 +3235,51 @@ export default function DealScorePublicPage() {
                                     <Clock className="h-5 w-5 text-amber-500" />
                                   </div>
                                   <div>
-                                    <div className="font-medium">Morning Rush Hour</div>
-                                    <div className="text-xs text-gray-500">Weekdays 7-9 AM</div>
+                                    <div className="font-medium">
+                                      Morning Rush Hour
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      Weekdays 7-9 AM
+                                    </div>
                                   </div>
                                 </div>
-                                <Badge className={`${
-                                  (dealReport?.trafficDensity?.morningRushHour || 0) > 70 
-                                    ? "bg-red-100 text-red-800 border border-red-300" 
-                                    : (dealReport?.trafficDensity?.morningRushHour || 0) > 40
-                                      ? "bg-amber-100 text-amber-800 border border-amber-300" 
-                                      : "bg-green-100 text-green-800 border border-green-300"
-                                } rounded-full px-3 font-semibold`}>
-                                  {(dealReport?.trafficDensity?.morningRushHour || 0)}% {(dealReport?.trafficDensity?.morningRushHour || 0) > 70 ? "HIGH" : 
-                                   (dealReport?.trafficDensity?.morningRushHour || 0) > 40 ? "MEDIUM" : "LOW"}
+                                <Badge
+                                  className={`${
+                                    (dealReport?.trafficDensity
+                                      ?.morningRushHour || 0) > 70
+                                      ? "bg-red-100 text-red-800 border border-red-300"
+                                      : (dealReport?.trafficDensity
+                                            ?.morningRushHour || 0) > 40
+                                        ? "bg-amber-100 text-amber-800 border border-amber-300"
+                                        : "bg-green-100 text-green-800 border border-green-300"
+                                  } rounded-full px-3 font-semibold`}
+                                >
+                                  {dealReport?.trafficDensity
+                                    ?.morningRushHour || 0}
+                                  %{" "}
+                                  {(dealReport?.trafficDensity
+                                    ?.morningRushHour || 0) > 70
+                                    ? "HIGH"
+                                    : (dealReport?.trafficDensity
+                                          ?.morningRushHour || 0) > 40
+                                      ? "MEDIUM"
+                                      : "LOW"}
                                 </Badge>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                <div 
+                                <div
                                   className={`h-1.5 rounded-full ${
-                                    (dealReport?.trafficDensity?.morningRushHour || 0) > 70 
-                                      ? "bg-red-500" 
-                                      : (dealReport?.trafficDensity?.morningRushHour || 0) > 40
-                                        ? "bg-amber-500" 
+                                    (dealReport?.trafficDensity
+                                      ?.morningRushHour || 0) > 70
+                                      ? "bg-red-500"
+                                      : (dealReport?.trafficDensity
+                                            ?.morningRushHour || 0) > 40
+                                        ? "bg-amber-500"
                                         : "bg-green-500"
                                   }`}
-                                  style={{ width: `${dealReport?.trafficDensity?.morningRushHour || 0}%` }}
+                                  style={{
+                                    width: `${dealReport?.trafficDensity?.morningRushHour || 0}%`,
+                                  }}
                                 ></div>
                               </div>
                             </div>
@@ -3189,31 +3292,51 @@ export default function DealScorePublicPage() {
                                     <Clock className="h-5 w-5 text-amber-500" />
                                   </div>
                                   <div>
-                                    <div className="font-medium">Evening Rush Hour</div>
-                                    <div className="text-xs text-gray-500">Weekdays 4-7 PM</div>
+                                    <div className="font-medium">
+                                      Evening Rush Hour
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      Weekdays 4-7 PM
+                                    </div>
                                   </div>
                                 </div>
-                                <Badge className={`${
-                                  (dealReport?.trafficDensity?.eveningRushHour || 0) > 70 
-                                    ? "bg-red-100 text-red-800 border border-red-300" 
-                                    : (dealReport?.trafficDensity?.eveningRushHour || 0) > 40
-                                      ? "bg-amber-100 text-amber-800 border border-amber-300" 
-                                      : "bg-green-100 text-green-800 border border-green-300"
-                                } rounded-full px-3 font-semibold`}>
-                                  {(dealReport?.trafficDensity?.eveningRushHour || 0)}% {(dealReport?.trafficDensity?.eveningRushHour || 0) > 70 ? "HIGH" : 
-                                   (dealReport?.trafficDensity?.eveningRushHour || 0) > 40 ? "MEDIUM" : "LOW"}
+                                <Badge
+                                  className={`${
+                                    (dealReport?.trafficDensity
+                                      ?.eveningRushHour || 0) > 70
+                                      ? "bg-red-100 text-red-800 border border-red-300"
+                                      : (dealReport?.trafficDensity
+                                            ?.eveningRushHour || 0) > 40
+                                        ? "bg-amber-100 text-amber-800 border border-amber-300"
+                                        : "bg-green-100 text-green-800 border border-green-300"
+                                  } rounded-full px-3 font-semibold`}
+                                >
+                                  {dealReport?.trafficDensity
+                                    ?.eveningRushHour || 0}
+                                  %{" "}
+                                  {(dealReport?.trafficDensity
+                                    ?.eveningRushHour || 0) > 70
+                                    ? "HIGH"
+                                    : (dealReport?.trafficDensity
+                                          ?.eveningRushHour || 0) > 40
+                                      ? "MEDIUM"
+                                      : "LOW"}
                                 </Badge>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                <div 
+                                <div
                                   className={`h-1.5 rounded-full ${
-                                    (dealReport?.trafficDensity?.eveningRushHour || 0) > 70 
-                                      ? "bg-red-500" 
-                                      : (dealReport?.trafficDensity?.eveningRushHour || 0) > 40
-                                        ? "bg-amber-500" 
+                                    (dealReport?.trafficDensity
+                                      ?.eveningRushHour || 0) > 70
+                                      ? "bg-red-500"
+                                      : (dealReport?.trafficDensity
+                                            ?.eveningRushHour || 0) > 40
+                                        ? "bg-amber-500"
                                         : "bg-green-500"
                                   }`}
-                                  style={{ width: `${dealReport?.trafficDensity?.eveningRushHour || 0}%` }}
+                                  style={{
+                                    width: `${dealReport?.trafficDensity?.eveningRushHour || 0}%`,
+                                  }}
                                 ></div>
                               </div>
                             </div>
@@ -3226,51 +3349,82 @@ export default function DealScorePublicPage() {
                                     <Calendar className="h-5 w-5 text-amber-500" />
                                   </div>
                                   <div>
-                                    <div className="font-medium">Weekend Traffic</div>
-                                    <div className="text-xs text-gray-500">Sat & Sun 10 AM-6 PM</div>
+                                    <div className="font-medium">
+                                      Weekend Traffic
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      Sat & Sun 10 AM-6 PM
+                                    </div>
                                   </div>
                                 </div>
-                                <Badge className={`${
-                                  (dealReport?.trafficDensity?.weekendTraffic || 0) > 70 
-                                    ? "bg-red-100 text-red-800 border border-red-300" 
-                                    : (dealReport?.trafficDensity?.weekendTraffic || 0) > 40
-                                      ? "bg-amber-100 text-amber-800 border border-amber-300" 
-                                      : "bg-green-100 text-green-800 border border-green-300"
-                                } rounded-full px-3 font-semibold`}>
-                                  {(dealReport?.trafficDensity?.weekendTraffic || 0)}% {(dealReport?.trafficDensity?.weekendTraffic || 0) > 70 ? "HIGH" : 
-                                   (dealReport?.trafficDensity?.weekendTraffic || 0) > 40 ? "MEDIUM" : "LOW"}
+                                <Badge
+                                  className={`${
+                                    (dealReport?.trafficDensity
+                                      ?.weekendTraffic || 0) > 70
+                                      ? "bg-red-100 text-red-800 border border-red-300"
+                                      : (dealReport?.trafficDensity
+                                            ?.weekendTraffic || 0) > 40
+                                        ? "bg-amber-100 text-amber-800 border border-amber-300"
+                                        : "bg-green-100 text-green-800 border border-green-300"
+                                  } rounded-full px-3 font-semibold`}
+                                >
+                                  {dealReport?.trafficDensity?.weekendTraffic ||
+                                    0}
+                                  %{" "}
+                                  {(dealReport?.trafficDensity
+                                    ?.weekendTraffic || 0) > 70
+                                    ? "HIGH"
+                                    : (dealReport?.trafficDensity
+                                          ?.weekendTraffic || 0) > 40
+                                      ? "MEDIUM"
+                                      : "LOW"}
                                 </Badge>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                <div 
+                                <div
                                   className={`h-1.5 rounded-full ${
-                                    (dealReport?.trafficDensity?.weekendTraffic || 0) > 70 
-                                      ? "bg-red-500" 
-                                      : (dealReport?.trafficDensity?.weekendTraffic || 0) > 40
-                                        ? "bg-amber-500" 
+                                    (dealReport?.trafficDensity
+                                      ?.weekendTraffic || 0) > 70
+                                      ? "bg-red-500"
+                                      : (dealReport?.trafficDensity
+                                            ?.weekendTraffic || 0) > 40
+                                        ? "bg-amber-500"
                                         : "bg-green-500"
                                   }`}
-                                  style={{ width: `${dealReport?.trafficDensity?.weekendTraffic || 0}%` }}
+                                  style={{
+                                    width: `${dealReport?.trafficDensity?.weekendTraffic || 0}%`,
+                                  }}
                                 ></div>
                               </div>
                             </div>
                           </div>
-                          
+
                           {/* Investment Implications */}
                           <div className="border border-gray-200 rounded-lg p-4 bg-white mt-5">
-                            <h4 className="font-medium mb-2">What This Means For Your Investment</h4>
+                            <h4 className="font-medium mb-2">
+                              What This Means For You
+                            </h4>
                             <ul className="space-y-2 text-sm text-gray-600">
                               <li className="flex items-start">
                                 <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                                <span>Traffic patterns affect property accessibility and tenant/guest satisfaction</span>
+                                <span>
+                                  Traffic patterns affect property accessibility
+                                  and tenant/guest satisfaction
+                                </span>
                               </li>
                               <li className="flex items-start">
                                 <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                                <span>Lower traffic areas may be more desirable for residential rentals</span>
+                                <span>
+                                  Lower traffic areas may be more desirable for
+                                  residential rentals
+                                </span>
                               </li>
                               <li className="flex items-start">
                                 <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                                <span>Commercial properties may benefit from moderate traffic for visibility</span>
+                                <span>
+                                  Commercial properties may benefit from
+                                  moderate traffic for visibility
+                                </span>
                               </li>
                             </ul>
                           </div>
@@ -3280,8 +3434,8 @@ export default function DealScorePublicPage() {
                           <Lock className="h-12 w-12 text-gray-300 mb-2" />
                           <p className="text-center text-muted-foreground mb-4">
                             Unlock the full report to access detailed traffic
-                            information including peak hours, historical patterns, and
-                            investment implications.
+                            information including peak hours, historical
+                            patterns, and investment implications.
                           </p>
                           <Button
                             onClick={() => setShowPaymentModal(true)}
@@ -3294,84 +3448,7 @@ export default function DealScorePublicPage() {
                     </div>
                   </div>
 
-                  {/* Delivery Services Availability */}
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
-                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <Package2 className="h-5 w-5 text-white mr-2" />
-                          <h4 className="font-semibold text-white">
-                            Delivery Services Availability
-                          </h4>
-                        </div>
-                        {reportUnlocked && (
-                          <Badge className="bg-green-500 text-white hover:bg-green-600">
-                            All Available
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <div className="p-5">
-                      {reportUnlocked ? (
-                        <>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="flex items-center">
-                              <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
-                              <span>Uber Eats</span>
-                            </div>
-                            <div className="flex items-center">
-                              <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
-                              <span>Mr. D Food</span>
-                            </div>
-                            <div className="flex items-center">
-                              <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
-                              <span>Takealot</span>
-                            </div>
-                            <div className="flex items-center">
-                              <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
-                              <span>Checkers Sixty60</span>
-                            </div>
-                          </div>
 
-                          <div className="pt-4 mt-4 border-t border-gray-100">
-                            <h5 className="font-medium mb-2">
-                              Convenience Summary
-                            </h5>
-                            <p className="text-sm text-muted-foreground">
-                              This property is well-served by all major delivery
-                              services, making it convenient for residents who
-                              value on-demand food, groceries, and shopping
-                              deliveries.
-                            </p>
-                          </div>
-
-                          <div className="mt-3 flex items-center">
-                            <Info className="h-4 w-4 text-blue-500 mr-2" />
-                            <p className="text-xs text-muted-foreground">
-                              Delivery availability may change over time. This
-                              information is accurate as of the report date.
-                            </p>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center p-4">
-                          <Lock className="h-12 w-12 text-gray-300 mb-2" />
-                          <p className="text-center text-muted-foreground mb-4">
-                            Unlock the full report to see which food and
-                            shopping delivery services are available at this
-                            property.
-                          </p>
-                          <Button
-                            onClick={() => setShowPaymentModal(true)}
-                            className="bg-primary hover:bg-primary/90"
-                          >
-                            Unlock Full Report
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
 
                 {/* Second row with Suburb Sentiment and Crime Statistics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -3589,6 +3666,84 @@ export default function DealScorePublicPage() {
                       )}
                     </div>
                   </div>
+
+                  {/* Delivery Services Availability */}
+                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full mt-6">
+                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Package2 className="h-5 w-5 text-white mr-2" />
+                          <h4 className="font-semibold text-white">
+                            Delivery Services Availability
+                          </h4>
+                        </div>
+                        {reportUnlocked && (
+                          <Badge className="bg-green-500 text-white hover:bg-green-600">
+                            All Available
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      {reportUnlocked ? (
+                        <>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="flex items-center">
+                              <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                              <span>Uber Eats</span>
+                            </div>
+                            <div className="flex items-center">
+                              <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                              <span>Mr. D Food</span>
+                            </div>
+                            <div className="flex items-center">
+                              <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                              <span>Takealot</span>
+                            </div>
+                            <div className="flex items-center">
+                              <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                              <span>Checkers Sixty60</span>
+                            </div>
+                          </div>
+
+                          <div className="pt-4 mt-4 border-t border-gray-100">
+                            <h5 className="font-medium mb-2">
+                              Convenience Summary
+                            </h5>
+                            <p className="text-sm text-muted-foreground">
+                              This property is well-served by all major delivery
+                              services, making it convenient for residents who
+                              value on-demand food, groceries, and shopping
+                              deliveries.
+                            </p>
+                          </div>
+
+                          <div className="mt-3 flex items-center">
+                            <Info className="h-4 w-4 text-blue-500 mr-2" />
+                            <p className="text-xs text-muted-foreground">
+                              Delivery availability may change over time. This
+                              information is accurate as of the report date.
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-4">
+                          <Lock className="h-12 w-12 text-gray-300 mb-2" />
+                          <p className="text-center text-muted-foreground mb-4">
+                            Unlock the full report to see which food and
+                            shopping delivery services are available at this
+                            property.
+                          </p>
+                          <Button
+                            onClick={() => setShowPaymentModal(true)}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            Unlock Full Report
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </AccordionContent>
@@ -3604,7 +3759,7 @@ export default function DealScorePublicPage() {
               className="h-4 w-4 mr-2"
             />
             <span>
-              Proply Deal Score™ Report - Generated on {dealReport.reportDate}
+              Proply Deal Score™ Report - Generated on {dealReport?.reportDate || new Date().toLocaleDateString()}
             </span>
           </div>
         </div>
@@ -4212,8 +4367,9 @@ export default function DealScorePublicPage() {
           <DialogHeader>
             <DialogTitle>Edit Area Rate</DialogTitle>
             <DialogDescription>
-              The AI has estimated the area rate based on available data, but you may have better local knowledge. 
-              Enter your own area rate below.
+              The AI has estimated the area rate based on available data, but
+              you may have better local knowledge. Enter your own area rate
+              below.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -4231,7 +4387,11 @@ export default function DealScorePublicPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setShowAreaRateModal(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowAreaRateModal(false)}
+            >
               Cancel
             </Button>
             <Button type="button" onClick={handleAreaRateUpdate}>
@@ -4240,14 +4400,18 @@ export default function DealScorePublicPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {/* Asking Price Edit Modal */}
-      <Dialog open={showAskingPriceModal} onOpenChange={setShowAskingPriceModal}>
+      <Dialog
+        open={showAskingPriceModal}
+        onOpenChange={setShowAskingPriceModal}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Asking Price</DialogTitle>
             <DialogDescription>
-              Update the asking price to see how it affects the deal score and financial metrics.
+              Update the asking price to see how it affects the deal score and
+              financial metrics.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -4265,7 +4429,11 @@ export default function DealScorePublicPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setShowAskingPriceModal(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowAskingPriceModal(false)}
+            >
               Cancel
             </Button>
             <Button type="button" onClick={handleAskingPriceUpdate}>
