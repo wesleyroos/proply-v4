@@ -1958,7 +1958,7 @@ export default function DealScorePublicPage() {
             </Badge>
           </div>
 
-          <div className="grid grid-cols-4 max-w-3xl mx-auto mb-6">
+          <div className="grid grid-cols-5 max-w-4xl mx-auto mb-6">
             <div className="flex flex-col items-center">
               <span className="text-sm text-slate-500">Asking Price</span>
               <div className="flex flex-col items-center">
@@ -2000,6 +2000,16 @@ export default function DealScorePublicPage() {
               <div className="flex flex-col items-center">
                 <span className="text-xl font-bold">
                   R{formatPrice(dealReport.estimatedValue)}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-sm text-slate-500">
+                Fair Offer Range
+              </span>
+              <div className="flex flex-col items-center">
+                <span className="text-xl font-bold">
+                  R{formatPrice(Math.round(dealReport.estimatedValue * 1.1))}-R{formatPrice(Math.round(dealReport.estimatedValue * 1.3))}
                 </span>
               </div>
             </div>
