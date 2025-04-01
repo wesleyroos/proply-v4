@@ -3339,8 +3339,32 @@ export default function DealScorePublicPage() {
                       </div>
                       <div>
                         {reportUnlocked && (
-                          <Badge className="bg-amber-500 text-white hover:bg-amber-600">
-                            {dealReport?.trafficDensity?.overallRating || "Medium Traffic"}
+                          <Badge className={`text-white ${
+                            (() => {
+                              const morning = dealReport?.trafficDensity?.morningRushHour || 0;
+                              const evening = dealReport?.trafficDensity?.eveningRushHour || 0;
+                              const weekend = dealReport?.trafficDensity?.weekendTraffic || 0;
+                              const weightedScore = Math.round((morning * 0.4) + (evening * 0.4) + (weekend * 0.2));
+                              
+                              if (weightedScore > 70) return "bg-red-500 hover:bg-red-600";
+                              else if (weightedScore > 55) return "bg-red-400 hover:bg-red-500";
+                              else if (weightedScore > 40) return "bg-amber-500 hover:bg-amber-600";
+                              else if (weightedScore > 25) return "bg-amber-400 hover:bg-amber-500";
+                              else return "bg-green-500 hover:bg-green-600";
+                            })()
+                          }`}>
+                            {(() => {
+                              const morning = dealReport?.trafficDensity?.morningRushHour || 0;
+                              const evening = dealReport?.trafficDensity?.eveningRushHour || 0;
+                              const weekend = dealReport?.trafficDensity?.weekendTraffic || 0;
+                              const weightedScore = Math.round((morning * 0.4) + (evening * 0.4) + (weekend * 0.2));
+                              
+                              if (weightedScore > 70) return "High Traffic";
+                              else if (weightedScore > 55) return "Medium-High Traffic";
+                              else if (weightedScore > 40) return "Medium Traffic";
+                              else if (weightedScore > 25) return "Low-Medium Traffic";
+                              else return "Low Traffic";
+                            })() || dealReport?.trafficDensity?.overallRating || "Medium Traffic"}
                           </Badge>
                         )}
                       </div>
@@ -3381,20 +3405,24 @@ export default function DealScorePublicPage() {
                             <div
                               className="absolute top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white border-2 border-gray-800 rounded-full shadow-md flex items-center justify-center text-[10px] font-bold"
                               style={{ 
-                                // Set position based on the highest traffic value
-                                left: `${Math.max(
-                                  dealReport?.trafficDensity?.morningRushHour || 0,
-                                  dealReport?.trafficDensity?.eveningRushHour || 0,
-                                  dealReport?.trafficDensity?.weekendTraffic || 0
-                                )}%`,
+                                // Calculate weighted average of traffic values (morning and evening count more)
+                                left: `${(() => {
+                                  const morning = dealReport?.trafficDensity?.morningRushHour || 0;
+                                  const evening = dealReport?.trafficDensity?.eveningRushHour || 0;
+                                  const weekend = dealReport?.trafficDensity?.weekendTraffic || 0;
+                                  // Weight: Morning 40%, Evening 40%, Weekend 20%
+                                  return Math.round((morning * 0.4) + (evening * 0.4) + (weekend * 0.2));
+                                })()}%`,
                                 transform: 'translateX(-50%) translateY(-50%)'
                               }}
                             >
-                              {Math.max(
-                                dealReport?.trafficDensity?.morningRushHour || 0,
-                                dealReport?.trafficDensity?.eveningRushHour || 0,
-                                dealReport?.trafficDensity?.weekendTraffic || 0
-                              )}
+                              {(() => {
+                                const morning = dealReport?.trafficDensity?.morningRushHour || 0;
+                                const evening = dealReport?.trafficDensity?.eveningRushHour || 0;
+                                const weekend = dealReport?.trafficDensity?.weekendTraffic || 0;
+                                // Weight: Morning 40%, Evening 40%, Weekend 20%
+                                return Math.round((morning * 0.4) + (evening * 0.4) + (weekend * 0.2));
+                              })()}
                             </div>
                             {/* Markers */}
                             <div className="absolute w-full flex justify-between px-[2%] mt-1">
@@ -3420,38 +3448,89 @@ export default function DealScorePublicPage() {
                             <div>
                               <div className="text-gray-500 mb-1">Overall Rating</div>
                               <div className={`font-medium text-lg ${
-                                dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
-                                  ? "text-red-500" 
-                                  : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
-                                    ? "text-amber-500" 
-                                    : "text-green-500"
+                                (() => {
+                                  const morning = dealReport?.trafficDensity?.morningRushHour || 0;
+                                  const evening = dealReport?.trafficDensity?.eveningRushHour || 0;
+                                  const weekend = dealReport?.trafficDensity?.weekendTraffic || 0;
+                                  // Calculate weighted average
+                                  const weightedScore = Math.round((morning * 0.4) + (evening * 0.4) + (weekend * 0.2));
+                                  
+                                  // Determine category based on weighted score
+                                  if (weightedScore > 70) return "text-red-500";
+                                  else if (weightedScore > 55) return "text-red-400";
+                                  else if (weightedScore > 40) return "text-amber-500";
+                                  else if (weightedScore > 25) return "text-amber-400";
+                                  else return "text-green-500";
+                                })()
                               }`}>
-                                {dealReport?.trafficDensity?.overallRating || "Medium Traffic"}
+                                {(() => {
+                                  const morning = dealReport?.trafficDensity?.morningRushHour || 0;
+                                  const evening = dealReport?.trafficDensity?.eveningRushHour || 0;
+                                  const weekend = dealReport?.trafficDensity?.weekendTraffic || 0;
+                                  // Calculate weighted average
+                                  const weightedScore = Math.round((morning * 0.4) + (evening * 0.4) + (weekend * 0.2));
+                                  
+                                  // Determine rating text based on weighted score
+                                  if (weightedScore > 70) return "High Traffic";
+                                  else if (weightedScore > 55) return "Medium-High Traffic";
+                                  else if (weightedScore > 40) return "Medium Traffic";
+                                  else if (weightedScore > 25) return "Low-Medium Traffic";
+                                  else return "Low Traffic";
+                                })() || dealReport?.trafficDensity?.overallRating || "Medium Traffic"}
                               </div>
                             </div>
                             <div className={`rounded-full p-2 ${
-                              dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
-                                ? "bg-red-100" 
-                                : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
-                                  ? "bg-amber-100" 
-                                  : "bg-green-100"
+                              (() => {
+                                const morning = dealReport?.trafficDensity?.morningRushHour || 0;
+                                const evening = dealReport?.trafficDensity?.eveningRushHour || 0;
+                                const weekend = dealReport?.trafficDensity?.weekendTraffic || 0;
+                                const weightedScore = Math.round((morning * 0.4) + (evening * 0.4) + (weekend * 0.2));
+                                
+                                if (weightedScore > 70) return "bg-red-100";
+                                else if (weightedScore > 55) return "bg-red-50";
+                                else if (weightedScore > 40) return "bg-amber-100";
+                                else if (weightedScore > 25) return "bg-amber-50";
+                                else return "bg-green-100";
+                              })()
                             }`}>
                               <Car className={`h-6 w-6 ${
-                                dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
-                                  ? "text-red-500" 
-                                  : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
-                                    ? "text-amber-500" 
-                                    : "text-green-500"
+                                (() => {
+                                  const morning = dealReport?.trafficDensity?.morningRushHour || 0;
+                                  const evening = dealReport?.trafficDensity?.eveningRushHour || 0;
+                                  const weekend = dealReport?.trafficDensity?.weekendTraffic || 0;
+                                  const weightedScore = Math.round((morning * 0.4) + (evening * 0.4) + (weekend * 0.2));
+                                  
+                                  if (weightedScore > 70) return "text-red-500";
+                                  else if (weightedScore > 55) return "text-red-400";
+                                  else if (weightedScore > 40) return "text-amber-500";
+                                  else if (weightedScore > 25) return "text-amber-400";
+                                  else return "text-green-500";
+                                })()
                               }`} />
                             </div>
                           </div>
                           
                           <div className="mt-3 text-sm text-gray-600">
-                            {dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
-                              ? "This area generally experiences high traffic congestion. Consider impact on commuting and accessibility." 
-                              : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
-                                ? "This area has moderate traffic congestion. Expect some delays during peak hours." 
-                                : "This area typically has low traffic congestion, offering easier commuting and accessibility."}
+                            {(() => {
+                              const morning = dealReport?.trafficDensity?.morningRushHour || 0;
+                              const evening = dealReport?.trafficDensity?.eveningRushHour || 0;
+                              const weekend = dealReport?.trafficDensity?.weekendTraffic || 0;
+                              // Calculate weighted average
+                              const weightedScore = Math.round((morning * 0.4) + (evening * 0.4) + (weekend * 0.2));
+                              
+                              // Provide context-based descriptions
+                              if (weightedScore > 70) {
+                                return "This area generally experiences high traffic congestion. Consider the significant impact on commuting times and property accessibility.";
+                              } else if (weightedScore > 55) {
+                                return "This area has medium-high traffic congestion. Peak hours can have substantial delays, but conditions are better during off-peak times.";
+                              } else if (weightedScore > 40) {
+                                return "This area has moderate traffic congestion. Expect some delays during peak hours, but generally manageable conditions.";
+                              } else if (weightedScore > 25) {
+                                return "This area has low-medium traffic congestion. Mostly good traffic flow with occasional congestion during peak hours.";
+                              } else {
+                                return "This area typically has low traffic congestion, offering easier commuting and accessibility throughout the day.";
+                              }
+                            })()}
                           </div>
                         </div>
 
