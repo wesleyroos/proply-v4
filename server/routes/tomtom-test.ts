@@ -2,6 +2,21 @@ import { Router } from 'express';
 import { geocodeAddress, getTrafficData, GEOCODING_API_VERSION } from '../services/tomtom-service';
 import fetch from 'node-fetch';
 
+// Traffic Flow API version (same as in tomtom-service.ts)
+const TRAFFIC_FLOW_API_VERSION = '4';
+
+// Interface for raw TomTom Traffic Flow API response
+interface RawTrafficFlowResponse {
+  flowSegmentData?: {
+    currentSpeed?: number;
+    freeFlowSpeed?: number;
+    confidence?: number;
+    roadClosure?: boolean;
+    [key: string]: any;
+  };
+  [key: string]: any;
+}
+
 const router = Router();
 
 /**
@@ -18,6 +33,7 @@ router.get('/', async (req, res) => {
   const testResults: any = {
     apiKey: process.env.TOMTOM_API_KEY ? "Present" : "Missing",
     timestamp: new Date().toISOString(),
+    apiKeyMasked: process.env.TOMTOM_API_KEY ? `${process.env.TOMTOM_API_KEY.substring(0, 4)}...${process.env.TOMTOM_API_KEY.substring(process.env.TOMTOM_API_KEY.length - 4)}` : "Missing",
     tests: {}
   };
   
@@ -138,6 +154,64 @@ router.get('/', async (req, res) => {
         } catch (error: any) {
           testResults.tests.directTraffic = {
             name: "Direct Traffic Data", 
+            coordinates: { latitude, longitude },
+            status: "Error",
+            error: error.message
+          };
+        }
+        
+        // Additional test: Direct call to TomTom Traffic Flow API
+        testResults.tests.rawTrafficFlowAPI = {
+          name: "Raw Traffic Flow API Test",
+          coordinates: { latitude, longitude },
+          status: "Running"
+        };
+        
+        try {
+          // Create a small bounding box around the given point
+          const latOffset = 0.01;
+          const lonOffset = 0.01;
+          const minLat = latitude - latOffset;
+          const minLon = longitude - lonOffset;
+          const maxLat = latitude + latOffset;
+          const maxLon = longitude + lonOffset;
+          
+          const apiKey = process.env.TOMTOM_API_KEY;
+          const trafficFlowUrl = `https://api.tomtom.com/traffic/services/${TRAFFIC_FLOW_API_VERSION}/flowSegmentData/relative0/10/json?key=${apiKey}&bbox=${minLon},${minLat},${maxLon},${maxLat}&zoom=10`;
+          
+          console.log(`Testing direct Traffic Flow API at: ${trafficFlowUrl.substring(0, trafficFlowUrl.indexOf('?') + 30)}...`);
+          
+          const headers = {
+            'Referer': 'http://localhost:5000',
+            'Origin': 'http://localhost:5000'
+          };
+          
+          const response = await fetch(trafficFlowUrl, { headers });
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            testResults.tests.rawTrafficFlowAPI = {
+              name: "Raw Traffic Flow API Test",
+              coordinates: { latitude, longitude },
+              status: "Failed",
+              statusCode: response.status,
+              statusText: response.statusText,
+              errorDetail: errorText
+            };
+          } else {
+            const data = await response.json() as RawTrafficFlowResponse;
+            testResults.tests.rawTrafficFlowAPI = {
+              name: "Raw Traffic Flow API Test",
+              coordinates: { latitude, longitude },
+              status: "Success",
+              statusCode: response.status,
+              hasFlowData: !!data.flowSegmentData,
+              dataPreview: JSON.stringify(data).substring(0, 300) + '...'
+            };
+          }
+        } catch (error: any) {
+          testResults.tests.rawTrafficFlowAPI = {
+            name: "Raw Traffic Flow API Test",
             coordinates: { latitude, longitude },
             status: "Error",
             error: error.message

@@ -5,7 +5,7 @@ const TOMTOM_API_BASE_URL = 'https://api.tomtom.com';
 const TOMTOM_API_VERSION = '1'; // For Traffic Density API
 const TRAFFIC_STATS_API_VERSION = '1'; // Traffic Stats API Version
 const TRAFFIC_FLOW_API_VERSION = '4'; // Traffic Flow API Version
-const GEOCODING_API_VERSION = '2';
+export const GEOCODING_API_VERSION = '2';
 
 // Types for TomTom responses
 interface GeocodingResult {
@@ -24,11 +24,23 @@ interface GeocodingResponse {
   results: GeocodingResult[];
 }
 
+interface FlowSegmentData {
+  currentSpeed?: number;
+  freeFlowSpeed?: number;
+  confidence?: number;
+  roadClosure?: boolean;
+  // Other TomTom-specific fields
+}
+
+interface TrafficFlowResponse {
+  flowSegmentData?: FlowSegmentData;
+}
+
 interface TrafficDensityResponse {
   density?: number; // Traffic density value from TomTom
   currentSpeed?: number; // Current vehicle speed
   freeFlowSpeed?: number; // Free flow speed without traffic
-  confidence?: string; // Confidence level of the data
+  confidence?: number; // Confidence level of the data
   roadClosure?: boolean; // Whether the road is closed
   // Other fields from TomTom response
 }
@@ -165,7 +177,7 @@ async function fetchTrafficDensity(
       throw new Error(`TomTom Traffic API error: ${response.status}`);
     }
     
-    const data = await response.json();
+    const data = await response.json() as TrafficFlowResponse;
     console.log(`TomTom traffic data response:`, JSON.stringify(data).substring(0, 500) + '...');
     
     // Extract traffic flow information from the response
