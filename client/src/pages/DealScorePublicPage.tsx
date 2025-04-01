@@ -3038,7 +3038,7 @@ export default function DealScorePublicPage() {
                         <div>
                           {reportUnlocked && (
                             <Badge className="bg-amber-500 text-white hover:bg-amber-600">
-                              Score: 6.5/10
+                              {dealReport?.trafficDensity?.overallRating || "Medium Traffic"}
                             </Badge>
                           )}
                         </div>

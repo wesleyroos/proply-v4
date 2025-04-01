@@ -28,6 +28,7 @@ import { dealAdvisorHandler } from "./routes/deal-advisor";
 import dealAdvisorRouter from './routes/deal-advisor';
 import addressValidationRouter from './routes/address-validation';
 import trafficDataRouter from './routes/traffic-data';
+import tomtomTestRouter from './routes/tomtom-test';
 
 // Extend Express.User to include our schema
 declare global {
@@ -71,6 +72,7 @@ export function registerRoutes(app: Express): Server {
       req.path === "/deal-advisor/suburb-sentiment" ||
       req.path === "/public-revenue-data" ||
       req.path === "/traffic-data" ||
+      req.path === "/tomtom-test" ||
       req.path === "/address-validation/validate" ||
       req.path === "/address-validation/autocomplete"
     ) {
@@ -1859,6 +1861,7 @@ export function registerRoutes(app: Express): Server {
   app.use('/api/deal-advisor', dealAdvisorRouter);
   app.use('/api/address-validation', addressValidationRouter);
   app.use('/api/traffic-data', trafficDataRouter);
+  app.use('/api/tomtom-test', tomtomTestRouter);
 
   // Add the calculate-deal-score endpoint
   app.post("/api/calculate-deal-score", async (req, res) => {

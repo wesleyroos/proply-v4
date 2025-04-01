@@ -62,7 +62,17 @@ export async function geocodeAddress(address: string): Promise<{ latitude: numbe
     const response = await fetch(url);
     
     if (!response.ok) {
-      console.error(`TomTom Geocoding API error: ${response.status} - ${await response.text()}`);
+      const errorText = await response.text();
+      console.error(`TomTom Geocoding API error: ${response.status} - ${errorText}`);
+      
+      // Add more specific error handling for common TomTom API errors
+      if (response.status === 403) {
+        if (errorText.includes("Developer Unknown Referer") || errorText.includes("Developer Inactive")) {
+          console.error("TomTom API domain authorization issue: Your domain is not whitelisted or the API key is not active for this domain.");
+          throw new Error("TomTom API domain not authorized. Please ensure domain is whitelisted in your TomTom developer account.");
+        }
+      }
+      
       throw new Error(`TomTom Geocoding API error: ${response.status}`);
     }
     
@@ -113,7 +123,21 @@ async function fetchTrafficDensity(
     const response = await fetch(url);
     
     if (!response.ok) {
-      console.error(`TomTom Traffic API error: ${response.status} - ${await response.text()}`);
+      const errorText = await response.text();
+      console.error(`TomTom Traffic API error: ${response.status} - ${errorText}`);
+      
+      // Add more detailed error handling for Traffic API
+      if (response.status === 403) {
+        if (errorText.includes("Developer Unknown Referer") || errorText.includes("Developer Inactive")) {
+          console.error("TomTom Traffic API domain authorization issue: Your domain is not whitelisted or the API key is not active for this domain.");
+          throw new Error("TomTom API domain not authorized. Please ensure your domain is whitelisted in the TomTom developer account.");
+        }
+      } else if (response.status === 400) {
+        console.error("TomTom Traffic API Bad Request: Check if coordinates are valid and within supported regions");
+      } else if (response.status === 596) {
+        console.error("TomTom Traffic API Service Not Found: Check if the traffic service version is correct");
+      }
+      
       throw new Error(`TomTom Traffic API error: ${response.status}`);
     }
     
