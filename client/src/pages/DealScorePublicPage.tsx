@@ -3010,289 +3010,8 @@ export default function DealScorePublicPage() {
                   Additional Property Insights
                 </h3>
 
-                {/* Grid layout for Traffic and Delivery Services */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  {/* Traffic Density Index - Redesigned */}
-                  <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
-                    <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <AlertTriangle className="h-5 w-5 text-white mr-2" />
-                          <h4 className="font-semibold text-white">
-                            Traffic Index
-                          </h4>
-                        </div>
-                        <div>
-                          {reportUnlocked && (
-                            <Badge className="bg-amber-500 text-white hover:bg-amber-600">
-                              {dealReport?.trafficDensity?.overallRating || "Medium Traffic"}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-5">
-                      {reportUnlocked ? (
-                        <div className="space-y-4">
-                          {/* Traffic Index Explanation Card */}
-                          <div className="border border-blue-100 rounded-lg p-4 mb-4 bg-blue-50 text-blue-700">
-                            <div className="flex items-start space-x-2">
-                              <Info className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                              <div>
-                                <h4 className="font-medium mb-1">About Traffic Analytics</h4>
-                                <p className="text-sm">
-                                  Data shows typical traffic patterns in this area based on historical trends. 
-                                  Lower traffic congestion (0-40%) is better for commuters, while higher values (60-100%) 
-                                  indicate significant delays during those periods.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Traffic Meter */}
-                          <div className="mb-6">
-                            <h4 className="font-medium mb-3">Overall Traffic Index</h4>
-                            <div className="flex justify-between items-center text-sm text-gray-500 mb-1">
-                              <div className="flex gap-2">
-                                <Car className="h-4 w-4 text-green-500" />
-                                <span className="font-medium">Low Traffic</span>
-                              </div>
-                              <div className="flex gap-2">
-                                <span className="font-medium">High Traffic</span>
-                                <Car className="h-4 w-4 text-red-500" />
-                              </div>
-                            </div>
-                            <div className="relative w-full h-4 bg-gradient-to-r from-green-400 via-amber-400 to-red-500 rounded-full mb-2">
-                              <div
-                                className="absolute top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white border-2 border-gray-800 rounded-full shadow-md flex items-center justify-center text-[10px] font-bold"
-                                style={{ 
-                                  // Set position based on the highest traffic value
-                                  left: `${Math.max(
-                                    dealReport?.trafficDensity?.morningRushHour || 0,
-                                    dealReport?.trafficDensity?.eveningRushHour || 0,
-                                    dealReport?.trafficDensity?.weekendTraffic || 0
-                                  )}%`,
-                                  transform: 'translateX(-50%) translateY(-50%)'
-                                }}
-                              >
-                                {Math.max(
-                                  dealReport?.trafficDensity?.morningRushHour || 0,
-                                  dealReport?.trafficDensity?.eveningRushHour || 0,
-                                  dealReport?.trafficDensity?.weekendTraffic || 0
-                                )}
-                              </div>
-                              {/* Markers */}
-                              <div className="absolute w-full flex justify-between px-[2%] mt-1">
-                                <div className="w-px h-2 bg-white"></div>
-                                <div className="w-px h-2 bg-white"></div>
-                                <div className="w-px h-2 bg-white"></div>
-                                <div className="w-px h-2 bg-white"></div>
-                                <div className="w-px h-2 bg-white"></div>
-                              </div>
-                            </div>
-                            <div className="flex justify-between text-xs text-gray-500 px-[2%]">
-                              <span>0</span>
-                              <span>25</span>
-                              <span>50</span>
-                              <span>75</span>
-                              <span>100</span>
-                            </div>
-                          </div>
-
-                          {/* Overall Rating Card */}
-                          <div className="border border-gray-200 rounded-lg p-4 mb-5 bg-white">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <div className="text-gray-500 mb-1">Overall Rating</div>
-                                <div className={`font-medium text-lg ${
-                                  dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
-                                    ? "text-red-500" 
-                                    : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
-                                      ? "text-amber-500" 
-                                      : "text-green-500"
-                                }`}>
-                                  {dealReport?.trafficDensity?.overallRating || "Medium Traffic"}
-                                </div>
-                              </div>
-                              <div className={`rounded-full p-2 ${
-                                dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
-                                  ? "bg-red-100" 
-                                  : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
-                                    ? "bg-amber-100" 
-                                    : "bg-green-100"
-                              }`}>
-                                <Car className={`h-6 w-6 ${
-                                  dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
-                                    ? "text-red-500" 
-                                    : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
-                                      ? "text-amber-500" 
-                                      : "text-green-500"
-                                }`} />
-                              </div>
-                            </div>
-                            
-                            <div className="mt-3 text-sm text-gray-600">
-                              {dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
-                                ? "This area generally experiences high traffic congestion. Consider impact on commuting and accessibility." 
-                                : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
-                                  ? "This area has moderate traffic congestion. Expect some delays during peak hours." 
-                                  : "This area typically has low traffic congestion, offering easier commuting and accessibility."}
-                            </div>
-                          </div>
-
-                          {/* Time-based Traffic Analysis */}
-                          <div className="space-y-3">
-                            <h4 className="font-medium mb-2">Detailed Traffic Analysis</h4>
-                            
-                            {/* Morning Rush Hour */}
-                            <div className="border border-gray-100 rounded-lg p-3 bg-white shadow-sm">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center">
-                                  <div className="bg-amber-100 p-1.5 rounded-full mr-3">
-                                    <Clock className="h-5 w-5 text-amber-500" />
-                                  </div>
-                                  <div>
-                                    <div className="font-medium">Morning Rush Hour</div>
-                                    <div className="text-xs text-gray-500">Weekdays 7-9 AM</div>
-                                  </div>
-                                </div>
-                                <Badge className={`${
-                                  (dealReport?.trafficDensity?.morningRushHour || 0) > 70 
-                                    ? "bg-red-100 text-red-800 border border-red-300" 
-                                    : (dealReport?.trafficDensity?.morningRushHour || 0) > 40
-                                      ? "bg-amber-100 text-amber-800 border border-amber-300" 
-                                      : "bg-green-100 text-green-800 border border-green-300"
-                                } rounded-full px-3 font-semibold`}>
-                                  {(dealReport?.trafficDensity?.morningRushHour || 0)}% {(dealReport?.trafficDensity?.morningRushHour || 0) > 70 ? "HIGH" : 
-                                   (dealReport?.trafficDensity?.morningRushHour || 0) > 40 ? "MEDIUM" : "LOW"}
-                                </Badge>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                <div 
-                                  className={`h-1.5 rounded-full ${
-                                    (dealReport?.trafficDensity?.morningRushHour || 0) > 70 
-                                      ? "bg-red-500" 
-                                      : (dealReport?.trafficDensity?.morningRushHour || 0) > 40
-                                        ? "bg-amber-500" 
-                                        : "bg-green-500"
-                                  }`}
-                                  style={{ width: `${dealReport?.trafficDensity?.morningRushHour || 0}%` }}
-                                ></div>
-                              </div>
-                            </div>
-
-                            {/* Evening Rush Hour */}
-                            <div className="border border-gray-100 rounded-lg p-3 bg-white shadow-sm">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center">
-                                  <div className="bg-amber-100 p-1.5 rounded-full mr-3">
-                                    <Clock className="h-5 w-5 text-amber-500" />
-                                  </div>
-                                  <div>
-                                    <div className="font-medium">Evening Rush Hour</div>
-                                    <div className="text-xs text-gray-500">Weekdays 4-7 PM</div>
-                                  </div>
-                                </div>
-                                <Badge className={`${
-                                  (dealReport?.trafficDensity?.eveningRushHour || 0) > 70 
-                                    ? "bg-red-100 text-red-800 border border-red-300" 
-                                    : (dealReport?.trafficDensity?.eveningRushHour || 0) > 40
-                                      ? "bg-amber-100 text-amber-800 border border-amber-300" 
-                                      : "bg-green-100 text-green-800 border border-green-300"
-                                } rounded-full px-3 font-semibold`}>
-                                  {(dealReport?.trafficDensity?.eveningRushHour || 0)}% {(dealReport?.trafficDensity?.eveningRushHour || 0) > 70 ? "HIGH" : 
-                                   (dealReport?.trafficDensity?.eveningRushHour || 0) > 40 ? "MEDIUM" : "LOW"}
-                                </Badge>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                <div 
-                                  className={`h-1.5 rounded-full ${
-                                    (dealReport?.trafficDensity?.eveningRushHour || 0) > 70 
-                                      ? "bg-red-500" 
-                                      : (dealReport?.trafficDensity?.eveningRushHour || 0) > 40
-                                        ? "bg-amber-500" 
-                                        : "bg-green-500"
-                                  }`}
-                                  style={{ width: `${dealReport?.trafficDensity?.eveningRushHour || 0}%` }}
-                                ></div>
-                              </div>
-                            </div>
-
-                            {/* Weekend Traffic */}
-                            <div className="border border-gray-100 rounded-lg p-3 bg-white shadow-sm">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center">
-                                  <div className="bg-amber-100 p-1.5 rounded-full mr-3">
-                                    <Calendar className="h-5 w-5 text-amber-500" />
-                                  </div>
-                                  <div>
-                                    <div className="font-medium">Weekend Traffic</div>
-                                    <div className="text-xs text-gray-500">Sat & Sun 10 AM-6 PM</div>
-                                  </div>
-                                </div>
-                                <Badge className={`${
-                                  (dealReport?.trafficDensity?.weekendTraffic || 0) > 70 
-                                    ? "bg-red-100 text-red-800 border border-red-300" 
-                                    : (dealReport?.trafficDensity?.weekendTraffic || 0) > 40
-                                      ? "bg-amber-100 text-amber-800 border border-amber-300" 
-                                      : "bg-green-100 text-green-800 border border-green-300"
-                                } rounded-full px-3 font-semibold`}>
-                                  {(dealReport?.trafficDensity?.weekendTraffic || 0)}% {(dealReport?.trafficDensity?.weekendTraffic || 0) > 70 ? "HIGH" : 
-                                   (dealReport?.trafficDensity?.weekendTraffic || 0) > 40 ? "MEDIUM" : "LOW"}
-                                </Badge>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                <div 
-                                  className={`h-1.5 rounded-full ${
-                                    (dealReport?.trafficDensity?.weekendTraffic || 0) > 70 
-                                      ? "bg-red-500" 
-                                      : (dealReport?.trafficDensity?.weekendTraffic || 0) > 40
-                                        ? "bg-amber-500" 
-                                        : "bg-green-500"
-                                  }`}
-                                  style={{ width: `${dealReport?.trafficDensity?.weekendTraffic || 0}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Investment Implications */}
-                          <div className="border border-gray-200 rounded-lg p-4 bg-white mt-5">
-                            <h4 className="font-medium mb-2">What This Means For Your Investment</h4>
-                            <ul className="space-y-2 text-sm text-gray-600">
-                              <li className="flex items-start">
-                                <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                                <span>Traffic patterns affect property accessibility and tenant/guest satisfaction</span>
-                              </li>
-                              <li className="flex items-start">
-                                <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                                <span>Lower traffic areas may be more desirable for residential rentals</span>
-                              </li>
-                              <li className="flex items-start">
-                                <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                                <span>Commercial properties may benefit from moderate traffic for visibility</span>
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center p-4">
-                          <Lock className="h-12 w-12 text-gray-300 mb-2" />
-                          <p className="text-center text-muted-foreground mb-4">
-                            Unlock the full report to access detailed traffic
-                            information including peak hours, historical patterns, and
-                            investment implications.
-                          </p>
-                          <Button
-                            onClick={() => setShowPaymentModal(true)}
-                            className="bg-primary hover:bg-primary/90"
-                          >
-                            Unlock Full Report
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                {/* Grid layout for Delivery Services */}
+                <div className="grid grid-cols-1 gap-6 mb-6">
 
                   {/* Delivery Services Availability */}
                   <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 h-full">
@@ -3588,6 +3307,308 @@ export default function DealScorePublicPage() {
                         </div>
                       )}
                     </div>
+                  </div>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Mobility Insights Accordion */}
+          <AccordionItem value="item-6" className="w-full">
+            <AccordionTrigger className="text-lg font-medium justify-start px-4 py-3">
+              <div className="flex items-center gap-2">
+                <Car className="h-5 w-5 text-slate-600" />
+                <span>Mobility Insights</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="flex flex-col items-center">
+              <div className="w-full max-w-4xl mx-auto px-4">
+                <h3 className="text-xl font-bold mb-4 text-left">
+                  Traffic & Mobility Analysis
+                </h3>
+
+                {/* Traffic Index Card - Full Width */}
+                <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 mb-6">
+                  <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <AlertTriangle className="h-5 w-5 text-white mr-2" />
+                        <h4 className="font-semibold text-white">
+                          Traffic Index
+                        </h4>
+                      </div>
+                      <div>
+                        {reportUnlocked && (
+                          <Badge className="bg-amber-500 text-white hover:bg-amber-600">
+                            {dealReport?.trafficDensity?.overallRating || "Medium Traffic"}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    {reportUnlocked ? (
+                      <div className="space-y-4">
+                        {/* Traffic Index Explanation Card */}
+                        <div className="border border-blue-100 rounded-lg p-4 mb-4 bg-blue-50 text-blue-700">
+                          <div className="flex items-start space-x-2">
+                            <Info className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <h4 className="font-medium mb-1">About Traffic Analytics</h4>
+                              <p className="text-sm">
+                                Data shows typical traffic patterns in this area based on historical trends. 
+                                Lower traffic congestion (0-40%) is better for commuters, while higher values (60-100%) 
+                                indicate significant delays during those periods.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Traffic Meter */}
+                        <div className="mb-6">
+                          <h4 className="font-medium mb-3">Overall Traffic Index</h4>
+                          <div className="flex justify-between items-center text-sm text-gray-500 mb-1">
+                            <div className="flex gap-2">
+                              <Car className="h-4 w-4 text-green-500" />
+                              <span className="font-medium">Low Traffic</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="font-medium">High Traffic</span>
+                              <Car className="h-4 w-4 text-red-500" />
+                            </div>
+                          </div>
+                          <div className="relative w-full h-4 bg-gradient-to-r from-green-400 via-amber-400 to-red-500 rounded-full mb-2">
+                            <div
+                              className="absolute top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white border-2 border-gray-800 rounded-full shadow-md flex items-center justify-center text-[10px] font-bold"
+                              style={{ 
+                                // Set position based on the highest traffic value
+                                left: `${Math.max(
+                                  dealReport?.trafficDensity?.morningRushHour || 0,
+                                  dealReport?.trafficDensity?.eveningRushHour || 0,
+                                  dealReport?.trafficDensity?.weekendTraffic || 0
+                                )}%`,
+                                transform: 'translateX(-50%) translateY(-50%)'
+                              }}
+                            >
+                              {Math.max(
+                                dealReport?.trafficDensity?.morningRushHour || 0,
+                                dealReport?.trafficDensity?.eveningRushHour || 0,
+                                dealReport?.trafficDensity?.weekendTraffic || 0
+                              )}
+                            </div>
+                            {/* Markers */}
+                            <div className="absolute w-full flex justify-between px-[2%] mt-1">
+                              <div className="w-px h-2 bg-white"></div>
+                              <div className="w-px h-2 bg-white"></div>
+                              <div className="w-px h-2 bg-white"></div>
+                              <div className="w-px h-2 bg-white"></div>
+                              <div className="w-px h-2 bg-white"></div>
+                            </div>
+                          </div>
+                          <div className="flex justify-between text-xs text-gray-500 px-[2%]">
+                            <span>0</span>
+                            <span>25</span>
+                            <span>50</span>
+                            <span>75</span>
+                            <span>100</span>
+                          </div>
+                        </div>
+
+                        {/* Overall Rating Card */}
+                        <div className="border border-gray-200 rounded-lg p-4 mb-5 bg-white">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <div className="text-gray-500 mb-1">Overall Rating</div>
+                              <div className={`font-medium text-lg ${
+                                dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
+                                  ? "text-red-500" 
+                                  : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
+                                    ? "text-amber-500" 
+                                    : "text-green-500"
+                              }`}>
+                                {dealReport?.trafficDensity?.overallRating || "Medium Traffic"}
+                              </div>
+                            </div>
+                            <div className={`rounded-full p-2 ${
+                              dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
+                                ? "bg-red-100" 
+                                : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
+                                  ? "bg-amber-100" 
+                                  : "bg-green-100"
+                            }`}>
+                              <Car className={`h-6 w-6 ${
+                                dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
+                                  ? "text-red-500" 
+                                  : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
+                                    ? "text-amber-500" 
+                                    : "text-green-500"
+                              }`} />
+                            </div>
+                          </div>
+                          
+                          <div className="mt-3 text-sm text-gray-600">
+                            {dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
+                              ? "This area generally experiences high traffic congestion. Consider impact on commuting and accessibility." 
+                              : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
+                                ? "This area has moderate traffic congestion. Expect some delays during peak hours." 
+                                : "This area typically has low traffic congestion, offering easier commuting and accessibility."}
+                          </div>
+                        </div>
+
+                        {/* Time-based Traffic Analysis */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {/* Morning Rush Hour */}
+                          <div className="border border-gray-100 rounded-lg p-3 bg-white shadow-sm">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center">
+                                <div className="bg-amber-100 p-1.5 rounded-full mr-3">
+                                  <Clock className="h-5 w-5 text-amber-500" />
+                                </div>
+                                <div>
+                                  <div className="font-medium">Morning Rush Hour</div>
+                                  <div className="text-xs text-gray-500">Weekdays 7-9 AM</div>
+                                </div>
+                              </div>
+                            </div>
+                            <Badge className={`mb-2 ${
+                              (dealReport?.trafficDensity?.morningRushHour || 0) > 70 
+                                ? "bg-red-100 text-red-800 border border-red-300" 
+                                : (dealReport?.trafficDensity?.morningRushHour || 0) > 40
+                                  ? "bg-amber-100 text-amber-800 border border-amber-300" 
+                                  : "bg-green-100 text-green-800 border border-green-300"
+                            } rounded-full px-3 font-semibold`}>
+                              {(dealReport?.trafficDensity?.morningRushHour || 0)}% {(dealReport?.trafficDensity?.morningRushHour || 0) > 70 ? "HIGH" : 
+                                (dealReport?.trafficDensity?.morningRushHour || 0) > 40 ? "MEDIUM" : "LOW"}
+                            </Badge>
+                            <div className="w-full bg-gray-200 rounded-full h-1.5">
+                              <div 
+                                className={`h-1.5 rounded-full ${
+                                  (dealReport?.trafficDensity?.morningRushHour || 0) > 70 
+                                    ? "bg-red-500" 
+                                    : (dealReport?.trafficDensity?.morningRushHour || 0) > 40
+                                      ? "bg-amber-500" 
+                                      : "bg-green-500"
+                                }`}
+                                style={{ width: `${dealReport?.trafficDensity?.morningRushHour || 0}%` }}
+                              ></div>
+                            </div>
+                          </div>
+
+                          {/* Evening Rush Hour */}
+                          <div className="border border-gray-100 rounded-lg p-3 bg-white shadow-sm">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center">
+                                <div className="bg-amber-100 p-1.5 rounded-full mr-3">
+                                  <Clock className="h-5 w-5 text-amber-500" />
+                                </div>
+                                <div>
+                                  <div className="font-medium">Evening Rush Hour</div>
+                                  <div className="text-xs text-gray-500">Weekdays 4-7 PM</div>
+                                </div>
+                              </div>
+                            </div>
+                            <Badge className={`mb-2 ${
+                              (dealReport?.trafficDensity?.eveningRushHour || 0) > 70 
+                                ? "bg-red-100 text-red-800 border border-red-300" 
+                                : (dealReport?.trafficDensity?.eveningRushHour || 0) > 40
+                                  ? "bg-amber-100 text-amber-800 border border-amber-300" 
+                                  : "bg-green-100 text-green-800 border border-green-300"
+                            } rounded-full px-3 font-semibold`}>
+                              {(dealReport?.trafficDensity?.eveningRushHour || 0)}% {(dealReport?.trafficDensity?.eveningRushHour || 0) > 70 ? "HIGH" : 
+                                (dealReport?.trafficDensity?.eveningRushHour || 0) > 40 ? "MEDIUM" : "LOW"}
+                            </Badge>
+                            <div className="w-full bg-gray-200 rounded-full h-1.5">
+                              <div 
+                                className={`h-1.5 rounded-full ${
+                                  (dealReport?.trafficDensity?.eveningRushHour || 0) > 70 
+                                    ? "bg-red-500" 
+                                    : (dealReport?.trafficDensity?.eveningRushHour || 0) > 40
+                                      ? "bg-amber-500" 
+                                      : "bg-green-500"
+                                }`}
+                                style={{ width: `${dealReport?.trafficDensity?.eveningRushHour || 0}%` }}
+                              ></div>
+                            </div>
+                          </div>
+
+                          {/* Weekend Traffic */}
+                          <div className="border border-gray-100 rounded-lg p-3 bg-white shadow-sm">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center">
+                                <div className="bg-amber-100 p-1.5 rounded-full mr-3">
+                                  <Calendar className="h-5 w-5 text-amber-500" />
+                                </div>
+                                <div>
+                                  <div className="font-medium">Weekend Traffic</div>
+                                  <div className="text-xs text-gray-500">Sat & Sun 10 AM-6 PM</div>
+                                </div>
+                              </div>
+                            </div>
+                            <Badge className={`mb-2 ${
+                              (dealReport?.trafficDensity?.weekendTraffic || 0) > 70 
+                                ? "bg-red-100 text-red-800 border border-red-300" 
+                                : (dealReport?.trafficDensity?.weekendTraffic || 0) > 40
+                                  ? "bg-amber-100 text-amber-800 border border-amber-300" 
+                                  : "bg-green-100 text-green-800 border border-green-300"
+                            } rounded-full px-3 font-semibold`}>
+                              {(dealReport?.trafficDensity?.weekendTraffic || 0)}% {(dealReport?.trafficDensity?.weekendTraffic || 0) > 70 ? "HIGH" : 
+                                (dealReport?.trafficDensity?.weekendTraffic || 0) > 40 ? "MEDIUM" : "LOW"}
+                            </Badge>
+                            <div className="w-full bg-gray-200 rounded-full h-1.5">
+                              <div 
+                                className={`h-1.5 rounded-full ${
+                                  (dealReport?.trafficDensity?.weekendTraffic || 0) > 70 
+                                    ? "bg-red-500" 
+                                    : (dealReport?.trafficDensity?.weekendTraffic || 0) > 40
+                                      ? "bg-amber-500" 
+                                      : "bg-green-500"
+                                }`}
+                                style={{ width: `${dealReport?.trafficDensity?.weekendTraffic || 0}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Investment Implications */}
+                        <div className="border border-gray-200 rounded-lg p-4 bg-white mt-5">
+                          <h4 className="font-medium mb-2">What This Means For Your Investment</h4>
+                          <ul className="space-y-2 text-sm text-gray-600">
+                            <li className="flex items-start">
+                              <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                              <span>Traffic patterns affect property accessibility and tenant/guest satisfaction</span>
+                            </li>
+                            <li className="flex items-start">
+                              <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                              <span>Lower traffic areas may be more desirable for residential rentals</span>
+                            </li>
+                            <li className="flex items-start">
+                              <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                              <span>Commercial properties may benefit from moderate traffic for visibility</span>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div className="text-xs text-gray-500 mt-3 flex items-start">
+                          <Info className="h-3.5 w-3.5 mr-1.5 mt-0.5 text-blue-500 flex-shrink-0" />
+                          <span>Traffic data is sourced from TomTom Traffic API using historical patterns and statistical analysis.</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-4">
+                        <Lock className="h-12 w-12 text-gray-300 mb-2" />
+                        <p className="text-center text-muted-foreground mb-4">
+                          Unlock the full report to access detailed traffic
+                          information including peak hours, historical patterns, and
+                          investment implications.
+                        </p>
+                        <Button
+                          onClick={() => setShowPaymentModal(true)}
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          Unlock Full Report
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
