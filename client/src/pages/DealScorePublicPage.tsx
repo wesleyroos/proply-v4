@@ -169,6 +169,18 @@ export default function DealScorePublicPage() {
   const [editedAreaRate, setEditedAreaRate] = useState("");
   const [showAskingPriceModal, setShowAskingPriceModal] = useState(false);
   const [editedAskingPrice, setEditedAskingPrice] = useState("");
+  
+  // Traffic data state
+  const [trafficDataStatus, setTrafficDataStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [trafficDataError, setTrafficDataError] = useState<string>();
+  const [trafficData, setTrafficData] = useState<{
+    morningRushHour: number;
+    eveningRushHour: number;
+    weekendTraffic: number;
+    overallRating: string;
+  } | null>(null);
 
   // Helper function to convert property condition to star rating
   const conditionToStars = (condition: string): number => {
@@ -655,7 +667,7 @@ export default function DealScorePublicPage() {
 
   // Function has been replaced with direct calculation
 
-  const calculateDealScore = (
+  const calculateDealScore = async (
     customNightlyRate?: number,
     customOccupancy?: number,
     customLongTermRental?: number,
@@ -666,6 +678,21 @@ export default function DealScorePublicPage() {
       trend: string;
     } | null,
   ) => {
+    // Fetch traffic data if we have a valid address
+    if (formData.address && formData.address.trim() !== "") {
+      try {
+        // Attempt to fetch traffic data from our API
+        const trafficResponse = await fetchTrafficData();
+        
+        if (trafficResponse) {
+          console.log("Successfully fetched traffic data:", trafficResponse);
+        } else {
+          console.warn("Failed to fetch traffic data, will use fallback");
+        }
+      } catch (error) {
+        console.error("Error fetching traffic data:", error);
+      }
+    }
     // Get property rate
     const propertyRate =
       Number(parseFormattedNumber(formData.purchasePrice)) /
@@ -1059,7 +1086,7 @@ export default function DealScorePublicPage() {
       reportDate: reportDate,
 
       // Traffic & Convenience Information
-      trafficDensity: {
+      trafficDensity: trafficData || {
         morningRushHour: 65,
         eveningRushHour: 85,
         weekendTraffic: 30,
@@ -1241,6 +1268,52 @@ export default function DealScorePublicPage() {
       const fallbackData = getFallbackSentimentData(suburb);
       setSuburbSentimentData(fallbackData);
       return fallbackData;
+    }
+  };
+  
+  // Function to fetch traffic data from our API
+  const fetchTrafficData = async () => {
+    // Only proceed if we have a valid address
+    if (!formData.address || formData.address.trim() === "") {
+      console.error("Cannot fetch traffic data without a valid address");
+      return null;
+    }
+    
+    setTrafficDataStatus("loading");
+    
+    try {
+      console.log(`Fetching traffic data for address: ${formData.address}`);
+      
+      // Call our traffic data API endpoint with the address as a query parameter
+      const response = await fetch(`/api/traffic-data?address=${encodeURIComponent(formData.address)}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+      
+      // Check if the request was successful
+      if (!response.ok) {
+        console.error(`Traffic data API returned status: ${response.status}`);
+        setTrafficDataStatus("error");
+        setTrafficDataError(`Failed to fetch traffic data: ${response.statusText}`);
+        return null;
+      }
+      
+      // Parse the JSON response
+      const data = await response.json();
+      console.log("Traffic data received:", data);
+      
+      // Update state with the received data
+      setTrafficData(data);
+      setTrafficDataStatus("success");
+      
+      return data;
+    } catch (error) {
+      console.error("Error fetching traffic data:", error);
+      setTrafficDataStatus("error");
+      setTrafficDataError(`${error}`);
+      return null;
     }
   };
 
@@ -1432,14 +1505,28 @@ export default function DealScorePublicPage() {
         }
       }
 
-      // In parallel, fetch suburb sentiment data
+      // In parallel, fetch suburb sentiment data and traffic data
       let suburbData = null;
+      let traffic = null;
+      
       if (formData.address.includes(",")) {
         try {
           // Use the fetchSuburbSentiment function to get suburb data
           suburbData = await fetchSuburbSentiment();
+          
+          // Fetch traffic data
+          toast({
+            title: "Analyzing traffic patterns",
+            description: "Retrieving traffic density data for this location..."
+          });
+          
+          traffic = await fetchTrafficData();
+          
+          if (traffic) {
+            console.log("Successfully fetched traffic data:", traffic);
+          }
         } catch (error) {
-          console.error("Error fetching suburb sentiment:", error);
+          console.error("Error fetching suburb sentiment or traffic data:", error);
         }
       }
 
@@ -2968,15 +3055,28 @@ export default function DealScorePublicPage() {
                             <div className="relative w-full h-3 bg-gradient-to-r from-green-400 via-amber-400 to-red-500 rounded-full">
                               <div
                                 className="absolute top-1/2 transform -translate-y-1/2 w-5 h-5 bg-white border-2 border-gray-300 rounded-full shadow-md"
-                                style={{ left: `65%` }}
+                                style={{ 
+                                  // Set position based on the morning rush hour score (highest of the values)
+                                  left: `${Math.max(
+                                    dealReport?.trafficDensity?.morningRushHour || 0,
+                                    dealReport?.trafficDensity?.eveningRushHour || 0,
+                                    dealReport?.trafficDensity?.weekendTraffic || 0
+                                  )}%` 
+                                }}
                               ></div>
                             </div>
                           </div>
 
                           <div className="border border-gray-200 rounded-lg p-4 mb-5 bg-white">
                             <div className="text-gray-500 mb-1">Rating</div>
-                            <div className="text-amber-500 font-medium text-lg">
-                              Moderate to High
+                            <div className={`font-medium text-lg ${
+                              dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("high") 
+                                ? "text-red-500" 
+                                : dealReport?.trafficDensity?.overallRating?.toLowerCase().includes("medium") 
+                                  ? "text-amber-500" 
+                                  : "text-green-500"
+                            }`}>
+                              {dealReport?.trafficDensity?.overallRating || "Medium Traffic"}
                             </div>
                           </div>
 
@@ -2986,8 +3086,15 @@ export default function DealScorePublicPage() {
                                 <Clock className="h-5 w-5 text-amber-500 mr-2" />
                                 <span>Morning Rush Hour:</span>
                               </div>
-                              <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300 rounded-full px-3">
-                                HIGH
+                              <Badge className={`${
+                                (dealReport?.trafficDensity?.morningRushHour || 0) > 70 
+                                  ? "bg-red-100 text-red-800 hover:bg-red-200 border border-red-300" 
+                                  : (dealReport?.trafficDensity?.morningRushHour || 0) > 40
+                                    ? "bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300" 
+                                    : "bg-green-100 text-green-800 hover:bg-green-200 border border-green-300"
+                              } rounded-full px-3`}>
+                                {(dealReport?.trafficDensity?.morningRushHour || 0) > 70 ? "HIGH" : 
+                                 (dealReport?.trafficDensity?.morningRushHour || 0) > 40 ? "MEDIUM" : "LOW"}
                               </Badge>
                             </div>
 
@@ -2996,8 +3103,15 @@ export default function DealScorePublicPage() {
                                 <Clock className="h-5 w-5 text-amber-500 mr-2" />
                                 <span>Evening Rush Hour:</span>
                               </div>
-                              <Badge className="bg-red-100 text-red-800 hover:bg-red-200 border border-red-300 rounded-full px-3">
-                                SEVERE
+                              <Badge className={`${
+                                (dealReport?.trafficDensity?.eveningRushHour || 0) > 70 
+                                  ? "bg-red-100 text-red-800 hover:bg-red-200 border border-red-300" 
+                                  : (dealReport?.trafficDensity?.eveningRushHour || 0) > 40
+                                    ? "bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300" 
+                                    : "bg-green-100 text-green-800 hover:bg-green-200 border border-green-300"
+                              } rounded-full px-3`}>
+                                {(dealReport?.trafficDensity?.eveningRushHour || 0) > 70 ? "HIGH" : 
+                                 (dealReport?.trafficDensity?.eveningRushHour || 0) > 40 ? "MEDIUM" : "LOW"}
                               </Badge>
                             </div>
 
@@ -3006,8 +3120,15 @@ export default function DealScorePublicPage() {
                                 <Clock className="h-5 w-5 text-amber-500 mr-2" />
                                 <span>Weekend Traffic:</span>
                               </div>
-                              <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border border-yellow-300 rounded-full px-3">
-                                MODERATE
+                              <Badge className={`${
+                                (dealReport?.trafficDensity?.weekendTraffic || 0) > 70 
+                                  ? "bg-red-100 text-red-800 hover:bg-red-200 border border-red-300" 
+                                  : (dealReport?.trafficDensity?.weekendTraffic || 0) > 40
+                                    ? "bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300" 
+                                    : "bg-green-100 text-green-800 hover:bg-green-200 border border-green-300"
+                              } rounded-full px-3`}>
+                                {(dealReport?.trafficDensity?.weekendTraffic || 0) > 70 ? "HIGH" : 
+                                 (dealReport?.trafficDensity?.weekendTraffic || 0) > 40 ? "MEDIUM" : "LOW"}
                               </Badge>
                             </div>
                           </div>
