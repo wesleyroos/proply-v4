@@ -1858,7 +1858,7 @@ export function registerRoutes(app: Express): Server {
   app.use("/api", propertyScraper);
   app.use('/api/deal-advisor', dealAdvisorRouter);
   app.use('/api/address-validation', addressValidationRouter);
-  app.use('/api', trafficDataRouter);
+  app.use('/api/traffic-data', trafficDataRouter);
 
   // Add the calculate-deal-score endpoint
   app.post("/api/calculate-deal-score", async (req, res) => {

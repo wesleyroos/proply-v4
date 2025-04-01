@@ -9,7 +9,7 @@ const router = Router();
  * Query parameters:
  *  - address: string (required) - The property address to analyze
  */
-router.get('/traffic-data', async (req, res) => {
+router.get('/', async (req, res) => {
   const { address } = req.query;
   
   if (!address || typeof address !== 'string') {
