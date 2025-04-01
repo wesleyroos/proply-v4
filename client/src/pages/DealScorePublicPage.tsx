@@ -2047,7 +2047,7 @@ export default function DealScorePublicPage() {
             </div>
             <div className="flex flex-col items-center">
               <span className="text-sm text-slate-500">
-                Price Equilibrium Zone
+                Smart Negotiation Zone
               </span>
               <div className="px-1 w-full max-w-[200px]">
                 <span className="text-sm font-bold whitespace-nowrap block text-center">
@@ -2157,14 +2157,14 @@ export default function DealScorePublicPage() {
                 } mt-1 text-center max-w-[190px]`}
               >
                 {dealReport.percentageDifference >= 5
-                  ? "High demand zone - compete with premium offer"
+                  ? "Hot property - act quickly with a strong offer"
                   : dealReport.percentageDifference >= 0
-                    ? "Supply-demand balanced - minimal discount"
+                    ? "Good deal - minimal discount possible"
                     : dealReport.percentageDifference >= -7
-                      ? "Slight disequilibrium - negotiate to equilibrium"
+                      ? "Fair price - room for modest negotiation"
                       : dealReport.percentageDifference >= -15
-                        ? "Elastic demand range - anchor to market value" 
-                        : "Market inefficiency - price must reach equilibrium"}
+                        ? "Negotiate firmly - focus on market value" 
+                        : "Significant negotiation needed - be patient"}
               </div>
             </div>
           </div>
