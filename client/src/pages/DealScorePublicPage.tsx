@@ -2046,17 +2046,54 @@ export default function DealScorePublicPage() {
               </div>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-sm text-slate-500">Negotiation Zone</span>
-              <div className="px-1 w-full max-w-[170px]">
+              <span className="text-sm text-slate-500">Smart Negotiation Zone</span>
+              <div className="px-1 w-full max-w-[200px]">
                 <span className="text-sm font-bold whitespace-nowrap block text-center">
                   {(() => {
-                    // Simple formula: Estimated value - 5% to Asking price
-                    // This gives a sensible negotiation zone in most cases
-                    const lowerBound = Math.min(
-                      dealReport.estimatedValue * 0.95,
-                      dealReport.askingPrice * 0.9,
-                    );
-                    return `R${formatPrice(Math.round(lowerBound))} - R${formatPrice(dealReport.askingPrice)}`;
+                    // Calculate the optimal negotiation zone based on multiple factors
+                    // 1. Market position (is property under or over market value?)
+                    // 2. Area growth potential (using suburb sentiment as proxy)
+                    // 3. Property condition (better condition = higher floor)
+                    
+                    // Base factors
+                    const marketValue = dealReport.estimatedValue;
+                    const askingPrice = dealReport.askingPrice;
+                    const percentDiff = dealReport.percentageDifference;
+                    const areaGrowth = dealReport.suburbTrend === "Trending Up" ? 1.02 : 1.0;
+                    const conditionFactor = 
+                      dealReport.propertyCondition === "excellent" ? 1.03 :
+                      dealReport.propertyCondition === "good" ? 1.02 :
+                      dealReport.propertyCondition === "average" ? 1.01 : 1.0;
+                    
+                    // Appreciation-adjusted market value
+                    const adjustedValue = marketValue * areaGrowth * conditionFactor;
+                    
+                    // Calculate floor and ceiling based on market position
+                    let floorPrice, ceilingPrice;
+                    
+                    if (percentDiff > 5) {
+                      // Great deal (>5% below market): Offer 98-100% of asking
+                      floorPrice = Math.round(askingPrice * 0.98);
+                      ceilingPrice = askingPrice;
+                    } else if (percentDiff > 0) {
+                      // Good deal (0-5% below market): Offer 95-100% of asking
+                      floorPrice = Math.round(askingPrice * 0.95);
+                      ceilingPrice = askingPrice;
+                    } else if (percentDiff >= -7) {
+                      // Fair deal (0-7% above market): Offer between adjusted value and 98% of asking
+                      floorPrice = Math.round(adjustedValue);
+                      ceilingPrice = Math.round(askingPrice * 0.98);
+                    } else if (percentDiff >= -15) {
+                      // Overpriced (7-15% above market): Offer between 95% of adjusted value and adjusted value
+                      floorPrice = Math.round(adjustedValue * 0.95);
+                      ceilingPrice = Math.round(adjustedValue);
+                    } else {
+                      // Significantly overpriced (>15% above market): Offer 90-95% of adjusted value
+                      floorPrice = Math.round(adjustedValue * 0.9);
+                      ceilingPrice = Math.round(adjustedValue * 0.95);
+                    }
+                    
+                    return `R${formatPrice(floorPrice)} - R${formatPrice(ceilingPrice)}`;
                   })()}
                 </span>
               </div>
@@ -2064,14 +2101,20 @@ export default function DealScorePublicPage() {
                 className={`text-xs ${
                   dealReport.percentageDifference >= 0
                     ? "text-green-600 font-medium"
-                    : "text-blue-600"
-                } mt-1 text-center max-w-[140px]`}
+                    : dealReport.percentageDifference >= -7
+                      ? "text-blue-600"
+                      : "text-amber-600"
+                } mt-1 text-center max-w-[190px]`}
               >
                 {dealReport.percentageDifference >= 5
-                  ? "Great value - consider offering asking price"
+                  ? "Excellent value - consider full asking price"
                   : dealReport.percentageDifference >= 0
-                    ? "Good value - minimal negotiation needed"
-                    : "Room to negotiate - consider starting low"}
+                    ? "Good investment - slight room to negotiate"
+                    : dealReport.percentageDifference >= -7
+                      ? "Fair price - negotiate within appreciation value"
+                      : dealReport.percentageDifference >= -15
+                        ? "High price - target adjusted market value"
+                        : "Premium price - use strong negotiation leverage"}
               </div>
             </div>
           </div>
