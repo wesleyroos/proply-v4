@@ -3321,9 +3321,9 @@ export default function DealScorePublicPage() {
                 <span>Mobility Insights</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="flex flex-col items-center">
-              <div className="w-full max-w-4xl mx-auto px-4">
-                <h3 className="text-xl font-bold mb-4 text-left">
+            <AccordionContent>
+              <div className="w-full px-4">
+                <h3 className="text-xl font-bold mb-4">
                   Traffic & Mobility Analysis
                 </h3>
 
