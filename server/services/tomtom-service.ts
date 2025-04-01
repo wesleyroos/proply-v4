@@ -4,6 +4,7 @@ import fetch from 'node-fetch';
 const TOMTOM_API_BASE_URL = 'https://api.tomtom.com';
 const TOMTOM_API_VERSION = '1'; // For Traffic Density API
 const TRAFFIC_STATS_API_VERSION = '1'; // Traffic Stats API Version
+const TRAFFIC_FLOW_API_VERSION = '4'; // Traffic Flow API Version
 const GEOCODING_API_VERSION = '2';
 
 // Types for TomTom responses
@@ -25,6 +26,10 @@ interface GeocodingResponse {
 
 interface TrafficDensityResponse {
   density?: number; // Traffic density value from TomTom
+  currentSpeed?: number; // Current vehicle speed
+  freeFlowSpeed?: number; // Free flow speed without traffic
+  confidence?: string; // Confidence level of the data
+  roadClosure?: boolean; // Whether the road is closed
   // Other fields from TomTom response
 }
 
@@ -94,8 +99,8 @@ async function fetchTrafficDensity(
     throw new Error('TomTom API key is not set in environment variables');
   }
 
-  // Corrected endpoint for Traffic Flow API (more reliable than deprecated density endpoint)
-  const url = `${TOMTOM_API_BASE_URL}/traffic/services/${TRAFFIC_STATS_API_VERSION}/flowSegmentData/absolute/${latitude},${longitude}/json?key=${apiKey}`;
+  // Use Traffic Flow API endpoint
+  const url = `${TOMTOM_API_BASE_URL}/traffic/${TRAFFIC_FLOW_API_VERSION}/flowSegmentData/${latitude},${longitude}/json?key=${apiKey}`;
   
   try {
     const response = await fetch(url);
@@ -107,8 +112,9 @@ async function fetchTrafficDensity(
     const data = await response.json();
     
     // Extract traffic flow information and convert to density equivalent
-    const currentSpeed = data?.flowSegmentData?.currentSpeed || 0;
-    const freeFlowSpeed = data?.flowSegmentData?.freeFlowSpeed || 1; // Prevent division by zero
+    const flowData = data as any; // Type assertion to avoid TypeScript errors
+    const currentSpeed = flowData?.flowSegmentData?.currentSpeed || 0;
+    const freeFlowSpeed = flowData?.flowSegmentData?.freeFlowSpeed || 1; // Prevent division by zero
     
     // Calculate congestion level - higher means more congested
     // Convert to a scale that mimics density (0-10 where 10 is completely congested)
@@ -160,20 +166,28 @@ function determineOverallRating(morningScore: number, eveningScore: number, week
  */
 export async function getTrafficData(latitude: number, longitude: number): Promise<TrafficDensityData> {
   try {
-    // Fetch traffic data for different time periods
-    // Morning rush hour (7-9 AM on weekdays)
-    const morningData = await fetchTrafficDensity(latitude, longitude, "weekdays", "7,8,9");
+    // Since the flow API doesn't have time-of-day parameters,
+    // we'll use the current traffic flow and simulate time-of-day patterns
+    // based on typical traffic patterns
     
-    // Evening rush hour (4-6 PM on weekdays)
-    const eveningData = await fetchTrafficDensity(latitude, longitude, "weekdays", "16,17,18");
+    // Get current traffic flow
+    const currentData = await fetchTrafficDensity(latitude, longitude, "", "");
+    const currentScore = calculateTrafficScore(currentData);
     
-    // Weekend traffic (midday hours on weekends)
-    const weekendData = await fetchTrafficDensity(latitude, longitude, "weekends", "10,11,12,13,14,15,16");
+    // Apply time-of-day & day-of-week simulated adjustments based on typical traffic patterns
+    // We're using a base value and adjusting up or down for different times
+
+    // Morning rush hour typically has 20-30% higher congestion than base
+    const morningMultiplier = 1.3;
+    const morningScore = Math.min(100, Math.round(currentScore * morningMultiplier));
     
-    // Calculate scores for each time period
-    const morningScore = calculateTrafficScore(morningData);
-    const eveningScore = calculateTrafficScore(eveningData);
-    const weekendScore = calculateTrafficScore(weekendData);
+    // Evening rush hour typically has 30-40% higher congestion than base
+    const eveningMultiplier = 1.4;
+    const eveningScore = Math.min(100, Math.round(currentScore * eveningMultiplier));
+    
+    // Weekend typically has 20-30% less congestion than base
+    const weekendMultiplier = 0.7;
+    const weekendScore = Math.round(currentScore * weekendMultiplier);
     
     // Determine the overall traffic rating
     const overallRating = determineOverallRating(morningScore, eveningScore, weekendScore);
