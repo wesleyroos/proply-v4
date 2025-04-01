@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 // TomTom API constants
 const TOMTOM_API_BASE_URL = 'https://api.tomtom.com';
 const TOMTOM_API_VERSION = '1'; // For Traffic Density API
+const TRAFFIC_STATS_API_VERSION = '1'; // Traffic Stats API Version
 const GEOCODING_API_VERSION = '2';
 
 // Types for TomTom responses
@@ -93,7 +94,8 @@ async function fetchTrafficDensity(
     throw new Error('TomTom API key is not set in environment variables');
   }
 
-  const url = `${TOMTOM_API_BASE_URL}/traffic-stats/density/${TOMTOM_API_VERSION}/position/${latitude},${longitude}/days/${days}/hours/${hours}?key=${apiKey}`;
+  // Corrected endpoint for Traffic Flow API (more reliable than deprecated density endpoint)
+  const url = `${TOMTOM_API_BASE_URL}/traffic/services/${TRAFFIC_STATS_API_VERSION}/flowSegmentData/absolute/${latitude},${longitude}/json?key=${apiKey}`;
   
   try {
     const response = await fetch(url);
@@ -102,7 +104,24 @@ async function fetchTrafficDensity(
       throw new Error(`TomTom Traffic API error: ${response.status}`);
     }
     
-    return await response.json() as TrafficDensityResponse;
+    const data = await response.json();
+    
+    // Extract traffic flow information and convert to density equivalent
+    const currentSpeed = data?.flowSegmentData?.currentSpeed || 0;
+    const freeFlowSpeed = data?.flowSegmentData?.freeFlowSpeed || 1; // Prevent division by zero
+    
+    // Calculate congestion level - higher means more congested
+    // Convert to a scale that mimics density (0-10 where 10 is completely congested)
+    let congestionLevel = 0;
+    if (freeFlowSpeed > 0) {
+      // Calculate as percentage of speed reduction from free flow
+      congestionLevel = Math.max(0, Math.min(10, 10 * (1 - (currentSpeed / freeFlowSpeed))));
+    }
+    
+    return { 
+      density: congestionLevel,
+      // Other relevant fields can be added here
+    } as TrafficDensityResponse;
   } catch (error) {
     console.error('Error fetching traffic density:', error);
     throw error;
