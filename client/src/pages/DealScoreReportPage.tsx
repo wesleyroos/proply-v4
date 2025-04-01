@@ -724,36 +724,36 @@ export default function DealScoreReportPage({ report }: { report?: DealScoreRepo
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span>Morning Rush Hour</span>
-                        <span className="font-medium">{data.trafficDensity.morningRushHour}/10</span>
+                        <span className="font-medium">{data.trafficDensity.morningRushHour}/100</span>
                       </div>
                       <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-gradient-to-r from-green-500 to-red-500"
-                          style={{ width: `${data.trafficDensity.morningRushHour * 10}%` }}
+                          style={{ width: `${data.trafficDensity.morningRushHour}%` }}
                         ></div>
                       </div>
                     </div>
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span>Evening Rush Hour</span>
-                        <span className="font-medium">{data.trafficDensity.eveningRushHour}/10</span>
+                        <span className="font-medium">{data.trafficDensity.eveningRushHour}/100</span>
                       </div>
                       <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-gradient-to-r from-green-500 to-red-500"
-                          style={{ width: `${data.trafficDensity.eveningRushHour * 10}%` }}
+                          style={{ width: `${data.trafficDensity.eveningRushHour}%` }}
                         ></div>
                       </div>
                     </div>
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span>Weekend Traffic</span>
-                        <span className="font-medium">{data.trafficDensity.weekendTraffic}/10</span>
+                        <span className="font-medium">{data.trafficDensity.weekendTraffic}/100</span>
                       </div>
                       <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-gradient-to-r from-green-500 to-red-500"
-                          style={{ width: `${data.trafficDensity.weekendTraffic * 10}%` }}
+                          style={{ width: `${data.trafficDensity.weekendTraffic}%` }}
                         ></div>
                       </div>
                     </div>

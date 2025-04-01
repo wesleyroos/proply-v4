@@ -53,12 +53,16 @@ export async function geocodeAddress(address: string): Promise<{ latitude: numbe
   }
 
   const encodedAddress = encodeURIComponent(address);
-  const url = `${TOMTOM_API_BASE_URL}/search/${GEOCODING_API_VERSION}/geocode/${encodedAddress}.json?key=${apiKey}`;
+  // Updated URL with countrySet=ZA to bias results toward South Africa and limit=1 to return only one result
+  const url = `${TOMTOM_API_BASE_URL}/search/${GEOCODING_API_VERSION}/geocode/${encodedAddress}.json?key=${apiKey}&limit=1&countrySet=ZA`;
+  
+  console.log(`Geocoding address: ${address}`);
 
   try {
     const response = await fetch(url);
     
     if (!response.ok) {
+      console.error(`TomTom Geocoding API error: ${response.status} - ${await response.text()}`);
       throw new Error(`TomTom Geocoding API error: ${response.status}`);
     }
     
@@ -69,6 +73,7 @@ export async function geocodeAddress(address: string): Promise<{ latitude: numbe
     }
     
     const { lat, lon } = data.results[0].position;
+    console.log(`Successfully geocoded address to: ${lat}, ${lon}`);
     
     return {
       latitude: lat,
@@ -99,13 +104,16 @@ async function fetchTrafficDensity(
     throw new Error('TomTom API key is not set in environment variables');
   }
 
-  // Use the Traffic API v5 Incidents endpoint which is more stable and documented
-  const url = `${TOMTOM_API_BASE_URL}/traffic/services/5/incidentDetails?key=${apiKey}&bbox=${longitude-0.15},${latitude-0.15},${longitude+0.15},${latitude+0.15}&fields=incidents,geometry`;
+  // Use the Traffic Incidents API with the correct format - 2023 docs
+  // https://developer.tomtom.com/traffic-api/api-explorer/traffic-incidents
+  const url = `${TOMTOM_API_BASE_URL}/traffic/services/5/incidentDetails?key=${apiKey}&point=${latitude},${longitude}&radius=3000&expandCluster=true&language=en-GB&timeValidityFilter=present`;
   
   try {
+    console.log(`Fetching traffic data from TomTom at coordinates: ${latitude}, ${longitude}`);
     const response = await fetch(url);
     
     if (!response.ok) {
+      console.error(`TomTom Traffic API error: ${response.status} - ${await response.text()}`);
       throw new Error(`TomTom Traffic API error: ${response.status}`);
     }
     
