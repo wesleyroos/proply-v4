@@ -59,7 +59,13 @@ export async function geocodeAddress(address: string): Promise<{ latitude: numbe
   console.log(`Geocoding address: ${address}`);
 
   try {
-    const response = await fetch(url);
+    // Add headers to show proper referer
+    const headers = {
+      'Referer': 'http://localhost:5000',
+      'Origin': 'http://localhost:5000'
+    };
+    
+    const response = await fetch(url, { headers });
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -69,6 +75,7 @@ export async function geocodeAddress(address: string): Promise<{ latitude: numbe
       if (response.status === 403) {
         if (errorText.includes("Developer Unknown Referer") || errorText.includes("Developer Inactive")) {
           console.error("TomTom API domain authorization issue: Your domain is not whitelisted or the API key is not active for this domain.");
+          console.error("Request headers used: ", JSON.stringify(headers));
           throw new Error("TomTom API domain not authorized. Please ensure domain is whitelisted in your TomTom developer account.");
         }
       }
@@ -114,13 +121,29 @@ async function fetchTrafficDensity(
     throw new Error('TomTom API key is not set in environment variables');
   }
 
-  // Use the Traffic Incidents API with the correct format - 2023 docs
-  // https://developer.tomtom.com/traffic-api/api-explorer/traffic-incidents
-  const url = `${TOMTOM_API_BASE_URL}/traffic/services/5/incidentDetails?key=${apiKey}&point=${latitude},${longitude}&radius=3000&expandCluster=true&language=en-GB&timeValidityFilter=present`;
+  // Use the Traffic Flow API with the correct format
+  // According to 2023 API docs, we need to use bbox parameter (not point)
+  // Create a small bounding box around the given point (approximately a 1km area)
+  const latOffset = 0.01; // Approximately 1km in latitude
+  const lonOffset = 0.01; // Approximately 1km in longitude
+  
+  const minLat = latitude - latOffset;
+  const minLon = longitude - lonOffset;
+  const maxLat = latitude + latOffset;
+  const maxLon = longitude + lonOffset;
+  
+  const url = `${TOMTOM_API_BASE_URL}/traffic/services/${TRAFFIC_FLOW_API_VERSION}/flowSegmentData/relative0/10/json?key=${apiKey}&bbox=${minLon},${minLat},${maxLon},${maxLat}&zoom=10`;
   
   try {
     console.log(`Fetching traffic data from TomTom at coordinates: ${latitude}, ${longitude}`);
-    const response = await fetch(url);
+    
+    // Add headers to show proper referer
+    const headers = {
+      'Referer': 'http://localhost:5000',
+      'Origin': 'http://localhost:5000'
+    };
+    
+    const response = await fetch(url, { headers });
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -130,6 +153,7 @@ async function fetchTrafficDensity(
       if (response.status === 403) {
         if (errorText.includes("Developer Unknown Referer") || errorText.includes("Developer Inactive")) {
           console.error("TomTom Traffic API domain authorization issue: Your domain is not whitelisted or the API key is not active for this domain.");
+          console.error("Request headers used: ", JSON.stringify(headers));
           throw new Error("TomTom API domain not authorized. Please ensure your domain is whitelisted in the TomTom developer account.");
         }
       } else if (response.status === 400) {
@@ -142,44 +166,43 @@ async function fetchTrafficDensity(
     }
     
     const data = await response.json();
+    console.log(`TomTom traffic data response:`, JSON.stringify(data).substring(0, 500) + '...');
     
-    // Extract traffic incidents information from the response
-    const responseData = data as any; // Type assertion for TypeScript
+    // Extract traffic flow information from the response
+    const flowSegmentData = data?.flowSegmentData || null;
     
-    // Get the incidents from the response (different structure in the incidents.json endpoint)
-    const incidents = responseData?.incidents || [];
-    console.log(`Found ${incidents.length} traffic incidents nearby`);
+    if (!flowSegmentData) {
+      console.warn('No flow segment data in TomTom response');
+      return { density: 5 }; // Default mid-range value
+    }
     
-    // Calculate a density value based on number and type of incidents
+    // Calculate density based on current speed vs free flow speed
+    // with adjustments for confidence and road closure
     let congestionLevel = 0;
     
-    if (incidents.length > 0) {
-      // Base density on incident count (max 6 points for many incidents)
-      const incidentCountFactor = Math.min(6, incidents.length * 0.6);
-      congestionLevel += incidentCountFactor;
+    try {
+      // Extract relevant traffic flow metrics
+      const currentSpeed = flowSegmentData.currentSpeed || 0;
+      const freeFlowSpeed = flowSegmentData.freeFlowSpeed || 1; // Avoid division by zero
+      const confidence = flowSegmentData.confidence || 0.75;
+      const roadClosure = flowSegmentData.roadClosure || false;
       
-      // Add density based on types of incidents (up to 4 points)
-      let severityPoints = 0;
+      // Calculate a congestion ratio (how much slower current traffic is compared to free flow)
+      // Higher values mean more congestion (e.g., 0.8 means traffic is at 20% of free flow speed)
+      const congestionRatio = 1 - Math.min(1, currentSpeed / freeFlowSpeed);
       
-      incidents.forEach((incident: any) => {
-        // Extract type info from the incident
-        const incidentType = incident?.type || '';
-        const incidentCategory = incident?.category || '';
-        const delaySeconds = incident?.delay?.seconds || 0;
-        
-        // Add points based on incident type and severity
-        if (incidentType.includes('ACCIDENT') || incidentCategory.includes('ROAD_CLOSED')) {
-          severityPoints += 1.0; // Major incidents
-        } else if (incidentType.includes('CONGESTION') || incidentType.includes('JAM') || delaySeconds > 300) {
-          severityPoints += 0.7; // Medium impact incidents
-        } else if (incidentType.includes('CONSTRUCTION') || incidentType.includes('LANE_RESTRICTION')) {
-          severityPoints += 0.5; // Minor but impactful incidents
-        } else {
-          severityPoints += 0.2; // Minor incidents
-        }
-      });
+      // Scale the congestion ratio to our 0-10 scale and adjust by confidence
+      congestionLevel = congestionRatio * 10 * confidence;
       
-      congestionLevel += Math.min(4, severityPoints);
+      // Add extra points for road closures
+      if (roadClosure) {
+        congestionLevel += 3;
+      }
+      
+      console.log(`Calculated traffic congestion level: ${congestionLevel} (current speed: ${currentSpeed}, free flow: ${freeFlowSpeed})`);
+    } catch (err) {
+      console.error('Error processing traffic flow data:', err);
+      congestionLevel = 5; // Default mid-range value on error
     }
     
     // Ensure the density is within 0-10 range

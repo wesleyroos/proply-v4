@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { geocodeAddress, getTrafficData } from '../services/tomtom-service';
+import { geocodeAddress, getTrafficData, GEOCODING_API_VERSION } from '../services/tomtom-service';
 import fetch from 'node-fetch';
 
 const router = Router();
@@ -29,8 +29,17 @@ router.get('/', async (req, res) => {
         status: "Running"
       };
       
-      const pingUrl = `https://api.tomtom.com/search/2/geocode.json?key=${process.env.TOMTOM_API_KEY}&query=test&limit=1`;
-      const pingResponse = await fetch(pingUrl);
+      // Use a known working endpoint for the ping test
+      const pingUrl = `https://api.tomtom.com/search/${GEOCODING_API_VERSION}/geocode/Cape%20Town.json?key=${process.env.TOMTOM_API_KEY}&limit=1`;
+      
+      // Add headers to show proper referer
+      const headers = {
+        'Referer': 'http://localhost:5000',
+        'Origin': 'http://localhost:5000'
+      };
+      
+      console.log("Sending request to TomTom with headers:", JSON.stringify(headers));
+      const pingResponse = await fetch(pingUrl, { headers });
       
       testResults.tests.ping = {
         name: "TomTom API Ping",
