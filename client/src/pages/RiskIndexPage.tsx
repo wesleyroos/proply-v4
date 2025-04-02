@@ -847,22 +847,26 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           </div>
 
           {/* Property Value Information */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 max-w-3xl mx-auto">
-            <div className="text-center p-3 bg-slate-50 rounded-lg">
-              <p className="text-sm text-slate-500">Purchase Price</p>
-              <p className="text-lg font-medium">R{riskResult.propertyDetails.price}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 max-w-3xl mx-auto">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">Purchase Price</p>
+              <p className="text-2xl font-bold">R{riskResult.propertyDetails.price}</p>
+              <button className="text-blue-600 text-sm mt-1">Edit</button>
             </div>
-            <div className="text-center p-3 bg-slate-50 rounded-lg">
-              <p className="text-sm text-slate-500">Municipal Value</p>
-              <p className="font-medium">R{riskResult.propertyDetails.municipalValue}</p>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">Municipal Value</p>
+              <p className="text-2xl font-bold">R{riskResult.propertyDetails.municipalValue}</p>
+              <button className="text-blue-600 text-sm mt-1">Edit</button>
             </div>
-            <div className="text-center p-3 bg-slate-50 rounded-lg">
-              <p className="text-sm text-slate-500">Monthly Rates</p>
-              <p className="font-medium">R{riskResult.propertyDetails.monthlyRates}</p>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">Monthly Rates</p>
+              <p className="text-2xl font-bold">R{riskResult.propertyDetails.monthlyRates}</p>
+              <button className="text-blue-600 text-sm mt-1">Edit</button>
             </div>
-            <div className="text-center p-3 bg-slate-50 rounded-lg">
-              <p className="text-sm text-slate-500">Est. Monthly Costs</p>
-              <p className="font-medium">R{riskResult.propertyDetails.estimatedMonthlyCosts}</p>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">Est. Monthly Costs</p>
+              <p className="text-2xl font-bold">R{riskResult.propertyDetails.estimatedMonthlyCosts}</p>
+              <button className="text-blue-600 text-sm mt-1">Edit</button>
             </div>
           </div>
 
