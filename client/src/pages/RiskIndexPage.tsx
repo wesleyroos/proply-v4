@@ -847,23 +847,6 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </div>
           </div>
 
-          <div className="mb-8">
-            <div className="text-lg font-semibold mb-4">
-              Overall Risk Score: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints} ({riskResult.overallRiskScore}%) - {riskResult.riskRating} Risk Property
-            </div>
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Low Risk</span>
-              <span>Medium Risk</span>
-              <span>High Risk</span>
-            </div>
-            <div className="w-full h-3 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 rounded-full relative z-10">
-              <div
-                className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-800 rounded-full -mt-0.5 transform -translate-x-1/2"
-                style={{ left: `${riskResult.overallRiskScore}%` }}
-              ></div>
-            </div>
-          </div>
-
           {/* Property Location Map */}
           <div className="mb-8">
             <h3 className="text-xl font-bold mb-4">
@@ -880,6 +863,23 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                   mapClassName="w-full h-full rounded-lg"
                 />
               </div>
+            </div>
+          </div>
+          
+          <div className="mb-8">
+            <div className="text-lg font-semibold mb-4">
+              Overall Risk Score: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints} ({riskResult.overallRiskScore}%) - {riskResult.riskRating} Risk Property
+            </div>
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>Low Risk</span>
+              <span>Medium Risk</span>
+              <span>High Risk</span>
+            </div>
+            <div className="w-full h-3 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 rounded-full relative z-10">
+              <div
+                className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-800 rounded-full -mt-0.5 transform -translate-x-1/2"
+                style={{ left: `${riskResult.overallRiskScore}%` }}
+              ></div>
             </div>
           </div>
         </div>
