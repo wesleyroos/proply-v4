@@ -1005,9 +1005,10 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             <form onSubmit={handleFormSubmit}>
               <CardContent className="space-y-8">
                 {/* Property Address */}
-                <div className="space-y-2">
-                  <Label htmlFor="address" className="font-medium">
-                    <MapPin className="h-4 w-4 inline mr-1" /> Property Address
+                <div className="space-y-2 text-center">
+                  <Label htmlFor="address" className="mb-1 block">
+                    Property Address
+                    <span className="text-red-500">*</span>
                   </Label>
                   <AddressAutocomplete
                     placeholder="Enter the property address"
@@ -1017,52 +1018,60 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 </div>
 
                 {/* Property Type */}
-                <div className="space-y-2">
-                  <Label htmlFor="propertyType" className="font-medium">
-                    <Home className="h-4 w-4 inline mr-1" /> Property Type
-                  </Label>
-                  <Select
-                    value={formData.propertyType}
-                    onValueChange={(value) =>
-                      handleInputChange("propertyType", value)
-                    }
-                  >
-                    <SelectTrigger id="propertyType">
-                      <SelectValue placeholder="Select property type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="apartment">Apartment</SelectItem>
-                      <SelectItem value="house">House</SelectItem>
-                      <SelectItem value="townhouse">Townhouse</SelectItem>
-                      <SelectItem value="villa">Villa</SelectItem>
-                      <SelectItem value="commercial">Commercial</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <Label htmlFor="propertyType" className="mb-1 block">
+                      Property Type
+                    </Label>
+                    <Select
+                      value={formData.propertyType}
+                      onValueChange={(value) =>
+                        handleInputChange("propertyType", value)
+                      }
+                    >
+                      <SelectTrigger id="propertyType">
+                        <SelectValue placeholder="Select property type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="apartment">Apartment</SelectItem>
+                        <SelectItem value="house">House</SelectItem>
+                        <SelectItem value="townhouse">Townhouse</SelectItem>
+                        <SelectItem value="villa">Villa</SelectItem>
+                        <SelectItem value="commercial">Commercial</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                {/* Property Size */}
-                <div className="space-y-2">
-                  <Label htmlFor="size" className="font-medium">
-                    <Package2 className="h-4 w-4 inline mr-1" /> Property Size
-                    (m²)
-                  </Label>
-                  <Input
-                    id="size"
-                    placeholder="Size in square meters"
-                    value={formData.size}
-                    onChange={(e) => handleInputChange("size", e.target.value)}
-                  />
+                  {/* Property Size */}
+                  <div className="text-center">
+                    <Label htmlFor="size" className="mb-1 block">
+                      Property Size
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="size"
+                        placeholder="0"
+                        value={formData.size}
+                        onChange={(e) => handleInputChange("size", e.target.value)}
+                        className="pr-10"
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <span className="text-muted-foreground">m²</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Property Features */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="bedrooms" className="font-medium">
-                      <BarChart3 className="h-4 w-4 inline mr-1" /> Bedrooms
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <Label htmlFor="bedrooms" className="mb-1 block">
+                      Bedrooms
                     </Label>
                     <Input
                       id="bedrooms"
-                      placeholder="e.g. 3"
+                      placeholder="0"
                       value={formData.bedrooms}
                       onChange={(e) =>
                         handleInputChange("bedrooms", e.target.value)
@@ -1070,13 +1079,13 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="bathrooms" className="font-medium">
-                      <CloudRain className="h-4 w-4 inline mr-1" /> Bathrooms
+                  <div className="text-center">
+                    <Label htmlFor="bathrooms" className="mb-1 block">
+                      Bathrooms
                     </Label>
                     <Input
                       id="bathrooms"
-                      placeholder="e.g. 2"
+                      placeholder="0"
                       value={formData.bathrooms}
                       onChange={(e) =>
                         handleInputChange("bathrooms", e.target.value)
@@ -1084,13 +1093,13 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="parking" className="font-medium">
-                      <Car className="h-4 w-4 inline mr-1" /> Parking
+                  <div className="text-center">
+                    <Label htmlFor="parking" className="mb-1 block">
+                      Parking
                     </Label>
                     <Input
                       id="parking"
-                      placeholder="e.g. 1"
+                      placeholder="0"
                       value={formData.parking}
                       onChange={(e) =>
                         handleInputChange("parking", e.target.value)
@@ -1100,10 +1109,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 </div>
 
                 {/* Property Condition */}
-                <div className="space-y-2">
-                  <Label htmlFor="propertyCondition" className="font-medium">
-                    <Building className="h-4 w-4 inline mr-1" /> Property
-                    Condition
+                <div className="text-center">
+                  <Label htmlFor="propertyCondition" className="mb-1 block">
+                    Property Condition
                   </Label>
                   <Select
                     value={formData.propertyCondition}
@@ -1124,19 +1132,19 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 </div>
 
                 {/* Purchase Price */}
-                <div className="space-y-2">
-                  <Label htmlFor="purchasePrice" className="font-medium">
-                    <CircleDollarSign className="h-4 w-4 inline mr-1" />{" "}
+                <div className="text-center">
+                  <Label htmlFor="purchasePrice" className="mb-1 block">
                     Purchase Price/Property Value
+                    <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500">R</span>
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <span className="text-muted-foreground">R</span>
                     </div>
                     <Input
                       id="purchasePrice"
-                      className="pl-8"
-                      placeholder="e.g. 3,500,000"
+                      className="pl-7"
+                      placeholder="0"
                       value={formData.purchasePrice}
                       onChange={(e) =>
                         handleInputChange("purchasePrice", e.target.value)
@@ -1146,12 +1154,12 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 </div>
               </CardContent>
 
-              <div className="flex items-center justify-end p-6 pt-0">
+              <div className="flex justify-end mt-6 p-6 pt-0">
                 <Button type="submit" disabled={isLoading}>
                   {isLoading ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Processing
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Calculating...
                     </>
                   ) : (
                     <>
