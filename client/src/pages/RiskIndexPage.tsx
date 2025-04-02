@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import {
   ArrowRight,
   Loader2,
@@ -11,15 +11,8 @@ import {
   Car,
   BarChart3,
   Star,
-  X,
-  ChevronLeft,
-  Download,
-  Printer,
-  Share,
 } from "lucide-react";
 import AddressAutocomplete from "../components/AddressAutocomplete";
-import RiskIndexReport from "../components/RiskIndexReport";
-import { RiskIndexReport as RiskIndexReportType, RiskFactor, RiskCategory } from "../types/riskIndex";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -32,15 +25,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
 
 export default function RiskIndexPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [demoClicks, setDemoClicks] = useState(0);
-  const [showReport, setShowReport] = useState(false);
-  const [riskReport, setRiskReport] = useState<RiskIndexReportType | null>(null);
-  const reportRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     // Property Details
     address: "",
@@ -118,264 +107,6 @@ export default function RiskIndexPage() {
     });
   };
 
-  // Helper functions to create properly typed objects
-  const createRiskFactor = (
-    name: string,
-    score: number,
-    description: string,
-    impact: "low" | "medium" | "high",
-    trend: "improving" | "stable" | "worsening"
-  ): RiskFactor => {
-    return {
-      name,
-      score,
-      description,
-      impact,
-      trend
-    };
-  };
-
-  // Generate mock risk report based on form data
-  const generateRiskReport = (): RiskIndexReportType => {
-    // Parse numeric values
-    const purchasePrice = Number(parseFormattedNumber(formData.purchasePrice));
-    const propertySize = Number(parseFormattedNumber(formData.size));
-    
-    // Calculate base risk score (mock calculation)
-    const propertyConditionScores = {
-      excellent: 85,
-      good: 70,
-      fair: 50,
-      poor: 30,
-    };
-
-    // Base overall risk score is influenced by property condition
-    const baseRiskScore = propertyConditionScores[formData.propertyCondition as keyof typeof propertyConditionScores];
-    
-    // Slight variations based on property type
-    const propertyTypeInfluence = {
-      apartment: 5,
-      house: 0,
-      townhouse: 2,
-      villa: -2,
-      commercial: -10,
-    };
-    
-    // Calculate overall risk score (higher is better, lower risk)
-    let overallRiskScore = baseRiskScore + propertyTypeInfluence[formData.propertyType as keyof typeof propertyTypeInfluence];
-    
-    // Ensure score is within bounds
-    overallRiskScore = Math.max(0, Math.min(100, overallRiskScore));
-    
-    // Determine risk rating and color
-    let riskRating;
-    let riskColor;
-    
-    if (overallRiskScore >= 80) {
-      riskRating = "LOW RISK";
-      riskColor = "bg-green-500";
-    } else if (overallRiskScore >= 60) {
-      riskRating = "LOW-MODERATE RISK";
-      riskColor = "bg-blue-500";
-    } else if (overallRiskScore >= 40) {
-      riskRating = "MODERATE RISK";
-      riskColor = "bg-yellow-500";
-    } else if (overallRiskScore >= 20) {
-      riskRating = "MODERATE-HIGH RISK";
-      riskColor = "bg-orange-500";
-    } else {
-      riskRating = "HIGH RISK";
-      riskColor = "bg-red-500";
-    }
-    
-    // Calculate price per square meter
-    const pricePerSqM = Math.round(purchasePrice / propertySize);
-    
-    // Create mock estimated market value (slightly different from purchase price)
-    const valuationVariance = ((Math.random() * 20) - 10) / 100; // Random variance between -10% and +10%
-    const estimatedMarketValue = Math.round(purchasePrice * (1 + valuationVariance));
-    
-    // Calculate valuation deviation
-    const valuationDeviation = ((purchasePrice - estimatedMarketValue) / estimatedMarketValue) * 100;
-    
-    // Generate market risk factors
-    const marketVolatility = Math.round(Math.random() * 15);
-    const demandTrend = Math.random() > 0.5 ? "increasing" : Math.random() > 0.3 ? "stable" : "decreasing";
-    const supplyTrend = Math.random() > 0.5 ? "increasing" : Math.random() > 0.3 ? "stable" : "decreasing";
-    
-    // Create risk categories with factors
-    const riskCategories: RiskCategory[] = [
-      {
-        name: "Financial Risk",
-        score: Math.round(overallRiskScore * 0.9 + Math.random() * 10),
-        description: "Assessment of the financial aspects of this investment including price, financing, and potential returns.",
-        factors: [
-          {
-            name: "Price to Value",
-            score: 50 + (valuationDeviation < 0 ? Math.abs(valuationDeviation) * 5 : -valuationDeviation * 5),
-            description: `This property is ${Math.abs(valuationDeviation).toFixed(1)}% ${valuationDeviation < 0 ? "below" : "above"} the estimated market value.`,
-            impact: valuationDeviation < -5 ? "low" as const : valuationDeviation > 5 ? "high" as const : "medium" as const,
-            trend: "stable" as const
-          },
-          {
-            name: "Monthly Financing Costs",
-            score: 65,
-            description: "Estimated monthly mortgage payments are within reasonable range for properties of this type.",
-            impact: "medium",
-            trend: "stable"
-          },
-          {
-            name: "Return on Investment",
-            score: 70,
-            description: "Based on local rental yields and property appreciation in this area.",
-            impact: "medium",
-            trend: "improving"
-          }
-        ]
-      },
-      {
-        name: "Property Risk",
-        score: Math.round(propertyConditionScores[formData.propertyCondition as keyof typeof propertyConditionScores]),
-        description: "Evaluation of physical property characteristics, condition, and maintenance requirements.",
-        factors: [
-          {
-            name: "Property Condition",
-            score: propertyConditionScores[formData.propertyCondition as keyof typeof propertyConditionScores],
-            description: `Property is in ${formData.propertyCondition} condition with ${formData.propertyCondition === "excellent" || formData.propertyCondition === "good" ? "minimal" : "some"} maintenance requirements.`,
-            impact: formData.propertyCondition === "excellent" || formData.propertyCondition === "good" ? "low" : "high",
-            trend: "stable"
-          },
-          {
-            name: "Property Features",
-            score: 75,
-            description: `${formData.bedrooms || "0"} bedroom, ${formData.bathrooms || "0"} bathroom ${formData.propertyType} with ${formData.parking || "0"} parking spaces.`,
-            impact: "low",
-            trend: "stable"
-          },
-          {
-            name: "Property Age & Structure",
-            score: formData.propertyCondition === "excellent" ? 80 : formData.propertyCondition === "good" ? 65 : 40,
-            description: "Based on typical properties in this area and the reported condition.",
-            impact: "medium",
-            trend: formData.propertyCondition === "poor" ? "worsening" : "stable"
-          }
-        ]
-      },
-      {
-        name: "Market Risk",
-        score: Math.max(20, Math.min(95, 100 - marketVolatility * 5)),
-        description: "Analysis of the local property market, trends, and economic indicators.",
-        factors: [
-          {
-            name: "Market Volatility",
-            score: 100 - marketVolatility * 5,
-            description: `The property market in this area shows ${marketVolatility > 10 ? "high" : marketVolatility > 5 ? "moderate" : "low"} volatility.`,
-            impact: marketVolatility > 10 ? "high" : marketVolatility > 5 ? "medium" : "low",
-            trend: marketVolatility > 10 ? "worsening" : "stable"
-          },
-          {
-            name: "Supply/Demand Balance",
-            score: demandTrend === "increasing" ? 85 : demandTrend === "stable" ? 60 : 30,
-            description: `Demand is ${demandTrend} while supply is ${supplyTrend} in this area.`,
-            impact: demandTrend === "decreasing" && supplyTrend === "increasing" ? "high" : "medium",
-            trend: demandTrend === "increasing" ? "improving" : demandTrend === "stable" ? "stable" : "worsening"
-          },
-          {
-            name: "Economic Outlook",
-            score: 55,
-            description: "The local economy shows moderate strength with average employment and income growth.",
-            impact: "medium",
-            trend: "stable"
-          }
-        ]
-      }
-    ];
-
-    // Generate risk mitigation strategies based on the lowest scoring risk category
-    const lowestCategory = [...riskCategories].sort((a, b) => a.score - b.score)[0];
-    let riskMitigationStrategies: string[] = [];
-    
-    if (lowestCategory.name === "Financial Risk") {
-      riskMitigationStrategies = [
-        "Consider negotiating the purchase price if above estimated market value",
-        "Explore different financing options to reduce monthly costs",
-        "Budget for at least 1% of property value annually for maintenance",
-        "Diversify your investment portfolio to reduce overall financial risk",
-        "Consider property insurance options to protect against unexpected costs"
-      ];
-    } else if (lowestCategory.name === "Property Risk") {
-      riskMitigationStrategies = [
-        "Conduct a professional property inspection before purchase",
-        "Budget for immediate repairs and maintenance if condition is fair or poor",
-        "Consider property improvements that increase value and reduce long-term risk",
-        "Review building materials and structure for long-term durability",
-        "Assess potential renovation costs against potential value increase"
-      ];
-    } else {
-      riskMitigationStrategies = [
-        "Research local market trends and development plans in the area",
-        "Consider longer holding periods to ride out market fluctuations",
-        "Research upcoming infrastructure or development projects",
-        "Monitor local economic indicators that impact property values",
-        "Diversify your property portfolio across different areas"
-      ];
-    }
-
-    // Generate investment recommendation
-    let investmentRecommendation = "";
-    
-    if (overallRiskScore >= 80) {
-      investmentRecommendation = "This property presents a favorable risk profile. It's well positioned in the market with strong fundamentals and appears to be a sound investment opportunity based on the provided information.";
-    } else if (overallRiskScore >= 60) {
-      investmentRecommendation = "This property shows a reasonable risk profile with some areas of concern. With proper risk management strategies, it could be a viable investment opportunity for investors with moderate risk tolerance.";
-    } else if (overallRiskScore >= 40) {
-      investmentRecommendation = "This property presents a moderate risk profile. Careful consideration of the identified risk factors is recommended before proceeding with this investment. Consider negotiating terms to improve the risk-return profile.";
-    } else if (overallRiskScore >= 20) {
-      investmentRecommendation = "This property shows elevated risk levels in several key areas. Proceed with caution and consider whether the potential returns justify the identified risks. Additional due diligence is strongly recommended.";
-    } else {
-      investmentRecommendation = "This property demonstrates a high-risk profile. Significant caution is advised, and it may be prudent to explore alternative investment opportunities with more favorable risk characteristics.";
-    }
-
-    return {
-      // Property Details
-      address: formData.address,
-      propertyValue: purchasePrice,
-      propertySize: propertySize,
-      bedrooms: formData.bedrooms || "N/A",
-      bathrooms: formData.bathrooms || "N/A",
-      parking: formData.parking || "N/A",
-      propertyCondition: formData.propertyCondition,
-      propertyType: formData.propertyType,
-      
-      // Risk Assessment
-      overallRiskScore: Math.round(overallRiskScore),
-      riskRating: riskRating,
-      riskColor: riskColor,
-      riskCategories: riskCategories,
-      
-      // Financial Risk
-      pricePerSqM: pricePerSqM,
-      estimatedMarketValue: estimatedMarketValue,
-      valuationDeviation: valuationDeviation,
-      
-      // Market Risk
-      marketVolatility: marketVolatility,
-      demandTrend: demandTrend as any,
-      supplyTrend: supplyTrend as any,
-      
-      // Recommendations
-      riskMitigationStrategies: riskMitigationStrategies,
-      investmentRecommendation: investmentRecommendation,
-      
-      // Report Metadata
-      reportDate: new Date().toLocaleDateString('en-ZA', {
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric'
-      })
-    };
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -391,17 +122,12 @@ export default function RiskIndexPage() {
 
     setIsLoading(true);
     
-    // Simulate calculation delay
+    // Mock calculation for now - will implement actual risk calculation later
     await new Promise((resolve) => setTimeout(resolve, 2000));
     
-    // Generate risk report
-    const report = generateRiskReport();
-    setRiskReport(report);
-    
     setIsLoading(false);
-    setShowReport(true);
     
-    // Show success toast
+    // For now, just show a success toast
     toast({
       title: "Risk Index Calculated",
       description: "Your property risk analysis is complete.",
@@ -691,51 +417,6 @@ export default function RiskIndexPage() {
             </div>
           </form>
         </Card>
-
-        {/* Risk Report Drawer */}
-        <Drawer open={showReport} onOpenChange={setShowReport}>
-          <DrawerContent className="max-h-[85vh] overflow-y-auto">
-            <div className="mx-auto w-full max-w-4xl p-4 md:p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold">Risk Index Report</h2>
-                <DrawerClose>
-                  <Button variant="ghost" size="icon">
-                    <X className="w-4 h-4" />
-                  </Button>
-                </DrawerClose>
-              </div>
-              
-              {/* Controls */}
-              <div className="flex justify-between items-center mb-6">
-                <Button variant="outline" size="sm" onClick={() => setShowReport(false)}>
-                  <ChevronLeft className="w-4 h-4 mr-2" />
-                  Back to Form
-                </Button>
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="sm">
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Printer className="w-4 h-4 mr-2" />
-                    Print
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Share className="w-4 h-4 mr-2" />
-                    Share
-                  </Button>
-                </div>
-              </div>
-              
-              {/* Report */}
-              {riskReport && (
-                <div className="mt-4">
-                  <RiskIndexReport ref={reportRef} report={riskReport} />
-                </div>
-              )}
-            </div>
-          </DrawerContent>
-        </Drawer>
 
         {/* Footer */}
         <footer className="py-6 px-6 w-full mt-12">
