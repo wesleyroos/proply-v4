@@ -907,27 +907,27 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             <p className="text-gray-700 mb-4">
               This property presents an overall {riskResult.riskRating.toLowerCase()} risk profile ({riskResult.overallRiskScore}%), with most risk factors being well-managed or naturally low. However, there are specific areas of concern:
             </p>
-            <div className="space-y-4">
-              <div className="grid grid-cols-[auto,1fr] gap-x-6">
-                <div className="text-red-600 font-medium whitespace-nowrap">• High Flood Risk:</div>
-                <div>The property's location in a flood-prone area represents the most significant risk factor and should be carefully considered.</div>
-              </div>
+            <ul className="space-y-3 pl-1">
+              <li className="flex items-start">
+                <span className="text-red-600 font-medium mr-2">• High Flood Risk:</span>
+                <span>The property's location in a flood-prone area represents the most significant risk factor and should be carefully considered.</span>
+              </li>
               
-              <div className="grid grid-cols-[auto,1fr] gap-x-6">
-                <div className="text-amber-600 font-medium whitespace-nowrap">• Medium Security Risk:</div>
-                <div>While not critical, security measures could be improved to enhance property protection.</div>
-              </div>
+              <li className="flex items-start">
+                <span className="text-amber-600 font-medium mr-2">• Medium Security Risk:</span>
+                <span>While not critical, security measures could be improved to enhance property protection.</span>
+              </li>
               
-              <div className="grid grid-cols-[auto,1fr] gap-x-6">
-                <div className="text-amber-600 font-medium whitespace-nowrap">• Medium Environmental & Hail Risk:</div>
-                <div>These moderate risk factors should be monitored but don't present immediate concerns.</div>
-              </div>
+              <li className="flex items-start">
+                <span className="text-amber-600 font-medium mr-2">• Medium Environmental & Hail Risk:</span>
+                <span>These moderate risk factors should be monitored but don't present immediate concerns.</span>
+              </li>
               
-              <div className="grid grid-cols-[auto,1fr] gap-x-6">
-                <div className="text-green-600 font-medium whitespace-nowrap">• Low Climate Risk:</div>
-                <div>The property is well-positioned to withstand long-term climate change impacts.</div>
-              </div>
-            </div>
+              <li className="flex items-start">
+                <span className="text-green-600 font-medium mr-2">• Low Climate Risk:</span>
+                <span>The property is well-positioned to withstand long-term climate change impacts.</span>
+              </li>
+            </ul>
           </div>
         </div>
 
