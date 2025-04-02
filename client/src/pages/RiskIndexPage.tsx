@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { EmailPDFButton } from "../components/pdf/email-pdf-button";
 import {
   ArrowRight,
   ArrowLeft,
