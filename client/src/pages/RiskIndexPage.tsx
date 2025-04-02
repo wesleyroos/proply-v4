@@ -772,25 +772,6 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             factors.
           </p>
 
-          {/* Property Location Map */}
-          <div className="mb-6 max-w-4xl mx-auto">
-            <h3 className="text-xl font-bold mb-4">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
-                Property Location
-              </div>
-            </h3>
-            <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative z-10">
-              <p className="text-sm text-muted-foreground mb-4">{riskResult.propertyDetails.address}</p>
-              <div className="h-[300px] w-full rounded-lg overflow-hidden">
-                <PropertyMap 
-                  address={riskResult.propertyDetails.address} 
-                  mapClassName="w-full h-full rounded-lg"
-                />
-              </div>
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 max-w-4xl mx-auto">
             {/* Risk Score Card */}
             <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
@@ -880,6 +861,25 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-800 rounded-full -mt-0.5 transform -translate-x-1/2"
                 style={{ left: `${riskResult.overallRiskScore}%` }}
               ></div>
+            </div>
+          </div>
+
+          {/* Property Location Map */}
+          <div className="mb-8">
+            <h3 className="text-xl font-bold mb-4">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-primary" />
+                Property Location
+              </div>
+            </h3>
+            <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative z-10">
+              <p className="text-sm text-muted-foreground mb-4">{riskResult.propertyDetails.address}</p>
+              <div className="h-[300px] w-full rounded-lg overflow-hidden">
+                <PropertyMap 
+                  address={riskResult.propertyDetails.address} 
+                  mapClassName="w-full h-full rounded-lg"
+                />
+              </div>
             </div>
           </div>
         </div>
