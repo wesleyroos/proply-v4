@@ -662,6 +662,42 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
   const renderComprehensiveReport = () => {
     if (!riskResult) return null;
     
+    // Function to render risk category section
+    const renderRiskCategory = (title: string, riskData: any, icon: React.ReactNode) => {
+      return (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <div className={`p-2 rounded-full ${getRiskColor(riskData.rating)} bg-opacity-20`}>{icon}</div>
+            <h3 className="text-lg font-semibold">{title} Risk</h3>
+            <Badge className={getRiskColor(riskData.rating)}>
+              {riskData.score}/{riskData.maxScore} ({Math.round(riskData.percentageScore)}%)
+            </Badge>
+          </div>
+
+          <div className="mb-4">
+            {renderRiskLevelIndicator(riskData.percentageScore, riskData.rating)}
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>Low Risk</span>
+              <span>Medium Risk</span>
+              <span>High Risk</span>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-medium mb-2">{title} Risk Factors:</h4>
+            <ul className="space-y-1 text-sm">
+              {riskData.factors.map((factor: string, index: number) => (
+                <li key={index} className="flex items-start">
+                  <span className="text-gray-700 mr-2">•</span>
+                  <span>{factor}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
+    };
+    
     return (
       <div id="risk-index-report" className="space-y-8">
         {/* Property Title and Summary */}
