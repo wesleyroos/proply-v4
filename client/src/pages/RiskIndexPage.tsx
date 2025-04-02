@@ -262,7 +262,7 @@ export default function RiskIndexPage() {
   // Function to render risk level indicator
   const renderRiskLevelIndicator = (percentage: number, rating: string) => {
     return (
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 relative z-10">
         <div className="w-full bg-gray-200 rounded-full h-2.5">
           <div
             className={`h-2.5 rounded-full ${getRiskColor(rating)}`}
@@ -683,7 +683,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-gray-50 p-4 rounded-lg relative z-10">
             <h4 className="font-medium mb-2">{title} Risk Factors:</h4>
             <ul className="space-y-1 text-sm">
               {riskData.factors.map((factor: string, index: number) => (
@@ -711,7 +711,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             {/* Risk Score Card */}
-            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
+            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
               <div className="p-6 flex flex-col items-center">
                 <h3 className="text-slate-700 font-medium mb-4">Property Risk Assessment</h3>
                 <div className="relative mb-3 w-36 h-36">
@@ -752,7 +752,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </div>
 
             {/* Property Address Card */}
-            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
+            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
               <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                 <div className="flex items-center">
                   <MapPin className="h-5 w-5 text-white mr-2" />
@@ -789,7 +789,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </div>
 
             {/* Property Value Card */}
-            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
+            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
               <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                 <div className="flex items-center">
                   <CircleDollarSign className="h-5 w-5 text-white mr-2" />
@@ -831,7 +831,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               <span>Medium Risk</span>
               <span>High Risk</span>
             </div>
-            <div className="w-full h-3 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 rounded-full relative">
+            <div className="w-full h-3 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 rounded-full relative z-10">
               <div
                 className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-800 rounded-full -mt-0.5 transform -translate-x-1/2"
                 style={{ left: `${riskResult.overallRiskScore}%` }}
@@ -859,7 +859,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           {/* Hail Risk */}
           {renderRiskCategory("Hail", riskResult.riskFactors.hailRisk, getRiskIcon("hail"))}
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 relative z-10">
             <div className="p-4 rounded-lg bg-green-50 border border-green-200">
               <h4 className="font-medium text-green-800 mb-2">Low Risk (0-33%)</h4>
               <div className="w-full h-2 bg-green-500 rounded-full"></div>
@@ -878,7 +878,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             Total Risk Score: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints} ({riskResult.overallRiskScore}% - {riskResult.riskRating} Risk)
           </div>
 
-          <div className="bg-gray-50 p-6 rounded-lg">
+          <div className="bg-gray-50 p-6 rounded-lg relative z-10">
             <h4 className="font-semibold text-lg mb-3">Risk Assessment Summary</h4>
             <div className="text-gray-700 whitespace-pre-line">{riskResult.riskSummary}</div>
           </div>
@@ -887,7 +887,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         {/* Recommendations */}
         <div className="mb-8">
           <h3 className="text-xl font-bold mb-4">Recommendations</h3>
-          <div className="bg-gray-50 p-6 rounded-lg">
+          <div className="bg-gray-50 p-6 rounded-lg relative z-10">
             <ul className="space-y-2">
               {riskResult.recommendations.map((recommendation, index) => (
                 <li key={index} className="flex items-start">
@@ -910,7 +910,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         {/* Report Footer */}
         <div className="pt-6 border-t text-center text-sm text-muted-foreground">
           <div className="flex items-center justify-center">
-            <img src="/Proply Logo 3.png" alt="Proply Logo" className="h-4 w-auto mr-2" />
+            <img src="/proply-logo-1.png" alt="Proply Logo" className="h-4 w-auto mr-2" />
             <span>
               Proply Risk Index™ Report - Generated on{" "}
               {new Date().toLocaleDateString("en-ZA", { year: "numeric", month: "long", day: "numeric" })}
@@ -925,7 +925,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
     <div className="min-h-screen bg-background">
       {/* Proply Logo */}
       <div className="absolute top-8 left-8 z-20">
-        <img src="/Proply Logo 3.png" alt="Proply Logo" className="h-8 w-auto" />
+        <img src="/proply-logo-1.png" alt="Proply Logo" className="h-8 w-auto" />
       </div>
       
       {/* Background Elements */}
@@ -995,7 +995,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
         {!showResult ? (
           // Form section
-          <Card className="max-w-2xl mx-auto">
+          <Card className="max-w-2xl mx-auto relative z-10 bg-white shadow-md">
             <CardHeader>
               <CardTitle>Property Risk Assessment</CardTitle>
               <CardDescription>
@@ -1166,7 +1166,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         ) : (
           // Result display
           <div className="w-full max-w-[1000px] mx-auto">
-            <Card className="w-full bg-white shadow-md rounded-lg">
+            <Card className="w-full bg-white shadow-md rounded-lg relative z-10">
               <CardContent className="p-8">
                 {riskResult && renderComprehensiveReport()}
                 
