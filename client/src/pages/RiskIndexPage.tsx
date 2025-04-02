@@ -133,7 +133,56 @@ export default function RiskIndexPage() {
       </div>
 
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Grid background pattern */}
         <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#8884_1px,transparent_1px),linear-gradient(to_bottom,#8884_1px,transparent_1px)] bg-[size:14px_24px]"></div>
+        
+        {/* Gradient Circle Animations */}
+        <div className="circle-animation absolute -top-[150px] -left-[150px] w-[300px] h-[300px] rounded-full bg-primary/10 blur-3xl"></div>
+        <div className="circle-animation animation-delay-1000 absolute top-[20%] -right-[100px] w-[200px] h-[200px] rounded-full bg-blue-400/10 blur-3xl"></div>
+        <div className="circle-animation animation-delay-2000 absolute -bottom-[150px] left-[20%] w-[250px] h-[250px] rounded-full bg-primary/10 blur-3xl"></div>
+        
+        {/* Data Points */}
+        <div className="data-points absolute top-0 left-0 w-full h-full">
+          {Array.from({ length: 50 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 rounded-full bg-primary/40"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                opacity: Math.random() * 0.5 + 0.2,
+                animationDelay: `${Math.random() * 5000}ms`,
+                animationDuration: `${Math.random() * 10000 + 5000}ms`,
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* Floating Geometric Shapes */}
+        <div className="absolute top-[15%] left-[10%] w-16 h-16 border-2 border-primary/20 rounded-lg rotate-12 animate-float"></div>
+        <div className="absolute bottom-[20%] right-[15%] w-20 h-20 border-2 border-primary/20 rounded-full animate-float animation-delay-1000"></div>
+        <div className="absolute top-[60%] right-[25%] w-12 h-12 border-2 border-primary/20 rotate-45 animate-float animation-delay-2000"></div>
+        
+        {/* SVG Paths */}
+        <svg
+          className="absolute inset-0 w-full h-full opacity-[0.07]"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,100 Q150,50 300,200 T600,100 T900,100"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="text-primary animate-draw"
+          />
+          <path
+            d="M0,200 Q200,150 400,250 T800,200"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="text-primary animate-draw animation-delay-1000"
+          />
+        </svg>
       </div>
 
       <div className="flex-1 relative z-10 flex flex-col items-center pt-8">
