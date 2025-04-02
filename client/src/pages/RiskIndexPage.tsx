@@ -72,6 +72,9 @@ interface RiskResult {
     monthlyRates?: string;
     levy?: string;
     estimatedMonthlyCosts?: string;
+    suburb?: string;
+    city?: string;
+    postalCode?: string;
   };
   riskFactors: {
     securityRisk: {
@@ -383,8 +386,8 @@ export default function RiskIndexPage() {
     const marketVolatility = Math.floor(Math.random() * 35) + 40; // Random value between 40-75%
     const locationRisk = Math.floor(Math.random() * 45) + 30; // Random value between 30-75%
     const propertyConditionRisk = formData.propertyCondition === "excellent" ? 25 : 
-                                  formData.propertyCondition === "good" ? 45 : 
-                                  formData.propertyCondition === "fair" ? 65 : 85;
+                                formData.propertyCondition === "good" ? 45 : 
+                                formData.propertyCondition === "fair" ? 65 : 85;
     const financialRisk = Math.floor(Math.random() * 30) + 40; // Random value between 40-70%
     const demographicTrends = Math.floor(Math.random() * 40) + 30; // Random value between 30-70%
     const regulatoryRisk = Math.floor(Math.random() * 35) + 25; // Random value between 25-60%
@@ -412,7 +415,7 @@ export default function RiskIndexPage() {
       riskColor,
       propertyDetails: {
         address: formData.address,
-        propertyType: formData.propertyType.charAt(0).toUpperCase() + formData.propertyType.slice(1),
+        propertyType: formData.propertyType,
         size: formData.size,
         bedrooms: formData.bedrooms || "0",
         bathrooms: formData.bathrooms || "0",
@@ -422,7 +425,10 @@ export default function RiskIndexPage() {
         municipalValue: "3,600,000",
         monthlyRates: "2,850",
         levy: "1,950",
-        estimatedMonthlyCosts: "4,800"
+        estimatedMonthlyCosts: "7,350",
+        suburb: "Cape Town City Centre",
+        city: "Cape Town",
+        postalCode: "8001",
       },
       riskFactors: {
         securityRisk: {
@@ -430,61 +436,77 @@ export default function RiskIndexPage() {
           maxScore: securityRiskMaxScore,
           percentageScore: securityRiskPercentage,
           rating: securityRiskRating,
-          factors: securityRiskFactors
+          factors: securityRiskFactors,
         },
         environmentalRisk: {
           score: environmentalRiskScore,
           maxScore: environmentalRiskMaxScore,
           percentageScore: environmentalRiskPercentage,
           rating: environmentalRiskRating,
-          factors: environmentalRiskFactors
+          factors: environmentalRiskFactors,
         },
         floodRisk: {
           score: floodRiskScore,
           maxScore: floodRiskMaxScore,
           percentageScore: floodRiskPercentage,
           rating: floodRiskRating,
-          factors: floodRiskFactors
+          factors: floodRiskFactors,
         },
         climateRisk: {
           score: climateRiskScore,
           maxScore: climateRiskMaxScore,
           percentageScore: climateRiskPercentage,
           rating: climateRiskRating,
-          factors: climateRiskFactors
+          factors: climateRiskFactors,
         },
         hailRisk: {
           score: hailRiskScore,
           maxScore: hailRiskMaxScore,
           percentageScore: hailRiskPercentage,
           rating: hailRiskRating,
-          factors: hailRiskFactors
+          factors: hailRiskFactors,
         },
         marketVolatility,
         locationRisk,
         propertyConditionRisk,
         financialRisk,
         demographicTrends,
-        regulatoryRisk
+        regulatoryRisk,
       },
       projections: {
         shortTerm,
         mediumTerm,
         longTerm,
-        trendDirection
+        trendDirection,
       },
-      recommendations
+      recommendations,
     };
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleAddressChange = (newAddress: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      address: newAddress,
+    }));
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation
-    if (!formData.address || !formData.purchasePrice || !formData.size) {
+    // Basic validation
+    if (!formData.address) {
       toast({
-        title: "Missing required fields",
-        description: "Please fill in all required fields.",
+        title: "Missing Address",
+        description: "Please enter a property address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.purchasePrice) {
+      toast({
+        title: "Missing Purchase Price",
+        description: "Please enter the property value.",
         variant: "destructive",
       });
       return;
@@ -493,310 +515,192 @@ export default function RiskIndexPage() {
     setIsLoading(true);
 
     // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // Calculate risk index
-    const result = calculateRiskIndex();
-    setRiskResult(result);
-    setShowResult(true);
-    setIsLoading(false);
-
-    // Show success toast
-    toast({
-      title: "Risk Index Calculated",
-      description: "Your property risk analysis is complete.",
-    });
+    setTimeout(() => {
+      const results = calculateRiskIndex();
+      setRiskResult(results);
+      setShowResult(true);
+      setIsLoading(false);
+    }, 1500);
   };
 
-  // Check if a field is required and empty
-  const checkRequiredFields = (field: string) => {
-    if (field === "address" || field === "purchasePrice" || field === "size") {
-      return formData[field as keyof typeof formData] === "";
-    }
-    return false;
+  const resetForm = () => {
+    setShowResult(false);
+    setRiskResult(null);
   };
 
   return (
-    <div className="flex min-h-screen flex-col relative overflow-hidden bg-background">
-      <div className="absolute top-8 left-8 z-20">
-        <img
-          src="/proply-logo-auth.png"
-          alt="Proply Logo"
-          className="h-8 w-auto"
-        />
+    <div className="min-h-screen bg-background">
+      {/* Background Elements */}
+      <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]">
+        <div className="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_500px_at_50%_200px,#e5f9ff,transparent)]" />
       </div>
 
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Grid background pattern */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#8884_1px,transparent_1px),linear-gradient(to_bottom,#8884_1px,transparent_1px)] bg-[size:14px_24px]"></div>
-
-        {/* Gradient Circle Animations */}
-        <div className="circle-animation absolute -top-[150px] -left-[150px] w-[300px] h-[300px] rounded-full bg-primary/10 blur-3xl"></div>
-        <div className="circle-animation animation-delay-1000 absolute top-[20%] -right-[100px] w-[200px] h-[200px] rounded-full bg-blue-400/10 blur-3xl"></div>
-        <div className="circle-animation animation-delay-2000 absolute -bottom-[150px] left-[20%] w-[250px] h-[250px] rounded-full bg-primary/10 blur-3xl"></div>
-
-        {/* Data Points */}
-        <div className="data-points absolute top-0 left-0 w-full h-full">
-          {Array.from({ length: 50 }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 rounded-full bg-primary/40"
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                opacity: Math.random() * 0.5 + 0.2,
-                animationDelay: `${Math.random() * 5000}ms`,
-                animationDuration: `${Math.random() * 10000 + 5000}ms`,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Floating Geometric Shapes */}
-        <div className="absolute top-[15%] left-[10%] w-16 h-16 border-2 border-primary/20 rounded-lg rotate-12 animate-float"></div>
-        <div className="absolute bottom-[20%] right-[15%] w-20 h-20 border-2 border-primary/20 rounded-full animate-float animation-delay-1000"></div>
-        <div className="absolute top-[60%] right-[25%] w-12 h-12 border-2 border-primary/20 rotate-45 animate-float animation-delay-2000"></div>
-
-        {/* SVG Paths */}
-        <svg
-          className="absolute inset-0 w-full h-full opacity-[0.07]"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M0,100 Q150,50 300,200 T600,100 T900,100"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            className="text-primary animate-draw"
-          />
-          <path
-            d="M0,200 Q200,150 400,250 T800,200"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            className="text-primary animate-draw animation-delay-1000"
-          />
-        </svg>
-      </div>
-
-      <div className="flex-1 relative z-10 flex flex-col items-center pt-8">
-        <div className="container flex flex-col items-center px-2 py-4 text-center md:py-8 lg:py-12 max-w-[1600px]">
-          <div className="w-full max-w-[1400px] space-y-4">
-            <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">
-              Proply Risk Index™
-            </h1>
-            <p className="mx-auto max-w-[800px] text-muted-foreground md:text-xl">
-              Get an instant risk assessment based on property details and
-              market conditions.
-            </p>
-          </div>
+      <div className="container mx-auto px-4 pt-[80px] pb-20">
+        <div className="text-center space-y-4 mb-12">
+          <h1 className="text-4xl font-bold">Proply Risk Index™</h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Comprehensive insurance risk assessment for your property investment
+          </p>
         </div>
 
         {!showResult ? (
-          <Card className="mx-auto mt-2 w-full max-w-[600px] bg-background rounded-lg p-6">
-            <h1 className="text-3xl font-bold mb-8 text-center">
-              Proply Risk Index™
-            </h1>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Property Address */}
-              <div>
-                <div className="flex flex-col w-full">
+          // Form section
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle>Property Risk Assessment</CardTitle>
+              <CardDescription>
+                Enter property details for a detailed risk analysis
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleFormSubmit}>
+              <CardContent className="space-y-8">
+                {/* Property Address */}
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="font-medium">
+                    <MapPin className="h-4 w-4 inline mr-1" /> Property Address
+                  </Label>
                   <AddressAutocomplete
-                    id="address"
-                    name="address"
-                    label="Property Address"
-                    placeholder="Enter the full property address"
+                    placeholder="Enter the property address"
                     value={formData.address}
-                    onChange={(value) => handleInputChange("address", value)}
-                    onAddressValidated={(addressData) => {
-                      if (addressData.validationStatus === "valid") {
-                        handleInputChange(
-                          "address",
-                          addressData.formattedAddress,
-                        );
-                      }
-                    }}
-                    className={
-                      checkRequiredFields("address") ? "border-red-500" : ""
-                    }
-                    required
+                    onChange={handleAddressChange}
                   />
-                  {checkRequiredFields("address") && (
-                    <p className="text-red-500 text-xs mt-1">
-                      Please enter the property address
-                    </p>
-                  )}
                 </div>
-              </div>
 
-              {/* Property Type */}
-              <div>
-                <Label htmlFor="propertyType" className="mb-1 block">
-                  Property Type
-                </Label>
-                <Select
-                  value={formData.propertyType}
-                  onValueChange={(value) =>
-                    handleInputChange("propertyType", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select property type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="apartment">Apartment</SelectItem>
-                    <SelectItem value="house">House</SelectItem>
-                    <SelectItem value="townhouse">Townhouse</SelectItem>
-                    <SelectItem value="villa">Villa</SelectItem>
-                    <SelectItem value="commercial">Commercial</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                {/* Property Type */}
+                <div className="space-y-2">
+                  <Label htmlFor="propertyType" className="font-medium">
+                    <Home className="h-4 w-4 inline mr-1" /> Property Type
+                  </Label>
+                  <Select
+                    value={formData.propertyType}
+                    onValueChange={(value) =>
+                      handleInputChange("propertyType", value)
+                    }
+                  >
+                    <SelectTrigger id="propertyType">
+                      <SelectValue placeholder="Select property type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="apartment">Apartment</SelectItem>
+                      <SelectItem value="house">House</SelectItem>
+                      <SelectItem value="townhouse">Townhouse</SelectItem>
+                      <SelectItem value="villa">Villa</SelectItem>
+                      <SelectItem value="commercial">Commercial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Property Size */}
-              <div>
-                <Label
-                  htmlFor="size"
-                  className="mb-1 block"
-                  data-error={checkRequiredFields("size")}
-                >
-                  Property Size (m²)
-                  <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative">
+                {/* Property Size */}
+                <div className="space-y-2">
+                  <Label htmlFor="size" className="font-medium">
+                    <Package2 className="h-4 w-4 inline mr-1" /> Property Size (m²)
+                  </Label>
                   <Input
                     id="size"
-                    placeholder="0"
+                    placeholder="Size in square meters"
                     value={formData.size}
                     onChange={(e) => handleInputChange("size", e.target.value)}
-                    className={
-                      checkRequiredFields("size")
-                        ? "border-red-500 pr-16"
-                        : "pr-16"
-                    }
                   />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <span className="text-muted-foreground">m²</span>
+                </div>
+
+                {/* Property Features */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="bedrooms" className="font-medium">
+                      <BarChart3 className="h-4 w-4 inline mr-1" /> Bedrooms
+                    </Label>
+                    <Input
+                      id="bedrooms"
+                      placeholder="e.g. 3"
+                      value={formData.bedrooms}
+                      onChange={(e) =>
+                        handleInputChange("bedrooms", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="bathrooms" className="font-medium">
+                      <Droplets className="h-4 w-4 inline mr-1" /> Bathrooms
+                    </Label>
+                    <Input
+                      id="bathrooms"
+                      placeholder="e.g. 2"
+                      value={formData.bathrooms}
+                      onChange={(e) =>
+                        handleInputChange("bathrooms", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="parking" className="font-medium">
+                      <Car className="h-4 w-4 inline mr-1" /> Parking
+                    </Label>
+                    <Input
+                      id="parking"
+                      placeholder="e.g. 1"
+                      value={formData.parking}
+                      onChange={(e) =>
+                        handleInputChange("parking", e.target.value)
+                      }
+                    />
                   </div>
                 </div>
-                {checkRequiredFields("size") && (
-                  <p className="text-red-500 text-xs mt-1">
-                    Please enter the property size
-                  </p>
-                )}
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Bedrooms */}
-                <div>
-                  <Label htmlFor="bedrooms" className="mb-1 block">
-                    Bedrooms
+                {/* Property Condition */}
+                <div className="space-y-2">
+                  <Label htmlFor="propertyCondition" className="font-medium">
+                    <Building className="h-4 w-4 inline mr-1" /> Property
+                    Condition
                   </Label>
-                  <Input
-                    id="bedrooms"
-                    placeholder="2"
-                    value={formData.bedrooms}
-                    onChange={(e) =>
-                      handleInputChange("bedrooms", e.target.value)
+                  <Select
+                    value={formData.propertyCondition}
+                    onValueChange={(value) =>
+                      handleInputChange("propertyCondition", value)
                     }
-                  />
+                  >
+                    <SelectTrigger id="propertyCondition">
+                      <SelectValue placeholder="Select property condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                {/* Bathrooms */}
-                <div>
-                  <Label htmlFor="bathrooms" className="mb-1 block">
-                    Bathrooms
+                {/* Purchase Price */}
+                <div className="space-y-2">
+                  <Label htmlFor="purchasePrice" className="font-medium">
+                    <CircleDollarSign className="h-4 w-4 inline mr-1" />{" "}
+                    Purchase Price/Property Value
                   </Label>
-                  <Input
-                    id="bathrooms"
-                    placeholder="2"
-                    value={formData.bathrooms}
-                    onChange={(e) =>
-                      handleInputChange("bathrooms", e.target.value)
-                    }
-                  />
-                </div>
-              </div>
-
-              {/* Parking */}
-              <div>
-                <Label htmlFor="parking" className="mb-1 block">
-                  Parking Spaces
-                </Label>
-                <Input
-                  id="parking"
-                  placeholder="1"
-                  value={formData.parking}
-                  onChange={(e) => handleInputChange("parking", e.target.value)}
-                />
-              </div>
-
-              {/* Property Condition */}
-              <div>
-                <Label htmlFor="propertyCondition" className="mb-1 block">
-                  Property Condition
-                </Label>
-                <Select
-                  value={formData.propertyCondition}
-                  onValueChange={(value) =>
-                    handleInputChange("propertyCondition", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select property condition" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="excellent">Excellent</SelectItem>
-                    <SelectItem value="good">Good</SelectItem>
-                    <SelectItem value="fair">Fair</SelectItem>
-                    <SelectItem value="poor">Poor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Purchase Price */}
-              <div>
-                <Label
-                  htmlFor="purchasePrice"
-                  className="mb-1 block"
-                  data-error={checkRequiredFields("purchasePrice")}
-                >
-                  Purchase Price/Property Value
-                  <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <span className="text-muted-foreground">R</span>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500">R</span>
+                    </div>
+                    <Input
+                      id="purchasePrice"
+                      className="pl-8"
+                      placeholder="e.g. 3,500,000"
+                      value={formData.purchasePrice}
+                      onChange={(e) =>
+                        handleInputChange("purchasePrice", e.target.value)
+                      }
+                    />
                   </div>
-                  <Input
-                    id="purchasePrice"
-                    placeholder="0"
-                    value={formData.purchasePrice}
-                    onChange={(e) =>
-                      handleInputChange("purchasePrice", e.target.value)
-                    }
-                    className={
-                      checkRequiredFields("purchasePrice")
-                        ? "border-red-500 pl-8"
-                        : "pl-8"
-                    }
-                  />
                 </div>
-                {checkRequiredFields("purchasePrice") && (
-                  <p className="text-red-500 text-xs mt-1">
-                    Please enter the purchase price
-                  </p>
-                )}
-              </div>
+              </CardContent>
 
-              {/* Submit Button */}
-              <div className="flex justify-end mt-6">
-                <Button type="submit" className="ml-auto">
+              <div className="flex items-center justify-end p-6 pt-0">
+                <Button type="submit" disabled={isLoading}>
                   {isLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Calculating...
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Processing
                     </>
                   ) : (
                     <>
@@ -900,9 +804,10 @@ export default function RiskIndexPage() {
                   </div>
                 </div>
 
-                {/* Property Details */}
+                {/* All Report Content in a Single Card */}
                 <Card className="bg-background border-0 shadow-md mt-12">
-                  <CardHeader>
+                  {/* Property Details Section */}
+                  <CardHeader className="border-b">
                     <CardTitle className="flex items-center justify-between">
                       <div className="flex items-center">
                         <Home className="mr-2 h-5 w-5" />
@@ -911,7 +816,7 @@ export default function RiskIndexPage() {
                       <ChevronDown className="h-5 w-5 text-muted-foreground" />
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-6 pb-2">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {/* General Information Column */}
                       <div className="space-y-6">
@@ -990,11 +895,9 @@ export default function RiskIndexPage() {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
 
-                {/* Risk Factors */}
-                <Card className="bg-background border-0 shadow-md">
-                  <CardHeader>
+                  {/* Risk Factors Section */}
+                  <CardHeader className="border-t border-b pt-8">
                     <CardTitle className="flex items-center">
                       <AlertCircle className="mr-2 h-5 w-5" />
                       Risk Factors
@@ -1004,7 +907,7 @@ export default function RiskIndexPage() {
                       risk score
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-6 pb-2">
                     <div className="space-y-4">
                       <div>
                         <div className="flex justify-between mb-1">
@@ -1169,11 +1072,9 @@ export default function RiskIndexPage() {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
 
-                {/* Projections */}
-                <Card className="bg-background border-0 shadow-md">
-                  <CardHeader>
+                  {/* Projections Section */}
+                  <CardHeader className="border-t border-b pt-8">
                     <CardTitle className="flex items-center">
                       <TrendingUp className="mr-2 h-5 w-5" />
                       Market Projections
@@ -1182,7 +1083,7 @@ export default function RiskIndexPage() {
                       Expected trends and performance insights
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-6 pb-2">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="p-4 border rounded-md">
                         <div className="flex items-center mb-2">
@@ -1225,16 +1126,14 @@ export default function RiskIndexPage() {
                         {riskResult.projections.trendDirection === "up"
                           ? "Overall positive trend expected"
                           : riskResult.projections.trendDirection === "stable"
-                            ? "Overall stable market performance expected"
-                            : "Caution advised - negative trend potential"}
+                            ? "Market expected to remain stable"
+                            : "Potential downward trend expected"}
                       </p>
                     </div>
                   </CardContent>
-                </Card>
 
-                {/* Recommendations */}
-                <Card className="bg-background border-0 shadow-md">
-                  <CardHeader>
+                  {/* Recommendations Section */}
+                  <CardHeader className="border-t pt-8">
                     <CardTitle className="flex items-center">
                       <CheckCircle2 className="mr-2 h-5 w-5" />
                       Recommendations
@@ -1243,12 +1142,12 @@ export default function RiskIndexPage() {
                       Strategic advice based on risk analysis
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-6 pb-6">
                     <ul className="space-y-2">
                       {riskResult.recommendations.map(
                         (recommendation, index) => (
                           <li key={index} className="flex items-start">
-                            <span className="mr-2 mt-0.5">•</span>
+                            <CheckCircle2 className="h-5 w-5 mr-2 text-green-500 shrink-0 mt-0.5" />
                             <span>{recommendation}</span>
                           </li>
                         ),
@@ -1256,22 +1155,6 @@ export default function RiskIndexPage() {
                     </ul>
                   </CardContent>
                 </Card>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col md:flex-row gap-4 justify-center mt-8">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowResult(false)}
-                    className="flex items-center"
-                  >
-                    <ArrowRight className="mr-2 h-4 w-4 rotate-180" />
-                    Return to Form
-                  </Button>
-                  <Button className="flex items-center">
-                    <Download className="mr-2 h-4 w-4" />
-                    Download Report
-                  </Button>
-                </div>
               </>
             )}
           </div>
