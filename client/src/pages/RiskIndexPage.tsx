@@ -772,10 +772,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             factors.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 max-w-4xl mx-auto">
-          
           {/* Property Location Map */}
-          <div className="mb-6 max-w-4xl mx-auto mt-10 md:col-span-2">
+          <div className="mb-6 max-w-4xl mx-auto">
             <h3 className="text-xl font-bold mb-4">
               <div className="flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-primary" />
@@ -792,6 +790,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               </div>
             </div>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 max-w-4xl mx-auto">
             {/* Risk Score Card */}
             <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
               <div className="p-6 flex flex-col items-center">
