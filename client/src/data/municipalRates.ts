@@ -28,7 +28,12 @@ export const municipalRates: MunicipalRate[] = [
     financialYear: "2024/2025",
     lastUpdated: "2025-04-02"
   },
-  // Add other municipalities here as needed
+  {
+    municipality: "Johannesburg",
+    rateInTheRand: 0.009125,
+    financialYear: "2024/2025", 
+    lastUpdated: "2025-04-02"
+  }
 ];
 
 /**
