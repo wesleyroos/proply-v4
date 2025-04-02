@@ -1,0 +1,90 @@
+Thought for 2 seconds### Proply Risk Index Data Requirements
+
+To transform the Proply Risk Index mock report into a working product, we need to identify the essential data points and their sources. Here's a breakdown of the required data:
+
+## User-Supplied Form Inputs
+
+These are data points that users would directly enter into a form:
+
+### Property Information
+
+- **Property Address** - Full address including street, suburb, city, postal code
+- **Property Type** - Apartment, house, townhouse, etc.
+- **Property Size (m²)** - Total floor area
+- **Bedrooms** - Number of bedrooms
+- **Bathrooms** - Number of bathrooms
+- **Parking** - Number and type of parking spaces
+- **Property Condition** - User assessment (Excellent, Good, Fair, Poor)
+- **Purchase Price/Property Value** - Current or expected purchase price
+
+
+### Property Features (Optional)
+
+- **Year Built** - Construction year
+- **Building Materials** - Primary construction materials
+- **Roof Type** - Material and design
+- **Basement/Lower Level** - Presence and condition
+- **Elevation** - Height above sea level (if known)
+
+
+## Data Retrieved from Partners/APIs
+
+These data points would be retrieved from external sources:
+
+### Security Risk Data
+
+- **Crime Statistics** - Local crime rates and patterns
+- **Security Infrastructure** - Area security measures
+- **Building Security Features** - Access control systems, monitoring
+- **Neighborhood Watch Programs** - Presence and effectiveness
+
+
+### Environmental Risk Data
+
+- **Air Quality Index** - Local air pollution levels
+- **Noise Pollution Levels** - Traffic, industrial, or other noise sources
+- **Industrial Proximity** - Distance to industrial zones
+- **Contamination History** - Past environmental incidents
+
+
+### Flood Risk Data
+
+- **Flood Zone Classification** - 1-in-100 year flood zone status
+- **Historical Flooding** - Past flooding events in the area
+- **Drainage Infrastructure** - Quality and capacity of local drainage
+- **Water Table Levels** - Groundwater proximity
+- **Proximity to Water Bodies** - Distance to rivers, lakes, ocean
+
+
+### Climate Risk Data
+
+- **Sea Level Rise Projections** - Future impact models
+- **Temperature Extremes** - Historical and projected temperature patterns
+- **Building Climate Resilience** - Energy efficiency ratings
+- **Severe Weather Frequency** - Storm, drought patterns
+
+
+### Hail Risk Data
+
+- **Hail Event Frequency** - Historical hail occurrences
+- **Hail Intensity Patterns** - Size and damage potential
+- **Roof Vulnerability Assessment** - Based on materials and design
+- **Vehicle Protection Facilities** - Covered parking availability
+
+
+### Location Analysis
+
+- **Traffic Index** - Traffic patterns and congestion levels
+- **Public Transport Proximity** - Distance to public transportation
+- **Shopping Centers Proximity** - Distance to retail facilities
+- **Schools Proximity** - Distance to educational institutions
+- **Hospitals Proximity** - Distance to healthcare facilities
+- **Parks & Recreation Proximity** - Distance to leisure facilities
+
+
+### Financial Data
+
+- **Municipal Value** - Official municipal property valuation
+- **Monthly Rates** - Municipal rates and taxes
+- **Levy** - Body corporate or HOA fees (for applicable properties)
+- **Historical Property Value Trends** - Price appreciation in the area
