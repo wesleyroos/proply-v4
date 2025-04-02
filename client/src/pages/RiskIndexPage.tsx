@@ -580,7 +580,7 @@ export default function RiskIndexPage() {
 
     // Risk summary
     const riskSummary = `This property presents an overall ${riskRating.toLowerCase()} risk profile (${Math.round(overallRiskPercentage)}%), with most risk factors being well-managed or naturally low. However, there are specific areas of concern:
-
+    
 ${floodRiskRating === "High" ? "High Flood Risk: The property's location in a flood-prone area represents a significant risk factor and should be carefully considered.\n" : ""}
 ${securityRiskRating === "Medium" || securityRiskRating === "High" ? `${securityRiskRating} Security Risk: ${securityRiskRating === "High" ? "This is a critical concern and" : "While not critical,"} security measures could be improved to enhance property protection.\n` : ""}
 ${environmentalRiskRating === "Medium" || environmentalRiskRating === "High" ? `${environmentalRiskRating} Environmental Risk: This moderate risk factor should be monitored, particularly regarding air quality and noise pollution.\n` : ""}
@@ -1195,8 +1195,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
       <div className="container mx-auto px-4 pt-[80px] pb-20">
         <div className="text-center space-y-4 mb-12">
           <h1 className="text-6xl font-bold">Proply Risk Index™</h1>
-          <p className="opacity-80 mt-2">{formData.address}</p>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mt-4">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Comprehensive insurance risk assessment for your property investment
           </p>
         </div>
