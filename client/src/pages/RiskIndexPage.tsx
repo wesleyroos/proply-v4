@@ -52,6 +52,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { calculateMonthlyRates, estimateMonthlyMunicipalCosts } from "../data/municipalRates";
 
 // Risk Result interface
 interface RiskResult {
@@ -551,10 +552,10 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         parking: formData.parking || "0",
         condition: formData.propertyCondition,
         price: formData.purchasePrice,
-        municipalValue: "3,600,000",
-        monthlyRates: "2,850",
+        municipalValue: formatWithThousandSeparators(String(Math.round(price * 1.03))), // Municipal value is typically slightly higher than purchase price
+        monthlyRates: formatWithThousandSeparators(String(Math.round(calculateMonthlyRates(price * 1.03)))),
         levy: "1,950",
-        estimatedMonthlyCosts: "7,350",
+        estimatedMonthlyCosts: formatWithThousandSeparators(String(Math.round(estimateMonthlyMunicipalCosts(price * 1.03)))),
         suburb: "Cape Town City Centre",
         city: "Cape Town",
         postalCode: "8001",
