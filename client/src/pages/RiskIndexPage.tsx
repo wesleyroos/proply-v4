@@ -875,7 +875,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
               <div className="p-6 flex flex-col items-center">
                 <h3 className="text-slate-700 font-medium mb-4">
-                  Property Risk Assessment
+                  Proply Risk Index™
                 </h3>
                 <div className="relative mb-3 w-36 h-36">
                   <svg className="w-36 h-36" viewBox="0 0 128 128">
