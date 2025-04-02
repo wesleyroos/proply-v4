@@ -987,7 +987,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
       <div className="container mx-auto px-4 pt-[80px] pb-20">
         <div className="text-center space-y-4 mb-12">
-          <h1 className="text-4xl font-bold">Proply Risk Index™</h1>
+          <h1 className="text-6xl font-bold">Proply Risk Index™</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Comprehensive insurance risk assessment for your property investment
           </p>
@@ -997,8 +997,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           // Form section
           <Card className="max-w-2xl mx-auto relative z-10 bg-white shadow-md">
             <CardHeader>
-              <CardTitle>Property Risk Assessment</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-xl text-center">Proply Risk Index™</CardTitle>
+              <CardDescription className="text-center">
                 Enter property details for a detailed risk analysis
               </CardDescription>
             </CardHeader>
