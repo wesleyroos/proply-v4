@@ -29,6 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function RiskIndexPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [demoClicks, setDemoClicks] = useState(0);
   const [formData, setFormData] = useState({
     // Property Details
     address: "",
@@ -85,6 +86,25 @@ export default function RiskIndexPage() {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const fillDemoData = () => {
+    setDemoClicks((prev) => {
+      if (prev === 2) {
+        setFormData({
+          address: "27 Leeuwen St, Cape Town City Centre, 8001",
+          purchasePrice: "3,500,000",
+          size: "85",
+          bedrooms: "2",
+          bathrooms: "2",
+          parking: "1",
+          propertyCondition: "excellent",
+          propertyType: "apartment",
+        });
+        return 0;
+      }
+      return prev + 1;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -407,6 +427,15 @@ export default function RiskIndexPage() {
             </p>
           </div>
         </footer>
+
+        {/* Secret Fill Data Button */}
+        <button
+          type="button"
+          onClick={fillDemoData}
+          className="fixed bottom-4 right-4 opacity-0"
+        >
+          Fill Demo Data
+        </button>
       </div>
     </div>
   );
