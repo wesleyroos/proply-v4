@@ -819,7 +819,7 @@ export default function RiskIndexPage() {
                     <div className="flex flex-col md:flex-row items-center justify-between">
                       <div className="mb-4 md:mb-0">
                         <h2 className="text-2xl font-bold">
-                          Proply Risk Index™ Score
+                          Property Risk Score
                         </h2>
                         <p className="text-muted-foreground">
                           {riskResult.propertyDetails.address}
@@ -865,64 +865,128 @@ export default function RiskIndexPage() {
                   </div>
                 </Card>
 
+                {/* Overall Risk Score with Scale */}
+                <div className="my-4">
+                  <div className="bg-slate-50 rounded-md p-4 mb-4 text-center">
+                    <h3 className="text-lg font-semibold">
+                      Overall Risk Score:{" "}
+                      <span className="text-green-600 font-bold">
+                        {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints} ({riskResult.overallRiskScore}%)
+                      </span>{" "}
+                      - {riskResult.riskRating} Risk Property
+                    </h3>
+                  </div>
+                  
+                  <div className="relative h-8 rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500">
+                    {/* Marker showing current risk level */}
+                    <div 
+                      className="absolute top-0 w-6 h-6 bg-white rounded-full border-2 border-gray-300 transform -translate-x-1/2"
+                      style={{ 
+                        left: `${riskResult.overallRiskScore}%`,
+                        top: '-4px' 
+                      }}
+                    />
+                    
+                    {/* Risk labels underneath */}
+                    <div className="absolute -bottom-8 left-0 text-sm font-medium">
+                      Low Risk
+                    </div>
+                    <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-sm font-medium">
+                      Medium Risk
+                    </div>
+                    <div className="absolute -bottom-8 right-0 text-sm font-medium">
+                      High Risk
+                    </div>
+                  </div>
+                </div>
+
                 {/* Property Details */}
-                <Card className="bg-background border-0 shadow-md">
+                <Card className="bg-background border-0 shadow-md mt-12">
                   <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Home className="mr-2 h-5 w-5" />
-                      Property Details
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <Home className="mr-2 h-5 w-5" />
+                        Property Details
+                      </div>
+                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Property Type
-                        </p>
-                        <p className="font-medium">
-                          {riskResult.propertyDetails.propertyType
-                            .charAt(0)
-                            .toUpperCase() +
-                            riskResult.propertyDetails.propertyType.slice(1)}
-                        </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* General Information Column */}
+                      <div className="space-y-6">
+                        <h3 className="text-lg font-semibold text-gray-700">General Information</h3>
+                        
+                        <div className="flex justify-between items-center border-b pb-2">
+                          <p className="text-sm text-muted-foreground">Property Type:</p>
+                          <p className="font-medium text-right">
+                            {riskResult.propertyDetails.propertyType
+                              .charAt(0)
+                              .toUpperCase() +
+                              riskResult.propertyDetails.propertyType.slice(1)}
+                          </p>
+                        </div>
+                        
+                        <div className="flex justify-between items-center border-b pb-2">
+                          <p className="text-sm text-muted-foreground">Size:</p>
+                          <p className="font-medium text-right">
+                            {riskResult.propertyDetails.size} m²
+                          </p>
+                        </div>
+                        
+                        <div className="flex justify-between items-center border-b pb-2">
+                          <p className="text-sm text-muted-foreground">Bedrooms:</p>
+                          <p className="font-medium text-right">
+                            {riskResult.propertyDetails.bedrooms}
+                          </p>
+                        </div>
+                        
+                        <div className="flex justify-between items-center border-b pb-2">
+                          <p className="text-sm text-muted-foreground">Bathrooms:</p>
+                          <p className="font-medium text-right">
+                            {riskResult.propertyDetails.bathrooms}
+                          </p>
+                        </div>
+                        
+                        <div className="flex justify-between items-center border-b pb-2">
+                          <p className="text-sm text-muted-foreground">Parking:</p>
+                          <p className="font-medium text-right">
+                            {riskResult.propertyDetails.parking} Covered
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Property Size
-                        </p>
-                        <p className="font-medium">
-                          {riskResult.propertyDetails.size} m²
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Purchase Price
-                        </p>
-                        <p className="font-medium">
-                          R {riskResult.propertyDetails.price}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Bedrooms
-                        </p>
-                        <p className="font-medium">
-                          {riskResult.propertyDetails.bedrooms}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Bathrooms
-                        </p>
-                        <p className="font-medium">
-                          {riskResult.propertyDetails.bathrooms}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Parking</p>
-                        <p className="font-medium">
-                          {riskResult.propertyDetails.parking}
-                        </p>
+                      
+                      {/* Financial Information Column */}
+                      <div className="space-y-6">
+                        <h3 className="text-lg font-semibold text-gray-700">Financial Information</h3>
+                        
+                        <div className="flex justify-between items-center border-b pb-2">
+                          <p className="text-sm text-muted-foreground">Municipal Value:</p>
+                          <p className="font-medium text-right">
+                            R{riskResult.propertyDetails.municipalValue}
+                          </p>
+                        </div>
+                        
+                        <div className="flex justify-between items-center border-b pb-2">
+                          <p className="text-sm text-muted-foreground">Monthly Rates:</p>
+                          <p className="font-medium text-right">
+                            R{riskResult.propertyDetails.monthlyRates}
+                          </p>
+                        </div>
+                        
+                        <div className="flex justify-between items-center border-b pb-2">
+                          <p className="text-sm text-muted-foreground">Levy:</p>
+                          <p className="font-medium text-right">
+                            R{riskResult.propertyDetails.levy}
+                          </p>
+                        </div>
+                        
+                        <div className="flex justify-between items-center border-b pb-2">
+                          <p className="text-sm text-muted-foreground">Estimated Monthly Costs:</p>
+                          <p className="font-medium text-right">
+                            R{riskResult.propertyDetails.estimatedMonthlyCosts}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
