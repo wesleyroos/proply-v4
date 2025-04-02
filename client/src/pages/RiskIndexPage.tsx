@@ -699,7 +699,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
     };
     
     return (
-      <div id="risk-index-report" className="space-y-8">
+      <div id="risk-index-report" className="space-y-8 max-w-[900px] mx-auto">
         {/* Property Title and Summary */}
         <div className="pb-8 text-center">
           <h2 className="text-2xl font-medium mb-2">Proply Risk Index™ (PRI)</h2>
@@ -1107,7 +1107,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           </Card>
         ) : (
           // Result display
-          <div className="w-full max-w-[1200px] mx-auto">
+          <div className="w-full max-w-[1000px] mx-auto">
             <Card className="w-full bg-white shadow-md rounded-lg">
               <CardContent className="p-8">
                 {riskResult && renderComprehensiveReport()}
