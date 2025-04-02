@@ -1255,25 +1255,13 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           </div>
         </div>
 
-        {/* Download Report Button */}
-        <div className="flex justify-center mt-8">
-          <EmailPDFButton
-            elementId="risk-index-report"
-            filename={`Proply_Risk_Index_${riskResult?.propertyDetails?.address?.split(",")[0] || "Report"}.pdf`}
-            className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md h-10 py-2 px-4 inline-flex items-center justify-center rounded-md text-sm font-medium"
-            propertyAddress={riskResult?.propertyDetails?.address}
-          >
-            Download Full Report
-          </EmailPDFButton>
-        </div>
-
         {/* Report Footer */}
-        <div className="pt-6 border-t text-center text-sm text-muted-foreground">
+        <div className="pt-6 border-t text-center text-sm text-muted-foreground mb-8">
           <div className="flex items-center justify-center">
             <img
-              src="/proply-logo-1.png"
+              src="/proply-favicon.png"
               alt="Proply Logo"
-              className="h-4 w-auto mr-2"
+              className="h-4 w-4 mr-2"
             />
             <span>
               Proply Risk Index™ Report - Generated on{" "}
@@ -1284,6 +1272,18 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               })}
             </span>
           </div>
+        </div>
+
+        {/* Download Report Button */}
+        <div className="flex justify-center">
+          <EmailPDFButton
+            elementId="risk-index-report"
+            filename={`Proply_Risk_Index_${riskResult?.propertyDetails?.address?.split(",")[0] || "Report"}.pdf`}
+            className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md h-10 py-2 px-4 inline-flex items-center justify-center rounded-md text-sm font-medium"
+            propertyAddress={riskResult?.propertyDetails?.address}
+          >
+            Download Full Report
+          </EmailPDFButton>
         </div>
       </div>
     );
