@@ -736,8 +736,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </div>
             <h3 className="text-lg font-semibold">{title} Risk</h3>
             <Badge className={getRiskColor(riskData.rating)}>
-              {riskData.score}/{riskData.maxScore} (
-              {Math.round(riskData.percentageScore)}%)
+              {Math.round(riskData.percentageScore)}%
             </Badge>
           </div>
 
@@ -931,7 +930,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <span className="font-medium text-sm">Security</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {riskResult.riskFactors.securityRisk.score}/{riskResult.riskFactors.securityRisk.maxScore}
+                          {Math.round(riskResult.riskFactors.securityRisk.percentageScore)}%
                         </span>
                         <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                           riskResult.riskFactors.securityRisk.rating === "Low" 
@@ -964,7 +963,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <span className="font-medium text-sm">Environmental</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {riskResult.riskFactors.environmentalRisk.score}/{riskResult.riskFactors.environmentalRisk.maxScore}
+                          {Math.round(riskResult.riskFactors.environmentalRisk.percentageScore)}%
                         </span>
                         <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                           riskResult.riskFactors.environmentalRisk.rating === "Low" 
@@ -997,7 +996,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <span className="font-medium text-sm">Flood</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {riskResult.riskFactors.floodRisk.score}/{riskResult.riskFactors.floodRisk.maxScore}
+                          {Math.round(riskResult.riskFactors.floodRisk.percentageScore)}%
                         </span>
                         <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                           riskResult.riskFactors.floodRisk.rating === "Low" 
@@ -1030,7 +1029,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <span className="font-medium text-sm">Climate</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {riskResult.riskFactors.climateRisk.score}/{riskResult.riskFactors.climateRisk.maxScore}
+                          {Math.round(riskResult.riskFactors.climateRisk.percentageScore)}%
                         </span>
                         <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                           riskResult.riskFactors.climateRisk.rating === "Low" 
@@ -1063,7 +1062,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <span className="font-medium text-sm">Hail</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {riskResult.riskFactors.hailRisk.score}/{riskResult.riskFactors.hailRisk.maxScore}
+                          {Math.round(riskResult.riskFactors.hailRisk.percentageScore)}%
                         </span>
                         <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                           riskResult.riskFactors.hailRisk.rating === "Low" 
@@ -1109,8 +1108,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
           <div className="mb-8">
             <div className="text-lg font-semibold mb-4">
-              Overall Risk Score: {riskResult.totalRiskPoints}/
-              {riskResult.maxRiskPoints} ({riskResult.overallRiskScore}%) -{" "}
+              Overall Risk Score: {riskResult.overallRiskScore}% -{" "}
               {riskResult.riskRating} Risk Property
             </div>
             <div className="flex justify-between text-sm text-gray-600 mb-2">
@@ -1188,9 +1186,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           </div>
 
           <div className="text-lg font-semibold mb-4 mt-8">
-            Total Risk Score: {riskResult.totalRiskPoints}/
-            {riskResult.maxRiskPoints} ({riskResult.overallRiskScore}% -{" "}
-            {riskResult.riskRating} Risk)
+            Total Risk Score: {riskResult.overallRiskScore}% -{" "}
+            {riskResult.riskRating} Risk
           </div>
 
           <div className="bg-blue-50 p-6 rounded-lg relative z-10">
