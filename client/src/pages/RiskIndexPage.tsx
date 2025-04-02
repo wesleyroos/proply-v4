@@ -399,7 +399,7 @@ export default function RiskIndexPage() {
         </Card>
 
         {/* Footer */}
-        <footer className="bg-muted py-6 px-6 w-full mt-12">
+        <footer className="py-6 px-6 w-full mt-12">
           <div className="max-w-7xl mx-auto text-center text-sm text-muted-foreground">
             <p>© {new Date().getFullYear()} Proply. All rights reserved.</p>
             <p className="mt-1">
