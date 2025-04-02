@@ -1256,7 +1256,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
         {/* Download Report Button */}
         <div className="flex justify-center mt-8">
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button className="bg-primary hover:bg-primary/90">
             <Download className="mr-2 h-4 w-4" />
             Download Full Report
           </Button>
