@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import AddressAutocomplete from "../components/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -123,259 +124,233 @@ export default function RiskIndexPage() {
 
   return (
     <div className="flex min-h-screen flex-col relative overflow-hidden bg-background">
-      {/* Decorative patterns - similar to Deal Score page */}
-      <div 
-        className="absolute inset-0 z-0 opacity-5 pointer-events-none"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle at 25% 25%, rgba(0, 0, 0, 0.2) 1px, transparent 1px),
-            radial-gradient(circle at 75% 75%, rgba(0, 0, 0, 0.2) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
-        }}
-      />
-      
-      <div className="relative z-10 flex flex-col flex-1">
-        {/* Header */}
-        <header className="relative bg-gradient-to-r from-primary to-blue-600 py-16 px-6 md:px-12">
-          <div 
-            className="absolute inset-0 z-0 opacity-10"
-            style={{
-              backgroundImage: `
-                linear-gradient(135deg, rgba(255, 255, 255, 0.3) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.3) 75%, transparent 75%, transparent)
-              `,
-              backgroundSize: '40px 40px',
-            }}
-          />
-          
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-6">
-              <div className="bg-white/20 p-4 rounded-xl">
-                <BarChart3 className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl md:text-4xl font-bold text-white">
-                  Proply Risk Index™
-                </h1>
-                <p className="text-white/90 mt-2 max-w-xl">
-                  Analyze property risks and investment outlook with our comprehensive assessment tool.
-                </p>
-              </div>
-            </div>
+      <div className="absolute top-8 left-8 z-20">
+        <img
+          src="/proply-logo-auth.png"
+          alt="Proply Logo"
+          className="h-8 w-auto"
+        />
+      </div>
+
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#8884_1px,transparent_1px),linear-gradient(to_bottom,#8884_1px,transparent_1px)] bg-[size:14px_24px]"></div>
+      </div>
+
+      <div className="flex-1 relative z-10 flex flex-col items-center pt-8">
+        <div className="container flex flex-col items-center px-2 py-8 text-center md:py-16 lg:py-24 max-w-[1600px]">
+          <div className="w-full max-w-[1400px] space-y-4">
+            <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">
+              Proply Risk Index™
+            </h1>
+            <p className="mx-auto max-w-[800px] text-muted-foreground md:text-xl">
+              Get an instant risk assessment based on property details and market conditions.
+            </p>
           </div>
-        </header>
+        </div>
 
-        {/* Main Content */}
-        <main className="flex-1 p-4 md:p-8">
-          <div 
-            className="mx-auto mt-10 w-full max-w-[600px] bg-background rounded-lg p-6 shadow-lg border border-border"
-          >
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2">Property Risk Assessment</h2>
-              <p className="text-muted-foreground">
-                Enter your property details below to calculate the risk index
-              </p>
-            </div>
+        <Card className="mx-auto mt-6 w-full max-w-[600px] bg-background rounded-lg p-6">
+          <h1 className="text-3xl font-bold mb-8 text-center">
+            Proply Risk Index™
+          </h1>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Property Address */}
-              <div>
-                <div className="flex flex-col w-full">
-                  <AddressAutocomplete
-                    id="address"
-                    name="address"
-                    label="Property Address"
-                    placeholder="Enter the full property address"
-                    value={formData.address}
-                    onChange={(value) => handleInputChange("address", value)}
-                    onAddressValidated={(addressData) => {
-                      if (addressData.validationStatus === "valid") {
-                        handleInputChange("address", addressData.formattedAddress);
-                      }
-                    }}
-                    className={
-                      checkRequiredFields("address") ? "border-red-500" : ""
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Property Address */}
+            <div>
+              <div className="flex flex-col w-full">
+                <AddressAutocomplete
+                  id="address"
+                  name="address"
+                  label="Property Address"
+                  placeholder="Enter the full property address"
+                  value={formData.address}
+                  onChange={(value) => handleInputChange("address", value)}
+                  onAddressValidated={(addressData) => {
+                    if (addressData.validationStatus === "valid") {
+                      handleInputChange("address", addressData.formattedAddress);
                     }
-                    required
-                  />
-                  {checkRequiredFields("address") && (
-                    <p className="text-red-500 text-xs mt-1">
-                      Please enter the property address
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Property Type */}
-              <div>
-                <Label htmlFor="propertyType" className="mb-1 block">
-                  Property Type
-                </Label>
-                <Select
-                  value={formData.propertyType}
-                  onValueChange={(value) => handleInputChange("propertyType", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select property type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="apartment">Apartment</SelectItem>
-                    <SelectItem value="house">House</SelectItem>
-                    <SelectItem value="townhouse">Townhouse</SelectItem>
-                    <SelectItem value="villa">Villa</SelectItem>
-                    <SelectItem value="commercial">Commercial</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Property Size */}
-              <div>
-                <Label
-                  htmlFor="size"
-                  className="mb-1 block"
-                  data-error={checkRequiredFields("size")}
-                >
-                  Property Size (m²)
-                  <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="size"
-                    placeholder="0"
-                    value={formData.size}
-                    onChange={(e) => handleInputChange("size", e.target.value)}
-                    className={
-                      checkRequiredFields("size") ? "border-red-500 pr-16" : "pr-16"
-                    }
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <span className="text-muted-foreground">m²</span>
-                  </div>
-                </div>
-                {checkRequiredFields("size") && (
+                  }}
+                  className={
+                    checkRequiredFields("address") ? "border-red-500" : ""
+                  }
+                  required
+                />
+                {checkRequiredFields("address") && (
                   <p className="text-red-500 text-xs mt-1">
-                    Please enter the property size
+                    Please enter the property address
                   </p>
                 )}
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Bedrooms */}
-                <div>
-                  <Label htmlFor="bedrooms" className="mb-1 block">
-                    Bedrooms
-                  </Label>
-                  <Input
-                    id="bedrooms"
-                    placeholder="2"
-                    value={formData.bedrooms}
-                    onChange={(e) => handleInputChange("bedrooms", e.target.value)}
-                  />
-                </div>
+            {/* Property Type */}
+            <div>
+              <Label htmlFor="propertyType" className="mb-1 block">
+                Property Type
+              </Label>
+              <Select
+                value={formData.propertyType}
+                onValueChange={(value) => handleInputChange("propertyType", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select property type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="apartment">Apartment</SelectItem>
+                  <SelectItem value="house">House</SelectItem>
+                  <SelectItem value="townhouse">Townhouse</SelectItem>
+                  <SelectItem value="villa">Villa</SelectItem>
+                  <SelectItem value="commercial">Commercial</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-                {/* Bathrooms */}
-                <div>
-                  <Label htmlFor="bathrooms" className="mb-1 block">
-                    Bathrooms
-                  </Label>
-                  <Input
-                    id="bathrooms"
-                    placeholder="2"
-                    value={formData.bathrooms}
-                    onChange={(e) => handleInputChange("bathrooms", e.target.value)}
-                  />
+            {/* Property Size */}
+            <div>
+              <Label
+                htmlFor="size"
+                className="mb-1 block"
+                data-error={checkRequiredFields("size")}
+              >
+                Property Size (m²)
+                <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative">
+                <Input
+                  id="size"
+                  placeholder="0"
+                  value={formData.size}
+                  onChange={(e) => handleInputChange("size", e.target.value)}
+                  className={
+                    checkRequiredFields("size") ? "border-red-500 pr-16" : "pr-16"
+                  }
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <span className="text-muted-foreground">m²</span>
                 </div>
               </div>
+              {checkRequiredFields("size") && (
+                <p className="text-red-500 text-xs mt-1">
+                  Please enter the property size
+                </p>
+              )}
+            </div>
 
-              {/* Parking */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Bedrooms */}
               <div>
-                <Label htmlFor="parking" className="mb-1 block">
-                  Parking Spaces
+                <Label htmlFor="bedrooms" className="mb-1 block">
+                  Bedrooms
                 </Label>
                 <Input
-                  id="parking"
-                  placeholder="1"
-                  value={formData.parking}
-                  onChange={(e) => handleInputChange("parking", e.target.value)}
+                  id="bedrooms"
+                  placeholder="2"
+                  value={formData.bedrooms}
+                  onChange={(e) => handleInputChange("bedrooms", e.target.value)}
                 />
               </div>
 
-              {/* Property Condition */}
+              {/* Bathrooms */}
               <div>
-                <Label htmlFor="propertyCondition" className="mb-1 block">
-                  Property Condition
+                <Label htmlFor="bathrooms" className="mb-1 block">
+                  Bathrooms
                 </Label>
-                <Select
-                  value={formData.propertyCondition}
-                  onValueChange={(value) => handleInputChange("propertyCondition", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select property condition" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="excellent">Excellent</SelectItem>
-                    <SelectItem value="good">Good</SelectItem>
-                    <SelectItem value="fair">Fair</SelectItem>
-                    <SelectItem value="poor">Poor</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="bathrooms"
+                  placeholder="2"
+                  value={formData.bathrooms}
+                  onChange={(e) => handleInputChange("bathrooms", e.target.value)}
+                />
               </div>
+            </div>
 
-              {/* Purchase Price */}
-              <div>
-                <Label
-                  htmlFor="purchasePrice"
-                  className="mb-1 block"
-                  data-error={checkRequiredFields("purchasePrice")}
-                >
-                  Purchase Price/Property Value
-                  <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <span className="text-muted-foreground">R</span>
-                  </div>
-                  <Input
-                    id="purchasePrice"
-                    placeholder="0"
-                    value={formData.purchasePrice}
-                    onChange={(e) => handleInputChange("purchasePrice", e.target.value)}
-                    className={
-                      checkRequiredFields("purchasePrice")
-                        ? "border-red-500 pl-8"
-                        : "pl-8"
-                    }
-                  />
+            {/* Parking */}
+            <div>
+              <Label htmlFor="parking" className="mb-1 block">
+                Parking Spaces
+              </Label>
+              <Input
+                id="parking"
+                placeholder="1"
+                value={formData.parking}
+                onChange={(e) => handleInputChange("parking", e.target.value)}
+              />
+            </div>
+
+            {/* Property Condition */}
+            <div>
+              <Label htmlFor="propertyCondition" className="mb-1 block">
+                Property Condition
+              </Label>
+              <Select
+                value={formData.propertyCondition}
+                onValueChange={(value) => handleInputChange("propertyCondition", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select property condition" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="excellent">Excellent</SelectItem>
+                  <SelectItem value="good">Good</SelectItem>
+                  <SelectItem value="fair">Fair</SelectItem>
+                  <SelectItem value="poor">Poor</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Purchase Price */}
+            <div>
+              <Label
+                htmlFor="purchasePrice"
+                className="mb-1 block"
+                data-error={checkRequiredFields("purchasePrice")}
+              >
+                Purchase Price/Property Value
+                <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <span className="text-muted-foreground">R</span>
                 </div>
-                {checkRequiredFields("purchasePrice") && (
-                  <p className="text-red-500 text-xs mt-1">
-                    Please enter the purchase price
-                  </p>
-                )}
+                <Input
+                  id="purchasePrice"
+                  placeholder="0"
+                  value={formData.purchasePrice}
+                  onChange={(e) => handleInputChange("purchasePrice", e.target.value)}
+                  className={
+                    checkRequiredFields("purchasePrice")
+                      ? "border-red-500 pl-8"
+                      : "pl-8"
+                  }
+                />
               </div>
+              {checkRequiredFields("purchasePrice") && (
+                <p className="text-red-500 text-xs mt-1">
+                  Please enter the purchase price
+                </p>
+              )}
+            </div>
 
-              {/* Submit Button */}
-              <div className="flex justify-end mt-6">
-                <Button type="submit" className="ml-auto">
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Calculating...
-                    </>
-                  ) : (
-                    <>
-                      Calculate Risk Index
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </main>
+            {/* Submit Button */}
+            <div className="flex justify-end mt-6">
+              <Button type="submit" className="ml-auto">
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Calculating...
+                  </>
+                ) : (
+                  <>
+                    Calculate Risk Index
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Card>
 
         {/* Footer */}
-        <footer className="bg-muted py-6 px-6 mt-12">
+        <footer className="bg-muted py-6 px-6 w-full mt-12">
           <div className="max-w-7xl mx-auto text-center text-sm text-muted-foreground">
             <p>© {new Date().getFullYear()} Proply. All rights reserved.</p>
             <p className="mt-1">
