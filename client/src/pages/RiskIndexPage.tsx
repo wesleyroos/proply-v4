@@ -850,23 +850,19 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 max-w-3xl mx-auto">
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-1">Purchase Price</p>
-              <p className="text-2xl font-bold">R{riskResult.propertyDetails.price}</p>
-              <button className="text-blue-600 text-sm mt-1">Edit</button>
+              <p className="text-xl font-bold">R{riskResult.propertyDetails.price}</p>
             </div>
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-1">Municipal Value</p>
-              <p className="text-2xl font-bold">R{riskResult.propertyDetails.municipalValue}</p>
-              <button className="text-blue-600 text-sm mt-1">Edit</button>
+              <p className="text-xl font-bold">R{riskResult.propertyDetails.municipalValue}</p>
             </div>
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-1">Monthly Rates</p>
-              <p className="text-2xl font-bold">R{riskResult.propertyDetails.monthlyRates}</p>
-              <button className="text-blue-600 text-sm mt-1">Edit</button>
+              <p className="text-xl font-bold">R{riskResult.propertyDetails.monthlyRates}</p>
             </div>
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-1">Est. Monthly Costs</p>
-              <p className="text-2xl font-bold">R{riskResult.propertyDetails.estimatedMonthlyCosts}</p>
-              <button className="text-blue-600 text-sm mt-1">Edit</button>
+              <p className="text-xl font-bold">R{riskResult.propertyDetails.estimatedMonthlyCosts}</p>
             </div>
           </div>
 
@@ -939,9 +935,6 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           <div className="mb-8">
             <h3 className="text-xl font-bold mb-4"></h3>
             <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative z-10">
-              <p className="text-sm text-muted-foreground mb-4">
-                {riskResult.propertyDetails.address}
-              </p>
               <div className="h-[300px] w-full rounded-lg overflow-hidden">
                 <PropertyMap
                   address={riskResult.propertyDetails.address}
