@@ -53,6 +53,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { calculateMonthlyRates, estimateMonthlyMunicipalCosts } from "../data/municipalRates";
+import PropertyMap from "../components/PropertyMap";
 
 // Risk Result interface
 interface RiskResult {
@@ -939,6 +940,25 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 </li>
               ))}
             </ul>
+          </div>
+        </div>
+
+        {/* Property Location Map */}
+        <div className="mb-8">
+          <h3 className="text-xl font-bold mb-4">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              Property Location
+            </div>
+          </h3>
+          <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative z-10">
+            <p className="text-sm text-muted-foreground mb-4">{riskResult.propertyDetails.address}</p>
+            <div className="h-[350px] w-full rounded-lg overflow-hidden">
+              <PropertyMap 
+                address={riskResult.propertyDetails.address} 
+                mapClassName="w-full h-full rounded-lg"
+              />
+            </div>
           </div>
         </div>
 
