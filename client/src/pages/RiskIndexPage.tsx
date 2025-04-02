@@ -703,42 +703,64 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         {/* Property Title and Summary */}
         <div className="pb-8 text-center">
           <h2 className="text-2xl font-bold mb-2">Proply Risk Index™ (PRI)</h2>
-          <h3 className="text-xl mb-2">{riskResult.propertyDetails.address}</h3>
+          <h3 className="text-xl mb-5">{riskResult.propertyDetails.address}</h3>
           
           {/* Feature Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-6">
             {riskResult.propertyDetails.bedrooms && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
                 {riskResult.propertyDetails.bedrooms} {parseInt(riskResult.propertyDetails.bedrooms) === 1 ? 'Bed' : 'Beds'}
               </Badge>
             )}
             {riskResult.propertyDetails.bathrooms && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
                 {riskResult.propertyDetails.bathrooms} {parseInt(riskResult.propertyDetails.bathrooms) === 1 ? 'Bath' : 'Baths'}
               </Badge>
             )}
             {riskResult.propertyDetails.size && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
                 {riskResult.propertyDetails.size} m²
               </Badge>
             )}
             {riskResult.propertyDetails.parking && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
                 {riskResult.propertyDetails.parking} Parking
               </Badge>
             )}
             {riskResult.propertyDetails.propertyType && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+              <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 text-sm capitalize">
                 {riskResult.propertyDetails.propertyType.charAt(0).toUpperCase() + riskResult.propertyDetails.propertyType.slice(1)}
               </Badge>
             )}
             {riskResult.propertyDetails.condition && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm capitalize flex items-center gap-1">
                 {riskResult.propertyDetails.condition.charAt(0).toUpperCase() + riskResult.propertyDetails.condition.slice(1)} Condition 
-                {riskResult.propertyDetails.condition === "excellent" && " ★★★★"}
-                {riskResult.propertyDetails.condition === "good" && " ★★★"}
-                {riskResult.propertyDetails.condition === "fair" && " ★★"}
-                {riskResult.propertyDetails.condition === "poor" && " ★"}
+                <span className="ml-1 flex">
+                  {riskResult.propertyDetails.condition === "excellent" && (
+                    <>
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    </>
+                  )}
+                  {riskResult.propertyDetails.condition === "good" && (
+                    <>
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    </>
+                  )}
+                  {riskResult.propertyDetails.condition === "fair" && (
+                    <>
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    </>
+                  )}
+                  {riskResult.propertyDetails.condition === "poor" && (
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  )}
+                </span>
               </Badge>
             )}
           </div>
