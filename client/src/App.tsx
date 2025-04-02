@@ -39,6 +39,7 @@ import AirbnbYieldCalculator from "./pages/AirbnbYieldCalculator";
 import DealScorePage from "./pages/DealScorePage";
 import DealScorePublicPage from "./pages/DealScorePublicPage";
 import DealScoreReportPage from "./pages/DealScoreReportPage";
+import RiskIndexPage from "./pages/RiskIndexPage";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -196,6 +197,11 @@ function App() {
             <Route path="/deal-score/report" component={() => (
               <PageTransition>
                 <DealScoreReportPage />
+              </PageTransition>
+            )} />
+            <Route path="/risk-index" component={() => (
+              <PageTransition>
+                <RiskIndexPage />
               </PageTransition>
             )} />
 
