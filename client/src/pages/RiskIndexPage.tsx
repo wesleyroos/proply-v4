@@ -702,8 +702,47 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
       <div id="risk-index-report" className="space-y-8 max-w-[900px] mx-auto">
         {/* Property Title and Summary */}
         <div className="pb-8 text-center">
-          <h2 className="text-2xl font-medium mb-2">Proply Risk Index™ (PRI)</h2>
-          <h3 className="text-xl mb-5">{riskResult.propertyDetails.address}</h3>
+          <h2 className="text-2xl font-bold mb-2">Proply Risk Index™ (PRI)</h2>
+          <h3 className="text-xl mb-2">{riskResult.propertyDetails.address}</h3>
+          
+          {/* Feature Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+            {riskResult.propertyDetails.bedrooms && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+                {riskResult.propertyDetails.bedrooms} {parseInt(riskResult.propertyDetails.bedrooms) === 1 ? 'Bed' : 'Beds'}
+              </Badge>
+            )}
+            {riskResult.propertyDetails.bathrooms && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+                {riskResult.propertyDetails.bathrooms} {parseInt(riskResult.propertyDetails.bathrooms) === 1 ? 'Bath' : 'Baths'}
+              </Badge>
+            )}
+            {riskResult.propertyDetails.size && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+                {riskResult.propertyDetails.size} m²
+              </Badge>
+            )}
+            {riskResult.propertyDetails.parking && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+                {riskResult.propertyDetails.parking} Parking
+              </Badge>
+            )}
+            {riskResult.propertyDetails.propertyType && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+                {riskResult.propertyDetails.propertyType.charAt(0).toUpperCase() + riskResult.propertyDetails.propertyType.slice(1)}
+              </Badge>
+            )}
+            {riskResult.propertyDetails.condition && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+                {riskResult.propertyDetails.condition.charAt(0).toUpperCase() + riskResult.propertyDetails.condition.slice(1)} Condition 
+                {riskResult.propertyDetails.condition === "excellent" && " ★★★★"}
+                {riskResult.propertyDetails.condition === "good" && " ★★★"}
+                {riskResult.propertyDetails.condition === "fair" && " ★★"}
+                {riskResult.propertyDetails.condition === "poor" && " ★"}
+              </Badge>
+            )}
+          </div>
+          
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
             A comprehensive assessment of property risks including security, environmental, flood, climate, and hail
             factors.
