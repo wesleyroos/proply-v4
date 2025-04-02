@@ -186,7 +186,7 @@ export default function RiskIndexPage() {
       </div>
 
       <div className="flex-1 relative z-10 flex flex-col items-center pt-8">
-        <div className="container flex flex-col items-center px-2 py-8 text-center md:py-16 lg:py-24 max-w-[1600px]">
+        <div className="container flex flex-col items-center px-2 py-4 text-center md:py-8 lg:py-12 max-w-[1600px]">
           <div className="w-full max-w-[1400px] space-y-4">
             <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">
               Proply Risk Index™
@@ -197,7 +197,7 @@ export default function RiskIndexPage() {
           </div>
         </div>
 
-        <Card className="mx-auto mt-6 w-full max-w-[600px] bg-background rounded-lg p-6">
+        <Card className="mx-auto mt-2 w-full max-w-[600px] bg-background rounded-lg p-6">
           <h1 className="text-3xl font-bold mb-8 text-center">
             Proply Risk Index™
           </h1>
