@@ -821,21 +821,20 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 </div>
               </div>
               <div className="p-5">
-                <p className="text-lg font-medium mb-4">R{riskResult.propertyDetails.price}</p>
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-2 gap-6 mb-4">
+                  <div>
+                    <p className="text-sm text-slate-500">Purchase Price</p>
+                    <p className="text-lg font-medium">R{riskResult.propertyDetails.price}</p>
+                  </div>
                   <div>
                     <p className="text-sm text-slate-500">Municipal Value</p>
                     <p className="font-medium">R{riskResult.propertyDetails.municipalValue}</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-slate-500">Monthly Rates</p>
-                      <p className="font-medium">R{riskResult.propertyDetails.monthlyRates}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-500">Levy</p>
-                      <p className="font-medium">R{riskResult.propertyDetails.levy}</p>
-                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm text-slate-500">Monthly Rates</p>
+                    <p className="font-medium">R{riskResult.propertyDetails.monthlyRates}</p>
                   </div>
                   <div>
                     <p className="text-sm text-slate-500">Est. Monthly Costs</p>
