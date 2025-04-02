@@ -1006,14 +1006,12 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               <CardContent className="space-y-8">
                 {/* Property Address */}
                 <div className="space-y-2 text-center">
-                  <Label htmlFor="address" className="mb-1 block">
-                    Property Address
-                    <span className="text-red-500">*</span>
-                  </Label>
                   <AddressAutocomplete
+                    label="Property Address"
                     placeholder="Enter the property address"
                     value={formData.address}
                     onChange={handleAddressChange}
+                    required={true}
                   />
                 </div>
 

@@ -238,14 +238,13 @@ export default function AddressAutocomplete({
   return (
     <div className="relative w-full">
       {label && (
-        <Label htmlFor={id} className="mb-2 block">
+        <Label htmlFor={id} className="mb-1 block text-center">
           {label} {required && <span className="text-red-500">*</span>}
         </Label>
       )}
       
       <div className="relative">
         <div className="relative flex items-center">
-          <MapPin className="absolute left-3 h-4 w-4 text-gray-400" />
           <Input
             ref={inputRef}
             type="text"
@@ -258,7 +257,7 @@ export default function AddressAutocomplete({
             }}
             onFocus={() => value && value.length >= 3 && setShowSuggestions(true)}
             placeholder={placeholder}
-            className={`pl-9 pr-12 ${className}`}
+            className={`pr-12 ${className}`}
             disabled={disabled}
             required={required}
           />
