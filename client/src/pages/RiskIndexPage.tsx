@@ -52,7 +52,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { calculateMonthlyRates, estimateMonthlyMunicipalCosts } from "../data/municipalRates";
+import { calculateMonthlyRates, estimateMonthlyMunicipalCosts, getAvailableMunicipalities } from "../data/municipalRates";
 
 // Risk Result interface
 interface RiskResult {
@@ -147,6 +147,7 @@ export default function RiskIndexPage() {
     parking: "",
     propertyCondition: "excellent",
     propertyType: "apartment", // Default to apartment
+    municipality: "Cape Town", // Default to Cape Town
   });
 
   const formatWithThousandSeparators = (value: string): string => {
@@ -207,6 +208,7 @@ export default function RiskIndexPage() {
           parking: "1",
           propertyCondition: "excellent",
           propertyType: "apartment",
+          municipality: "Cape Town",
         });
         return 0;
       }
@@ -553,9 +555,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         condition: formData.propertyCondition,
         price: formData.purchasePrice,
         municipalValue: formatWithThousandSeparators(String(Math.round(price * 1.03))), // Municipal value is typically slightly higher than purchase price
-        monthlyRates: formatWithThousandSeparators(String(Math.round(calculateMonthlyRates(price * 1.03)))),
+        monthlyRates: formatWithThousandSeparators(String(Math.round(calculateMonthlyRates(price * 1.03, formData.municipality)))),
         levy: "1,950",
-        estimatedMonthlyCosts: formatWithThousandSeparators(String(Math.round(estimateMonthlyMunicipalCosts(price * 1.03)))),
+        estimatedMonthlyCosts: formatWithThousandSeparators(String(Math.round(estimateMonthlyMunicipalCosts(price * 1.03, formData.municipality)))),
         suburb: "Cape Town City Centre",
         city: "Cape Town",
         postalCode: "8001",
@@ -1168,6 +1170,30 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <SelectItem value="good">Good</SelectItem>
                       <SelectItem value="fair">Fair</SelectItem>
                       <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Municipality */}
+                <div className="text-center">
+                  <Label htmlFor="municipality" className="mb-1 block">
+                    Municipality
+                  </Label>
+                  <Select
+                    value={formData.municipality}
+                    onValueChange={(value) =>
+                      handleInputChange("municipality", value)
+                    }
+                  >
+                    <SelectTrigger id="municipality">
+                      <SelectValue placeholder="Select municipality" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getAvailableMunicipalities().map((municipality) => (
+                        <SelectItem key={municipality} value={municipality}>
+                          {municipality}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
