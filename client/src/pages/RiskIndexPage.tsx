@@ -915,17 +915,140 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               </div>
             </div>
 
-            {/* Property Value Card */}
+            {/* Risk Factors Card */}
             <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
               <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                 <div className="flex items-center">
-                  <CircleDollarSign className="h-5 w-5 text-white mr-2" />
-                  <h4 className="font-semibold text-white">Property Value</h4>
+                  <AlertTriangle className="h-5 w-5 text-white mr-2" />
+                  <h4 className="font-semibold text-white">Risk Factors</h4>
                 </div>
               </div>
-              <div className="p-5 flex items-center justify-center h-[200px] text-slate-400">
-                <div className="text-center">
-                  <span className="block text-sm">Area for future content</span>
+              <div className="p-5 overflow-auto h-[300px]">
+                <div className="space-y-4">
+                  {/* Security Risk */}
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <div className="flex items-center">
+                      {getRiskIcon("security")}
+                      <span className="ml-2 font-medium">Security</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className={`text-sm px-2 py-0.5 rounded-full ${
+                        riskResult.riskFactors.securityRisk.rating === "Low" 
+                          ? "bg-green-100 text-green-800" 
+                          : riskResult.riskFactors.securityRisk.rating === "Medium" 
+                          ? "bg-yellow-100 text-yellow-800" 
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {riskResult.riskFactors.securityRisk.rating}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {riskResult.riskFactors.securityRisk.score}/{riskResult.riskFactors.securityRisk.maxScore}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        ({riskResult.riskFactors.securityRisk.percentageScore}%)
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Environmental Risk */}
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <div className="flex items-center">
+                      {getRiskIcon("environmental")}
+                      <span className="ml-2 font-medium">Environmental</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className={`text-sm px-2 py-0.5 rounded-full ${
+                        riskResult.riskFactors.environmentalRisk.rating === "Low" 
+                          ? "bg-green-100 text-green-800" 
+                          : riskResult.riskFactors.environmentalRisk.rating === "Medium" 
+                          ? "bg-yellow-100 text-yellow-800" 
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {riskResult.riskFactors.environmentalRisk.rating}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {riskResult.riskFactors.environmentalRisk.score}/{riskResult.riskFactors.environmentalRisk.maxScore}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        ({riskResult.riskFactors.environmentalRisk.percentageScore}%)
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Flood Risk */}
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <div className="flex items-center">
+                      {getRiskIcon("flood")}
+                      <span className="ml-2 font-medium">Flood</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className={`text-sm px-2 py-0.5 rounded-full ${
+                        riskResult.riskFactors.floodRisk.rating === "Low" 
+                          ? "bg-green-100 text-green-800" 
+                          : riskResult.riskFactors.floodRisk.rating === "Medium" 
+                          ? "bg-yellow-100 text-yellow-800" 
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {riskResult.riskFactors.floodRisk.rating}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {riskResult.riskFactors.floodRisk.score}/{riskResult.riskFactors.floodRisk.maxScore}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        ({riskResult.riskFactors.floodRisk.percentageScore}%)
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Climate Risk */}
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <div className="flex items-center">
+                      {getRiskIcon("climate")}
+                      <span className="ml-2 font-medium">Climate</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className={`text-sm px-2 py-0.5 rounded-full ${
+                        riskResult.riskFactors.climateRisk.rating === "Low" 
+                          ? "bg-green-100 text-green-800" 
+                          : riskResult.riskFactors.climateRisk.rating === "Medium" 
+                          ? "bg-yellow-100 text-yellow-800" 
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {riskResult.riskFactors.climateRisk.rating}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {riskResult.riskFactors.climateRisk.score}/{riskResult.riskFactors.climateRisk.maxScore}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        ({riskResult.riskFactors.climateRisk.percentageScore}%)
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Hail Risk */}
+                  <div className="flex items-center justify-between pb-3">
+                    <div className="flex items-center">
+                      {getRiskIcon("hail")}
+                      <span className="ml-2 font-medium">Hail</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className={`text-sm px-2 py-0.5 rounded-full ${
+                        riskResult.riskFactors.hailRisk.rating === "Low" 
+                          ? "bg-green-100 text-green-800" 
+                          : riskResult.riskFactors.hailRisk.rating === "Medium" 
+                          ? "bg-yellow-100 text-yellow-800" 
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {riskResult.riskFactors.hailRisk.rating}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {riskResult.riskFactors.hailRisk.score}/{riskResult.riskFactors.hailRisk.maxScore}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        ({riskResult.riskFactors.hailRisk.percentageScore}%)
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
