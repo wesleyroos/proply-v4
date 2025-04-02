@@ -846,6 +846,26 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             )}
           </div>
 
+          {/* Property Value Information */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 max-w-3xl mx-auto">
+            <div className="text-center p-3 bg-slate-50 rounded-lg">
+              <p className="text-sm text-slate-500">Purchase Price</p>
+              <p className="text-lg font-medium">R{riskResult.propertyDetails.price}</p>
+            </div>
+            <div className="text-center p-3 bg-slate-50 rounded-lg">
+              <p className="text-sm text-slate-500">Municipal Value</p>
+              <p className="font-medium">R{riskResult.propertyDetails.municipalValue}</p>
+            </div>
+            <div className="text-center p-3 bg-slate-50 rounded-lg">
+              <p className="text-sm text-slate-500">Monthly Rates</p>
+              <p className="font-medium">R{riskResult.propertyDetails.monthlyRates}</p>
+            </div>
+            <div className="text-center p-3 bg-slate-50 rounded-lg">
+              <p className="text-sm text-slate-500">Est. Monthly Costs</p>
+              <p className="font-medium">R{riskResult.propertyDetails.estimatedMonthlyCosts}</p>
+            </div>
+          </div>
+
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
             A comprehensive assessment of property risks including security,
             environmental, flood, climate, and hail factors.
@@ -903,34 +923,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                   <h4 className="font-semibold text-white">Property Value</h4>
                 </div>
               </div>
-              <div className="p-5">
-                <div className="grid grid-cols-2 gap-6 mb-4">
-                  <div>
-                    <p className="text-sm text-slate-500">Purchase Price</p>
-                    <p className="text-lg font-medium">
-                      R{riskResult.propertyDetails.price}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Municipal Value</p>
-                    <p className="font-medium">
-                      R{riskResult.propertyDetails.municipalValue}
-                    </p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-sm text-slate-500">Monthly Rates</p>
-                    <p className="font-medium">
-                      R{riskResult.propertyDetails.monthlyRates}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Est. Monthly Costs</p>
-                    <p className="font-medium">
-                      R{riskResult.propertyDetails.estimatedMonthlyCosts}
-                    </p>
-                  </div>
+              <div className="p-5 flex items-center justify-center h-[200px] text-slate-400">
+                <div className="text-center">
+                  <span className="block text-sm">Area for future content</span>
                 </div>
               </div>
             </div>
@@ -940,6 +935,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           <div className="mb-8">
             <h3 className="text-xl font-bold mb-4"></h3>
             <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative z-10">
+              <p className="text-sm text-muted-foreground mb-4">
+                {riskResult.propertyDetails.address}
+              </p>
               <div className="h-[300px] w-full rounded-lg overflow-hidden">
                 <PropertyMap
                   address={riskResult.propertyDetails.address}
