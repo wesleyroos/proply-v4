@@ -1256,10 +1256,14 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
         {/* Download Report Button */}
         <div className="flex justify-center mt-8">
-          <Button className="bg-primary hover:bg-primary/90">
-            <Download className="mr-2 h-4 w-4" />
+          <EmailPDFButton
+            elementId="deal-score-report"
+            filename={`Proply_Deal_Score_${dealReport?.address?.split(",")[0] || "Report"}.pdf`}
+            className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md h-10 py-2 px-4 inline-flex items-center justify-center rounded-md text-sm font-medium"
+            propertyAddress={dealReport?.address}
+          >
             Download Full Report
-          </Button>
+          </EmailPDFButton>
         </div>
 
         {/* Report Footer */}
