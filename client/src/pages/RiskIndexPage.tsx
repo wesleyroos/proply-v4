@@ -907,25 +907,21 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             <p className="text-gray-700 mb-4">
               This property presents an overall {riskResult.riskRating.toLowerCase()} risk profile ({riskResult.overallRiskScore}%), with most risk factors being well-managed or naturally low. However, there are specific areas of concern:
             </p>
-            <ul className="space-y-3 pl-1">
-              <li className="flex items-start">
-                <span className="text-red-600 font-medium mr-2">• High Flood Risk:</span>
-                <span>The property's location in a flood-prone area represents the most significant risk factor and should be carefully considered.</span>
+            <ul className="space-y-4 ml-5 list-disc">
+              <li>
+                <span className="text-red-600 font-medium">High Flood Risk:</span> The property's location in a flood-prone area represents the most significant risk factor and should be carefully considered.
               </li>
               
-              <li className="flex items-start">
-                <span className="text-amber-600 font-medium mr-2">• Medium Security Risk:</span>
-                <span>While not critical, security measures could be improved to enhance property protection.</span>
+              <li>
+                <span className="text-amber-600 font-medium">Medium Security Risk:</span> While not critical, security measures could be improved to enhance property protection.
               </li>
               
-              <li className="flex items-start">
-                <span className="text-amber-600 font-medium mr-2">• Medium Environmental & Hail Risk:</span>
-                <span>These moderate risk factors should be monitored but don't present immediate concerns.</span>
+              <li>
+                <span className="text-amber-600 font-medium">Medium Environmental & Hail Risk:</span> These moderate risk factors should be monitored but don't present immediate concerns.
               </li>
               
-              <li className="flex items-start">
-                <span className="text-green-600 font-medium mr-2">• Low Climate Risk:</span>
-                <span>The property is well-positioned to withstand long-term climate change impacts.</span>
+              <li>
+                <span className="text-green-600 font-medium">Low Climate Risk:</span> The property is well-positioned to withstand long-term climate change impacts.
               </li>
             </ul>
           </div>
@@ -936,11 +932,10 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           <h3 className="text-xl font-bold mb-4">Recommendations</h3>
           <div className="bg-blue-50 p-6 rounded-lg relative z-10">
             <h4 className="text-blue-600 font-semibold text-lg mb-3">Insurance Considerations</h4>
-            <ul className="space-y-3">
+            <ul className="space-y-4 ml-5 list-disc">
               {riskResult.recommendations.map((recommendation, index) => (
-                <li key={index} className="flex items-start">
-                  <CheckCircle2 className="h-5 w-5 mr-2 text-green-500 shrink-0 mt-0.5" />
-                  <span>{recommendation}</span>
+                <li key={index}>
+                  <span className="text-gray-700">{recommendation}</span>
                 </li>
               ))}
             </ul>
