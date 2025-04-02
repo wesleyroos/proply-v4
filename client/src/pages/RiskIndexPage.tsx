@@ -728,7 +728,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               </Badge>
             )}
             {riskResult.propertyDetails.propertyType && (
-              <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 text-sm capitalize">
+              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm capitalize">
                 {riskResult.propertyDetails.propertyType.charAt(0).toUpperCase() + riskResult.propertyDetails.propertyType.slice(1)}
               </Badge>
             )}
@@ -770,7 +770,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             factors.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 max-w-4xl mx-auto">
             {/* Risk Score Card */}
             <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
               <div className="p-6 flex flex-col items-center">
@@ -808,43 +808,6 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                   className={`text-xl font-semibold ${riskResult.overallRiskScore <= 33 ? "text-green-600" : riskResult.overallRiskScore <= 66 ? "text-yellow-600" : "text-red-600"}`}
                 >
                   {riskResult.riskRating} Risk
-                </div>
-              </div>
-            </div>
-
-            {/* Property Address Card */}
-            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
-              <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
-                <div className="flex items-center">
-                  <MapPin className="h-5 w-5 text-white mr-2" />
-                  <h4 className="font-semibold text-white">Property Address</h4>
-                </div>
-              </div>
-              <div className="p-5">
-                <p className="text-lg font-medium mb-4">{riskResult.propertyDetails.address}</p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-slate-500">Property Type</p>
-                    <p className="font-medium">{riskResult.propertyDetails.propertyType.charAt(0).toUpperCase() + riskResult.propertyDetails.propertyType.slice(1)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Size</p>
-                    <p className="font-medium">{riskResult.propertyDetails.size} m²</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4 mt-4">
-                  <div>
-                    <p className="text-sm text-slate-500">Bedrooms</p>
-                    <p className="font-medium">{riskResult.propertyDetails.bedrooms}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Bathrooms</p>
-                    <p className="font-medium">{riskResult.propertyDetails.bathrooms}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Parking</p>
-                    <p className="font-medium">{riskResult.propertyDetails.parking} Covered</p>
-                  </div>
                 </div>
               </div>
             </div>

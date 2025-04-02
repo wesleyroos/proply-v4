@@ -1995,7 +1995,7 @@ export default function DealScorePublicPage() {
                 ))}
               </span>
             </Badge>
-            <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 text-sm capitalize">
+            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm capitalize">
               {dealReport.propertyType || "Apartment"}
             </Badge>
           </div>
