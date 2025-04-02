@@ -773,7 +773,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         {/* Property Title and Summary */}
         <div className="pb-8 text-center">
           <h2 className="text-2xl font-bold mb-2">Proply Risk Index™ (PRI)</h2>
-          <h3 className="text-xl mb-5">{riskResult.propertyDetails.address}</h3>
+          <h3 className="text-3xl mb-5">{riskResult.propertyDetails.address}</h3>
 
           {/* Feature Badges */}
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-6">
