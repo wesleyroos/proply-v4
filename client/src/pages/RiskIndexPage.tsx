@@ -910,6 +910,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         {/* Report Footer */}
         <div className="pt-6 border-t text-center text-sm text-muted-foreground">
           <div className="flex items-center justify-center">
+            <img src="/Proply Logo 3.png" alt="Proply Logo" className="h-4 w-auto mr-2" />
             <span>
               Proply Risk Index™ Report - Generated on{" "}
               {new Date().toLocaleDateString("en-ZA", { year: "numeric", month: "long", day: "numeric" })}
@@ -922,9 +923,23 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Proply Logo */}
+      <div className="absolute top-8 left-8 z-20">
+        <img src="/Proply Logo 3.png" alt="Proply Logo" className="h-8 w-auto" />
+      </div>
+      
       {/* Background Elements */}
       <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]">
         <div className="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_500px_at_50%_200px,#e5f9ff,transparent)]" />
+      </div>
+      
+      {/* Enhanced Background Patterns */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#8884_1px,transparent_1px),linear-gradient(to_bottom,#8884_1px,transparent_1px)] bg-[size:14px_24px]"></div>
+        
+        <div className="absolute -top-[150px] -left-[150px] w-[300px] h-[300px] rounded-full bg-primary/10 blur-3xl"></div>
+        <div className="absolute top-[20%] -right-[100px] w-[200px] h-[200px] rounded-full bg-blue-400/10 blur-3xl"></div>
+        <div className="absolute -bottom-[150px] left-[20%] w-[250px] h-[250px] rounded-full bg-primary/10 blur-3xl"></div>
       </div>
 
       <div className="container mx-auto px-4 pt-[80px] pb-20">
