@@ -580,7 +580,7 @@ export default function RiskIndexPage() {
     }
 
     // Risk summary
-    const riskSummary = `This property presents an overall ${riskRating.toLowerCase()} risk profile (${totalRiskPoints}/${maxRiskPoints} or ${Math.round(overallRiskPercentage)}%), with most risk factors being well-managed or naturally low. However, there are specific areas of concern:
+    const riskSummary = `This property presents an overall ${riskRating.toLowerCase()} risk profile (${Math.round(overallRiskPercentage)}%), with most risk factors being well-managed or naturally low. However, there are specific areas of concern:
     
 ${floodRiskRating === "High" ? "High Flood Risk: The property's location in a flood-prone area represents a significant risk factor and should be carefully considered.\n" : ""}
 ${securityRiskRating === "Medium" || securityRiskRating === "High" ? `${securityRiskRating} Security Risk: ${securityRiskRating === "High" ? "This is a critical concern and" : "While not critical,"} security measures could be improved to enhance property protection.\n` : ""}
@@ -1109,7 +1109,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
           <div className="mb-8">
             <div className="text-lg font-semibold mb-4">
-              Overall Risk Score: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints} ({riskResult.overallRiskScore}%) -{" "}
+              Overall Risk Score: {riskResult.overallRiskScore}% -{" "}
               {riskResult.riskRating} Risk Property
             </div>
             <div className="flex justify-between text-sm text-gray-600 mb-2">
@@ -1187,7 +1187,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           </div>
 
           <div className="text-lg font-semibold mb-4 mt-8">
-            Total Risk Score: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints} ({riskResult.overallRiskScore}%) -{" "}
+            Total Risk Score: {riskResult.overallRiskScore}% -{" "}
             {riskResult.riskRating} Risk
           </div>
 
@@ -1198,7 +1198,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             <p className="text-gray-700 mb-4">
               This property presents an overall{" "}
               {riskResult.riskRating.toLowerCase()} risk profile (
-              {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints} or {riskResult.overallRiskScore}%), with most risk factors being
+              {riskResult.overallRiskScore}%), with most risk factors being
               well-managed or naturally low. However, there are specific areas
               of concern:
             </p>
