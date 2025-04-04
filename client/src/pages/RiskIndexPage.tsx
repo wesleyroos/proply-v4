@@ -928,85 +928,86 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             )}
           </div>
 
-          {/* Property and Neighborhood Information */}
-          <div className="space-y-8 mb-10">
-            {/* Property Value Information */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-0 max-w-3xl mx-auto">
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-1">
-                  Purchase Price
-                </p>
-                <p className="text-xl font-bold">
-                  R{riskResult.propertyDetails.price}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-1">
-                  Municipal Value
-                </p>
-                <p className="text-xl font-bold">
-                  R{riskResult.propertyDetails.municipalValue}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-1">
-                  Monthly Rates
-                </p>
-                <p className="text-xl font-bold">
-                  R{riskResult.propertyDetails.monthlyRates}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-1">
-                  Est. Monthly Costs
-                </p>
-                <p className="text-xl font-bold">
-                  R{riskResult.propertyDetails.estimatedMonthlyCosts}
-                </p>
-              </div>
+          {/* Property Value Information */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 max-w-3xl mx-auto">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">
+                Purchase Price
+              </p>
+              <p className="text-xl font-bold">
+                R{riskResult.propertyDetails.price}
+              </p>
             </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">
+                Municipal Value
+              </p>
+              <p className="text-xl font-bold">
+                R{riskResult.propertyDetails.municipalValue}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">
+                Monthly Rates
+              </p>
+              <p className="text-xl font-bold">
+                R{riskResult.propertyDetails.monthlyRates}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">
+                Est. Monthly Costs
+              </p>
+              <p className="text-xl font-bold">
+                R{riskResult.propertyDetails.estimatedMonthlyCosts}
+              </p>
+            </div>
+          </div>
 
-            {/* Neighborhood Demographics */}
-            {riskResult.neighborhoodDemographics && (
-              <div>
-                <h3 className="text-base font-medium mb-4 text-center text-slate-700">Neighborhood Demographics</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-3xl mx-auto">
-                  <div className="text-center">
+          {/* Neighborhood Demographics Card */}
+          {riskResult.neighborhoodDemographics && (
+            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10 mb-8 max-w-4xl mx-auto">
+              <div className="bg-white px-4 py-3 border-b">
+                <h3 className="font-semibold text-gray-700">Neighborhood Demographics</h3>
+              </div>
+              <div className="p-5">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  <div className="text-center bg-slate-50 p-3 rounded-lg">
                     <p className="text-sm text-muted-foreground mb-1">Dominant Age</p>
                     <p className="text-base font-medium">{riskResult.neighborhoodDemographics.dominantAge}</p>
                   </div>
-                  <div className="text-center">
+                  <div className="text-center bg-slate-50 p-3 rounded-lg">
                     <p className="text-sm text-muted-foreground mb-1">Dominant Race</p>
                     <p className="text-base font-medium">{riskResult.neighborhoodDemographics.dominantRace}</p>
                   </div>
-                  <div className="text-center">
+                  <div className="text-center bg-slate-50 p-3 rounded-lg">
                     <p className="text-sm text-muted-foreground mb-1">Gender Ratio</p>
                     <p className="text-base font-medium">{riskResult.neighborhoodDemographics.dominantGender}</p>
                   </div>
-                  <div className="text-center">
+                  <div className="text-center bg-slate-50 p-3 rounded-lg">
                     <p className="text-sm text-muted-foreground mb-1">Income Class</p>
                     <p className="text-base font-medium">{riskResult.neighborhoodDemographics.incomeClass}</p>
                   </div>
-                  <div className="text-center">
+                  <div className="text-center bg-slate-50 p-3 rounded-lg">
                     <p className="text-sm text-muted-foreground mb-1">NLI Index</p>
                     <div className="flex items-center justify-center gap-2">
-                      <div className="w-8 bg-gray-200 rounded-full h-1.5 my-1">
+                      <div className="w-full bg-gray-200 rounded-full h-2 my-1">
                         <div 
-                          className="h-1.5 rounded-full bg-blue-600"
+                          className="h-2 rounded-full bg-blue-600"
                           style={{ width: `${(riskResult.neighborhoodDemographics.nliIndex / 10) * 100}%` }}
                         ></div>
                       </div>
                       <span className="text-base font-medium">{riskResult.neighborhoodDemographics.nliIndex}/10</span>
                     </div>
                   </div>
-                  <div className="text-center">
+                  <div className="text-center bg-slate-50 p-3 rounded-lg">
                     <p className="text-sm text-muted-foreground mb-1">Avg Building Value</p>
                     <p className="text-base font-medium">R{riskResult.neighborhoodDemographics.averageBuildingValue}</p>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
             A comprehensive assessment of property risks including security,
