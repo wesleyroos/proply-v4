@@ -1001,9 +1001,14 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             {/* Risk Factors Card */}
             <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
               <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
-                <div className="flex items-center">
-                  <AlertTriangle className="h-5 w-5 text-white mr-2" />
-                  <h4 className="font-semibold text-white">Risk Factors</h4>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <AlertTriangle className="h-5 w-5 text-white mr-2" />
+                    <h4 className="font-semibold text-white">Risk Factors</h4>
+                  </div>
+                  <Badge className="bg-white/20 text-white hover:bg-white/25">
+                    Total: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints}
+                  </Badge>
                 </div>
               </div>
               <div className="p-5 overflow-auto h-[300px]">
