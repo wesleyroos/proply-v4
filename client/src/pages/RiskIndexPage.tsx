@@ -901,7 +901,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                   {riskResult.propertyDetails.condition === "fair" && (
                     <>
                       <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                      <Star className="h-3 w-3 fill<Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                     </>
                   )}
                   {riskResult.propertyDetails.condition === "poor" && (
@@ -913,12 +913,12 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           </div>
 
           {/* Property Value Information */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-4 max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 max-w-3xl mx-auto">
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-1">
                 Purchase Price
               </p>
-              <p className="text-xl font-bold whitespace-nowrap">
+              <p className="text-xl font-bold">
                 R{riskResult.propertyDetails.price}
               </p>
             </div>
@@ -938,32 +938,13 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 R{riskResult.propertyDetails.monthlyRates}
               </p>
             </div>
-          </div>
-
-          {/* Neighborhood Properties */}
-          <div className="bg-gray-50 p-6 rounded-lg mb-6 max-w-3xl mx-auto">
-            <h3 className="text-lg font-semibold mb-4">Neighborhood Properties</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Dominant Age</p>
-                <p className="font-medium">25-35 years</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Dominant Race</p>
-                <p className="font-medium">Mixed</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Dominant Gender</p>
-                <p className="font-medium">49% Male / 51% Female</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Income Class (NLI)</p>
-                <p className="font-medium">8/10</p>
-              </div>
-              <div className="md:col-span-2">
-                <p className="text-sm text-muted-foreground mb-1">Average Building Value</p>
-                <p className="font-medium">R3,450,000</p>
-              </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">
+                Est. Monthly Costs
+              </p>
+              <p className="text-xl font-bold">
+                R{riskResult.propertyDetails.estimatedMonthlyCosts}
+              </p>
             </div>
           </div>
 
