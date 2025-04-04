@@ -476,26 +476,26 @@ export default function RiskIndexPage() {
         : hailRiskPercentage < 66
           ? "Medium"
           : "High";
-          
+
     // Additional hail risk metrics
     const maxHailSize = hailRiskRating === "Low" 
       ? "10-20mm" 
       : hailRiskRating === "Medium" 
         ? "20-40mm" 
         : "40-60mm";
-        
+
     const annualFrequency = hailRiskRating === "Low"
       ? 1 
       : hailRiskRating === "Medium"
         ? 3
         : 5;
-        
+
     const damageProb = hailRiskRating === "Low"
       ? 15
       : hailRiskRating === "Medium"
         ? 45
         : 75;
-        
+
     const roofVulnerability = formData.propertyCondition === "excellent"
       ? "Low"
       : formData.propertyCondition === "good"
@@ -503,7 +503,7 @@ export default function RiskIndexPage() {
         : formData.propertyCondition === "fair"
           ? "Medium"
           : "High";
-          
+
     const returnPeriod = hailRiskRating === "Low"
       ? "1 in 7 years"
       : hailRiskRating === "Medium"
@@ -576,7 +576,7 @@ export default function RiskIndexPage() {
         "Consider energy-efficient upgrades to reduce climate vulnerability.",
       );
     }
-    
+
     // Add hail risk recommendations based on enhanced metrics
     if (hailRiskRating === "Medium" || hailRiskRating === "High") {
       recommendations.push(
@@ -640,7 +640,7 @@ export default function RiskIndexPage() {
 
     // Risk summary
     const riskSummary = `This property presents an overall ${riskRating.toLowerCase()} risk profile (${Math.round(overallRiskPercentage)}%), with most risk factors being well-managed or naturally low. However, there are specific areas of concern:
-    
+
 ${floodRiskRating === "High" ? "High Flood Risk: The property's location in a flood-prone area represents a significant risk factor and should be carefully considered.\n" : ""}
 ${securityRiskRating === "Medium" || securityRiskRating === "High" ? `${securityRiskRating} Security Risk: ${securityRiskRating === "High" ? "This is a critical concern and" : "While not critical,"} security measures could be improved to enhance property protection.\n` : ""}
 ${environmentalRiskRating === "Medium" || environmentalRiskRating === "High" ? `${environmentalRiskRating} Environmental Risk: This moderate risk factor should be monitored, particularly regarding air quality and noise pollution.\n` : ""}
@@ -1003,11 +1003,11 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               <div className="bg-white px-4 py-3 border-b">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <AlertTriangle className="h-5 w-5 text-white mr-2" />
-                    <h4 className="font-semibold text-white">Risk Factors</h4>
+                    <AlertTriangle className="h-5 w-5 text-gray-700 mr-2" />
+                    <h4 className="font-semibold text-gray-700">Risk Factors</h4>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-white/20 text-white hover:bg-white/25">
+                    <Badge className="bg-white/20 text-gray-700 hover:bg-white/25">
                       Total: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints}
                     </Badge>
                     <Badge className={`${riskResult.riskRating === "Very Low" || riskResult.riskRating === "Low" 
@@ -1343,7 +1343,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       </li>
                     ))}
                   </ul>
-                  
+
                   {/* Insurance-relevant metrics */}
                   <div className="mt-4 pt-3 border-t border-gray-200">
                     <h4 className="font-medium mb-2">Risk Metrics:</h4>
@@ -1648,7 +1648,6 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                   </div>
                 </div>
 
-                {/* Property Features */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center">
                     <Label htmlFor="bedrooms" className="mb-1 block">
