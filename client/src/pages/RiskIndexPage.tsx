@@ -118,6 +118,12 @@ interface RiskResult {
       percentageScore: number;
       rating: "Low" | "Medium" | "High";
       factors: string[];
+      // Additional hail metrics
+      maxHailSize?: string;
+      annualFrequency?: number;
+      damageProb?: number;
+      roofVulnerability?: "Low" | "Medium" | "High";
+      returnPeriod?: string;
     };
     marketVolatility: number;
     locationRisk: number;
@@ -470,6 +476,39 @@ export default function RiskIndexPage() {
         : hailRiskPercentage < 66
           ? "Medium"
           : "High";
+          
+    // Additional hail risk metrics
+    const maxHailSize = hailRiskRating === "Low" 
+      ? "10-20mm" 
+      : hailRiskRating === "Medium" 
+        ? "20-40mm" 
+        : "40-60mm";
+        
+    const annualFrequency = hailRiskRating === "Low"
+      ? 1 
+      : hailRiskRating === "Medium"
+        ? 3
+        : 5;
+        
+    const damageProb = hailRiskRating === "Low"
+      ? 15
+      : hailRiskRating === "Medium"
+        ? 45
+        : 75;
+        
+    const roofVulnerability = formData.propertyCondition === "excellent"
+      ? "Low"
+      : formData.propertyCondition === "good"
+        ? "Low"
+        : formData.propertyCondition === "fair"
+          ? "Medium"
+          : "High";
+          
+    const returnPeriod = hailRiskRating === "Low"
+      ? "1 in 7 years"
+      : hailRiskRating === "Medium"
+        ? "1 in 3 years"
+        : "Annual";
 
     // OVERALL RISK CALCULATION
     const totalRiskPoints =
@@ -537,6 +576,26 @@ export default function RiskIndexPage() {
         "Consider energy-efficient upgrades to reduce climate vulnerability.",
       );
     }
+    
+    // Add hail risk recommendations based on enhanced metrics
+    if (hailRiskRating === "Medium" || hailRiskRating === "High") {
+      recommendations.push(
+        `Consider roof reinforcement to withstand maximum hail size of ${maxHailSize}.`,
+      );
+      if (damageProb > 40) {
+        recommendations.push(
+          `Obtain specialized hail insurance coverage with an annual damage probability of ${damageProb}%.`,
+        );
+      }
+      if (roofVulnerability === "Medium" || roofVulnerability === "High") {
+        recommendations.push(
+          `Schedule a roof inspection to address ${roofVulnerability.toLowerCase()} vulnerability rating.`,
+        );
+      }
+      recommendations.push(
+        `Plan for ${annualFrequency} potential hail events per year with a return period of ${returnPeriod}.`,
+      );
+    }
 
     // Add generic recommendations
     recommendations.push(
@@ -585,7 +644,7 @@ export default function RiskIndexPage() {
 ${floodRiskRating === "High" ? "High Flood Risk: The property's location in a flood-prone area represents a significant risk factor and should be carefully considered.\n" : ""}
 ${securityRiskRating === "Medium" || securityRiskRating === "High" ? `${securityRiskRating} Security Risk: ${securityRiskRating === "High" ? "This is a critical concern and" : "While not critical,"} security measures could be improved to enhance property protection.\n` : ""}
 ${environmentalRiskRating === "Medium" || environmentalRiskRating === "High" ? `${environmentalRiskRating} Environmental Risk: This moderate risk factor should be monitored, particularly regarding air quality and noise pollution.\n` : ""}
-${hailRiskRating === "Medium" || hailRiskRating === "High" ? `${hailRiskRating} Hail Risk: The property may require additional protection measures against potential hail damage.\n` : ""}
+${hailRiskRating === "Medium" || hailRiskRating === "High" ? `${hailRiskRating} Hail Risk: The property may experience ${annualFrequency} hail events annually with maximum size of ${maxHailSize}. Roof vulnerability is rated as ${roofVulnerability}. Probability of damage is ${damageProb}% with a return period of ${returnPeriod}.\n` : ""}
 
 Based on the overall risk assessment, we recommend a comprehensive insurance policy that specifically addresses the identified risk factors.`;
 
@@ -653,6 +712,11 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           percentageScore: hailRiskPercentage,
           rating: hailRiskRating,
           factors: hailRiskFactors,
+          maxHailSize,
+          annualFrequency,
+          damageProb,
+          roofVulnerability,
+          returnPeriod,
         },
         marketVolatility,
         locationRisk,
@@ -1226,12 +1290,76 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             getRiskIcon("climate"),
           )}
 
-          {/* Hail Risk */}
-          {renderRiskCategory(
-            "Hail",
-            riskResult.riskFactors.hailRisk,
-            getRiskIcon("hail"),
-          )}
+          {/* Hail Risk - with additional metrics */}
+          {(() => {
+            const hailRisk = riskResult.riskFactors.hailRisk;
+            return (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div
+                    className={`p-2 rounded-full ${getRiskColor(hailRisk.rating)} bg-opacity-20`}
+                  >
+                    {getRiskIcon("hail")}
+                  </div>
+                  <h3 className="text-lg font-semibold">Hail Risk</h3>
+                  <Badge className={getRiskColor(hailRisk.rating)}>
+                    {hailRisk.score} out of {hailRisk.maxScore} ({Math.round(hailRisk.percentageScore)}%)
+                  </Badge>
+                </div>
+
+                <div className="mb-4">
+                  {renderRiskLevelIndicator(
+                    hailRisk.percentageScore,
+                    hailRisk.rating,
+                  )}
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Low Risk</span>
+                    <span>Medium Risk</span>
+                    <span>High Risk</span>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg relative z-10">
+                  <h4 className="font-medium mb-2">Hail Risk Factors:</h4>
+                  <ul className="space-y-1 text-sm">
+                    {hailRisk.factors.map((factor: string, index: number) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-gray-700 mr-2">•</span>
+                        <span>{factor}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  {/* Insurance-relevant metrics */}
+                  <div className="mt-4 pt-3 border-t border-gray-200">
+                    <h4 className="font-medium mb-2">Insurance-Relevant Metrics:</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Maximum Hail Size</p>
+                        <p className="text-sm">{hailRisk.maxHailSize}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Annual Frequency</p>
+                        <p className="text-sm">{hailRisk.annualFrequency} events/year</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Damage Probability</p>
+                        <p className="text-sm">{hailRisk.damageProb}%</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Roof Vulnerability</p>
+                        <p className="text-sm">{hailRisk.roofVulnerability}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-sm font-medium text-gray-700">Return Period</p>
+                        <p className="text-sm">{hailRisk.returnPeriod}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 relative z-10">
             <div className="p-4 rounded-lg bg-green-50 border border-green-200">
