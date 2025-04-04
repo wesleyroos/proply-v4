@@ -1011,10 +1011,10 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       Total: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints}
                     </Badge>
                     <Badge className={`${riskResult.riskRating === "Very Low" || riskResult.riskRating === "Low" 
-                      ? "bg-green-500/20 text-green-100" 
+                      ? "bg-green-500 text-white" 
                       : riskResult.riskRating === "Moderate"
-                        ? "bg-yellow-500/20 text-yellow-100"
-                        : "bg-red-500/20 text-red-100"} hover:bg-opacity-25`}>
+                        ? "bg-yellow-500 text-white"
+                        : "bg-red-500 text-white"}`}>
                       {riskResult.riskRating} Risk
                     </Badge>
                   </div>
