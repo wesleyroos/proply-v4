@@ -918,7 +918,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               <p className="text-sm text-muted-foreground mb-1">
                 Purchase Price
               </p>
-              <p className="text-xl font-bold">
+              <p className="text-xl font-bold whitespace-nowrap">
                 R{riskResult.propertyDetails.price}
               </p>
             </div>
@@ -926,7 +926,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               <p className="text-sm text-muted-foreground mb-1">
                 Municipal Value
               </p>
-              <p className="text-xl font-bold">
+              <p className="text-xl font-bold whitespace-nowrap">
                 R{riskResult.propertyDetails.municipalValue}
               </p>
             </div>
@@ -934,7 +934,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               <p className="text-sm text-muted-foreground mb-1">
                 Total Building Value
               </p>
-              <p className="text-xl font-bold">
+              <p className="text-xl font-bold whitespace-nowrap">
                 R3,200,000 - R3,800,000
               </p>
             </div>
