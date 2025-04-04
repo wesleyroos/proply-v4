@@ -737,7 +737,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </div>
             <h3 className="text-lg font-semibold">{title} Risk</h3>
             <Badge className={getRiskColor(riskData.rating)}>
-              {Math.round(riskData.percentageScore)}%
+              {riskData.score} out of {riskData.maxScore} ({Math.round(riskData.percentageScore)}%)
             </Badge>
           </div>
 
@@ -773,7 +773,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         {/* Property Title and Summary */}
         <div className="pb-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Proply Risk Index™</h2>
-          <h3 className="text-xl font-medium mb-5">{riskResult.propertyDetails.address}</h3>
+          <h3 className="text-xl font-medium mb-5">
+            {riskResult.propertyDetails.address}
+          </h3>
 
           {/* Feature Badges */}
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-6">
@@ -849,20 +851,36 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           {/* Property Value Information */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 max-w-3xl mx-auto">
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">Purchase Price</p>
-              <p className="text-xl font-bold">R{riskResult.propertyDetails.price}</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Purchase Price
+              </p>
+              <p className="text-xl font-bold">
+                R{riskResult.propertyDetails.price}
+              </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">Municipal Value</p>
-              <p className="text-xl font-bold">R{riskResult.propertyDetails.municipalValue}</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Municipal Value
+              </p>
+              <p className="text-xl font-bold">
+                R{riskResult.propertyDetails.municipalValue}
+              </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">Monthly Rates</p>
-              <p className="text-xl font-bold">R{riskResult.propertyDetails.monthlyRates}</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Monthly Rates
+              </p>
+              <p className="text-xl font-bold">
+                R{riskResult.propertyDetails.monthlyRates}
+              </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">Est. Monthly Costs</p>
-              <p className="text-xl font-bold">R{riskResult.propertyDetails.estimatedMonthlyCosts}</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Est. Monthly Costs
+              </p>
+              <p className="text-xl font-bold">
+                R{riskResult.propertyDetails.estimatedMonthlyCosts}
+              </p>
             </div>
           </div>
 
@@ -903,8 +921,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       transform="rotate(-90 64 64)"
                     />
                   </svg>
-                  <div className="absolute inset-0 flex items-center justify-center text-5xl font-bold">
-                    {riskResult.overallRiskScore}%
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="text-5xl font-bold">{riskResult.overallRiskScore}%</div>
+                    <div className="text-sm mt-1">{riskResult.totalRiskPoints}/{riskResult.maxRiskPoints} pts</div>
                   </div>
                 </div>
                 <div
@@ -931,161 +950,209 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <span className="font-medium text-sm">Security</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {Math.round(riskResult.riskFactors.securityRisk.percentageScore)}%
+                          {riskResult.riskFactors.securityRisk.score} / {riskResult.riskFactors.securityRisk.maxScore} ({Math.round(
+                            riskResult.riskFactors.securityRisk.percentageScore,
+                          )}
+                          %)
                         </span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                          riskResult.riskFactors.securityRisk.rating === "Low" 
-                            ? "bg-green-100 text-green-800" 
-                            : riskResult.riskFactors.securityRisk.rating === "Medium" 
-                            ? "bg-yellow-100 text-yellow-800" 
-                            : "bg-red-100 text-red-800"
-                        }`}>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded-full ${
+                            riskResult.riskFactors.securityRisk.rating === "Low"
+                              ? "bg-green-100 text-green-800"
+                              : riskResult.riskFactors.securityRisk.rating ===
+                                  "Medium"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
                           {riskResult.riskFactors.securityRisk.rating}
                         </span>
                       </div>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full ${
-                          riskResult.riskFactors.securityRisk.rating === "Low" 
-                            ? "bg-green-500" 
-                            : riskResult.riskFactors.securityRisk.rating === "Medium" 
-                            ? "bg-yellow-500" 
-                            : "bg-red-500"
+                          riskResult.riskFactors.securityRisk.rating === "Low"
+                            ? "bg-green-500"
+                            : riskResult.riskFactors.securityRisk.rating ===
+                                "Medium"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
                         }`}
-                        style={{ width: `${riskResult.riskFactors.securityRisk.percentageScore}%` }}
+                        style={{
+                          width: `${riskResult.riskFactors.securityRisk.percentageScore}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
-                  
+
                   {/* Environmental Risk */}
                   <div className="pb-2 border-b border-gray-100">
                     <div className="flex justify-between mb-1">
                       <span className="font-medium text-sm">Environmental</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {Math.round(riskResult.riskFactors.environmentalRisk.percentageScore)}%
+                          {riskResult.riskFactors.environmentalRisk.score} / {riskResult.riskFactors.environmentalRisk.maxScore} ({Math.round(
+                            riskResult.riskFactors.environmentalRisk
+                              .percentageScore,
+                          )}
+                          %)
                         </span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                          riskResult.riskFactors.environmentalRisk.rating === "Low" 
-                            ? "bg-green-100 text-green-800" 
-                            : riskResult.riskFactors.environmentalRisk.rating === "Medium" 
-                            ? "bg-yellow-100 text-yellow-800" 
-                            : "bg-red-100 text-red-800"
-                        }`}>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded-full ${
+                            riskResult.riskFactors.environmentalRisk.rating ===
+                            "Low"
+                              ? "bg-green-100 text-green-800"
+                              : riskResult.riskFactors.environmentalRisk
+                                    .rating === "Medium"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
                           {riskResult.riskFactors.environmentalRisk.rating}
                         </span>
                       </div>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full ${
-                          riskResult.riskFactors.environmentalRisk.rating === "Low" 
-                            ? "bg-green-500" 
-                            : riskResult.riskFactors.environmentalRisk.rating === "Medium" 
-                            ? "bg-yellow-500" 
-                            : "bg-red-500"
+                          riskResult.riskFactors.environmentalRisk.rating ===
+                          "Low"
+                            ? "bg-green-500"
+                            : riskResult.riskFactors.environmentalRisk
+                                  .rating === "Medium"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
                         }`}
-                        style={{ width: `${riskResult.riskFactors.environmentalRisk.percentageScore}%` }}
+                        style={{
+                          width: `${riskResult.riskFactors.environmentalRisk.percentageScore}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
-                  
+
                   {/* Flood Risk */}
                   <div className="pb-2 border-b border-gray-100">
                     <div className="flex justify-between mb-1">
                       <span className="font-medium text-sm">Flood</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {Math.round(riskResult.riskFactors.floodRisk.percentageScore)}%
+                          {riskResult.riskFactors.floodRisk.score} / {riskResult.riskFactors.floodRisk.maxScore} ({Math.round(
+                            riskResult.riskFactors.floodRisk.percentageScore,
+                          )}
+                          %)
                         </span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                          riskResult.riskFactors.floodRisk.rating === "Low" 
-                            ? "bg-green-100 text-green-800" 
-                            : riskResult.riskFactors.floodRisk.rating === "Medium" 
-                            ? "bg-yellow-100 text-yellow-800" 
-                            : "bg-red-100 text-red-800"
-                        }`}>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded-full ${
+                            riskResult.riskFactors.floodRisk.rating === "Low"
+                              ? "bg-green-100 text-green-800"
+                              : riskResult.riskFactors.floodRisk.rating ===
+                                  "Medium"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
                           {riskResult.riskFactors.floodRisk.rating}
                         </span>
                       </div>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full ${
-                          riskResult.riskFactors.floodRisk.rating === "Low" 
-                            ? "bg-green-500" 
-                            : riskResult.riskFactors.floodRisk.rating === "Medium" 
-                            ? "bg-yellow-500" 
-                            : "bg-red-500"
+                          riskResult.riskFactors.floodRisk.rating === "Low"
+                            ? "bg-green-500"
+                            : riskResult.riskFactors.floodRisk.rating ===
+                                "Medium"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
                         }`}
-                        style={{ width: `${riskResult.riskFactors.floodRisk.percentageScore}%` }}
+                        style={{
+                          width: `${riskResult.riskFactors.floodRisk.percentageScore}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
-                  
+
                   {/* Climate Risk */}
                   <div className="pb-2 border-b border-gray-100">
                     <div className="flex justify-between mb-1">
                       <span className="font-medium text-sm">Climate</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {Math.round(riskResult.riskFactors.climateRisk.percentageScore)}%
+                          {riskResult.riskFactors.climateRisk.score} / {riskResult.riskFactors.climateRisk.maxScore} ({Math.round(
+                            riskResult.riskFactors.climateRisk.percentageScore,
+                          )}
+                          %)
                         </span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                          riskResult.riskFactors.climateRisk.rating === "Low" 
-                            ? "bg-green-100 text-green-800" 
-                            : riskResult.riskFactors.climateRisk.rating === "Medium" 
-                            ? "bg-yellow-100 text-yellow-800" 
-                            : "bg-red-100 text-red-800"
-                        }`}>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded-full ${
+                            riskResult.riskFactors.climateRisk.rating === "Low"
+                              ? "bg-green-100 text-green-800"
+                              : riskResult.riskFactors.climateRisk.rating ===
+                                  "Medium"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
                           {riskResult.riskFactors.climateRisk.rating}
                         </span>
                       </div>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full ${
-                          riskResult.riskFactors.climateRisk.rating === "Low" 
-                            ? "bg-green-500" 
-                            : riskResult.riskFactors.climateRisk.rating === "Medium" 
-                            ? "bg-yellow-500" 
-                            : "bg-red-500"
+                          riskResult.riskFactors.climateRisk.rating === "Low"
+                            ? "bg-green-500"
+                            : riskResult.riskFactors.climateRisk.rating ===
+                                "Medium"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
                         }`}
-                        style={{ width: `${riskResult.riskFactors.climateRisk.percentageScore}%` }}
+                        style={{
+                          width: `${riskResult.riskFactors.climateRisk.percentageScore}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
-                  
+
                   {/* Hail Risk */}
                   <div className="pb-2">
                     <div className="flex justify-between mb-1">
                       <span className="font-medium text-sm">Hail</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {Math.round(riskResult.riskFactors.hailRisk.percentageScore)}%
+                          {riskResult.riskFactors.hailRisk.score} / {riskResult.riskFactors.hailRisk.maxScore} ({Math.round(
+                            riskResult.riskFactors.hailRisk.percentageScore,
+                          )}
+                          %)
                         </span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                          riskResult.riskFactors.hailRisk.rating === "Low" 
-                            ? "bg-green-100 text-green-800" 
-                            : riskResult.riskFactors.hailRisk.rating === "Medium" 
-                            ? "bg-yellow-100 text-yellow-800" 
-                            : "bg-red-100 text-red-800"
-                        }`}>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded-full ${
+                            riskResult.riskFactors.hailRisk.rating === "Low"
+                              ? "bg-green-100 text-green-800"
+                              : riskResult.riskFactors.hailRisk.rating ===
+                                  "Medium"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
                           {riskResult.riskFactors.hailRisk.rating}
                         </span>
                       </div>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full ${
-                          riskResult.riskFactors.hailRisk.rating === "Low" 
-                            ? "bg-green-500" 
-                            : riskResult.riskFactors.hailRisk.rating === "Medium" 
-                            ? "bg-yellow-500" 
-                            : "bg-red-500"
+                          riskResult.riskFactors.hailRisk.rating === "Low"
+                            ? "bg-green-500"
+                            : riskResult.riskFactors.hailRisk.rating ===
+                                "Medium"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
                         }`}
-                        style={{ width: `${riskResult.riskFactors.hailRisk.percentageScore}%` }}
+                        style={{
+                          width: `${riskResult.riskFactors.hailRisk.percentageScore}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -1109,7 +1176,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
           <div className="mb-8">
             <div className="text-lg font-semibold mb-4">
-              Overall Risk Score: {riskResult.overallRiskScore}% -{" "}
+              Overall Risk Score: {riskResult.totalRiskPoints}/
+              {riskResult.maxRiskPoints} ({riskResult.overallRiskScore}%) -{" "}
               {riskResult.riskRating} Risk Property
             </div>
             <div className="flex justify-between text-sm text-gray-600 mb-2">
@@ -1187,7 +1255,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           </div>
 
           <div className="text-lg font-semibold mb-4 mt-8">
-            Total Risk Score: {riskResult.overallRiskScore}% -{" "}
+            Total Risk Score: {riskResult.totalRiskPoints} out of{" "}
+            {riskResult.maxRiskPoints} ({riskResult.overallRiskScore}%) -{" "}
             {riskResult.riskRating} Risk
           </div>
 
