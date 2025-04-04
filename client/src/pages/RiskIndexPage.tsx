@@ -1816,7 +1816,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
           <div className="mb-8">
             <div className="text-lg font-semibold mb-4">
-              Overall Risk Score: {riskResult.overallRiskScore}% -{" "}
+              Overall Risk Score: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints} ({riskResult.overallRiskScore}%) -{" "}
               {riskResult.riskRating} Risk Property
             </div>
             <div className="flex justify-between text-sm text-gray-600 mb-2">
@@ -1908,7 +1908,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           </div>
 
           <div className="text-lg font-semibold mb-4 mt-8">
-            Total Risk Score: {riskResult.overallRiskScore}% -{" "}
+            Total Risk Score: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints} ({riskResult.overallRiskScore}%) -{" "}
             {riskResult.riskRating} Risk
           </div>
 
@@ -1919,7 +1919,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             <p className="text-gray-700 mb-4">
               This property presents an overall{" "}
               {riskResult.riskRating.toLowerCase()} risk profile (
-              {riskResult.overallRiskScore}%), with most risk factors being
+              {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints} or {riskResult.overallRiskScore}%), with most risk factors being
               well-managed or naturally low. However, there are specific areas
               of concern:
             </p>
