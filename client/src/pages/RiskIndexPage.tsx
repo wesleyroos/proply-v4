@@ -1332,7 +1332,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                   
                   {/* Insurance-relevant metrics */}
                   <div className="mt-4 pt-3 border-t border-gray-200">
-                    <h4 className="font-medium mb-2">Insurance-Relevant Metrics:</h4>
+                    <h4 className="font-medium mb-2">Risk Metrics:</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm font-medium text-gray-700">Maximum Hail Size</p>
