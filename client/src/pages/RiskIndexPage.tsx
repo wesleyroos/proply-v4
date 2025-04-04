@@ -1006,15 +1006,15 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                     <AlertTriangle className="h-5 w-5 text-white mr-2" />
                     <h4 className="font-semibold text-white">Risk Factors</h4>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-white">
                     <Badge className="bg-white/20 text-white hover:bg-white/25">
                       Total: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints}
                     </Badge>
                     <Badge className={`${riskResult.riskRating === "Very Low" || riskResult.riskRating === "Low" 
-                      ? "bg-green-500/20 text-green-100" 
+                      ? "bg-green-500/20 text-white" 
                       : riskResult.riskRating === "Moderate"
-                        ? "bg-yellow-500/20 text-yellow-100"
-                        : "bg-red-500/20 text-red-100"} hover:bg-opacity-25`}>
+                        ? "bg-yellow-500/20 text-white"
+                        : "bg-red-500/20 text-white"} hover:bg-opacity-25`}>
                       {riskResult.riskRating} Risk
                     </Badge>
                   </div>
