@@ -985,9 +985,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       transform="rotate(-90 64 64)"
                     />
                   </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-5xl font-bold">{riskResult.overallRiskScore}%</div>
-                    <div className="text-sm mt-1">{riskResult.totalRiskPoints}/{riskResult.maxRiskPoints} pts</div>
                   </div>
                 </div>
                 <div
