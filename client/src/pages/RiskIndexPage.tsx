@@ -82,6 +82,42 @@ interface RiskResult {
     suburb?: string;
     city?: string;
     postalCode?: string;
+    standNumber?: string;
+    erfNumber?: string;
+    registeredOwner?: string;
+    zoning?: string;
+  };
+  demographicData?: {
+    ageDistribution: {
+      under18Percent: number;
+      adults18to35Percent: number;
+      adults36to65Percent: number;
+      over65Percent: number;
+    };
+    incomeLevel: {
+      medianIncome: string;
+      incomeBracket: "Low" | "Lower-Middle" | "Middle" | "Upper-Middle" | "High";
+      unemploymentRate: number;
+    };
+    populationDensity: number; // people per square km
+    populationGrowthRate: number; // annual percentage
+  };
+  propertyValueMetrics?: {
+    estimatedBuildingValue: string;
+    landValue: string;
+    areaAverageValue: string;
+    valueTrend: {
+      fiveYearGrowth: number; // percentage
+      oneYearGrowth: number; // percentage
+      forecastNextYear: number; // percentage
+    };
+    comparableProperties: {
+      recentSales: {
+        avgPricePerSquareMeter: string;
+        numberOfSales: number;
+        timeFrame: string; // e.g., "Last 12 months"
+      }
+    }
   };
   riskFactors: {
     securityRisk: {
@@ -104,6 +140,19 @@ interface RiskResult {
       percentageScore: number;
       rating: "Low" | "Medium" | "High";
       factors: string[];
+      floodZoneType?: string; // e.g., "100-year flood plain"
+      historicalFloodEvents?: {
+        numberOfEvents: number;
+        lastOccurrence: string; // year
+        severityOfLastEvent: string;
+      };
+      drainageInfrastructure?: {
+        quality: "Poor" | "Adequate" | "Good";
+        maintenanceStatus: string;
+      };
+      waterTableDepth?: number; // in meters
+      surfaceWaterAccumulation?: "Low" | "Medium" | "High";
+      floodMitigationMeasures?: string[];
     };
     climateRisk: {
       score: number;
@@ -111,6 +160,65 @@ interface RiskResult {
       percentageScore: number;
       rating: "Low" | "Medium" | "High";
       factors: string[];
+      temperatureVolatility?: {
+        historical: {
+          averageAnnualTemperature: number; // in celsius
+          temperatureRange: [number, number]; // [min, max] in celsius
+          extremeHeatDays: number; // days per year above threshold
+          extremeColdDays: number; // days per year below threshold
+        };
+        future: {
+          projectedTemperatureIncrease: number; // in celsius by 2050
+          projectedExtremeDaysIncrease: number; // additional extreme days by 2050
+          riskLevel: "Low" | "Medium" | "High";
+        };
+        anomalyData: {
+          yearsAboveAverage: number; // out of last 10 years
+          temperatureTrend: number; // celsius per decade
+        }
+      };
+      precipitationPatterns?: {
+        historical: {
+          annualAverage: number; // in mm
+          seasonalDistribution: {
+            summer: number; // percentage of annual
+            autumn: number;
+            winter: number;
+            spring: number;
+          };
+          highestRecordedDaily: number; // in mm
+        };
+        future: {
+          projectedChange: number; // percentage by 2050
+          droughtRisk: "Low" | "Medium" | "High";
+          floodRisk: "Low" | "Medium" | "High";
+        };
+        anomalyData: {
+          dryYears: number; // out of last 10 years
+          wetYears: number; // out of last 10 years
+          precipitationTrend: number; // mm per decade
+        }
+      };
+      windExposure?: {
+        averageWindSpeed: number; // in km/h
+        prevailingDirection: string;
+        gustRisk: "Low" | "Medium" | "High";
+        hurricaneOrCycloneRisk: "Low" | "Medium" | "High";
+      };
+      subsidence?: {
+        riskLevel: "Low" | "Medium" | "High";
+        soilShrinkageRisk: "Low" | "Medium" | "High";
+        miningActivities: boolean;
+        geologicalFaults: boolean;
+      };
+      wildfireRisk?: {
+        riskLevel: "Low" | "Medium" | "High";
+        proximityToVegetation: number; // in meters
+        vegetationType: string;
+        historicalIncidents: number;
+        droughtCorrelation: "Low" | "Medium" | "High";
+      };
+      redFlagRisks?: string[]; // Critical climate risks that need immediate attention
     };
     hailRisk: {
       score: number;
@@ -118,6 +226,88 @@ interface RiskResult {
       percentageScore: number;
       rating: "Low" | "Medium" | "High";
       factors: string[];
+      hailCharacteristics?: {
+        estimatedAnnualOccurrence: number; // events per year
+        severeHailProbability: number; // percentage chance of severe hail annually
+        historicalHailsizes: {
+          average: number; // in mm
+          largest: number; // in mm
+          damageThreshold: number; // size in mm that causes damage
+        };
+        seasonality: {
+          peakMonths: string[];
+          offSeasonRisk: "Low" | "Medium" | "High";
+        };
+      };
+      impactAssessment?: {
+        roofVulnerability: {
+          roofType: string;
+          roofAge: number; // in years
+          materialResistance: "Low" | "Medium" | "High";
+          estimatedReplacementCost: string;
+        };
+        potentialDamageAreas: string[]; // e.g., ["Roof", "Solar Panels", "Windows", "Vehicles"]
+        previousHailDamageClaims: number;
+        typicalClaimAmount: string; // e.g., "R15,000 - R45,000"
+      };
+      mitigationMeasures?: {
+        installed: string[]; // e.g., ["Impact-resistant Roof", "Covered Parking"]
+        recommended: string[];
+        estimatedCostToImplement: string;
+        potentialPremiumSavings: string;
+      };
+    };
+    lightningRisk?: {
+      score: number;
+      maxScore: number;
+      percentageScore: number;
+      rating: "Low" | "Medium" | "High";
+      factors: string[];
+      lightningCharacteristics?: {
+        strikeFrequency: number; // strikes per km² per year
+        regionRanking: string; // e.g., "High concentration area"
+        historicalTrends: string;
+      };
+      vulnerabilityFactors?: {
+        buildingHeight: string;
+        surroundingTerrain: string;
+        proximityToTallStructures: string;
+        proximityToLargeWaterBodies: string;
+      };
+      impactAssessment?: {
+        electricalSystemVulnerability: "Low" | "Medium" | "High";
+        fireRiskFromLightning: "Low" | "Medium" | "High";
+        potentialDamageToElectronics: "Low" | "Medium" | "High";
+        typicalClaimAmount: string; // e.g., "R20,000 - R75,000"
+      };
+      protectionSystems?: {
+        lightningRods: boolean;
+        surgeProtection: boolean;
+        groundingSystem: boolean;
+        additionalMeasures: string[];
+      };
+      mitigationRecommendations?: {
+        critical: string[];
+        recommended: string[];
+        estimatedCostToImplement: string;
+        potentialPremiumSavings: string;
+      };
+    };
+    fireRisk?: {
+      score: number;
+      maxScore: number;
+      percentageScore: number;
+      rating: "Low" | "Medium" | "High";
+      factors: string[];
+      buildingConstructionType: string;
+      distanceToFireStation: number; // in km
+      fireSuppressionSystems: string[];
+      solarInstallation?: {
+        hasSolarPanels: boolean;
+        installationAge: number; // in years
+        solarFireRisk: "Low" | "Medium" | "High";
+        safetyFeatures: string[];
+      };
     };
     marketVolatility: number;
     locationRisk: number;
@@ -126,11 +316,96 @@ interface RiskResult {
     demographicTrends: number;
     regulatoryRisk: number;
   };
+  proximityRisks?: {
+    openAreas?: {
+      distanceToNearestOpenArea: number; // in meters
+      typeOfOpenArea: string; // e.g., "Park", "Undeveloped Land"
+      riskLevel: "Low" | "Medium" | "High";
+      impactDescription: string;
+    };
+    informalSettlements?: {
+      distanceToNearestSettlement: number; // in meters
+      populationEstimate: number;
+      riskLevel: "Low" | "Medium" | "High";
+      impactDescription: string;
+    };
+    industrialZones?: {
+      distanceToNearestZone: number; // in meters
+      typeOfIndustry: string;
+      pollutionRisk: "Low" | "Medium" | "High";
+      impactDescription: string;
+    };
+    securedArea?: {
+      isInSecuredComplex: boolean;
+      securityFeatures: string[]; // e.g., ["Electric Fence", "24hr Security", "Access Control"]
+      crimeRate: {
+        propertyRateVsCity: number; // percentage relative to city average
+        violentRateVsCity: number; // percentage relative to city average
+      }
+    }
+  };
+  topography?: {
+    elevation: number; // in meters
+    slope: {
+      degreeOfSlope: number; // in degrees
+      stabilityRisk: "Low" | "Medium" | "High";
+      erosionPotential: "Low" | "Medium" | "High";
+    };
+    proximityToWater: {
+      distanceToNearestWaterBody: number; // in meters
+      typeOfWaterBody: string; // e.g., "River", "Dam", "Ocean"
+      historicalWaterLevelChanges: string;
+    };
+    soilType: string;
+    soilStability: "Low" | "Medium" | "High";
+  };
+  aggregateRiskMetrics?: {
+    totalRiskScore: number; // absolute score
+    maxPossibleScore: number;
+    percentageScore: number;
+    weightedBreakdown: {
+      securityRisk: number; // percentage contribution
+      environmentalRisk: number;
+      floodRisk: number;
+      climateRisk: number;
+      hailRisk: number;
+      lightningRisk: number;
+      fireRisk: number;
+      otherRisks: number;
+    };
+    insuranceImplications: {
+      recommendedCoverageLevel: string;
+      estimatedPremiumImpact: string;
+      specialCoverageNeeds: string[];
+      exclusionConsiderations: string[];
+    };
+  };
+  visualRiskBreakdown?: {
+    riskRadarData: {
+      categories: string[];
+      values: number[];
+      benchmarkValues: number[];
+    };
+    historicalTrendData: {
+      years: string[];
+      riskValues: number[];
+    };
+    riskHeatmap: {
+      categories: string[];
+      severity: number[];
+    };
+  };
   projections: {
     shortTerm: string;
     mediumTerm: string;
     longTerm: string;
     trendDirection: "up" | "stable" | "down";
+    riskTrendProjection?: {
+      shortTerm: string; // 1-2 years
+      mediumTerm: string; // 3-5 years
+      longTerm: string; // 10+ years
+      confidenceLevel: "Low" | "Medium" | "High";
+    };
   };
   recommendations: string[];
   riskSummary?: string;
@@ -260,6 +535,10 @@ export default function RiskIndexPage() {
         return <Thermometer className="h-5 w-5" />;
       case "hail":
         return <Umbrella className="h-5 w-5" />;
+      case "lightning":
+        return <AlertTriangle className="h-5 w-5" />;
+      case "fire":
+        return <AlertCircle className="h-5 w-5 text-red-500" />;
       default:
         return <AlertCircle className="h-5 w-5" />;
     }
@@ -290,6 +569,10 @@ export default function RiskIndexPage() {
     const bathrooms = Number(formData.bathrooms) || 0;
     const parking = Number(formData.parking) || 0;
 
+    // Generate property stand/erf number
+    const standNumber = `ST-${Math.floor(Math.random() * 100000)}`;
+    const erfNumber = `ERF-${Math.floor(Math.random() * 10000)}`;
+    
     // SECURITY RISK CALCULATION
     const securityRiskMaxScore = 50;
     let securityRiskScore = 0;
@@ -462,12 +745,167 @@ export default function RiskIndexPage() {
       hailRiskFactors.push("Partial covered parking for vehicles");
     }
 
+    // Enhanced hail risk data for insurance purposes
+    const hailCharacteristics = {
+      estimatedAnnualOccurrence: 3.2, // events per year
+      severeHailProbability: 12.5, // percentage chance of severe hail annually
+      historicalHailsizes: {
+        average: 15, // in mm
+        largest: 32, // in mm
+        damageThreshold: 19, // size in mm that causes damage
+      },
+      seasonality: {
+        peakMonths: ["October", "November", "December"],
+        offSeasonRisk: "Low" as "Low" | "Medium" | "High",
+      },
+    };
+    
+    const hailImpactAssessment = {
+      roofVulnerability: {
+        roofType: formData.propertyType === "apartment" ? "Flat concrete" : "Tiled sloped",
+        roofAge: 6, // in years
+        materialResistance: "Medium" as "Low" | "Medium" | "High",
+        estimatedReplacementCost: "R75,000 - R120,000",
+      },
+      potentialDamageAreas: [
+        "Roof", 
+        "Windows", 
+        "Outdoor equipment", 
+        "Vehicles"
+      ],
+      previousHailDamageClaims: 1,
+      typicalClaimAmount: "R18,000 - R42,000",
+    };
+    
+    const hailMitigationMeasures = {
+      installed: ["Weather-resistant roof materials"],
+      recommended: [
+        "Covered parking structures",
+        "Impact-resistant window film",
+        "Regular roof inspection and maintenance"
+      ],
+      estimatedCostToImplement: "R22,000 - R35,000",
+      potentialPremiumSavings: "8-12% on comprehensive coverage",
+    };
+
     // Hail risk rating
     const hailRiskPercentage = (hailRiskScore / hailRiskMaxScore) * 100;
     let hailRiskRating: "Low" | "Medium" | "High" =
       hailRiskPercentage < 33
         ? "Low"
         : hailRiskPercentage < 66
+          ? "Medium"
+          : "High";
+          
+    // LIGHTNING RISK CALCULATION
+    const lightningRiskMaxScore = 40;
+    let lightningRiskScore = 0;
+    const lightningRiskFactors: string[] = [];
+    
+    // Calculate lightning risk based on location and building features
+    if (formData.address.toLowerCase().includes("cape town")) {
+      lightningRiskScore += 15; // Moderate lightning risk in Cape Town area
+      lightningRiskFactors.push("Property located in area with moderate thunderstorm activity");
+    }
+    
+    if (formData.propertyType === "house") {
+      lightningRiskScore += 12; // Higher risk for standalone structures
+      lightningRiskFactors.push("Standalone structure with higher lightning strike exposure");
+    } else if (formData.propertyType === "apartment") {
+      lightningRiskScore += 5; // Lower risk for apartments in larger buildings
+      lightningRiskFactors.push("Multi-unit building with shared lightning protection systems");
+    }
+    
+    // Add typical lightning risk factors
+    lightningRiskFactors.push("Limited surge protection for sensitive electronics");
+    lightningRiskFactors.push("Aging electrical wiring may increase vulnerability to surges");
+    
+    // Lightning risk characteristics
+    const lightningCharacteristics = {
+      strikeFrequency: 3.8, // strikes per km² per year
+      regionRanking: "Moderate lightning density area",
+      historicalTrends: "Increasing strike frequency over past decade",
+    };
+    
+    const lightningVulnerabilityFactors = {
+      buildingHeight: formData.propertyType === "apartment" ? "Medium-rise building" : "Low-rise structure",
+      surroundingTerrain: "Urban environment with varied building heights",
+      proximityToTallStructures: "Several taller buildings within 500m radius",
+      proximityToLargeWaterBodies: "2.3km from coastline",
+    };
+    
+    const lightningImpactAssessment = {
+      electricalSystemVulnerability: "Medium" as "Low" | "Medium" | "High",
+      fireRiskFromLightning: "Low" as "Low" | "Medium" | "High",
+      potentialDamageToElectronics: "High" as "Low" | "Medium" | "High",
+      typicalClaimAmount: "R12,000 - R35,000",
+    };
+    
+    const lightningProtectionSystems = {
+      lightningRods: false,
+      surgeProtection: true,
+      groundingSystem: true,
+      additionalMeasures: ["Basic circuit breakers"],
+    };
+    
+    const lightningMitigationRecommendations = {
+      critical: ["Install whole-house surge protection system"],
+      recommended: [
+        "Upgrade electrical panel",
+        "Add dedicated circuits for sensitive electronics",
+        "Install lightning protection system on roof"
+      ],
+      estimatedCostToImplement: "R15,000 - R28,000",
+      potentialPremiumSavings: "5-8% on electronics coverage",
+    };
+    
+    // Lightning risk rating
+    const lightningRiskPercentage = (lightningRiskScore / lightningRiskMaxScore) * 100;
+    let lightningRiskRating: "Low" | "Medium" | "High" =
+      lightningRiskPercentage < 33
+        ? "Low"
+        : lightningRiskPercentage < 66
+          ? "Medium"
+          : "High";
+    
+    // FIRE RISK CALCULATION
+    const fireRiskMaxScore = 45;
+    let fireRiskScore = 0;
+    const fireRiskFactors: string[] = [];
+    
+    // Calculate fire risk based on property type and condition
+    if (formData.propertyType === "apartment") {
+      fireRiskScore += 15; // Apartments have shared risk factors
+      fireRiskFactors.push("Multi-unit building with shared fire risk");
+      fireRiskFactors.push("Fire could spread from neighboring units");
+    } else if (formData.propertyType === "house") {
+      fireRiskScore += 10; // Houses have more isolated risk
+      fireRiskFactors.push("Standalone structure with lower risk of fire spread from neighbors");
+    }
+    
+    if (formData.propertyCondition === "excellent") {
+      fireRiskScore += 5; // Better condition means less fire risk
+      fireRiskFactors.push("Modern wiring and electrical systems reduce fire risk");
+    } else if (formData.propertyCondition === "poor") {
+      fireRiskScore += 20; // Poor condition means higher fire risk
+      fireRiskFactors.push("Aging electrical systems may present fire hazards");
+      fireRiskFactors.push("Building materials may not meet current fire safety standards");
+    }
+    
+    // Add rooftop solar fire risk if applicable
+    const hasSolarPanels = Math.random() > 0.7; // 30% chance of having solar panels for demo
+    if (hasSolarPanels) {
+      fireRiskScore += 8;
+      fireRiskFactors.push("Rooftop solar installation creates additional fire risk points");
+      fireRiskFactors.push("DC electrical components from solar system require specialized firefighting approach");
+    }
+    
+    // Fire risk rating
+    const fireRiskPercentage = (fireRiskScore / fireRiskMaxScore) * 100;
+    let fireRiskRating: "Low" | "Medium" | "High" =
+      fireRiskPercentage < 33
+        ? "Low"
+        : fireRiskPercentage < 66
           ? "Medium"
           : "High";
 
@@ -477,13 +915,17 @@ export default function RiskIndexPage() {
       environmentalRiskScore +
       floodRiskScore +
       climateRiskScore +
-      hailRiskScore;
+      hailRiskScore +
+      lightningRiskScore +
+      fireRiskScore;
     const maxRiskPoints =
       securityRiskMaxScore +
       environmentalRiskMaxScore +
       floodRiskMaxScore +
       climateRiskMaxScore +
-      hailRiskMaxScore;
+      hailRiskMaxScore +
+      lightningRiskMaxScore +
+      fireRiskMaxScore;
     const overallRiskPercentage = (totalRiskPoints / maxRiskPoints) * 100;
 
     // Determine overall risk rating
@@ -579,15 +1021,179 @@ export default function RiskIndexPage() {
       trendDirection = "down";
     }
 
-    // Risk summary
+    // Define insurance implications first for use in the risk summary
+    const insuranceImplications = {
+      recommendedCoverageLevel: "Comprehensive Plus",
+      estimatedPremiumImpact: "R850 - R1,200 monthly",
+      specialCoverageNeeds: [
+        "Enhanced flood protection",
+        "Electronics coverage for lightning damage",
+        "Hail damage rider for vehicles"
+      ],
+      exclusionConsiderations: [
+        "Subsidence may be excluded in standard policy",
+        "Solar panel coverage may require specialized endorsement"
+      ],
+    };
+
+    // Risk summary using the defined insurance implications
     const riskSummary = `This property presents an overall ${riskRating.toLowerCase()} risk profile (${Math.round(overallRiskPercentage)}%), with most risk factors being well-managed or naturally low. However, there are specific areas of concern:
     
 ${floodRiskRating === "High" ? "High Flood Risk: The property's location in a flood-prone area represents a significant risk factor and should be carefully considered.\n" : ""}
 ${securityRiskRating === "Medium" || securityRiskRating === "High" ? `${securityRiskRating} Security Risk: ${securityRiskRating === "High" ? "This is a critical concern and" : "While not critical,"} security measures could be improved to enhance property protection.\n` : ""}
 ${environmentalRiskRating === "Medium" || environmentalRiskRating === "High" ? `${environmentalRiskRating} Environmental Risk: This moderate risk factor should be monitored, particularly regarding air quality and noise pollution.\n` : ""}
-${hailRiskRating === "Medium" || hailRiskRating === "High" ? `${hailRiskRating} Hail Risk: The property may require additional protection measures against potential hail damage.\n` : ""}
+${hailRiskRating === "Medium" || hailRiskRating === "High" ? `${hailRiskRating} Hail Risk: The property may require additional protection measures against potential hail damage. Historical data shows hail sizes of up to ${hailCharacteristics.historicalHailsizes.largest}mm in this area.\n` : ""}
+${lightningRiskRating === "Medium" || lightningRiskRating === "High" ? `${lightningRiskRating} Lightning Risk: With a strike frequency of ${lightningCharacteristics.strikeFrequency} strikes per km² annually, additional surge protection is recommended for electronics and systems.\n` : ""}
+${fireRiskRating === "Medium" || fireRiskRating === "High" ? `${fireRiskRating} Fire Risk: The building's construction type and maintenance status contribute to elevated fire risk levels. Regular inspections and updated suppression systems are advised.\n` : ""}
+${hasSolarPanels ? "Solar Installation Fire Risk: The property's solar installation represents an additional fire risk factor that requires specialized coverage and safety measures.\n" : ""}
 
-Based on the overall risk assessment, we recommend a comprehensive insurance policy that specifically addresses the identified risk factors.`;
+Based on the overall risk assessment, we recommend a comprehensive insurance policy that specifically addresses the identified risk factors. Insurance implications include estimated premiums of ${insuranceImplications.estimatedPremiumImpact} with special consideration for ${insuranceImplications.specialCoverageNeeds.join(", ")}.`;
+
+    // Create demographic and property value data
+    const demographicData = {
+      ageDistribution: {
+        under18Percent: 18.7,
+        adults18to35Percent: 34.2,
+        adults36to65Percent: 37.5,
+        over65Percent: 9.6,
+      },
+      incomeLevel: {
+        medianIncome: "R384,200",
+        incomeBracket: "Middle" as "Low" | "Lower-Middle" | "Middle" | "Upper-Middle" | "High",
+        unemploymentRate: 9.8,
+      },
+      populationDensity: 4800, // people per square km
+      populationGrowthRate: 1.7, // annual percentage
+    };
+    
+    const propertyValueMetrics = {
+      estimatedBuildingValue: formatWithThousandSeparators(
+        String(Math.round(price * 0.75))
+      ),
+      landValue: formatWithThousandSeparators(
+        String(Math.round(price * 0.25))
+      ),
+      areaAverageValue: formatWithThousandSeparators(
+        String(Math.round(price * 1.12))
+      ),
+      valueTrend: {
+        fiveYearGrowth: 18.4, // percentage
+        oneYearGrowth: 3.2, // percentage
+        forecastNextYear: 4.5, // percentage
+      },
+      comparableProperties: {
+        recentSales: {
+          avgPricePerSquareMeter: formatWithThousandSeparators(
+            String(Math.round((price / propertySize) * 1.05))
+          ),
+          numberOfSales: 14,
+          timeFrame: "Last 12 months",
+        }
+      }
+    };
+    
+    // Create proximity risk data
+    const proximityRisks = {
+      openAreas: {
+        distanceToNearestOpenArea: 350, // in meters
+        typeOfOpenArea: "Public park", 
+        riskLevel: "Low" as "Low" | "Medium" | "High",
+        impactDescription: "Nearby Company's Garden provides natural buffer zone",
+      },
+      informalSettlements: {
+        distanceToNearestSettlement: 6500, // in meters
+        populationEstimate: 12000,
+        riskLevel: "Low" as "Low" | "Medium" | "High",
+        impactDescription: "Significant distance from property reduces associated risks",
+      },
+      industrialZones: {
+        distanceToNearestZone: 4200, // in meters
+        typeOfIndustry: "Light manufacturing",
+        pollutionRisk: "Low" as "Low" | "Medium" | "High",
+        impactDescription: "Industrial zone is downwind and has minimal impact on air quality",
+      },
+      securedArea: {
+        isInSecuredComplex: formData.propertyType === "apartment",
+        securityFeatures: ["Access control", "CCTV", "Security personnel"],
+        crimeRate: {
+          propertyRateVsCity: 85, // percentage relative to city average
+          violentRateVsCity: 72, // percentage relative to city average
+        }
+      }
+    };
+    
+    // Create topography data
+    const topography = {
+      elevation: 28, // in meters
+      slope: {
+        degreeOfSlope: 2.3, // in degrees
+        stabilityRisk: "Low" as "Low" | "Medium" | "High",
+        erosionPotential: "Low" as "Low" | "Medium" | "High",
+      },
+      proximityToWater: {
+        distanceToNearestWaterBody: 970, // in meters
+        typeOfWaterBody: "Harbor", 
+        historicalWaterLevelChanges: "Stable with minor seasonal fluctuations",
+      },
+      soilType: "Urban fill over sandy loam",
+      soilStability: "Medium" as "Low" | "Medium" | "High",
+    };
+    
+    // Create aggregate risk metrics
+    const totalRiskWithNewFactors = totalRiskPoints + fireRiskScore + lightningRiskScore;
+    const maxRiskWithNewFactors = maxRiskPoints + fireRiskMaxScore + lightningRiskMaxScore;
+    const percentageWithNewFactors = (totalRiskWithNewFactors / maxRiskWithNewFactors) * 100;
+    
+    // Create the aggregateRiskMetrics object using the insurance implications we defined earlier
+    const aggregateRiskMetrics = {
+      totalRiskScore: totalRiskWithNewFactors,
+      maxPossibleScore: maxRiskWithNewFactors,
+      percentageScore: percentageWithNewFactors,
+      weightedBreakdown: {
+        securityRisk: Math.round((securityRiskScore / totalRiskWithNewFactors) * 100),
+        environmentalRisk: Math.round((environmentalRiskScore / totalRiskWithNewFactors) * 100),
+        floodRisk: Math.round((floodRiskScore / totalRiskWithNewFactors) * 100),
+        climateRisk: Math.round((climateRiskScore / totalRiskWithNewFactors) * 100),
+        hailRisk: Math.round((hailRiskScore / totalRiskWithNewFactors) * 100),
+        lightningRisk: Math.round((lightningRiskScore / totalRiskWithNewFactors) * 100),
+        fireRisk: Math.round((fireRiskScore / totalRiskWithNewFactors) * 100),
+        otherRisks: 5,
+      },
+      insuranceImplications: insuranceImplications,
+    };
+    
+    // Create visualization data
+    const visualRiskBreakdown = {
+      riskRadarData: {
+        categories: ["Security", "Environmental", "Flood", "Climate", "Hail", "Lightning", "Fire"],
+        values: [
+          securityRiskPercentage, 
+          environmentalRiskPercentage, 
+          floodRiskPercentage, 
+          climateRiskPercentage, 
+          hailRiskPercentage,
+          lightningRiskPercentage,
+          fireRiskPercentage
+        ],
+        benchmarkValues: [45, 38, 32, 59, 38, 29, 34],
+      },
+      historicalTrendData: {
+        years: ["2018", "2019", "2020", "2021", "2022", "2023", "2024"],
+        riskValues: [35, 38, 41, 43, 45, 48, Math.round(overallRiskPercentage)],
+      },
+      riskHeatmap: {
+        categories: ["Short-term", "Medium-term", "Long-term"],
+        severity: [Math.round(overallRiskPercentage * 0.9), Math.round(overallRiskPercentage * 1.1), Math.round(overallRiskPercentage * 1.2)],
+      },
+    };
+    
+    // Create enhanced projections
+    const riskTrendProjection = {
+      shortTerm: "Insurance costs likely to increase 8-12% annually",
+      mediumTerm: "Regulatory changes may require additional mitigation measures",
+      longTerm: "Climate impacts expected to significantly affect risk profile", 
+      confidenceLevel: "Medium" as "Low" | "Medium" | "High",
+    };
 
     return {
       overallRiskScore: Math.round(overallRiskPercentage),
@@ -617,7 +1223,13 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         suburb: "Cape Town City Centre",
         city: "Cape Town",
         postalCode: "8001",
+        standNumber: standNumber,
+        erfNumber: erfNumber,
+        registeredOwner: "Current Owner",
+        zoning: "Residential 1",
       },
+      demographicData,
+      propertyValueMetrics,
       riskFactors: {
         securityRisk: {
           score: securityRiskScore,
@@ -639,6 +1251,19 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           percentageScore: floodRiskPercentage,
           rating: floodRiskRating,
           factors: floodRiskFactors,
+          floodZoneType: "100-year flood zone",
+          historicalFloodEvents: {
+            numberOfEvents: 2,
+            lastOccurrence: "2019",
+            severityOfLastEvent: "Moderate",
+          },
+          drainageInfrastructure: {
+            quality: "Adequate" as "Poor" | "Adequate" | "Good",
+            maintenanceStatus: "Regularly maintained but undersized for severe events",
+          },
+          waterTableDepth: 3.2, // in meters
+          surfaceWaterAccumulation: "Medium" as "Low" | "Medium" | "High",
+          floodMitigationMeasures: ["Improved building drainage", "Waterproofing of basement level"],
         },
         climateRisk: {
           score: climateRiskScore,
@@ -646,6 +1271,52 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           percentageScore: climateRiskPercentage,
           rating: climateRiskRating,
           factors: climateRiskFactors,
+          temperatureVolatility: {
+            historical: {
+              averageAnnualTemperature: 18.2, // in celsius
+              temperatureRange: [7.4, 33.8], // [min, max] in celsius
+              extremeHeatDays: 12, // days per year above threshold
+              extremeColdDays: 2, // days per year below threshold
+            },
+            future: {
+              projectedTemperatureIncrease: 1.8, // in celsius by 2050
+              projectedExtremeDaysIncrease: 6, // additional extreme days by 2050
+              riskLevel: "Medium" as "Low" | "Medium" | "High",
+            },
+            anomalyData: {
+              yearsAboveAverage: 7, // out of last 10 years
+              temperatureTrend: 0.21, // celsius per decade
+            }
+          },
+          precipitationPatterns: {
+            historical: {
+              annualAverage: 580, // in mm
+              seasonalDistribution: {
+                summer: 12, // percentage of annual
+                autumn: 21,
+                winter: 52,
+                spring: 15,
+              },
+              highestRecordedDaily: 102, // in mm
+            },
+            future: {
+              projectedChange: -8.5, // percentage by 2050
+              droughtRisk: "Medium" as "Low" | "Medium" | "High",
+              floodRisk: "Medium" as "Low" | "Medium" | "High",
+            },
+            anomalyData: {
+              dryYears: 6, // out of last 10 years
+              wetYears: 3, // out of last 10 years
+              precipitationTrend: -12.5, // mm per decade
+            }
+          },
+          windExposure: {
+            averageWindSpeed: 18.7, // in km/h
+            prevailingDirection: "South-East",
+            gustRisk: "Medium" as "Low" | "Medium" | "High",
+            hurricaneOrCycloneRisk: "Low" as "Low" | "Medium" | "High",
+          },
+          redFlagRisks: ["Increasing drought conditions", "Rising sea levels"],
         },
         hailRisk: {
           score: hailRiskScore,
@@ -653,6 +1324,37 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           percentageScore: hailRiskPercentage,
           rating: hailRiskRating,
           factors: hailRiskFactors,
+          hailCharacteristics: hailCharacteristics,
+          impactAssessment: hailImpactAssessment,
+          mitigationMeasures: hailMitigationMeasures,
+        },
+        lightningRisk: {
+          score: lightningRiskScore,
+          maxScore: lightningRiskMaxScore,
+          percentageScore: lightningRiskPercentage,
+          rating: lightningRiskRating,
+          factors: lightningRiskFactors,
+          lightningCharacteristics: lightningCharacteristics,
+          vulnerabilityFactors: lightningVulnerabilityFactors,
+          impactAssessment: lightningImpactAssessment,
+          protectionSystems: lightningProtectionSystems,
+          mitigationRecommendations: lightningMitigationRecommendations,
+        },
+        fireRisk: {
+          score: fireRiskScore,
+          maxScore: fireRiskMaxScore,
+          percentageScore: fireRiskPercentage,
+          rating: fireRiskRating,
+          factors: fireRiskFactors,
+          buildingConstructionType: formData.propertyType === "apartment" ? "Concrete frame with masonry" : "Wood frame with brick exterior",
+          distanceToFireStation: 1.8, // in km
+          fireSuppressionSystems: ["Sprinklers", "Fire extinguishers", "Smoke detectors"],
+          solarInstallation: hasSolarPanels ? {
+            hasSolarPanels: true,
+            installationAge: 3, // in years
+            solarFireRisk: "Medium" as "Low" | "Medium" | "High",
+            safetyFeatures: ["DC isolation switches", "Micro-inverters"],
+          } : undefined,
         },
         marketVolatility,
         locationRisk,
@@ -661,11 +1363,16 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         demographicTrends,
         regulatoryRisk,
       },
+      proximityRisks,
+      topography,
+      aggregateRiskMetrics,
+      visualRiskBreakdown,
       projections: {
         shortTerm,
         mediumTerm,
         longTerm,
         trendDirection,
+        riskTrendProjection,
       },
       recommendations,
       riskSummary,
@@ -1164,6 +1871,20 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             riskResult.riskFactors.hailRisk,
             getRiskIcon("hail"),
           )}
+          
+          {/* Lightning Risk */}
+          {renderRiskCategory(
+            "Lightning",
+            riskResult.riskFactors.lightningRisk,
+            getRiskIcon("lightning"),
+          )}
+          
+          {/* Fire Risk */}
+          {renderRiskCategory(
+            "Fire",
+            riskResult.riskFactors.fireRisk,
+            getRiskIcon("fire"),
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 relative z-10">
             <div className="p-4 rounded-lg bg-green-50 border border-green-200">
@@ -1225,6 +1946,22 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 </span>{" "}
                 These moderate risk factors should be monitored but don't
                 present immediate concerns.
+              </li>
+              
+              <li>
+                <span className="text-amber-600 font-medium">
+                  Lightning Risk:
+                </span>{" "}
+                With a strike frequency of 3.8 strikes per km² annually, 
+                additional surge protection is recommended for electronics and systems.
+              </li>
+              
+              <li>
+                <span className="text-amber-600 font-medium">
+                  Fire Risk:
+                </span>{" "}
+                The building's construction type and maintenance status contribute to 
+                elevated fire risk levels. Regular inspections and updated suppression systems are advised.
               </li>
 
               <li>
