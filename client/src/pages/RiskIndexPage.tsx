@@ -123,6 +123,11 @@ interface RiskResult {
       percentageScore: number;
       rating: "Low" | "Medium" | "High";
       factors: string[];
+      detailedFactors?: Array<{
+        dimension: string;
+        outcome: string;
+        riskFactor: number;
+      }>;
     };
     climateRisk: {
       score: number;
@@ -130,6 +135,13 @@ interface RiskResult {
       percentageScore: number;
       rating: "Low" | "Medium" | "High";
       factors: string[];
+      detailedFactors?: Array<{
+        dimension: string;
+        outcome: string;
+        riskFactor: number;
+        category?: string;
+        futureRisk?: string;
+      }>;
     };
     hailRisk: {
       score: number;
@@ -493,10 +505,21 @@ export default function RiskIndexPage() {
     const floodRiskMaxScore = 10;
     let floodRiskScore = 0;
     const floodRiskFactors: string[] = [];
+    const floodDetailedFactors: Array<{dimension: string; outcome: string; riskFactor: number}> = [];
 
-    // Property location affects flood risk
+    // Flood risk assessment - based on screenshot data
+    const floodRisk = "High";
+    floodRiskScore = 10; // Total flood risk score
+
+    // Add flood risk detailed factor
+    floodDetailedFactors.push({
+      dimension: "Flood Risk",
+      outcome: floodRisk,
+      riskFactor: 10
+    });
+
+    // Property location affects flood risk narrative
     if (formData.address.toLowerCase().includes("cape town city centre")) {
-      floodRiskScore += 10; // Flood zone risks
       floodRiskFactors.push(
         "Property is located in a 1-in-100 year flood zone",
       );
@@ -507,7 +530,25 @@ export default function RiskIndexPage() {
       floodRiskFactors.push(
         "Basement level is particularly vulnerable to water ingress",
       );
+    } else {
+      floodRiskFactors.push(
+        "Property is located in a potential flood zone area",
+      );
+      floodRiskFactors.push(
+        "Flood hazard assessment estimates risk of inundation damage",
+      );
+      floodRiskFactors.push(
+        "Property may be subject to water velocity risks during heavy rainfall",
+      );
     }
+
+    // Add flood educational narrative
+    floodRiskFactors.push(
+      "Flood hazard assessment estimates the probability of different magnitudes of damaging flood conditions",
+    );
+    floodRiskFactors.push(
+      "Factors include depth of inundation, duration, velocity of moving water, and wave height",
+    );
 
     // Flood risk rating
     const floodRiskPercentage = (floodRiskScore / floodRiskMaxScore) * 100;
@@ -522,13 +563,242 @@ export default function RiskIndexPage() {
     const climateRiskMaxScore = 270;
     let climateRiskScore = 0;
     const climateRiskFactors: string[] = [];
+    const climateDetailedFactors: Array<{
+      dimension: string; 
+      outcome: string; 
+      riskFactor: number;
+      category?: string;
+      futureRisk?: string;
+    }> = [];
 
-    // Property location and construction affect climate risk
+    // Temperature related climate factors
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Changing of air temperature",
+      outcome: "Medium risk",
+      riskFactor: 5,
+      futureRisk: "Medium Risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Changing of freshwater and marine water temperatures",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Heat Stress",
+      outcome: "Low risk",
+      riskFactor: 2,
+      futureRisk: "Medium Risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Temperature variability",
+      outcome: "Medium risk",
+      riskFactor: 5,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Permafrost thawing",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Heat wave",
+      outcome: "Medium risk",
+      riskFactor: 5,
+      futureRisk: "Medium risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Cold wave / frost",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Wildfire",
+      outcome: "High Risk",
+      riskFactor: 10,
+      futureRisk: "High Risk"
+    });
+
+    // Wind related climate factors
+    climateDetailedFactors.push({
+      category: "Wind related",
+      dimension: "Changing wind patterns",
+      outcome: "Low risk",
+      riskFactor: 2,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Wind related",
+      dimension: "Windstorm (cyclone, hurricane, typhoon)",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Wind related",
+      dimension: "Blizzards, dust and sandstorm",
+      outcome: "Low risk",
+      riskFactor: 2,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Wind related",
+      dimension: "Tornado",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    // Water related climate factors
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Changing of precipitation patterns: Rain",
+      outcome: "Medium risk",
+      riskFactor: 5,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Precipitation or hydrological variability",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Ocean acidification",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Saline intrusion",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Sea level rise",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Water stress",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "Medium Risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Drought",
+      outcome: "Medium risk",
+      riskFactor: 5,
+      futureRisk: "High Risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Heavy precipitation",
+      outcome: "Medium risk",
+      riskFactor: 5,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Flood (coastal, fluvial, pluvial, ground water)",
+      outcome: "High Risk",
+      riskFactor: 10,
+      futureRisk: "Red Flag"
+    });
+
+    // Solid matter related factors
+    climateDetailedFactors.push({
+      category: "Solid matter-related",
+      dimension: "Coastal erosion",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Solid matter-related",
+      dimension: "Soil degradation",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Solid matter-related",
+      dimension: "Soil erosion",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Solid matter-related",
+      dimension: "Solifluction",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Solid matter-related",
+      dimension: "Landslide",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Solid matter-related",
+      dimension: "Subsidence",
+      outcome: "Medium Risk",
+      riskFactor: 5,
+      futureRisk: "Medium Risk"
+    });
+
+    // Calculate total climate risk score from detailed factors
+    climateRiskScore = climateDetailedFactors.reduce((sum, factor) => sum + factor.riskFactor, 0);
+
+    // Property quality context for narrative
     if (
       formData.propertyCondition === "excellent" ||
       formData.propertyCondition === "good"
     ) {
-      climateRiskScore += 61; // Better buildings withstand climate risks better
       climateRiskFactors.push(
         "Property is not in a high-risk zone for sea level rise",
       );
@@ -542,7 +812,6 @@ export default function RiskIndexPage() {
         "Property has good natural ventilation reducing AC dependency",
       );
     } else {
-      climateRiskScore += 120; // Poorer condition buildings have higher climate risk
       climateRiskFactors.push(
         "Property may experience increased maintenance due to weather extremes",
       );
@@ -550,6 +819,20 @@ export default function RiskIndexPage() {
         "Building materials may not be optimal for temperature regulation",
       );
     }
+
+    // Add additional climate narrative
+    climateRiskFactors.push(
+      "Temperature anomalies show a slight increase of 0.3°C from historical average",
+    );
+    climateRiskFactors.push(
+      "Precipitation is 45mm below normal average which may indicate drought conditions",
+    );
+    climateRiskFactors.push(
+      "Wildfire risk is rated high with increasing prevalence in the region",
+    );
+    climateRiskFactors.push(
+      "Future climate projections indicate higher water stress and drought potential",
+    );
 
     // Climate risk rating
     const climateRiskPercentage =
@@ -565,24 +848,132 @@ export default function RiskIndexPage() {
     const hailRiskMaxScore = 30;
     let hailRiskScore = 0;
     const hailRiskFactors: string[] = [];
+    const hailDetailedFactors: Array<{dimension: string; outcome: string; riskFactor: number}> = [];
 
-    // Roof condition affects hail risk
+    // Hail risk detailed factors based on roof condition and location
     if (formData.propertyCondition === "excellent") {
-      hailRiskScore += 10; // Lower risk with excellent roofing
+      // Hail risk assessment for excellent condition properties
+      hailDetailedFactors.push({
+        dimension: "Roof condition",
+        outcome: "Excellent - High impact resistance",
+        riskFactor: 1
+      });
+      
+      hailDetailedFactors.push({
+        dimension: "Hail frequency in area",
+        outcome: "Medium - 1-2 events per year",
+        riskFactor: 5
+      });
+      
+      hailDetailedFactors.push({
+        dimension: "Vehicle protection",
+        outcome: "Full covered parking available",
+        riskFactor: 1
+      });
+      
+      hailDetailedFactors.push({
+        dimension: "Roof material",
+        outcome: "Hail-resistant materials",
+        riskFactor: 1
+      });
+      
+      hailDetailedFactors.push({
+        dimension: "Proximity to high-risk zone",
+        outcome: "Within 5km of high frequency area",
+        riskFactor: 2
+      });
+      
+      // Calculate total hail risk score
+      hailRiskScore = hailDetailedFactors.reduce((sum, factor) => sum + factor.riskFactor, 0);
+      
+      // Narrative factors
       hailRiskFactors.push(
         "Roof is in excellent condition and likely to withstand hail impact",
       );
       hailRiskFactors.push("Covered parking provides vehicle protection");
+      hailRiskFactors.push("Hail-resistant roofing materials installed");
+      
     } else if (formData.propertyCondition === "poor") {
-      hailRiskScore += 20; // Higher risk with poor roofing
+      // Hail risk assessment for poor condition properties
+      hailDetailedFactors.push({
+        dimension: "Roof condition",
+        outcome: "Poor - Low impact resistance",
+        riskFactor: 8
+      });
+      
+      hailDetailedFactors.push({
+        dimension: "Hail frequency in area",
+        outcome: "Medium - 1-2 events per year",
+        riskFactor: 5
+      });
+      
+      hailDetailedFactors.push({
+        dimension: "Vehicle protection",
+        outcome: "No covered parking available",
+        riskFactor: 4
+      });
+      
+      hailDetailedFactors.push({
+        dimension: "Roof material",
+        outcome: "Standard materials with wear",
+        riskFactor: 5
+      });
+      
+      hailDetailedFactors.push({
+        dimension: "Proximity to high-risk zone",
+        outcome: "Within 5km of high frequency area",
+        riskFactor: 2
+      });
+      
+      // Calculate total hail risk score
+      hailRiskScore = hailDetailedFactors.reduce((sum, factor) => sum + factor.riskFactor, 0);
+      
+      // Narrative factors
       hailRiskFactors.push("Roof condition may be vulnerable to hail damage");
       hailRiskFactors.push("Inadequate vehicle protection during hail storms");
+      hailRiskFactors.push("Roof materials show signs of wear and may need replacement");
+      
     } else {
-      hailRiskScore += 15; // Medium risk
+      // Hail risk assessment for average condition properties
+      hailDetailedFactors.push({
+        dimension: "Roof condition",
+        outcome: "Fair/Good - Moderate impact resistance",
+        riskFactor: 4
+      });
+      
+      hailDetailedFactors.push({
+        dimension: "Hail frequency in area",
+        outcome: "Medium - 1-2 events per year",
+        riskFactor: 5
+      });
+      
+      hailDetailedFactors.push({
+        dimension: "Vehicle protection",
+        outcome: "Partial covered parking available",
+        riskFactor: 2
+      });
+      
+      hailDetailedFactors.push({
+        dimension: "Roof material",
+        outcome: "Standard materials in good condition",
+        riskFactor: 3
+      });
+      
+      hailDetailedFactors.push({
+        dimension: "Proximity to high-risk zone",
+        outcome: "Within 5km of high frequency area",
+        riskFactor: 2
+      });
+      
+      // Calculate total hail risk score
+      hailRiskScore = hailDetailedFactors.reduce((sum, factor) => sum + factor.riskFactor, 0);
+      
+      // Narrative factors
       hailRiskFactors.push(
         "Roof may require inspection to assess hail resistance",
       );
       hailRiskFactors.push("Partial covered parking for vehicles");
+      hailRiskFactors.push("Standard roofing materials with moderate resistance to hail impact");
     }
 
     // Hail risk rating
@@ -825,6 +1216,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           percentageScore: floodRiskPercentage,
           rating: floodRiskRating,
           factors: floodRiskFactors,
+          detailedFactors: floodDetailedFactors,
         },
         climateRisk: {
           score: climateRiskScore,
@@ -832,6 +1224,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           percentageScore: climateRiskPercentage,
           rating: climateRiskRating,
           factors: climateRiskFactors,
+          detailedFactors: climateDetailedFactors,
         },
         hailRisk: {
           score: hailRiskScore,
@@ -839,6 +1232,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           percentageScore: hailRiskPercentage,
           rating: hailRiskRating,
           factors: hailRiskFactors,
+          detailedFactors: hailDetailedFactors,
           maxHailSize,
           annualFrequency,
           damageProb,
@@ -961,7 +1355,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <td className="px-4 py-2 border-t border-gray-200">{factor.dimension}</td>
                       <td className="px-4 py-2 border-t border-gray-200">{factor.outcome}</td>
                       <td className="px-4 py-2 border-t border-gray-200">
-                        <Badge variant={factor.riskFactor > 5 ? "destructive" : factor.riskFactor > 2 ? "yellow" : "outline"}>
+                        <Badge variant={factor.riskFactor > 5 ? "destructive" : factor.riskFactor > 2 ? "secondary" : "outline"}>
                           {factor.riskFactor} {factor.riskFactor === 1 ? "point" : "points"}
                         </Badge>
                       </td>
