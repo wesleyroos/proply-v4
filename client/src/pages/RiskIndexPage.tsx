@@ -901,7 +901,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                   {riskResult.propertyDetails.condition === "fair" && (
                     <>
                       <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400/>
                     </>
                   )}
                   {riskResult.propertyDetails.condition === "poor" && (
@@ -1007,14 +1007,14 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                     <h4 className="font-semibold text-gray-700">Risk Factors</h4>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-white/20 text-gray-700 hover:bg-white/25">
+                    <Badge className="bg-white border border-gray-200 text-gray-700">
                       Total: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints}
                     </Badge>
                     <Badge className={`${riskResult.riskRating === "Very Low" || riskResult.riskRating === "Low" 
-                      ? "bg-green-500/20 text-green-100" 
-                      : riskResult.riskRating === "Moderate"
-                        ? "bg-yellow-500/20 text-yellow-100"
-                        : "bg-red-500/20 text-red-100"} hover:bg-opacity-25`}>
+                        ? "bg-green-500 text-white" 
+                        : riskResult.riskRating === "Moderate"
+                          ? "bg-yellow-500 text-white"
+                          : "bg-red-500 text-white"}`}>
                       {riskResult.riskRating} Risk
                     </Badge>
                   </div>
