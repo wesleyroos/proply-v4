@@ -1352,64 +1352,64 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </div>
 
             <Accordion type="single" collapsible className="w-full">
-              {/* Detailed risk factors accordion item */}
-              {riskData.detailedFactors && riskData.detailedFactors.length > 0 && (
-                <AccordionItem value="detailed-factors">
-                  <AccordionTrigger className="py-2 px-4 bg-gray-50 rounded-t-lg font-medium text-gray-800 hover:no-underline">
-                    Detailed Risk Assessment
-                  </AccordionTrigger>
-                  <AccordionContent className="border border-t-0 border-gray-200 p-0 rounded-b-lg overflow-hidden">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full bg-white text-sm">
-                        <thead>
-                          <tr className="bg-gray-50">
-                            <th className="px-4 py-2 text-left font-medium text-gray-700">Dimension</th>
-                            <th className="px-4 py-2 text-left font-medium text-gray-700">Outcome</th>
-                            <th className="px-4 py-2 text-left font-medium text-gray-700">Risk Factor</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {riskData.detailedFactors.map((factor: any, index: number) => (
-                            <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-                              <td className="px-4 py-2 border-t border-gray-200">{factor.dimension}</td>
-                              <td className="px-4 py-2 border-t border-gray-200">{factor.outcome}</td>
-                              <td className="px-4 py-2 border-t border-gray-200">
-                                <Badge variant={factor.riskFactor > 5 ? "destructive" : factor.riskFactor > 2 ? "secondary" : "outline"}>
-                                  {factor.riskFactor} {factor.riskFactor === 1 ? "point" : "points"}
+              {/* Single accordion item with all risk details */}
+              <AccordionItem value="detailed-factors">
+                <AccordionTrigger className="py-2 px-4 bg-gray-50 rounded-t-lg font-medium text-gray-800 hover:no-underline">
+                  Security Risk Details
+                </AccordionTrigger>
+                <AccordionContent className="border border-t-0 border-gray-200 p-4 rounded-b-lg">
+                  {/* Risk factors */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2">Risk Factors:</h4>
+                    <ul className="space-y-1 text-sm mb-4">
+                      {riskData.factors.map((factor: string, index: number) => (
+                        <li key={index} className="flex items-start">
+                          <span className="text-gray-700 mr-2">•</span>
+                          <span>{factor}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  {/* Detailed assessment table */}
+                  {riskData.detailedFactors && riskData.detailedFactors.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">Detailed Assessment:</h4>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full bg-white text-sm">
+                          <thead>
+                            <tr className="bg-gray-50">
+                              <th className="px-4 py-2 text-left font-medium text-gray-700">Dimension</th>
+                              <th className="px-4 py-2 text-left font-medium text-gray-700">Outcome</th>
+                              <th className="px-4 py-2 text-left font-medium text-gray-700">Risk Factor</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {riskData.detailedFactors.map((factor: any, index: number) => (
+                              <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                                <td className="px-4 py-2 border-t border-gray-200">{factor.dimension}</td>
+                                <td className="px-4 py-2 border-t border-gray-200">{factor.outcome}</td>
+                                <td className="px-4 py-2 border-t border-gray-200">
+                                  <Badge variant={factor.riskFactor > 5 ? "destructive" : factor.riskFactor > 2 ? "secondary" : "outline"}>
+                                    {factor.riskFactor} {factor.riskFactor === 1 ? "point" : "points"}
+                                  </Badge>
+                                </td>
+                              </tr>
+                            ))}
+                            <tr className="bg-gray-100">
+                              <td className="px-4 py-2 font-medium border-t">Total</td>
+                              <td className="px-4 py-2 border-t"></td>
+                              <td className="px-4 py-2 font-medium border-t">
+                                <Badge variant="default">
+                                  {riskData.score} {riskData.score === 1 ? "point" : "points"}
                                 </Badge>
                               </td>
                             </tr>
-                          ))}
-                          <tr className="bg-gray-100">
-                            <td className="px-4 py-2 font-medium border-t">Total</td>
-                            <td className="px-4 py-2 border-t"></td>
-                            <td className="px-4 py-2 font-medium border-t">
-                              <Badge variant="default">
-                                {riskData.score} {riskData.score === 1 ? "point" : "points"}
-                              </Badge>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </AccordionContent>
-                </AccordionItem>
-              )}
-
-              {/* Risk factors accordion item */}
-              <AccordionItem value="risk-factors" className="mt-2">
-                <AccordionTrigger className="py-2 px-4 bg-gray-50 rounded-t-lg font-medium text-gray-800 hover:no-underline">
-                  {title} Risk Factors
-                </AccordionTrigger>
-                <AccordionContent className="border border-t-0 border-gray-200 p-4 rounded-b-lg">
-                  <ul className="space-y-1 text-sm">
-                    {riskData.factors.map((factor: string, index: number) => (
-                      <li key={index} className="flex items-start">
-                        <span className="text-gray-700 mr-2">•</span>
-                        <span>{factor}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  )}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
