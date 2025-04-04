@@ -1417,8 +1417,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         );
       }
       
-      // For environmental risk, use the accordion pattern
-      if (title.toLowerCase() === 'environmental') {
+      // For environmental and flood risks, use the accordion pattern
+      if (title.toLowerCase() === 'environmental' || title.toLowerCase() === 'flood') {
         return (
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
@@ -1448,7 +1448,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="detailed-factors">
                 <AccordionTrigger className="py-2 px-4 bg-gray-50 rounded-t-lg font-medium text-gray-800 hover:no-underline">
-                  Environmental Risk Details
+                  {title} Risk Details
                 </AccordionTrigger>
                 <AccordionContent className="border border-t-0 border-gray-200 p-4 rounded-b-lg">
                   {/* Risk factors */}
