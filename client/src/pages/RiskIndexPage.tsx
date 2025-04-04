@@ -913,7 +913,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           </div>
 
           {/* Property Value Information */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-4 max-w-3xl mx-auto">
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-1">
                 Purchase Price
@@ -938,14 +938,14 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 R{riskResult.propertyDetails.monthlyRates}
               </p>
             </div>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">
-                Total Building Value
-              </p>
-              <p className="text-xl font-bold">
-                R3,200,000 - R3,800,000
-              </p>
-            </div>
+          </div>
+          <div className="text-center mb-8">
+            <p className="text-sm text-muted-foreground mb-1">
+              Total Building Value
+            </p>
+            <p className="text-xl font-bold">
+              R3,200,000 - R3,800,000
+            </p>
           </div>
 
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
