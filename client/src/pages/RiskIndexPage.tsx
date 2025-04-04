@@ -857,7 +857,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               <p className="text-xl font-bold">R{riskResult.propertyDetails.municipalValue}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">Est. Monthly Rates</p>
+              <p className="text-sm text-muted-foreground mb-1">Monthly Rates</p>
               <p className="text-xl font-bold">R{riskResult.propertyDetails.monthlyRates}</p>
             </div>
             <div className="text-center">
