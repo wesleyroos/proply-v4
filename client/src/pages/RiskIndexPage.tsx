@@ -940,10 +940,10 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </div>
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-1">
-                Est. Monthly Costs
+                Total Building Value
               </p>
               <p className="text-xl font-bold">
-                R{riskResult.propertyDetails.estimatedMonthlyCosts}
+                R3,200,000 - R3,800,000
               </p>
             </div>
           </div>
