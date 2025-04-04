@@ -30,6 +30,7 @@ import {
   Cloud,
   Umbrella,
   ChevronDown,
+  Users,
 } from "lucide-react";
 import AddressAutocomplete from "../components/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
@@ -1269,43 +1270,127 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
           {/* Neighborhood Demographics Card */}
           {riskResult.neighborhoodDemographics && (
-            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10 mb-8 max-w-4xl mx-auto">
-              <div className="bg-white px-4 py-3 border-b">
-                <h3 className="font-semibold text-gray-700">Neighborhood Demographics</h3>
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2 rounded-full bg-blue-500 bg-opacity-20">
+                  <Landmark className="h-5 w-5 text-blue-500" />
+                </div>
+                <h3 className="text-lg font-semibold">Neighborhood Demographics</h3>
+                <Badge className="bg-blue-500 text-white hover:bg-blue-600">
+                  Area Profile
+                </Badge>
               </div>
-              <div className="p-5">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                  <div className="text-center bg-slate-50 p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">Dominant Age</p>
-                    <p className="text-base font-medium">{riskResult.neighborhoodDemographics.dominantAge}</p>
-                  </div>
-                  <div className="text-center bg-slate-50 p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">Dominant Race</p>
-                    <p className="text-base font-medium">{riskResult.neighborhoodDemographics.dominantRace}</p>
-                  </div>
-                  <div className="text-center bg-slate-50 p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">Gender Ratio</p>
-                    <p className="text-base font-medium">{riskResult.neighborhoodDemographics.dominantGender}</p>
-                  </div>
-                  <div className="text-center bg-slate-50 p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">Income Class</p>
-                    <p className="text-base font-medium">{riskResult.neighborhoodDemographics.incomeClass}</p>
-                  </div>
-                  <div className="text-center bg-slate-50 p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">NLI Index</p>
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-full bg-gray-200 rounded-full h-2 my-1">
-                        <div 
-                          className="h-2 rounded-full bg-blue-600"
-                          style={{ width: `${(riskResult.neighborhoodDemographics.nliIndex / 10) * 100}%` }}
-                        ></div>
+
+              <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Left column - Demographics */}
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>Population Demographics</span>
+                    </h4>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-slate-100 p-1.5 rounded">
+                            <Clock className="h-4 w-4 text-slate-500" />
+                          </div>
+                          <span className="text-sm font-medium">Dominant Age Group</span>
+                        </div>
+                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
+                          {riskResult.neighborhoodDemographics.dominantAge}
+                        </span>
                       </div>
-                      <span className="text-base font-medium">{riskResult.neighborhoodDemographics.nliIndex}/10</span>
+
+                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-slate-100 p-1.5 rounded">
+                            <AlertCircle className="h-4 w-4 text-slate-500" />
+                          </div>
+                          <span className="text-sm font-medium">Dominant Race</span>
+                        </div>
+                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
+                          {riskResult.neighborhoodDemographics.dominantRace}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-slate-100 p-1.5 rounded">
+                            <AlertCircle className="h-4 w-4 text-slate-500" />
+                          </div>
+                          <span className="text-sm font-medium">Gender Ratio</span>
+                        </div>
+                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
+                          {riskResult.neighborhoodDemographics.dominantGender}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-center bg-slate-50 p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">Avg Building Value</p>
-                    <p className="text-base font-medium">R{riskResult.neighborhoodDemographics.averageBuildingValue}</p>
+
+                  {/* Right column - Economic Indicators */}
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <CircleDollarSign className="h-4 w-4" />
+                      <span>Economic Indicators</span>
+                    </h4>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-slate-100 p-1.5 rounded">
+                            <TrendingUp className="h-4 w-4 text-slate-500" />
+                          </div>
+                          <span className="text-sm font-medium">Income Classification</span>
+                        </div>
+                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
+                          {riskResult.neighborhoodDemographics.incomeClass}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-slate-100 p-1.5 rounded">
+                            <Home className="h-4 w-4 text-slate-500" />
+                          </div>
+                          <span className="text-sm font-medium">Average Building Value</span>
+                        </div>
+                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
+                          R{riskResult.neighborhoodDemographics.averageBuildingValue}
+                        </span>
+                      </div>
+
+                      <div className="pt-2">
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-medium">National Living Index (NLI)</span>
+                          <span className="text-sm font-medium text-blue-600">{riskResult.neighborhoodDemographics.nliIndex}/10</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="h-2.5 rounded-full bg-blue-600"
+                            style={{ width: `${(riskResult.neighborhoodDemographics.nliIndex / 10) * 100}%` }}
+                          ></div>
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>Lower Income</span>
+                          <span>Middle Income</span>
+                          <span>Higher Income</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-gray-200">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-gray-500">
+                      <Info className="h-4 w-4 inline mr-1" />
+                      Demographics data is based on the latest census information and local surveys.
+                    </p>
+                    <Badge variant="outline" className="text-xs">
+                      <Clock className="h-3 w-3 mr-1" /> Updated Feb 2025
+                    </Badge>
                   </div>
                 </div>
               </div>
