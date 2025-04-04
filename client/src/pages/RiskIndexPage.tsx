@@ -99,6 +99,11 @@ interface RiskResult {
       percentageScore: number;
       rating: "Low" | "Medium" | "High";
       factors: string[];
+      detailedFactors?: Array<{
+        dimension: string;
+        outcome: string;
+        riskFactor: number;
+      }>;
     };
     environmentalRisk: {
       score: number;
@@ -106,6 +111,11 @@ interface RiskResult {
       percentageScore: number;
       rating: "Low" | "Medium" | "High";
       factors: string[];
+      detailedFactors?: Array<{
+        dimension: string;
+        outcome: string;
+        riskFactor: number;
+      }>;
     };
     floodRisk: {
       score: number;
@@ -309,34 +319,81 @@ export default function RiskIndexPage() {
     const securityRiskMaxScore = 50;
     let securityRiskScore = 0;
     const securityRiskFactors: string[] = [];
+    const securityDetailedFactors: Array<{dimension: string; outcome: string; riskFactor: number}> = [];
 
-    // Property type affects security risk
+    // Inside security area
+    const insideSecurityArea = formData.propertyType === "apartment" ? "Yes" : "No";
+    const insideSecurityScore = insideSecurityArea === "Yes" ? 1 : 5;
+    securityRiskScore += insideSecurityScore;
+    securityDetailedFactors.push({
+      dimension: "Inside security area:",
+      outcome: insideSecurityArea,
+      riskFactor: insideSecurityScore
+    });
+
+    // Next to open areas
+    const nextToOpenAreas = formData.address.toLowerCase().includes("cape town city centre") ? "Yes" : "No";
+    const nextToOpenAreasScore = nextToOpenAreas === "Yes" ? 10 : 0;
+    securityRiskScore += nextToOpenAreasScore;
+    securityDetailedFactors.push({
+      dimension: "Next to open areas:",
+      outcome: nextToOpenAreas,
+      riskFactor: nextToOpenAreasScore
+    });
+
+    // Distance to industrial
+    const distanceToIndustrial = "1.8km";
+    const distanceToIndustrialScore = 5;
+    securityRiskScore += distanceToIndustrialScore;
+    securityDetailedFactors.push({
+      dimension: "Distance to industrial:",
+      outcome: distanceToIndustrial,
+      riskFactor: distanceToIndustrialScore
+    });
+
+    // Distance to informal settlements
+    const distanceToInformal = "3.2km";
+    const distanceToInformalScore = 5;
+    securityRiskScore += distanceToInformalScore;
+    securityDetailedFactors.push({
+      dimension: "Distance to informal settlements:",
+      outcome: distanceToInformal,
+      riskFactor: distanceToInformalScore
+    });
+
+    // Construction in the area
+    const constructionInArea = "No";
+    const constructionInAreaScore = 0;
+    securityRiskScore += constructionInAreaScore;
+    securityDetailedFactors.push({
+      dimension: "Construction in the area:",
+      outcome: constructionInArea,
+      riskFactor: constructionInAreaScore
+    });
+
+    // Property type context for narrative
     if (formData.propertyType === "apartment") {
-      securityRiskScore += 15; // Medium risk (building security but potential shared access)
       securityRiskFactors.push(
         "Property is located in an apartment building with shared access",
       );
     } else if (formData.propertyType === "house") {
-      securityRiskScore += 25; // Higher risk (standalone structure)
       securityRiskFactors.push(
         "Standalone structure with multiple entry points",
       );
     } else if (formData.propertyType === "townhouse") {
-      securityRiskScore += 20; // Medium-high risk
       securityRiskFactors.push(
         "Townhouse with multiple levels and entry points",
       );
     }
 
-    // Location-based risk (mock data - would be based on real crime statistics)
+    // Location context for narrative
     if (formData.address.toLowerCase().includes("cape town city centre")) {
-      securityRiskScore += 10; // Urban center risks
       securityRiskFactors.push(
         "Property is located in an area with moderate crime rates",
       );
     }
 
-    // Add generic factors for demo
+    // Add generic factors for narrative
     securityRiskFactors.push(
       "Building has security but lacks 24-hour monitoring",
     );
@@ -358,10 +415,50 @@ export default function RiskIndexPage() {
     const environmentalRiskMaxScore = 40;
     let environmentalRiskScore = 0;
     const environmentalRiskFactors: string[] = [];
+    const environmentalDetailedFactors: Array<{dimension: string; outcome: string; riskFactor: number}> = [];
 
-    // Property location affects environmental risk
+    // Fire risk
+    const fireRisk = "High";
+    const fireRiskScore = 10;
+    environmentalRiskScore += fireRiskScore;
+    environmentalDetailedFactors.push({
+      dimension: "Fire risk:",
+      outcome: fireRisk,
+      riskFactor: fireRiskScore
+    });
+
+    // Roof top solar (fire risk)
+    const roofTopSolar = "Yes";
+    const roofTopSolarScore = 10;
+    environmentalRiskScore += roofTopSolarScore;
+    environmentalDetailedFactors.push({
+      dimension: "Roof top solar (fire risk):",
+      outcome: roofTopSolar,
+      riskFactor: roofTopSolarScore
+    });
+
+    // Distance to water
+    const distanceToWater = ">100m (225m)";
+    const distanceToWaterScore = 0;
+    environmentalRiskScore += distanceToWaterScore;
+    environmentalDetailedFactors.push({
+      dimension: "Distance to water:",
+      outcome: distanceToWater,
+      riskFactor: distanceToWaterScore
+    });
+
+    // Slope
+    const slope = "5°";
+    const slopeScore = 1;
+    environmentalRiskScore += slopeScore;
+    environmentalDetailedFactors.push({
+      dimension: "Slope:",
+      outcome: slope,
+      riskFactor: slopeScore
+    });
+
+    // Add narrative factors for display
     if (formData.address.toLowerCase().includes("cape town city centre")) {
-      environmentalRiskScore += 21; // Urban pollution factors
       environmentalRiskFactors.push(
         "Moderate air pollution from nearby traffic",
       );
@@ -370,6 +467,17 @@ export default function RiskIndexPage() {
         "Limited exposure to industrial contaminants",
       );
     }
+
+    // Add fire-related factors for narrative
+    environmentalRiskFactors.push(
+      "Property is in an area with high fire risk rating",
+    );
+    environmentalRiskFactors.push(
+      "Roof top solar installation increases potential fire hazard",
+    );
+    environmentalRiskFactors.push(
+      "Property has low slope gradient which is favorable for drainage",
+    );
 
     // Environmental risk rating
     const environmentalRiskPercentage =
@@ -701,6 +809,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           percentageScore: securityRiskPercentage,
           rating: securityRiskRating,
           factors: securityRiskFactors,
+          detailedFactors: securityDetailedFactors,
         },
         environmentalRisk: {
           score: environmentalRiskScore,
@@ -708,6 +817,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           percentageScore: environmentalRiskPercentage,
           rating: environmentalRiskRating,
           factors: environmentalRiskFactors,
+          detailedFactors: environmentalDetailedFactors,
         },
         floodRisk: {
           score: floodRiskScore,
@@ -833,6 +943,43 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               <span>High Risk</span>
             </div>
           </div>
+
+          {/* Detailed risk factors table (if available) */}
+          {riskData.detailedFactors && riskData.detailedFactors.length > 0 && (
+            <div className="overflow-x-auto mb-4">
+              <table className="min-w-full bg-white border border-gray-200 text-sm">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">Dimension</th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">Outcome</th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">Risk Factor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {riskData.detailedFactors.map((factor: any, index: number) => (
+                    <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                      <td className="px-4 py-2 border-t border-gray-200">{factor.dimension}</td>
+                      <td className="px-4 py-2 border-t border-gray-200">{factor.outcome}</td>
+                      <td className="px-4 py-2 border-t border-gray-200">
+                        <Badge variant={factor.riskFactor > 5 ? "destructive" : factor.riskFactor > 2 ? "yellow" : "outline"}>
+                          {factor.riskFactor} {factor.riskFactor === 1 ? "point" : "points"}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="bg-gray-100">
+                    <td className="px-4 py-2 font-medium border-t">Total</td>
+                    <td className="px-4 py-2 border-t"></td>
+                    <td className="px-4 py-2 font-medium border-t">
+                      <Badge variant="default">
+                        {riskData.score} {riskData.score === 1 ? "point" : "points"}
+                      </Badge>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
 
           <div className="bg-gray-50 p-4 rounded-lg relative z-10">
             <h4 className="font-medium mb-2">{title} Risk Factors:</h4>
