@@ -1000,7 +1000,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
             {/* Risk Factors Card */}
             <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
-              <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
+              <div className="bg-white px-4 py-3 border-b">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <AlertTriangle className="h-5 w-5 text-white mr-2" />
