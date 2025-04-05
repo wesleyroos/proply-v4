@@ -1518,9 +1518,6 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                     </ul>
                   </div>
                   
-                  {/* Insurance metrics for hail risk */}
-                  {title.toLowerCase() === "hail" && renderHailInsuranceMetrics(riskData)}
-                  
                   {/* Detailed assessment table */}
                   {riskData.detailedFactors && riskData.detailedFactors.length > 0 && (
                     <div>
