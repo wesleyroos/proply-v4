@@ -1762,11 +1762,6 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </div>
           </div>
 
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            A comprehensive assessment of property risks including security,
-            environmental, flood, climate, and hail factors.
-          </p>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 max-w-4xl mx-auto">
             {/* Risk Score Card */}
             <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
@@ -2450,7 +2445,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         <div className="text-center space-y-4 mb-12">
           <h1 className="text-6xl font-bold">Proply Risk Index™</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Comprehensive insurance risk assessment for your property investment
+            A comprehensive assessment of property risks including security,
+              environmental, flood, climate, hail factors, and more.
           </p>
         </div>
 
