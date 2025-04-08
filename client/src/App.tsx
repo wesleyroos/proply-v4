@@ -40,6 +40,7 @@ import DealScorePage from "./pages/DealScorePage";
 import DealScorePublicPage from "./pages/DealScorePublicPage";
 import DealScoreReportPage from "./pages/DealScoreReportPage";
 import RiskIndexPage from "./pages/RiskIndexPage";
+import HollardRiskIndexPage from "./pages/HollardRiskIndexPage";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -202,6 +203,11 @@ function App() {
             <Route path="/risk-index" component={() => (
               <PageTransition>
                 <RiskIndexPage />
+              </PageTransition>
+            )} />
+            <Route path="/hollard-risk-index" component={() => (
+              <PageTransition>
+                <HollardRiskIndexPage />
               </PageTransition>
             )} />
 
