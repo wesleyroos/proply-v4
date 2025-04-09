@@ -184,7 +184,7 @@ interface RiskResult {
   riskSummary?: string;
 }
 
-export default function HollardRiskIndexPage() {
+export default function RiskIndexPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [demoClicks, setDemoClicks] = useState(0);
@@ -331,104 +331,878 @@ export default function HollardRiskIndexPage() {
   };
 
   const calculateRiskIndex = (): RiskResult => {
-    // For brevity, reusing the same risk calculation logic from RiskIndexPage
-    // In a real application, you might customize this specifically for Hollard
-    
-    // This is just a sample calculation - normally this would be more sophisticated
-    const securityRiskScore = 21;
+    // Extract numeric values from form data
+    const propertySize = Number(parseFormattedNumber(formData.size));
+    const price = Number(parseFormattedNumber(formData.purchasePrice));
+    const bedrooms = Number(formData.bedrooms) || 0;
+    const bathrooms = Number(formData.bathrooms) || 0;
+    const parking = Number(formData.parking) || 0;
+
+    // SECURITY RISK CALCULATION
     const securityRiskMaxScore = 50;
-    const securityRiskPercentage = (securityRiskScore / securityRiskMaxScore) * 100;
-    const securityRiskRating: "Low" | "Medium" | "High" = securityRiskPercentage < 33 ? "Low" : securityRiskPercentage < 66 ? "Medium" : "High";
-    
-    const environmentalRiskScore = 21;
+    let securityRiskScore = 0;
+    const securityRiskFactors: string[] = [];
+    const securityDetailedFactors: Array<{dimension: string; outcome: string; riskFactor: number}> = [];
+
+    // Inside security area
+    const insideSecurityArea = formData.propertyType === "apartment" ? "Yes" : "No";
+    const insideSecurityScore = insideSecurityArea === "Yes" ? 1 : 5;
+    securityRiskScore += insideSecurityScore;
+    securityDetailedFactors.push({
+      dimension: "Inside security area:",
+      outcome: insideSecurityArea,
+      riskFactor: insideSecurityScore
+    });
+
+    // Next to open areas
+    const nextToOpenAreas = formData.address.toLowerCase().includes("cape town city centre") ? "Yes" : "No";
+    const nextToOpenAreasScore = nextToOpenAreas === "Yes" ? 10 : 0;
+    securityRiskScore += nextToOpenAreasScore;
+    securityDetailedFactors.push({
+      dimension: "Next to open areas:",
+      outcome: nextToOpenAreas,
+      riskFactor: nextToOpenAreasScore
+    });
+
+    // Distance to industrial
+    const distanceToIndustrial = "1.8km";
+    const distanceToIndustrialScore = 5;
+    securityRiskScore += distanceToIndustrialScore;
+    securityDetailedFactors.push({
+      dimension: "Distance to industrial:",
+      outcome: distanceToIndustrial,
+      riskFactor: distanceToIndustrialScore
+    });
+
+    // Distance to informal settlements
+    const distanceToInformal = "3.2km";
+    const distanceToInformalScore = 5;
+    securityRiskScore += distanceToInformalScore;
+    securityDetailedFactors.push({
+      dimension: "Distance to informal settlements:",
+      outcome: distanceToInformal,
+      riskFactor: distanceToInformalScore
+    });
+
+    // Construction in the area
+    const constructionInArea = "No";
+    const constructionInAreaScore = 0;
+    securityRiskScore += constructionInAreaScore;
+    securityDetailedFactors.push({
+      dimension: "Construction in the area:",
+      outcome: constructionInArea,
+      riskFactor: constructionInAreaScore
+    });
+
+    // Property type context for narrative
+    if (formData.propertyType === "apartment") {
+      securityRiskFactors.push(
+        "Property is located in an apartment building with shared access",
+      );
+    } else if (formData.propertyType === "house") {
+      securityRiskFactors.push(
+        "Standalone structure with multiple entry points",
+      );
+    } else if (formData.propertyType === "townhouse") {
+      securityRiskFactors.push(
+        "Townhouse with multiple levels and entry points",
+      );
+    }
+
+    // Location context for narrative
+    if (formData.address.toLowerCase().includes("cape town city centre")) {
+      securityRiskFactors.push(
+        "Property is located in an area with moderate crime rates",
+      );
+    }
+
+    // Add generic factors for narrative
+    securityRiskFactors.push(
+      "Building has security but lacks 24-hour monitoring",
+    );
+    securityRiskFactors.push(
+      "Access control systems are present but could be improved",
+    );
+
+    // Security risk rating
+    const securityRiskPercentage =
+      (securityRiskScore / securityRiskMaxScore) * 100;
+    let securityRiskRating: "Low" | "Medium" | "High" =
+      securityRiskPercentage < 33
+        ? "Low"
+        : securityRiskPercentage < 66
+          ? "Medium"
+          : "High";
+
+    // ENVIRONMENTAL RISK CALCULATION
     const environmentalRiskMaxScore = 40;
-    const environmentalRiskPercentage = (environmentalRiskScore / environmentalRiskMaxScore) * 100;
-    const environmentalRiskRating: "Low" | "Medium" | "High" = environmentalRiskPercentage < 33 ? "Low" : environmentalRiskPercentage < 66 ? "Medium" : "High";
-    
-    const floodRiskScore = 6;
+    let environmentalRiskScore = 0;
+    const environmentalRiskFactors: string[] = [];
+    const environmentalDetailedFactors: Array<{dimension: string; outcome: string; riskFactor: number}> = [];
+
+    // Fire risk
+    const fireRisk = "High";
+    const fireRiskScore = 10;
+    environmentalRiskScore += fireRiskScore;
+    environmentalDetailedFactors.push({
+      dimension: "Fire risk:",
+      outcome: fireRisk,
+      riskFactor: fireRiskScore
+    });
+
+    // Roof top solar (fire risk)
+    const roofTopSolar = "Yes";
+    const roofTopSolarScore = 10;
+    environmentalRiskScore += roofTopSolarScore;
+    environmentalDetailedFactors.push({
+      dimension: "Roof top solar (fire risk):",
+      outcome: roofTopSolar,
+      riskFactor: roofTopSolarScore
+    });
+
+    // Distance to water
+    const distanceToWater = ">100m (225m)";
+    const distanceToWaterScore = 0;
+    environmentalRiskScore += distanceToWaterScore;
+    environmentalDetailedFactors.push({
+      dimension: "Distance to water:",
+      outcome: distanceToWater,
+      riskFactor: distanceToWaterScore
+    });
+
+    // Slope
+    const slope = "5°";
+    const slopeScore = 1;
+    environmentalRiskScore += slopeScore;
+    environmentalDetailedFactors.push({
+      dimension: "Slope:",
+      outcome: slope,
+      riskFactor: slopeScore
+    });
+
+    // Add narrative factors for display
+    if (formData.address.toLowerCase().includes("cape town city centre")) {
+      environmentalRiskFactors.push(
+        "Moderate air pollution from nearby traffic",
+      );
+      environmentalRiskFactors.push("Some noise pollution during peak hours");
+      environmentalRiskFactors.push(
+        "Limited exposure to industrial contaminants",
+      );
+    }
+
+    // Add fire-related factors for narrative
+    environmentalRiskFactors.push(
+      "Property is in an area with high fire risk rating",
+    );
+    environmentalRiskFactors.push(
+      "Roof top solar installation increases potential fire hazard",
+    );
+    environmentalRiskFactors.push(
+      "Property has low slope gradient which is favorable for drainage",
+    );
+
+    // Environmental risk rating
+    const environmentalRiskPercentage =
+      (environmentalRiskScore / environmentalRiskMaxScore) * 100;
+    let environmentalRiskRating: "Low" | "Medium" | "High" =
+      environmentalRiskPercentage < 33
+        ? "Low"
+        : environmentalRiskPercentage < 66
+          ? "Medium"
+          : "High";
+
+    // FLOOD RISK CALCULATION
     const floodRiskMaxScore = 10;
+    let floodRiskScore = 0;
+    const floodRiskFactors: string[] = [];
+    const floodDetailedFactors: Array<{dimension: string; outcome: string; riskFactor: number}> = [];
+
+    // Flood risk assessment - based on screenshot data
+    const floodRisk = "High";
+    floodRiskScore = 10; // Total flood risk score
+
+    // Add flood risk detailed factor
+    floodDetailedFactors.push({
+      dimension: "Flood Risk",
+      outcome: floodRisk,
+      riskFactor: 10
+    });
+
+    // Property location affects flood risk narrative
+    if (formData.address.toLowerCase().includes("cape town city centre")) {
+      floodRiskFactors.push(
+        "Property is located in a 1-in-100 year flood zone",
+      );
+      floodRiskFactors.push("Historical flooding has occurred in this area");
+      floodRiskFactors.push(
+        "Limited drainage infrastructure in surrounding streets",
+      );
+      floodRiskFactors.push(
+        "Basement level is particularly vulnerable to water ingress",
+      );
+    } else {
+      floodRiskFactors.push(
+        "Property is located in a potential flood zone area",
+      );
+      floodRiskFactors.push(
+        "Flood hazard assessment estimates risk of inundation damage",
+      );
+      floodRiskFactors.push(
+        "Property may be subject to water velocity risks during heavy rainfall",
+      );
+    }
+
+    // Add flood educational narrative
+    floodRiskFactors.push(
+      "Flood hazard assessment estimates the probability of different magnitudes of damaging flood conditions",
+    );
+    floodRiskFactors.push(
+      "Factors include depth of inundation, duration, velocity of moving water, and wave height",
+    );
+
+    // Flood risk rating
     const floodRiskPercentage = (floodRiskScore / floodRiskMaxScore) * 100;
-    const floodRiskRating: "Low" | "Medium" | "High" = floodRiskPercentage < 33 ? "Low" : floodRiskPercentage < 66 ? "Medium" : "High";
-    
-    const climateRiskScore = 15;
-    const climateRiskMaxScore = 40;
-    const climateRiskPercentage = (climateRiskScore / climateRiskMaxScore) * 100;
-    const climateRiskRating: "Low" | "Medium" | "High" = climateRiskPercentage < 33 ? "Low" : climateRiskPercentage < 66 ? "Medium" : "High";
-    
-    const hailRiskScore = 3;
-    const hailRiskMaxScore = 10;
+    let floodRiskRating: "Low" | "Medium" | "High" =
+      floodRiskPercentage < 33
+        ? "Low"
+        : floodRiskPercentage < 66
+          ? "Medium"
+          : "High";
+
+    // CLIMATE RISK CALCULATION
+    const climateRiskMaxScore = 270;
+    let climateRiskScore = 0;
+    const climateRiskFactors: string[] = [];
+    const climateDetailedFactors: Array<{
+      dimension: string; 
+      outcome: string; 
+      riskFactor: number;
+      category?: string;
+      futureRisk?: string;
+    }> = [];
+
+    // Temperature related climate factors
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Changing of air temperature",
+      outcome: "Medium risk",
+      riskFactor: 5,
+      futureRisk: "Medium Risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Changing of freshwater and marine water temperatures",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Heat Stress",
+      outcome: "Low risk",
+      riskFactor: 2,
+      futureRisk: "Medium Risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Temperature variability",
+      outcome: "Medium risk",
+      riskFactor: 5,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Permafrost thawing",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Heat wave",
+      outcome: "Medium risk",
+      riskFactor: 5,
+      futureRisk: "Medium risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Cold wave / frost",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Temperature Related",
+      dimension: "Wildfire",
+      outcome: "High Risk",
+      riskFactor: 10,
+      futureRisk: "High Risk"
+    });
+
+    // Wind related climate factors
+    climateDetailedFactors.push({
+      category: "Wind related",
+      dimension: "Changing wind patterns",
+      outcome: "Low risk",
+      riskFactor: 2,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Wind related",
+      dimension: "Windstorm (cyclone, hurricane, typhoon)",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Wind related",
+      dimension: "Blizzards, dust and sandstorm",
+      outcome: "Low risk",
+      riskFactor: 2,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Wind related",
+      dimension: "Tornado",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    // Water related climate factors
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Changing of precipitation patterns: Rain",
+      outcome: "Medium risk",
+      riskFactor: 5,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Precipitation or hydrological variability",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Ocean acidification",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Saline intrusion",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Sea level rise",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Water stress",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "Medium Risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Drought",
+      outcome: "Medium risk",
+      riskFactor: 5,
+      futureRisk: "High Risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Heavy precipitation",
+      outcome: "Medium risk",
+      riskFactor: 5,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Water Related",
+      dimension: "Flood (coastal, fluvial, pluvial, ground water)",
+      outcome: "High Risk",
+      riskFactor: 10,
+      futureRisk: "Red Flag"
+    });
+
+    // Solid matter related factors
+    climateDetailedFactors.push({
+      category: "Solid matter-related",
+      dimension: "Coastal erosion",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Solid matter-related",
+      dimension: "Soil degradation",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Solid matter-related",
+      dimension: "Soil erosion",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Solid matter-related",
+      dimension: "Solifluction",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Solid matter-related",
+      dimension: "Landslide",
+      outcome: "No risk",
+      riskFactor: 0,
+      futureRisk: "No risk"
+    });
+
+    climateDetailedFactors.push({
+      category: "Solid matter-related",
+      dimension: "Subsidence",
+      outcome: "Medium Risk",
+      riskFactor: 5,
+      futureRisk: "Medium Risk"
+    });
+
+    // Calculate total climate risk score from detailed factors
+    climateRiskScore = climateDetailedFactors.reduce((sum, factor) => sum + factor.riskFactor, 0);
+
+    // Property quality context for narrative
+    if (
+      formData.propertyCondition === "excellent" ||
+      formData.propertyCondition === "good"
+    ) {
+      climateRiskFactors.push(
+        "Property is not in a high-risk zone for sea level rise",
+      );
+      climateRiskFactors.push(
+        "Building materials are resistant to temperature fluctuations",
+      );
+      climateRiskFactors.push(
+        "Energy-efficient design helps mitigate extreme weather impacts",
+      );
+      climateRiskFactors.push(
+        "Property has good natural ventilation reducing AC dependency",
+      );
+    } else {
+      climateRiskFactors.push(
+        "Property may experience increased maintenance due to weather extremes",
+      );
+      climateRiskFactors.push(
+        "Building materials may not be optimal for temperature regulation",
+      );
+    }
+
+    // Add additional climate narrative
+    climateRiskFactors.push(
+      "Temperature anomalies show a slight increase of 0.3°C from historical average",
+    );
+    climateRiskFactors.push(
+      "Precipitation is 45mm below normal average which may indicate drought conditions",
+    );
+    climateRiskFactors.push(
+      "Wildfire risk is rated high with increasing prevalence in the region",
+    );
+    climateRiskFactors.push(
+      "Future climate projections indicate higher water stress and drought potential",
+    );
+
+    // Climate risk rating
+    const climateRiskPercentage =
+      (climateRiskScore / climateRiskMaxScore) * 100;
+    let climateRiskRating: "Low" | "Medium" | "High" =
+      climateRiskPercentage < 33
+        ? "Low"
+        : climateRiskPercentage < 66
+          ? "Medium"
+          : "High";
+
+    // HAIL RISK CALCULATION
+    const hailRiskMaxScore = 30;
+    let hailRiskScore = 0;
+    const hailRiskFactors: string[] = [];
+    const hailDetailedFactors: Array<{dimension: string; outcome: string; riskFactor: number}> = [];
+
+    // Hail risk detailed factors based on roof condition and location
+    if (formData.propertyCondition === "excellent") {
+      // Hail risk assessment for excellent condition properties
+      hailDetailedFactors.push({
+        dimension: "Roof condition",
+        outcome: "Excellent - High impact resistance",
+        riskFactor: 1
+      });
+
+      hailDetailedFactors.push({
+        dimension: "Hail frequency in area",
+        outcome: "Medium - 1-2 events per year",
+        riskFactor: 5
+      });
+
+      hailDetailedFactors.push({
+        dimension: "Vehicle protection",
+        outcome: "Full covered parking available",
+        riskFactor: 1
+      });
+
+      hailDetailedFactors.push({
+        dimension: "Roof material",
+        outcome: "Hail-resistant materials",
+        riskFactor: 1
+      });
+
+      hailDetailedFactors.push({
+        dimension: "Proximity to high-risk zone",
+        outcome: "Within 5km of high frequency area",
+        riskFactor: 2
+      });
+
+      // Calculate total hail risk score
+      hailRiskScore = hailDetailedFactors.reduce((sum, factor) => sum + factor.riskFactor, 0);
+
+      // Narrative factors
+      hailRiskFactors.push(
+        "Roof is in excellent condition and likely to withstand hail impact",
+      );
+      hailRiskFactors.push("Covered parking provides vehicle protection");
+      hailRiskFactors.push("Hail-resistant roofing materials installed");
+
+    } else if (formData.propertyCondition === "poor") {
+      // Hail risk assessment for poor condition properties
+      hailDetailedFactors.push({
+        dimension: "Roof condition",
+        outcome: "Poor - Low impact resistance",
+        riskFactor: 8
+      });
+
+      hailDetailedFactors.push({
+        dimension: "Hail frequency in area",
+        outcome: "Medium - 1-2 events per year",
+        riskFactor: 5
+      });
+
+      hailDetailedFactors.push({
+        dimension: "Vehicle protection",
+        outcome: "No covered parking available",
+        riskFactor: 4
+      });
+
+      hailDetailedFactors.push({
+        dimension: "Roof material",
+        outcome: "Standard materials with wear",
+        riskFactor: 5
+      });
+
+      hailDetailedFactors.push({
+        dimension: "Proximity to high-risk zone",
+        outcome: "Within 5km of high frequency area",
+        riskFactor: 2
+      });
+
+      // Calculate total hail risk score
+      hailRiskScore = hailDetailedFactors.reduce((sum, factor) => sum + factor.riskFactor, 0);
+
+      // Narrative factors
+      hailRiskFactors.push("Roof condition may be vulnerable to hail damage");
+      hailRiskFactors.push("Inadequate vehicle protection during hail storms");
+      hailRiskFactors.push("Roof materials show signs of wear and may need replacement");
+
+    } else {
+      // Hail risk assessment for average condition properties
+      hailDetailedFactors.push({
+        dimension: "Roof condition",
+        outcome: "Fair/Good - Moderate impact resistance",
+        riskFactor: 4
+      });
+
+      hailDetailedFactors.push({
+        dimension: "Hail frequency in area",
+        outcome: "Medium - 1-2 events per year",
+        riskFactor: 5
+      });
+
+      hailDetailedFactors.push({
+        dimension: "Vehicle protection",
+        outcome: "Partial covered parking available",
+        riskFactor: 2
+      });
+
+      hailDetailedFactors.push({
+        dimension: "Roof material",
+        outcome: "Standard materials in good condition",
+        riskFactor: 3
+      });
+
+      hailDetailedFactors.push({
+        dimension: "Proximity to high-risk zone",
+        outcome: "Within 5km of high frequency area",
+        riskFactor: 2
+      });
+
+      // Calculate total hail risk score
+      hailRiskScore = hailDetailedFactors.reduce((sum, factor) => sum + factor.riskFactor, 0);
+
+      // Narrative factors
+      hailRiskFactors.push(
+        "Roof may require inspection to assess hail resistance",
+      );
+      hailRiskFactors.push("Partial covered parking for vehicles");
+      hailRiskFactors.push("Standard roofing materials with moderate resistance to hail impact");
+    }
+
+    // Hail risk rating
     const hailRiskPercentage = (hailRiskScore / hailRiskMaxScore) * 100;
-    const hailRiskRating: "Low" | "Medium" | "High" = hailRiskPercentage < 33 ? "Low" : hailRiskPercentage < 66 ? "Medium" : "High";
-    
-    // Calculate total risk score and percentage
-    const totalRiskScore = securityRiskScore + environmentalRiskScore + floodRiskScore + climateRiskScore + hailRiskScore;
-    const maxRiskScore = securityRiskMaxScore + environmentalRiskMaxScore + floodRiskMaxScore + climateRiskMaxScore + hailRiskMaxScore;
-    const overallRiskPercentage = (totalRiskScore / maxRiskScore) * 100;
-    
-    // Determine overall risk rating based on the percentage
-    let riskRating: "Very Low" | "Low" | "Moderate" | "High" | "Very High" = "Moderate";
+    let hailRiskRating: "Low" | "Medium" | "High" =
+      hailRiskPercentage < 33
+        ? "Low"
+        : hailRiskPercentage < 66
+          ? "Medium"
+          : "High";
+
+    // Additional hail risk metrics
+    const maxHailSize = hailRiskRating === "Low" 
+      ? "10-20mm" 
+      : hailRiskRating === "Medium" 
+        ? "20-40mm" 
+        : "40-60mm";
+
+    const annualFrequency = hailRiskRating === "Low"
+      ? 1 
+      : hailRiskRating === "Medium"
+        ? 3
+        : 5;
+
+    const damageProb = hailRiskRating === "Low"
+      ? 15
+      : hailRiskRating === "Medium"
+        ? 45
+        : 75;
+
+    const roofVulnerability = formData.propertyCondition === "excellent"
+      ? "Low"
+      : formData.propertyCondition === "good"
+        ? "Low"
+        : formData.propertyCondition === "fair"
+          ? "Medium"
+          : "High";
+
+    const returnPeriod = hailRiskRating === "Low"
+      ? "1 in 7 years"
+      : hailRiskRating === "Medium"
+        ? "1 in 3 years"
+        : "Annual";
+
+    // OVERALL RISK CALCULATION
+    const totalRiskPoints =
+      securityRiskScore +
+      environmentalRiskScore +
+      floodRiskScore +
+      climateRiskScore +
+      hailRiskScore;
+    const maxRiskPoints =
+      securityRiskMaxScore +
+      environmentalRiskMaxScore +
+      floodRiskMaxScore +
+      climateRiskMaxScore +
+      hailRiskMaxScore;
+    const overallRiskPercentage = (totalRiskPoints / maxRiskPoints) * 100;
+
+    // Determine overall risk rating
+    let riskRating: "Very Low" | "Low" | "Moderate" | "High" | "Very High";
+    let riskColor: string;
+
     if (overallRiskPercentage < 20) {
       riskRating = "Very Low";
+      riskColor = "green";
     } else if (overallRiskPercentage < 40) {
       riskRating = "Low";
+      riskColor = "green";
     } else if (overallRiskPercentage < 60) {
       riskRating = "Moderate";
+      riskColor = "orange";
     } else if (overallRiskPercentage < 80) {
       riskRating = "High";
+      riskColor = "amber";
     } else {
       riskRating = "Very High";
+      riskColor = "red";
     }
-    
-    // Determine risk color
-    let riskColor = "";
-    switch (riskRating) {
-      case "Very Low":
-        riskColor = "bg-green-300";
-        break;
-      case "Low":
-        riskColor = "bg-green-500";
-        break;
-      case "Moderate":
-        riskColor = "bg-yellow-500";
-        break;
-      case "High":
-        riskColor = "bg-red-500";
-        break;
-      case "Very High":
-        riskColor = "bg-red-700";
-        break;
+
+    // Generate overall recommendations
+    const recommendations: string[] = [];
+
+    // Add security recommendations
+    if (securityRiskRating === "High" || securityRiskRating === "Medium") {
+      recommendations.push(
+        "Consider upgrading security systems and access control.",
+      );
+      recommendations.push(
+        "Install additional exterior lighting around the property.",
+      );
     }
-    
+
+    // Add flood recommendations
+    if (floodRiskRating === "High") {
+      recommendations.push("Obtain comprehensive flood insurance coverage.");
+      recommendations.push(
+        "Install flood barriers and improved drainage systems.",
+      );
+    }
+
+    // Add climate recommendations
+    if (climateRiskRating === "Medium" || climateRiskRating === "High") {
+      recommendations.push(
+        "Improve building insulation to manage temperature extremes.",
+      );
+      recommendations.push(
+        "Consider energy-efficient upgrades to reduce climate vulnerability.",
+      );
+    }
+
+    // Add hail risk recommendations based on enhanced metrics
+    if (hailRiskRating === "Medium" || hailRiskRating === "High") {
+      recommendations.push(
+        `Consider roof reinforcement to withstand maximum hail size of ${maxHailSize}.`,
+      );
+      if (damageProb > 40) {
+        recommendations.push(
+          `Obtain specialized hail insurance coverage with an annual damage probability of ${damageProb}%.`,
+        );
+      }
+      if (roofVulnerability === "Medium" || roofVulnerability === "High") {
+        recommendations.push(
+          `Schedule a roof inspection to address ${roofVulnerability.toLowerCase()} vulnerability rating.`,
+        );
+      }
+      recommendations.push(
+        `Plan for ${annualFrequency} potential hail events per year with a return period of ${returnPeriod}.`,
+      );
+    }
+
+    // Add generic recommendations
+    recommendations.push(
+      "Conduct a professional property inspection before finalizing insurance coverage.",
+    );
+    recommendations.push(
+      "Consider bundling multiple insurance policies for better protection and rates.",
+    );
+
+    // Calculate additional risk factors
+    const marketVolatility = Math.floor(Math.random() * 35) + 40; // Random value between 40-75%
+    const locationRisk = Math.floor(Math.random() * 45) + 30; // Random value between 30-75%
+    const propertyConditionRisk =
+      formData.propertyCondition === "excellent"
+        ? 25
+        : formData.propertyCondition === "good"
+          ? 45
+          : formData.propertyCondition === "fair"
+            ? 65
+            : 85;
+    const financialRisk = Math.floor(Math.random() * 30) + 40; // Random value between 40-70%
+    const demographicTrends = Math.floor(Math.random() * 40) + 30; // Random value between 30-70%
+    const regulatoryRisk = Math.floor(Math.random() * 35) + 25; // Random value between 25-60%
+
+    // Generate market projections
+    const shortTerm =
+      "Property insurance costs are expected to increase by 8-12% in the next year due to rising material costs and increased claim frequency.";
+    const mediumTerm =
+      "Over the next 5 years, property in this area may experience a 15-20% increase in insurance premiums as climate-related risks continue to be factored into underwriting models.";
+    const longTerm =
+      "Long-term projections suggest a 30-35% increase in insurance costs for properties in this zone over the next decade, with potential new regulatory requirements for flood and climate risk mitigation.";
+
+    // Determine trend direction based on overall risk score
+    let trendDirection: "up" | "stable" | "down";
+    if (overallRiskPercentage > 60) {
+      trendDirection = "up";
+    } else if (overallRiskPercentage > 40) {
+      trendDirection = "stable";
+    } else {
+      trendDirection = "down";
+    }
+
+    // Risk summary
+    const riskSummary = `This property presents an overall ${riskRating.toLowerCase()} risk profile (${Math.round(overallRiskPercentage)}%), with most risk factors being well-managed or naturally low. However, there are specific areas of concern:
+
+${floodRiskRating === "High" ? "High Flood Risk: The property's location in a flood-prone area represents a significant risk factor and should be carefully considered.\n" : ""}
+${securityRiskRating === "Medium" || securityRiskRating === "High" ? `${securityRiskRating} Security Risk: ${securityRiskRating === "High" ? "This is a critical concern and" : "While not critical,"} security measures could be improved to enhance property protection.\n` : ""}
+${environmentalRiskRating === "Medium" || environmentalRiskRating === "High" ? `${environmentalRiskRating} Environmental Risk: This moderate risk factor should be monitored, particularly regarding air quality and noise pollution.\n` : ""}
+${hailRiskRating === "Medium" || hailRiskRating === "High" ? `${hailRiskRating} Hail Risk: The property may experience ${annualFrequency} hail events annually with maximum size of ${maxHailSize}. Roof vulnerability is rated as ${roofVulnerability}. Probability of damage is ${damageProb}% with a return period of ${returnPeriod}.\n` : ""}
+
+Based on the overall risk assessment, we recommend a comprehensive insurance policy that specifically addresses the identified risk factors.`;
+
     return {
       overallRiskScore: Math.round(overallRiskPercentage),
-      totalRiskPoints: totalRiskScore,
-      maxRiskPoints: maxRiskScore,
+      totalRiskPoints,
+      maxRiskPoints,
       riskRating,
       riskColor,
       propertyDetails: {
         address: formData.address,
         propertyType: formData.propertyType,
         size: formData.size,
-        bedrooms: formData.bedrooms,
-        bathrooms: formData.bathrooms,
-        parking: formData.parking,
+        bedrooms: formData.bedrooms || "0",
+        bathrooms: formData.bathrooms || "0",
+        parking: formData.parking || "0",
         condition: formData.propertyCondition,
         price: formData.purchasePrice,
-        municipalValue: "R2,650,000",
-        monthlyRates: "R2,250",
-        levy: formData.propertyType === "apartment" ? "R1,800" : "N/A",
-        estimatedMonthlyCosts: "R4,050",
+        municipalValue: formatWithThousandSeparators(
+          String(Math.round(price * 1.03)),
+        ), // Municipal value is typically slightly higher than purchase price
+        monthlyRates: formatWithThousandSeparators(
+          String(Math.round(calculateMonthlyRates(price * 1.03))),
+        ),
+        levy: "1,950",
+        estimatedMonthlyCosts: formatWithThousandSeparators(
+          String(Math.round(estimateMonthlyMunicipalCosts(price * 1.03))),
+        ),
         suburb: "Cape Town City Centre",
         city: "Cape Town",
         postalCode: "8001",
       },
       neighborhoodDemographics: {
-        dominantAge: "25-45",
+        dominantAge: "25-35 years",
         dominantRace: "Mixed",
-        dominantGender: "Balanced",
-        incomeClass: "Upper-middle",
-        nliIndex: 7,
-        averageBuildingValue: "R3,200,000",
+        dominantGender: "Balanced (52% female)",
+        incomeClass: "Upper Middle",
+        nliIndex: 7, // 1=poor, 10=affluent
+        averageBuildingValue: "3,850,000",
       },
       riskFactors: {
         securityRisk: {
@@ -436,328 +1210,113 @@ export default function HollardRiskIndexPage() {
           maxScore: securityRiskMaxScore,
           percentageScore: securityRiskPercentage,
           rating: securityRiskRating,
-          factors: [
-            "Property is located in an apartment building with shared access",
-            "Property is located in an area with moderate crime rates",
-            "Building has security but lacks 24-hour monitoring",
-            "Access control systems are present but could be improved",
-          ],
-          detailedFactors: [
-            {
-              dimension: "Inside security area:",
-              outcome: "Yes",
-              riskFactor: 1,
-            },
-            {
-              dimension: "Next to open areas:",
-              outcome: "Yes",
-              riskFactor: 10,
-            },
-            {
-              dimension: "Distance to industrial:",
-              outcome: "1.8km",
-              riskFactor: 5,
-            },
-            {
-              dimension: "Distance to informal settlements:",
-              outcome: "3.2km",
-              riskFactor: 5,
-            },
-            {
-              dimension: "Construction in the area:",
-              outcome: "No",
-              riskFactor: 0,
-            },
-          ],
+          factors: securityRiskFactors,
+          detailedFactors: securityDetailedFactors,
         },
         environmentalRisk: {
           score: environmentalRiskScore,
           maxScore: environmentalRiskMaxScore,
           percentageScore: environmentalRiskPercentage,
           rating: environmentalRiskRating,
-          factors: [
-            "Moderate air pollution from nearby traffic",
-            "Some noise pollution during peak hours",
-            "Limited exposure to industrial contaminants",
-            "Property is in an area with high fire risk rating",
-            "Roof top solar installation increases potential fire hazard",
-            "Property has low slope gradient which is favorable for drainage",
-          ],
-          detailedFactors: [
-            {
-              dimension: "Fire risk:",
-              outcome: "High",
-              riskFactor: 10,
-            },
-            {
-              dimension: "Roof top solar (fire risk):",
-              outcome: "Yes",
-              riskFactor: 10,
-            },
-            {
-              dimension: "Distance to water:",
-              outcome: ">100m (225m)",
-              riskFactor: 0,
-            },
-            {
-              dimension: "Slope:",
-              outcome: "5°",
-              riskFactor: 1,
-            },
-          ],
+          factors: environmentalRiskFactors,
+          detailedFactors: environmentalDetailedFactors,
         },
         floodRisk: {
           score: floodRiskScore,
           maxScore: floodRiskMaxScore,
           percentageScore: floodRiskPercentage,
           rating: floodRiskRating,
-          factors: [
-            "Property is located in a 1-in-100 year flood zone",
-            "Historical flooding has occurred in this area",
-            "Limited drainage infrastructure in surrounding streets",
-            "Basement level is particularly vulnerable to water ingress",
-          ],
-          detailedFactors: [
-            {
-              dimension: "Flood Risk",
-              outcome: "Medium",
-              riskFactor: 6,
-            },
-          ],
+          factors: floodRiskFactors,
+          detailedFactors: floodDetailedFactors,
         },
         climateRisk: {
           score: climateRiskScore,
           maxScore: climateRiskMaxScore,
           percentageScore: climateRiskPercentage,
           rating: climateRiskRating,
-          factors: [
-            "Moderate exposure to increased temperatures",
-            "Low risk of extreme weather events",
-            "Area has shown resilience to drought conditions",
-            "City has implemented climate adaptation measures",
-          ],
-          detailedFactors: [
-            {
-              dimension: "Climate Risk",
-              outcome: "Low",
-              riskFactor: 15,
-              category: "Temperature",
-              futureRisk: "Moderate",
-            },
-          ],
+          factors: climateRiskFactors,
+          detailedFactors: climateDetailedFactors,
         },
         hailRisk: {
           score: hailRiskScore,
           maxScore: hailRiskMaxScore,
           percentageScore: hailRiskPercentage,
           rating: hailRiskRating,
-          factors: [
-            "Low frequency of hail events",
-            "Historical hail sizes typically small",
-            "Building construction offers adequate protection",
-            "Roof material resistant to typical hail damage",
-          ],
-          detailedFactors: [
-            {
-              dimension: "Hail Risk",
-              outcome: "Low",
-              riskFactor: 3,
-            },
-          ],
-          maxHailSize: "20mm",
-          annualFrequency: 0.5,
-          damageProb: 0.15,
-          roofVulnerability: "Low",
-          returnPeriod: "1-in-5 years",
+          factors: hailRiskFactors,
+          detailedFactors: hailDetailedFactors,
+          maxHailSize,
+          annualFrequency,
+          damageProb,
+          roofVulnerability,
+          returnPeriod,
         },
-        marketVolatility: 4,
-        locationRisk: 3,
-        propertyConditionRisk: 2,
-        financialRisk: 5,
-        demographicTrends: 2,
-        regulatoryRisk: 3,
+        marketVolatility,
+        locationRisk,
+        propertyConditionRisk,
+        financialRisk,
+        demographicTrends,
+        regulatoryRisk,
       },
       projections: {
-        shortTerm: "Stable with minimal risk exposure",
-        mediumTerm: "Potential increase in environmental risks",
-        longTerm: "Climate adaptation measures likely to mitigate risks",
-        trendDirection: "stable",
+        shortTerm,
+        mediumTerm,
+        longTerm,
+        trendDirection,
       },
-      recommendations: [
-        "Consider upgrading to a comprehensive insurance policy that covers flood damage",
-        "Install water sensors in basement areas for early detection",
-        "Upgrade fire detection systems due to solar installation risks",
-        "Regular maintenance of drainage systems is recommended",
-        "Document belongings with photographs for insurance purposes",
-      ],
-      riskSummary: "This property presents a moderate overall risk profile with specific concerns in environmental and security categories. The property's location in Cape Town City Centre exposes it to moderate urban risks including crime and fire hazards. While flood risk exists, it is manageable with proper precautions. Climate and hail risks are relatively low, presenting minimal concerns for long-term ownership.",
+      recommendations,
+      riskSummary,
     };
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleAddressChange = (newAddress: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      address: newAddress,
+    }));
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    setTimeout(() => {
-      try {
-        const riskResult = calculateRiskIndex();
-        setRiskResult(riskResult);
-        setShowResult(true);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error calculating risk index:", error);
-        toast({
-          title: "Error",
-          description: "Failed to calculate risk index. Please try again.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-      }
-    }, 1500); // Simulate API call delay
-  };
-
-  const handleReset = () => {
-    setShowResult(false);
-    setRiskResult(null);
-    setFormData({
-      address: "",
-      purchasePrice: "",
-      size: "",
-      bedrooms: "",
-      bathrooms: "",
-      parking: "",
-      propertyCondition: "excellent",
-      propertyType: "apartment",
-    });
-  };
-
-  // Function to render risk category section
-  const renderRiskCategory = (
-    title: string,
-    riskData: any,
-    icon: React.ReactNode,
-  ) => {
-    // Apply accordions only to security risk (as requested)
-    if (title.toLowerCase() === 'security') {
-      return (
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <div
-              className={`p-2 rounded-full ${getRiskColor(riskData.rating)} bg-opacity-20`}
-            >
-              {icon}
-            </div>
-            <h3 className="text-lg font-semibold">{title} Risk</h3>
-            <Badge className={getRiskColor(riskData.rating)}>
-              {riskData.score} out of {riskData.maxScore} ({Math.round(riskData.percentageScore)}%)
-            </Badge>
-          </div>
-
-          <div className="mb-4">
-            {renderRiskLevelIndicator(
-              riskData.percentageScore,
-              riskData.rating,
-            )}
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>Low Risk</span>
-              <span>Medium Risk</span>
-              <span>High Risk</span>
-            </div>
-          </div>
-
-          <Accordion type="single" collapsible className="bg-gray-50 rounded-lg">
-            <AccordionItem value="item-1" className="border-b-0">
-              <AccordionTrigger className="py-3 px-4 hover:no-underline">
-                <span className="text-sm font-medium">Risk Factors</span>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-3">
-                <ul className="space-y-1 text-sm">
-                  {riskData.factors.map((factor: string, index: number) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-gray-700 mr-2">•</span>
-                      <span>{factor}</span>
-                    </li>
-                  ))}
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-2" className="border-b-0 border-t">
-              <AccordionTrigger className="py-3 px-4 hover:no-underline">
-                <span className="text-sm font-medium">Detailed Assessment</span>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-3">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2 font-medium">Factor</th>
-                      <th className="text-left py-2 font-medium">Value</th>
-                      <th className="text-left py-2 font-medium">Risk Points</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {riskData.detailedFactors?.map((factor: any, index: number) => (
-                      <tr key={index} className="border-b last:border-b-0">
-                        <td className="py-1.5">{factor.dimension}</td>
-                        <td className="py-1.5">{factor.outcome}</td>
-                        <td className="py-1.5">{factor.riskFactor}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      );
+    // Basic validation
+    if (!formData.address) {
+      toast({
+        title: "Missing Address",
+        description: "Please enter a property address.",
+        variant: "destructive",
+      });
+      return;
     }
 
-    // Standard display for other risk categories
-    return (
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <div
-            className={`p-2 rounded-full ${getRiskColor(riskData.rating)} bg-opacity-20`}
-          >
-            {icon}
-          </div>
-          <h3 className="text-lg font-semibold">{title} Risk</h3>
-          <Badge className={getRiskColor(riskData.rating)}>
-            {riskData.score} out of {riskData.maxScore} ({Math.round(riskData.percentageScore)}%)
-          </Badge>
-        </div>
+    if (!formData.purchasePrice) {
+      toast({
+        title: "Missing Purchase Price",
+        description: "Please enter the property value.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-        <div className="mb-4">
-          {renderRiskLevelIndicator(
-            riskData.percentageScore,
-            riskData.rating,
-          )}
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>Low Risk</span>
-            <span>Medium Risk</span>
-            <span>High Risk</span>
-          </div>
-        </div>
+    setIsLoading(true);
 
-        <div className="bg-gray-50 p-4 rounded-lg relative z-10">
-          <h4 className="font-medium mb-2">{title} Risk Factors:</h4>
-          <ul className="space-y-1 text-sm">
-            {riskData.factors.map((factor: string, index: number) => (
-              <li key={index} className="flex items-start">
-                <span className="text-gray-700 mr-2">•</span>
-                <span>{factor}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    );
+    // Simulate API call delay
+    setTimeout(() => {
+      const results = calculateRiskIndex();
+      setRiskResult(results);
+      setShowResult(true);
+      setIsLoading(false);
+    }, 1500);
+  };
+
+  const resetForm = () => {
+    setShowResult(false);
+    setRiskResult(null);
   };
 
   // Render the comprehensive risk report
   const renderComprehensiveReport = () => {
     if (!riskResult) return null;
-    
+
     // Function to render hail insurance metrics 
     const renderHailInsuranceMetrics = (riskData: { 
       maxHailSize?: string; 
@@ -767,7 +1326,7 @@ export default function HollardRiskIndexPage() {
       returnPeriod?: string;
     }) => {
       if (!riskData) return null;
-      
+
       return (
         <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
           <h4 className="text-sm font-semibold mb-3 text-blue-800">Insurance-Relevant Metrics:</h4>
@@ -806,184 +1365,942 @@ export default function HollardRiskIndexPage() {
         </div>
       );
     };
-    
-    // Get municipality tax data
-    const estimatedMunicipalCosts = riskResult.propertyDetails.estimatedMonthlyCosts || "R0";
+
+    // Function to render risk category section
+    const renderRiskCategory = (
+      title: string,
+      riskData: any,
+      icon: React.ReactNode,
+    ) => {
+      // Apply accordions only to security risk (as requested)
+      if (title.toLowerCase() === 'security') {
+        return (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <div
+                className={`p-2 rounded-full ${getRiskColor(riskData.rating)} bg-opacity-20`}
+              >
+                {icon}
+              </div>
+              <h3 className="text-lg font-semibold">{title} Risk</h3>
+              <Badge className={getRiskColor(riskData.rating)}>
+                {riskData.score} out of {riskData.maxScore} ({Math.round(riskData.percentageScore)}%)
+              </Badge>
+            </div>
+
+            <div className="mb-4">
+              {renderRiskLevelIndicator(
+                riskData.percentageScore,
+                riskData.rating,
+              )}
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>Low Risk</span>
+                <span>Medium Risk</span>
+                <span>High Risk</span>
+              </div>
+            </div>
+
+            <Accordion type="single" collapsible className="w-full">
+              {/* Single accordion item with all risk details */}
+              <AccordionItem value="detailed-factors">
+                <AccordionTrigger className="py-2 px-4 bg-gray-50 rounded-t-lg font-medium text-gray-800 hover:no-underline">
+                  Security Risk Details
+                </AccordionTrigger>
+                <AccordionContent className="border border-t-0 border-gray-200 p-4 rounded-b-lg">
+                  {/* Risk factors */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2">Risk Factors:</h4>
+                    <ul className="space-y-1 text-sm mb-4">
+                      {riskData.factors.map((factor: string, index: number) => (
+                        <li key={index} className="flex items-start">
+                          <span className="text-gray-700 mr-2">•</span>
+                          <span>{factor}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Detailed assessment table */}
+                  {riskData.detailedFactors && riskData.detailedFactors.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">Detailed Assessment:</h4>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full bg-white text-sm">
+                          <thead>
+                            <tr className="bg-gray-50">
+                              <th className="px-4 py-2 text-left font-medium text-gray-700">Dimension</th>
+                              <th className="px-4 py-2 text-left font-medium text-gray-700">Outcome</th>
+                              <th className="px-4 py-2 text-left font-medium text-gray-700">Risk Factor</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {riskData.detailedFactors.map((factor: any, index: number) => (
+                              <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                                <td className="px-4 py-2 border-t border-gray-200">{factor.dimension}</td>
+                                <td className="px-4 py-2 border-t border-gray-200">{factor.outcome}</td>
+                                <td className="px-4 py-2 border-t border-gray-200">
+                                  <Badge variant={factor.riskFactor > 5 ? "destructive" : factor.riskFactor > 2 ? "secondary" : "outline"}>
+                                    {factor.riskFactor} {factor.riskFactor === 1 ? "point" : "points"}
+                                  </Badge>
+                                </td>
+                              </tr>
+                            ))}
+                            <tr className="bg-gray-100">
+                              <td className="px-4 py-2 font-medium border-t">Total</td>
+                              <td className="px-4 py-2 border-t"></td>
+                              <td className="px-4 py-2 font-medium border-t">
+                                <Badge variant="default">
+                                  {riskData.score} {riskData.score === 1 ? "point" : "points"}
+                                </Badge>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        );
+      }
+
+      // Removed special case for hail risk - now handled in the shared accordion pattern
+
+      // Use accordion pattern for environmental, flood, climate, and hail risks
+      if (title.toLowerCase() === 'environmental' || 
+          title.toLowerCase() === 'flood' || 
+          title.toLowerCase() === 'climate' ||
+          title.toLowerCase() === 'hail') {
+        return (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <div
+                className={`p-2 rounded-full ${getRiskColor(riskData.rating)} bg-opacity-20`}
+              >
+                {icon}
+              </div>
+              <h3 className="text-lg font-semibold">{title} Risk</h3>
+              <Badge className={getRiskColor(riskData.rating)}>
+                {riskData.score} out of {riskData.maxScore} ({Math.round(riskData.percentageScore)}%)
+              </Badge>
+            </div>
+
+            <div className="mb-4">
+              {renderRiskLevelIndicator(
+                riskData.percentageScore,
+                riskData.rating,
+              )}
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>Low Risk</span>
+                <span>Medium Risk</span>
+                <span>High Risk</span>
+              </div>
+            </div>
+
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="detailed-factors">
+                <AccordionTrigger className="py-2 px-4 bg-gray-50 rounded-t-lg font-medium text-gray-800 hover:no-underline">
+                  {title} Risk Details
+                </AccordionTrigger>
+                <AccordionContent className="border border-t-0 border-gray-200 p-4 rounded-b-lg">
+                  {/* Risk factors */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2">Risk Factors:</h4>
+                    <ul className="space-y-1 text-sm mb-4">
+                      {riskData.factors.map((factor: string, index: number) => (
+                        <li key={index} className="flex items-start">
+                          <span className="text-gray-700 mr-2">•</span>
+                          <span>{factor}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Insurance metrics for hail risk */}
+                  {title.toLowerCase() === "hail" && renderHailInsuranceMetrics(riskData)}
+
+                  {/* Detailed assessment table */}
+                  {riskData.detailedFactors && riskData.detailedFactors.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">Detailed Assessment:</h4>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full bg-white text-sm">
+                          <thead>
+                            <tr className="bg-gray-50">
+                              <th className="px-4 py-2 text-left font-medium text-gray-700">Dimension</th>
+                              <th className="px-4 py-2 text-left font-medium text-gray-700">Outcome</th>
+                              <th className="px-4 py-2 text-left font-medium text-gray-700">Risk Factor</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {riskData.detailedFactors.map((factor: any, index: number) => (
+                              <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                                <td className="px-4 py-2 border-t border-gray-200">{factor.dimension}</td>
+                                <td className="px-4 py-2 border-t border-gray-200">{factor.outcome}</td>
+                                <td className="px-4 py-2 border-t border-gray-200">
+                                  <Badge variant={factor.riskFactor > 5 ? "destructive" : factor.riskFactor > 2 ? "secondary" : "outline"}>
+                                    {factor.riskFactor} {factor.riskFactor === 1 ? "point" : "points"}
+                                  </Badge>
+                                </td>
+                              </tr>
+                            ))}
+                            <tr className="bg-gray-100">
+                              <td className="px-4 py-2 font-medium border-t">Total</td>
+                              <td className="px-4 py-2 border-t"></td>
+                              <td className="px-4 py-2 font-medium border-t">
+                                <Badge variant="default">
+                                  {riskData.score} {riskData.score === 1 ? "point" : "points"}
+                                </Badge>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        );
+      }
+
+      // For other risk factors (keep the original design)
+      return (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <div
+              className={`p-2 rounded-full ${getRiskColor(riskData.rating)} bg-opacity-20`}
+            >
+              {icon}
+            </div>
+            <h3 className="text-lg font-semibold">{title} Risk</h3>
+            <Badge className={getRiskColor(riskData.rating)}>
+              {riskData.score} out of {riskData.maxScore} ({Math.round(riskData.percentageScore)}%)
+            </Badge>
+          </div>
+
+          <div className="mb-4">
+            {renderRiskLevelIndicator(
+              riskData.percentageScore,
+              riskData.rating,
+            )}
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>Low Risk</span>
+              <span>Medium Risk</span>
+              <span>High Risk</span>
+            </div>
+          </div>
+
+          {/* Detailed risk factors table (if available) */}
+          {riskData.detailedFactors && riskData.detailedFactors.length > 0 && (
+            <div className="overflow-x-auto mb-4">
+              <table className="min-w-full bg-white border border-gray-200 text-sm">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">Dimension</th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">Outcome</th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">Risk Factor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {riskData.detailedFactors.map((factor: any, index: number) => (
+                    <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                      <td className="px-4 py-2 border-t border-gray-200">{factor.dimension}</td>
+                      <td className="px-4 py-2 border-t border-gray-200">{factor.outcome}</td>
+                      <td className="px-4 py-2 border-t border-gray-200">
+                        <Badge variant={factor.riskFactor > 5 ? "destructive" : factor.riskFactor > 2 ? "secondary" : "outline"}>
+                          {factor.riskFactor} {factor.riskFactor === 1 ? "point" : "points"}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="bg-gray-100">
+                    <td className="px-4 py-2 font-medium border-t">Total</td>
+                    <td className="px-4 py-2 border-t"></td>
+                    <td className="px-4 py-2 font-medium border-t">
+                      <Badge variant="default">
+                        {riskData.score} {riskData.score === 1 ? "point" : "points"}
+                      </Badge>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div className="bg-gray-50 p-4 rounded-lg relative z-10">
+            <h4 className="font-medium mb-2">{title} Risk Factors:</h4>
+            <ul className="space-y-1 text-sm">
+              {riskData.factors.map((factor: string, index: number) => (
+                <li key={index} className="flex items-start">
+                  <span className="text-gray-700 mr-2">•</span>
+                  <span>{factor}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
+    };
 
     return (
       <div id="risk-index-report" className="space-y-8 max-w-[900px] mx-auto">
         {/* Property Title and Summary */}
         <div className="pb-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Hollard Risk Index™</h2>
+          <h2 className="text-2xl font-bold mb-4">Proply Risk Index™</h2>
           <h3 className="text-xl font-medium mb-5">
             {riskResult.propertyDetails.address}
           </h3>
-        </div>
 
-        {/* Risk Score Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 max-w-4xl mx-auto">
-          {/* Risk Score Card */}
-          <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
-            <div className="p-6 flex flex-col items-center">
-              <h3 className="text-slate-700 font-medium mb-4">
-                Hollard Risk Index™
-              </h3>
-              <div className="relative mb-3 w-36 h-36">
-                <svg className="w-36 h-36" viewBox="0 0 128 128">
-                  <circle
-                    className="text-slate-100 stroke-current"
-                    strokeWidth="12"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="56"
-                    cx="64"
-                    cy="64"
-                  />
-                  <circle
-                    className={`${riskResult.overallRiskScore <= 33 ? "text-green-500" : riskResult.overallRiskScore <= 66 ? "text-yellow-500" : "text-red-500"} stroke-current`}
-                    strokeWidth="12"
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="56"
-                    cx="64"
-                    cy="64"
-                    strokeDasharray={`${riskResult.overallRiskScore * 3.51} 351`}
-                    strokeDashoffset="0"
-                    transform="rotate(-90 64 64)"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-4xl font-bold">
-                    {riskResult.overallRiskScore}
-                  </span>
-                  <span className="text-sm text-gray-500">out of 100</span>
+          {/* Feature Badges */}
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-6">
+            {riskResult.propertyDetails.bedrooms && (
+              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
+                {riskResult.propertyDetails.bedrooms}{" "}
+                {parseInt(riskResult.propertyDetails.bedrooms) === 1
+                  ? "Bed"
+                  : "Beds"}
+              </Badge>
+            )}
+            {riskResult.propertyDetails.bathrooms && (
+              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
+                {riskResult.propertyDetails.bathrooms}{" "}
+                {parseInt(riskResult.propertyDetails.bathrooms) === 1
+                  ? "Bath"
+                  : "Baths"}
+              </Badge>
+            )}
+            {riskResult.propertyDetails.size && (
+              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
+                {riskResult.propertyDetails.size} m²
+              </Badge>
+            )}
+            {riskResult.propertyDetails.parking && (
+              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
+                {riskResult.propertyDetails.parking} Parking
+              </Badge>
+            )}
+            {riskResult.propertyDetails.propertyType && (
+              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm capitalize">
+                {riskResult.propertyDetails.propertyType
+                  .charAt(0)
+                  .toUpperCase() +
+                  riskResult.propertyDetails.propertyType.slice(1)}
+              </Badge>
+            )}
+            {riskResult.propertyDetails.condition && (
+              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm capitalize flex items-center gap-1">
+                {riskResult.propertyDetails.condition.charAt(0).toUpperCase() +
+                  riskResult.propertyDetails.condition.slice(1)}{" "}
+                Condition
+                <span className="ml-1 flex">
+                  {riskResult.propertyDetails.condition === "excellent" && (
+                    <>
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    </>
+                  )}
+                  {riskResult.propertyDetails.condition === "good" && (
+                    <>
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    </>
+                  )}
+                  {riskResult.propertyDetails.condition === "fair" && (
+                    <>
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    </>
+                  )}
+                  {riskResult.propertyDetails.condition === "poor" && (
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  )}
+                </span>
+              </Badge>
+            )}
+          </div>
+
+          {/* Property Value Information */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 max-w-3xl mx-auto">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">
+                Purchase Price
+              </p>
+              <p className="text-xl font-bold">
+                R{riskResult.propertyDetails.price}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">
+                Municipal Value
+              </p>
+              <p className="text-xl font-bold">
+                R{riskResult.propertyDetails.municipalValue}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">
+                Monthly Rates
+              </p>
+              <p className="text-xl font-bold">
+                R{riskResult.propertyDetails.monthlyRates}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">
+                Est. Monthly Costs
+              </p>
+              <p className="text-xl font-bold">
+                R{riskResult.propertyDetails.estimatedMonthlyCosts}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 max-w-4xl mx-auto">
+            {/* Risk Score Card */}
+            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
+              <div className="p-6 flex flex-col items-center">
+                <h3 className="text-slate-700 font-medium mb-4">
+                  Proply Risk Index™
+                </h3>
+                <div className="relative mb-3 w-36 h-36">
+                  <svg className="w-36 h-36" viewBox="0 0 128 128">
+                    <circle
+                      className="text-slate-100 stroke-current"
+                      strokeWidth="12"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="56"
+                      cx="64"
+                      cy="64"
+                    />
+                    <circle
+                      className={`${riskResult.overallRiskScore <= 33 ? "text-green-500" : riskResult.overallRiskScore <= 66 ? "text-yellow-500" : "text-red-500"} stroke-current`}
+                      strokeWidth="12"
+                      strokeLinecap="round"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="56"
+                      cx="64"
+                      cy="64"
+                      strokeDasharray={`${riskResult.overallRiskScore * 3.51} 351`}
+                      strokeDashoffset="0"
+                      transform="rotate(-90 64 64)"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-5xl font-bold">{riskResult.overallRiskScore}%</div>
+                  </div>
                 </div>
-              </div>
-              <div className="text-center">
-                <h4 className="font-medium text-lg">
+                <div
+                  className={`text-xl font-semibold ${riskResult.overallRiskScore <= 33 ? "text-green-600" : riskResult.overallRiskScore <= 66 ? "text-yellow-600" : "text-red-600"}`}
+                >
                   {riskResult.riskRating} Risk
-                </h4>
-                <p className="text-sm text-gray-500">
-                  {riskResult.totalRiskPoints} of {riskResult.maxRiskPoints}{" "}
-                  risk points
-                </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Risk Factors Card */}
+            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
+              <div className="bg-white px-4 py-3 border-b">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <AlertTriangle className="h-5 w-5 text-gray-700 mr-2" />
+                    <h4 className="font-semibold text-gray-700">Risk Factors</h4>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-white/20 text-gray-700 hover:bg-white/25">
+                      Total: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints}
+                    </Badge>
+                    <Badge className={`${riskResult.riskRating === "Very Low" || riskResult.riskRating === "Low" 
+                      ? "bg-green-500 text-white" 
+                      : riskResult.riskRating === "Moderate"
+                        ? "bg-yellow-500 text-white"
+                        : "bg-red-500 text-white"}`}>
+                      {riskResult.riskRating} Risk
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              <div className="p-5 overflow-auto h-[300px]">
+                <div className="space-y-2">
+                  {/* Security Risk */}
+                  <div className="pb-2 border-b border-gray-100">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium text-sm">Security</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs font-medium">
+                          {riskResult.riskFactors.securityRisk.score} / {riskResult.riskFactors.securityRisk.maxScore} ({Math.round(
+                            riskResult.riskFactors.securityRisk.percentageScore,
+                          )}
+                          %)
+                        </span>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded-full ${
+                            riskResult.riskFactors.securityRisk.rating === "Low"
+                              ? "bg-green-100 text-green-800"
+                              : riskResult.riskFactors.securityRisk.rating ===
+                                  "Medium"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {riskResult.riskFactors.securityRisk.rating}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          riskResult.riskFactors.securityRisk.rating === "Low"
+                            ? "bg-green-500"
+                            : riskResult.riskFactors.securityRisk.rating ===
+                                "Medium"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                        }`}
+                        style={{
+                          width: `${riskResult.riskFactors.securityRisk.percentageScore}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* Environmental Risk */}
+                  <div className="pb-2 border-b border-gray-100">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium text-sm">Environmental</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs font-medium">
+                          {riskResult.riskFactors.environmentalRisk.score} / {riskResult.riskFactors.environmentalRisk.maxScore} ({Math.round(
+                            riskResult.riskFactors.environmentalRisk
+                              .percentageScore,
+                          )}
+                          %)
+                        </span>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded-full ${
+                            riskResult.riskFactors.environmentalRisk.rating ===
+                            "Low"
+                              ? "bg-green-100 text-green-800"
+                              : riskResult.riskFactors.environmentalRisk
+                                    .rating === "Medium"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {riskResult.riskFactors.environmentalRisk.rating}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          riskResult.riskFactors.environmentalRisk.rating ===
+                          "Low"
+                            ? "bg-green-500"
+                            : riskResult.riskFactors.environmentalRisk
+                                  .rating === "Medium"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                        }`}
+                        style={{
+                          width: `${riskResult.riskFactors.environmentalRisk.percentageScore}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* Flood Risk */}
+                  <div className="pb-2 border-b border-gray-100">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium text-sm">Flood</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs font-medium">
+                          {riskResult.riskFactors.floodRisk.score} / {riskResult.riskFactors.floodRisk.maxScore} ({Math.round(
+                            riskResult.riskFactors.floodRisk.percentageScore,
+                          )}
+                          %)
+                        </span>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded-full ${
+                            riskResult.riskFactors.floodRisk.rating === "Low"
+                              ? "bg-green-100 text-green-800"
+                              : riskResult.riskFactors.floodRisk.rating ===
+                                  "Medium"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {riskResult.riskFactors.floodRisk.rating}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          riskResult.riskFactors.floodRisk.rating === "Low"
+                            ? "bg-green-500"
+                            : riskResult.riskFactors.floodRisk.rating ===
+                                "Medium"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                        }`}
+                        style={{
+                          width: `${riskResult.riskFactors.floodRisk.percentageScore}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* Climate Risk */}
+                  <div className="pb-2 border-b border-gray-100">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium text-sm">Climate</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs font-medium">
+                          {riskResult.riskFactors.climateRisk.score} / {riskResult.riskFactors.climateRisk.maxScore} ({Math.round(
+                            riskResult.riskFactors.climateRisk.percentageScore,
+                          )}
+                          %)
+                        </span>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded-full ${
+                            riskResult.riskFactors.climateRisk.rating === "Low"
+                              ? "bg-green-100 text-green-800"
+                              : riskResult.riskFactors.climateRisk.rating ===
+                                  "Medium"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {riskResult.riskFactors.climateRisk.rating}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          riskResult.riskFactors.climateRisk.rating === "Low"
+                            ? "bg-green-500"
+                            : riskResult.riskFactors.climateRisk.rating ===
+                                "Medium"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                        }`}
+                        style={{
+                          width: `${riskResult.riskFactors.climateRisk.percentageScore}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* Hail Risk */}
+                  <div className="pb-2">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium text-sm">Hail</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs font-medium">
+                          {riskResult.riskFactors.hailRisk.score} / {riskResult.riskFactors.hailRisk.maxScore} ({Math.round(
+                            riskResult.riskFactors.hailRisk.percentageScore,
+                          )}
+                          %)
+                        </span>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded-full ${
+                            riskResult.riskFactors.hailRisk.rating === "Low"
+                              ? "bg-green-100 text-green-800"
+                              : riskResult.riskFactors.hailRisk.rating ===
+                                  "Medium"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {riskResult.riskFactors.hailRisk.rating}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          riskResult.riskFactors.hailRisk.rating === "Low"
+                            ? "bg-green-500"
+                            : riskResult.riskFactors.hailRisk.rating ===
+                                "Medium"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                        }`}
+                        style={{
+                          width: `${riskResult.riskFactors.hailRisk.percentageScore}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Property Details Card */}
-          <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
-            <div className="p-6">
-              <h3 className="text-slate-700 font-medium mb-4">
-                Property Details
-              </h3>
-              <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
-                <div>
-                  <p className="text-gray-500">Property Type</p>
-                  <p className="font-medium capitalize">
-                    {riskResult.propertyDetails.propertyType}
-                  </p>
+          {/* Property Location Map */}
+          <div className="mb-8">
+            <h3 className="text-xl font-bold mb-4"></h3>
+            <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative z-10">
+              <div className="h-[300px] w-full rounded-lg overflow-hidden">
+                <PropertyMap
+                  address={riskResult.propertyDetails.address}
+                  mapClassName="w-full h-full rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Neighborhood Demographics Card */}
+          {riskResult.neighborhoodDemographics && (
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2 rounded-full bg-blue-500 bg-opacity-20">
+                  <Landmark className="h-5 w-5 text-blue-500" />
                 </div>
-                <div>
-                  <p className="text-gray-500">Size</p>
-                  <p className="font-medium">
-                    {riskResult.propertyDetails.size} m²
-                  </p>
+                <h3 className="text-lg font-semibold">Neighborhood Demographics</h3>
+                <Badge className="bg-blue-500 text-white hover:bg-blue-600">
+                  Area Profile
+                </Badge>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Left column - Demographics */}
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>Population Demographics</span>
+                    </h4>
+
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-slate-100 p-1.5 rounded">
+                            <Clock className="h-4 w-4 text-slate-500" />
+                          </div>
+                          <span className="text-sm font-medium">Dominant Age Group</span>
+                        </div>
+                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
+                          {riskResult.neighborhoodDemographics.dominantAge}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-slate-100 p-1.5 rounded">
+                            <AlertCircle className="h-4 w-4 text-slate-500" />
+                          </div>
+                          <span className="text-sm font-medium">Dominant Race</span>
+                        </div>
+                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
+                          {riskResult.neighborhoodDemographics.dominantRace}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-slate-100 p-1.5 rounded">
+                            <AlertCircle className="h-4 w-4 text-slate-500" />
+                          </div>
+                          <span className="text-sm font-medium">Gender Ratio</span>
+                        </div>
+                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
+                          {riskResult.neighborhoodDemographics.dominantGender}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right column - Economic Indicators */}
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <CircleDollarSign className="h-4 w-4" />
+                      <span>Economic Indicators</span>
+                    </h4>
+
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-slate-100 p-1.5 rounded">
+                            <TrendingUp className="h-4 w-4 text-slate-500" />
+                          </div>
+                          <span className="text-sm font-medium">Income Classification</span>
+                        </div>
+                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
+                          {riskResult.neighborhoodDemographics.incomeClass}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-slate-100 p-1.5 rounded">
+                            <Home className="h-4 w-4 text-slate-500" />
+                          </div>
+                          <span className="text-sm font-medium">Average Building Value</span>
+                        </div>
+                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
+                          R{riskResult.neighborhoodDemographics.averageBuildingValue}
+                        </span>
+                      </div>
+
+                      <div className="pt-2">
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-medium">National Living Index (NLI)</span>
+                          <span className="text-sm font-medium text-blue-600">{riskResult.neighborhoodDemographics.nliIndex}/10</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="h-2.5 rounded-full bg-blue-600"
+                            style={{ width: `${(riskResult.neighborhoodDemographics.nliIndex / 10) * 100}%` }}
+                          ></div>
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>Lower Income</span>
+                          <span>Middle Income</span>
+                          <span>Higher Income</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-gray-500">Bedrooms</p>
-                  <p className="font-medium">{riskResult.propertyDetails.bedrooms}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Bathrooms</p>
-                  <p className="font-medium">
-                    {riskResult.propertyDetails.bathrooms}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Parking</p>
-                  <p className="font-medium">{riskResult.propertyDetails.parking}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Condition</p>
-                  <p className="font-medium capitalize">
-                    {riskResult.propertyDetails.condition}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Purchase Price</p>
-                  <p className="font-medium">R{riskResult.propertyDetails.price}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Municipal Value</p>
-                  <p className="font-medium">
-                    {riskResult.propertyDetails.municipalValue}
-                  </p>
+
+                <div className="mt-4 pt-3 border-t border-gray-200">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-gray-500">
+                      <Info className="h-4 w-4 inline mr-1" />
+                      Demographics data is based on the latest census information and local surveys.
+                    </p>
+                    <Badge variant="outline" className="text-xs">
+                      <Clock className="h-3 w-3 mr-1" /> Updated Feb 2025
+                    </Badge>
+                  </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          <div className="mb-8">
+            <div className="text-lg font-semibold mb-4">
+              Overall Risk Score: {riskResult.totalRiskPoints}/
+              {riskResult.maxRiskPoints} ({riskResult.overallRiskScore}%) -{" "}
+              {riskResult.riskRating} Risk Property
+            </div>
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>Low Risk</span>
+              <span>Medium Risk</span>
+              <span>High Risk</span>
+            </div>
+            <div className="w-full h-3 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 rounded-full relative z-10">
+              <div
+                className="absolute top-0 w-4 h-4 bg-white border-2 border-gray-800 rounded-full -mt-0.5 transform -translate-x-1/2"
+                style={{ left: `${riskResult.overallRiskScore}%` }}
+              ></div>
             </div>
           </div>
         </div>
 
-        {/* Property Map */}
-        <div className="mb-10 rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
-          <div className="px-6 py-4 border-b">
-            <h3 className="text-slate-700 font-medium">Property Location</h3>
-          </div>
-          <div className="h-80 relative">
-            <PropertyMap address={riskResult.propertyDetails.address} />
-          </div>
-        </div>
-
-        {/* Detailed Risk Assessment */}
+        {/* Risk Factors */}
         <div className="mb-10">
-          <h3 className="text-xl font-bold mb-6">Detailed Risk Assessment</h3>
+          <h3 className="text-xl font-bold mb-6">Risk Factors</h3>
+
+          {/* Security Risk */}
           {renderRiskCategory(
             "Security",
             riskResult.riskFactors.securityRisk,
             getRiskIcon("security"),
           )}
+
+          {/* Environmental Risk */}
           {renderRiskCategory(
             "Environmental",
             riskResult.riskFactors.environmentalRisk,
             getRiskIcon("environmental"),
           )}
+
+          {/* Flood Risk */}
           {renderRiskCategory(
             "Flood",
             riskResult.riskFactors.floodRisk,
             getRiskIcon("flood"),
           )}
+
+          {/* Climate Risk */}
           {renderRiskCategory(
             "Climate",
             riskResult.riskFactors.climateRisk,
             getRiskIcon("climate"),
           )}
+
+          {/* Hail Risk */}
           {renderRiskCategory(
             "Hail",
             riskResult.riskFactors.hailRisk,
             getRiskIcon("hail"),
           )}
-          
-          {/* Special hail metrics for insurance */}
-          {riskResult.riskFactors.hailRisk && 
-            renderHailInsuranceMetrics(riskResult.riskFactors.hailRisk)
-          }
-        </div>
 
-        {/* Risk Summary */}
-        <div className="mb-8">
-          <h3 className="text-xl font-bold mb-4">Risk Summary</h3>
-          <div className="bg-slate-50 p-6 rounded-lg relative z-10">
-            <p className="text-gray-700 mb-4">{riskResult.riskSummary}</p>
-            <h4 className="font-semibold text-base mb-3">Key Points:</h4>
-            <ul className="space-y-3 ml-5 list-disc">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 relative z-10">
+            <div className="p-4 rounded-lg bg-green-50 border border-green-200">
+              <h4 className="font-medium text-green-800 mb-2">
+                Low Risk (0-33%)
+              </h4>
+              <div className="w-full h-2 bg-green-500 rounded-full"></div>
+            </div>
+            <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-200">
+              <h4 className="font-medium text-yellow-800 mb-2">
+                Medium Risk (34-66%)
+              </h4>
+              <div className="w-full h-2 bg-yellow-500 rounded-full"></div>
+            </div>
+            <div className="p-4 rounded-lg bg-red-50 border border-red-200">
+              <h4 className="font-medium text-red-800 mb-2">
+                High Risk (67-100%)
+              </h4>
+              <div className="w-full h-2 bg-red-500 rounded-full"></div>
+            </div>
+          </div>
+
+          <div className="text-lg font-semibold mb-4 mt-8">
+            Total Risk Score: {riskResult.totalRiskPoints} out of{" "}
+            {riskResult.maxRiskPoints} ({riskResult.overallRiskScore}%) -{" "}
+            {riskResult.riskRating} Risk
+          </div>
+
+          <div className="bg-blue-50 p-6 rounded-lg relative z-10">
+            <h4 className="text-blue-600 font-semibold text-lg mb-3">
+              Risk Assessment Summary
+            </h4>
+            <p className="text-gray-700 mb-4">
+              This property presents an overall{" "}
+              {riskResult.riskRating.toLowerCase()} risk profile (
+              {riskResult.overallRiskScore}%), with most risk factors being
+              well-managed or naturally low. However, there are specific areas
+              of concern:
+            </p>
+            <ul className="space-y-4 ml-5 list-disc">
               <li>
                 <span className="text-red-600 font-medium">
-                  High Security Risk:
+                  High Flood Risk:
                 </span>{" "}
-                This property requires additional security measures to mitigate
-                significant vulnerabilities.
+                The property's location in a flood-prone area represents the
+                most significant risk factor and should be carefully considered.
+              </li>
+
+              <li>
+                <span className="text-amber-600 font-medium">
+                  Medium Security Risk:
+                </span>{" "}
+                While not critical, security measures could be improved to
+                enhance property protection.
               </li>
 
               <li>
@@ -1022,111 +2339,6 @@ export default function HollardRiskIndexPage() {
           </div>
         </div>
 
-        {/* Future Projections */}
-        <div className="mb-10">
-          <h3 className="text-xl font-bold mb-4">Future Risk Projections</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Short Term</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  {riskResult.projections.trendDirection === "up" ? (
-                    <TrendingUp className="h-5 w-5 text-red-500" />
-                  ) : riskResult.projections.trendDirection === "down" ? (
-                    <TrendingDown className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <Clock className="h-5 w-5 text-yellow-500" />
-                  )}
-                  <p className="text-sm">{riskResult.projections.shortTerm}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Medium Term</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  {riskResult.projections.trendDirection === "up" ? (
-                    <TrendingUp className="h-5 w-5 text-red-500" />
-                  ) : riskResult.projections.trendDirection === "down" ? (
-                    <TrendingDown className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <Clock className="h-5 w-5 text-yellow-500" />
-                  )}
-                  <p className="text-sm">{riskResult.projections.mediumTerm}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Long Term</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  {riskResult.projections.trendDirection === "up" ? (
-                    <TrendingUp className="h-5 w-5 text-red-500" />
-                  ) : riskResult.projections.trendDirection === "down" ? (
-                    <TrendingDown className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <Clock className="h-5 w-5 text-yellow-500" />
-                  )}
-                  <p className="text-sm">{riskResult.projections.longTerm}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Methodology Section (Information Box) */}
-        <div className="mb-10">
-          <h3 className="text-xl font-bold mb-4">Methodology</h3>
-          <div className="bg-gray-50 p-6 rounded-lg text-sm relative z-10">
-            <div className="mb-4 flex items-start">
-              <Info className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-              <p>
-                The Hollard Risk Index™ is a proprietary algorithm designed to
-                assess property risk across multiple dimensions. It combines
-                real-world data with predictive analytics to provide a
-                comprehensive risk profile.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-medium mb-2">Data Sources</h4>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Historical crime statistics</li>
-                  <li>Flood mapping and historical flood data</li>
-                  <li>Climate and weather pattern analysis</li>
-                  <li>Geographical and environmental assessments</li>
-                  <li>Municipal zoning and property records</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-medium mb-2">Calculation Method</h4>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>
-                    Each risk category is scored independently on specific
-                    criteria
-                  </li>
-                  <li>
-                    Scores are weighted based on severity and impact potential
-                  </li>
-                  <li>
-                    Combined total scores determine the overall risk rating
-                  </li>
-                  <li>
-                    Projections are based on historical trends and predictive
-                    modeling
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Report Footer */}
         <div className="pt-6 border-t text-center text-sm text-muted-foreground mb-8">
           <div className="flex items-center justify-center">
@@ -1136,7 +2348,7 @@ export default function HollardRiskIndexPage() {
               className="h-4 w-4 mr-2"
             />
             <span>
-              Hollard Risk Index™ Report - Generated on{" "}
+              Proply Risk Index™ Report - Generated on{" "}
               {new Date().toLocaleDateString("en-ZA", {
                 year: "numeric",
                 month: "long",
@@ -1150,7 +2362,7 @@ export default function HollardRiskIndexPage() {
         <div className="flex justify-center">
           <EmailPDFButton
             elementId="risk-index-report"
-            filename={`Hollard_Risk_Index_${riskResult?.propertyDetails?.address?.split(",")[0] || "Report"}.pdf`}
+            filename={`Proply_Risk_Index_${riskResult?.propertyDetails?.address?.split(",")[0] || "Report"}.pdf`}
             className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md h-10 py-2 px-4 inline-flex items-center justify-center rounded-md text-sm font-medium"
             propertyAddress={riskResult?.propertyDetails?.address}
           >
@@ -1172,193 +2384,292 @@ export default function HollardRiskIndexPage() {
         />
       </div>
 
-      <div className="container max-w-[1200px] mx-auto px-4 py-16">
+      {/* Background Elements */}
+      <div className="fixed inset-0 -z-10 min-h-screen w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]">
+        <div className="fixed inset-0 min-h-screen bg-[radial-gradient(circle_800px_at_50%_200px,#e5f9ff,transparent)]" />
+      </div>
+
+      {/* Enhanced Background Patterns */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {/* Grid pattern */}
+        <div className="fixed inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#8884_1px,transparent_1px),linear-gradient(to_bottom,#8884_1px,transparent_1px)] bg-[size:14px_24px]"></div>
+
+        {/* Gradient circle animations */}
+        <div className="circle-animation absolute -top-[150px] -left-[150px] w-[300px] h-[300px] rounded-full bg-primary/10 blur-3xl"></div>
+        <div className="circle-animation animation-delay-1000 absolute top-[20%] -right-[100px] w-[200px] h-[200px] rounded-full bg-blue-400/10 blur-3xl"></div>
+        <div className="circle-animation animation-delay-2000 absolute -bottom-[150px] left-[20%] w-[250px] h-[250px] rounded-full bg-primary/10 blur-3xl"></div>
+
+        {/* Data points */}
+        <div className="data-points absolute top-0 left-0 w-full h-full">
+          {Array.from({ length: 50 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 rounded-full bg-primary/40"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                opacity: Math.random() * 0.5 + 0.2,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Floating geometric shapes */}
+        <div className="absolute top-[15%] left-[10%] w-16 h-16 border-2 border-primary/20 rounded-lg rotate-12 animate-float"></div>
+        <div className="absolute bottom-[20%] right-[15%] w-20 h-20 border-2 border-primary/20 rounded-full animate-float animation-delay-1000"></div>
+        <div className="absolute top-[60%] right-[25%] w-12 h-12 border-2 border-primary/20 rotate-45 animate-float animation-delay-2000"></div>
+
+        {/* SVG paths */}
+        <svg
+          className="absolute inset-0 w-full h-full opacity-[0.07]"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,100 Q150,50 300,200 T600,100 T900,100"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="text-primary animate-draw"
+          />
+          <path
+            d="M0,200 Q200,150 400,250 T800,200"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="text-primary animate-draw animation-delay-1000"
+          />
+        </svg>
+      </div>
+
+      <div className="container mx-auto px-4 pt-[80px] pb-20">
+        <div className="text-center space-y-4 mb-12">
+          <h1 className="text-6xl font-bold">Proply Risk Index™</h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            A comprehensive assessment of property risks including security,
+              environmental, flood, climate, hail factors, and more.
+          </p>
+        </div>
+
         {!showResult ? (
-          <>
-            <div className="mb-12 text-center pt-8">
-              <h1 className="text-6xl font-bold">Hollard Risk Index™</h1>
-              <p className="mt-6 text-xl text-muted-foreground max-w-3xl mx-auto">
-                Comprehensive risk assessment for property insurance
-              </p>
-              <p className="text-muted-foreground mt-2">
-                Hollard Risk Index™
-              </p>
-            </div>
-            
-            <Card className="max-w-3xl mx-auto mb-12">
-              <CardHeader className="pb-0">
-                <CardTitle className="text-2xl">
-                  Property Risk Assessment
-                </CardTitle>
-                <CardDescription>
-                  Enter property details to generate a comprehensive risk report
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="col-span-1 md:col-span-2">
-                      <Label htmlFor="address">Property Address</Label>
-                      <div className="flex items-center">
-                        <AddressAutocomplete
-                          value={formData.address}
-                          onChange={(value) => handleInputChange("address", value)}
-                          placeholder="Enter property address"
-                          className="w-full"
-                          required
-                        />
-                        <Info className="w-4 h-4 ml-2 text-muted-foreground cursor-help" />
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Required for accurate risk assessment
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="property-type">Property Type</Label>
-                      <Select
-                        value={formData.propertyType}
-                        onValueChange={(value) => handleInputChange("propertyType", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="apartment">Apartment</SelectItem>
-                          <SelectItem value="house">House</SelectItem>
-                          <SelectItem value="townhouse">Townhouse</SelectItem>
-                          <SelectItem value="vacant-land">Vacant Land</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="purchase-price">Purchase Price (R)</Label>
-                      <Input
-                        id="purchase-price"
-                        type="text"
-                        placeholder="e.g. 1,500,000"
-                        value={formData.purchasePrice}
-                        onChange={(e) => handleInputChange("purchasePrice", e.target.value)}
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="size">Size (m²)</Label>
+          // Form section
+          <Card className="max-w-2xl mx-auto relative z-10 bg-white shadow-md">
+            <CardHeader>
+              <CardTitle className="text-xl text-center">
+                Proply Risk Index™
+              </CardTitle>
+              <CardDescription className="text-center">
+                Enter property details for a detailed risk analysis
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleFormSubmit}>
+              <CardContent className="space-y-8">
+                {/* Property Address */}
+                <div className="space-y-2 text-center">
+                  <AddressAutocomplete
+                    label="Property Address"
+                    placeholder="Enter the property address"
+                    value={formData.address}
+                    onChange={handleAddressChange}
+                    required={true}
+                  />
+                </div>
+
+                {/* Property Type */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <Label htmlFor="propertyType" className="mb-1 block">
+                      Property Type
+                    </Label>
+                    <Select
+                      value={formData.propertyType}
+                      onValueChange={(value) =>
+                        handleInputChange("propertyType", value)
+                      }
+                    >
+                      <SelectTrigger id="propertyType">
+                        <SelectValue placeholder="Select property type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="apartment">Apartment</SelectItem>
+                        <SelectItem value="house">House</SelectItem>
+                        <SelectItem value="townhouse">Townhouse</SelectItem>
+                        <SelectItem value="villa">Villa</SelectItem>
+                        <SelectItem value="commercial">Commercial</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Property Size */}
+                  <div className="text-center">
+                    <Label htmlFor="size" className="mb-1 block">
+                      Property Size
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
                       <Input
                         id="size"
-                        type="text"
-                        placeholder="e.g. 80"
+                        placeholder="0"
                         value={formData.size}
-                        onChange={(e) => handleInputChange("size", e.target.value)}
-                        required
+                        onChange={(e) =>
+                          handleInputChange("size", e.target.value)
+                        }
+                        className="pr-10"
                       />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="bedrooms">Bedrooms</Label>
-                      <Input
-                        id="bedrooms"
-                        type="text"
-                        placeholder="e.g. 2 (or 'Studio')"
-                        value={formData.bedrooms}
-                        onChange={(e) => handleInputChange("bedrooms", e.target.value)}
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="bathrooms">Bathrooms</Label>
-                      <Input
-                        id="bathrooms"
-                        type="text"
-                        placeholder="e.g. 1.5"
-                        value={formData.bathrooms}
-                        onChange={(e) => handleInputChange("bathrooms", e.target.value)}
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="parking">Parking Spaces</Label>
-                      <Input
-                        id="parking"
-                        type="text"
-                        placeholder="e.g. 1"
-                        value={formData.parking}
-                        onChange={(e) => handleInputChange("parking", e.target.value)}
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="property-condition">Property Condition</Label>
-                      <Select
-                        value={formData.propertyCondition}
-                        onValueChange={(value) => handleInputChange("propertyCondition", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select condition" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="excellent">Excellent</SelectItem>
-                          <SelectItem value="good">Good</SelectItem>
-                          <SelectItem value="average">Average</SelectItem>
-                          <SelectItem value="below-average">Below Average</SelectItem>
-                          <SelectItem value="poor">Poor</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <span className="text-muted-foreground">m²</span>
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="flex justify-between pt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={fillDemoData}
-                      className="text-sm"
-                    >
-                      Fill with Sample Data
-                    </Button>
-                    <Button 
-                      type="submit" 
-                      disabled={isLoading}
-                      className="min-w-[150px]"
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Analyzing...
-                        </>
-                      ) : (
-                        <>
-                          Calculate Risk
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </>
-                      )}
-                    </Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <Label htmlFor="bedrooms" className="mb-1 block">
+                      Bedrooms
+                    </Label>
+                    <Input
+                      id="bedrooms"
+                      placeholder="0"
+                      value={formData.bedrooms}
+                      onChange={(e) =>
+                        handleInputChange("bedrooms", e.target.value)
+                      }
+                    />
                   </div>
-                </form>
+
+                  <div className="text-center">
+                    <Label htmlFor="bathrooms" className="mb-1 block">
+                      Bathrooms
+                    </Label>
+                    <Input
+                      id="bathrooms"
+                      placeholder="0"
+                      value={formData.bathrooms}
+                      onChange={(e) =>
+                        handleInputChange("bathrooms", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="text-center">
+                    <Label htmlFor="parking" className="mb-1 block">
+                      Parking
+                    </Label>
+                    <Input
+                      id="parking"
+                      placeholder="0"
+                      value={formData.parking}
+                      onChange={(e) =>
+                        handleInputChange("parking", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Property Condition */}
+                <div className="text-center">
+                  <Label htmlFor="propertyCondition" className="mb-1 block">
+                    Property Condition
+                  </Label>
+                  <Select
+                    value={formData.propertyCondition}
+                    onValueChange={(value) =>
+                      handleInputChange("propertyCondition", value)
+                    }
+                  >
+                    <SelectTrigger id="propertyCondition">
+                      <SelectValue placeholder="Select property condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Purchase Price */}
+                <div className="text-center">
+                  <Label htmlFor="purchasePrice" className="mb-1 block">
+                    Purchase Price/Property Value
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <span className="text-muted-foreground">R</span>
+                    </div>
+                    <Input
+                      id="purchasePrice"
+                      className="pl-7"
+                      placeholder="0"
+                      value={formData.purchasePrice}
+                      onChange={(e) =>
+                        handleInputChange("purchasePrice", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+              </CardContent>
+
+              <div className="flex justify-end mt-6 p-6 pt-0">
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Calculating...
+                    </>
+                  ) : (
+                    <>
+                      Calculate Risk Index
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        ) : (
+          // Result display
+          <div className="w-full max-w-[1000px] mx-auto">
+            <Card className="w-full bg-white shadow-md rounded-lg relative z-10">
+              <CardContent className="p-8">
+                {riskResult && renderComprehensiveReport()}
+
+                <div className="flex justify-between mt-8">
+                  <Button
+                    variant="outline"
+                    onClick={resetForm}
+                    className="flex items-center gap-1"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Form
+                  </Button>
+                </div>
               </CardContent>
             </Card>
-          </>
-        ) : (
-          <>
-            <div className="flex items-center mb-8">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                className="mr-2"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
-              </Button>
-            </div>
-            {renderComprehensiveReport()}
-          </>
+          </div>
         )}
+
+        {/* Footer */}
+        <footer className="py-6 px-6 w-full mt-12">
+          <div className="max-w-7xl mx-auto text-center text-sm text-muted-foreground">
+            <p>© {new Date().getFullYear()} Proply. All rights reserved.</p>
+            <p className="mt-1">
+              The Proply Risk Index™ is a proprietary algorithm designed to
+              assess risk for insurance underwriting purposes.
+            </p>
+          </div>
+        </footer>
+
+        {/* Secret Fill Data Button */}
+        <button
+          type="button"
+          onClick={fillDemoData}
+          className="fixed bottom-4 right-4 opacity-0"
+        >
+          Fill Demo Data
+        </button>
       </div>
     </div>
   );
