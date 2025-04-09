@@ -2375,12 +2375,12 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Proply Logo */}
+      {/* Hollard Logo */}
       <div className="absolute top-8 left-8 z-20">
         <img
-          src="/proply-logo-1.png"
-          alt="Proply Logo"
-          className="h-8 w-auto"
+          src="/sponsor logos-01.png"
+          alt="Hollard Logo"
+          className="h-12 w-auto"
         />
       </div>
 
