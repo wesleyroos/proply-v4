@@ -13,6 +13,7 @@ import {
   apiUsage,
   subscriptionHistory,
   invoices,
+  passwordResetTokens,
 } from "@db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -29,6 +30,7 @@ import dealAdvisorRouter from './routes/deal-advisor';
 import addressValidationRouter from './routes/address-validation';
 import trafficDataRouter from './routes/traffic-data';
 import tomtomTestRouter from './routes/tomtom-test';
+import { sendPasswordResetEmail } from './services/email';
 
 // Extend Express.User to include our schema
 declare global {

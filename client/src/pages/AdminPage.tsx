@@ -176,7 +176,7 @@ export default function AdminPage() {
       plan,
     }: {
       userId: number;
-      action: "suspend" | "unsuspend" | "change-plan";
+      action: "suspend" | "unsuspend" | "change-plan" | "send-reset-link";
       plan?: "free" | "pro";
     }) => {
       const response = await fetch(`/api/admin/users/${userId}/${action}`, {
@@ -720,6 +720,19 @@ export default function AdminPage() {
                                     {userData.subscriptionStatus === "suspended"
                                       ? "Unsuspend"
                                       : "Suspend"}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      userActionMutation.mutate({
+                                        userId: userData.id,
+                                        action: "send-reset-link",
+                                      })
+                                    }
+                                    className="text-blue-600"
+                                  >
+                                    <FileText className="h-4 w-4 mr-2" />
+                                    Send Password Reset Link
                                   </DropdownMenuItem>
                                   <AlertDialog>
                                     <AlertDialogTrigger asChild>
