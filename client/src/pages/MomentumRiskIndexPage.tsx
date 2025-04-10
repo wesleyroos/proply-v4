@@ -2580,8 +2580,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
       {/* King Price Logo */}
       <div className="absolute top-8 left-8 z-20">
         <img
-          src="/FMS different logos_KING PRICE.png"
-          alt="King Price Logo"
+          src="/momentum-co-za-vector-logo.png"
+          alt="Momentum Logo"
           className="h-12 w-auto"
         />
       </div>
