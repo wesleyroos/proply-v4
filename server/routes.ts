@@ -666,7 +666,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   app.post(
-    "/api/admin/users/:id/:action(suspend|unsuspend|change-plan)",
+    "/api/admin/users/:id/:action(suspend|unsuspend|change-plan|send-reset-link)",
     async (req, res) => {
       if (!req.isAuthenticated() || !req.user?.isAdmin) {
         return res.status(403).send("Not authorized");
@@ -685,18 +685,22 @@ export function registerRoutes(app: Express): Server {
           return res.status(404).send("User not found");
         }
 
-        if (targetUser.isAdmin) {
-          return res.status(400).send("Cannot suspend admin users");
-        }
-
-        if (targetUser.id === req.user.id) {
-          return res.status(400).send("Cannot suspend yourself");
-        }
-
+        // For password reset links, we don't need these checks
         const action = req.params.action as
           | "suspend"
           | "unsuspend"
-          | "change-plan";
+          | "change-plan"
+          | "send-reset-link";
+        
+        if (action !== "send-reset-link") {
+          if (targetUser.isAdmin) {
+            return res.status(400).send("Cannot suspend admin users");
+          }
+
+          if (targetUser.id === req.user.id) {
+            return res.status(400).send("Cannot suspend yourself");
+          }
+        }
 
         if (action === "change-plan") {
           const { plan } = req.body;
@@ -716,6 +720,32 @@ export function registerRoutes(app: Express): Server {
             .where(eq(users.id, userId));
 
           res.json({ message: `User plan updated to ${plan} successfully` });
+        } else if (action === "send-reset-link") {
+          try {
+            // Import needed functions
+            const { sendPasswordResetEmail } = await import("./services/email");
+            
+            // Create password reset token
+            const [token] = await db
+              .insert(passwordResetTokens)
+              .values({
+                userId: targetUser.id,
+                expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now
+              })
+              .returning();
+
+            // Send password reset email
+            const success = await sendPasswordResetEmail(targetUser.email, token.token);
+
+            if (success) {
+              res.json({ message: `Password reset link sent to ${targetUser.email} successfully` });
+            } else {
+              res.status(500).json({ error: "Failed to send password reset email" });
+            }
+          } catch (error) {
+            console.error("Error sending password reset link:", error);
+            res.status(500).json({ error: "Failed to send password reset link" });
+          }
         } else {
           await db
             .update(users)
