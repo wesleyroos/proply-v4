@@ -42,6 +42,7 @@ import DealScoreReportPage from "./pages/DealScoreReportPage";
 import RiskIndexPage from "./pages/RiskIndexPage";
 import HollardRiskIndexPage from "./pages/HollardRiskIndexPage";
 import KingPriceRiskIndexPage from "./pages/KingPriceRiskIndexPage";
+import MomentumRiskIndexPage from "./pages/MomentumRiskIndexPage";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -214,6 +215,11 @@ function App() {
             <Route path="/king-price-risk-index" component={() => (
               <PageTransition>
                 <KingPriceRiskIndexPage />
+              </PageTransition>
+            )} />
+            <Route path="/momentum-risk-index" component={() => (
+              <PageTransition>
+                <MomentumRiskIndexPage />
               </PageTransition>
             )} />
 
