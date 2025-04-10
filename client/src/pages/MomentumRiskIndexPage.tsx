@@ -1077,7 +1077,7 @@ export default function RiskIndexPage() {
     const overallRiskPercentage = (totalRiskPoints / maxRiskPoints) * 100;
 
     // Determine overall risk rating
-    let riskRating: "Very Low" | "Low" | "Moderate" | "High" | "Very High";
+    let riskRating: "Very Low" | "Low" | ""Moderate" | "High" | "Very High";
     let riskColor: string;
 
     if (overallRiskPercentage < 20) {
@@ -1926,8 +1926,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
               <div className="p-6 flex flex-col items-center">
                 <h3 className="text-slate-700 font-medium mb-4">
-                  King Price Property Risk Index
-                </h3>
+                  King Price Property Risk Index                </h3>
                 <div className="relative mb-3 w-36 h-36">
                   <svg className="w-36 h-36" viewBox="0 0 128 128">
                     <circle
@@ -2577,11 +2576,11 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
   return (
     <div className="min-h-screen bg-background">
-      {/* King Price Logo */}
+      {/* Momentum Logo */}
       <div className="absolute top-8 left-8 z-20">
         <img
-          src="/FMS different logos_KING PRICE.png"
-          alt="King Price Logo"
+          src="/momentum-co-za-vector-logo.png"
+          alt="Momentum Logo"
           className="h-12 w-auto"
         />
       </div>
@@ -2685,8 +2684,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                     <Select
                       value={formData.propertyType}
                       onValueChange={(value) =>
-                        handleInputChange("propertyType", value)
-                      }
+                        handleInputChange("propertyType", value)                      }
                     >
                       <SelectTrigger id="propertyType">
                         <SelectValue placeholder="Select property type" />
