@@ -342,26 +342,35 @@ export default function RiskIndexPage() {
     const securityRiskMaxScore = 50;
     let securityRiskScore = 0;
     const securityRiskFactors: string[] = [];
-    const securityDetailedFactors: Array<{dimension: string; outcome: string; riskFactor: number}> = [];
+    const securityDetailedFactors: Array<{
+      dimension: string;
+      outcome: string;
+      riskFactor: number;
+    }> = [];
 
     // Inside security area
-    const insideSecurityArea = formData.propertyType === "apartment" ? "Yes" : "No";
+    const insideSecurityArea =
+      formData.propertyType === "apartment" ? "Yes" : "No";
     const insideSecurityScore = insideSecurityArea === "Yes" ? 1 : 5;
     securityRiskScore += insideSecurityScore;
     securityDetailedFactors.push({
       dimension: "Inside security area:",
       outcome: insideSecurityArea,
-      riskFactor: insideSecurityScore
+      riskFactor: insideSecurityScore,
     });
 
     // Next to open areas
-    const nextToOpenAreas = formData.address.toLowerCase().includes("cape town city centre") ? "Yes" : "No";
+    const nextToOpenAreas = formData.address
+      .toLowerCase()
+      .includes("cape town city centre")
+      ? "Yes"
+      : "No";
     const nextToOpenAreasScore = nextToOpenAreas === "Yes" ? 10 : 0;
     securityRiskScore += nextToOpenAreasScore;
     securityDetailedFactors.push({
       dimension: "Next to open areas:",
       outcome: nextToOpenAreas,
-      riskFactor: nextToOpenAreasScore
+      riskFactor: nextToOpenAreasScore,
     });
 
     // Distance to industrial
@@ -371,7 +380,7 @@ export default function RiskIndexPage() {
     securityDetailedFactors.push({
       dimension: "Distance to industrial:",
       outcome: distanceToIndustrial,
-      riskFactor: distanceToIndustrialScore
+      riskFactor: distanceToIndustrialScore,
     });
 
     // Distance to informal settlements
@@ -381,7 +390,7 @@ export default function RiskIndexPage() {
     securityDetailedFactors.push({
       dimension: "Distance to informal settlements:",
       outcome: distanceToInformal,
-      riskFactor: distanceToInformalScore
+      riskFactor: distanceToInformalScore,
     });
 
     // Construction in the area
@@ -391,7 +400,7 @@ export default function RiskIndexPage() {
     securityDetailedFactors.push({
       dimension: "Construction in the area:",
       outcome: constructionInArea,
-      riskFactor: constructionInAreaScore
+      riskFactor: constructionInAreaScore,
     });
 
     // Property type context for narrative
@@ -438,7 +447,11 @@ export default function RiskIndexPage() {
     const environmentalRiskMaxScore = 40;
     let environmentalRiskScore = 0;
     const environmentalRiskFactors: string[] = [];
-    const environmentalDetailedFactors: Array<{dimension: string; outcome: string; riskFactor: number}> = [];
+    const environmentalDetailedFactors: Array<{
+      dimension: string;
+      outcome: string;
+      riskFactor: number;
+    }> = [];
 
     // Fire risk
     const fireRisk = "High";
@@ -447,7 +460,7 @@ export default function RiskIndexPage() {
     environmentalDetailedFactors.push({
       dimension: "Fire risk:",
       outcome: fireRisk,
-      riskFactor: fireRiskScore
+      riskFactor: fireRiskScore,
     });
 
     // Roof top solar (fire risk)
@@ -457,7 +470,7 @@ export default function RiskIndexPage() {
     environmentalDetailedFactors.push({
       dimension: "Roof top solar (fire risk):",
       outcome: roofTopSolar,
-      riskFactor: roofTopSolarScore
+      riskFactor: roofTopSolarScore,
     });
 
     // Distance to water
@@ -467,7 +480,7 @@ export default function RiskIndexPage() {
     environmentalDetailedFactors.push({
       dimension: "Distance to water:",
       outcome: distanceToWater,
-      riskFactor: distanceToWaterScore
+      riskFactor: distanceToWaterScore,
     });
 
     // Slope
@@ -477,7 +490,7 @@ export default function RiskIndexPage() {
     environmentalDetailedFactors.push({
       dimension: "Slope:",
       outcome: slope,
-      riskFactor: slopeScore
+      riskFactor: slopeScore,
     });
 
     // Add narrative factors for display
@@ -516,7 +529,11 @@ export default function RiskIndexPage() {
     const floodRiskMaxScore = 10;
     let floodRiskScore = 0;
     const floodRiskFactors: string[] = [];
-    const floodDetailedFactors: Array<{dimension: string; outcome: string; riskFactor: number}> = [];
+    const floodDetailedFactors: Array<{
+      dimension: string;
+      outcome: string;
+      riskFactor: number;
+    }> = [];
 
     // Flood risk assessment - based on screenshot data
     const floodRisk = "High";
@@ -526,7 +543,7 @@ export default function RiskIndexPage() {
     floodDetailedFactors.push({
       dimension: "Flood Risk",
       outcome: floodRisk,
-      riskFactor: 10
+      riskFactor: 10,
     });
 
     // Property location affects flood risk narrative
@@ -575,8 +592,8 @@ export default function RiskIndexPage() {
     let climateRiskScore = 0;
     const climateRiskFactors: string[] = [];
     const climateDetailedFactors: Array<{
-      dimension: string; 
-      outcome: string; 
+      dimension: string;
+      outcome: string;
       riskFactor: number;
       category?: string;
       futureRisk?: string;
@@ -588,7 +605,7 @@ export default function RiskIndexPage() {
       dimension: "Changing of air temperature",
       outcome: "Medium risk",
       riskFactor: 5,
-      futureRisk: "Medium Risk"
+      futureRisk: "Medium Risk",
     });
 
     climateDetailedFactors.push({
@@ -596,7 +613,7 @@ export default function RiskIndexPage() {
       dimension: "Changing of freshwater and marine water temperatures",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -604,7 +621,7 @@ export default function RiskIndexPage() {
       dimension: "Heat Stress",
       outcome: "Low risk",
       riskFactor: 2,
-      futureRisk: "Medium Risk"
+      futureRisk: "Medium Risk",
     });
 
     climateDetailedFactors.push({
@@ -612,7 +629,7 @@ export default function RiskIndexPage() {
       dimension: "Temperature variability",
       outcome: "Medium risk",
       riskFactor: 5,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -620,7 +637,7 @@ export default function RiskIndexPage() {
       dimension: "Permafrost thawing",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -628,7 +645,7 @@ export default function RiskIndexPage() {
       dimension: "Heat wave",
       outcome: "Medium risk",
       riskFactor: 5,
-      futureRisk: "Medium risk"
+      futureRisk: "Medium risk",
     });
 
     climateDetailedFactors.push({
@@ -636,7 +653,7 @@ export default function RiskIndexPage() {
       dimension: "Cold wave / frost",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -644,7 +661,7 @@ export default function RiskIndexPage() {
       dimension: "Wildfire",
       outcome: "High Risk",
       riskFactor: 10,
-      futureRisk: "High Risk"
+      futureRisk: "High Risk",
     });
 
     // Wind related climate factors
@@ -653,7 +670,7 @@ export default function RiskIndexPage() {
       dimension: "Changing wind patterns",
       outcome: "Low risk",
       riskFactor: 2,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -661,7 +678,7 @@ export default function RiskIndexPage() {
       dimension: "Windstorm (cyclone, hurricane, typhoon)",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -669,7 +686,7 @@ export default function RiskIndexPage() {
       dimension: "Blizzards, dust and sandstorm",
       outcome: "Low risk",
       riskFactor: 2,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -677,7 +694,7 @@ export default function RiskIndexPage() {
       dimension: "Tornado",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     // Water related climate factors
@@ -686,7 +703,7 @@ export default function RiskIndexPage() {
       dimension: "Changing of precipitation patterns: Rain",
       outcome: "Medium risk",
       riskFactor: 5,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -694,7 +711,7 @@ export default function RiskIndexPage() {
       dimension: "Precipitation or hydrological variability",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -702,7 +719,7 @@ export default function RiskIndexPage() {
       dimension: "Ocean acidification",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -710,7 +727,7 @@ export default function RiskIndexPage() {
       dimension: "Saline intrusion",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -718,7 +735,7 @@ export default function RiskIndexPage() {
       dimension: "Sea level rise",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -726,7 +743,7 @@ export default function RiskIndexPage() {
       dimension: "Water stress",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "Medium Risk"
+      futureRisk: "Medium Risk",
     });
 
     climateDetailedFactors.push({
@@ -734,7 +751,7 @@ export default function RiskIndexPage() {
       dimension: "Drought",
       outcome: "Medium risk",
       riskFactor: 5,
-      futureRisk: "High Risk"
+      futureRisk: "High Risk",
     });
 
     climateDetailedFactors.push({
@@ -742,7 +759,7 @@ export default function RiskIndexPage() {
       dimension: "Heavy precipitation",
       outcome: "Medium risk",
       riskFactor: 5,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -750,7 +767,7 @@ export default function RiskIndexPage() {
       dimension: "Flood (coastal, fluvial, pluvial, ground water)",
       outcome: "High Risk",
       riskFactor: 10,
-      futureRisk: "Red Flag"
+      futureRisk: "Red Flag",
     });
 
     // Solid matter related factors
@@ -759,7 +776,7 @@ export default function RiskIndexPage() {
       dimension: "Coastal erosion",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -767,7 +784,7 @@ export default function RiskIndexPage() {
       dimension: "Soil degradation",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -775,7 +792,7 @@ export default function RiskIndexPage() {
       dimension: "Soil erosion",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -783,7 +800,7 @@ export default function RiskIndexPage() {
       dimension: "Solifluction",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -791,7 +808,7 @@ export default function RiskIndexPage() {
       dimension: "Landslide",
       outcome: "No risk",
       riskFactor: 0,
-      futureRisk: "No risk"
+      futureRisk: "No risk",
     });
 
     climateDetailedFactors.push({
@@ -799,11 +816,14 @@ export default function RiskIndexPage() {
       dimension: "Subsidence",
       outcome: "Medium Risk",
       riskFactor: 5,
-      futureRisk: "Medium Risk"
+      futureRisk: "Medium Risk",
     });
 
     // Calculate total climate risk score from detailed factors
-    climateRiskScore = climateDetailedFactors.reduce((sum, factor) => sum + factor.riskFactor, 0);
+    climateRiskScore = climateDetailedFactors.reduce(
+      (sum, factor) => sum + factor.riskFactor,
+      0,
+    );
 
     // Property quality context for narrative
     if (
@@ -859,7 +879,11 @@ export default function RiskIndexPage() {
     const hailRiskMaxScore = 30;
     let hailRiskScore = 0;
     const hailRiskFactors: string[] = [];
-    const hailDetailedFactors: Array<{dimension: string; outcome: string; riskFactor: number}> = [];
+    const hailDetailedFactors: Array<{
+      dimension: string;
+      outcome: string;
+      riskFactor: number;
+    }> = [];
 
     // Hail risk detailed factors based on roof condition and location
     if (formData.propertyCondition === "excellent") {
@@ -867,35 +891,38 @@ export default function RiskIndexPage() {
       hailDetailedFactors.push({
         dimension: "Roof condition",
         outcome: "Excellent - High impact resistance",
-        riskFactor: 1
+        riskFactor: 1,
       });
 
       hailDetailedFactors.push({
         dimension: "Hail frequency in area",
         outcome: "Medium - 1-2 events per year",
-        riskFactor: 5
+        riskFactor: 5,
       });
 
       hailDetailedFactors.push({
         dimension: "Vehicle protection",
         outcome: "Full covered parking available",
-        riskFactor: 1
+        riskFactor: 1,
       });
 
       hailDetailedFactors.push({
         dimension: "Roof material",
         outcome: "Hail-resistant materials",
-        riskFactor: 1
+        riskFactor: 1,
       });
 
       hailDetailedFactors.push({
         dimension: "Proximity to high-risk zone",
         outcome: "Within 5km of high frequency area",
-        riskFactor: 2
+        riskFactor: 2,
       });
 
       // Calculate total hail risk score
-      hailRiskScore = hailDetailedFactors.reduce((sum, factor) => sum + factor.riskFactor, 0);
+      hailRiskScore = hailDetailedFactors.reduce(
+        (sum, factor) => sum + factor.riskFactor,
+        0,
+      );
 
       // Narrative factors
       hailRiskFactors.push(
@@ -903,88 +930,96 @@ export default function RiskIndexPage() {
       );
       hailRiskFactors.push("Covered parking provides vehicle protection");
       hailRiskFactors.push("Hail-resistant roofing materials installed");
-
     } else if (formData.propertyCondition === "poor") {
       // Hail risk assessment for poor condition properties
       hailDetailedFactors.push({
         dimension: "Roof condition",
         outcome: "Poor - Low impact resistance",
-        riskFactor: 8
+        riskFactor: 8,
       });
 
       hailDetailedFactors.push({
         dimension: "Hail frequency in area",
         outcome: "Medium - 1-2 events per year",
-        riskFactor: 5
+        riskFactor: 5,
       });
 
       hailDetailedFactors.push({
         dimension: "Vehicle protection",
         outcome: "No covered parking available",
-        riskFactor: 4
+        riskFactor: 4,
       });
 
       hailDetailedFactors.push({
         dimension: "Roof material",
         outcome: "Standard materials with wear",
-        riskFactor: 5
+        riskFactor: 5,
       });
 
       hailDetailedFactors.push({
         dimension: "Proximity to high-risk zone",
         outcome: "Within 5km of high frequency area",
-        riskFactor: 2
+        riskFactor: 2,
       });
 
       // Calculate total hail risk score
-      hailRiskScore = hailDetailedFactors.reduce((sum, factor) => sum + factor.riskFactor, 0);
+      hailRiskScore = hailDetailedFactors.reduce(
+        (sum, factor) => sum + factor.riskFactor,
+        0,
+      );
 
       // Narrative factors
       hailRiskFactors.push("Roof condition may be vulnerable to hail damage");
       hailRiskFactors.push("Inadequate vehicle protection during hail storms");
-      hailRiskFactors.push("Roof materials show signs of wear and may need replacement");
-
+      hailRiskFactors.push(
+        "Roof materials show signs of wear and may need replacement",
+      );
     } else {
       // Hail risk assessment for average condition properties
       hailDetailedFactors.push({
         dimension: "Roof condition",
         outcome: "Fair/Good - Moderate impact resistance",
-        riskFactor: 4
+        riskFactor: 4,
       });
 
       hailDetailedFactors.push({
         dimension: "Hail frequency in area",
         outcome: "Medium - 1-2 events per year",
-        riskFactor: 5
+        riskFactor: 5,
       });
 
       hailDetailedFactors.push({
         dimension: "Vehicle protection",
         outcome: "Partial covered parking available",
-        riskFactor: 2
+        riskFactor: 2,
       });
 
       hailDetailedFactors.push({
         dimension: "Roof material",
         outcome: "Standard materials in good condition",
-        riskFactor: 3
+        riskFactor: 3,
       });
 
       hailDetailedFactors.push({
         dimension: "Proximity to high-risk zone",
         outcome: "Within 5km of high frequency area",
-        riskFactor: 2
+        riskFactor: 2,
       });
 
       // Calculate total hail risk score
-      hailRiskScore = hailDetailedFactors.reduce((sum, factor) => sum + factor.riskFactor, 0);
+      hailRiskScore = hailDetailedFactors.reduce(
+        (sum, factor) => sum + factor.riskFactor,
+        0,
+      );
 
       // Narrative factors
       hailRiskFactors.push(
         "Roof may require inspection to assess hail resistance",
       );
       hailRiskFactors.push("Partial covered parking for vehicles");
-      hailRiskFactors.push("Standard roofing materials with moderate resistance to hail impact");
+      hailRiskFactors.push(
+        "Standard roofing materials with moderate resistance to hail impact",
+      );
     }
 
     // Hail risk rating
@@ -997,37 +1032,34 @@ export default function RiskIndexPage() {
           : "High";
 
     // Additional hail risk metrics
-    const maxHailSize = hailRiskRating === "Low" 
-      ? "10-20mm" 
-      : hailRiskRating === "Medium" 
-        ? "20-40mm" 
-        : "40-60mm";
+    const maxHailSize =
+      hailRiskRating === "Low"
+        ? "10-20mm"
+        : hailRiskRating === "Medium"
+          ? "20-40mm"
+          : "40-60mm";
 
-    const annualFrequency = hailRiskRating === "Low"
-      ? 1 
-      : hailRiskRating === "Medium"
-        ? 3
-        : 5;
+    const annualFrequency =
+      hailRiskRating === "Low" ? 1 : hailRiskRating === "Medium" ? 3 : 5;
 
-    const damageProb = hailRiskRating === "Low"
-      ? 15
-      : hailRiskRating === "Medium"
-        ? 45
-        : 75;
+    const damageProb =
+      hailRiskRating === "Low" ? 15 : hailRiskRating === "Medium" ? 45 : 75;
 
-    const roofVulnerability = formData.propertyCondition === "excellent"
-      ? "Low"
-      : formData.propertyCondition === "good"
+    const roofVulnerability =
+      formData.propertyCondition === "excellent"
         ? "Low"
-        : formData.propertyCondition === "fair"
-          ? "Medium"
-          : "High";
+        : formData.propertyCondition === "good"
+          ? "Low"
+          : formData.propertyCondition === "fair"
+            ? "Medium"
+            : "High";
 
-    const returnPeriod = hailRiskRating === "Low"
-      ? "1 in 7 years"
-      : hailRiskRating === "Medium"
-        ? "1 in 3 years"
-        : "Annual";
+    const returnPeriod =
+      hailRiskRating === "Low"
+        ? "1 in 7 years"
+        : hailRiskRating === "Medium"
+          ? "1 in 3 years"
+          : "Annual";
 
     // OVERALL RISK CALCULATION
     const totalRiskPoints =
@@ -1317,47 +1349,69 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
   const renderComprehensiveReport = () => {
     if (!riskResult) return null;
 
-    // Function to render hail insurance metrics 
-    const renderHailInsuranceMetrics = (riskData: { 
-      maxHailSize?: string; 
-      annualFrequency?: number; 
-      damageProb?: number; 
-      roofVulnerability?: "Low" | "Medium" | "High"; 
+    // Function to render hail insurance metrics
+    const renderHailInsuranceMetrics = (riskData: {
+      maxHailSize?: string;
+      annualFrequency?: number;
+      damageProb?: number;
+      roofVulnerability?: "Low" | "Medium" | "High";
       returnPeriod?: string;
     }) => {
       if (!riskData) return null;
 
       return (
         <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
-          <h4 className="text-sm font-semibold mb-3 text-blue-800">Insurance-Relevant Metrics:</h4>
+          <h4 className="text-sm font-semibold mb-3 text-blue-800">
+            Insurance-Relevant Metrics:
+          </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {riskData.maxHailSize && (
               <div>
-                <span className="text-xs text-gray-500 block">Max Hail Size</span>
+                <span className="text-xs text-gray-500 block">
+                  Max Hail Size
+                </span>
                 <span className="font-medium">{riskData.maxHailSize}</span>
               </div>
             )}
             {riskData.annualFrequency !== undefined && (
               <div>
-                <span className="text-xs text-gray-500 block">Annual Frequency</span>
-                <span className="font-medium">{riskData.annualFrequency} events/year</span>
+                <span className="text-xs text-gray-500 block">
+                  Annual Frequency
+                </span>
+                <span className="font-medium">
+                  {riskData.annualFrequency} events/year
+                </span>
               </div>
             )}
             {riskData.damageProb !== undefined && (
               <div>
-                <span className="text-xs text-gray-500 block">Damage Probability</span>
-                <span className="font-medium">{typeof riskData.damageProb === 'number' && riskData.damageProb <= 1 ? Math.round(riskData.damageProb * 100) : riskData.damageProb}%</span>
+                <span className="text-xs text-gray-500 block">
+                  Damage Probability
+                </span>
+                <span className="font-medium">
+                  {typeof riskData.damageProb === "number" &&
+                  riskData.damageProb <= 1
+                    ? Math.round(riskData.damageProb * 100)
+                    : riskData.damageProb}
+                  %
+                </span>
               </div>
             )}
             {riskData.roofVulnerability && (
               <div>
-                <span className="text-xs text-gray-500 block">Roof Vulnerability</span>
-                <span className="font-medium">{riskData.roofVulnerability}</span>
+                <span className="text-xs text-gray-500 block">
+                  Roof Vulnerability
+                </span>
+                <span className="font-medium">
+                  {riskData.roofVulnerability}
+                </span>
               </div>
             )}
             {riskData.returnPeriod && (
               <div>
-                <span className="text-xs text-gray-500 block">Return Period</span>
+                <span className="text-xs text-gray-500 block">
+                  Return Period
+                </span>
                 <span className="font-medium">{riskData.returnPeriod}</span>
               </div>
             )}
@@ -1373,7 +1427,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
       icon: React.ReactNode,
     ) => {
       // Apply accordions only to security risk (as requested)
-      if (title.toLowerCase() === 'security') {
+      if (title.toLowerCase() === "security") {
         return (
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
@@ -1384,7 +1438,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               </div>
               <h3 className="text-lg font-semibold">{title} Risk</h3>
               <Badge className={getRiskColor(riskData.rating)}>
-                {riskData.score} out of {riskData.maxScore} ({Math.round(riskData.percentageScore)}%)
+                {riskData.score} out of {riskData.maxScore} (
+                {Math.round(riskData.percentageScore)}%)
               </Badge>
             </div>
 
@@ -1421,44 +1476,80 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                   </div>
 
                   {/* Detailed assessment table */}
-                  {riskData.detailedFactors && riskData.detailedFactors.length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Detailed Assessment:</h4>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full bg-white text-sm">
-                          <thead>
-                            <tr className="bg-gray-50">
-                              <th className="px-4 py-2 text-left font-medium text-gray-700">Dimension</th>
-                              <th className="px-4 py-2 text-left font-medium text-gray-700">Outcome</th>
-                              <th className="px-4 py-2 text-left font-medium text-gray-700">Risk Factor</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {riskData.detailedFactors.map((factor: any, index: number) => (
-                              <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-                                <td className="px-4 py-2 border-t border-gray-200">{factor.dimension}</td>
-                                <td className="px-4 py-2 border-t border-gray-200">{factor.outcome}</td>
-                                <td className="px-4 py-2 border-t border-gray-200">
-                                  <Badge variant={factor.riskFactor > 5 ? "destructive" : factor.riskFactor > 2 ? "secondary" : "outline"}>
-                                    {factor.riskFactor} {factor.riskFactor === 1 ? "point" : "points"}
+                  {riskData.detailedFactors &&
+                    riskData.detailedFactors.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">
+                          Detailed Assessment:
+                        </h4>
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full bg-white text-sm">
+                            <thead>
+                              <tr className="bg-gray-50">
+                                <th className="px-4 py-2 text-left font-medium text-gray-700">
+                                  Dimension
+                                </th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-700">
+                                  Outcome
+                                </th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-700">
+                                  Risk Factor
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {riskData.detailedFactors.map(
+                                (factor: any, index: number) => (
+                                  <tr
+                                    key={index}
+                                    className={
+                                      index % 2 === 0
+                                        ? "bg-gray-50"
+                                        : "bg-white"
+                                    }
+                                  >
+                                    <td className="px-4 py-2 border-t border-gray-200">
+                                      {factor.dimension}
+                                    </td>
+                                    <td className="px-4 py-2 border-t border-gray-200">
+                                      {factor.outcome}
+                                    </td>
+                                    <td className="px-4 py-2 border-t border-gray-200">
+                                      <Badge
+                                        variant={
+                                          factor.riskFactor > 5
+                                            ? "destructive"
+                                            : factor.riskFactor > 2
+                                              ? "secondary"
+                                              : "outline"
+                                        }
+                                      >
+                                        {factor.riskFactor}{" "}
+                                        {factor.riskFactor === 1
+                                          ? "point"
+                                          : "points"}
+                                      </Badge>
+                                    </td>
+                                  </tr>
+                                ),
+                              )}
+                              <tr className="bg-gray-100">
+                                <td className="px-4 py-2 font-medium border-t">
+                                  Total
+                                </td>
+                                <td className="px-4 py-2 border-t"></td>
+                                <td className="px-4 py-2 font-medium border-t">
+                                  <Badge variant="default">
+                                    {riskData.score}{" "}
+                                    {riskData.score === 1 ? "point" : "points"}
                                   </Badge>
                                 </td>
                               </tr>
-                            ))}
-                            <tr className="bg-gray-100">
-                              <td className="px-4 py-2 font-medium border-t">Total</td>
-                              <td className="px-4 py-2 border-t"></td>
-                              <td className="px-4 py-2 font-medium border-t">
-                                <Badge variant="default">
-                                  {riskData.score} {riskData.score === 1 ? "point" : "points"}
-                                </Badge>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -1469,10 +1560,12 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
       // Removed special case for hail risk - now handled in the shared accordion pattern
 
       // Use accordion pattern for environmental, flood, climate, and hail risks
-      if (title.toLowerCase() === 'environmental' || 
-          title.toLowerCase() === 'flood' || 
-          title.toLowerCase() === 'climate' ||
-          title.toLowerCase() === 'hail') {
+      if (
+        title.toLowerCase() === "environmental" ||
+        title.toLowerCase() === "flood" ||
+        title.toLowerCase() === "climate" ||
+        title.toLowerCase() === "hail"
+      ) {
         return (
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
@@ -1483,7 +1576,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               </div>
               <h3 className="text-lg font-semibold">{title} Risk</h3>
               <Badge className={getRiskColor(riskData.rating)}>
-                {riskData.score} out of {riskData.maxScore} ({Math.round(riskData.percentageScore)}%)
+                {riskData.score} out of {riskData.maxScore} (
+                {Math.round(riskData.percentageScore)}%)
               </Badge>
             </div>
 
@@ -1519,47 +1613,84 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                   </div>
 
                   {/* Insurance metrics for hail risk */}
-                  {title.toLowerCase() === "hail" && renderHailInsuranceMetrics(riskData)}
+                  {title.toLowerCase() === "hail" &&
+                    renderHailInsuranceMetrics(riskData)}
 
                   {/* Detailed assessment table */}
-                  {riskData.detailedFactors && riskData.detailedFactors.length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Detailed Assessment:</h4>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full bg-white text-sm">
-                          <thead>
-                            <tr className="bg-gray-50">
-                              <th className="px-4 py-2 text-left font-medium text-gray-700">Dimension</th>
-                              <th className="px-4 py-2 text-left font-medium text-gray-700">Outcome</th>
-                              <th className="px-4 py-2 text-left font-medium text-gray-700">Risk Factor</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {riskData.detailedFactors.map((factor: any, index: number) => (
-                              <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-                                <td className="px-4 py-2 border-t border-gray-200">{factor.dimension}</td>
-                                <td className="px-4 py-2 border-t border-gray-200">{factor.outcome}</td>
-                                <td className="px-4 py-2 border-t border-gray-200">
-                                  <Badge variant={factor.riskFactor > 5 ? "destructive" : factor.riskFactor > 2 ? "secondary" : "outline"}>
-                                    {factor.riskFactor} {factor.riskFactor === 1 ? "point" : "points"}
+                  {riskData.detailedFactors &&
+                    riskData.detailedFactors.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">
+                          Detailed Assessment:
+                        </h4>
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full bg-white text-sm">
+                            <thead>
+                              <tr className="bg-gray-50">
+                                <th className="px-4 py-2 text-left font-medium text-gray-700">
+                                  Dimension
+                                </th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-700">
+                                  Outcome
+                                </th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-700">
+                                  Risk Factor
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {riskData.detailedFactors.map(
+                                (factor: any, index: number) => (
+                                  <tr
+                                    key={index}
+                                    className={
+                                      index % 2 === 0
+                                        ? "bg-gray-50"
+                                        : "bg-white"
+                                    }
+                                  >
+                                    <td className="px-4 py-2 border-t border-gray-200">
+                                      {factor.dimension}
+                                    </td>
+                                    <td className="px-4 py-2 border-t border-gray-200">
+                                      {factor.outcome}
+                                    </td>
+                                    <td className="px-4 py-2 border-t border-gray-200">
+                                      <Badge
+                                        variant={
+                                          factor.riskFactor > 5
+                                            ? "destructive"
+                                            : factor.riskFactor > 2
+                                              ? "secondary"
+                                              : "outline"
+                                        }
+                                      >
+                                        {factor.riskFactor}{" "}
+                                        {factor.riskFactor === 1
+                                          ? "point"
+                                          : "points"}
+                                      </Badge>
+                                    </td>
+                                  </tr>
+                                ),
+                              )}
+                              <tr className="bg-gray-100">
+                                <td className="px-4 py-2 font-medium border-t">
+                                  Total
+                                </td>
+                                <td className="px-4 py-2 border-t"></td>
+                                <td className="px-4 py-2 font-medium border-t">
+                                  <Badge variant="default">
+                                    {riskData.score}{" "}
+                                    {riskData.score === 1 ? "point" : "points"}
                                   </Badge>
                                 </td>
                               </tr>
-                            ))}
-                            <tr className="bg-gray-100">
-                              <td className="px-4 py-2 font-medium border-t">Total</td>
-                              <td className="px-4 py-2 border-t"></td>
-                              <td className="px-4 py-2 font-medium border-t">
-                                <Badge variant="default">
-                                  {riskData.score} {riskData.score === 1 ? "point" : "points"}
-                                </Badge>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -1578,7 +1709,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </div>
             <h3 className="text-lg font-semibold">{title} Risk</h3>
             <Badge className={getRiskColor(riskData.rating)}>
-              {riskData.score} out of {riskData.maxScore} ({Math.round(riskData.percentageScore)}%)
+              {riskData.score} out of {riskData.maxScore} (
+              {Math.round(riskData.percentageScore)}%)
             </Badge>
           </div>
 
@@ -1600,29 +1732,54 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               <table className="min-w-full bg-white border border-gray-200 text-sm">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="px-4 py-2 text-left font-medium text-gray-700">Dimension</th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-700">Outcome</th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-700">Risk Factor</th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Dimension
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Outcome
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Risk Factor
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {riskData.detailedFactors.map((factor: any, index: number) => (
-                    <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-                      <td className="px-4 py-2 border-t border-gray-200">{factor.dimension}</td>
-                      <td className="px-4 py-2 border-t border-gray-200">{factor.outcome}</td>
-                      <td className="px-4 py-2 border-t border-gray-200">
-                        <Badge variant={factor.riskFactor > 5 ? "destructive" : factor.riskFactor > 2 ? "secondary" : "outline"}>
-                          {factor.riskFactor} {factor.riskFactor === 1 ? "point" : "points"}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
+                  {riskData.detailedFactors.map(
+                    (factor: any, index: number) => (
+                      <tr
+                        key={index}
+                        className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
+                      >
+                        <td className="px-4 py-2 border-t border-gray-200">
+                          {factor.dimension}
+                        </td>
+                        <td className="px-4 py-2 border-t border-gray-200">
+                          {factor.outcome}
+                        </td>
+                        <td className="px-4 py-2 border-t border-gray-200">
+                          <Badge
+                            variant={
+                              factor.riskFactor > 5
+                                ? "destructive"
+                                : factor.riskFactor > 2
+                                  ? "secondary"
+                                  : "outline"
+                            }
+                          >
+                            {factor.riskFactor}{" "}
+                            {factor.riskFactor === 1 ? "point" : "points"}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ),
+                  )}
                   <tr className="bg-gray-100">
                     <td className="px-4 py-2 font-medium border-t">Total</td>
                     <td className="px-4 py-2 border-t"></td>
                     <td className="px-4 py-2 font-medium border-t">
                       <Badge variant="default">
-                        {riskData.score} {riskData.score === 1 ? "point" : "points"}
+                        {riskData.score}{" "}
+                        {riskData.score === 1 ? "point" : "points"}
                       </Badge>
                     </td>
                   </tr>
@@ -1650,7 +1807,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
       <div id="risk-index-report" className="space-y-8 max-w-[900px] mx-auto">
         {/* Property Title and Summary */}
         <div className="pb-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Proply Risk Index™</h2>
+          <h2 className="text-2xl font-bold mb-4">
+            Hollard Property Risk Index
+          </h2>
           <h3 className="text-xl font-medium mb-5">
             {riskResult.propertyDetails.address}
           </h3>
@@ -1767,7 +1926,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
               <div className="p-6 flex flex-col items-center">
                 <h3 className="text-slate-700 font-medium mb-4">
-                  Proply Risk Index™
+                  Hollard Property Risk Index
                 </h3>
                 <div className="relative mb-3 w-36 h-36">
                   <svg className="w-36 h-36" viewBox="0 0 128 128">
@@ -1795,7 +1954,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-5xl font-bold">{riskResult.overallRiskScore}%</div>
+                    <div className="text-5xl font-bold">
+                      {riskResult.overallRiskScore}%
+                    </div>
                   </div>
                 </div>
                 <div
@@ -1812,17 +1973,25 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <AlertTriangle className="h-5 w-5 text-gray-700 mr-2" />
-                    <h4 className="font-semibold text-gray-700">Risk Factors</h4>
+                    <h4 className="font-semibold text-gray-700">
+                      Risk Factors
+                    </h4>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge className="bg-white/20 text-gray-700 hover:bg-white/25">
-                      Total: {riskResult.totalRiskPoints}/{riskResult.maxRiskPoints}
+                      Total: {riskResult.totalRiskPoints}/
+                      {riskResult.maxRiskPoints}
                     </Badge>
-                    <Badge className={`${riskResult.riskRating === "Very Low" || riskResult.riskRating === "Low" 
-                      ? "bg-green-500 text-white" 
-                      : riskResult.riskRating === "Moderate"
-                        ? "bg-yellow-500 text-white"
-                        : "bg-red-500 text-white"}`}>
+                    <Badge
+                      className={`${
+                        riskResult.riskRating === "Very Low" ||
+                        riskResult.riskRating === "Low"
+                          ? "bg-green-500 text-white"
+                          : riskResult.riskRating === "Moderate"
+                            ? "bg-yellow-500 text-white"
+                            : "bg-red-500 text-white"
+                      }`}
+                    >
                       {riskResult.riskRating} Risk
                     </Badge>
                   </div>
@@ -1836,7 +2005,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <span className="font-medium text-sm">Security</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {riskResult.riskFactors.securityRisk.score} / {riskResult.riskFactors.securityRisk.maxScore} ({Math.round(
+                          {riskResult.riskFactors.securityRisk.score} /{" "}
+                          {riskResult.riskFactors.securityRisk.maxScore} (
+                          {Math.round(
                             riskResult.riskFactors.securityRisk.percentageScore,
                           )}
                           %)
@@ -1878,7 +2049,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <span className="font-medium text-sm">Environmental</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {riskResult.riskFactors.environmentalRisk.score} / {riskResult.riskFactors.environmentalRisk.maxScore} ({Math.round(
+                          {riskResult.riskFactors.environmentalRisk.score} /{" "}
+                          {riskResult.riskFactors.environmentalRisk.maxScore} (
+                          {Math.round(
                             riskResult.riskFactors.environmentalRisk
                               .percentageScore,
                           )}
@@ -1923,7 +2096,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <span className="font-medium text-sm">Flood</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {riskResult.riskFactors.floodRisk.score} / {riskResult.riskFactors.floodRisk.maxScore} ({Math.round(
+                          {riskResult.riskFactors.floodRisk.score} /{" "}
+                          {riskResult.riskFactors.floodRisk.maxScore} (
+                          {Math.round(
                             riskResult.riskFactors.floodRisk.percentageScore,
                           )}
                           %)
@@ -1965,7 +2140,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <span className="font-medium text-sm">Climate</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {riskResult.riskFactors.climateRisk.score} / {riskResult.riskFactors.climateRisk.maxScore} ({Math.round(
+                          {riskResult.riskFactors.climateRisk.score} /{" "}
+                          {riskResult.riskFactors.climateRisk.maxScore} (
+                          {Math.round(
                             riskResult.riskFactors.climateRisk.percentageScore,
                           )}
                           %)
@@ -2007,7 +2184,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <span className="font-medium text-sm">Hail</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">
-                          {riskResult.riskFactors.hailRisk.score} / {riskResult.riskFactors.hailRisk.maxScore} ({Math.round(
+                          {riskResult.riskFactors.hailRisk.score} /{" "}
+                          {riskResult.riskFactors.hailRisk.maxScore} (
+                          {Math.round(
                             riskResult.riskFactors.hailRisk.percentageScore,
                           )}
                           %)
@@ -2067,7 +2246,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 <div className="p-2 rounded-full bg-blue-500 bg-opacity-20">
                   <Landmark className="h-5 w-5 text-blue-500" />
                 </div>
-                <h3 className="text-lg font-semibold">Neighborhood Demographics</h3>
+                <h3 className="text-lg font-semibold">
+                  Neighborhood Demographics
+                </h3>
                 <Badge className="bg-blue-500 text-white hover:bg-blue-600">
                   Area Profile
                 </Badge>
@@ -2088,7 +2269,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                           <div className="bg-slate-100 p-1.5 rounded">
                             <Clock className="h-4 w-4 text-slate-500" />
                           </div>
-                          <span className="text-sm font-medium">Dominant Age Group</span>
+                          <span className="text-sm font-medium">
+                            Dominant Age Group
+                          </span>
                         </div>
                         <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
                           {riskResult.neighborhoodDemographics.dominantAge}
@@ -2100,7 +2283,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                           <div className="bg-slate-100 p-1.5 rounded">
                             <AlertCircle className="h-4 w-4 text-slate-500" />
                           </div>
-                          <span className="text-sm font-medium">Dominant Race</span>
+                          <span className="text-sm font-medium">
+                            Dominant Race
+                          </span>
                         </div>
                         <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
                           {riskResult.neighborhoodDemographics.dominantRace}
@@ -2112,7 +2297,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                           <div className="bg-slate-100 p-1.5 rounded">
                             <AlertCircle className="h-4 w-4 text-slate-500" />
                           </div>
-                          <span className="text-sm font-medium">Gender Ratio</span>
+                          <span className="text-sm font-medium">
+                            Gender Ratio
+                          </span>
                         </div>
                         <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
                           {riskResult.neighborhoodDemographics.dominantGender}
@@ -2134,7 +2321,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                           <div className="bg-slate-100 p-1.5 rounded">
                             <TrendingUp className="h-4 w-4 text-slate-500" />
                           </div>
-                          <span className="text-sm font-medium">Income Classification</span>
+                          <span className="text-sm font-medium">
+                            Income Classification
+                          </span>
                         </div>
                         <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
                           {riskResult.neighborhoodDemographics.incomeClass}
@@ -2146,22 +2335,34 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                           <div className="bg-slate-100 p-1.5 rounded">
                             <Home className="h-4 w-4 text-slate-500" />
                           </div>
-                          <span className="text-sm font-medium">Average Building Value</span>
+                          <span className="text-sm font-medium">
+                            Average Building Value
+                          </span>
                         </div>
                         <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm font-medium">
-                          R{riskResult.neighborhoodDemographics.averageBuildingValue}
+                          R
+                          {
+                            riskResult.neighborhoodDemographics
+                              .averageBuildingValue
+                          }
                         </span>
                       </div>
 
                       <div className="pt-2">
                         <div className="flex justify-between mb-1">
-                          <span className="text-sm font-medium">National Living Index (NLI)</span>
-                          <span className="text-sm font-medium text-blue-600">{riskResult.neighborhoodDemographics.nliIndex}/10</span>
+                          <span className="text-sm font-medium">
+                            National Living Index (NLI)
+                          </span>
+                          <span className="text-sm font-medium text-blue-600">
+                            {riskResult.neighborhoodDemographics.nliIndex}/10
+                          </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div 
+                          <div
                             className="h-2.5 rounded-full bg-blue-600"
-                            style={{ width: `${(riskResult.neighborhoodDemographics.nliIndex / 10) * 100}%` }}
+                            style={{
+                              width: `${(riskResult.neighborhoodDemographics.nliIndex / 10) * 100}%`,
+                            }}
                           ></div>
                         </div>
                         <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -2178,7 +2379,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-500">
                       <Info className="h-4 w-4 inline mr-1" />
-                      Demographics data is based on the latest census information and local surveys.
+                      Demographics data is based on the latest census
+                      information and local surveys.
                     </p>
                     <Badge variant="outline" className="text-xs">
                       <Clock className="h-3 w-3 mr-1" /> Updated Feb 2025
@@ -2348,7 +2550,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               className="h-4 w-4 mr-2"
             />
             <span>
-              Proply Risk Index™ Report - Generated on{" "}
+              Powered by Proply Risk Index™ - Report generated on{" "}
               {new Date().toLocaleDateString("en-ZA", {
                 year: "numeric",
                 month: "long",
@@ -2443,10 +2645,10 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
       <div className="container mx-auto px-4 pt-[80px] pb-20">
         <div className="text-center space-y-4 mb-12">
-          <h1 className="text-6xl font-bold">Proply Risk Index™</h1>
+          <h1 className="text-6xl font-bold">Hollard Property Risk Index</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             A comprehensive assessment of property risks including security,
-              environmental, flood, climate, hail factors, and more.
+            environmental, flood, climate, hail factors, and more.
           </p>
         </div>
 
@@ -2455,7 +2657,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           <Card className="max-w-2xl mx-auto relative z-10 bg-white shadow-md">
             <CardHeader>
               <CardTitle className="text-xl text-center">
-                Proply Risk Index™
+                Hollard Property Risk Index
               </CardTitle>
               <CardDescription className="text-center">
                 Enter property details for a detailed risk analysis
