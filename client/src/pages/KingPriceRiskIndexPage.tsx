@@ -9,12 +9,14 @@ import {
   MapPin,
   Home,
   Building,
+  Building2,
   Package2,
   Car,
   BarChart3,
   Star,
   AlertCircle,
   Shield,
+  ShieldCheck,
   TrendingUp,
   TrendingDown,
   Clock,
@@ -31,6 +33,18 @@ import {
   Umbrella,
   ChevronDown,
   Users,
+  Layers,
+  CircuitBoard,
+  Flame,
+  Zap,
+  BatteryCharging,
+  Droplets,
+  PanelTop,
+  KeyRound,
+  Lock,
+  SplitSquareVertical,
+  GanttChart,
+  Radio,
 } from "lucide-react";
 import AddressAutocomplete from "../components/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
@@ -89,6 +103,33 @@ interface RiskResult {
     suburb?: string;
     city?: string;
     postalCode?: string;
+  };
+  buildingDetails?: {
+    roofType?: string;
+    nonStandardStructure?: string;
+    wallMaterial?: string;
+    fireRetardant?: string;
+    lightningConductor?: string;
+    residenceType?: string;
+    isCommune?: string;
+    isPlotOrFarm?: string;
+    geysers?: {
+      electric?: string;
+      gas?: string;
+      heatPump?: string;
+      solarWater?: string;
+    };
+    nearbyWaterBodies?: string;
+    surgeArresterInstalled?: string;
+  };
+  securityDetails?: {
+    perimeterWallType?: string;
+    radioLinkedAlarm?: string;
+    securityGates?: string;
+    burglarBars?: string;
+    controlledAccess?: string;
+    securityGuard?: string;
+    electricFence?: string;
   };
   neighborhoodDemographics?: {
     dominantAge: string;
@@ -200,6 +241,34 @@ export default function RiskIndexPage() {
     parking: "",
     propertyCondition: "excellent",
     propertyType: "apartment", // Default to apartment
+
+    // Building Details
+    roofType: "",
+    nonStandardStructure: "",
+    wallMaterial: "",
+    fireRetardant: "",
+    lightningConductor: "",
+    residenceType: "",
+    isCommune: "",
+    isPlotOrFarm: "",
+    landUsage: [] as string[],
+    geysers: {
+      electric: "0",
+      gas: "0",
+      heatPump: "0",
+      solarWater: "0",
+    },
+    nearbyWaterBodies: "",
+    surgeArresterInstalled: "",
+
+    // Security Details
+    perimeterWallType: "",
+    radioLinkedAlarm: "",
+    securityGates: "",
+    burglarBars: "",
+    controlledAccess: "",
+    securityGuard: "",
+    electricFence: "",
   });
 
   const formatWithThousandSeparators = (value: string): string => {
@@ -260,6 +329,34 @@ export default function RiskIndexPage() {
           parking: "1",
           propertyCondition: "excellent",
           propertyType: "apartment",
+
+          // Building Details
+          roofType: "concrete",
+          nonStandardStructure: "no",
+          wallMaterial: "brick",
+          fireRetardant: "yes",
+          lightningConductor: "no",
+          residenceType: "main",
+          isCommune: "no",
+          isPlotOrFarm: "no",
+          landUsage: ["residence", "retail"] as string[],
+          geysers: {
+            electric: "1",
+            gas: "0",
+            heatPump: "0",
+            solarWater: "0",
+          },
+          nearbyWaterBodies: "no",
+          surgeArresterInstalled: "yes",
+
+          // Security Details
+          perimeterWallType: "brick wall higher than 1.8m",
+          radioLinkedAlarm: "yes",
+          securityGates: "yes",
+          burglarBars: "yes",
+          controlledAccess: "yes",
+          securityGuard: "yes",
+          electricFence: "no",
         });
         return 0;
       }
@@ -1228,6 +1325,33 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         city: "Cape Town",
         postalCode: "8001",
       },
+      buildingDetails: {
+        roofType: formData.roofType,
+        nonStandardStructure: formData.nonStandardStructure,
+        wallMaterial: formData.wallMaterial,
+        fireRetardant: formData.fireRetardant,
+        lightningConductor: formData.lightningConductor,
+        residenceType: formData.residenceType,
+        isCommune: formData.isCommune,
+        isPlotOrFarm: formData.isPlotOrFarm,
+        geysers: {
+          electric: formData.geysers.electric,
+          gas: formData.geysers.gas,
+          heatPump: formData.geysers.heatPump,
+          solarWater: formData.geysers.solarWater,
+        },
+        nearbyWaterBodies: formData.nearbyWaterBodies,
+        surgeArresterInstalled: formData.surgeArresterInstalled,
+      },
+      securityDetails: {
+        perimeterWallType: formData.perimeterWallType,
+        radioLinkedAlarm: formData.radioLinkedAlarm,
+        securityGates: formData.securityGates,
+        burglarBars: formData.burglarBars,
+        controlledAccess: formData.controlledAccess,
+        securityGuard: formData.securityGuard,
+        electricFence: formData.electricFence,
+      },
       neighborhoodDemographics: {
         dominantAge: "25-35 years",
         dominantRace: "Mixed",
@@ -1808,7 +1932,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         {/* Property Title and Summary */}
         <div className="pb-8 text-center">
           <h2 className="text-2xl font-bold mb-4">
-            King Price Property Risk Index
+            Hollard Property Risk Index
           </h2>
           <h3 className="text-xl font-medium mb-5">
             {riskResult.propertyDetails.address}
@@ -1926,7 +2050,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
               <div className="p-6 flex flex-col items-center">
                 <h3 className="text-slate-700 font-medium mb-4">
-                  King Price Property Risk Index
+                  Hollard Property Risk Index
                 </h3>
                 <div className="relative mb-3 w-36 h-36">
                   <svg className="w-36 h-36" viewBox="0 0 128 128">
@@ -2238,6 +2362,364 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               </div>
             </div>
           </div>
+
+          {/* Building Details Card */}
+          {riskResult.buildingDetails && (
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2 rounded-full bg-amber-500 bg-opacity-20">
+                  <Building2 className="h-5 w-5 text-amber-500" />
+                </div>
+                <h3 className="text-lg font-semibold">
+                  Building Details
+                </h3>
+                <Badge className="bg-amber-500 text-white hover:bg-amber-600">
+                  Structure
+                </Badge>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Left column - Building structure */}
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <Building className="h-4 w-4" />
+                      <span>Structure Information</span>
+                    </h4>
+
+                    <div className="space-y-3">
+                      {riskResult.buildingDetails.roofType && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Home className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Roof Type
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.roofType}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.buildingDetails.wallMaterial && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Layers className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Wall Material
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.wallMaterial}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.buildingDetails.nonStandardStructure && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <CircuitBoard className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Non-Standard Structure
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.nonStandardStructure}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.buildingDetails.residenceType && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Home className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Residence Type
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.residenceType}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right column - Safety features */}
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <Shield className="h-4 w-4" />
+                      <span>Safety Features</span>
+                    </h4>
+
+                    <div className="space-y-3">
+                      {riskResult.buildingDetails.fireRetardant && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Flame className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Fire Retardant
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.fireRetardant}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.buildingDetails.lightningConductor && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Zap className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Lightning Conductor
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.lightningConductor}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.buildingDetails.surgeArresterInstalled && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <BatteryCharging className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Surge Arrester
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.surgeArresterInstalled}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.buildingDetails.nearbyWaterBodies && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Droplets className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Nearby Water Bodies
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.nearbyWaterBodies}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Geysers section */}
+                {riskResult.buildingDetails.geysers && (
+                  <div className="mt-5 pt-4 border-t border-dashed border-gray-200">
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <Droplets className="h-4 w-4" />
+                      <span>Geyser Information</span>
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="bg-blue-50 p-3 rounded-md">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Electric</span>
+                          <span className="font-semibold text-blue-700">{riskResult.buildingDetails.geysers.electric}</span>
+                        </div>
+                      </div>
+                      <div className="bg-orange-50 p-3 rounded-md">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Gas</span>
+                          <span className="font-semibold text-orange-700">{riskResult.buildingDetails.geysers.gas}</span>
+                        </div>
+                      </div>
+                      <div className="bg-green-50 p-3 rounded-md">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Heat Pump</span>
+                          <span className="font-semibold text-green-700">{riskResult.buildingDetails.geysers.heatPump}</span>
+                        </div>
+                      </div>
+                      <div className="bg-yellow-50 p-3 rounded-md">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Solar Water</span>
+                          <span className="font-semibold text-yellow-700">{riskResult.buildingDetails.geysers.solarWater}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Security Details Card */}
+          {riskResult.securityDetails && (
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2 rounded-full bg-indigo-500 bg-opacity-20">
+                  <Shield className="h-5 w-5 text-indigo-500" />
+                </div>
+                <h3 className="text-lg font-semibold">
+                  Security Details
+                </h3>
+                <Badge className="bg-indigo-500 text-white hover:bg-indigo-600">
+                  Safety
+                </Badge>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Left column - Perimeter security */}
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <PanelTop className="h-4 w-4" />
+                      <span>Perimeter Protection</span>
+                    </h4>
+
+                    <div className="space-y-3">
+                      {riskResult.securityDetails.perimeterWallType && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Layers className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Perimeter Wall Type
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.perimeterWallType}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.securityDetails.electricFence && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Zap className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Electric Fence
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.electricFence}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.securityDetails.controlledAccess && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <KeyRound className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Controlled Access
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.controlledAccess}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right column - Building security */}
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <Lock className="h-4 w-4" />
+                      <span>Building Protection</span>
+                    </h4>
+
+                    <div className="space-y-3">
+                      {riskResult.securityDetails.burglarBars && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <SplitSquareVertical className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Burglar Bars
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.burglarBars}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.securityDetails.securityGates && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <GanttChart className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Security Gates
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.securityGates}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.securityDetails.radioLinkedAlarm && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Radio className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Radio-Linked Alarm
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.radioLinkedAlarm}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.securityDetails.securityGuard && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <ShieldCheck className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Security Guard
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.securityGuard}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Neighborhood Demographics Card */}
           {riskResult.neighborhoodDemographics && (
@@ -2577,11 +3059,11 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
   return (
     <div className="min-h-screen bg-background">
-      {/* King Price Logo */}
+      {/* Hollard Logo */}
       <div className="absolute top-8 left-8 z-20">
         <img
-          src="/FMS different logos_KING PRICE.png"
-          alt="King Price Logo"
+          src="/sponsor logos-01.png"
+          alt="Hollard Logo"
           className="h-12 w-auto"
         />
       </div>
@@ -2645,7 +3127,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
       <div className="container mx-auto px-4 pt-[80px] pb-20">
         <div className="text-center space-y-4 mb-12">
-          <h1 className="text-6xl font-bold">King Price Property Risk Index</h1>
+          <h1 className="text-6xl font-bold">Hollard Property Risk Index</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             A comprehensive assessment of property risks including security,
             environmental, flood, climate, hail factors, and more.
@@ -2657,7 +3139,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           <Card className="max-w-2xl mx-auto relative z-10 bg-white shadow-md">
             <CardHeader>
               <CardTitle className="text-xl text-center">
-                King Price Property Risk Index
+                Hollard Property Risk Index
               </CardTitle>
               <CardDescription className="text-center">
                 Enter property details for a detailed risk analysis
@@ -2789,6 +3271,463 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <SelectItem value="poor">Poor</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Building Details Section */}
+                <div className="mt-8 mb-4">
+                  <h3 className="text-lg font-medium text-center mb-4">Building Details</h3>
+                  <div className="space-y-6">
+                    {/* Roof Type */}
+                    <div className="text-center">
+                      <Label htmlFor="roofType" className="mb-1 block">
+                        What type of roof does the building have?
+                      </Label>
+                      <Select
+                        value={formData.roofType}
+                        onValueChange={(value) => handleInputChange("roofType", value)}
+                      >
+                        <SelectTrigger id="roofType">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="asbestos">Asbestos</SelectItem>
+                          <SelectItem value="concrete">Concrete</SelectItem>
+                          <SelectItem value="corrugated iron">Corrugated iron</SelectItem>
+                          <SelectItem value="fibre cement">Fibre cement</SelectItem>
+                          <SelectItem value="wood">Wood</SelectItem>
+                          <SelectItem value="wooden shingles">Wooden shingles</SelectItem>
+                          <SelectItem value="slate">Slate</SelectItem>
+                          <SelectItem value="thatch">Thatch</SelectItem>
+                          <SelectItem value="tile">Tile</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Non-standard Structure */}
+                    <div className="text-center">
+                      <Label htmlFor="nonStandardStructure" className="mb-1 block">
+                        Is there any non-standard structure on your property or a structure with a thatched roof, with a roofed area greater than 15% of the roofed area of the main building?
+                      </Label>
+                      <Select
+                        value={formData.nonStandardStructure}
+                        onValueChange={(value) => handleInputChange("nonStandardStructure", value)}
+                      >
+                        <SelectTrigger id="nonStandardStructure">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Wall Material */}
+                    <div className="text-center">
+                      <Label htmlFor="wallMaterial" className="mb-1 block">
+                        What material are the walls of the building made of?
+                      </Label>
+                      <Select
+                        value={formData.wallMaterial}
+                        onValueChange={(value) => handleInputChange("wallMaterial", value)}
+                      >
+                        <SelectTrigger id="wallMaterial">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="asbestos">Asbestos</SelectItem>
+                          <SelectItem value="brick">Brick</SelectItem>
+                          <SelectItem value="concrete">Concrete</SelectItem>
+                          <SelectItem value="corrugated iron">Corrugated iron</SelectItem>
+                          <SelectItem value="fibre cement">Fibre cement</SelectItem>
+                          <SelectItem value="precast concrete">Precast concrete</SelectItem>
+                          <SelectItem value="prefabricated">Prefabricated</SelectItem>
+                          <SelectItem value="shingle">Shingle</SelectItem>
+                          <SelectItem value="stone">Stone</SelectItem>
+                          <SelectItem value="timber-framed">Timber-framed with Gypsum cladding</SelectItem>
+                          <SelectItem value="wood">Wood</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Conditional section for thatch/wooden buildings */}
+                    {(formData.roofType === "thatch" || 
+                      formData.roofType === "wood" || 
+                      formData.roofType === "wooden shingles" || 
+                      formData.nonStandardStructure === "yes" || 
+                      formData.wallMaterial === "wood") && (
+                      <div className="space-y-4 p-4 border border-gray-200 rounded-md bg-gray-50">
+                        <p className="text-sm text-center font-medium mb-2">Additional questions for thatch/wooden buildings:</p>
+
+                        {/* Fire Retardant */}
+                        <div className="text-center">
+                          <Label htmlFor="fireRetardant" className="mb-1 block text-sm">
+                            Has the thatch/wooden shingles been treated with SABS-approved fire retardant?
+                          </Label>
+                          <Select
+                            value={formData.fireRetardant}
+                            onValueChange={(value) => handleInputChange("fireRetardant", value)}
+                          >
+                            <SelectTrigger id="fireRetardant">
+                              <SelectValue placeholder="Please select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="yes">Yes</SelectItem>
+                              <SelectItem value="no">No</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Lightning Conductor */}
+                        <div className="text-center">
+                          <Label htmlFor="lightningConductor" className="mb-1 block text-sm">
+                            Is there a lightning conductor installed at the building?
+                          </Label>
+                          <Select
+                            value={formData.lightningConductor}
+                            onValueChange={(value) => handleInputChange("lightningConductor", value)}
+                          >
+                            <SelectTrigger id="lightningConductor">
+                              <SelectValue placeholder="Please select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="yes">Yes</SelectItem>
+                              <SelectItem value="no">No</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Residence Type */}
+                    <div className="text-center">
+                      <Label htmlFor="residenceType" className="mb-1 block">
+                        What type of residence is this?
+                      </Label>
+                      <Select
+                        value={formData.residenceType}
+                        onValueChange={(value) => handleInputChange("residenceType", value)}
+                      >
+                        <SelectTrigger id="residenceType">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="main">Main residence</SelectItem>
+                          <SelectItem value="secondary">Secondary residence/Holiday home</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Is Commune */}
+                    <div className="text-center">
+                      <Label htmlFor="isCommune" className="mb-1 block">
+                        Is the building used as a commune?
+                      </Label>
+                      <Select
+                        value={formData.isCommune}
+                        onValueChange={(value) => handleInputChange("isCommune", value)}
+                      >
+                        <SelectTrigger id="isCommune">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Is Plot or Farm */}
+                    <div className="text-center">
+                      <Label htmlFor="isPlotOrFarm" className="mb-1 block">
+                        Is the property a plot, smallholding or farm?
+                      </Label>
+                      <Select
+                        value={formData.isPlotOrFarm}
+                        onValueChange={(value) => handleInputChange("isPlotOrFarm", value)}
+                      >
+                        <SelectTrigger id="isPlotOrFarm">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Geysers */}
+                    <div className="text-center">
+                      <Label className="mb-3 block">
+                        How many geysers are at the building?
+                      </Label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="electricGeysers" className="mb-1 block text-sm">
+                            Electric geysers
+                          </Label>
+                          <Input
+                            id="electricGeysers"
+                            value={formData.geysers.electric}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              geysers: {
+                                ...prev.geysers,
+                                electric: e.target.value
+                              }
+                            }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="gasGeysers" className="mb-1 block text-sm">
+                            Gas geysers
+                          </Label>
+                          <Input
+                            id="gasGeysers"
+                            value={formData.geysers.gas}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              geysers: {
+                                ...prev.geysers,
+                                gas: e.target.value
+                              }
+                            }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="heatPumpGeysers" className="mb-1 block text-sm">
+                            Heat pump geysers
+                          </Label>
+                          <Input
+                            id="heatPumpGeysers"
+                            value={formData.geysers.heatPump}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              geysers: {
+                                ...prev.geysers,
+                                heatPump: e.target.value
+                              }
+                            }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="solarWaterGeysers" className="mb-1 block text-sm">
+                            Solar/water tank geysers
+                          </Label>
+                          <Input
+                            id="solarWaterGeysers"
+                            value={formData.geysers.solarWater}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              geysers: {
+                                ...prev.geysers,
+                                solarWater: e.target.value
+                              }
+                            }))}
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Note: Geysers are not automatically covered. Please select the Damage to geysers optional benefit.
+                      </p>
+                    </div>
+
+                    {/* Nearby Water Bodies */}
+                    <div className="text-center">
+                      <Label htmlFor="nearbyWaterBodies" className="mb-1 block">
+                        Are there any water bodies within 100m of the building – like a dam, lake or a river?
+                      </Label>
+                      <Select
+                        value={formData.nearbyWaterBodies}
+                        onValueChange={(value) => handleInputChange("nearbyWaterBodies", value)}
+                      >
+                        <SelectTrigger id="nearbyWaterBodies">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Surge Arrester */}
+                    <div className="text-center">
+                      <Label htmlFor="surgeArresterInstalled" className="mb-1 block">
+                        Is an approved surge arrester installed on the main electrical distribution board?
+                      </Label>
+                      <Select
+                        value={formData.surgeArresterInstalled}
+                        onValueChange={(value) => handleInputChange("surgeArresterInstalled", value)}
+                      >
+                        <SelectTrigger id="surgeArresterInstalled">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Note: Must meet SANS/IEC 61643-11 standards and several installation criteria.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Security Section */}
+                <div className="mt-8 mb-4">
+                  <h3 className="text-lg font-medium text-center mb-4">Security</h3>
+                  <div className="space-y-6">
+                    {/* Perimeter Wall Type */}
+                    <div className="text-center">
+                      <Label htmlFor="perimeterWallType" className="mb-1 block">
+                        What type of perimeter wall does the property have?
+                      </Label>
+                      <Select
+                        value={formData.perimeterWallType}
+                        onValueChange={(value) => handleInputChange("perimeterWallType", value)}
+                      >
+                        <SelectTrigger id="perimeterWallType">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="no fence">No fence</SelectItem>
+                          <SelectItem value="wire fence">Wire fence</SelectItem>
+                          <SelectItem value="brick wall lower than 1.8m">Brick wall lower than 1.8m</SelectItem>
+                          <SelectItem value="brick wall higher than 1.8m">Brick wall higher than 1.8m</SelectItem>
+                          <SelectItem value="pre-cast wall lower than 1.8m">Pre-cast wall lower than 1.8m</SelectItem>
+                          <SelectItem value="pre-cast wall higher than 1.8m">Pre-cast wall higher than 1.8m</SelectItem>
+                          <SelectItem value="palisade wall lower than 1.8m">Palisade wall lower than 1.8m</SelectItem>
+                          <SelectItem value="palisade wall higher than 1.8m">Palisade wall higher than 1.8m</SelectItem>
+                          <SelectItem value="wood fence lower than 1.8m">Wood fence lower than 1.8m</SelectItem>
+                          <SelectItem value="wood fence higher than 1.8m">Wood fence higher than 1.8m</SelectItem>
+                          <SelectItem value="pre-fabricated wire mesh lower than 1.8m">Pre-fabricated wire mesh lower than 1.8m</SelectItem>
+                          <SelectItem value="pre-fabricated wire mesh higher than 1.8m">Pre-fabricated wire mesh higher than 1.8m</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Radio-linked Alarm */}
+                    <div className="text-center">
+                      <Label htmlFor="radioLinkedAlarm" className="mb-1 block">
+                        Is there a radio-linked alarm installed?
+                      </Label>
+                      <Select
+                        value={formData.radioLinkedAlarm}
+                        onValueChange={(value) => handleInputChange("radioLinkedAlarm", value)}
+                      >
+                        <SelectTrigger id="radioLinkedAlarm">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Security Gates */}
+                    <div className="text-center">
+                      <Label htmlFor="securityGates" className="mb-1 block">
+                        Are there security gates on all the external doors, including sliding doors?
+                      </Label>
+                      <Select
+                        value={formData.securityGates}
+                        onValueChange={(value) => handleInputChange("securityGates", value)}
+                      >
+                        <SelectTrigger id="securityGates">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Burglar Bars */}
+                    <div className="text-center">
+                      <Label htmlFor="burglarBars" className="mb-1 block">
+                        Are there burglar bars on all the opening windows?
+                      </Label>
+                      <Select
+                        value={formData.burglarBars}
+                        onValueChange={(value) => handleInputChange("burglarBars", value)}
+                      >
+                        <SelectTrigger id="burglarBars">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Controlled Access */}
+                    <div className="text-center">
+                      <Label htmlFor="controlledAccess" className="mb-1 block">
+                        Is there controlled access to the property?
+                      </Label>
+                      <Select
+                        value={formData.controlledAccess}
+                        onValueChange={(value) => handleInputChange("controlledAccess", value)}
+                      >
+                        <SelectTrigger id="controlledAccess">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        For instance, is there a security guard that allows access to the complex/estate, or does the client have a special code or remote that allows access?
+                      </p>
+                    </div>
+
+                    {/* Security Guard */}
+                    <div className="text-center">
+                      <Label htmlFor="securityGuard" className="mb-1 block">
+                        Is there a 24hr security guard at the address?
+                      </Label>
+                      <Select
+                        value={formData.securityGuard}
+                        onValueChange={(value) => handleInputChange("securityGuard", value)}
+                      >
+                        <SelectTrigger id="securityGuard">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Electric Fence */}
+                    <div className="text-center">
+                      <Label htmlFor="electricFence" className="mb-1 block">
+                        Is there an electric fence covering all the perimeter walls of the property?
+                      </Label>
+                      <Select
+                        value={formData.electricFence}
+                        onValueChange={(value) => handleInputChange("electricFence", value)}
+                      >
+                        <SelectTrigger id="electricFence">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Purchase Price */}
