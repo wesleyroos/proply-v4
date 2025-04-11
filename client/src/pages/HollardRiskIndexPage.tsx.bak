@@ -192,8 +192,6 @@ export default function RiskIndexPage() {
   const [riskResult, setRiskResult] = useState<RiskResult | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3; // Property Details, Building Details, Security
-  const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3; // Property Details, Building Details, Security
   const [formData, setFormData] = useState({
     // Property Details
     address: "",
