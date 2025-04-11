@@ -2850,13 +2850,11 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 {/* Building Details Section */}
                 <div className="mt-8 mb-4">
                   <h3 className="text-lg font-medium text-center mb-4">Building Details</h3>
-
-                  {/* Row 1: Roof Type and Wall Material */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                  <div className="space-y-6">
                     {/* Roof Type */}
-                    <div>
+                    <div className="text-center">
                       <Label htmlFor="roofType" className="mb-1 block">
-                        Roof type
+                        What type of roof does the building have?
                       </Label>
                       <Select
                         value={formData.roofType}
@@ -2880,10 +2878,29 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       </Select>
                     </div>
 
+                    {/* Non-standard Structure */}
+                    <div className="text-center">
+                      <Label htmlFor="nonStandardStructure" className="mb-1 block">
+                        Is there any non-standard structure on your property or a structure with a thatched roof, with a roofed area greater than 15% of the roofed area of the main building?
+                      </Label>
+                      <Select
+                        value={formData.nonStandardStructure}
+                        onValueChange={(value) => handleInputChange("nonStandardStructure", value)}
+                      >
+                        <SelectTrigger id="nonStandardStructure">
+                          <SelectValue placeholder="Select yes or no" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     {/* Wall Material */}
-                    <div>
+                    <div className="text-center">
                       <Label htmlFor="wallMaterial" className="mb-1 block">
-                        Wall material
+                        What material are the walls of the building made of?
                       </Label>
                       <Select
                         value={formData.wallMaterial}
@@ -2908,33 +2925,60 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
 
-                  {/* Row 2: Non-standard Structure and Residence Type */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                    {/* Non-standard Structure */}
-                    <div>
-                      <Label htmlFor="nonStandardStructure" className="mb-1 block text-sm">
-                        Non-standard structure with thatched roof &gt;15% of main building?
-                      </Label>
-                      <Select
-                        value={formData.nonStandardStructure}
-                        onValueChange={(value) => handleInputChange("nonStandardStructure", value)}
-                      >
-                        <SelectTrigger id="nonStandardStructure">
-                          <SelectValue placeholder="Select yes or no" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="yes">Yes</SelectItem>
-                          <SelectItem value="no">No</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {/* Conditional section for thatch/wooden buildings */}
+                    {(formData.roofType === "thatch" || 
+                      formData.roofType === "wood" || 
+                      formData.roofType === "wooden shingles" || 
+                      formData.nonStandardStructure === "yes" || 
+                      formData.wallMaterial === "wood") && (
+                      <div className="space-y-4 p-4 border border-gray-200 rounded-md bg-gray-50">
+                        <p className="text-sm text-center font-medium mb-2">Additional questions for thatch/wooden buildings:</p>
+                        
+                        {/* Fire Retardant */}
+                        <div className="text-center">
+                          <Label htmlFor="fireRetardant" className="mb-1 block text-sm">
+                            Has the thatch/wooden shingles been treated with SABS-approved fire retardant?
+                          </Label>
+                          <Select
+                            value={formData.fireRetardant}
+                            onValueChange={(value) => handleInputChange("fireRetardant", value)}
+                          >
+                            <SelectTrigger id="fireRetardant">
+                              <SelectValue placeholder="Select yes or no" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="yes">Yes</SelectItem>
+                              <SelectItem value="no">No</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Lightning Conductor */}
+                        <div className="text-center">
+                          <Label htmlFor="lightningConductor" className="mb-1 block text-sm">
+                            Is there a lightning conductor installed at the building?
+                          </Label>
+                          <Select
+                            value={formData.lightningConductor}
+                            onValueChange={(value) => handleInputChange("lightningConductor", value)}
+                          >
+                            <SelectTrigger id="lightningConductor">
+                              <SelectValue placeholder="Select yes or no" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="yes">Yes</SelectItem>
+                              <SelectItem value="no">No</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Residence Type */}
-                    <div>
+                    <div className="text-center">
                       <Label htmlFor="residenceType" className="mb-1 block">
-                        Type of residence
+                        What type of residence is this?
                       </Label>
                       <Select
                         value={formData.residenceType}
@@ -2950,14 +2994,11 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
 
-                  {/* Row 3: Commune, Plot/Farm */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                     {/* Is Commune */}
-                    <div>
+                    <div className="text-center">
                       <Label htmlFor="isCommune" className="mb-1 block">
-                        Used as a commune?
+                        Is the building used as a commune?
                       </Label>
                       <Select
                         value={formData.isCommune}
@@ -2974,9 +3015,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                     </div>
 
                     {/* Is Plot or Farm */}
-                    <div>
+                    <div className="text-center">
                       <Label htmlFor="isPlotOrFarm" className="mb-1 block">
-                        Plot, smallholding or farm?
+                        Is the property a plot, smallholding or farm?
                       </Label>
                       <Select
                         value={formData.isPlotOrFarm}
@@ -2992,10 +3033,86 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       </Select>
                     </div>
 
+                    {/* Geysers */}
+                    <div className="text-center">
+                      <Label className="mb-3 block">
+                        How many geysers are at the building?
+                      </Label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="electricGeysers" className="mb-1 block text-sm">
+                            Electric geysers
+                          </Label>
+                          <Input
+                            id="electricGeysers"
+                            value={formData.geysers.electric}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              geysers: {
+                                ...prev.geysers,
+                                electric: e.target.value
+                              }
+                            }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="gasGeysers" className="mb-1 block text-sm">
+                            Gas geysers
+                          </Label>
+                          <Input
+                            id="gasGeysers"
+                            value={formData.geysers.gas}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              geysers: {
+                                ...prev.geysers,
+                                gas: e.target.value
+                              }
+                            }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="heatPumpGeysers" className="mb-1 block text-sm">
+                            Heat pump geysers
+                          </Label>
+                          <Input
+                            id="heatPumpGeysers"
+                            value={formData.geysers.heatPump}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              geysers: {
+                                ...prev.geysers,
+                                heatPump: e.target.value
+                              }
+                            }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="solarWaterGeysers" className="mb-1 block text-sm">
+                            Solar/water tank geysers
+                          </Label>
+                          <Input
+                            id="solarWaterGeysers"
+                            value={formData.geysers.solarWater}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              geysers: {
+                                ...prev.geysers,
+                                solarWater: e.target.value
+                              }
+                            }))}
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Note: Geysers are not automatically covered. Please select the Damage to geysers optional benefit.
+                      </p>
+                    </div>
+
                     {/* Nearby Water Bodies */}
-                    <div>
-                      <Label htmlFor="nearbyWaterBodies" className="mb-1 block text-sm">
-                        Water bodies within 100m?
+                    <div className="text-center">
+                      <Label htmlFor="nearbyWaterBodies" className="mb-1 block">
+                        Are there any water bodies within 100m of the building – like a dam, lake or a river?
                       </Label>
                       <Select
                         value={formData.nearbyWaterBodies}
@@ -3010,63 +3127,11 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
 
-                  {/* Conditional section for thatch/wooden buildings */}
-                  {(formData.roofType === "thatch" || 
-                    formData.roofType === "wood" || 
-                    formData.roofType === "wooden shingles" || 
-                    formData.nonStandardStructure === "yes" || 
-                    formData.wallMaterial === "wood") && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-gray-200 rounded-md bg-gray-50 mb-4">
-                      <p className="text-sm font-medium col-span-full mb-2">Additional questions for thatch/wooden buildings:</p>
-                      
-                      {/* Fire Retardant */}
-                      <div>
-                        <Label htmlFor="fireRetardant" className="mb-1 block text-sm">
-                          SABS-approved fire retardant?
-                        </Label>
-                        <Select
-                          value={formData.fireRetardant}
-                          onValueChange={(value) => handleInputChange("fireRetardant", value)}
-                        >
-                          <SelectTrigger id="fireRetardant">
-                            <SelectValue placeholder="Select yes or no" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Lightning Conductor */}
-                      <div>
-                        <Label htmlFor="lightningConductor" className="mb-1 block text-sm">
-                          Lightning conductor installed?
-                        </Label>
-                        <Select
-                          value={formData.lightningConductor}
-                          onValueChange={(value) => handleInputChange("lightningConductor", value)}
-                        >
-                          <SelectTrigger id="lightningConductor">
-                            <SelectValue placeholder="Select yes or no" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Row 4: Surge Arrester */}
-                  <div className="grid grid-cols-1 mb-4">
                     {/* Surge Arrester */}
-                    <div>
+                    <div className="text-center">
                       <Label htmlFor="surgeArresterInstalled" className="mb-1 block">
-                        Approved surge arrester installed?
+                        Is an approved surge arrester installed on the main electrical distribution board?
                       </Label>
                       <Select
                         value={formData.surgeArresterInstalled}
@@ -3080,128 +3145,50 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                           <SelectItem value="no">No</SelectItem>
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Note: Must meet SANS/IEC 61643-11 standards.
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Note: Must meet SANS/IEC 61643-11 standards and several installation criteria.
                       </p>
                     </div>
-                  </div>
-
-                  {/* Geysers */}
-                  <div className="mb-4">
-                    <Label className="mb-2 block">
-                      Number of geysers at the building:
-                    </Label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div>
-                        <Label htmlFor="electricGeysers" className="mb-1 block text-xs">
-                          Electric
-                        </Label>
-                        <Input
-                          id="electricGeysers"
-                          value={formData.geysers.electric}
-                          onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            geysers: {
-                              ...prev.geysers,
-                              electric: e.target.value
-                            }
-                          }))}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="gasGeysers" className="mb-1 block text-xs">
-                          Gas
-                        </Label>
-                        <Input
-                          id="gasGeysers"
-                          value={formData.geysers.gas}
-                          onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            geysers: {
-                              ...prev.geysers,
-                              gas: e.target.value
-                            }
-                          }))}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="heatPumpGeysers" className="mb-1 block text-xs">
-                          Heat pump
-                        </Label>
-                        <Input
-                          id="heatPumpGeysers"
-                          value={formData.geysers.heatPump}
-                          onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            geysers: {
-                              ...prev.geysers,
-                              heatPump: e.target.value
-                            }
-                          }))}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="solarWaterGeysers" className="mb-1 block text-xs">
-                          Solar/water tank
-                        </Label>
-                        <Input
-                          id="solarWaterGeysers"
-                          value={formData.geysers.solarWater}
-                          onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            geysers: {
-                              ...prev.geysers,
-                              solarWater: e.target.value
-                            }
-                          }))}
-                        />
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Note: Geysers are not automatically covered. Please select the Damage to geysers optional benefit.
-                    </p>
                   </div>
                 </div>
 
                 {/* Security Section */}
                 <div className="mt-8 mb-4">
                   <h3 className="text-lg font-medium text-center mb-4">Security</h3>
-                  
-                  {/* Row 1: Perimeter Wall Type */}
-                  <div className="mb-4">
-                    <Label htmlFor="perimeterWallType" className="mb-1 block">
-                      Perimeter wall type
-                    </Label>
-                    <Select
-                      value={formData.perimeterWallType}
-                      onValueChange={(value) => handleInputChange("perimeterWallType", value)}
-                    >
-                      <SelectTrigger id="perimeterWallType">
-                        <SelectValue placeholder="Select perimeter wall type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="no fence">No fence</SelectItem>
-                        <SelectItem value="wire fence">Wire fence</SelectItem>
-                        <SelectItem value="brick wall lower than 1.8m">Brick wall lower than 1.8m</SelectItem>
-                        <SelectItem value="brick wall higher than 1.8m">Brick wall higher than 1.8m</SelectItem>
-                        <SelectItem value="pre-cast wall lower than 1.8m">Pre-cast wall lower than 1.8m</SelectItem>
-                        <SelectItem value="pre-cast wall higher than 1.8m">Pre-cast wall higher than 1.8m</SelectItem>
-                        <SelectItem value="palisade wall lower than 1.8m">Palisade wall lower than 1.8m</SelectItem>
-                        <SelectItem value="palisade wall higher than 1.8m">Palisade wall higher than 1.8m</SelectItem>
-                        <SelectItem value="wood fence lower than 1.8m">Wood fence lower than 1.8m</SelectItem>
-                        <SelectItem value="wood fence higher than 1.8m">Wood fence higher than 1.8m</SelectItem>
-                        <SelectItem value="pre-fabricated wire mesh lower than 1.8m">Pre-fabricated wire mesh lower than 1.8m</SelectItem>
-                        <SelectItem value="pre-fabricated wire mesh higher than 1.8m">Pre-fabricated wire mesh higher than 1.8m</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <div className="space-y-6">
+                    {/* Perimeter Wall Type */}
+                    <div className="text-center">
+                      <Label htmlFor="perimeterWallType" className="mb-1 block">
+                        What type of perimeter wall does the property have?
+                      </Label>
+                      <Select
+                        value={formData.perimeterWallType}
+                        onValueChange={(value) => handleInputChange("perimeterWallType", value)}
+                      >
+                        <SelectTrigger id="perimeterWallType">
+                          <SelectValue placeholder="Select perimeter wall type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="no fence">No fence</SelectItem>
+                          <SelectItem value="wire fence">Wire fence</SelectItem>
+                          <SelectItem value="brick wall lower than 1.8m">Brick wall lower than 1.8m</SelectItem>
+                          <SelectItem value="brick wall higher than 1.8m">Brick wall higher than 1.8m</SelectItem>
+                          <SelectItem value="pre-cast wall lower than 1.8m">Pre-cast wall lower than 1.8m</SelectItem>
+                          <SelectItem value="pre-cast wall higher than 1.8m">Pre-cast wall higher than 1.8m</SelectItem>
+                          <SelectItem value="palisade wall lower than 1.8m">Palisade wall lower than 1.8m</SelectItem>
+                          <SelectItem value="palisade wall higher than 1.8m">Palisade wall higher than 1.8m</SelectItem>
+                          <SelectItem value="wood fence lower than 1.8m">Wood fence lower than 1.8m</SelectItem>
+                          <SelectItem value="wood fence higher than 1.8m">Wood fence higher than 1.8m</SelectItem>
+                          <SelectItem value="pre-fabricated wire mesh lower than 1.8m">Pre-fabricated wire mesh lower than 1.8m</SelectItem>
+                          <SelectItem value="pre-fabricated wire mesh higher than 1.8m">Pre-fabricated wire mesh higher than 1.8m</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  {/* Row 2: Radio Alarm, Security Gates, Burglar Bars */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                     {/* Radio-linked Alarm */}
-                    <div>
+                    <div className="text-center">
                       <Label htmlFor="radioLinkedAlarm" className="mb-1 block">
-                        Radio-linked alarm?
+                        Is there a radio-linked alarm installed?
                       </Label>
                       <Select
                         value={formData.radioLinkedAlarm}
@@ -3218,9 +3205,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                     </div>
 
                     {/* Security Gates */}
-                    <div>
-                      <Label htmlFor="securityGates" className="mb-1 block text-sm">
-                        Security gates on all doors?
+                    <div className="text-center">
+                      <Label htmlFor="securityGates" className="mb-1 block">
+                        Are there security gates on all the external doors, including sliding doors?
                       </Label>
                       <Select
                         value={formData.securityGates}
@@ -3237,9 +3224,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                     </div>
 
                     {/* Burglar Bars */}
-                    <div>
-                      <Label htmlFor="burglarBars" className="mb-1 block text-sm">
-                        Burglar bars on all windows?
+                    <div className="text-center">
+                      <Label htmlFor="burglarBars" className="mb-1 block">
+                        Are there burglar bars on all the opening windows?
                       </Label>
                       <Select
                         value={formData.burglarBars}
@@ -3254,14 +3241,11 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
 
-                  {/* Row 3: Controlled Access, Security Guard, Electric Fence */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                     {/* Controlled Access */}
-                    <div>
-                      <Label htmlFor="controlledAccess" className="mb-1 block text-sm">
-                        Controlled property access?
+                    <div className="text-center">
+                      <Label htmlFor="controlledAccess" className="mb-1 block">
+                        Is there controlled access to the property?
                       </Label>
                       <Select
                         value={formData.controlledAccess}
@@ -3275,12 +3259,15 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                           <SelectItem value="no">No</SelectItem>
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        For instance, is there a security guard that allows access to the complex/estate, or does the client have a special code or remote that allows access?
+                      </p>
                     </div>
 
                     {/* Security Guard */}
-                    <div>
-                      <Label htmlFor="securityGuard" className="mb-1 block text-sm">
-                        24hr security guard?
+                    <div className="text-center">
+                      <Label htmlFor="securityGuard" className="mb-1 block">
+                        Is there a 24hr security guard at the address?
                       </Label>
                       <Select
                         value={formData.securityGuard}
@@ -3297,9 +3284,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                     </div>
 
                     {/* Electric Fence */}
-                    <div>
-                      <Label htmlFor="electricFence" className="mb-1 block text-sm">
-                        Electric fence on perimeter?
+                    <div className="text-center">
+                      <Label htmlFor="electricFence" className="mb-1 block">
+                        Is there an electric fence covering all the perimeter walls of the property?
                       </Label>
                       <Select
                         value={formData.electricFence}
