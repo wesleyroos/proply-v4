@@ -2861,7 +2861,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("roofType", value)}
                       >
                         <SelectTrigger id="roofType">
-                          <SelectValue placeholder="Select roof type" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="asbestos">Asbestos</SelectItem>
@@ -2907,7 +2907,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("wallMaterial", value)}
                       >
                         <SelectTrigger id="wallMaterial">
-                          <SelectValue placeholder="Select wall material" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="asbestos">Asbestos</SelectItem>
@@ -3252,7 +3252,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("controlledAccess", value)}
                       >
                         <SelectTrigger id="controlledAccess">
-                          <SelectValue placeholder="Select yes or no" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="yes">Yes</SelectItem>
@@ -3274,7 +3274,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("securityGuard", value)}
                       >
                         <SelectTrigger id="securityGuard">
-                          <SelectValue placeholder="Select yes or no" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="yes">Yes</SelectItem>
@@ -3293,7 +3293,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("electricFence", value)}
                       >
                         <SelectTrigger id="electricFence">
-                          <SelectValue placeholder="Select yes or no" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="yes">Yes</SelectItem>
