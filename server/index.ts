@@ -53,6 +53,9 @@ app.use((req, res, next) => {
 // Register AI routes
 app.use('/api', aiRouter);
 
+// Serve static PDF files directly from the public folder
+app.use('/static-assets', express.static('public'));
+
 (async () => {
   const server = registerRoutes(app);
 
@@ -76,7 +79,7 @@ app.use('/api', aiRouter);
   try {
     // Use environment port if available, otherwise use 5000
     const port = process.env.PORT || 5000;
-    server.listen(port, "0.0.0.0", () => {
+    server.listen(Number(port), "0.0.0.0", () => {
       log(`serving on port ${port}`);
     });
   } catch (error) {
