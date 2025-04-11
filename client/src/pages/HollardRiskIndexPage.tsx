@@ -190,6 +190,7 @@ export default function RiskIndexPage() {
   const [demoClicks, setDemoClicks] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [riskResult, setRiskResult] = useState<RiskResult | null>(null);
+  const [currentStep, setCurrentStep] = useState(1); // Track the current form step (1-3)
   const [formData, setFormData] = useState({
     // Property Details
     address: "",
@@ -1363,10 +1364,49 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
     }));
   };
 
+  // Navigation functions for the multi-step form
+  const goToNextStep = () => {
+    // Validate current step fields before proceeding
+    if (currentStep === 1) {
+      // Validate Property Details
+      if (!formData.address) {
+        toast({
+          title: "Missing Address",
+          description: "Please enter a property address.",
+          variant: "destructive",
+        });
+        return;
+      }
+      // You could add more validations for other fields in step 1 here
+    } else if (currentStep === 2) {
+      // Validate Building Details
+      if (!formData.roofType) {
+        toast({
+          title: "Missing Roof Type",
+          description: "Please select the type of roof.",
+          variant: "destructive",
+        });
+        return;
+      }
+      // You could add more validations for other fields in step 2 here
+    }
+
+    // If validation passes, move to the next step
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const goToPreviousStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic validation
+    // Basic validation for the final step
     if (!formData.address) {
       toast({
         title: "Missing Address",
