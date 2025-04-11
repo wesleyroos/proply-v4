@@ -2964,7 +2964,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                             onValueChange={(value) => handleInputChange("lightningConductor", value)}
                           >
                             <SelectTrigger id="lightningConductor">
-                              <SelectValue placeholder="Select yes or no" />
+                              <SelectValue placeholder="Please select" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="yes">Yes</SelectItem>
@@ -2985,7 +2985,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("residenceType", value)}
                       >
                         <SelectTrigger id="residenceType">
-                          <SelectValue placeholder="Select residence type" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="main">Main residence</SelectItem>
@@ -3005,7 +3005,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("isCommune", value)}
                       >
                         <SelectTrigger id="isCommune">
-                          <SelectValue placeholder="Select yes or no" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="yes">Yes</SelectItem>
@@ -3024,7 +3024,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("isPlotOrFarm", value)}
                       >
                         <SelectTrigger id="isPlotOrFarm">
-                          <SelectValue placeholder="Select yes or no" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="yes">Yes</SelectItem>
@@ -3119,7 +3119,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("nearbyWaterBodies", value)}
                       >
                         <SelectTrigger id="nearbyWaterBodies">
-                          <SelectValue placeholder="Select yes or no" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="yes">Yes</SelectItem>
@@ -3138,7 +3138,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("surgeArresterInstalled", value)}
                       >
                         <SelectTrigger id="surgeArresterInstalled">
-                          <SelectValue placeholder="Select yes or no" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="yes">Yes</SelectItem>
@@ -3166,7 +3166,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("perimeterWallType", value)}
                       >
                         <SelectTrigger id="perimeterWallType">
-                          <SelectValue placeholder="Select perimeter wall type" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="no fence">No fence</SelectItem>
@@ -3195,7 +3195,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("radioLinkedAlarm", value)}
                       >
                         <SelectTrigger id="radioLinkedAlarm">
-                          <SelectValue placeholder="Select yes or no" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="yes">Yes</SelectItem>
@@ -3214,7 +3214,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("securityGates", value)}
                       >
                         <SelectTrigger id="securityGates">
-                          <SelectValue placeholder="Select yes or no" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="yes">Yes</SelectItem>
@@ -3233,7 +3233,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("burglarBars", value)}
                       >
                         <SelectTrigger id="burglarBars">
-                          <SelectValue placeholder="Select yes or no" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="yes">Yes</SelectItem>
