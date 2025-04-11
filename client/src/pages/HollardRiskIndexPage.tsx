@@ -203,13 +203,13 @@ export default function RiskIndexPage() {
     
     // Building Details
     roofType: "",
-    nonStandardStructure: "no",
+    nonStandardStructure: "",
     wallMaterial: "",
-    fireRetardant: "no",
-    lightningConductor: "no",
-    residenceType: "main",
-    isCommune: "no",
-    isPlotOrFarm: "no",
+    fireRetardant: "",
+    lightningConductor: "",
+    residenceType: "",
+    isCommune: "",
+    isPlotOrFarm: "",
     landUsage: [] as string[],
     geysers: {
       electric: "0",
@@ -217,17 +217,17 @@ export default function RiskIndexPage() {
       heatPump: "0",
       solarWater: "0",
     },
-    nearbyWaterBodies: "no",
-    surgeArresterInstalled: "no",
+    nearbyWaterBodies: "",
+    surgeArresterInstalled: "",
     
     // Security Details
     perimeterWallType: "",
-    radioLinkedAlarm: "no",
-    securityGates: "no",
-    burglarBars: "no",
-    controlledAccess: "no",
-    securityGuard: "no",
-    electricFence: "no",
+    radioLinkedAlarm: "",
+    securityGates: "",
+    burglarBars: "",
+    controlledAccess: "",
+    securityGuard: "",
+    electricFence: "",
   });
 
   const formatWithThousandSeparators = (value: string): string => {
@@ -2888,7 +2888,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         onValueChange={(value) => handleInputChange("nonStandardStructure", value)}
                       >
                         <SelectTrigger id="nonStandardStructure">
-                          <SelectValue placeholder="Select yes or no" />
+                          <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="yes">Yes</SelectItem>
@@ -2945,7 +2945,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                             onValueChange={(value) => handleInputChange("fireRetardant", value)}
                           >
                             <SelectTrigger id="fireRetardant">
-                              <SelectValue placeholder="Select yes or no" />
+                              <SelectValue placeholder="Please select" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="yes">Yes</SelectItem>
