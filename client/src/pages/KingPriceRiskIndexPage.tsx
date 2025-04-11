@@ -3062,7 +3062,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
       {/* Hollard Logo */}
       <div className="absolute top-8 left-8 z-20">
         <img
-          src="/sponsor logos-01.png"
+          src="/FMS different logos_KING PRICE.png"
           alt="King Price Logo"
           className="h-12 w-auto"
         />
