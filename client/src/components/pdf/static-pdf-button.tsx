@@ -3,7 +3,6 @@
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Download } from "lucide-react"
-import { EmailCollectionDialog } from "../EmailCollectionDialog"
 import { useToast } from "@/hooks/use-toast"
 
 interface StaticPDFButtonProps {
@@ -19,30 +18,14 @@ export function StaticPDFButton({
   children,
   propertyAddress,
 }: StaticPDFButtonProps) {
-  const [showEmailDialog, setShowEmailDialog] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
   const { toast } = useToast()
   
-  // Handle click on the main button
-  const handleButtonClick = () => {
-    setShowEmailDialog(true)
-  }
-  
-  // Function to trigger the PDF download
+  // Function to trigger the PDF download directly
   const downloadPDF = () => {
     setIsDownloading(true)
     
     try {
-      // For security reasons and to handle potential CORS issues,
-      // we'll use a base64 PDF embedded in the app
-      // This simulates downloading a report document
-      
-      // Normally we would fetch from server or have the path point to our static file,
-      // but for demonstration we'll use this approach
-      
-      // In a real implementation, we would make a request to the server:
-      // fetch('/api/reports/download?type=property-risk-assessment')
-      
       // For demo purposes, we'll create a simple PDF with some text
       import('jspdf').then(module => {
         const jsPDF = module.default;
@@ -124,64 +107,15 @@ export function StaticPDFButton({
       setIsDownloading(false);
     }
   }
-  
-  // Handle email submission
-  const handleEmailSubmit = async (email: string) => {
-    try {
-      // Optional: Send email to backend
-      await fetch('/api/deal-advisor/collect-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          reportType: 'Risk Assessment',
-          propertyAddress,
-          date: new Date().toISOString(),
-        }),
-      }).catch(err => {
-        // If API fails, we still allow the download
-        console.error('Failed to save email:', err)
-      })
-      
-      // Show success message
-      toast({
-        title: "Email Collected",
-        description: "Your report will be sent to your email. You can also download it now.",
-      })
-      
-      // Trigger the PDF download
-      downloadPDF()
-    } catch (error) {
-      console.error('Error handling email submission:', error)
-      toast({
-        title: "Error",
-        description: "There was a problem processing your request. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
 
   return (
-    <>
-      {/* Visible button that opens email dialog */}
-      <Button
-        onClick={handleButtonClick}
-        disabled={isDownloading}
-        className={className}
-      >
-        <Download className="mr-2 h-4 w-4" />
-        {children || "Download PDF"}
-      </Button>
-      
-      {/* Email collection dialog */}
-      <EmailCollectionDialog
-        isOpen={showEmailDialog}
-        onClose={() => setShowEmailDialog(false)}
-        onSubmit={handleEmailSubmit}
-        propertyAddress={propertyAddress}
-      />
-    </>
+    <Button
+      onClick={downloadPDF}
+      disabled={isDownloading}
+      className={className}
+    >
+      <Download className="mr-2 h-4 w-4" />
+      {children || "Download PDF"}
+    </Button>
   )
 }
