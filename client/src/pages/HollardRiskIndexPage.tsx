@@ -200,6 +200,34 @@ export default function RiskIndexPage() {
     parking: "",
     propertyCondition: "excellent",
     propertyType: "apartment", // Default to apartment
+    
+    // Building Details
+    roofType: "",
+    nonStandardStructure: "no",
+    wallMaterial: "",
+    fireRetardant: "no",
+    lightningConductor: "no",
+    residenceType: "main",
+    isCommune: "no",
+    isPlotOrFarm: "no",
+    landUsage: [],
+    geysers: {
+      electric: "0",
+      gas: "0",
+      heatPump: "0",
+      solarWater: "0",
+    },
+    nearbyWaterBodies: "no",
+    surgeArresterInstalled: "no",
+    
+    // Security Details
+    perimeterWallType: "",
+    radioLinkedAlarm: "no",
+    securityGates: "no",
+    burglarBars: "no",
+    controlledAccess: "no",
+    securityGuard: "no",
+    electricFence: "no",
   });
 
   const formatWithThousandSeparators = (value: string): string => {
@@ -260,6 +288,34 @@ export default function RiskIndexPage() {
           parking: "1",
           propertyCondition: "excellent",
           propertyType: "apartment",
+          
+          // Building Details
+          roofType: "concrete",
+          nonStandardStructure: "no",
+          wallMaterial: "brick",
+          fireRetardant: "yes",
+          lightningConductor: "no",
+          residenceType: "main",
+          isCommune: "no",
+          isPlotOrFarm: "no",
+          landUsage: ["residence", "retail"],
+          geysers: {
+            electric: "1",
+            gas: "0",
+            heatPump: "0",
+            solarWater: "0",
+          },
+          nearbyWaterBodies: "no",
+          surgeArresterInstalled: "yes",
+          
+          // Security Details
+          perimeterWallType: "brick wall higher than 1.8m",
+          radioLinkedAlarm: "yes",
+          securityGates: "yes",
+          burglarBars: "yes",
+          controlledAccess: "yes",
+          securityGuard: "yes",
+          electricFence: "no",
         });
         return 0;
       }
