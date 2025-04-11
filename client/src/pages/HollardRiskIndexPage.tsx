@@ -190,8 +190,6 @@ export default function RiskIndexPage() {
   const [demoClicks, setDemoClicks] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [riskResult, setRiskResult] = useState<RiskResult | null>(null);
-  const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3; // Property Details, Building Details, Security
   const [formData, setFormData] = useState({
     // Property Details
     address: "",
@@ -1364,113 +1362,38 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
       address: newAddress,
     }));
   };
-  
-  const nextStep = () => {
-    // Validation for Step 1 (Property Details)
-    if (currentStep === 1) {
-      if (!formData.address) {
-        toast({
-          title: "Missing Address",
-          description: "Please enter a property address.",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
-    // Validation for Step 2 (Building Details)
-    if (currentStep === 2) {
-      if (!formData.roofType) {
-        toast({
-          title: "Missing Roof Type",
-          description: "Please select the building's roof type.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (!formData.wallMaterial) {
-        toast({
-          title: "Missing Wall Material",
-          description: "Please select the building's wall material.",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
-    // Validation for Step 3 (Security Details)
-    if (currentStep === 3) {
-      if (!formData.perimeterWallType) {
-        toast({
-          title: "Missing Perimeter Wall Type",
-          description: "Please select the perimeter wall type.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Final validation before submission
-      if (!formData.purchasePrice) {
-        toast({
-          title: "Missing Purchase Price",
-          description: "Please go back to step 1 and enter the property value.",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
-    // Move to the next step or submit form
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // For the final step, submit the form
-    if (currentStep === totalSteps) {
-      // Final validation
-      if (!formData.address) {
-        toast({
-          title: "Missing Address",
-          description: "Please enter a property address.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!formData.purchasePrice) {
-        toast({
-          title: "Missing Purchase Price",
-          description: "Please enter the property value.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setIsLoading(true);
-
-      // Simulate API call delay
-      setTimeout(() => {
-        const results = calculateRiskIndex();
-        setRiskResult(results);
-        setShowResult(true);
-        setIsLoading(false);
-      }, 1500);
-    } else {
-      // If not on the final step, move to the next step
-      nextStep();
+    // Basic validation
+    if (!formData.address) {
+      toast({
+        title: "Missing Address",
+        description: "Please enter a property address.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    if (!formData.purchasePrice) {
+      toast({
+        title: "Missing Purchase Price",
+        description: "Please enter the property value.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    // Simulate API call delay
+    setTimeout(() => {
+      const results = calculateRiskIndex();
+      setRiskResult(results);
+      setShowResult(true);
+      setIsLoading(false);
+    }, 1500);
   };
 
   const resetForm = () => {
@@ -2798,199 +2721,136 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </CardHeader>
             <form onSubmit={handleFormSubmit}>
               <CardContent className="space-y-8">
-                {/* Step Indicator */}
-                <div className="relative mb-6">
-                  <div className="flex justify-between mb-2">
-                    {Array.from({ length: totalSteps }).map((_, index) => (
-                      <div key={index} className="flex flex-col items-center">
-                        <div 
-                          className={`w-10 h-10 flex items-center justify-center rounded-full border-2 ${
-                            currentStep > index + 1 
-                              ? "bg-primary text-white border-primary" 
-                              : currentStep === index + 1 
-                                ? "border-primary text-primary" 
-                                : "border-gray-300 text-gray-500"
-                          }`}
-                        >
-                          {currentStep > index + 1 ? (
-                            <CheckCircle2 className="h-6 w-6" />
-                          ) : (
-                            index + 1
-                          )}
-                        </div>
-                        <span className="text-xs mt-1 font-medium">
-                          {index === 0 ? "Property" : index === 1 ? "Building" : "Security"}
-                        </span>
-                      </div>
-                    ))}
+                {/* Property Address */}
+                <div className="space-y-2 text-center">
+                  <AddressAutocomplete
+                    label="Property Address"
+                    placeholder="Enter the property address"
+                    value={formData.address}
+                    onChange={handleAddressChange}
+                    required={true}
+                  />
+                </div>
+
+                {/* Property Type */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <Label htmlFor="propertyType" className="mb-1 block">
+                      Property Type
+                    </Label>
+                    <Select
+                      value={formData.propertyType}
+                      onValueChange={(value) =>
+                        handleInputChange("propertyType", value)
+                      }
+                    >
+                      <SelectTrigger id="propertyType">
+                        <SelectValue placeholder="Select property type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="apartment">Apartment</SelectItem>
+                        <SelectItem value="house">House</SelectItem>
+                        <SelectItem value="townhouse">Townhouse</SelectItem>
+                        <SelectItem value="villa">Villa</SelectItem>
+                        <SelectItem value="commercial">Commercial</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 -z-10">
-                    <div 
-                      className="h-full bg-primary transition-all duration-300" 
-                      style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
-                    ></div>
+
+                  {/* Property Size */}
+                  <div className="text-center">
+                    <Label htmlFor="size" className="mb-1 block">
+                      Property Size
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="size"
+                        placeholder="0"
+                        value={formData.size}
+                        onChange={(e) =>
+                          handleInputChange("size", e.target.value)
+                        }
+                        className="pr-10"
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <span className="text-muted-foreground">m²</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                {/* Step 1: Property Details */}
-                {currentStep === 1 && (
-                  <div className="space-y-6">
-                    <h3 className="text-lg font-medium text-center">Property Details</h3>
-                    
-                    {/* Property Address */}
-                    <div className="space-y-2 text-center">
-                      <AddressAutocomplete
-                        label="Property Address"
-                        placeholder="Enter the property address"
-                        value={formData.address}
-                        onChange={handleAddressChange}
-                        required={true}
-                      />
-                    </div>
 
-                    {/* Property Type */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="text-center">
-                        <Label htmlFor="propertyType" className="mb-1 block">
-                          Property Type
-                        </Label>
-                        <Select
-                          value={formData.propertyType}
-                          onValueChange={(value) =>
-                            handleInputChange("propertyType", value)
-                          }
-                        >
-                          <SelectTrigger id="propertyType">
-                            <SelectValue placeholder="Select property type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="apartment">Apartment</SelectItem>
-                            <SelectItem value="house">House</SelectItem>
-                            <SelectItem value="townhouse">Townhouse</SelectItem>
-                            <SelectItem value="villa">Villa</SelectItem>
-                            <SelectItem value="commercial">Commercial</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Property Size */}
-                      <div className="text-center">
-                        <Label htmlFor="size" className="mb-1 block">
-                          Property Size
-                          <span className="text-red-500">*</span>
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            id="size"
-                            placeholder="0"
-                            value={formData.size}
-                            onChange={(e) =>
-                              handleInputChange("size", e.target.value)
-                            }
-                            className="pr-10"
-                          />
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <span className="text-muted-foreground">m²</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="text-center">
-                        <Label htmlFor="bedrooms" className="mb-1 block">
-                          Bedrooms
-                        </Label>
-                        <Input
-                          id="bedrooms"
-                          placeholder="0"
-                          value={formData.bedrooms}
-                          onChange={(e) =>
-                            handleInputChange("bedrooms", e.target.value)
-                          }
-                        />
-                      </div>
-
-                      <div className="text-center">
-                        <Label htmlFor="bathrooms" className="mb-1 block">
-                          Bathrooms
-                        </Label>
-                        <Input
-                          id="bathrooms"
-                          placeholder="0"
-                          value={formData.bathrooms}
-                          onChange={(e) =>
-                            handleInputChange("bathrooms", e.target.value)
-                          }
-                        />
-                      </div>
-
-                      <div className="text-center">
-                        <Label htmlFor="parking" className="mb-1 block">
-                          Parking
-                        </Label>
-                        <Input
-                          id="parking"
-                          placeholder="0"
-                          value={formData.parking}
-                          onChange={(e) =>
-                            handleInputChange("parking", e.target.value)
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    {/* Property Condition */}
-                    <div className="text-center">
-                      <Label htmlFor="propertyCondition" className="mb-1 block">
-                        Property Condition
-                      </Label>
-                      <Select
-                        value={formData.propertyCondition}
-                        onValueChange={(value) =>
-                          handleInputChange("propertyCondition", value)
-                        }
-                      >
-                        <SelectTrigger id="propertyCondition">
-                          <SelectValue placeholder="Select property condition" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="excellent">Excellent</SelectItem>
-                          <SelectItem value="good">Good</SelectItem>
-                          <SelectItem value="fair">Fair</SelectItem>
-                          <SelectItem value="poor">Poor</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Purchase Price */}
-                    <div className="text-center">
-                      <Label htmlFor="purchasePrice" className="mb-1 block">
-                        Purchase Price/Property Value
-                        <span className="text-red-500">*</span>
-                      </Label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                          <span className="text-muted-foreground">R</span>
-                        </div>
-                        <Input
-                          id="purchasePrice"
-                          className="pl-7"
-                          placeholder="0"
-                          value={formData.purchasePrice}
-                          onChange={(e) =>
-                            handleInputChange("purchasePrice", e.target.value)
-                          }
-                        />
-                      </div>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <Label htmlFor="bedrooms" className="mb-1 block">
+                      Bedrooms
+                    </Label>
+                    <Input
+                      id="bedrooms"
+                      placeholder="0"
+                      value={formData.bedrooms}
+                      onChange={(e) =>
+                        handleInputChange("bedrooms", e.target.value)
+                      }
+                    />
                   </div>
-                )}
 
-                {/* Step 2: Building Details */}
-                {currentStep === 2 && (
+                  <div className="text-center">
+                    <Label htmlFor="bathrooms" className="mb-1 block">
+                      Bathrooms
+                    </Label>
+                    <Input
+                      id="bathrooms"
+                      placeholder="0"
+                      value={formData.bathrooms}
+                      onChange={(e) =>
+                        handleInputChange("bathrooms", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="text-center">
+                    <Label htmlFor="parking" className="mb-1 block">
+                      Parking
+                    </Label>
+                    <Input
+                      id="parking"
+                      placeholder="0"
+                      value={formData.parking}
+                      onChange={(e) =>
+                        handleInputChange("parking", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Property Condition */}
+                <div className="text-center">
+                  <Label htmlFor="propertyCondition" className="mb-1 block">
+                    Property Condition
+                  </Label>
+                  <Select
+                    value={formData.propertyCondition}
+                    onValueChange={(value) =>
+                      handleInputChange("propertyCondition", value)
+                    }
+                  >
+                    <SelectTrigger id="propertyCondition">
+                      <SelectValue placeholder="Select property condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Building Details Section */}
+                <div className="mt-8 mb-4">
+                  <h3 className="text-lg font-medium text-center mb-4">Building Details</h3>
                   <div className="space-y-6">
-                    <h3 className="text-lg font-medium text-center">Building Details</h3>
-                    <div className="space-y-6">
                     {/* Roof Type */}
                     <div className="text-center">
                       <Label htmlFor="roofType" className="mb-1 block">
@@ -3290,205 +3150,197 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       </p>
                     </div>
                   </div>
-                )}
+                </div>
 
-                {/* Step 3: Security Section */}
-                {currentStep === 3 && (
+                {/* Security Section */}
+                <div className="mt-8 mb-4">
+                  <h3 className="text-lg font-medium text-center mb-4">Security</h3>
                   <div className="space-y-6">
-                    <h3 className="text-lg font-medium text-center">Security</h3>
-                    <div className="space-y-6">
-                      {/* Perimeter Wall Type */}
-                      <div className="text-center">
-                        <Label htmlFor="perimeterWallType" className="mb-1 block">
-                          What type of perimeter wall does the property have?
-                        </Label>
-                        <Select
-                          value={formData.perimeterWallType}
-                          onValueChange={(value) => handleInputChange("perimeterWallType", value)}
-                        >
-                          <SelectTrigger id="perimeterWallType">
-                            <SelectValue placeholder="Select perimeter wall type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="no fence">No fence</SelectItem>
-                            <SelectItem value="wire fence">Wire fence</SelectItem>
-                            <SelectItem value="brick wall lower than 1.8m">Brick wall lower than 1.8m</SelectItem>
-                            <SelectItem value="brick wall higher than 1.8m">Brick wall higher than 1.8m</SelectItem>
-                            <SelectItem value="pre-cast wall lower than 1.8m">Pre-cast wall lower than 1.8m</SelectItem>
-                            <SelectItem value="pre-cast wall higher than 1.8m">Pre-cast wall higher than 1.8m</SelectItem>
-                            <SelectItem value="palisade wall lower than 1.8m">Palisade wall lower than 1.8m</SelectItem>
-                            <SelectItem value="palisade wall higher than 1.8m">Palisade wall higher than 1.8m</SelectItem>
-                            <SelectItem value="wood fence lower than 1.8m">Wood fence lower than 1.8m</SelectItem>
-                            <SelectItem value="wood fence higher than 1.8m">Wood fence higher than 1.8m</SelectItem>
-                            <SelectItem value="pre-fabricated wire mesh lower than 1.8m">Pre-fabricated wire mesh lower than 1.8m</SelectItem>
-                            <SelectItem value="pre-fabricated wire mesh higher than 1.8m">Pre-fabricated wire mesh higher than 1.8m</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    {/* Perimeter Wall Type */}
+                    <div className="text-center">
+                      <Label htmlFor="perimeterWallType" className="mb-1 block">
+                        What type of perimeter wall does the property have?
+                      </Label>
+                      <Select
+                        value={formData.perimeterWallType}
+                        onValueChange={(value) => handleInputChange("perimeterWallType", value)}
+                      >
+                        <SelectTrigger id="perimeterWallType">
+                          <SelectValue placeholder="Select perimeter wall type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="no fence">No fence</SelectItem>
+                          <SelectItem value="wire fence">Wire fence</SelectItem>
+                          <SelectItem value="brick wall lower than 1.8m">Brick wall lower than 1.8m</SelectItem>
+                          <SelectItem value="brick wall higher than 1.8m">Brick wall higher than 1.8m</SelectItem>
+                          <SelectItem value="pre-cast wall lower than 1.8m">Pre-cast wall lower than 1.8m</SelectItem>
+                          <SelectItem value="pre-cast wall higher than 1.8m">Pre-cast wall higher than 1.8m</SelectItem>
+                          <SelectItem value="palisade wall lower than 1.8m">Palisade wall lower than 1.8m</SelectItem>
+                          <SelectItem value="palisade wall higher than 1.8m">Palisade wall higher than 1.8m</SelectItem>
+                          <SelectItem value="wood fence lower than 1.8m">Wood fence lower than 1.8m</SelectItem>
+                          <SelectItem value="wood fence higher than 1.8m">Wood fence higher than 1.8m</SelectItem>
+                          <SelectItem value="pre-fabricated wire mesh lower than 1.8m">Pre-fabricated wire mesh lower than 1.8m</SelectItem>
+                          <SelectItem value="pre-fabricated wire mesh higher than 1.8m">Pre-fabricated wire mesh higher than 1.8m</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                      {/* Radio-linked Alarm */}
-                      <div className="text-center">
-                        <Label htmlFor="radioLinkedAlarm" className="mb-1 block">
-                          Is there a radio-linked alarm installed?
-                        </Label>
-                        <Select
-                          value={formData.radioLinkedAlarm}
-                          onValueChange={(value) => handleInputChange("radioLinkedAlarm", value)}
-                        >
-                          <SelectTrigger id="radioLinkedAlarm">
-                            <SelectValue placeholder="Select yes or no" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    {/* Radio-linked Alarm */}
+                    <div className="text-center">
+                      <Label htmlFor="radioLinkedAlarm" className="mb-1 block">
+                        Is there a radio-linked alarm installed?
+                      </Label>
+                      <Select
+                        value={formData.radioLinkedAlarm}
+                        onValueChange={(value) => handleInputChange("radioLinkedAlarm", value)}
+                      >
+                        <SelectTrigger id="radioLinkedAlarm">
+                          <SelectValue placeholder="Select yes or no" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                      {/* Security Gates */}
-                      <div className="text-center">
-                        <Label htmlFor="securityGates" className="mb-1 block">
-                          Are there security gates on all the external doors, including sliding doors?
-                        </Label>
-                        <Select
-                          value={formData.securityGates}
-                          onValueChange={(value) => handleInputChange("securityGates", value)}
-                        >
-                          <SelectTrigger id="securityGates">
-                            <SelectValue placeholder="Select yes or no" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    {/* Security Gates */}
+                    <div className="text-center">
+                      <Label htmlFor="securityGates" className="mb-1 block">
+                        Are there security gates on all the external doors, including sliding doors?
+                      </Label>
+                      <Select
+                        value={formData.securityGates}
+                        onValueChange={(value) => handleInputChange("securityGates", value)}
+                      >
+                        <SelectTrigger id="securityGates">
+                          <SelectValue placeholder="Select yes or no" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                      {/* Burglar Bars */}
-                      <div className="text-center">
-                        <Label htmlFor="burglarBars" className="mb-1 block">
-                          Are there burglar bars on all the opening windows?
-                        </Label>
-                        <Select
-                          value={formData.burglarBars}
-                          onValueChange={(value) => handleInputChange("burglarBars", value)}
-                        >
-                          <SelectTrigger id="burglarBars">
-                            <SelectValue placeholder="Select yes or no" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    {/* Burglar Bars */}
+                    <div className="text-center">
+                      <Label htmlFor="burglarBars" className="mb-1 block">
+                        Are there burglar bars on all the opening windows?
+                      </Label>
+                      <Select
+                        value={formData.burglarBars}
+                        onValueChange={(value) => handleInputChange("burglarBars", value)}
+                      >
+                        <SelectTrigger id="burglarBars">
+                          <SelectValue placeholder="Select yes or no" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                      {/* Controlled Access */}
-                      <div className="text-center">
-                        <Label htmlFor="controlledAccess" className="mb-1 block">
-                          Is there controlled access to the property?
-                        </Label>
-                        <Select
-                          value={formData.controlledAccess}
-                          onValueChange={(value) => handleInputChange("controlledAccess", value)}
-                        >
-                          <SelectTrigger id="controlledAccess">
-                            <SelectValue placeholder="Select yes or no" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          For instance, is there a security guard that allows access to the complex/estate, or does the client have a special code or remote that allows access?
-                        </p>
-                      </div>
+                    {/* Controlled Access */}
+                    <div className="text-center">
+                      <Label htmlFor="controlledAccess" className="mb-1 block">
+                        Is there controlled access to the property?
+                      </Label>
+                      <Select
+                        value={formData.controlledAccess}
+                        onValueChange={(value) => handleInputChange("controlledAccess", value)}
+                      >
+                        <SelectTrigger id="controlledAccess">
+                          <SelectValue placeholder="Select yes or no" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        For instance, is there a security guard that allows access to the complex/estate, or does the client have a special code or remote that allows access?
+                      </p>
+                    </div>
 
-                      {/* Security Guard */}
-                      <div className="text-center">
-                        <Label htmlFor="securityGuard" className="mb-1 block">
-                          Is there a 24hr security guard at the address?
-                        </Label>
-                        <Select
-                          value={formData.securityGuard}
-                          onValueChange={(value) => handleInputChange("securityGuard", value)}
-                        >
-                          <SelectTrigger id="securityGuard">
-                            <SelectValue placeholder="Select yes or no" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    {/* Security Guard */}
+                    <div className="text-center">
+                      <Label htmlFor="securityGuard" className="mb-1 block">
+                        Is there a 24hr security guard at the address?
+                      </Label>
+                      <Select
+                        value={formData.securityGuard}
+                        onValueChange={(value) => handleInputChange("securityGuard", value)}
+                      >
+                        <SelectTrigger id="securityGuard">
+                          <SelectValue placeholder="Select yes or no" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                      {/* Electric Fence */}
-                      <div className="text-center">
-                        <Label htmlFor="electricFence" className="mb-1 block">
-                          Is there an electric fence covering all the perimeter walls of the property?
-                        </Label>
-                        <Select
-                          value={formData.electricFence}
-                          onValueChange={(value) => handleInputChange("electricFence", value)}
-                        >
-                          <SelectTrigger id="electricFence">
-                            <SelectValue placeholder="Select yes or no" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    {/* Electric Fence */}
+                    <div className="text-center">
+                      <Label htmlFor="electricFence" className="mb-1 block">
+                        Is there an electric fence covering all the perimeter walls of the property?
+                      </Label>
+                      <Select
+                        value={formData.electricFence}
+                        onValueChange={(value) => handleInputChange("electricFence", value)}
+                      >
+                        <SelectTrigger id="electricFence">
+                          <SelectValue placeholder="Select yes or no" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
-                )}
+                </div>
+
+                {/* Purchase Price */}
+                <div className="text-center">
+                  <Label htmlFor="purchasePrice" className="mb-1 block">
+                    Purchase Price/Property Value
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <span className="text-muted-foreground">R</span>
+                    </div>
+                    <Input
+                      id="purchasePrice"
+                      className="pl-7"
+                      placeholder="0"
+                      value={formData.purchasePrice}
+                      onChange={(e) =>
+                        handleInputChange("purchasePrice", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
               </CardContent>
 
-              {/* Step Navigation Buttons */}
-              <div className="flex justify-between mt-6 p-6 pt-0">
-                {currentStep > 1 && (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={prevStep}
-                    className="flex items-center"
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Previous
-                  </Button>
-                )}
-                
-                {currentStep < totalSteps ? (
-                  <Button 
-                    type="button" 
-                    onClick={nextStep}
-                    className="flex items-center ml-auto"
-                  >
-                    Next
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button 
-                    type="submit" 
-                    disabled={isLoading}
-                    className="flex items-center ml-auto"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Calculating...
-                      </>
-                    ) : (
-                      <>
-                        Calculate Risk Index
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </>
-                    )}
-                  </Button>
-                )}
+              <div className="flex justify-end mt-6 p-6 pt-0">
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Calculating...
+                    </>
+                  ) : (
+                    <>
+                      Calculate Risk Index
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </>
+                  )}
+                </Button>
               </div>
             </form>
           </Card>
@@ -3498,13 +3350,42 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             <Card className="w-full bg-white shadow-md rounded-lg relative z-10">
               <CardContent className="p-8">
                 {riskResult && renderComprehensiveReport()}
+
+                <div className="flex justify-between mt-8">
+                  <Button
+                    variant="outline"
+                    onClick={resetForm}
+                    className="flex items-center gap-1"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Form
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
         )}
+
+        {/* Footer */}
+        <footer className="py-6 px-6 w-full mt-12">
+          <div className="max-w-7xl mx-auto text-center text-sm text-muted-foreground">
+            <p>© {new Date().getFullYear()} Proply. All rights reserved.</p>
+            <p className="mt-1">
+              The Proply Risk Index™ is a proprietary algorithm designed to
+              assess risk for insurance underwriting purposes.
+            </p>
+          </div>
+        </footer>
+
+        {/* Secret Fill Data Button */}
+        <button
+          type="button"
+          onClick={fillDemoData}
+          className="fixed bottom-4 right-4 opacity-0"
+        >
+          Fill Demo Data
+        </button>
       </div>
     </div>
   );
 }
-
-export default HollardRiskIndexPage;
