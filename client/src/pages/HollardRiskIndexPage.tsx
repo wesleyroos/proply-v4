@@ -90,6 +90,33 @@ interface RiskResult {
     city?: string;
     postalCode?: string;
   };
+  buildingDetails?: {
+    roofType?: string;
+    nonStandardStructure?: string;
+    wallMaterial?: string;
+    fireRetardant?: string;
+    lightningConductor?: string;
+    residenceType?: string;
+    isCommune?: string;
+    isPlotOrFarm?: string;
+    geysers?: {
+      electric?: string;
+      gas?: string;
+      heatPump?: string;
+      solarWater?: string;
+    };
+    nearbyWaterBodies?: string;
+    surgeArresterInstalled?: string;
+  };
+  securityDetails?: {
+    perimeterWallType?: string;
+    radioLinkedAlarm?: string;
+    securityGates?: string;
+    burglarBars?: string;
+    controlledAccess?: string;
+    securityGuard?: string;
+    electricFence?: string;
+  };
   neighborhoodDemographics?: {
     dominantAge: string;
     dominantRace: string;
@@ -1283,6 +1310,33 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         suburb: "Cape Town City Centre",
         city: "Cape Town",
         postalCode: "8001",
+      },
+      buildingDetails: {
+        roofType: formData.roofType,
+        nonStandardStructure: formData.nonStandardStructure,
+        wallMaterial: formData.wallMaterial,
+        fireRetardant: formData.fireRetardant,
+        lightningConductor: formData.lightningConductor,
+        residenceType: formData.residenceType,
+        isCommune: formData.isCommune,
+        isPlotOrFarm: formData.isPlotOrFarm,
+        geysers: {
+          electric: formData.geysers.electric,
+          gas: formData.geysers.gas,
+          heatPump: formData.geysers.heatPump,
+          solarWater: formData.geysers.solarWater,
+        },
+        nearbyWaterBodies: formData.nearbyWaterBodies,
+        surgeArresterInstalled: formData.surgeArresterInstalled,
+      },
+      securityDetails: {
+        perimeterWallType: formData.perimeterWallType,
+        radioLinkedAlarm: formData.radioLinkedAlarm,
+        securityGates: formData.securityGates,
+        burglarBars: formData.burglarBars,
+        controlledAccess: formData.controlledAccess,
+        securityGuard: formData.securityGuard,
+        electricFence: formData.electricFence,
       },
       neighborhoodDemographics: {
         dominantAge: "25-35 years",
