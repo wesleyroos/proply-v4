@@ -2349,6 +2349,364 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </div>
           </div>
 
+          {/* Building Details Card */}
+          {riskResult.buildingDetails && (
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2 rounded-full bg-amber-500 bg-opacity-20">
+                  <Building2 className="h-5 w-5 text-amber-500" />
+                </div>
+                <h3 className="text-lg font-semibold">
+                  Building Details
+                </h3>
+                <Badge className="bg-amber-500 text-white hover:bg-amber-600">
+                  Structure
+                </Badge>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Left column - Building structure */}
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <Building className="h-4 w-4" />
+                      <span>Structure Information</span>
+                    </h4>
+
+                    <div className="space-y-3">
+                      {riskResult.buildingDetails.roofType && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Home className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Roof Type
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.roofType}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.buildingDetails.wallMaterial && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Layers className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Wall Material
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.wallMaterial}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.buildingDetails.nonStandardStructure && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <CircuitBoard className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Non-Standard Structure
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.nonStandardStructure}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.buildingDetails.residenceType && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Home className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Residence Type
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.residenceType}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Right column - Safety features */}
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <Shield className="h-4 w-4" />
+                      <span>Safety Features</span>
+                    </h4>
+
+                    <div className="space-y-3">
+                      {riskResult.buildingDetails.fireRetardant && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Flame className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Fire Retardant
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.fireRetardant}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.buildingDetails.lightningConductor && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Zap className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Lightning Conductor
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.lightningConductor}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.buildingDetails.surgeArresterInstalled && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <BatteryCharging className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Surge Arrester
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.surgeArresterInstalled}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.buildingDetails.nearbyWaterBodies && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Droplets className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Nearby Water Bodies
+                            </span>
+                          </div>
+                          <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.buildingDetails.nearbyWaterBodies}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Geysers section */}
+                {riskResult.buildingDetails.geysers && (
+                  <div className="mt-5 pt-4 border-t border-dashed border-gray-200">
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <Droplets className="h-4 w-4" />
+                      <span>Geyser Information</span>
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="bg-blue-50 p-3 rounded-md">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Electric</span>
+                          <span className="font-semibold text-blue-700">{riskResult.buildingDetails.geysers.electric}</span>
+                        </div>
+                      </div>
+                      <div className="bg-orange-50 p-3 rounded-md">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Gas</span>
+                          <span className="font-semibold text-orange-700">{riskResult.buildingDetails.geysers.gas}</span>
+                        </div>
+                      </div>
+                      <div className="bg-green-50 p-3 rounded-md">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Heat Pump</span>
+                          <span className="font-semibold text-green-700">{riskResult.buildingDetails.geysers.heatPump}</span>
+                        </div>
+                      </div>
+                      <div className="bg-yellow-50 p-3 rounded-md">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Solar Water</span>
+                          <span className="font-semibold text-yellow-700">{riskResult.buildingDetails.geysers.solarWater}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Security Details Card */}
+          {riskResult.securityDetails && (
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2 rounded-full bg-indigo-500 bg-opacity-20">
+                  <Shield className="h-5 w-5 text-indigo-500" />
+                </div>
+                <h3 className="text-lg font-semibold">
+                  Security Details
+                </h3>
+                <Badge className="bg-indigo-500 text-white hover:bg-indigo-600">
+                  Safety
+                </Badge>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Left column - Perimeter security */}
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <PanelTop className="h-4 w-4" />
+                      <span>Perimeter Protection</span>
+                    </h4>
+
+                    <div className="space-y-3">
+                      {riskResult.securityDetails.perimeterWallType && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Layers className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Perimeter Wall Type
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.perimeterWallType}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.securityDetails.electricFence && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Zap className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Electric Fence
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.electricFence}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.securityDetails.controlledAccess && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <KeyRound className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Controlled Access
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.controlledAccess}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Right column - Building security */}
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-1 text-gray-700">
+                      <Lock className="h-4 w-4" />
+                      <span>Building Protection</span>
+                    </h4>
+
+                    <div className="space-y-3">
+                      {riskResult.securityDetails.burglarBars && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <SplitSquareVertical className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Burglar Bars
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.burglarBars}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.securityDetails.securityGates && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <GanttChart className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Security Gates
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.securityGates}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.securityDetails.radioLinkedAlarm && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <Radio className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Radio-Linked Alarm
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.radioLinkedAlarm}
+                          </span>
+                        </div>
+                      )}
+
+                      {riskResult.securityDetails.securityGuard && (
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-slate-100 p-1.5 rounded">
+                              <ShieldCheck className="h-4 w-4 text-slate-500" />
+                            </div>
+                            <span className="text-sm font-medium">
+                              Security Guard
+                            </span>
+                          </div>
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm font-medium">
+                            {riskResult.securityDetails.securityGuard}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Neighborhood Demographics Card */}
           {riskResult.neighborhoodDemographics && (
             <div className="mb-8">
