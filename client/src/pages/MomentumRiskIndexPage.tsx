@@ -3059,11 +3059,11 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hollard Logo */}
+      {/* Momentum Logo */}
       <div className="absolute top-8 left-8 z-20">
         <img
-          src="/sponsor logos-01.png"
-          alt="Hollard Logo"
+          src="/momentum-co-za-vector-logo.png"
+          alt="Momentum Logo"
           className="h-12 w-auto"
         />
       </div>
@@ -3127,7 +3127,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
       <div className="container mx-auto px-4 pt-[80px] pb-20">
         <div className="text-center space-y-4 mb-12">
-          <h1 className="text-6xl font-bold">Hollard Property Risk Index</h1>
+          <h1 className="text-6xl font-bold">Momentum Property Risk Index</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             A comprehensive assessment of property risks including security,
             environmental, flood, climate, hail factors, and more.
@@ -3139,7 +3139,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           <Card className="max-w-2xl mx-auto relative z-10 bg-white shadow-md">
             <CardHeader>
               <CardTitle className="text-xl text-center">
-                Hollard Property Risk Index
+                Momentum Property Risk Index
               </CardTitle>
               <CardDescription className="text-center">
                 Enter property details for a detailed risk analysis
