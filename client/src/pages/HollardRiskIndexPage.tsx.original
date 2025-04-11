@@ -1364,7 +1364,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
       address: newAddress,
     }));
   };
-  
+
   const nextStep = () => {
     // Validation for Step 1 (Property Details)
     if (currentStep === 1) {
@@ -1432,7 +1432,6 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
       setCurrentStep(currentStep - 1);
     }
   };
-
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -3290,7 +3289,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       </p>
                     </div>
                   </div>
-                )}
+                </div>
 
                 {/* Step 3: Security Section */}
                 {currentStep === 3 && (
@@ -3498,13 +3497,42 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             <Card className="w-full bg-white shadow-md rounded-lg relative z-10">
               <CardContent className="p-8">
                 {riskResult && renderComprehensiveReport()}
+
+                <div className="flex justify-between mt-8">
+                  <Button
+                    variant="outline"
+                    onClick={resetForm}
+                    className="flex items-center gap-1"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Form
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
         )}
+
+        {/* Footer */}
+        <footer className="py-6 px-6 w-full mt-12">
+          <div className="max-w-7xl mx-auto text-center text-sm text-muted-foreground">
+            <p>© {new Date().getFullYear()} Proply. All rights reserved.</p>
+            <p className="mt-1">
+              The Proply Risk Index™ is a proprietary algorithm designed to
+              assess risk for insurance underwriting purposes.
+            </p>
+          </div>
+        </footer>
+
+        {/* Secret Fill Data Button */}
+        <button
+          type="button"
+          onClick={fillDemoData}
+          className="fixed bottom-4 right-4 opacity-0"
+        >
+          Fill Demo Data
+        </button>
       </div>
     </div>
   );
 }
-
-export default HollardRiskIndexPage;
