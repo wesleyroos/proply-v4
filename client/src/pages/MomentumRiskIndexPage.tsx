@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { EmailPDFButton } from "../components/pdf/email-pdf-button";
+import { StaticPDFButton } from "../components/pdf/static-pdf-button";
 import {
   ArrowRight,
   ArrowLeft,
