@@ -26,9 +26,9 @@ export function StaticPDFButton({
     setIsDownloading(true)
     
     try {
-      // Create a link to the static PDF file that you supplied
+      // Create a link to the static PDF file specified in props
       const link = document.createElement('a')
-      link.href = '/static-assets/Property Risk Assessment.pdf'
+      link.href = pdfPath // Use the provided pdfPath prop
       link.download = `Property_Risk_Assessment${propertyAddress ? `_${propertyAddress.split(',')[0]}` : ''}.pdf`
       document.body.appendChild(link)
       link.click()
