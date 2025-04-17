@@ -3137,10 +3137,10 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
       <div className="container mx-auto px-4 pt-[80px] pb-20">
         <div className="text-center space-y-4 mb-12">
-          <h1 className="text-6xl font-bold">King Price Property Risk Index</h1>
+          <h1 className="text-6xl font-bold">King Price Commercial Property Risk Index</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            A comprehensive assessment of property risks including security,
-            environmental, flood, climate, hail factors, and more.
+            A comprehensive assessment of commercial property risks including security,
+            environmental, business interruption, structural integrity, and regulatory compliance factors.
           </p>
         </div>
 
@@ -3149,10 +3149,10 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           <Card className="max-w-2xl mx-auto relative z-10 bg-white shadow-md">
             <CardHeader>
               <CardTitle className="text-xl text-center">
-                King Price Property Risk Index
+                Commercial Property Risk Assessment
               </CardTitle>
               <CardDescription className="text-center">
-                Enter property details for a detailed risk analysis
+                Enter commercial property details for comprehensive risk analysis
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleFormSubmit}>
@@ -3184,11 +3184,13 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         <SelectValue placeholder="Select property type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="apartment">Apartment</SelectItem>
-                        <SelectItem value="house">House</SelectItem>
-                        <SelectItem value="townhouse">Townhouse</SelectItem>
-                        <SelectItem value="villa">Villa</SelectItem>
-                        <SelectItem value="commercial">Commercial</SelectItem>
+                        <SelectItem value="office">Office Building</SelectItem>
+                        <SelectItem value="retail">Retail Space</SelectItem>
+                        <SelectItem value="warehouse">Warehouse/Industrial</SelectItem>
+                        <SelectItem value="mixed">Mixed-Use Commercial</SelectItem>
+                        <SelectItem value="healthcare">Healthcare Facility</SelectItem>
+                        <SelectItem value="hospitality">Hotel/Hospitality</SelectItem>
+                        <SelectItem value="apartment">Apartment Block (Multi-Unit)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -3219,7 +3221,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center">
                     <Label htmlFor="bedrooms" className="mb-1 block">
-                      Bedrooms
+                      Office Units/Rooms
                     </Label>
                     <Input
                       id="bedrooms"
@@ -3233,7 +3235,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
                   <div className="text-center">
                     <Label htmlFor="bathrooms" className="mb-1 block">
-                      Bathrooms
+                      Restrooms/Washrooms
                     </Label>
                     <Input
                       id="bathrooms"
@@ -3247,7 +3249,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
                   <div className="text-center">
                     <Label htmlFor="parking" className="mb-1 block">
-                      Parking
+                      Parking Bays
                     </Label>
                     <Input
                       id="parking"
@@ -3281,6 +3283,57 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       <SelectItem value="poor">Poor</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Commercial Risk Assessment */}
+                <div className="mt-8 mb-4 p-4 border border-blue-100 rounded-lg bg-blue-50">
+                  <h3 className="text-lg font-medium text-center mb-4">
+                    Commercial Risk Factors
+                  </h3>
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <Label htmlFor="businessInterruption" className="mb-1 block">
+                        Business Interruption Protection
+                      </Label>
+                      <Select
+                        value={formData.fireRetardant || ""}
+                        onValueChange={(value) =>
+                          handleInputChange("fireRetardant", value)
+                        }
+                      >
+                        <SelectTrigger id="businessInterruption">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="comprehensive">Comprehensive Plan</SelectItem>
+                          <SelectItem value="basic">Basic Coverage</SelectItem>
+                          <SelectItem value="none">No Coverage</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="text-center">
+                      <Label htmlFor="buildingRegCompliance" className="mb-1 block">
+                        Building Regulatory Compliance
+                      </Label>
+                      <Select
+                        value={formData.lightningConductor || ""}
+                        onValueChange={(value) =>
+                          handleInputChange("lightningConductor", value)
+                        }
+                      >
+                        <SelectTrigger id="buildingRegCompliance">
+                          <SelectValue placeholder="Please select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="fullcompliance">Full Compliance</SelectItem>
+                          <SelectItem value="partial">Partial Compliance</SelectItem>
+                          <SelectItem value="pending">Compliance Pending</SelectItem>
+                          <SelectItem value="unknown">Unknown Status</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Building Details Section */}
@@ -3455,10 +3508,10 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                       </div>
                     )}
 
-                    {/* Residence Type */}
+                    {/* Occupancy Type */}
                     <div className="text-center">
                       <Label htmlFor="residenceType" className="mb-1 block">
-                        What type of residence is this?
+                        What is the occupancy type of this property?
                       </Label>
                       <Select
                         value={formData.residenceType}
@@ -3470,19 +3523,21 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                           <SelectValue placeholder="Please select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="main">Main residence</SelectItem>
-                          <SelectItem value="secondary">
-                            Secondary residence/Holiday home
+                          <SelectItem value="owner">Owner-Occupied</SelectItem>
+                          <SelectItem value="tenant">
+                            Single-Tenant Leased
                           </SelectItem>
+                          <SelectItem value="multi-tenant">Multi-Tenant Leased</SelectItem>
+                          <SelectItem value="vacant">Vacant</SelectItem>
                           <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
-                    {/* Is Commune */}
+                    {/* Business Usage */}
                     <div className="text-center">
                       <Label htmlFor="isCommune" className="mb-1 block">
-                        Is the building used as a commune?
+                        What business activities are conducted on the premises?
                       </Label>
                       <Select
                         value={formData.isCommune}
@@ -3491,11 +3546,16 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         }
                       >
                         <SelectTrigger id="isCommune">
-                          <SelectValue placeholder="Please select" />
+                          <SelectValue placeholder="Please select primary usage" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="yes">Yes</SelectItem>
-                          <SelectItem value="no">No</SelectItem>
+                          <SelectItem value="office">Office/Administrative</SelectItem>
+                          <SelectItem value="retail">Retail/Sales</SelectItem>
+                          <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                          <SelectItem value="storage">Storage/Warehousing</SelectItem>
+                          <SelectItem value="food">Food Service</SelectItem>
+                          <SelectItem value="medical">Medical/Healthcare</SelectItem>
+                          <SelectItem value="mixed">Mixed Use</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
