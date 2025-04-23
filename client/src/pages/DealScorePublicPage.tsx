@@ -151,6 +151,68 @@ export default function DealScorePublicPage() {
     longTermYield: number | null;
     bestStrategy: string;
   }
+  
+  // Interface for comparable property data
+  interface ComparableProperty {
+    similarity: string;
+    address: string;
+    salePrice: number;
+    size: number;
+    pricePerSqM: number;
+    bedrooms: number;
+    saleDate: string;
+  }
+  
+  // Interface for comparable sales API response
+  interface ComparableSalesData {
+    properties: ComparableProperty[];
+    averageSalePrice: number;
+  }
+  
+  // Function to fetch comparable sales data from the API
+  const fetchComparableSales = async (
+    address: string,
+    propertySize: number,
+    bedrooms: number,
+    propertyType: string,
+    propertyCondition: string,
+    luxuryRating: number
+  ): Promise<ComparableSalesData | null> => {
+    try {
+      console.log(`Fetching comparable sales for ${propertySize}m² ${bedrooms} bedroom ${propertyType} at ${address}`);
+      
+      const response = await fetch("/api/deal-advisor/comparable-sales", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          address,
+          propertySize,
+          bedrooms,
+          propertyType,
+          propertyCondition,
+          luxuryRating
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Comparable sales data received:", data);
+      
+      if (data.success && data.data) {
+        return data.data;
+      } else {
+        throw new Error(data.error || "Failed to fetch comparable sales data");
+      }
+    } catch (error) {
+      console.error("Error fetching comparable sales:", error);
+      return null;
+    }
+  };
 
   const [result, setResult] = useState<DealResult | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
