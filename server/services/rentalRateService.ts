@@ -25,41 +25,48 @@ function getLuxuryContext(luxuryRating: number): string {
   }
 }
 
-export async function getRentalRate(address: string, propertySize: number, bedrooms: number, condition: string, luxuryRating?: number): Promise<number> {
+// Define new interface to return rental rate range
+export interface RentalRateRange {
+  min: number;
+  max: number;
+  average: number;
+}
+
+export async function getRentalRate(address: string, propertySize: number, bedrooms: number, condition: string, luxuryRating?: number): Promise<RentalRateRange> {
   try {
     // Create luxury context based on the rating
     const luxuryContext = luxuryRating 
       ? getLuxuryContext(luxuryRating) 
       : '';
     
-    // First API call - rental market expert perspective
+    // First API call - rental market expert perspective (lower range)
     const response1 = await openai.chat.completions.create({
       model: "gpt-4o",
       temperature: 0.1,
       messages: [
         {
           role: "system",
-          content: "You are a rental market expert in South Africa. Return ONLY a number representing the monthly rental amount in Rand. No text, just the number. Example: '15000'"
+          content: "You are a conservative rental market expert in South Africa focused on providing the lower end of market rental estimates. Return ONLY a number representing the minimum monthly rental amount in Rand that could be reasonably achieved. No text, just the number. Example: '15000'"
         },
         {
           role: "user",
-          content: `What would be the current market rental rate for a ${propertySize}m² ${bedrooms} bedroom property in ${condition} condition located at ${address}?${luxuryContext} Return only the numeric amount.`
+          content: `What would be the minimum reasonable market rental rate for a ${propertySize}m² ${bedrooms} bedroom property in ${condition} condition located at ${address}?${luxuryContext} Return only the numeric amount.`
         }
       ]
     });
 
-    // Second API call - property manager perspective
+    // Second API call - property manager perspective (higher range)
     const response2 = await openai.chat.completions.create({
       model: "gpt-4o",
       temperature: 0.1,
       messages: [
         {
           role: "system",
-          content: "You are a property manager in South Africa. Return ONLY a number representing the achievable monthly rental in Rand. No text, just the number. Example: '15000'"
+          content: "You are an optimistic property manager in South Africa focused on providing the higher end of market rental estimates. Return ONLY a number representing the maximum monthly rental amount in Rand that could be reasonably achieved. No text, just the number. Example: '18000'"
         },
         {
           role: "user",
-          content: `What monthly rental could we achieve for a ${propertySize}m² ${bedrooms} bedroom property in ${condition} condition at ${address}?${luxuryContext} Return only the numeric amount.`
+          content: `What is the maximum monthly rental we could reasonably achieve for a ${propertySize}m² ${bedrooms} bedroom property in ${condition} condition at ${address}?${luxuryContext} Return only the numeric amount.`
         }
       ]
     });
@@ -67,29 +74,42 @@ export async function getRentalRate(address: string, propertySize: number, bedro
     const content1 = response1.choices[0]?.message?.content || '';
     const content2 = response2.choices[0]?.message?.content || '';
 
-    console.log('OpenAI Rental Response 1:', content1);
-    console.log('OpenAI Rental Response 2:', content2);
+    console.log('OpenAI Rental Response (Min):', content1);
+    console.log('OpenAI Rental Response (Max):', content2);
 
     // Parse rates and handle edge cases
-    let rate1 = parseInt(content1.replace(/[^0-9]/g, '')) || 0;
-    let rate2 = parseInt(content2.replace(/[^0-9]/g, '')) || 0;
+    let minRate = parseInt(content1.replace(/[^0-9]/g, '')) || 0;
+    let maxRate = parseInt(content2.replace(/[^0-9]/g, '')) || 0;
 
-    // If one rate is 0, use the other rate
-    if (rate1 === 0 && rate2 > 0) return rate2;
-    if (rate2 === 0 && rate1 > 0) return rate1;
+    // Ensure min is actually less than max
+    if (minRate > maxRate && maxRate > 0) {
+      const temp = minRate;
+      minRate = maxRate;
+      maxRate = temp;
+    }
 
-    // If both rates are valid, take the average
-    if (rate1 > 0 && rate2 > 0) {
-      const finalRate = Math.round((rate1 + rate2) / 2);
+    // If one rate is 0, use the other with a +/- 10% range
+    if (minRate === 0 && maxRate > 0) {
+      minRate = Math.round(maxRate * 0.9);
+      // maxRate stays the same
+    } else if (maxRate === 0 && minRate > 0) {
+      maxRate = Math.round(minRate * 1.1);
+      // minRate stays the same
+    }
 
-      // Validate final rate is within reasonable range for SA rental market
-      if (finalRate > 0 && finalRate <= 200000) {
-        console.log('Final rental rate:', finalRate);
-        return finalRate;
+    // If both rates are valid, use them as the range
+    if (minRate > 0 && maxRate > 0) {
+      // Calculate the average
+      const averageRate = Math.round((minRate + maxRate) / 2);
+
+      // Validate rates are within reasonable range for SA rental market
+      if (minRate > 0 && maxRate <= 200000) {
+        console.log('Rental rate range:', { min: minRate, max: maxRate, average: averageRate });
+        return { min: minRate, max: maxRate, average: averageRate };
       }
     }
 
-    throw new Error('Could not determine a valid rental rate');
+    throw new Error('Could not determine a valid rental rate range');
   } catch (error) {
     console.error('Error in getRentalRate:', error);
     throw error;

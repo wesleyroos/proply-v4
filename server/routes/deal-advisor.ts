@@ -40,8 +40,14 @@ router.post('/rental-amount', async (req, res) => {
       return res.status(400).json({ error: 'Address is required' });
     }
 
-    const rentalRate = await getRentalRate(address, propertySize, bedrooms, condition, luxuryRating);
-    res.json({ rentalAmount: rentalRate });
+    const rentalRateRange = await getRentalRate(address, propertySize, bedrooms, condition, luxuryRating);
+    res.json({ 
+      rentalRange: {
+        min: rentalRateRange.min,
+        max: rentalRateRange.max
+      },
+      rentalAmount: rentalRateRange.average // Keep this for backward compatibility
+    });
   } catch (error) {
     console.error('Error in rental-amount endpoint:', error);
     res.status(500).json({ error: 'Failed to fetch rental amount' });
