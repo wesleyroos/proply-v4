@@ -711,10 +711,15 @@ export default function DealScorePublicPage() {
 
     // Determine whether to use custom data from API or default estimates
     let estimatedLongTermRental;
+    let estimatedLongTermRentalMin;
+    let estimatedLongTermRentalMax;
 
     // Check each possible source
     if (customLongTermRental) {
       estimatedLongTermRental = customLongTermRental;
+      // For custom values, set min/max based on a reasonable range (± 7%)
+      estimatedLongTermRentalMin = Math.round(customLongTermRental * 0.93);
+      estimatedLongTermRentalMax = Math.round(customLongTermRental * 1.07);
     } else if (
       formData.longTermRental &&
       Number(parseFormattedNumber(formData.longTermRental)) > 0
@@ -722,9 +727,27 @@ export default function DealScorePublicPage() {
       estimatedLongTermRental = Number(
         parseFormattedNumber(formData.longTermRental),
       );
+      
+      // Check if we have min/max values from the API
+      if (
+        formData.longTermRentalMin && 
+        formData.longTermRentalMax && 
+        Number(parseFormattedNumber(formData.longTermRentalMin)) > 0 &&
+        Number(parseFormattedNumber(formData.longTermRentalMax)) > 0
+      ) {
+        estimatedLongTermRentalMin = Number(parseFormattedNumber(formData.longTermRentalMin));
+        estimatedLongTermRentalMax = Number(parseFormattedNumber(formData.longTermRentalMax));
+      } else {
+        // If no min/max available, create a reasonable range (± 7%)
+        estimatedLongTermRentalMin = Math.round(estimatedLongTermRental * 0.93);
+        estimatedLongTermRentalMax = Math.round(estimatedLongTermRental * 1.07);
+      }
     } else {
       const estimatedValue = purchasePrice * 0.005;
       estimatedLongTermRental = estimatedValue;
+      // Create a reasonable range for fallback values (± 10%)
+      estimatedLongTermRentalMin = Math.round(estimatedValue * 0.9);
+      estimatedLongTermRentalMax = Math.round(estimatedValue * 1.1);
     }
 
     // Use custom nightly rate if provided, otherwise use estimate
@@ -748,9 +771,13 @@ export default function DealScorePublicPage() {
     // Calculate yields
     let shortTermYield = null;
     let longTermYield = null;
+    let longTermYieldMin = null;
+    let longTermYieldMax = null;
 
-    // Calculate long term yield
+    // Calculate long term yield and yield range
     longTermYield = ((estimatedLongTermRental * 12) / purchasePrice) * 100;
+    longTermYieldMin = ((estimatedLongTermRentalMin * 12) / purchasePrice) * 100;
+    longTermYieldMax = ((estimatedLongTermRentalMax * 12) / purchasePrice) * 100;
 
     // Calculate short term yield
     const annualRevenueShortTerm =
@@ -890,13 +917,15 @@ export default function DealScorePublicPage() {
       nightlyRate: estimatedNightlyRate,
       occupancyRate: propertyOccupancyRate,
       monthlyLongTerm: estimatedLongTermRental,
-
-      // Rental data is now fully functioning
+      monthlyLongTermMin: estimatedLongTermRentalMin,
+      monthlyLongTermMax: estimatedLongTermRentalMax,
 
       // Calculated Financial Metrics
       pricePerSqM: propertyRate,
       shortTermYield: shortTermYield || 0,
       longTermYield: longTermYield || 0,
+      longTermYieldMin: longTermYieldMin || 0,
+      longTermYieldMax: longTermYieldMax || 0,
       bestInvestmentStrategy: bestInvestmentStrategy,
 
       // Municipal Information
@@ -2370,14 +2399,20 @@ export default function DealScorePublicPage() {
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm text-slate-500">Long-Term Yield</p>
                   <p className="font-medium text-lg">
-                    {dealReport.longTermYield.toFixed(1)}%
+                    {dealReport.longTermYieldMin && dealReport.longTermYieldMax
+                      ? `${dealReport.longTermYieldMin.toFixed(1)}-${dealReport.longTermYieldMax.toFixed(1)}%`
+                      : `${dealReport.longTermYield.toFixed(1)}%`}
                   </p>
                   <div className="text-xs text-slate-500">
                     <div>
-                      Monthly: R{formatPrice(dealReport.monthlyLongTerm)}
+                      Monthly: {dealReport.monthlyLongTermMin && dealReport.monthlyLongTermMax
+                        ? `R${formatPrice(dealReport.monthlyLongTermMin)}-R${formatPrice(dealReport.monthlyLongTermMax)}`
+                        : `R${formatPrice(dealReport.monthlyLongTerm)}`}
                     </div>
                     <div>
-                      Annual: R{formatPrice(dealReport.monthlyLongTerm * 12)}
+                      Annual: {dealReport.monthlyLongTermMin && dealReport.monthlyLongTermMax
+                        ? `R${formatPrice(dealReport.monthlyLongTermMin * 12)}-R${formatPrice(dealReport.monthlyLongTermMax * 12)}`
+                        : `R${formatPrice(dealReport.monthlyLongTerm * 12)}`}
                     </div>
                   </div>
                 </div>
