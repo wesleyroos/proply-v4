@@ -232,6 +232,8 @@ export default function DealScorePublicPage() {
           nightlyRate: "2500",
           occupancy: "70",
           longTermRental: "25000",
+          longTermRentalMin: "23000",
+          longTermRentalMax: "27000",
           depositAmount: "350000",
           depositPercentage: "10",
           interestRate: "11.75",
@@ -1641,6 +1643,8 @@ export default function DealScorePublicPage() {
       nightlyRate: "",
       occupancy: "",
       longTermRental: "",
+      longTermRentalMin: "",
+      longTermRentalMax: "",
       depositAmount: "",
       depositPercentage: "10",
       interestRate: "11",
@@ -2778,7 +2782,9 @@ export default function DealScorePublicPage() {
                             Annual yield:
                           </span>
                           <span className="font-medium text-emerald-600">
-                            {dealReport.longTermYield.toFixed(1)}%
+                            {dealReport.longTermYieldMin && dealReport.longTermYieldMax 
+                              ? `${dealReport.longTermYieldMin.toFixed(1)}-${dealReport.longTermYieldMax.toFixed(1)}%`
+                              : `${dealReport.longTermYield.toFixed(1)}%`}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -2786,7 +2792,9 @@ export default function DealScorePublicPage() {
                             Yearly income:
                           </span>
                           <span className="font-medium">
-                            R{formatPrice(dealReport.annualRentalLongTerm)}
+                            {dealReport.monthlyLongTermMin && dealReport.monthlyLongTermMax
+                              ? `R${formatPrice(dealReport.monthlyLongTermMin * 12)}-R${formatPrice(dealReport.monthlyLongTermMax * 12)}`
+                              : `R${formatPrice(dealReport.annualRentalLongTerm)}`}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -2818,8 +2826,12 @@ export default function DealScorePublicPage() {
                   </div>
                   <p className="text-sm text-slate-700 leading-relaxed">
                     {dealReport.bestInvestmentStrategy === "Short-Term Rental"
-                      ? `This property offers better returns as a short-term rental, with a yield of ${dealReport.shortTermYield.toFixed(1)}% compared to ${dealReport.longTermYield.toFixed(1)}% for long-term. The premium location and amenities make it attractive for holiday or business travelers.`
-                      : `This property is best suited for long-term rental, offering stable returns of ${dealReport.longTermYield.toFixed(1)}% compared to ${dealReport.shortTermYield.toFixed(1)}% for short-term. The location and property characteristics appeal more to residential tenants seeking stability.`}
+                      ? `This property offers better returns as a short-term rental, with a yield of ${dealReport.shortTermYield.toFixed(1)}% compared to ${dealReport.longTermYieldMin && dealReport.longTermYieldMax 
+                        ? `${dealReport.longTermYieldMin.toFixed(1)}-${dealReport.longTermYieldMax.toFixed(1)}%` 
+                        : `${dealReport.longTermYield.toFixed(1)}%`} for long-term. The premium location and amenities make it attractive for holiday or business travelers.`
+                      : `This property is best suited for long-term rental, offering stable returns of ${dealReport.longTermYieldMin && dealReport.longTermYieldMax 
+                        ? `${dealReport.longTermYieldMin.toFixed(1)}-${dealReport.longTermYieldMax.toFixed(1)}%` 
+                        : `${dealReport.longTermYield.toFixed(1)}%`} compared to ${dealReport.shortTermYield.toFixed(1)}% for short-term. The location and property characteristics appeal more to residential tenants seeking stability.`}
                   </p>
                 </div>
               </div>
