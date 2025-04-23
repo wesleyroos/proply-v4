@@ -126,4 +126,70 @@ router.post("/area-rate", async (req, res) => {
   }
 });
 
+// Endpoint to get rental amount
+router.post("/rental-amount", async (req, res) => {
+  try {
+    const { address, propertySize, bedrooms, condition, luxuryRating } = req.body;
+
+    // Validate required fields
+    if (!address || !propertySize || !bedrooms) {
+      return res.status(400).json({
+        success: false,
+        error: "Address, property size, and number of bedrooms are required",
+      });
+    }
+
+    // Convert to appropriate types
+    const size = Number(propertySize);
+    const beds = Number(bedrooms);
+    const luxury = luxuryRating ? Number(luxuryRating) : 5;
+
+    // Validate conversions
+    if (isNaN(size) || isNaN(beds) || (luxury !== undefined && isNaN(luxury))) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid numeric values provided",
+      });
+    }
+
+    // Calculate base rental amount
+    const baseRental = beds * 5000 + size * 100;
+    
+    // Apply condition multiplier
+    let conditionMultiplier = 1.0;
+    if (condition === "excellent") {
+      conditionMultiplier = 1.2;
+    } else if (condition === "good") {
+      conditionMultiplier = 1.1;
+    } else if (condition === "poor") {
+      conditionMultiplier = 0.8;
+    }
+    
+    // Apply luxury rating multiplier (1-10 scale)
+    const luxuryMultiplier = 0.9 + (luxury / 10);
+    
+    // Calculate final rental amount
+    const rentalAmount = Math.round(baseRental * conditionMultiplier * luxuryMultiplier);
+    
+    // Calculate min/max range
+    const minRental = Math.round(rentalAmount * 0.9);
+    const maxRental = Math.round(rentalAmount * 1.1);
+    
+    return res.json({
+      success: true,
+      rentalAmount,
+      rentalRange: {
+        min: minRental,
+        max: maxRental
+      }
+    });
+  } catch (error) {
+    console.error("Error in rental amount endpoint:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+});
+
 export default router;
