@@ -1634,18 +1634,41 @@ export default function DealScorePublicPage() {
       const address = formData.address;
       console.log("Fetching revenue data for:", { address, bedrooms: formattedBedrooms });
 
-      // Force test mode to debug the issue
+      // Force test mode while developing to avoid unnecessary API calls
       const testMode = true;
       console.log("Using test mode:", testMode);
 
       let pricelabsData = null;
       
       try {
-        // Problem appears to be somewhere in the chain of fetch calls
-        // let's create a simplified mock object directly instead of calling the API
-        console.log("Skip API call due to HTML parsing issue, use direct test data instead");
+        console.log("Fetching revenue data from API endpoint");
         
-        // Create a direct test data object with exact structure needed
+        // Create URL with query parameters
+        const url = `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${encodeURIComponent(formattedBedrooms)}&test=${testMode}`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
+        }
+        
+        pricelabsData = await response.json();
+        console.log("Revenue data response:", pricelabsData);
+        
+        // Check if we have the expected data structure
+        if (!pricelabsData.KPIsByBedroomCategory || !pricelabsData.KPIsByBedroomCategory[formattedBedrooms]) {
+          console.warn("Revenue data missing expected structure:", pricelabsData);
+        }
+      } catch (fetchError) {
+        console.error("Error fetching revenue data:", fetchError);
+        // Show toast but continue with fallback data
+        toast({
+          title: "Error",
+          description: "We couldn't fetch revenue data. Using estimated values instead.",
+          variant: "destructive",
+        });
+        
+        // Create fallback data in case of API failure
         pricelabsData = {
           KPIsByBedroomCategory: {
             [formattedBedrooms]: {
@@ -1654,20 +1677,16 @@ export default function DealScorePublicPage() {
               market_occupancy: 65,
               market_adr: 2500,
               sample_size: 20,
-              ADR75PercentileAvg: 2800,
-              AvgAdjustedOccupancy: 65
+              ADR75PercentileAvg: Number(parseFormattedNumber(formData.nightlyRate)) || 2800,
+              AvgAdjustedOccupancy: Number(parseFormattedNumber(formData.occupancy)) || 65
             }
           },
           address: address,
-          destination_id: "test-destination",
+          destination_id: "fallback-destination",
           destination_name: "Cape Town, South Africa",
-          bedroom_category: Number(formattedBedrooms)
+          bedroom_category: Number(formattedBedrooms),
+          fallback: true
         };
-        
-        console.log("Using simplified test data:", pricelabsData);
-      } catch (fetchError) {
-        console.error("Error fetching from API:", fetchError);
-        throw fetchError;
       }
 
       // Extract nightly rate and occupancy from PriceLabs data

@@ -25,7 +25,6 @@ import { suburbs } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
 import primeRateRouter from './routes/prime-rate';
-import { dealAdvisorHandler } from "./routes/deal-advisor"; 
 import dealAdvisorRouter from './routes/deal-advisor';
 import addressValidationRouter from './routes/address-validation';
 import trafficDataRouter from './routes/traffic-data';
@@ -999,8 +998,9 @@ export function registerRoutes(app: Express): Server {
     
     console.log("Public revenue data request:", { address, bedrooms, test });
     
-    // Always use test mode for now to debug the issue
-    const isTestMode = true;
+    // Check if test parameter was passed or if we want to force test mode
+    // You can easily toggle this to control test vs production mode
+    const useTestMode = test === 'true' || true; // Set to 'true' to force test mode, 'false' for production
 
     if (!address || !bedrooms) {
       return res
@@ -1012,28 +1012,51 @@ export function registerRoutes(app: Express): Server {
     let success = false;
 
     try {
-      // Use test mode to return consistent data for debugging
-      console.log("Using test mode for consistent data");
+      console.log(`Revenue data mode: ${useTestMode ? "TEST" : "PRODUCTION"}`);
       
-      // Return the mock data response with a structure that matches what the client expects
-      return res.json({
-        KPIsByBedroomCategory: {
-          [String(bedrooms)]: {
-            adr: 2500,
-            occupancy: 65,
-            market_occupancy: 65,
-            market_adr: 2500,
-            sample_size: 20,
-            ADR75PercentileAvg: 2800, // For nightlyRateValue in client
-            AvgAdjustedOccupancy: 65  // For occupancyValue in client
-          }
-        },
-        address: String(address),
-        destination_id: "test-destination",
-        destination_name: "Cape Town, South Africa",
-        bedroom_category: Number(bedrooms),
-        status: "success"
-      });
+      if (useTestMode) {
+        // Generate a consistent test response based on the property details
+        console.log("Using test mode for consistent data");
+        
+        // Ensure bedrooms is properly formatted
+        const formattedBedrooms = String(bedrooms).toLowerCase() === 'studio' ? '0' 
+                                : String(bedrooms).toLowerCase() === 'room' ? '-1'
+                                : String(bedrooms);
+        
+        // Convert address to string to handle any unexpected input types
+        const addressStr = String(address);
+        
+        // Create test data with slight randomization based on address length for variety
+        const addressFactor = (addressStr.length % 5) * 100;
+        const bedroomsFactor = parseInt(formattedBedrooms) || 1;
+        
+        // Calculate test values that scale with property size
+        const baseRate = 2000 + (bedroomsFactor * 500) + addressFactor;
+        const premiumRate = baseRate * 1.15;
+        
+        success = true;
+        
+        // Return the mock data response with a structure that matches the PriceLabs API
+        return res.json({
+          KPIsByBedroomCategory: {
+            [formattedBedrooms]: {
+              adr: baseRate,
+              occupancy: 60 + (bedroomsFactor * 2),
+              market_occupancy: 65,
+              market_adr: baseRate,
+              sample_size: 15 + (bedroomsFactor * 3),
+              ADR75PercentileAvg: premiumRate, // For nightlyRateValue in client
+              AvgAdjustedOccupancy: 60 + (bedroomsFactor * 2)  // For occupancyValue in client
+            }
+          },
+          address: addressStr,
+          destination_id: "test-destination",
+          destination_name: "Cape Town, South Africa",
+          bedroom_category: parseInt(formattedBedrooms) || 0,
+          status: "success",
+          testMode: true
+        });
+      }
       
       // Uncomment this section once we confirm the endpoint is being called correctly
       /*
