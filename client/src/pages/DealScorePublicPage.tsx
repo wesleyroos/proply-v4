@@ -73,11 +73,34 @@ import { DealScoreReport } from "./DealScoreReportPage";
 import { EmailPDFButton } from "@/components/pdf/email-pdf-button";
 import LoanEquityChart from "@/components/LoanEquityChart";
 
+// Define a type for the form data
+interface FormData {
+  address: string;
+  purchasePrice: string;
+  size: string;
+  areaRate: string;
+  bedrooms: string;
+  bathrooms: string;
+  parking: string;
+  propertyCondition: string;
+  propertyType: string;
+  luxuryRating: string;
+  nightlyRate: string;
+  occupancy: string;
+  longTermRental: string;
+  longTermRentalMin: string;
+  longTermRentalMax: string;
+  depositAmount: string;
+  depositPercentage: string;
+  interestRate: string;
+  loanTerm: string;
+}
+
 export default function DealScorePublicPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   // Form is now a single step
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     // Property Details (Step 1 - simplified)
     address: "",
     purchasePrice: "",
@@ -296,6 +319,8 @@ export default function DealScorePublicPage() {
       field === "nightlyRate" ||
       field === "occupancy" ||
       field === "longTermRental" ||
+      field === "longTermRentalMin" ||
+      field === "longTermRentalMax" ||
       field === "depositAmount" ||
       field === "loanTerm"
     ) {
@@ -307,6 +332,31 @@ export default function DealScorePublicPage() {
       }
     }
 
+    // Handle long term rental amount changes - auto calculate min/max if needed
+    if (field === "longTermRental") {
+      const rentalAmount = Number(parseFormattedNumber(numericValue));
+      if (rentalAmount > 0) {
+        // Only auto-generate min/max if they don't exist or are significantly different from the average
+        const currentMin = Number(parseFormattedNumber(formData.longTermRentalMin || "0"));
+        const currentMax = Number(parseFormattedNumber(formData.longTermRentalMax || "0"));
+        
+        if (currentMin === 0 || currentMax === 0 || 
+            Math.abs(rentalAmount - (currentMin + currentMax) / 2) > rentalAmount * 0.05) {
+          // Generate min/max with ±7% range
+          const minAmount = Math.round(rentalAmount * 0.93);
+          const maxAmount = Math.round(rentalAmount * 1.07);
+          
+          setFormData((prev) => ({
+            ...prev,
+            [field]: value,
+            longTermRentalMin: formatWithThousandSeparators(minAmount.toString()),
+            longTermRentalMax: formatWithThousandSeparators(maxAmount.toString()),
+          }));
+          return;
+        }
+      }
+    }
+    
     if (field === "depositAmount") {
       const purchasePrice = Number(
         parseFormattedNumber(formData.purchasePrice),
