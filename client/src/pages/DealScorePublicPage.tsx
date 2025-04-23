@@ -992,8 +992,33 @@ export default function DealScorePublicPage() {
         ? "Short-Term Rental"
         : "Long-Term Rental";
 
-    // Example comparable properties (dummy data)
-    const avgComparableSalesPrice = estimatedValue * 0.98; // Average slightly below the estimated value
+    // Fetch comparable properties data from the API or use fallback
+    let comparableSalesData: ComparableSalesData | null = null;
+    let avgComparableSalesPrice = estimatedValue * 0.98; // Fallback value
+    let comparableProperties: ComparableProperty[] = [];
+    
+    try {
+      // Try to fetch real data from the API
+      comparableSalesData = await fetchComparableSales(
+        formData.address,
+        propertySize,
+        bedrooms,
+        formData.propertyType,
+        formData.propertyCondition,
+        Number(formData.luxuryRating)
+      );
+      
+      if (comparableSalesData && comparableSalesData.properties.length > 0) {
+        // Use the API data if available
+        comparableProperties = comparableSalesData.properties;
+        avgComparableSalesPrice = comparableSalesData.averageSalePrice;
+        console.log(`Successfully fetched ${comparableProperties.length} comparable properties`);
+      } else {
+        console.log("No comparable sales data returned from API, using fallback data");
+      }
+    } catch (error) {
+      console.error("Error fetching comparable sales data:", error);
+    }
 
     // Report date
     const reportDate = new Date().toLocaleDateString("en-ZA", {
@@ -1067,7 +1092,7 @@ export default function DealScorePublicPage() {
 
       // Comparable Properties
       avgComparableSalesPrice: avgComparableSalesPrice,
-      comparableProperties: [
+      comparableProperties: comparableProperties.length > 0 ? comparableProperties : [
         {
           similarity: "Similar",
           address: `${Math.floor(Math.random() * 100)} ${formData.address.split(",")[0].split(" ").pop()}`,

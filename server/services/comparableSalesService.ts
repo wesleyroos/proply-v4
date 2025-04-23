@@ -1,5 +1,19 @@
 import OpenAI from "openai";
-import { ComparableProperty, ComparableSalesData } from "../types";
+// Import the interfaces we need
+interface ComparableProperty {
+  similarity: string; // "Similar" or "Comparable"
+  address: string;
+  salePrice: number;
+  size: number;
+  pricePerSqM: number;
+  bedrooms: number;
+  saleDate: string;
+}
+
+interface ComparableSalesData {
+  properties: ComparableProperty[];
+  averageSalePrice: number;
+}
 
 // Initialize the OpenAI client
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -119,7 +133,7 @@ Your response should be based on realistic market data for the area, with sale p
     }
 
     // Make sure the properties are properly formatted
-    result.properties = result.properties.map(property => ({
+    result.properties = result.properties.map((property: ComparableProperty) => ({
       ...property,
       // Ensure consistent date format
       saleDate: formatSaleDate(property.saleDate)
