@@ -94,6 +94,8 @@ export default function DealScorePublicPage() {
     nightlyRate: "",
     occupancy: "",
     longTermRental: "",
+    longTermRentalMin: "", // Min rental amount for range
+    longTermRentalMax: "", // Max rental amount for range
     depositAmount: "",
     depositPercentage: "10", // Default to 10%
     interestRate: "11",
@@ -1504,6 +1506,22 @@ export default function DealScorePublicPage() {
         const rentalData = await rentalResponse.json();
         if (rentalData && rentalData.rentalAmount) {
           rentalAmountValue = rentalData.rentalAmount;
+          
+          // Store rental range values if available
+          if (rentalData.rentalRange) {
+            setFormData(prev => ({
+              ...prev,
+              longTermRentalMin: formatWithThousandSeparators(rentalData.rentalRange.min.toString()),
+              longTermRentalMax: formatWithThousandSeparators(rentalData.rentalRange.max.toString()),
+              longTermRental: formatWithThousandSeparators(rentalData.rentalAmount.toString()),
+            }));
+          } else {
+            setFormData(prev => ({
+              ...prev,
+              longTermRental: formatWithThousandSeparators(rentalData.rentalAmount.toString()),
+            }));
+          }
+          
           setRentalAmountStatus("success");
         }
       }

@@ -51,11 +51,15 @@ export interface DealScoreReport {
   nightlyRate: number;
   occupancyRate: number;
   monthlyLongTerm: number;
+  monthlyLongTermMin?: number; // Minimum monthly long-term rental
+  monthlyLongTermMax?: number; // Maximum monthly long-term rental
   
   // Calculated Financial Metrics
   pricePerSqM: number;
   shortTermYield: number;
   longTermYield: number;
+  longTermYieldMin?: number; // Minimum long-term yield
+  longTermYieldMax?: number; // Maximum long-term yield
   bestInvestmentStrategy: string;
   
   // Municipal Information
