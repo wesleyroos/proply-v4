@@ -1,6 +1,7 @@
 import express from 'express';
 import { getAreaRate, getDealAnalysis } from '../services/areaRateService';
 import { getRentalRate, getSuburbSentiment } from '../services/rentalRateService';
+import { getComparableSales } from '../services/comparableSalesService';
 import OpenAI from "openai";
 import { db } from 'db';
 import { dealScoreLeads } from '@db/schema';
@@ -116,6 +117,49 @@ router.post('/area-rate', async (req, res) => {
       error: 'Failed to fetch area rate',
       details: error instanceof Error ? error.message : 'Unknown error',
       message: 'Could not calculate area rate. Please try again.'
+    });
+  }
+});
+
+// Comparable sales endpoint - public access
+router.post('/comparable-sales', async (req, res) => {
+  const { address, propertySize, bedrooms, propertyType, propertyCondition, luxuryRating } = req.body;
+
+  if (!address) {
+    return res.status(400).json({ error: 'Address is required' });
+  }
+
+  if (!propertySize || isNaN(Number(propertySize))) {
+    return res.status(400).json({ error: 'Valid property size is required' });
+  }
+
+  if (!bedrooms || isNaN(Number(bedrooms))) {
+    return res.status(400).json({ error: 'Valid number of bedrooms is required' });
+  }
+
+  try {
+    console.log(`Processing comparable sales request for ${propertySize}m² ${bedrooms}-bedroom ${propertyType || 'property'} at ${address}`);
+    
+    const comparableSalesData = await getComparableSales(
+      address,
+      Number(propertySize),
+      Number(bedrooms),
+      propertyType,
+      propertyCondition,
+      luxuryRating ? Number(luxuryRating) : undefined
+    );
+
+    console.log(`Successfully retrieved ${comparableSalesData.properties.length} comparable properties`);
+    res.json({
+      success: true,
+      data: comparableSalesData
+    });
+  } catch (error) {
+    console.error('Error in comparable-sales endpoint:', error);
+    res.status(500).json({
+      error: 'Failed to fetch comparable sales data',
+      details: error instanceof Error ? error.message : 'Unknown error',
+      message: 'Could not retrieve comparable sales data. Please try again.'
     });
   }
 });
