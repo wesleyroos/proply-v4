@@ -1632,19 +1632,47 @@ export default function DealScorePublicPage() {
 
       // Fetch revenue data from PriceLabs API
       const address = formData.address;
+      console.log("Fetching revenue data for:", { address, bedrooms: formattedBedrooms });
 
-      // Get PriceLabs API data for short-term rental metrics
-      const pricelabsResponse = await fetch(
-        `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}&test=false`,
-      );
+      // Force test mode to debug the issue
+      const testMode = true;
+      console.log("Using test mode:", testMode);
 
-      if (!pricelabsResponse.ok) {
-        throw new Error(
-          `Failed to fetch revenue data: ${pricelabsResponse.statusText}`,
-        );
+      try {
+        // Get PriceLabs API data for short-term rental metrics 
+        const apiUrl = `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}&test=${testMode}`;
+        console.log("Making API request to:", apiUrl);
+        
+        const pricelabsResponse = await fetch(apiUrl, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        console.log("API response status:", pricelabsResponse.status, pricelabsResponse.statusText);
+        
+        if (!pricelabsResponse.ok) {
+          throw new Error(
+            `Failed to fetch revenue data: ${pricelabsResponse.statusText}`,
+          );
+        }
+
+        // Get response text first to check for HTML errors
+        const responseText = await pricelabsResponse.text();
+        
+        let pricelabsData;
+        try {
+          pricelabsData = JSON.parse(responseText);
+          console.log("Successfully parsed API response:", pricelabsData);
+        } catch (parseError) {
+          console.error("Failed to parse API response:", parseError);
+          console.error("Response text:", responseText.substring(0, 200) + "...");
+          throw new Error("Invalid JSON response from API");
+        }
+      } catch (fetchError) {
+        console.error("Error fetching from API:", fetchError);
+        throw fetchError;
       }
-
-      const pricelabsData = await pricelabsResponse.json();
 
       // Extract nightly rate and occupancy from PriceLabs data
       let nightlyRateValue =

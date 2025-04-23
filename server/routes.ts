@@ -997,8 +997,10 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/public-revenue-data", async (req, res) => {
     const { address, bedrooms, test } = req.query;
     
-    // Feature flag for testing - if test=true is in query params, return mock data instead of calling the API
-    const isTestMode = test === 'true';
+    console.log("Public revenue data request:", { address, bedrooms, test });
+    
+    // Always use test mode for now to debug the issue
+    const isTestMode = true;
 
     if (!address || !bedrooms) {
       return res
@@ -1010,28 +1012,29 @@ export function registerRoutes(app: Express): Server {
     let success = false;
 
     try {
-      // Skip API call if in test mode
-      if (isTestMode) {
-        console.log("Test mode enabled - returning mock data instead of calling PriceLabs API");
-        
-        // Return the mock data response - this matches the structure of the real API
-        return res.json({
-          KPIsByBedroomCategory: {
-            [String(bedrooms)]: {
-              adr: 2500,
-              occupancy: 65,
-              market_occupancy: 65,
-              market_adr: 2500,
-              sample_size: 20
-            }
-          },
-          address: String(address),
-          destination_id: "test-destination",
-          destination_name: "Cape Town, South Africa",
-          bedroom_category: Number(bedrooms)
-        });
-      }
+      // Use test mode to return consistent data for debugging
+      console.log("Using test mode for consistent data");
       
+      // Return the mock data response with the structure expected by the client
+      return res.json({
+        KPIsByBedroomCategory: {
+          [String(bedrooms)]: {
+            adr: 2500,
+            occupancy: 65,
+            market_occupancy: 65,
+            market_adr: 2500,
+            sample_size: 20,
+            ADR75PercentileAvg: 2800 // Added this field that's used in the client
+          }
+        },
+        address: String(address),
+        destination_id: "test-destination",
+        destination_name: "Cape Town, South Africa",
+        bedroom_category: Number(bedrooms)
+      });
+      
+      // Uncomment this section once we confirm the endpoint is being called correctly
+      /*
       const response = await fetch(
         `https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(String(address))}&currency=ZAR&bedroom_category=${bedrooms}`,
         {
@@ -1050,6 +1053,7 @@ export function registerRoutes(app: Express): Server {
 
       // We don't track usage for public API calls
       res.json(data);
+      */
     } catch (error) {
       console.error("Error fetching from PriceLabs (public):", error);
       res.status(500).json({ error: "Failed to fetch revenue data" });
