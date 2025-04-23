@@ -1441,11 +1441,21 @@ export default function DealScorePublicPage() {
       const data = await response.json();
 
       if (data.rentalAmount) {
+        // Update both the average rental amount and the min/max range
         setFormData((prev) => ({
           ...prev,
           longTermRental: formatWithThousandSeparators(
             data.rentalAmount.toString(),
           ),
+          // Also set the min and max values if available
+          ...(data.rentalRange && {
+            longTermRentalMin: formatWithThousandSeparators(
+              data.rentalRange.min.toString(),
+            ),
+            longTermRentalMax: formatWithThousandSeparators(
+              data.rentalRange.max.toString(),
+            ),
+          }),
         }));
         setRentalAmountStatus("success");
 
