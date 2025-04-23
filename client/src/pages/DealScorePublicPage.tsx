@@ -1638,6 +1638,8 @@ export default function DealScorePublicPage() {
       const testMode = true;
       console.log("Using test mode:", testMode);
 
+      let pricelabsData = null;
+      
       try {
         // Get PriceLabs API data for short-term rental metrics 
         const apiUrl = `/api/public-revenue-data?address=${encodeURIComponent(address)}&bedrooms=${formattedBedrooms}&test=${testMode}`;
@@ -1660,7 +1662,6 @@ export default function DealScorePublicPage() {
         // Get response text first to check for HTML errors
         const responseText = await pricelabsResponse.text();
         
-        let pricelabsData;
         try {
           pricelabsData = JSON.parse(responseText);
           console.log("Successfully parsed API response:", pricelabsData);
@@ -1681,12 +1682,13 @@ export default function DealScorePublicPage() {
         Number(parseFormattedNumber(formData.occupancy)) || 65;
 
       if (
+        pricelabsData && 
         pricelabsData.KPIsByBedroomCategory &&
         pricelabsData.KPIsByBedroomCategory[formattedBedrooms]
       ) {
         const kpiData = pricelabsData.KPIsByBedroomCategory[formattedBedrooms];
-        nightlyRateValue = kpiData.ADR75PercentileAvg;
-        occupancyValue = kpiData.AvgAdjustedOccupancy;
+        nightlyRateValue = kpiData.ADR75PercentileAvg || nightlyRateValue;
+        occupancyValue = kpiData.AvgAdjustedOccupancy || occupancyValue;
       }
 
       // Get long-term rental data
@@ -1785,16 +1787,30 @@ export default function DealScorePublicPage() {
         description:
           "You now have full access to the comprehensive property report with real revenue data.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during payment or data fetching:", error);
       setProcessingPayment(false);
 
-      toast({
-        title: "Error",
-        description:
-          "We couldn't fetch revenue data. Using estimated values instead.",
-        variant: "destructive",
-      });
+      // Check if this is a controlled fallback (test mode) or an actual error
+      const errorMessage = error?.toString() || "";
+      const isControlledFallback = errorMessage.includes("Invalid JSON response from API") || 
+                                   errorMessage.includes("Failed to fetch revenue data");
+      
+      if (isControlledFallback) {
+        // This is more of an informational message than an error
+        toast({
+          title: "Using Estimated Values",
+          description: "We're using AI-estimated values for your analysis.",
+          variant: "default",
+        });
+      } else {
+        // This is an actual error
+        toast({
+          title: "Error",
+          description: "We couldn't fetch revenue data. Using estimated values instead.",
+          variant: "destructive",
+        });
+      }
 
       // Still unlock the report but use estimated values
       setShowPaymentModal(false);

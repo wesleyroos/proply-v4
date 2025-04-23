@@ -1015,7 +1015,7 @@ export function registerRoutes(app: Express): Server {
       // Use test mode to return consistent data for debugging
       console.log("Using test mode for consistent data");
       
-      // Return the mock data response with the structure expected by the client
+      // Return the mock data response with a structure that matches what the client expects
       return res.json({
         KPIsByBedroomCategory: {
           [String(bedrooms)]: {
@@ -1024,13 +1024,15 @@ export function registerRoutes(app: Express): Server {
             market_occupancy: 65,
             market_adr: 2500,
             sample_size: 20,
-            ADR75PercentileAvg: 2800 // Added this field that's used in the client
+            ADR75PercentileAvg: 2800, // For nightlyRateValue in client
+            AvgAdjustedOccupancy: 65  // For occupancyValue in client
           }
         },
         address: String(address),
         destination_id: "test-destination",
         destination_name: "Cape Town, South Africa",
-        bedroom_category: Number(bedrooms)
+        bedroom_category: Number(bedrooms),
+        status: "success"
       });
       
       // Uncomment this section once we confirm the endpoint is being called correctly
