@@ -432,11 +432,13 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
             }
           });
           
-          // Extract listing ID from the URL
+          if (!listingUrl) return; // Skip if no valid listing URL found
+          
+          // Extract listing ID from URL
           listingId = listingUrl.split('/').pop() || '';
           
-          // Find the title, which is usually inside the link or nearby heading
-          const $heading = $(element).find('h1, h2, h3, h4, h5, .p24_title, .title, [class*="title"]').first();
+          // Find the heading/title element
+          const $heading = $(element).find('h2, h3, .title, .propertyTitle').first();
           title = $heading.text().trim();
           
           // Find address/location info
@@ -476,9 +478,26 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
             const parkingMatch = parkingText.match(/(\d+)/);
             parkingText = parkingMatch ? parkingMatch[1] : '0';
             
-            // Size/area
+            // Size/area - ENHANCED to capture square meters display format
             const $size = $features.find('[class*="size"], [class*="area"], .p24_size');
             areaText = $size.text().trim();
+            
+            // Check for area in various formats directly in the element text
+            if (!areaText || !areaText.match(/\d+\s*m²/i)) {
+              // Try to find it in the full text with square symbol patterns as seen in screenshots
+              const allText = $(element).text();
+              const squareMatch = allText.match(/(\d+)\s*(?:m²|m2|sqm)/i);
+              
+              if (squareMatch) {
+                areaText = squareMatch[0];
+              } else {
+                // Try looking for square icon ⬜ or □ followed by number and m²
+                const squareIconMatch = allText.match(/[□⬜]\s*(\d+)\s*m[²2]/i);
+                if (squareIconMatch) {
+                  areaText = squareIconMatch[1] + ' m²';
+                }
+              }
+            }
           } else {
             // If we can't find a features section, look for any text containing bedroom/bathroom mentions
             const allText = $(element).text();
@@ -525,11 +544,13 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
               bathroomsText = '1';
             }
             
-            // Look for area in square meters
+            // Look for area in square meters - IMPROVED to catch more patterns
             const areaPatterns = [
               /(\d+)\s*(?:m²|m2|sqm|square\s*meters?)/i,
               /(?:area|size|floor[^:]*)\s*:\s*(\d+)\s*(?:m²|m2|sqm)/i,
-              /(\d+)\s*(?:m²|m2|sqm)[^0-9]+(?:floor|area|size)/i
+              /(\d+)\s*(?:m²|m2|sqm)[^0-9]+(?:floor|area|size)/i,
+              /[□⬜]\s*(\d+)\s*m[²2]/i, // Square icon followed by number
+              /(\d+)\s*m[²2]/i // Just number followed by m²
             ];
             
             for (const pattern of areaPatterns) {
@@ -635,8 +656,27 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
           const parkingMatch = parkingText.match(/(\d+)/);
           parkingText = parkingMatch ? parkingMatch[1] : '0';
           
-          // Look for area
+          // Look for area - IMPROVED area extraction
           areaText = $(element).find('.propertyArea, .listingSize, .floorSize').first().text().trim();
+          
+          // If we didn't find area using direct classes, look throughout the element text
+          if (!areaText || !areaText.includes('m²')) {
+            const allText = $(element).text();
+            // Try multiple patterns to catch different formats
+            const areaPatterns = [
+              /(\d+)\s*(?:m²|m2|sqm)/i,
+              /[□⬜]\s*(\d+)\s*m[²2]/i, // Square icon followed by number as seen in screenshots
+              /(\d+)\s*m[²2]/i // Number followed by m² without space
+            ];
+            
+            for (const pattern of areaPatterns) {
+              const match = allText.match(pattern);
+              if (match) {
+                areaText = match[1] + ' m²';
+                break;
+              }
+            }
+          }
           
           // Look for image
           imageUrl = $(element).find('img.propertyImage, .listingImage, .cardImage').first().attr('src') || '';
@@ -716,6 +756,12 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
           ? Number(priceMatch[1].replace(/[\s,]/g, '')) 
           : 0;
         
+        // Extract property type first so we can use it for all calculations
+        const propertyTypeMatch = title.toLowerCase().match(/(house|apartment|flat|duplex|townhouse|studio)/);
+        const propertyType = propertyTypeMatch 
+          ? propertyTypeMatch[0] 
+          : (title.toLowerCase().includes('for sale') ? 'house' : 'flat');
+          
         // Parse numeric values - ensure residential properties have sensible defaults
         // If no bedroom data available, use sensible defaults (studio=1, apartment=2)
         let bedrooms = Number(bedroomsText) || 0;
@@ -731,13 +777,7 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
         const bathrooms = Number(bathroomsText) || 1;
         const parking = Number(parkingText) || 1; // Assume 1 parking space if not specified
         
-        // Extract property type first so we can use it for area calculation
-        const propertyTypeMatch = title.toLowerCase().match(/(house|apartment|flat|duplex|townhouse|studio)/);
-        const propertyType = propertyTypeMatch 
-          ? propertyTypeMatch[0] 
-          : (title.toLowerCase().includes('for sale') ? 'house' : 'flat');
-          
-        // Extract floor area with improved extraction and default values
+        // Extract floor area - IMPROVED to handle more patterns
         const areaMatch = areaText.match(/(\d+)\s*(?:m²|m2|sqm|square\s*meters?)/i);
         let area: number | undefined;
         
