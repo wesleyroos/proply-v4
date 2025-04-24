@@ -533,11 +533,61 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
         }
         
         // If we have a listing ID but couldn't extract all data
-        // Log which specific fields we're missing to assist with debugging
-        if (listingId) {
-          if (!title) console.log(`Missing title for listing ${listingId}`);
-          if (!address) console.log(`Missing address for listing ${listingId}`);
-          if (!priceText) console.log(`Missing price for listing ${listingId}`);
+        // Try an additional approach - look for R followed by numbers in all text
+        if (listingId && !priceText) {
+          const allText = $(element).text();
+          const anyPriceMatch = allText.match(/R\s*[\d\s,\.]+/);
+          if (anyPriceMatch) {
+            priceText = anyPriceMatch[0];
+            console.log(`Found price via text search: ${priceText}`);
+          }
+        }
+        
+        // If no title, try to create one from property type and suburb
+        if (listingId && !title) {
+          let suburbFromUrl = '';
+          const urlParts = listingUrl.split('/');
+          if (urlParts.length > 2) {
+            suburbFromUrl = urlParts[urlParts.length - 3]
+              .replace(/-/g, ' ')
+              .replace(/^\w/, c => c.toUpperCase());
+          }
+          
+          if (suburbFromUrl) {
+            title = `Property in ${suburbFromUrl}`;
+            console.log(`Created title from URL: ${title}`);
+          } else {
+            title = 'Property for sale';
+          }
+        }
+        
+        // If no address, try to extract from URL or use title
+        if (listingId && !address) {
+          let suburbFromUrl = '';
+          const urlParts = listingUrl.split('/');
+          if (urlParts.length > 2) {
+            suburbFromUrl = urlParts[urlParts.length - 3]
+              .replace(/-/g, ' ')
+              .replace(/^\w/, c => c.toUpperCase());
+          }
+          
+          if (suburbFromUrl) {
+            address = suburbFromUrl + ', Cape Town';
+            console.log(`Created address from URL: ${address}`);
+          } else {
+            address = 'Cape Town';
+          }
+        }
+        
+        // Additional debug for the first few listings
+        if (listings.length < 3) {
+          console.log(`Listing ${listingId} data:`);
+          console.log(`- Title: ${title || 'Not found'}`);
+          console.log(`- Address: ${address || 'Not found'}`);
+          console.log(`- Price: ${priceText || 'Not found'}`);
+          console.log(`- Bedrooms: ${bedroomsText || 'Not found'}`);
+          console.log(`- Bathrooms: ${bathroomsText || 'Not found'}`);
+          console.log(`- Area: ${areaText || 'Not found'}`);
         }
         
         if (!listingId) return;
