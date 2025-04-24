@@ -245,16 +245,17 @@ function generateSearchUrl(
   
   let url = '';
   
-  // Handle Sea Point specially - use a direct search URL format
+  // IMPORTANT: Use the standard format with correct suburb code for Sea Point
+  // The special URL format was redirecting to Eldorette in Gauteng!
   if (foundSuburb === 'sea point' || suburbLower.includes('sea point') || suburbLower.includes('seapoint')) {
-    // Try an alternate URL format that seems to work better for P24
-    url = 'https://www.property24.com/for-sale/sea-point/atlantic-seaboard/western-cape/429';
-    console.log(`Using special Sea Point URL: ${url}`);
+    url = `https://www.property24.com/for-sale/sea-point/cape-town/western-cape/11021`;
+    console.log(`Using Sea Point URL with correct code: ${url}`);
   }
-  // Handle Camps Bay specially 
+  // Handle Camps Bay specially - check if this works properly 
   else if (foundSuburb === 'camps bay' || suburbLower.includes('camps bay')) {
-    url = 'https://www.property24.com/for-sale/camps-bay/atlantic-seaboard/western-cape/422';
-    console.log(`Using special Camps Bay URL: ${url}`);
+    // Using standard format with the correct code instead of regional format that might redirect
+    url = `https://www.property24.com/for-sale/camps-bay/cape-town/western-cape/11014`;
+    console.log(`Using Camps Bay URL with correct code: ${url}`);
   }
   // Now use the suburb code if we found one, otherwise use the formatted suburb name
   else if (suburbCode) {
