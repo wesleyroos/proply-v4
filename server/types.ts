@@ -2,13 +2,14 @@
  * Interface representing a comparable property from sales data
  */
 export interface ComparableProperty {
-  similarity: string; // "Similar" or "Comparable"
+  similarity: string | number; // Can be a number (0-100) or string like "Similar" or "Comparable"
   address: string;
   salePrice: number;
   size: number;
   pricePerSqM: number;
   bedrooms: number;
   saleDate: string;
+  url?: string; // Link to the property listing
 }
 
 /**

@@ -154,14 +154,14 @@ export default function DealScorePublicPage() {
   
   // Interface for comparable property data
   interface ComparableProperty {
-    similarity: string;
+    similarity: string | number;
     address: string;
     salePrice: number;
     size: number;
     pricePerSqM: number;
     bedrooms: number;
     saleDate: string;
-    url?: string; // Add URL for Property24 link
+    url?: string; // URL for Property24 link
   }
   
   // Interface for comparable sales API response
@@ -3206,12 +3206,14 @@ export default function DealScorePublicPage() {
                                 <td className="px-4 py-3 text-sm">
                                   <Badge
                                     className={
-                                      property.similarity === "Similar"
-                                        ? "bg-green-500"
-                                        : "bg-blue-500"
+                                      typeof property.similarity === "number" ?
+                                        (property.similarity >= 85 ? "bg-green-500" : "bg-blue-500") :
+                                        (property.similarity === "Similar" ? "bg-green-500" : "bg-blue-500")
                                     }
                                   >
-                                    {property.similarity}
+                                    {typeof property.similarity === "number" 
+                                      ? property.similarity.toFixed(1) 
+                                      : property.similarity}
                                   </Badge>
                                 </td>
                                 <td className="px-4 py-3 text-sm">
