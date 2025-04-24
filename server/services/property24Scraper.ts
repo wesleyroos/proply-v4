@@ -93,6 +93,10 @@ const suburbCodeMap: Record<string, string> = {
 
 /**
  * Generate a Property24 search URL based on parameters
+ * 
+ * Correct format examples for Property24:
+ * https://www.property24.com/for-sale/gardens/cape-town/western-cape/9145
+ * https://www.property24.com/for-sale/city-centre/cape-town/western-cape/9138
  */
 function generateSearchUrl(
   suburb: string,
@@ -125,35 +129,49 @@ function generateSearchUrl(
     }
   }
   
+  // Format the suburb name for URL
+  const formattedSuburb = suburb
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+  
   // Build search URL with suburb code if available
   let url;
   if (suburbCode) {
-    // Use the suburb code format (correct format for Property24 codes)
-    // Instead of suburb name, just use the suburb code directly
-    url = `https://www.property24.com/${category}/cape-town/western-cape/${suburbCode}`;
+    // Use the correct format for Property24 suburb codes
+    url = `https://www.property24.com/${category}/${formattedSuburb}/cape-town/western-cape/${suburbCode}`;
   } else {
-    // Fallback to the suburb name format
-    const formattedSuburb = suburb
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
-    
-    url = `https://www.property24.com/${category}/${formattedSuburb}/western-cape/`;
+    // Fallback to the suburb name format without code
+    url = `https://www.property24.com/${category}/${formattedSuburb}/cape-town/western-cape`;
   }
   
   // Add search parameters
   const params = new URLSearchParams();
-  params.append('PropertyTypes', propertyType);
-  params.append('MinPrice', minPrice.toString());
-  params.append('MaxPrice', maxPrice.toString());
-  params.append('MinBeds', minBedrooms.toString());
-  params.append('MaxBeds', maxBedrooms.toString());
-  params.append('MinBaths', minBathrooms.toString());
-  params.append('MaxBaths', maxBathrooms.toString());
+  
+  // Only add property type if it's specified
+  if (propertyType) {
+    // Correct Property24 property type values
+    let p24PropertyType = propertyType.toLowerCase();
+    if (p24PropertyType === 'flat') p24PropertyType = 'flat';
+    else if (p24PropertyType === 'house') p24PropertyType = 'house';
+    else if (p24PropertyType === 'apartment') p24PropertyType = 'flat';
+    else if (p24PropertyType === 'townhouse') p24PropertyType = 'townhouse';
+    
+    params.append('PropertyTypes', p24PropertyType);
+  }
+  
+  // Add price and bedroom filters
+  if (minPrice > 0) params.append('MinPrice', minPrice.toString());
+  if (maxPrice > 0) params.append('MaxPrice', maxPrice.toString());
+  if (minBedrooms > 0) params.append('MinBeds', minBedrooms.toString());
+  if (maxBedrooms > 0) params.append('MaxBeds', maxBedrooms.toString());
+  if (minBathrooms > 0) params.append('MinBaths', minBathrooms.toString());
+  if (maxBathrooms > 0) params.append('MaxBaths', maxBathrooms.toString());
   if (minArea > 0) params.append('MinFloorSize', minArea.toString());
   if (maxArea > 0) params.append('MaxFloorSize', maxArea.toString());
   
-  return `${url}?${params.toString()}`;
+  const queryString = params.toString();
+  return queryString ? `${url}?${queryString}` : url;
 }
 
 /**
@@ -291,9 +309,9 @@ async function saveListings(listings: PropertyListing[]): Promise<number> {
             ? parseFloat(listing.price) 
             : listing.price;
             
-          // Save new listing with properly typed values
+          // Save new listing with field names and types that match schema
           await db.insert(propertyListings).values({
-            listing_id: listing.listingId,
+            listingId: listing.listingId,
             title: listing.title,
             address: listing.address,
             suburb: listing.suburb,
@@ -302,13 +320,13 @@ async function saveListings(listings: PropertyListing[]): Promise<number> {
             bedrooms: listing.bedrooms,
             bathrooms: listing.bathrooms,
             parking: listing.parking ?? null,
-            property_type: listing.propertyType,
+            propertyType: listing.propertyType,
             category: listing.category,
             area: listing.area ? listing.area.toString() : null,
-            image_urls: listing.imageUrls || [],
+            imageUrls: listing.imageUrls || [],
             url: listing.url,
             source: "property24",
-            scraped_at: new Date(),
+            scrapedAt: new Date(),
           });
           
           savedCount++;
@@ -332,12 +350,13 @@ async function saveListings(listings: PropertyListing[]): Promise<number> {
             const now = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
             priceHistory[now] = newPrice;
             
+            // Update with correct field names
             await db.update(propertyListings)
               .set({
-                price: newPrice,
+                price: newPrice.toString(), // Convert to string for decimal field
                 imageUrls: listing.imageUrls || existing[0].imageUrls,
                 updatedAt: new Date(),
-                priceHistory: JSON.stringify(priceHistory)
+                priceHistory: priceHistory
               })
               .where(eq(propertyListings.listingId, listing.listingId));
           }
