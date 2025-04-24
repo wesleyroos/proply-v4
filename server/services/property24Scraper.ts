@@ -111,41 +111,65 @@ function generateSearchUrl(
   minArea: number = 0,
   maxArea: number = 1000
 ): string {
+  console.log(`Generating search URL for suburb: "${suburb}"`);
+
   // Look up the suburb code
   const suburbLower = suburb.toLowerCase().trim();
   let suburbCode = '';
+  let foundSuburb = '';
   
   // Try to find exact match in map
   if (suburbCodeMap[suburbLower]) {
     suburbCode = suburbCodeMap[suburbLower];
+    foundSuburb = suburbLower;
+    console.log(`Found exact suburb match: ${foundSuburb} (code: ${suburbCode})`);
   } else {
-    // Try to find partial match in map
-    const matchingKey = Object.keys(suburbCodeMap).find(key => 
-      suburbLower.includes(key) || key.includes(suburbLower)
-    );
+    // Try to find partial match in map - this is more precise than before
+    let bestMatchLength = 0;
     
-    if (matchingKey) {
-      suburbCode = suburbCodeMap[matchingKey];
+    for (const [key, code] of Object.entries(suburbCodeMap)) {
+      // Check if the search suburb contains this known suburb
+      if (suburbLower.includes(key)) {
+        // If this is a longer/better match than what we've found so far
+        if (key.length > bestMatchLength) {
+          foundSuburb = key;
+          suburbCode = code;
+          bestMatchLength = key.length;
+        }
+      }
+      // Or check if this known suburb contains our search suburb
+      else if (key.includes(suburbLower) && suburbLower.length > 3) {
+        // If this is a longer/better match than what we've found so far
+        if (suburbLower.length > bestMatchLength) {
+          foundSuburb = key;
+          suburbCode = code;
+          bestMatchLength = suburbLower.length;
+        }
+      }
+    }
+    
+    if (foundSuburb) {
+      console.log(`Found partial suburb match: "${suburbLower}" matches with "${foundSuburb}" (code: ${suburbCode})`);
     }
   }
   
-  // Try a simpler URL format based on actual Property24 URLs
-  // Direct Property24 format URLs (2025)
-  
-  // Format the suburb name for URL
-  const formattedSuburb = suburb
+  // Format the suburb name for URL - use the matched suburb if we found one
+  const formattedSuburb = (foundSuburb || suburb)
     .toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '');
     
+  console.log(`Using formatted suburb for URL: "${formattedSuburb}"`);
+  
   let url = '';
   
-  // We're going to try multiple formats to improve our chances
-  // The most likely/simplified format directly matching website behavior
+  // Now use the suburb code if we found one, otherwise use the formatted suburb name
   if (suburbCode) {
     url = `https://www.property24.com/for-sale/${formattedSuburb}/cape-town/western-cape/${suburbCode}`;
+    console.log(`Generated URL with suburb code: ${url}`);
   } else {
     url = `https://www.property24.com/for-sale/${formattedSuburb}/cape-town/western-cape`;
+    console.log(`Generated URL without suburb code: ${url}`);
   }
   
   // Add search parameters
@@ -957,6 +981,19 @@ export async function scrapeProperty24(
   maxBedrooms: number = 10
 ): Promise<ScrapingResult> {
   try {
+    // Check for Sea Point special case (commonly misspelled or redirected)
+    if (suburb.toLowerCase().includes('sea point') || 
+        suburb.toLowerCase().includes('seapoint')) {
+      console.log('Detected Sea Point address - using specific suburb code');
+      suburb = 'sea point'; // Use exact match for the suburbCodeMap
+    }
+    
+    // Similarly for other commonly confused suburbs
+    if (suburb.toLowerCase().includes('camps bay')) {
+      console.log('Detected Camps Bay address - using specific suburb code');
+      suburb = 'camps bay';
+    }
+    
     // Generate search URL
     const searchUrl = generateSearchUrl(
       suburb,
@@ -1012,22 +1049,65 @@ export async function findComparableProperties(
   try {
     console.log(`Finding comparable sales for ${address} (${propertyType}, ${bedrooms} beds, ${propertySize}m²)`);
     
-    // Extract suburb from address
+    // Extract suburb from address more accurately
     const addressParts = address.split(',').map(part => part.trim());
+    let suburb = '';
     const possibleSuburbs = [];
     
-    // Try to extract suburb from different parts of the address
+    // Try to identify the suburb from the address parts
+    // We prioritize known suburbs that match our suburbCodeMap
     for (let i = 0; i < addressParts.length; i++) {
-      const part = addressParts[i];
-      // Skip parts that are likely not suburbs (too short, or contains numbers)
-      if (part.length > 3 && !/\d/.test(part)) {
-        possibleSuburbs.push(part);
+      const part = addressParts[i].toLowerCase();
+      
+      // Skip parts that are likely not suburbs (too short, contains numbers, or common non-suburb terms)
+      if (part.length <= 3 || /\d/.test(part) || 
+          part === "cape town" || part === "south africa" || 
+          part === "western cape" || part.includes("street") || 
+          part.includes("road") || part.includes("avenue")) {
+        continue;
+      }
+      
+      // Check if this part matches or is contained in any of our known suburbs
+      for (const [knownSuburb, code] of Object.entries(suburbCodeMap)) {
+        if (part.includes(knownSuburb) || knownSuburb.includes(part)) {
+          // We found a match to a known suburb!
+          suburb = knownSuburb;
+          console.log(`Found suburb match: "${part}" matches known suburb "${knownSuburb}"`);
+          possibleSuburbs.unshift(knownSuburb); // Add at beginning to prioritize
+          break;
+        }
+      }
+      
+      // If we haven't found a match in the map, still consider this part as a possible suburb
+      if (!suburb && part.length > 3) {
+        possibleSuburbs.push(addressParts[i]); // Keep original capitalization for display
+      }
+    }
+    
+    // If we didn't find a match in our map but we have possible suburbs, use the second part of the address
+    // This is often the suburb in addresses formatted like "123 Main Road, Sea Point, Cape Town"
+    if (!suburb && possibleSuburbs.length === 0 && addressParts.length >= 2) {
+      const secondPart = addressParts[1].trim();
+      if (secondPart.length > 3 && !/\d/.test(secondPart)) {
+        possibleSuburbs.push(secondPart);
       }
     }
     
     // Default to "Cape Town" if no suburb found
     if (possibleSuburbs.length === 0) {
       possibleSuburbs.push('Cape Town');
+    }
+    
+    console.log(`Extracted suburbs from address: ${possibleSuburbs.join(', ')}`);
+    
+    // If the first suburb is in our known suburb map, use it explicitly for better matching
+    const primarySuburb = possibleSuburbs[0].toLowerCase();
+    for (const [knownSuburb, code] of Object.entries(suburbCodeMap)) {
+      if (primarySuburb.includes(knownSuburb) || knownSuburb.includes(primarySuburb)) {
+        suburb = knownSuburb;
+        console.log(`Using known suburb: ${suburb} (code: ${code})`);
+        break;
+      }
     }
     
     // Determine property type for search
