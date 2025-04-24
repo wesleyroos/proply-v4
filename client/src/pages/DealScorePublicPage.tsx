@@ -161,6 +161,7 @@ export default function DealScorePublicPage() {
     pricePerSqM: number;
     bedrooms: number;
     saleDate: string;
+    url?: string; // Add URL for Property24 link
   }
   
   // Interface for comparable sales API response
@@ -3176,6 +3177,9 @@ export default function DealScorePublicPage() {
                             <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
                               Similarity
                             </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                              Listing
+                            </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
@@ -3213,6 +3217,20 @@ export default function DealScorePublicPage() {
                                   >
                                     {property.similarity}
                                   </Badge>
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {property.url ? (
+                                    <a 
+                                      href={property.url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                      View Listing
+                                    </a>
+                                  ) : (
+                                    <span className="text-gray-400">No Link</span>
+                                  )}
                                 </td>
                               </tr>
                             ),
