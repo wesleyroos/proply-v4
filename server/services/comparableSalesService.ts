@@ -75,9 +75,9 @@ export async function getComparableSales(
       // Calculate average sale price (using the filtered properties)
       const averageSalePrice = calculateAverageSalePrice(propertiesToUse);
       
-      // Format to the expected structure using the filtered properties
+      // Format to the expected structure using the filtered/fallback properties
       const result: ComparableSalesData = {
-        properties: filteredProperties.map(p => ({
+        properties: propertiesToUse.map(p => ({
           similarity: typeof p.similarity === 'number' ? p.similarity : 'Similar',
           address: p.address,
           salePrice: p.salePrice,
@@ -187,11 +187,14 @@ Your response should be based on realistic market data for the area, with sale p
     // Remove any outliers from the AI-generated data
     const filteredProperties = removeOutliers(result.properties);
     
+    // If we have filtered out all properties, use original set
+    const propertiesToUse = filteredProperties.length > 0 ? filteredProperties : result.properties;
+    
     // Replace the properties with filtered ones
-    result.properties = filteredProperties;
+    result.properties = propertiesToUse;
     
     // Calculate a new average sale price after outlier removal
-    result.averageSalePrice = calculateAverageSalePrice(filteredProperties);
+    result.averageSalePrice = calculateAverageSalePrice(propertiesToUse);
     
     // Make sure the properties are properly formatted
     result.properties = result.properties.map((property: ComparableProperty) => ({
