@@ -129,20 +129,31 @@ function generateSearchUrl(
     }
   }
   
+  // Format the property type correctly for URL
+  let formattedPropertyType = '';
+  if (propertyType.toLowerCase() === 'flat' || propertyType.toLowerCase() === 'apartment') {
+    formattedPropertyType = 'apartments';
+  } else if (propertyType.toLowerCase() === 'house') {
+    formattedPropertyType = 'houses';
+  } else {
+    formattedPropertyType = propertyType.toLowerCase() + 's';
+  }
+  
   // Format the suburb name for URL
   const formattedSuburb = suburb
     .toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '');
   
-  // Build search URL with suburb code if available
+  // Standard Property24 URL format (2025)
+  // Example: https://www.property24.com/apartments-for-sale/gardens/cape-town/western-cape/9145
   let url;
   if (suburbCode) {
-    // Use the correct format for Property24 suburb codes
-    url = `https://www.property24.com/${category}/${formattedSuburb}/cape-town/western-cape/${suburbCode}`;
+    // Use explicit suburb code and follow Property24's actual URL structure
+    url = `https://www.property24.com/${formattedPropertyType}-${category}/cape-town/${formattedSuburb}/western-cape/${suburbCode}`;
   } else {
-    // Fallback to the suburb name format without code
-    url = `https://www.property24.com/${category}/${formattedSuburb}/cape-town/western-cape`;
+    // Fallback to the simpler format without code
+    url = `https://www.property24.com/${formattedPropertyType}-${category}/cape-town/${formattedSuburb}/western-cape`;
   }
   
   // Add search parameters
@@ -184,14 +195,17 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
     // Fetch the search page
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
         'Referer': 'https://www.property24.com/',
         'DNT': '1',
         'Connection': 'keep-alive',
         'Upgrade-Insecure-Requests': '1',
         'Cache-Control': 'max-age=0',
+        'sec-ch-ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
       },
       timeout: 30000,
     });
@@ -201,21 +215,175 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
     }
     
     const html = await response.text();
+    
+    // Log some basic diagnostic info
+    console.log(`HTML response size: ${html.length} bytes`);
+    console.log(`Response URL: ${response.url}`);
+    
+    if (html.length < 1000) {
+      console.log('Warning: Response appears too small, possibly an error page');
+      console.log(`Response content: ${html.substring(0, 500)}`);
+    }
+    
     const $ = cheerio.load(html);
     const listings: PropertyListing[] = [];
     
-    // Extract listing data from search results
-    $('.p24_results .p24_content .p24_regularTile').each((i, element) => {
+    // Try multiple selectors to find property listings
+    // Current Property24 format (as of 2025)
+    const selectors = [
+      '.p24_content .p24_regularTile',
+      '.p24_results .p24_content .p24_regularTile',
+      '.propertyTileWrapper .propertyTileItem',
+      '.listings-wrapper .listing-result-item',
+      '.searchListingContainer .listingResult',
+      '.propertyCard',
+      '[data-test-id="search-result-item"]',
+      'article[data-testid="standard-property"]',
+      '.jsx-property-card',
+      '.ListingCell-wrap',
+      '.listing-wrapper',
+      '.property-listing',
+      '.property-card',
+      '.listingResult',
+      'article.listing',
+      '.search-result-list-item',
+      '#ct [role="article"]',
+      '.p24_listingResultsCont article'
+    ];
+    
+    let foundSelector = '';
+    let listingElements = [];
+    
+    // Try each selector until we find matching elements
+    for (const selector of selectors) {
+      listingElements = $(selector).toArray();
+      if (listingElements.length > 0) {
+        foundSelector = selector;
+        console.log(`Found ${listingElements.length} listings using selector: ${selector}`);
+        break;
+      }
+    }
+    
+    if (listingElements.length === 0) {
+      console.log('No listings found with any selector. Checking page structure...');
+      console.log(`Page title: ${$('title').text()}`);
+      console.log(`Body classes: ${$('body').attr('class')}`);
+      console.log(`Common container IDs found: ${$('#resultList, #searchResults, #listingsContainer').length}`);
+      
+      // Get more detailed structural info for debugging
+      console.log('Looking for specific HTML patterns to identify listing containers:');
+      console.log(`Found anchors with 'for-sale' in href: ${$('a[href*="for-sale"]').length}`);
+      console.log(`Found div elements with class containing 'listing': ${$('div[class*="listing"]').length}`);
+      console.log(`Found div elements with class containing 'property': ${$('div[class*="property"]').length}`);
+      console.log(`Found article elements: ${$('article').length}`);
+      
+      // Look for price elements (common in property listings)
+      console.log(`Found elements with R symbol: ${$('*:contains("R ")').length}`);
+      
+      // Check for various common structural patterns
+      console.log(`Main content area: ${$('#main, #content, #main-content, .main-content').length}`);
+      
+      // Try to identify the result list container
+      const possibleListContainers = [
+        $('div.results-container'),
+        $('div.search-results'),
+        $('div.listing-results'),
+        $('ul.property-list'),
+        $('div[id*="result"]'),
+        $('div[id*="listing"]'),
+        $('div[class*="result"]'),
+        $('div[class*="listing"]')
+      ];
+      
+      console.log('Possible listing containers:');
+      possibleListContainers.forEach((container, i) => {
+        if (container.length > 0) {
+          console.log(`Container ${i}: ${container.length} elements, classes: ${container.attr('class')}`);
+        }
+      });
+      
+      // Sample HTML structure around key elements
+      const priceElements = $('*:contains("R ")');
+      if (priceElements.length > 0) {
+        console.log('Structure around a price element:');
+        const sampleElement = $(priceElements[0]);
+        console.log(`Parent chain: ${sampleElement.parent().prop('tagName')} > ${sampleElement.parent().parent().prop('tagName')} > ${sampleElement.parent().parent().parent().prop('tagName')}`);
+        console.log(`Parent classes: ${sampleElement.parent().attr('class')} > ${sampleElement.parent().parent().attr('class')}`);
+      }
+      
+      // Try some fallback approaches if we can't find structured listings
+      // If available using the "no results" message to confirm there's actually no listings
+      if (html.includes('No results found') || html.includes('0 Properties found')) {
+        console.log('Page explicitly indicates no results found');
+      } else {
+        // Extract some sample of the HTML for further analysis
+        console.log('HTML sample snippet:');
+        console.log(html.substring(html.indexOf('<body'), Math.min(html.length, html.indexOf('<body') + 500)) + '...');
+      }
+      
+      return [];
+    }
+    
+    // Process each listing element
+    listingElements.forEach((element) => {
       try {
-        // Extract listing ID
-        const listingPath = $(element).find('a.p24_title').attr('href') || '';
-        const listingId = listingPath.split('/').pop() || '';
+        // Try different patterns to extract listing data based on the selector that worked
+        let listingId = '';
+        let title = '';
+        let address = '';
+        let priceText = '';
+        let bedroomsText = '';
+        let bathroomsText = '';
+        let parkingText = '';
+        let areaText = '';
+        let imageUrl = '';
+        let listingUrl = '';
+        
+        if (foundSelector.includes('p24_')) {
+          // Original Property24 selectors
+          listingUrl = $(element).find('a.p24_title').attr('href') || '';
+          listingId = listingUrl.split('/').pop() || '';
+          title = $(element).find('a.p24_title').text().trim();
+          address = $(element).find('span.p24_location').text().trim();
+          priceText = $(element).find('span.p24_price').text().trim();
+          bedroomsText = $(element).find('.p24_featureDetails .p24_icons.p24_bedroomIcon + span').text().trim();
+          bathroomsText = $(element).find('.p24_featureDetails .p24_icons.p24_bathroomIcon + span').text().trim();
+          parkingText = $(element).find('.p24_featureDetails .p24_icons.p24_garageIcon + span').text().trim();
+          areaText = $(element).find('.p24_size').text().trim();
+          imageUrl = $(element).find('.p24_imageSlider img').attr('src') || '';
+        } else {
+          // Try newer Property24 selectors
+          listingUrl = $(element).find('a[href*="/for-sale/"], a[href*="/to-rent/"]').attr('href') || '';
+          listingId = listingUrl.split('/').pop() || '';
+          title = $(element).find('h2, .propertyTitle, .listingTitle').first().text().trim();
+          address = $(element).find('.propertyLocation, .listingAddress, .propertyAddress').first().text().trim();
+          priceText = $(element).find('.propertyPrice, .listingPrice, .price').first().text().trim();
+          
+          // Look for bedrooms in various formats
+          bedroomsText = $(element).find('[data-testid="beds-baths"], .bedroomsBathrooms').first().text().trim();
+          const bedroomMatch = bedroomsText.match(/(\d+)(?:\s+bed)/i);
+          bedroomsText = bedroomMatch ? bedroomMatch[1] : '0';
+          
+          // Look for bathrooms
+          const bathroomMatch = bedroomsText.match(/(\d+)(?:\s+bath)/i);
+          bathroomsText = bathroomMatch ? bathroomMatch[1] : '0';
+          
+          // Look for parking
+          parkingText = $(element).find('.parkingSpaces, .garages').first().text().trim();
+          const parkingMatch = parkingText.match(/(\d+)/);
+          parkingText = parkingMatch ? parkingMatch[1] : '0';
+          
+          // Look for area
+          areaText = $(element).find('.propertyArea, .listingSize, .floorSize').first().text().trim();
+          
+          // Look for image
+          imageUrl = $(element).find('img.propertyImage, .listingImage, .cardImage').first().attr('src') || '';
+        }
+        
         if (!listingId) return;
         
-        // Extract basic information
-        const title = $(element).find('a.p24_title').text().trim();
-        const address = $(element).find('span.p24_location').text().trim();
-        const fullAddress = `${title}, ${address}`;
+        // Format the address
+        const fullAddress = address ? `${title}, ${address}` : title;
         
         // Extract suburb and city
         const addressParts = address.split(',').map(part => part.trim());
@@ -223,20 +391,18 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
         const city = addressParts[1] || 'Cape Town';
         
         // Extract price
-        const priceText = $(element).find('span.p24_price').text().trim();
         const priceMatch = priceText.match(/R\s*([\d\s,]+)/);
         const price = priceMatch 
           ? Number(priceMatch[1].replace(/[\s,]/g, '')) 
           : 0;
         
-        // Extract bedrooms, bathrooms, and garage
-        const bedrooms = Number($(element).find('.p24_featureDetails .p24_icons.p24_bedroomIcon + span').text().trim()) || 0;
-        const bathrooms = Number($(element).find('.p24_featureDetails .p24_icons.p24_bathroomIcon + span').text().trim()) || 0;
-        const parking = Number($(element).find('.p24_featureDetails .p24_icons.p24_garageIcon + span').text().trim()) || undefined;
+        // Parse numeric values
+        const bedrooms = Number(bedroomsText) || 0;
+        const bathrooms = Number(bathroomsText) || 0;
+        const parking = Number(parkingText) || undefined;
         
         // Extract floor area
-        const areaText = $(element).find('.p24_size').text().trim();
-        const areaMatch = areaText.match(/(\d+)m²/);
+        const areaMatch = areaText.match(/(\d+)\s*m²/);
         const area = areaMatch ? Number(areaMatch[1]) : undefined;
         
         // Extract property type
@@ -248,15 +414,14 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
         // Determine category
         const category = url.includes('for-sale') ? 'For Sale' : 'For Rent';
         
-        // Extract image URLs
-        const mainImage = $(element).find('.p24_imageSlider img').attr('src') || '';
-        const imageUrls = mainImage ? [mainImage] : undefined;
+        // Process image URLs
+        const imageUrls = imageUrl ? [imageUrl] : undefined;
         
-        // Build full URL
+        // Build full URL if needed
         const baseUrl = 'https://www.property24.com';
-        const fullUrl = listingPath.startsWith('http') 
-          ? listingPath 
-          : `${baseUrl}${listingPath}`;
+        const fullUrl = listingUrl.startsWith('http') 
+          ? listingUrl 
+          : `${baseUrl}${listingUrl}`;
         
         listings.push({
           listingId,
@@ -280,6 +445,20 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
     });
     
     console.log(`Extracted ${listings.length} listings from search page`);
+    
+    // If no listings found but page loaded, check page content
+    if (listings.length === 0 && html.length > 1000) {
+      if (html.includes('No results found')) {
+        console.log('Page indicates "No results found"');
+      } else if (html.includes('Sorry, we couldn\'t find that page')) {
+        console.log('Page indicates "Page not found"');
+      } else {
+        // Log a sample of the HTML to debug selector issues
+        console.log('No listings extracted. HTML sample:');
+        console.log(html.substring(0, 500) + '...');
+      }
+    }
+    
     return listings;
   } catch (error) {
     console.error('Error scraping search page:', error);
