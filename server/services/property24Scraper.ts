@@ -999,8 +999,14 @@ export async function findComparableProperties(
         maxBedrooms
       );
       
-      if (scrapingResult.success) {
-        // Re-query the database after scraping
+      if (scrapingResult.success && scrapingResult.listings && scrapingResult.listings.length > 0) {
+        // Use the scraped listings directly instead of re-querying the database
+        // This ensures we have the freshly scraped data immediately available
+        console.log(`Using ${scrapingResult.listings.length} freshly scraped listings directly`);
+        listings = [...listings, ...scrapingResult.listings]; // Combine existing and new listings
+      } else {
+        // Re-query the database as fallback
+        console.log(`No new listings found, using database listings only`);
         listings = await db.select()
           .from(propertyListings)
           .where(
