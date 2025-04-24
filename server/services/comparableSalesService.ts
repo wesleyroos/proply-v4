@@ -66,12 +66,15 @@ export async function getComparableSales(
     if (scrapedProperties && scrapedProperties.length >= 5) {
       console.log(`Using ${scrapedProperties.length} real property listings from Property24`);
       
-      // Calculate average sale price
-      const averageSalePrice = calculateAverageSalePrice(scrapedProperties);
+      // First remove outliers and keep only the filtered properties
+      const filteredProperties = removeOutliers(scrapedProperties);
       
-      // Format to the expected structure
+      // Calculate average sale price (using the filtered properties)
+      const averageSalePrice = calculateAverageSalePrice(filteredProperties);
+      
+      // Format to the expected structure using the filtered properties
       const result: ComparableSalesData = {
-        properties: scrapedProperties.map(p => ({
+        properties: filteredProperties.map(p => ({
           similarity: typeof p.similarity === 'number' ? p.similarity : 'Similar',
           address: p.address,
           salePrice: p.salePrice,
@@ -178,11 +181,15 @@ Your response should be based on realistic market data for the area, with sale p
       throw new Error("Invalid result structure: missing or empty properties array");
     }
 
-    if (typeof result.averageSalePrice !== "number" || isNaN(result.averageSalePrice)) {
-      // Calculate the average ourselves if it's missing or invalid
-      result.averageSalePrice = calculateAverageSalePrice(result.properties);
-    }
-
+    // Remove any outliers from the AI-generated data
+    const filteredProperties = removeOutliers(result.properties);
+    
+    // Replace the properties with filtered ones
+    result.properties = filteredProperties;
+    
+    // Calculate a new average sale price after outlier removal
+    result.averageSalePrice = calculateAverageSalePrice(filteredProperties);
+    
     // Make sure the properties are properly formatted
     result.properties = result.properties.map((property: ComparableProperty) => ({
       ...property,
@@ -203,15 +210,79 @@ Your response should be based on realistic market data for the area, with sale p
 }
 
 /**
- * Calculate the average sale price from a list of properties
+ * Remove outliers from a list of properties based on size and price
+ * Using the Interquartile Range (IQR) method to identify outliers
  */
-function calculateAverageSalePrice(properties: ComparableProperty[]): number {
+function removeOutliers(properties: ComparableProperty[]): ComparableProperty[] {
+  if (!properties || properties.length < 5) {
+    return properties; // Need at least 5 properties to detect outliers
+  }
+  
+  // Remove properties with missing or zero sizes/prices
+  const filteredProperties = properties.filter(p => 
+    p.size && p.size > 0 && p.salePrice && p.salePrice > 0
+  );
+  
+  if (filteredProperties.length < 5) {
+    return properties; // Need at least 5 valid properties
+  }
+  
+  // Sort arrays by size to calculate quartiles
+  const sizes = [...filteredProperties].map(p => p.size as number).sort((a, b) => a - b);
+  const n = sizes.length;
+  
+  // Calculate quartiles for sizes
+  const q1IndexSize = Math.floor(n * 0.25);
+  const q3IndexSize = Math.floor(n * 0.75);
+  const q1Size = sizes[q1IndexSize];
+  const q3Size = sizes[q3IndexSize];
+  const iqrSize = q3Size - q1Size;
+  
+  // Define bounds for sizes (1.5 is the standard multiplier for outlier detection)
+  const lowerBoundSize = q1Size - 1.5 * iqrSize;
+  const upperBoundSize = q3Size + 1.5 * iqrSize;
+  
+  console.log(`Size outlier bounds: ${lowerBoundSize} - ${upperBoundSize}`);
+  
+  // Filter out size outliers
+  const result = properties.filter(property => {
+    // If size is missing, keep the property
+    if (!property.size) return true;
+    
+    const isOutlier = property.size < lowerBoundSize || property.size > upperBoundSize;
+    
+    if (isOutlier) {
+      console.log(`Found size outlier: ${property.address} (${property.size}m²)`);
+    }
+    
+    return !isOutlier;
+  });
+  
+  console.log(`Removed ${properties.length - result.length} size outliers`);
+  return result;
+}
+
+/**
+ * Calculate the average sale price from a list of properties
+ * Optionally remove outliers before calculation
+ */
+function calculateAverageSalePrice(properties: ComparableProperty[], removeOutliersFirst: boolean = false): number {
   if (!properties || properties.length === 0) {
     return 0;
   }
   
-  const sum = properties.reduce((acc, property) => acc + property.salePrice, 0);
-  return Math.round(sum / properties.length);
+  // Optionally remove outliers before calculation
+  const propsToUse = removeOutliersFirst ? removeOutliers(properties) : properties;
+  
+  // Skip properties with zero or missing price
+  const validProperties = propsToUse.filter(p => p.salePrice && p.salePrice > 0);
+  
+  if (validProperties.length === 0) {
+    return 0;
+  }
+  
+  const sum = validProperties.reduce((acc, property) => acc + property.salePrice, 0);
+  return Math.round(sum / validProperties.length);
 }
 
 /**
