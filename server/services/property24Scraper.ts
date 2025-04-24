@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 import { db } from '@db';
-import { propertyListings } from '@db/schema';
+import { propertyListings, InsertPropertyListing } from '@db/schema';
 import { eq, and, sql, desc, lte, gte, inArray } from 'drizzle-orm';
 
 // Define types
@@ -129,7 +129,8 @@ function generateSearchUrl(
   let url;
   if (suburbCode) {
     // Use the suburb code format (correct format for Property24 codes)
-    url = `https://www.property24.com/${category}/gardens/western-cape/${suburbCode}`;
+    // Instead of suburb name, just use the suburb code directly
+    url = `https://www.property24.com/${category}/cape-town/western-cape/${suburbCode}`;
   } else {
     // Fallback to the suburb name format
     const formattedSuburb = suburb
@@ -290,27 +291,24 @@ async function saveListings(listings: PropertyListing[]): Promise<number> {
             ? parseFloat(listing.price) 
             : listing.price;
             
-          // Save new listing
+          // Save new listing with properly typed values
           await db.insert(propertyListings).values({
-            listingId: listing.listingId,
+            listing_id: listing.listingId,
             title: listing.title,
             address: listing.address,
             suburb: listing.suburb,
             city: listing.city,
-            price: priceValue,
+            price: priceValue.toString(), // Convert to string for decimal field
             bedrooms: listing.bedrooms,
             bathrooms: listing.bathrooms,
-            parking: listing.parking,
-            propertyType: listing.propertyType,
+            parking: listing.parking ?? null,
+            property_type: listing.propertyType,
             category: listing.category,
-            area: listing.area,
-            amenities: listing.amenities,
-            imageUrls: listing.imageUrls,
-            agent: listing.agent ? JSON.stringify(listing.agent) : null,
-            listedDate: listing.listedDate,
+            area: listing.area ? listing.area.toString() : null,
+            image_urls: listing.imageUrls || [],
             url: listing.url,
-            scrapedAt: new Date(),
-            updatedAt: new Date()
+            source: "property24",
+            scraped_at: new Date(),
           });
           
           savedCount++;
