@@ -1027,25 +1027,43 @@ export async function findComparableProperties(
         
         const listingBedrooms = typeof listing.bedrooms === 'number' ? listing.bedrooms : Number(listing.bedrooms);
         
-        // Adjust score based on bedrooms difference
-        const bedroomsDiff = Math.abs(listingBedrooms - bedrooms);
-        similarityScore -= bedroomsDiff * 10;
+        // Be more lenient about bedroom differences (especially when 0)
+        let bedroomsDiff = 0;
+        if (listingBedrooms === 0) {
+          // Don't heavily penalize listings with missing bedroom info
+          bedroomsDiff = 1;
+        } else {
+          bedroomsDiff = Math.abs(listingBedrooms - bedrooms);
+        }
+        similarityScore -= bedroomsDiff * 5; // Reduced penalty (was 10)
         
-        // Adjust score based on size difference
+        // Adjust score based on size difference (but be more lenient)
         const listingArea = listing.area ? (typeof listing.area === 'number' ? listing.area : Number(listing.area)) : null;
         
         if (listingArea && propertySize) {
           const sizeDiffPercent = Math.abs(listingArea - propertySize) / propertySize;
-          similarityScore -= Math.min(30, sizeDiffPercent * 100);
+          // More lenient penalty for size difference
+          similarityScore -= Math.min(20, sizeDiffPercent * 50); // Reduced penalty (was 30, sizeDiffPercent*100)
         } else {
-          similarityScore -= 15; // Penalty for missing size
+          similarityScore -= 10; // Reduced penalty for missing size (was 15)
         }
         
-        // Adjust score based on property type match
+        // Adjust score based on property type match (but be more lenient)
         const listingPropertyType = listing.propertyType || '';
         if (listingPropertyType.toLowerCase() !== searchPropertyType.toLowerCase()) {
-          similarityScore -= 10;
+          similarityScore -= 5; // Reduced penalty (was 10)
         }
+        
+        // Give bonus points for exact suburb match (most important factor)
+        if (listing.suburb && possibleSuburbs.some(s => 
+            listing.suburb.toLowerCase().includes(s.toLowerCase()) || 
+            s.toLowerCase().includes(listing.suburb.toLowerCase()))) {
+          similarityScore += 20; // Bonus for suburb match
+          console.log(`Suburb match bonus for ${listing.suburb}`);
+        }
+        
+        // Minimum similarity threshold - don't let it go below 50
+        similarityScore = Math.max(50, similarityScore);
         
         // Calculate price per square meter
         const price = typeof listing.price === 'number' ? listing.price : Number(listing.price);
