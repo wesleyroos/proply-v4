@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb, date, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
@@ -424,3 +424,35 @@ export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
 export type SelectPasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type InsertDealScoreLead = typeof dealScoreLeads.$inferInsert;
 export type SelectDealScoreLead = typeof dealScoreLeads.$inferSelect;
+
+// Add property listings table for scraped data
+export const propertyListings = pgTable("property_listings", {
+  id: serial("id").primaryKey(),
+  listingId: varchar("listing_id", { length: 100 }).unique().notNull(), // Property24 listing ID
+  title: text("title").notNull(),
+  address: text("address").notNull(),
+  suburb: varchar("suburb", { length: 100 }).notNull(),
+  city: varchar("city", { length: 100 }).notNull(),
+  price: decimal("price", { precision: 12, scale: 2 }).notNull(),
+  bedrooms: integer("bedrooms").notNull(),
+  bathrooms: integer("bathrooms").notNull(),
+  parking: integer("parking"),
+  propertyType: varchar("property_type", { length: 50 }).notNull(), // Flat, House, etc.
+  category: varchar("category", { length: 50 }).notNull(), // For Sale, For Rent, etc.
+  area: decimal("area", { precision: 10, scale: 2 }), // Floor area in square meters
+  erfSize: decimal("erf_size", { precision: 10, scale: 2 }), // Land size in square meters
+  description: text("description"),
+  amenities: text("amenities").array(),
+  imageUrls: text("image_urls").array(),
+  agent: jsonb("agent"), // Agent contact information
+  listedDate: date("listed_date"),
+  soldDate: date("sold_date"), // If available
+  priceHistory: jsonb("price_history"), // Historical price changes
+  source: varchar("source", { length: 50 }).default("property24").notNull(), // Data source
+  url: text("url").notNull(), // Original listing URL
+  scrapedAt: timestamp("scraped_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
+});
+
+export type InsertPropertyListing = typeof propertyListings.$inferInsert;
+export type SelectPropertyListing = typeof propertyListings.$inferSelect;
