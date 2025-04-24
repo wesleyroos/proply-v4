@@ -1,13 +1,20 @@
 import OpenAI from "openai";
+import { findComparableProperties } from "./property24Scraper";
+
 // Import the interfaces we need
 interface ComparableProperty {
-  similarity: string; // "Similar" or "Comparable"
+  similarity: number | string; // Number (0-100) or "Similar"/"Comparable"
   address: string;
   salePrice: number;
-  size: number;
-  pricePerSqM: number;
+  size: number | null;
+  pricePerSqM: number | null;
   bedrooms: number;
-  saleDate: string;
+  bathrooms?: number;
+  parking?: number | null;
+  propertyType?: string;
+  imageUrl?: string | null;
+  url?: string;
+  saleDate: string | null;
 }
 
 interface ComparableSalesData {
@@ -15,17 +22,20 @@ interface ComparableSalesData {
   averageSalePrice: number;
 }
 
-// Initialize the OpenAI client
+// Initialize the OpenAI client for fallback
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 /**
- * Uses OpenAI to find comparable sales data for a property
+ * Find comparable sales data for a property using a tiered approach:
+ * 1. Try using Property24 scraper to get real property listings
+ * 2. Fallback to OpenAI if scraper doesn't return enough results
+ * 
  * @param address Full address of the subject property
  * @param propertySize Size of the subject property in square meters
  * @param bedrooms Number of bedrooms in the subject property
  * @param propertyType Type of property (apartment, house, etc.)
  * @param propertyCondition Condition of the property (excellent, good, fair, poor)
- * @param luxuryRating Optional luxury rating of the property (1-5)
+ * @param luxuryRating Optional luxury rating of the property (1-10)
  * @returns Object containing comparable properties and average sale price
  */
 export async function getComparableSales(
@@ -43,6 +53,47 @@ export async function getComparableSales(
   );
 
   try {
+    // FIRST ATTEMPT: Try to get real property listings using Property24 scraper
+    const scrapedProperties = await findComparableProperties(
+      address,
+      propertySize,
+      bedrooms,
+      propertyType || 'apartment',
+      15
+    );
+
+    // If we found enough properties, use them
+    if (scrapedProperties && scrapedProperties.length >= 5) {
+      console.log(`Using ${scrapedProperties.length} real property listings from Property24`);
+      
+      // Calculate average sale price
+      const averageSalePrice = calculateAverageSalePrice(scrapedProperties);
+      
+      // Format to the expected structure
+      const result: ComparableSalesData = {
+        properties: scrapedProperties.map(p => ({
+          similarity: typeof p.similarity === 'number' ? p.similarity : 'Similar',
+          address: p.address,
+          salePrice: p.salePrice,
+          size: p.size,
+          pricePerSqM: p.pricePerSqM,
+          bedrooms: p.bedrooms,
+          bathrooms: p.bathrooms,
+          parking: p.parking,
+          propertyType: p.propertyType,
+          imageUrl: p.imageUrl,
+          url: p.url,
+          saleDate: p.saleDate ? formatSaleDate(new Date(p.saleDate).toISOString()) : 'Recent'
+        })),
+        averageSalePrice
+      };
+      
+      return result;
+    }
+    
+    // FALLBACK: Use OpenAI to generate comparable properties
+    console.log("Not enough real property listings found, falling back to AI-generated data");
+    
     // Create a system prompt for the OpenAI model
     const systemPrompt = `You are a real estate data analyst with expertise in South African property markets. Your task is to research and provide comparable property sales data based on the information provided.
     
@@ -52,7 +103,7 @@ The subject property is:
 - Bedrooms: ${bedrooms}
 - Type: ${propertyType || "Not specified"}
 - Condition: ${propertyCondition || "Not specified"}
-${luxuryRating ? `- Luxury Rating: ${luxuryRating}/5` : ""}
+${luxuryRating ? `- Luxury Rating: ${luxuryRating}/10` : ""}
 
 Based on your expert knowledge of recent property sales, generate a list of 15 comparable properties that have sold in the same area or similar neighborhoods within the last 12 months.
 
@@ -88,7 +139,7 @@ Your response should be based on realistic market data for the area, with sale p
     const userPrompt = `Find comparable property sales for ${propertySize}m² ${bedrooms}-bedroom ${
       propertyType || "property"
     } located at ${address}.${
-      luxuryRating ? ` The property has a luxury rating of ${luxuryRating}/5.` : ""
+      luxuryRating ? ` The property has a luxury rating of ${luxuryRating}/10.` : ""
     }${
       propertyCondition
         ? ` The property is in ${propertyCondition} condition.`
@@ -136,10 +187,10 @@ Your response should be based on realistic market data for the area, with sale p
     result.properties = result.properties.map((property: ComparableProperty) => ({
       ...property,
       // Ensure consistent date format
-      saleDate: formatSaleDate(property.saleDate)
+      saleDate: formatSaleDate(property.saleDate?.toString() || '')
     }));
 
-    console.log(`Successfully found ${result.properties.length} comparable properties with average price R${result.averageSalePrice.toLocaleString()}`);
+    console.log(`Successfully found ${result.properties.length} AI-generated comparable properties with average price R${result.averageSalePrice.toLocaleString()}`);
     return result;
   } catch (error) {
     console.error("Error finding comparable sales:", error);
