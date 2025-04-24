@@ -482,11 +482,63 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
           } else {
             // If we can't find a features section, look for any text containing bedroom/bathroom mentions
             const allText = $(element).text();
-            const bedroomMatch = allText.match(/(\d+)\s*(?:bed|bedroom)/i);
-            bedroomsText = bedroomMatch ? bedroomMatch[1] : '0';
             
-            const bathroomMatch = allText.match(/(\d+)\s*(?:bath|bathroom)/i);
-            bathroomsText = bathroomMatch ? bathroomMatch[1] : '0';
+            // Try multiple bedroom patterns 
+            const bedroomPatterns = [
+              /(\d+)\s*(?:bed|bedroom|bedrooms)/i,
+              /(?:bed|bedroom|bedrooms)\s*:\s*(\d+)/i,
+              /(?:bed|bedroom|bedrooms)[^\d]+(\d+)/i,
+              /(\d+)[^\d]+(?:bed|bedroom|bedrooms)/i
+            ];
+            
+            for (const pattern of bedroomPatterns) {
+              const match = allText.match(pattern);
+              if (match) {
+                bedroomsText = match[1];
+                break;
+              }
+            }
+            
+            // Default to 2 if no bedrooms found
+            if (!bedroomsText || bedroomsText === '0') {
+              bedroomsText = '2';
+            }
+            
+            // Try multiple bathroom patterns
+            const bathroomPatterns = [
+              /(\d+)\s*(?:bath|bathroom|bathrooms)/i,
+              /(?:bath|bathroom|bathrooms)\s*:\s*(\d+)/i,
+              /(?:bath|bathroom|bathrooms)[^\d]+(\d+)/i,
+              /(\d+)[^\d]+(?:bath|bathroom|bathrooms)/i
+            ];
+            
+            for (const pattern of bathroomPatterns) {
+              const match = allText.match(pattern);
+              if (match) {
+                bathroomsText = match[1];
+                break;
+              }
+            }
+            
+            // Default to 1 if no bathrooms found
+            if (!bathroomsText || bathroomsText === '0') {
+              bathroomsText = '1';
+            }
+            
+            // Look for area in square meters
+            const areaPatterns = [
+              /(\d+)\s*(?:m²|m2|sqm|square\s*meters?)/i,
+              /(?:area|size|floor[^:]*)\s*:\s*(\d+)\s*(?:m²|m2|sqm)/i,
+              /(\d+)\s*(?:m²|m2|sqm)[^0-9]+(?:floor|area|size)/i
+            ];
+            
+            for (const pattern of areaPatterns) {
+              const match = allText.match(pattern);
+              if (match) {
+                areaText = match[1] + ' m²';
+                break;
+              }
+            }
           }
           
           // Extract image URL
@@ -513,12 +565,70 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
           
           // Look for bedrooms in various formats
           bedroomsText = $(element).find('[data-testid="beds-baths"], .bedroomsBathrooms').first().text().trim();
-          const bedroomMatch = bedroomsText.match(/(\d+)(?:\s+bed)/i);
-          bedroomsText = bedroomMatch ? bedroomMatch[1] : '0';
+          
+          // Try multiple bedroom patterns 
+          const bedroomPatterns = [
+            /(\d+)(?:\s+bed)/i,
+            /(\d+)\s*(?:bed|bedroom|bedrooms)/i,
+            /(?:bed|bedroom|bedrooms)\s*:\s*(\d+)/i
+          ];
+          
+          for (const pattern of bedroomPatterns) {
+            const match = bedroomsText.match(pattern);
+            if (match) {
+              bedroomsText = match[1];
+              break;
+            }
+          }
+          
+          // If still no bedrooms, try to find in all text
+          if (!bedroomsText || bedroomsText === '0') {
+            const allText = $(element).text();
+            for (const pattern of bedroomPatterns) {
+              const match = allText.match(pattern);
+              if (match) {
+                bedroomsText = match[1];
+                break;
+              }
+            }
+          }
+          
+          // Default to 2 if no bedrooms found
+          if (!bedroomsText || bedroomsText === '0') {
+            bedroomsText = '2';
+          }
           
           // Look for bathrooms
-          const bathroomMatch = bedroomsText.match(/(\d+)(?:\s+bath)/i);
-          bathroomsText = bathroomMatch ? bathroomMatch[1] : '0';
+          const bathroomPatterns = [
+            /(\d+)(?:\s+bath)/i,
+            /(\d+)\s*(?:bath|bathroom|bathrooms)/i,
+            /(?:bath|bathroom|bathrooms)\s*:\s*(\d+)/i
+          ];
+          
+          for (const pattern of bathroomPatterns) {
+            const match = bedroomsText.match(pattern);
+            if (match) {
+              bathroomsText = match[1];
+              break;
+            }
+          }
+          
+          // If still no bathrooms, try to find in all text
+          if (!bathroomsText || bathroomsText === '0') {
+            const allText = $(element).text();
+            for (const pattern of bathroomPatterns) {
+              const match = allText.match(pattern);
+              if (match) {
+                bathroomsText = match[1];
+                break;
+              }
+            }
+          }
+          
+          // Default to 1 if no bathrooms found
+          if (!bathroomsText || bathroomsText === '0') {
+            bathroomsText = '1';
+          }
           
           // Look for parking
           parkingText = $(element).find('.parkingSpaces, .garages').first().text().trim();
