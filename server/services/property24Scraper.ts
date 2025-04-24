@@ -517,6 +517,25 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
     // Process each listing element
     listingElements.forEach((element) => {
       try {
+        // Check if this is a sponsored listing
+        const elementHtml = $(element).html() || '';
+        const elementText = $(element).text() || '';
+        
+        // Look for common sponsored indicators in the element or its children
+        const isSponsored = 
+          $(element).find('[class*="sponsor"], [class*="premium"], [class*="feature"], [data-testid*="sponsored"]').length > 0 ||
+          elementHtml.toLowerCase().includes('sponsored') || 
+          elementHtml.toLowerCase().includes('premium listing') ||
+          elementHtml.toLowerCase().includes('featured') ||
+          elementText.toLowerCase().includes('sponsored') ||
+          elementText.toLowerCase().includes('premium listing') ||
+          elementText.toLowerCase().includes('featured');
+        
+        if (isSponsored) {
+          console.log('Skipping sponsored listing');
+          return; // Skip sponsored listings
+        }
+        
         // Try different patterns to extract listing data based on the selector that worked
         let listingId = '';
         let title = '';
