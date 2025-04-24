@@ -164,6 +164,7 @@ export default function DealScorePublicPage() {
     url?: string; // URL for Property24 link
   }
   
+  
   // Interface for comparable sales API response
   interface ComparableSalesData {
     properties: ComparableProperty[];
@@ -3232,6 +3233,46 @@ export default function DealScorePublicPage() {
                                 </td>
                               </tr>
                             ),
+                          )}
+                          {/* Average row */}
+                          {dealReport.comparableProperties.length > 0 && (
+                            <tr className="bg-slate-100 font-medium border-t-2 border-slate-300">
+                              <td className="px-4 py-3 text-sm">
+                                <span className="font-semibold">AVERAGE</span>
+                              </td>
+                              <td className="px-4 py-3 text-sm">
+                                R{formatPrice(dealReport.avgComparableSalesPrice)}
+                              </td>
+                              <td className="px-4 py-3 text-sm">
+                                {(() => {
+                                  // Calculate average size
+                                  const validSizes = dealReport.comparableProperties
+                                    .filter(p => p.size && !isNaN(Number(p.size)))
+                                    .map(p => Number(p.size));
+                                  
+                                  if (validSizes.length === 0) return "-";
+                                  
+                                  const avgSize = validSizes.reduce((sum, size) => sum + size, 0) / validSizes.length;
+                                  return `${avgSize.toFixed(1)} m²`;
+                                })()}
+                              </td>
+                              <td className="px-4 py-3 text-sm">
+                                {(() => {
+                                  // Calculate average price per m²
+                                  const validPrices = dealReport.comparableProperties
+                                    .filter(p => p.pricePerSqM && !isNaN(Number(p.pricePerSqM)))
+                                    .map(p => Number(p.pricePerSqM));
+                                  
+                                  if (validPrices.length === 0) return "-";
+                                  
+                                  const avgPricePerSqM = validPrices.reduce((sum, price) => sum + price, 0) / validPrices.length;
+                                  return `R${formatPrice(avgPricePerSqM)}`;
+                                })()}
+                              </td>
+                              <td className="px-4 py-3 text-sm" colSpan={3}>
+                                {/* Empty cell for bedrooms and other columns */}
+                              </td>
+                            </tr>
                           )}
                         </tbody>
                       </table>

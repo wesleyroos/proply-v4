@@ -23,6 +23,18 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { EmailPDFButton } from "@/components/pdf/email-pdf-button"
 
+// Define the ComparableProperty interface here for simpler file dependencies
+interface ComparableProperty {
+  similarity: string | number;
+  address: string;
+  salePrice: number;
+  size: number;
+  pricePerSqM: number;
+  bedrooms: number;
+  saleDate: string;
+  url?: string; // URL for Property24 link
+}
+
 // Property data types
 export interface DealScoreReport {
   // Property Details
@@ -82,23 +94,15 @@ export interface DealScoreReport {
   loanAmount: number;
   loanTerm: number;
   monthlyPayment: number;
-  cashFlowShortTerm: number;
-  cashFlowLongTerm: number;
+  cashFlowShortTerm?: number;
+  cashFlowLongTerm?: number;
   
   // Comparable Properties
   avgComparableSalesPrice: number;
-  comparableProperties: Array<{
-    similarity: string;
-    address: string;
-    salePrice: number;
-    size: number;
-    pricePerSqM: number;
-    bedrooms: number;
-    saleDate: string;
-  }>;
+  comparableProperties: ComparableProperty[];
   
   // Metadata
-  reportDate: string;
+  reportDate?: string;
   
   // Traffic & Convenience Information
   trafficDensity?: {
