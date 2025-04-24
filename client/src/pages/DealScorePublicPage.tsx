@@ -3140,7 +3140,7 @@ export default function DealScorePublicPage() {
                       <div className="flex items-center">
                         <BarChart3 className="h-5 w-5 text-white mr-2" />
                         <h4 className="font-semibold text-white">
-                          Recently Sold Properties
+                          Similar Listings
                         </h4>
                       </div>
                       <div>
@@ -3171,11 +3171,9 @@ export default function DealScorePublicPage() {
                             <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
                               Beds
                             </th>
+
                             <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
-                              Sale Date
-                            </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
-                              Similarity
+                              Similarity Score
                             </th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
                               Listing
@@ -3204,9 +3202,7 @@ export default function DealScorePublicPage() {
                                 <td className="px-4 py-3 text-sm">
                                   {property.bedrooms}
                                 </td>
-                                <td className="px-4 py-3 text-sm">
-                                  {property.saleDate}
-                                </td>
+
                                 <td className="px-4 py-3 text-sm">
                                   <Badge
                                     className={
