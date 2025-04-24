@@ -62,15 +62,18 @@ export async function getComparableSales(
       15
     );
 
-    // If we found enough properties, use them
-    if (scrapedProperties && scrapedProperties.length >= 5) {
+    // If we found any properties, use them (we now have better filtering)
+    if (scrapedProperties && scrapedProperties.length > 0) {
       console.log(`Using ${scrapedProperties.length} real property listings from Property24`);
       
       // First remove outliers and keep only the filtered properties
       const filteredProperties = removeOutliers(scrapedProperties);
       
+      // If we have filtered out all properties, return to original set
+      const propertiesToUse = filteredProperties.length > 0 ? filteredProperties : scrapedProperties;
+      
       // Calculate average sale price (using the filtered properties)
-      const averageSalePrice = calculateAverageSalePrice(filteredProperties);
+      const averageSalePrice = calculateAverageSalePrice(propertiesToUse);
       
       // Format to the expected structure using the filtered properties
       const result: ComparableSalesData = {
@@ -211,55 +214,82 @@ Your response should be based on realistic market data for the area, with sale p
 
 /**
  * Remove outliers from a list of properties based on size and price
- * Using the Interquartile Range (IQR) method to identify outliers
+ * Using reasonable size constraints for residential properties
+ * and the Interquartile Range (IQR) method when enough data exists
  */
 function removeOutliers(properties: ComparableProperty[]): ComparableProperty[] {
-  if (!properties || properties.length < 5) {
-    return properties; // Need at least 5 properties to detect outliers
+  if (!properties || properties.length === 0) {
+    return properties;
   }
   
-  // Remove properties with missing or zero sizes/prices
-  const filteredProperties = properties.filter(p => 
-    p.size && p.size > 0 && p.salePrice && p.salePrice > 0
-  );
+  console.log(`Removing outliers from ${properties.length} properties`);
   
-  if (filteredProperties.length < 5) {
-    return properties; // Need at least 5 valid properties
-  }
-  
-  // Sort arrays by size to calculate quartiles
-  const sizes = [...filteredProperties].map(p => p.size as number).sort((a, b) => a - b);
-  const n = sizes.length;
-  
-  // Calculate quartiles for sizes
-  const q1IndexSize = Math.floor(n * 0.25);
-  const q3IndexSize = Math.floor(n * 0.75);
-  const q1Size = sizes[q1IndexSize];
-  const q3Size = sizes[q3IndexSize];
-  const iqrSize = q3Size - q1Size;
-  
-  // Define bounds for sizes (1.5 is the standard multiplier for outlier detection)
-  const lowerBoundSize = q1Size - 1.5 * iqrSize;
-  const upperBoundSize = q3Size + 1.5 * iqrSize;
-  
-  console.log(`Size outlier bounds: ${lowerBoundSize} - ${upperBoundSize}`);
-  
-  // Filter out size outliers
-  const result = properties.filter(property => {
-    // If size is missing, keep the property
+  // First, apply direct reasonable size constraints for residential properties
+  // Typical residential apartments/houses are rarely over 300m² except for luxury properties
+  const sizeFilteredProperties = properties.filter(property => {
+    // Skip properties with missing size data
     if (!property.size) return true;
     
-    const isOutlier = property.size < lowerBoundSize || property.size > upperBoundSize;
+    // Common sense filter for residential properties - typically under 300m²
+    // Properties over 300m² are likely commercial or multi-unit buildings
+    const isCommercialSize = property.size > 300;
     
-    if (isOutlier) {
-      console.log(`Found size outlier: ${property.address} (${property.size}m²)`);
+    if (isCommercialSize) {
+      console.log(`Filtering out likely commercial property: ${property.address} (${property.size}m²)`);
+      return false;
     }
     
-    return !isOutlier;
+    return true;
   });
   
-  console.log(`Removed ${properties.length - result.length} size outliers`);
-  return result;
+  console.log(`After size constraint filtering: ${sizeFilteredProperties.length} properties remain`);
+  
+  // If we have enough properties, also apply statistical outlier detection
+  if (sizeFilteredProperties.length >= 5) {
+    // Remove properties with missing or zero sizes/prices for statistics
+    const validProperties = sizeFilteredProperties.filter(p => 
+      p.size && p.size > 0 && p.salePrice && p.salePrice > 0
+    );
+    
+    if (validProperties.length >= 5) {
+      // Sort arrays by size to calculate quartiles
+      const sizes = [...validProperties].map(p => p.size as number).sort((a, b) => a - b);
+      const n = sizes.length;
+      
+      // Calculate quartiles for sizes
+      const q1IndexSize = Math.floor(n * 0.25);
+      const q3IndexSize = Math.floor(n * 0.75);
+      const q1Size = sizes[q1IndexSize];
+      const q3Size = sizes[q3IndexSize];
+      const iqrSize = q3Size - q1Size;
+      
+      // Define bounds for sizes (1.5 is the standard multiplier for outlier detection)
+      const lowerBoundSize = q1Size - 1.5 * iqrSize;
+      const upperBoundSize = q3Size + 1.5 * iqrSize;
+      
+      console.log(`Size outlier bounds: ${lowerBoundSize} - ${upperBoundSize}`);
+      
+      // Filter out size outliers
+      const result = sizeFilteredProperties.filter(property => {
+        // If size is missing, keep the property
+        if (!property.size) return true;
+        
+        const isOutlier = property.size < lowerBoundSize || property.size > upperBoundSize;
+        
+        if (isOutlier) {
+          console.log(`Found statistical size outlier: ${property.address} (${property.size}m²)`);
+        }
+        
+        return !isOutlier;
+      });
+      
+      console.log(`Removed ${sizeFilteredProperties.length - result.length} statistical outliers`);
+      return result;
+    }
+  }
+  
+  // If we don't have enough properties for statistical methods, return the size-filtered list
+  return sizeFilteredProperties;
 }
 
 /**
