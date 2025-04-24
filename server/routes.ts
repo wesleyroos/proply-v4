@@ -72,6 +72,8 @@ export function registerRoutes(app: Express): Server {
       req.path === "/deal-advisor/rental-amount" ||
       req.path === "/deal-advisor/suburb-sentiment" ||
       req.path === "/deal-advisor/comparable-sales" ||
+      req.path === "/deal-advisor/scrape-property24" ||
+      req.path === "/deal-advisor/find-comparable" ||
       req.path === "/public-revenue-data" ||
       req.path === "/traffic-data" ||
       req.path === "/tomtom-test" ||

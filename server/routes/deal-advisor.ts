@@ -305,7 +305,21 @@ router.post("/scrape-property24", async (req, res) => {
 // Endpoint to test finding comparable properties
 router.post("/find-comparable", async (req, res) => {
   try {
-    const { address, propertySize, bedrooms, propertyType } = req.body;
+    const { 
+      address, 
+      propertySize, 
+      bedrooms, 
+      propertyType,
+      bypassAuth = true  // Allow bypassing auth for development endpoints
+    } = req.body;
+    
+    // Check authentication unless bypassed
+    if (!bypassAuth && (!req.user || !req.user.id)) {
+      return res.status(401).json({
+        success: false,
+        error: "Authentication required",
+      });
+    }
 
     // Validate required fields
     if (!address || !propertySize || !bedrooms) {

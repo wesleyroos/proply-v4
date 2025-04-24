@@ -128,8 +128,8 @@ function generateSearchUrl(
   // Build search URL with suburb code if available
   let url;
   if (suburbCode) {
-    // Use the suburb code format
-    url = `https://www.property24.com/${category}/cape-town/western-cape/${suburbCode}`;
+    // Use the suburb code format (correct format for Property24 codes)
+    url = `https://www.property24.com/${category}/gardens/western-cape/${suburbCode}`;
   } else {
     // Fallback to the suburb name format
     const formattedSuburb = suburb
@@ -137,7 +137,7 @@ function generateSearchUrl(
       .replace(/\s+/g, '-')
       .replace(/[^a-z0-9-]/g, '');
     
-    url = `https://www.property24.com/${category}/${formattedSuburb}/`;
+    url = `https://www.property24.com/${category}/${formattedSuburb}/western-cape/`;
   }
   
   // Add search parameters
