@@ -1,5 +1,6 @@
 import express from "express";
 import { getComparableSales } from "../services/comparableSalesService";
+import { findComparableProperties, scrapeProperty24 } from "../services/property24Scraper";
 
 const router = express.Router();
 
@@ -13,7 +14,17 @@ router.post("/comparable-sales", async (req, res) => {
       propertyType,
       propertyCondition,
       luxuryRating,
+      bypassAuth = false, // Allow public access with explicit flag
+      useOpenAI = false, // Flag to force OpenAI usage for testing
     } = req.body;
+
+    // Check authentication unless bypassed
+    if (!bypassAuth && (!req.user || !req.user.id)) {
+      return res.status(401).json({
+        success: false,
+        error: "Authentication required",
+      });
+    }
 
     // Validate required fields
     if (!address || !propertySize || !bedrooms) {
@@ -36,22 +47,66 @@ router.post("/comparable-sales", async (req, res) => {
       });
     }
 
-    console.log(`Finding comparable sales for ${address} (${propertyType}, ${beds} beds, ${size}m²)`);
+    console.log(`Finding comparable sales for ${address} (${propertyType || 'apartment'}, ${beds} beds, ${size}m²)`);
 
-    // Get comparable sales data from the service
-    const comparableSalesData = await getComparableSales(
-      address,
-      size,
-      beds,
-      propertyType,
-      propertyCondition,
-      luxury
-    );
+    // STEP 1: Try to get real property listings using Property24 scraper
+    let comparableProperties = [];
+    let averageSalePrice = 0;
+    let dataSource = "property24";
+    
+    // If not forcing OpenAI, try the Property24 scraper first
+    if (!useOpenAI) {
+      try {
+        comparableProperties = await findComparableProperties(
+          address,
+          size,
+          beds,
+          propertyType || 'apartment',
+          15
+        );
+        
+        if (comparableProperties.length > 0) {
+          // Calculate average sale price
+          const totalPrice = comparableProperties.reduce((sum, p) => sum + p.salePrice, 0);
+          averageSalePrice = Math.round(totalPrice / comparableProperties.length);
+          
+          console.log(`Using ${comparableProperties.length} real property listings from Property24`);
+        }
+      } catch (scrapingError) {
+        console.error("Error using Property24 scraper:", scrapingError);
+      }
+    }
+    
+    // STEP 2: If Property24 failed or returned no results, fallback to OpenAI
+    if (comparableProperties.length === 0 || useOpenAI) {
+      console.log("Falling back to OpenAI for comparable sales data");
+      dataSource = "openai";
+      
+      const comparableSalesData = await getComparableSales(
+        address,
+        size,
+        beds,
+        propertyType,
+        propertyCondition,
+        luxury
+      );
+      
+      // Use the OpenAI data
+      comparableProperties = comparableSalesData.properties;
+      averageSalePrice = comparableSalesData.averageSalePrice;
+    }
 
+    // Structure the final response
+    const responseData = {
+      properties: comparableProperties,
+      averageSalePrice,
+      dataSource
+    };
+    
     // Return the data
     return res.json({
       success: true,
-      data: comparableSalesData,
+      data: responseData,
     });
   } catch (error) {
     console.error("Error in comparable sales endpoint:", error);
@@ -185,6 +240,111 @@ router.post("/rental-amount", async (req, res) => {
     });
   } catch (error) {
     console.error("Error in rental amount endpoint:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+});
+
+// DEVELOPMENT ENDPOINTS - These are for testing and development only
+
+// Endpoint to directly test Property24 scraper
+router.post("/scrape-property24", async (req, res) => {
+  try {
+    const { 
+      suburb, 
+      propertyType = 'flat', 
+      minBedrooms = 0, 
+      maxBedrooms = 10,
+      bypassAuth = true  // Allow bypassing auth for development endpoints
+    } = req.body;
+    
+    // Check authentication unless bypassed
+    if (!bypassAuth && (!req.user || !req.user.id)) {
+      return res.status(401).json({
+        success: false,
+        error: "Authentication required",
+      });
+    }
+
+    // Validate suburb
+    if (!suburb) {
+      return res.status(400).json({
+        success: false,
+        error: "suburb is required",
+      });
+    }
+
+    // Run the scraper
+    console.log(`Scraping Property24 for ${suburb}, property type: ${propertyType}, beds: ${minBedrooms}-${maxBedrooms}`);
+    
+    const results = await scrapeProperty24(
+      suburb,
+      propertyType,
+      'for-sale',
+      0, // minPrice
+      0, // maxPrice (0 = no limit)
+      minBedrooms,
+      maxBedrooms
+    );
+    
+    return res.json({
+      success: true,
+      data: results,
+    });
+  } catch (error) {
+    console.error("Error in Property24 scraper test endpoint:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+});
+
+// Endpoint to test finding comparable properties
+router.post("/find-comparable", async (req, res) => {
+  try {
+    const { address, propertySize, bedrooms, propertyType } = req.body;
+
+    // Validate required fields
+    if (!address || !propertySize || !bedrooms) {
+      return res.status(400).json({
+        success: false,
+        error: "Address, property size, and number of bedrooms are required",
+      });
+    }
+
+    // Convert to appropriate types
+    const size = Number(propertySize);
+    const beds = Number(bedrooms);
+
+    // Validate conversions
+    if (isNaN(size) || isNaN(beds)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid numeric values provided",
+      });
+    }
+
+    console.log(`Testing findComparableProperties with: ${address}, size: ${size}, beds: ${beds}, type: ${propertyType || 'apartment'}`);
+    
+    // Find comparable properties
+    const comparableProperties = await findComparableProperties(
+      address,
+      size,
+      beds,
+      propertyType || 'apartment',
+      15
+    );
+    
+    return res.json({
+      success: true,
+      count: comparableProperties.length,
+      data: comparableProperties,
+    });
+  } catch (error) {
+    console.error("Error in find comparable properties test endpoint:", error);
     return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : "Unknown error occurred",

@@ -285,45 +285,61 @@ async function saveListings(listings: PropertyListing[]): Promise<number> {
           .limit(1);
         
         if (existing.length === 0) {
+          // Convert values to proper types and format
+          const priceValue = typeof listing.price === 'string' 
+            ? parseFloat(listing.price) 
+            : listing.price;
+            
           // Save new listing
           await db.insert(propertyListings).values({
-            listing_id: listing.listingId,
+            listingId: listing.listingId,
             title: listing.title,
             address: listing.address,
             suburb: listing.suburb,
             city: listing.city,
-            price: listing.price,
+            price: priceValue,
             bedrooms: listing.bedrooms,
             bathrooms: listing.bathrooms,
             parking: listing.parking,
-            property_type: listing.propertyType,
+            propertyType: listing.propertyType,
             category: listing.category,
             area: listing.area,
             amenities: listing.amenities,
-            image_urls: listing.imageUrls,
+            imageUrls: listing.imageUrls,
             agent: listing.agent ? JSON.stringify(listing.agent) : null,
-            listed_date: listing.listedDate,
+            listedDate: listing.listedDate,
             url: listing.url,
+            scrapedAt: new Date(),
+            updatedAt: new Date()
           });
           
           savedCount++;
         } else {
-          // Update existing listing if needed
-          if (listing.price !== Number(existing[0].price)) {
+          // Convert values to proper types for comparison
+          const existingPrice = typeof existing[0].price === 'string' 
+            ? parseFloat(existing[0].price) 
+            : Number(existing[0].price);
+            
+          const newPrice = typeof listing.price === 'string' 
+            ? parseFloat(listing.price) 
+            : listing.price;
+            
+          // Update existing listing if price has changed
+          if (newPrice !== existingPrice) {
             // Save price history if price changed
             const priceHistory = existing[0].priceHistory 
               ? JSON.parse(existing[0].priceHistory?.toString() || '{}') 
               : {};
             
             const now = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-            priceHistory[now] = listing.price;
+            priceHistory[now] = newPrice;
             
             await db.update(propertyListings)
               .set({
-                price: listing.price,
-                image_urls: listing.imageUrls || existing[0].imageUrls,
-                updated_at: new Date(),
-                price_history: JSON.stringify(priceHistory)
+                price: newPrice,
+                imageUrls: listing.imageUrls || existing[0].imageUrls,
+                updatedAt: new Date(),
+                priceHistory: JSON.stringify(priceHistory)
               })
               .where(eq(propertyListings.listingId, listing.listingId));
           }
@@ -510,7 +526,7 @@ export async function findComparableProperties(
         }
         
         // Adjust score based on property type match
-        const listingPropertyType = listing.property_type || '';
+        const listingPropertyType = listing.propertyType || '';
         if (listingPropertyType.toLowerCase() !== searchPropertyType.toLowerCase()) {
           similarityScore -= 10;
         }
@@ -521,8 +537,8 @@ export async function findComparableProperties(
         
         // Format imageUrl
         let imageUrl = null;
-        if (listing.image_urls && Array.isArray(listing.image_urls) && listing.image_urls.length > 0) {
-          imageUrl = listing.image_urls[0];
+        if (listing.imageUrls && Array.isArray(listing.imageUrls) && listing.imageUrls.length > 0) {
+          imageUrl = listing.imageUrls[0];
         }
         
         comparableProperties.push({
@@ -535,10 +551,10 @@ export async function findComparableProperties(
           bedrooms: listingBedrooms,
           bathrooms: typeof listing.bathrooms === 'number' ? listing.bathrooms : Number(listing.bathrooms),
           parking: listing.parking ? (typeof listing.parking === 'number' ? listing.parking : Number(listing.parking)) : null,
-          propertyType: listing.property_type || 'Unknown',
+          propertyType: listing.propertyType || 'Unknown',
           imageUrl,
           url: listing.url || '',
-          saleDate: listing.listed_date ? new Date(listing.listed_date).toISOString() : null,
+          saleDate: listing.listedDate ? new Date(listing.listedDate).toISOString() : null,
         });
       } catch (err) {
         console.error('Error processing listing:', err);
