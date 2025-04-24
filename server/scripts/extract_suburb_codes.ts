@@ -2,6 +2,11 @@ import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+// ES Module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Define the provinces we want to crawl (can be expanded)
 const provinces = [
