@@ -499,9 +499,9 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
               }
             }
             
-            // Default to 2 if no bedrooms found
-            if (!bedroomsText || bedroomsText === '0') {
-              bedroomsText = '2';
+            // Default to 2 only if no bedrooms found, allow 0 to remain 0
+            if (!bedroomsText) {
+              bedroomsText = '2'; // Only if missing completely
             }
             
             // Try multiple bathroom patterns
@@ -593,9 +593,9 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
             }
           }
           
-          // Default to 2 if no bedrooms found
-          if (!bedroomsText || bedroomsText === '0') {
-            bedroomsText = '2';
+          // Default to 2 only if no bedrooms info found, allow 0 to remain 0
+          if (!bedroomsText) {
+            bedroomsText = '2'; // Only if missing completely
           }
           
           // Look for bathrooms

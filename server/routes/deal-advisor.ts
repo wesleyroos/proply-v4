@@ -57,7 +57,9 @@ router.post("/comparable-sales", async (req, res) => {
     // If not forcing OpenAI, try the Property24 scraper first
     if (!useOpenAI) {
       try {
-        comparableProperties = await findComparableProperties(
+        console.log(`Trying to find comparable properties in ${address} using Property24 scraper`);
+        
+        const scrapedProperties = await findComparableProperties(
           address,
           size,
           beds,
@@ -65,12 +67,17 @@ router.post("/comparable-sales", async (req, res) => {
           15
         );
         
-        if (comparableProperties.length > 0) {
+        if (scrapedProperties.length > 0) {
+          // Successfully found scraped properties! Use them.
+          comparableProperties = scrapedProperties;
+          
           // Calculate average sale price
           const totalPrice = comparableProperties.reduce((sum, p) => sum + p.salePrice, 0);
           averageSalePrice = Math.round(totalPrice / comparableProperties.length);
           
-          console.log(`Using ${comparableProperties.length} real property listings from Property24`);
+          console.log(`Success! Using ${comparableProperties.length} real property listings from Property24`);
+        } else {
+          console.log("No comparable properties found from Property24 scraper - will fall back to OpenAI");
         }
       } catch (scrapingError) {
         console.error("Error using Property24 scraper:", scrapingError);
