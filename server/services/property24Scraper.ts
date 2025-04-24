@@ -163,8 +163,19 @@ function generateSearchUrl(
   
   let url = '';
   
+  // Handle Sea Point specially - use a direct search URL format
+  if (foundSuburb === 'sea point' || suburbLower.includes('sea point') || suburbLower.includes('seapoint')) {
+    // Try an alternate URL format that seems to work better for P24
+    url = 'https://www.property24.com/for-sale/sea-point/atlantic-seaboard/western-cape/429';
+    console.log(`Using special Sea Point URL: ${url}`);
+  }
+  // Handle Camps Bay specially 
+  else if (foundSuburb === 'camps bay' || suburbLower.includes('camps bay')) {
+    url = 'https://www.property24.com/for-sale/camps-bay/atlantic-seaboard/western-cape/422';
+    console.log(`Using special Camps Bay URL: ${url}`);
+  }
   // Now use the suburb code if we found one, otherwise use the formatted suburb name
-  if (suburbCode) {
+  else if (suburbCode) {
     url = `https://www.property24.com/for-sale/${formattedSuburb}/cape-town/western-cape/${suburbCode}`;
     console.log(`Generated URL with suburb code: ${url}`);
   } else {
