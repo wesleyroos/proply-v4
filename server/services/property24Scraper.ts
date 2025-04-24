@@ -716,20 +716,52 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
           ? Number(priceMatch[1].replace(/[\s,]/g, '')) 
           : 0;
         
-        // Parse numeric values
-        const bedrooms = Number(bedroomsText) || 0;
-        const bathrooms = Number(bathroomsText) || 0;
-        const parking = Number(parkingText) || undefined;
+        // Parse numeric values - ensure residential properties have sensible defaults
+        // If no bedroom data available, use sensible defaults (studio=1, apartment=2)
+        let bedrooms = Number(bedroomsText) || 0;
+        if (bedrooms === 0 && propertyType.includes('flat')) {
+          bedrooms = 2; // Assume 2 bedrooms for apartments/flats with missing data
+        } else if (bedrooms === 0 && propertyType.includes('house')) {
+          bedrooms = 3; // Assume 3 bedrooms for houses with missing data
+        } else if (bedrooms === 0) {
+          bedrooms = 2; // Default assumption for any residential property
+        }
         
-        // Extract floor area
-        const areaMatch = areaText.match(/(\d+)\s*m²/);
-        const area = areaMatch ? Number(areaMatch[1]) : undefined;
+        // Default to 1 bathroom if missing
+        const bathrooms = Number(bathroomsText) || 1;
+        const parking = Number(parkingText) || 1; // Assume 1 parking space if not specified
         
-        // Extract property type
+        // Extract property type first so we can use it for area calculation
         const propertyTypeMatch = title.toLowerCase().match(/(house|apartment|flat|duplex|townhouse|studio)/);
         const propertyType = propertyTypeMatch 
           ? propertyTypeMatch[0] 
           : (title.toLowerCase().includes('for sale') ? 'house' : 'flat');
+          
+        // Extract floor area with improved extraction and default values
+        const areaMatch = areaText.match(/(\d+)\s*(?:m²|m2|sqm|square\s*meters?)/i);
+        let area: number | undefined;
+        
+        if (areaMatch) {
+          area = Number(areaMatch[1]);
+        } else {
+          // Provide sensible default sizes for different property types when area is missing
+          if (propertyType.includes('flat') || propertyType.includes('apartment')) {
+            // Default apartment/flat size based on bedrooms
+            if (bedrooms <= 1) area = 45; // Studio or 1BR
+            else if (bedrooms === 2) area = 65; // 2BR
+            else if (bedrooms === 3) area = 85; // 3BR
+            else area = 85 + ((bedrooms - 3) * 20); // Larger units
+          } else if (propertyType.includes('house')) {
+            // Default house size based on bedrooms
+            if (bedrooms <= 2) area = 100;
+            else if (bedrooms === 3) area = 140;
+            else if (bedrooms === 4) area = 180;
+            else area = 180 + ((bedrooms - 4) * 40);
+          } else {
+            // Generic default
+            area = 70 + (bedrooms * 20);
+          }
+        }
         
         // Determine category
         const category = url.includes('for-sale') ? 'For Sale' : 'For Rent';
@@ -928,6 +960,7 @@ export async function scrapeProperty24(
 
 /**
  * Find comparable property listings based on address and features
+ * This function only returns residential properties (houses, apartments, flats)
  */
 export async function findComparableProperties(
   address: string,
