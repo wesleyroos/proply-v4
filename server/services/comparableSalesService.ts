@@ -227,18 +227,18 @@ function removeOutliers(properties: ComparableProperty[]): ComparableProperty[] 
   
   console.log(`Removing outliers from ${properties.length} properties`);
   
-  // First, apply direct reasonable size constraints for residential properties
-  // Typical residential apartments/houses are rarely over 300m² except for luxury properties
+  // First, apply direct constraints for obviously non-residential properties
+  // Large properties (>450m²) are almost certainly commercial, not residential
   const sizeFilteredProperties = properties.filter(property => {
     // Skip properties with missing size data
     if (!property.size) return true;
     
-    // Common sense filter for residential properties - typically under 300m²
-    // Properties over 300m² are likely commercial or multi-unit buildings
-    const isCommercialSize = property.size > 300;
+    // Only filter out extremely large properties that are certainly commercial
+    // Most residential properties are under 400m², but some luxury homes/penthouses can be large
+    const isDefinitelyCommercialSize = property.size > 450;
     
-    if (isCommercialSize) {
-      console.log(`Filtering out likely commercial property: ${property.address} (${property.size}m²)`);
+    if (isDefinitelyCommercialSize) {
+      console.log(`Filtering out definitely commercial property: ${property.address} (${property.size}m²)`);
       return false;
     }
     

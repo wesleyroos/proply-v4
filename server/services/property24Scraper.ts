@@ -517,19 +517,25 @@ async function scrapeSearchPage(url: string): Promise<PropertyListing[]> {
     // Process each listing element
     listingElements.forEach((element) => {
       try {
-        // Check if this is a sponsored listing
-        const elementHtml = $(element).html() || '';
-        const elementText = $(element).text() || '';
+        // Check if this is a sponsored listing, but be more selective
+        // Only look for specific sponsored indicators to avoid filtering too many listings
         
-        // Look for common sponsored indicators in the element or its children
-        const isSponsored = 
-          $(element).find('[class*="sponsor"], [class*="premium"], [class*="feature"], [data-testid*="sponsored"]').length > 0 ||
-          elementHtml.toLowerCase().includes('sponsored') || 
-          elementHtml.toLowerCase().includes('premium listing') ||
-          elementHtml.toLowerCase().includes('featured') ||
-          elementText.toLowerCase().includes('sponsored') ||
-          elementText.toLowerCase().includes('premium listing') ||
-          elementText.toLowerCase().includes('featured');
+        // First check for explicit sponsored badges
+        const hasExplicitSponsoredBadge = 
+          $(element).find('[class*="sponsored-badge"],[class*="sponsoredBadge"],[data-testid="sponsored-badge"]').length > 0;
+        
+        // Check for specific premium listing badges
+        const hasPremiumBadge =
+          $(element).find('[class*="premium-badge"],[class*="premiumBadge"]').length > 0;
+        
+        // More targeted check for featured text
+        const elementText = $(element).text() || '';
+        const hasExplicitFeaturedText = 
+          elementText.match(/^\s*featured\s*$/i) || // Exact "Featured" text
+          elementText.match(/^\s*sponsored\s*$/i); // Exact "Sponsored" text
+        
+        // Only mark as sponsored if we have clear indicators
+        const isSponsored = hasExplicitSponsoredBadge || hasPremiumBadge || hasExplicitFeaturedText;
         
         if (isSponsored) {
           console.log('Skipping sponsored listing');
