@@ -352,7 +352,10 @@ export default function DealScorePublicPage() {
     return value.replace(/,/g, "");
   };
 
-  const formatPrice = (value: number, decimals: number = 0): string => {
+  const formatPrice = (value: number | null | undefined, decimals: number = 0): string => {
+    if (value === null || value === undefined) {
+      return "0";
+    }
     return value.toLocaleString("en-ZA", {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
