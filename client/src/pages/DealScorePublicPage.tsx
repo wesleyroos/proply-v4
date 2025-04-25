@@ -1099,7 +1099,52 @@ export default function DealScorePublicPage() {
       // Comparable Properties
       avgComparableSalesPrice: avgComparableSalesPrice,
       comparableProperties: comparableProperties,
-
+      
+      // Historical Sales Data (Mock data until Knowledge Factory API integration)
+      historicalSales: [
+        {
+          address: "505 Mandela Rhodes Place, Cape Town City Centre",
+          transferDate: "15/01/2024",
+          salePrice: 3450000,
+          size: 82,
+          pricePerSqM: 42073,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT12345"
+        },
+        {
+          address: "301 Cartwright's Corner, Cape Town City Centre",
+          transferDate: "05/12/2023",
+          salePrice: 3280000,
+          size: 78,
+          pricePerSqM: 42051,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT65432"
+        },
+        {
+          address: "407 The Decks, Cape Town City Centre",
+          transferDate: "22/11/2023",
+          salePrice: 3590000,
+          size: 88,
+          pricePerSqM: 40795,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT78901"
+        },
+        {
+          address: "210 Icon Building, Cape Town City Centre",
+          transferDate: "08/10/2023",
+          salePrice: 3175000,
+          size: 75,
+          pricePerSqM: 42333,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT45678"
+        }
+      ],
+      avgHistoricalSalePrice: 3373750,
+      
       // Metadata
       reportDate: reportDate,
 
