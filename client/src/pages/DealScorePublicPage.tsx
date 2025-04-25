@@ -3280,6 +3280,136 @@ export default function DealScorePublicPage() {
                   </div>
                 </div>
 
+                {/* Historical Sales Table */}
+                <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 mb-6">
+                  <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <Receipt className="h-5 w-5 text-white mr-2" />
+                        <h4 className="font-semibold text-white">
+                          Recent Sales Data
+                        </h4>
+                      </div>
+                      <div>
+                        {dealReport.historicalSales && dealReport.historicalSales.length > 0 && dealReport.avgHistoricalSalePrice && (
+                          <Badge className="bg-white text-slate-700 hover:bg-gray-100">
+                            Average: R{formatPrice(dealReport.avgHistoricalSalePrice)}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    {dealReport.historicalSales && dealReport.historicalSales.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-border">
+                          <thead>
+                            <tr>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                                Address
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                                Sale Price
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                                Size
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                                Price/m²
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                                Beds
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                                Property Type
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground tracking-wider">
+                                Transfer Date
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border">
+                            {dealReport.historicalSales.map((property, index) => (
+                              <tr
+                                key={index}
+                                className={index % 2 === 0 ? "bg-muted/20" : ""}
+                              >
+                                <td className="px-4 py-3 text-sm">
+                                  {property.address}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  R{formatPrice(property.salePrice)}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {property.size} m²
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  R{formatPrice(property.pricePerSqM)}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {property.bedrooms}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {property.propertyType}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {property.transferDate}
+                                </td>
+                              </tr>
+                            ))}
+                            {/* Average row */}
+                            {dealReport.historicalSales.length > 0 && (
+                              <tr className="bg-slate-100 font-medium border-t-2 border-slate-300">
+                                <td className="px-4 py-3 text-sm">
+                                  <span className="font-semibold">AVERAGE</span>
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  R{formatPrice(dealReport.avgHistoricalSalePrice)}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {(() => {
+                                    // Calculate average size
+                                    const validSizes = dealReport.historicalSales
+                                      .filter(p => p.size && !isNaN(Number(p.size)))
+                                      .map(p => Number(p.size));
+                                    
+                                    if (validSizes.length === 0) return "-";
+                                    
+                                    const avgSize = validSizes.reduce((sum, size) => sum + size, 0) / validSizes.length;
+                                    return `${avgSize.toFixed(1)} m²`;
+                                  })()}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {(() => {
+                                    // Calculate average price per m²
+                                    const validPrices = dealReport.historicalSales
+                                      .filter(p => p.pricePerSqM && !isNaN(Number(p.pricePerSqM)))
+                                      .map(p => Number(p.pricePerSqM));
+                                    
+                                    if (validPrices.length === 0) return "-";
+                                    
+                                    const avgPricePerSqM = validPrices.reduce((sum, price) => sum + price, 0) / validPrices.length;
+                                    return `R${formatPrice(avgPricePerSqM)}`;
+                                  })()}
+                                </td>
+                                <td className="px-4 py-3 text-sm" colSpan={3}>
+                                  {/* Empty cell for bedrooms and other columns */}
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <Receipt className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                        <p>No historical sales data is currently available for this area.</p>
+                        <p className="text-sm mt-2">Sales data will be provided by Knowledge Factory API shortly.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
                   <div className="bg-gradient-to-r from-slate-700 to-gray-600 px-4 py-3">
                     <div className="flex items-center">

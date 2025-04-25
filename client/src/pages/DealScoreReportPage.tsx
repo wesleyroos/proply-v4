@@ -35,6 +35,18 @@ interface ComparableProperty {
   url?: string; // URL for Property24 link
 }
 
+// Define the HistoricalSale interface for completed sales data
+interface HistoricalSale {
+  address: string;
+  transferDate: string; // When the property transfer was completed
+  salePrice: number;
+  size: number;
+  pricePerSqM: number;
+  bedrooms: number;
+  propertyType: string; // House, Apartment, etc.
+  erf?: string; // Optional ERF number for property identification
+}
+
 // Property data types
 export interface DealScoreReport {
   // Property Details
@@ -100,6 +112,10 @@ export interface DealScoreReport {
   // Comparable Properties
   avgComparableSalesPrice: number;
   comparableProperties: ComparableProperty[];
+  
+  // Historical Sales Data
+  historicalSales?: HistoricalSale[];
+  avgHistoricalSalePrice?: number;
   
   // Metadata
   reportDate?: string;
@@ -199,7 +215,7 @@ export default function DealScoreReportPage({ report }: { report?: DealScoreRepo
     cashFlowShortTerm: 18650,
     cashFlowLongTerm: -8850,
     
-    // Comparable Properties
+    // Comparable Properties (current listings from Property24)
     avgComparableSalesPrice: 4943949,
     comparableProperties: [
       {
@@ -230,6 +246,51 @@ export default function DealScoreReportPage({ report }: { report?: DealScoreRepo
         saleDate: "2023/10/30"
       }
     ],
+    
+    // Historical Sales (from Deeds Office - Knowledge Factory)
+    historicalSales: [
+      {
+        address: "505 Mandela Rhodes Place, Cape Town City Centre",
+        transferDate: "15/01/2024",
+        salePrice: 3450000,
+        size: 82,
+        pricePerSqM: 42073,
+        bedrooms: 2,
+        propertyType: "Apartment",
+        erf: "CT12345"
+      },
+      {
+        address: "301 Cartwright's Corner, Cape Town City Centre",
+        transferDate: "05/12/2023",
+        salePrice: 3280000,
+        size: 78,
+        pricePerSqM: 42051,
+        bedrooms: 2,
+        propertyType: "Apartment",
+        erf: "CT65432"
+      },
+      {
+        address: "407 The Decks, Cape Town City Centre",
+        transferDate: "22/11/2023",
+        salePrice: 3590000,
+        size: 88,
+        pricePerSqM: 40795,
+        bedrooms: 2,
+        propertyType: "Apartment",
+        erf: "CT78901"
+      },
+      {
+        address: "210 Icon Building, Cape Town City Centre",
+        transferDate: "08/10/2023",
+        salePrice: 3175000,
+        size: 75,
+        pricePerSqM: 42333,
+        bedrooms: 2,
+        propertyType: "Apartment",
+        erf: "CT45678"
+      }
+    ],
+    avgHistoricalSalePrice: 3373750,
     
     // Metadata
     reportDate: "20 March 2025",
