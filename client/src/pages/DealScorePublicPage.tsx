@@ -1141,9 +1141,119 @@ export default function DealScorePublicPage() {
           bedrooms: 2,
           propertyType: "Apartment",
           erf: "CT45678"
+        },
+        {
+          address: "603 Mutual Heights, Cape Town City Centre",
+          transferDate: "17/02/2024",
+          salePrice: 3320000,
+          size: 76,
+          pricePerSqM: 43684,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT23456"
+        },
+        {
+          address: "802 The Fountains, Cape Town City Centre",
+          transferDate: "03/01/2024",
+          salePrice: 3680000,
+          size: 92,
+          pricePerSqM: 40000,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT89012"
+        },
+        {
+          address: "401 Park Central, Cape Town City Centre",
+          transferDate: "12/12/2023",
+          salePrice: 3220000,
+          size: 79,
+          pricePerSqM: 40759,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT34567"
+        },
+        {
+          address: "308 The Adderley, Cape Town City Centre",
+          transferDate: "29/11/2023",
+          salePrice: 3380000,
+          size: 81,
+          pricePerSqM: 41728,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT90123"
+        },
+        {
+          address: "905 Triangle House, Cape Town City Centre",
+          transferDate: "15/10/2023",
+          salePrice: 3490000,
+          size: 85,
+          pricePerSqM: 41059,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT56789"
+        },
+        {
+          address: "702 Parliament Towers, Cape Town City Centre",
+          transferDate: "08/09/2023",
+          salePrice: 3250000,
+          size: 80,
+          pricePerSqM: 40625,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT01234"
+        },
+        {
+          address: "507 Metropolitan, Cape Town City Centre",
+          transferDate: "18/08/2023",
+          salePrice: 3400000,
+          size: 83,
+          pricePerSqM: 40964,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT67890"
+        },
+        {
+          address: "205 St Martini Gardens, Cape Town City Centre",
+          transferDate: "25/07/2023",
+          salePrice: 3510000,
+          size: 84,
+          pricePerSqM: 41786,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT12378"
+        },
+        {
+          address: "604 Urban Oasis, Cape Town City Centre",
+          transferDate: "10/07/2023",
+          salePrice: 3350000,
+          size: 82,
+          pricePerSqM: 40854,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT78945"
+        },
+        {
+          address: "403 City Square, Cape Town City Centre",
+          transferDate: "28/06/2023",
+          salePrice: 3290000,
+          size: 79,
+          pricePerSqM: 41646,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT23490"
+        },
+        {
+          address: "809 Heritage Place, Cape Town City Centre",
+          transferDate: "15/06/2023",
+          salePrice: 3420000,
+          size: 83,
+          pricePerSqM: 41205,
+          bedrooms: 2,
+          propertyType: "Apartment",
+          erf: "CT56123"
         }
       ],
-      avgHistoricalSalePrice: 3373750,
+      avgHistoricalSalePrice: 3387000,
       
       // Metadata
       reportDate: reportDate,
@@ -3332,7 +3442,7 @@ export default function DealScorePublicPage() {
                       <div className="flex items-center">
                         <Receipt className="h-5 w-5 text-white mr-2" />
                         <h4 className="font-semibold text-white">
-                          Recent Sales Data
+                          Recently Sold Properties
                         </h4>
                       </div>
                       <div>
@@ -3449,7 +3559,7 @@ export default function DealScorePublicPage() {
                       <div className="text-center py-8 text-gray-500">
                         <Receipt className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                         <p>No historical sales data is currently available for this area.</p>
-                        <p className="text-sm mt-2">Sales data will be provided by Knowledge Factory API shortly.</p>
+                        <p className="text-sm mt-2">Data will be provided by Knowledge Factory API integration.</p>
                       </div>
                     )}
                   </div>
