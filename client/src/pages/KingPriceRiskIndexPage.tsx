@@ -104,6 +104,8 @@ interface RiskResult {
     suburb?: string;
     city?: string;
     postalCode?: string;
+    replacementCost?: string;
+    estimatedMarketValue?: string;
   };
   buildingDetails?: {
     roofType?: string;
