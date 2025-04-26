@@ -88,6 +88,24 @@ interface RiskResult {
   maxRiskPoints: number;
   riskRating: "Very Low" | "Low" | "Moderate" | "High" | "Very High";
   riskColor: string;
+  premiumRange?: {
+    low: string;
+    high: string;
+    factors: string[];
+  };
+  commercialRisk?: {
+    businessInterruptionScore: number; // 1-100 scale
+    liabilityExposureRating: "Low" | "Medium" | "High";
+    occupationType: string;
+    occupationRiskLevel: "Low" | "Medium" | "High";
+  };
+  claimsProbability?: {
+    fire: number; // percentage
+    theft: number;
+    waterDamage: number;
+    stormDamage: number;
+    liability: number;
+  };
   propertyDetails: {
     address: string;
     propertyType: string;
@@ -106,6 +124,11 @@ interface RiskResult {
     postalCode?: string;
     replacementCost?: string;
     estimatedMarketValue?: string;
+    replacementBreakdown?: {
+      buildingShell: string;
+      fixtures: string;
+      codeCompliance: string;
+    };
   };
   buildingDetails?: {
     roofType?: string;
@@ -1299,12 +1322,80 @@ ${hailRiskRating === "Medium" || hailRiskRating === "High" ? `${hailRiskRating} 
 
 Based on the overall risk assessment, we recommend a comprehensive insurance policy that specifically addresses the identified risk factors.`;
 
+    // Commercial insurance premium range calculation (for commercial properties)
+    // Base premium calculation approximately 0.5% to 0.8% of property value annually
+    const annualBasePremiumLow = price * 0.005;
+    const annualBasePremiumHigh = price * 0.008;
+    
+    // Adjust based on risk factors
+    const riskMultiplier = overallRiskPercentage / 50; // 1.0 = medium risk, lower is better
+    const adjustedAnnualPremiumLow = annualBasePremiumLow * (1 + (riskMultiplier - 1) * 0.5);
+    const adjustedAnnualPremiumHigh = annualBasePremiumHigh * (1 + (riskMultiplier - 1) * 0.7);
+    
+    // Monthly premiums
+    const monthlyPremiumLow = adjustedAnnualPremiumLow / 12;
+    const monthlyPremiumHigh = adjustedAnnualPremiumHigh / 12;
+    
+    // Commercial risk calculations
+    const businessInterruptionScore = Math.round(
+      (securityRiskScore / securityRiskMaxScore) * 70 + 
+      (floodRiskScore / floodRiskMaxScore) * 30 + 
+      (climateRiskScore / climateRiskMaxScore * 10)
+    );
+    
+    // Determine liability exposure based on property type and location
+    let liabilityExposureRating: "Low" | "Medium" | "High" = "Medium";
+    if (formData.propertyType === "apartment") {
+      liabilityExposureRating = "Low";
+    } else if (formData.propertyType === "house" && securityRiskScore > 30) {
+      liabilityExposureRating = "High";
+    }
+    
+    // Determine occupation type based on property use
+    const occupationType = "Retail/Office";
+    let occupationRiskLevel: "Low" | "Medium" | "High" = "Medium";
+    
+    // Calculate claims probability
+    const fireClaimProb = Math.min(90, Math.round((environmentalRiskScore / environmentalRiskMaxScore) * 100));
+    const theftClaimProb = Math.min(90, Math.round((securityRiskScore / securityRiskMaxScore) * 100));
+    const waterDamageProb = Math.min(90, Math.round((floodRiskScore / floodRiskMaxScore) * 100));
+    const stormDamageProb = Math.min(90, Math.round((hailRiskScore / hailRiskMaxScore) * 70 + (climateRiskScore / climateRiskMaxScore) * 30));
+    const liabilityClaimProb = liabilityExposureRating === "Low" ? 20 : liabilityExposureRating === "Medium" ? 45 : 70;
+    
+    // Replacement cost breakdown
+    const buildingShellCost = price * 0.75; // 75% of property value
+    const fixturesCost = price * 0.15; // 15% of property value
+    const codeComplianceCost = price * 0.1; // 10% of property value for bringing up to code
+
     return {
       overallRiskScore: Math.round(overallRiskPercentage),
       totalRiskPoints,
       maxRiskPoints,
       riskRating,
       riskColor,
+      premiumRange: {
+        low: formatWithThousandSeparators(String(Math.round(monthlyPremiumLow))),
+        high: formatWithThousandSeparators(String(Math.round(monthlyPremiumHigh))),
+        factors: [
+          "Property value and characteristics",
+          "Overall risk assessment score",
+          "Location and environmental factors",
+          "Security measures in place"
+        ]
+      },
+      commercialRisk: {
+        businessInterruptionScore: businessInterruptionScore,
+        liabilityExposureRating: liabilityExposureRating,
+        occupationType: occupationType,
+        occupationRiskLevel: occupationRiskLevel
+      },
+      claimsProbability: {
+        fire: fireClaimProb,
+        theft: theftClaimProb,
+        waterDamage: waterDamageProb,
+        stormDamage: stormDamageProb,
+        liability: liabilityClaimProb
+      },
       propertyDetails: {
         address: formData.address,
         propertyType: formData.propertyType,
@@ -1330,6 +1421,11 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         estimatedMarketValue: formatWithThousandSeparators(
           String(Math.round(price * 1.08)), // Market value estimated higher than purchase price
         ),
+        replacementBreakdown: {
+          buildingShell: formatWithThousandSeparators(String(Math.round(buildingShellCost))),
+          fixtures: formatWithThousandSeparators(String(Math.round(fixturesCost))),
+          codeCompliance: formatWithThousandSeparators(String(Math.round(codeComplianceCost)))
+        },
         suburb: "Cape Town City Centre",
         city: "Cape Town",
         postalCode: "8001",
