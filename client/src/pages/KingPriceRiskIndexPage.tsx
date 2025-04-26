@@ -110,9 +110,8 @@ interface RiskResult {
     address: string;
     propertyType: string;
     size: string;
-    bedrooms: string;
-    bathrooms: string;
-    parking: string;
+    yearBuilt: string;
+    stories: string;
     condition: string;
     price: string;
     municipalValue?: string;
@@ -262,11 +261,16 @@ export default function RiskIndexPage() {
     address: "",
     purchasePrice: "",
     size: "",
-    bedrooms: "",
-    bathrooms: "",
-    parking: "",
     propertyCondition: "excellent",
-    propertyType: "apartment", // Default to apartment
+    propertyType: "office", // Default to office for commercial properties
+    yearBuilt: "",
+    stories: "",
+
+    // Commercial Risk Factors
+    businessInterruptionCoverage: "",
+    regulatoryCompliance: "",
+    occupancyRate: "",
+    tenantQuality: "",
 
     // Building Details
     roofType: "",
@@ -274,7 +278,7 @@ export default function RiskIndexPage() {
     wallMaterial: "",
     fireRetardant: "",
     lightningConductor: "",
-    residenceType: "",
+    residenceType: "owner", // Default to owner-occupied 
     isCommune: "",
     isPlotOrFarm: "",
     landUsage: [] as string[],
@@ -312,24 +316,16 @@ export default function RiskIndexPage() {
   const handleInputChange = (field: string, value: string) => {
     let numericValue = value;
 
-    if (field === "bedrooms") {
-      if (value.toLowerCase() === "studio") {
-        numericValue = "0";
-      } else if (value.toLowerCase() === "room") {
-        numericValue = "-1";
-      } else {
-        numericValue = value.replace(/,/g, "");
-        numericValue = numericValue.replace(/[^0-9.-]/g, "");
-        const decimalCount = (numericValue.match(/\./g) || []).length;
-        if (decimalCount > 1) {
-          numericValue = numericValue.slice(0, numericValue.lastIndexOf("."));
-        }
+    if (field === "yearBuilt" || field === "stories") {
+      numericValue = value.replace(/,/g, "");
+      numericValue = numericValue.replace(/[^0-9.-]/g, "");
+      const decimalCount = (numericValue.match(/\./g) || []).length;
+      if (decimalCount > 1) {
+        numericValue = numericValue.slice(0, numericValue.lastIndexOf("."));
       }
     } else if (
       field === "purchasePrice" ||
-      field === "size" ||
-      field === "bathrooms" ||
-      field === "parking"
+      field === "size"
     ) {
       numericValue = parseFormattedNumber(value);
       numericValue = numericValue.replace(/[^0-9.]/g, "");
@@ -347,14 +343,20 @@ export default function RiskIndexPage() {
     setDemoClicks((prev) => {
       if (prev === 2) {
         setFormData({
+          // Property Details
           address: "27 Leeuwen St, Cape Town City Centre, 8001",
           purchasePrice: "3,500,000",
-          size: "85",
-          bedrooms: "2",
-          bathrooms: "2",
-          parking: "1",
+          size: "850",
           propertyCondition: "excellent",
-          propertyType: "apartment",
+          propertyType: "office",
+          yearBuilt: "2005",
+          stories: "4",
+          
+          // Commercial Risk Factors
+          businessInterruptionCoverage: "comprehensive",
+          regulatoryCompliance: "fullcompliance",
+          occupancyRate: "95",
+          tenantQuality: "highquality",
 
           // Building Details
           roofType: "concrete",
@@ -362,10 +364,10 @@ export default function RiskIndexPage() {
           wallMaterial: "brick",
           fireRetardant: "yes",
           lightningConductor: "no",
-          residenceType: "main",
+          residenceType: "owner",
           isCommune: "no",
           isPlotOrFarm: "no",
-          landUsage: ["residence", "retail"] as string[],
+          landUsage: ["commercial", "office"] as string[],
           geysers: {
             electric: "1",
             gas: "0",
@@ -457,9 +459,8 @@ export default function RiskIndexPage() {
     // Extract numeric values from form data
     const propertySize = Number(parseFormattedNumber(formData.size));
     const price = Number(parseFormattedNumber(formData.purchasePrice));
-    const bedrooms = Number(formData.bedrooms) || 0;
-    const bathrooms = Number(formData.bathrooms) || 0;
-    const parking = Number(formData.parking) || 0;
+    const yearBuilt = Number(formData.yearBuilt) || 0;
+    const stories = Number(formData.stories) || 0;
 
     // SECURITY RISK CALCULATION
     const securityRiskMaxScore = 50;
@@ -527,17 +528,33 @@ export default function RiskIndexPage() {
     });
 
     // Property type context for narrative
-    if (formData.propertyType === "apartment") {
+    if (formData.propertyType === "office") {
       securityRiskFactors.push(
-        "Property is located in an apartment building with shared access",
+        "Office building with multiple tenants and shared access points",
       );
-    } else if (formData.propertyType === "house") {
+    } else if (formData.propertyType === "retail") {
       securityRiskFactors.push(
-        "Standalone structure with multiple entry points",
+        "Retail space with public access and potential security challenges",
       );
-    } else if (formData.propertyType === "townhouse") {
+    } else if (formData.propertyType === "warehouse") {
       securityRiskFactors.push(
-        "Townhouse with multiple levels and entry points",
+        "Industrial/warehouse property with valuable inventory storage",
+      );
+    } else if (formData.propertyType === "healthcare") {
+      securityRiskFactors.push(
+        "Healthcare facility requiring controlled access and specialized security",
+      );
+    } else if (formData.propertyType === "hospitality") {
+      securityRiskFactors.push(
+        "Hospitality property with 24/7 public access and turnover",
+      );
+    } else if (formData.propertyType === "mixed") {
+      securityRiskFactors.push(
+        "Mixed-use commercial property with complex security requirements",
+      );
+    } else if (formData.propertyType === "apartment") {
+      securityRiskFactors.push(
+        "Multi-unit apartment building with shared access points",
       );
     }
 
@@ -1223,60 +1240,84 @@ export default function RiskIndexPage() {
     // Generate overall recommendations
     const recommendations: string[] = [];
 
-    // Add security recommendations
+    // Add security recommendations for commercial properties
     if (securityRiskRating === "High" || securityRiskRating === "Medium") {
       recommendations.push(
-        "Consider upgrading security systems and access control.",
+        "Consider upgrading security systems and access control for all entry points.",
       );
       recommendations.push(
-        "Install additional exterior lighting around the property.",
+        "Install additional exterior lighting and CCTV coverage around the property.",
+      );
+      recommendations.push(
+        "Implement electronic access control systems for sensitive areas of the building.",
       );
     }
 
-    // Add flood recommendations
+    // Add flood recommendations for commercial properties
     if (floodRiskRating === "High") {
-      recommendations.push("Obtain comprehensive flood insurance coverage.");
+      recommendations.push("Obtain comprehensive commercial flood insurance coverage.");
       recommendations.push(
-        "Install flood barriers and improved drainage systems.",
+        "Install commercial-grade flood barriers and improved drainage systems.",
+      );
+      recommendations.push(
+        "Implement a business continuity plan for flood-related disruptions.",
+      );
+      recommendations.push(
+        "Consider relocating valuable equipment and inventory above ground floor level.",
       );
     }
 
-    // Add climate recommendations
+    // Add climate recommendations for commercial buildings
     if (climateRiskRating === "Medium" || climateRiskRating === "High") {
       recommendations.push(
-        "Improve building insulation to manage temperature extremes.",
+        "Invest in commercial-grade insulation to manage temperature extremes and reduce HVAC costs.",
       );
       recommendations.push(
-        "Consider energy-efficient upgrades to reduce climate vulnerability.",
+        "Consider energy-efficient upgrades to reduce climate vulnerability and lower operational expenses.",
+      );
+      recommendations.push(
+        "Install backup power generators to maintain business operations during extreme weather events.",
+      );
+      recommendations.push(
+        "Implement a preventative maintenance schedule for HVAC and building systems.",
       );
     }
 
-    // Add hail risk recommendations based on enhanced metrics
+    // Add hail risk recommendations for commercial buildings based on enhanced metrics
     if (hailRiskRating === "Medium" || hailRiskRating === "High") {
       recommendations.push(
-        `Consider roof reinforcement to withstand maximum hail size of ${maxHailSize}.`,
+        `Upgrade commercial roofing systems to withstand maximum hail size of ${maxHailSize}.`,
       );
       if (damageProb > 40) {
         recommendations.push(
-          `Obtain specialized hail insurance coverage with an annual damage probability of ${damageProb}%.`,
+          `Obtain specialized commercial hail insurance with business interruption coverage (annual damage probability: ${damageProb}%).`,
         );
       }
       if (roofVulnerability === "Medium" || roofVulnerability === "High") {
         recommendations.push(
-          `Schedule a roof inspection to address ${roofVulnerability.toLowerCase()} vulnerability rating.`,
+          `Schedule a professional commercial roof inspection to address ${roofVulnerability.toLowerCase()} vulnerability rating.`,
         );
       }
       recommendations.push(
-        `Plan for ${annualFrequency} potential hail events per year with a return period of ${returnPeriod}.`,
+        `Implement a quarterly roof maintenance program to manage ${annualFrequency} potential hail events per year.`,
+      );
+      recommendations.push(
+        `Consider installing protective barriers for HVAC units and other roof-mounted equipment.`,
       );
     }
 
-    // Add generic recommendations
+    // Add generic recommendations for commercial properties
     recommendations.push(
-      "Conduct a professional property inspection before finalizing insurance coverage.",
+      "Conduct a comprehensive commercial property assessment by a professional inspector before finalizing insurance coverage.",
     );
     recommendations.push(
-      "Consider bundling multiple insurance policies for better protection and rates.",
+      "Consider a customized commercial insurance package including property, liability, and business interruption coverage.",
+    );
+    recommendations.push(
+      "Implement a formal emergency response plan and conduct regular safety drills with staff and tenants.",
+    );
+    recommendations.push(
+      "Document and regularly update an inventory of all valuable equipment, fixtures, and other assets for insurance purposes.",
     );
 
     // Calculate additional risk factors
@@ -1312,15 +1353,66 @@ export default function RiskIndexPage() {
       trendDirection = "down";
     }
 
-    // Risk summary
-    const riskSummary = `This property presents an overall ${riskRating.toLowerCase()} risk profile (${Math.round(overallRiskPercentage)}%), with most risk factors being well-managed or naturally low. However, there are specific areas of concern:
+    // Commercial risk calculations
+    let businessInterruptionScore = Math.round(
+      (securityRiskScore / securityRiskMaxScore) * 70 + 
+      (floodRiskScore / floodRiskMaxScore) * 30 + 
+      (climateRiskScore / climateRiskMaxScore * 10)
+    );
+    
+    // Adjust business interruption score based on selected coverage
+    if (formData.businessInterruptionCoverage === "comprehensive") {
+      businessInterruptionScore = Math.max(10, businessInterruptionScore - 25); // Reduce risk with comprehensive coverage
+    } else if (formData.businessInterruptionCoverage === "basic") {
+      businessInterruptionScore = Math.max(10, businessInterruptionScore - 10); // Reduce risk slightly with basic coverage
+    } else if (formData.businessInterruptionCoverage === "none") {
+      businessInterruptionScore = Math.min(95, businessInterruptionScore + 15); // Increase risk with no coverage
+    }
+    
+    // Determine liability exposure based on property type and location
+    let liabilityExposureRating: "Low" | "Medium" | "High" = "Medium";
+    if (formData.propertyType === "apartment") {
+      liabilityExposureRating = "Low";
+    } else if ((formData.propertyType === "retail" || formData.propertyType === "hospitality") && securityRiskScore > 30) {
+      liabilityExposureRating = "High";
+    }
+    
+    // Adjust liability based on regulatory compliance
+    if (formData.regulatoryCompliance === "fullcompliance") {
+      if (liabilityExposureRating === "High") liabilityExposureRating = "Medium";
+      else if (liabilityExposureRating === "Medium") liabilityExposureRating = "Low";
+    } else if (formData.regulatoryCompliance === "pending" || formData.regulatoryCompliance === "unknown") {
+      if (liabilityExposureRating === "Low") liabilityExposureRating = "Medium";
+      else if (liabilityExposureRating === "Medium") liabilityExposureRating = "High";
+    }
+    
+    // Determine occupation type based on property use
+    const occupationType = formData.propertyType === "retail" ? "Retail" : 
+                          formData.propertyType === "office" ? "Office" :
+                          formData.propertyType === "warehouse" ? "Industrial" :
+                          formData.propertyType === "healthcare" ? "Healthcare" :
+                          formData.propertyType === "hospitality" ? "Hospitality" :
+                          formData.propertyType === "mixed" ? "Mixed-Use" : "Commercial";
+    
+    // Determine occupation risk level based on property type
+    let occupationRiskLevel: "Low" | "Medium" | "High" = "Medium";
+    if (formData.propertyType === "warehouse" || formData.propertyType === "office") {
+      occupationRiskLevel = "Low";
+    } else if (formData.propertyType === "retail" || formData.propertyType === "hospitality") {
+      occupationRiskLevel = "High";
+    }
+    
+    // Risk summary for commercial properties
+    const riskSummary = `This commercial property presents an overall ${riskRating.toLowerCase()} risk profile (${Math.round(overallRiskPercentage)}%), with a business interruption risk score of ${businessInterruptionScore}/100 and ${liabilityExposureRating.toLowerCase()} liability exposure as a ${occupationType.toLowerCase()} property. While some risk factors are well-managed, there are specific areas of concern:
 
-${floodRiskRating === "High" ? "High Flood Risk: The property's location in a flood-prone area represents a significant risk factor and should be carefully considered.\n" : ""}
-${securityRiskRating === "Medium" || securityRiskRating === "High" ? `${securityRiskRating} Security Risk: ${securityRiskRating === "High" ? "This is a critical concern and" : "While not critical,"} security measures could be improved to enhance property protection.\n` : ""}
-${environmentalRiskRating === "Medium" || environmentalRiskRating === "High" ? `${environmentalRiskRating} Environmental Risk: This moderate risk factor should be monitored, particularly regarding air quality and noise pollution.\n` : ""}
-${hailRiskRating === "Medium" || hailRiskRating === "High" ? `${hailRiskRating} Hail Risk: The property may experience ${annualFrequency} hail events annually with maximum size of ${maxHailSize}. Roof vulnerability is rated as ${roofVulnerability}. Probability of damage is ${damageProb}% with a return period of ${returnPeriod}.\n` : ""}
+${formData.businessInterruptionCoverage === "none" ? "No Business Interruption Coverage: The absence of business interruption insurance significantly increases financial vulnerability in case of property damage or forced closure.\n" : ""}
+${floodRiskRating === "High" ? "High Flood Risk: The property's location in a flood-prone area represents a significant business continuity risk factor and should be carefully considered.\n" : ""}
+${securityRiskRating === "Medium" || securityRiskRating === "High" ? `${securityRiskRating} Security Risk: ${securityRiskRating === "High" ? "This is a critical concern for commercial operations and" : "While not critical,"} security measures could be improved to enhance property and business protection.\n` : ""}
+${environmentalRiskRating === "Medium" || environmentalRiskRating === "High" ? `${environmentalRiskRating} Environmental Risk: This risk factor should be monitored for impact on commercial operations, particularly regarding air quality and regulatory compliance.\n` : ""}
+${hailRiskRating === "Medium" || hailRiskRating === "High" ? `${hailRiskRating} Hail Risk: The property may experience ${annualFrequency} hail events annually with maximum size of ${maxHailSize}. Roof and equipment vulnerability is rated as ${roofVulnerability}. Probability of business disruption is ${damageProb}% with a return period of ${returnPeriod}.\n` : ""}
+${formData.regulatoryCompliance !== "fullcompliance" ? `Regulatory Compliance Issues: The property's ${formData.regulatoryCompliance === "pending" ? "pending" : "unknown"} regulatory compliance status may lead to additional liability exposure and potential penalties.\n` : ""}
 
-Based on the overall risk assessment, we recommend a comprehensive insurance policy that specifically addresses the identified risk factors.`;
+Based on this commercial risk assessment, we recommend a comprehensive business insurance package that specifically addresses the identified risk factors including property damage, business interruption, and liability coverage.`;
 
     // Commercial insurance premium range calculation (for commercial properties)
     // Base premium calculation approximately 0.5% to 0.8% of property value annually
@@ -1335,25 +1427,6 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
     // Monthly premiums
     const monthlyPremiumLow = adjustedAnnualPremiumLow / 12;
     const monthlyPremiumHigh = adjustedAnnualPremiumHigh / 12;
-    
-    // Commercial risk calculations
-    const businessInterruptionScore = Math.round(
-      (securityRiskScore / securityRiskMaxScore) * 70 + 
-      (floodRiskScore / floodRiskMaxScore) * 30 + 
-      (climateRiskScore / climateRiskMaxScore * 10)
-    );
-    
-    // Determine liability exposure based on property type and location
-    let liabilityExposureRating: "Low" | "Medium" | "High" = "Medium";
-    if (formData.propertyType === "apartment") {
-      liabilityExposureRating = "Low";
-    } else if (formData.propertyType === "house" && securityRiskScore > 30) {
-      liabilityExposureRating = "High";
-    }
-    
-    // Determine occupation type based on property use
-    const occupationType = "Retail/Office";
-    let occupationRiskLevel: "Low" | "Medium" | "High" = "Medium";
     
     // Calculate claims probability
     const fireClaimProb = Math.min(90, Math.round((environmentalRiskScore / environmentalRiskMaxScore) * 100));
@@ -1400,9 +1473,8 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         address: formData.address,
         propertyType: formData.propertyType,
         size: formData.size,
-        bedrooms: formData.bedrooms || "0",
-        bathrooms: formData.bathrooms || "0",
-        parking: formData.parking || "0",
+        yearBuilt: formData.yearBuilt || "0",
+        stories: formData.stories || "0",
         condition: formData.propertyCondition,
         price: formData.purchasePrice,
         municipalValue: formatWithThousandSeparators(
@@ -2045,30 +2117,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
 
           {/* Feature Badges */}
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-6">
-            {riskResult.propertyDetails.bedrooms && (
-              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
-                {riskResult.propertyDetails.bedrooms}{" "}
-                {parseInt(riskResult.propertyDetails.bedrooms) === 1
-                  ? "Bed"
-                  : "Beds"}
-              </Badge>
-            )}
-            {riskResult.propertyDetails.bathrooms && (
-              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
-                {riskResult.propertyDetails.bathrooms}{" "}
-                {parseInt(riskResult.propertyDetails.bathrooms) === 1
-                  ? "Bath"
-                  : "Baths"}
-              </Badge>
-            )}
             {riskResult.propertyDetails.size && (
               <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
                 {riskResult.propertyDetails.size} m²
-              </Badge>
-            )}
-            {riskResult.propertyDetails.parking && (
-              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 text-sm">
-                {riskResult.propertyDetails.parking} Parking
               </Badge>
             )}
             {riskResult.propertyDetails.propertyType && (
@@ -2115,7 +2166,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           </div>
 
           {/* Commercial Insurance Premium Range */}
-          <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white mb-8 max-w-3xl mx-auto">
+          <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white mb-8 max-w-6xl mx-auto">
             <div className="p-5 bg-blue-50 border-b border-blue-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -2153,7 +2204,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           </div>
           
           {/* Commercial Risk Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-6xl mx-auto">
             <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
               <div className="p-4 bg-gray-50 border-b">
                 <div className="flex items-center">
@@ -2264,7 +2315,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           </div>
           
           {/* Property Value Information */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-6xl mx-auto">
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-1">
                 Replacement Cost
@@ -2293,7 +2344,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           
           {/* Replacement Cost Breakdown */}
           {riskResult.propertyDetails.replacementBreakdown && (
-            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white mb-8 max-w-3xl mx-auto">
+            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white mb-8 max-w-6xl mx-auto">
               <div className="p-4 bg-slate-50 border-b">
                 <div className="flex items-center">
                   <Layers className="h-5 w-5 text-gray-700 mr-2" />
@@ -2347,7 +2398,7 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 max-w-6xl mx-auto">
             {/* Risk Score Card */}
             <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white relative z-10">
               <div className="p-6 flex flex-col items-center">
@@ -3572,45 +3623,32 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Commercial Property Specifics */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="text-center">
-                    <Label htmlFor="bedrooms" className="mb-1 block">
-                      Office Units/Rooms
+                    <Label htmlFor="yearBuilt" className="mb-1 block">
+                      Year Built
                     </Label>
                     <Input
-                      id="bedrooms"
-                      placeholder="0"
-                      value={formData.bedrooms}
+                      id="yearBuilt"
+                      placeholder="e.g. 2005"
+                      value={formData.yearBuilt}
                       onChange={(e) =>
-                        handleInputChange("bedrooms", e.target.value)
+                        handleInputChange("yearBuilt", e.target.value)
                       }
                     />
                   </div>
 
                   <div className="text-center">
-                    <Label htmlFor="bathrooms" className="mb-1 block">
-                      Restrooms/Washrooms
+                    <Label htmlFor="stories" className="mb-1 block">
+                      Number of Stories
                     </Label>
                     <Input
-                      id="bathrooms"
-                      placeholder="0"
-                      value={formData.bathrooms}
+                      id="stories"
+                      placeholder="1"
+                      value={formData.stories}
                       onChange={(e) =>
-                        handleInputChange("bathrooms", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="text-center">
-                    <Label htmlFor="parking" className="mb-1 block">
-                      Parking Bays
-                    </Label>
-                    <Input
-                      id="parking"
-                      placeholder="0"
-                      value={formData.parking}
-                      onChange={(e) =>
-                        handleInputChange("parking", e.target.value)
+                        handleInputChange("stories", e.target.value)
                       }
                     />
                   </div>
@@ -3650,9 +3688,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         Business Interruption Protection
                       </Label>
                       <Select
-                        value={formData.fireRetardant || ""}
+                        value={formData.businessInterruptionCoverage || ""}
                         onValueChange={(value) =>
-                          handleInputChange("fireRetardant", value)
+                          handleInputChange("businessInterruptionCoverage", value)
                         }
                       >
                         <SelectTrigger id="businessInterruption">
@@ -3671,9 +3709,9 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
                         Building Regulatory Compliance
                       </Label>
                       <Select
-                        value={formData.lightningConductor || ""}
+                        value={formData.regulatoryCompliance || ""}
                         onValueChange={(value) =>
-                          handleInputChange("lightningConductor", value)
+                          handleInputChange("regulatoryCompliance", value)
                         }
                       >
                         <SelectTrigger id="buildingRegCompliance">
