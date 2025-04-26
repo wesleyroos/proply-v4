@@ -1324,6 +1324,12 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         estimatedMonthlyCosts: formatWithThousandSeparators(
           String(Math.round(estimateMonthlyMunicipalCosts(price * 1.03))),
         ),
+        replacementCost: formatWithThousandSeparators(
+          String(Math.round(price * 1.25)), // Replacement cost is higher than purchase price
+        ),
+        estimatedMarketValue: formatWithThousandSeparators(
+          String(Math.round(price * 1.08)), // Market value estimated higher than purchase price
+        ),
         suburb: "Cape Town City Centre",
         city: "Cape Town",
         postalCode: "8001",
@@ -2013,18 +2019,18 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
           </div>
 
           {/* Property Value Information */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-3xl mx-auto">
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-1">
-                Purchase Price
+                Replacement Cost
               </p>
               <p className="text-xl font-bold">
-                R{riskResult.propertyDetails.price}
+                R{riskResult.propertyDetails.replacementCost}
               </p>
             </div>
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-1">
-                Municipal Value
+                Municipal Valuation
               </p>
               <p className="text-xl font-bold">
                 R{riskResult.propertyDetails.municipalValue}
@@ -2032,18 +2038,10 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             </div>
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-1">
-                Monthly Rates
+                Estimated Market Value
               </p>
               <p className="text-xl font-bold">
-                R{riskResult.propertyDetails.monthlyRates}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">
-                Est. Monthly Costs
-              </p>
-              <p className="text-xl font-bold">
-                R{riskResult.propertyDetails.estimatedMonthlyCosts}
+                R{riskResult.propertyDetails.estimatedMarketValue}
               </p>
             </div>
           </div>
