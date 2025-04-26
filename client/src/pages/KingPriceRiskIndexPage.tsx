@@ -2114,6 +2114,155 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
             )}
           </div>
 
+          {/* Commercial Insurance Premium Range */}
+          <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white mb-8 max-w-3xl mx-auto">
+            <div className="p-5 bg-blue-50 border-b border-blue-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <CircleDollarSign className="h-5 w-5 text-blue-700 mr-2" />
+                  <h3 className="text-lg font-semibold text-blue-700">
+                    Commercial Insurance Premium Range
+                  </h3>
+                </div>
+                <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 py-1">
+                  Monthly Estimate
+                </Badge>
+              </div>
+            </div>
+            
+            <div className="p-5">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="text-lg font-medium">
+                  R{riskResult.premiumRange?.low} - R{riskResult.premiumRange?.high}
+                </h4>
+                <div className="text-sm text-gray-500 italic">
+                  Based on risk assessment
+                </div>
+              </div>
+              
+              <h5 className="text-sm font-medium mb-2 text-gray-700">Key factors affecting premium:</h5>
+              <ul className="text-sm space-y-1">
+                {riskResult.premiumRange?.factors.map((factor, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="text-gray-700 mr-2">•</span>
+                    <span>{factor}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          
+          {/* Commercial Risk Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-3xl mx-auto">
+            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
+              <div className="p-4 bg-gray-50 border-b">
+                <div className="flex items-center">
+                  <BatteryCharging className="h-5 w-5 text-gray-700 mr-2" />
+                  <h3 className="font-medium text-gray-700">Business Disruption Risk</h3>
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="mb-2">
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm">Business Interruption Score:</span>
+                    <span className={`text-sm font-medium ${
+                      riskResult.commercialRisk?.businessInterruptionScore || 0 <= 30 
+                        ? "text-green-600" 
+                        : riskResult.commercialRisk?.businessInterruptionScore || 0 <= 70 
+                        ? "text-yellow-600" 
+                        : "text-red-600"
+                    }`}>
+                      {riskResult.commercialRisk?.businessInterruptionScore}/100
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className={`h-2 rounded-full ${
+                      riskResult.commercialRisk?.businessInterruptionScore || 0 <= 30 
+                        ? "bg-green-500" 
+                        : riskResult.commercialRisk?.businessInterruptionScore || 0 <= 70 
+                        ? "bg-yellow-500" 
+                        : "bg-red-500"
+                    }`} style={{ width: `${riskResult.commercialRisk?.businessInterruptionScore || 0}%` }}></div>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mt-3">
+                  <span className="text-sm">Occupation Type:</span>
+                  <span className="text-sm font-medium">{riskResult.commercialRisk?.occupationType}</span>
+                </div>
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-sm">Occupation Risk Level:</span>
+                  <Badge className={`${
+                    riskResult.commercialRisk?.occupationRiskLevel === "Low" 
+                      ? "bg-green-100 text-green-800" 
+                      : riskResult.commercialRisk?.occupationRiskLevel === "Medium" 
+                      ? "bg-yellow-100 text-yellow-800" 
+                      : "bg-red-100 text-red-800"
+                  }`}>
+                    {riskResult.commercialRisk?.occupationRiskLevel}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+            
+            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
+              <div className="p-4 bg-gray-50 border-b">
+                <div className="flex items-center">
+                  <AlertTriangle className="h-5 w-5 text-gray-700 mr-2" />
+                  <h3 className="font-medium text-gray-700">Claim Probability Analysis</h3>
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-1 gap-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Fire:</span>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium mr-2">{riskResult.claimsProbability?.fire}%</span>
+                      <div className="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-red-500 h-1.5 rounded-full" style={{ width: `${riskResult.claimsProbability?.fire || 0}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Theft:</span>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium mr-2">{riskResult.claimsProbability?.theft}%</span>
+                      <div className="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-red-500 h-1.5 rounded-full" style={{ width: `${riskResult.claimsProbability?.theft || 0}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Water Damage:</span>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium mr-2">{riskResult.claimsProbability?.waterDamage}%</span>
+                      <div className="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${riskResult.claimsProbability?.waterDamage || 0}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Storm Damage:</span>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium mr-2">{riskResult.claimsProbability?.stormDamage}%</span>
+                      <div className="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${riskResult.claimsProbability?.stormDamage || 0}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Liability:</span>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium mr-2">{riskResult.claimsProbability?.liability}%</span>
+                      <div className="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-orange-500 h-1.5 rounded-full" style={{ width: `${riskResult.claimsProbability?.liability || 0}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           {/* Property Value Information */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-3xl mx-auto">
             <div className="text-center">
@@ -2141,6 +2290,62 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
               </p>
             </div>
           </div>
+          
+          {/* Replacement Cost Breakdown */}
+          {riskResult.propertyDetails.replacementBreakdown && (
+            <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white mb-8 max-w-3xl mx-auto">
+              <div className="p-4 bg-slate-50 border-b">
+                <div className="flex items-center">
+                  <Layers className="h-5 w-5 text-gray-700 mr-2" />
+                  <h3 className="font-medium text-gray-700">Replacement Cost Breakdown</h3>
+                </div>
+              </div>
+              <div className="p-5">
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Building Shell</span>
+                      <span className="font-medium">R{riskResult.propertyDetails.replacementBreakdown.buildingShell}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: "75%" }}></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Fixtures & Fittings</span>
+                      <span className="font-medium">R{riskResult.propertyDetails.replacementBreakdown.fixtures}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: "15%" }}></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Code Compliance Upgrades</span>
+                      <span className="font-medium">R{riskResult.propertyDetails.replacementBreakdown.codeCompliance}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: "10%" }}></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 pt-3 border-t border-gray-100">
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Total Replacement Cost</span>
+                    <span className="font-semibold">R{riskResult.propertyDetails.replacementCost}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    <Info className="h-3 w-3 inline mr-1" />
+                    This breakdown helps insurers determine appropriate coverage limits for different aspects of the property.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 max-w-4xl mx-auto">
             {/* Risk Score Card */}
@@ -3116,6 +3321,59 @@ Based on the overall risk assessment, we recommend a comprehensive insurance pol
         {/* Recommendations */}
         <div className="mb-8">
           <h3 className="text-xl font-bold mb-4">Recommendations</h3>
+          
+          {/* Commercial Premium Reduction Opportunities */}
+          <div className="bg-white border border-gray-200 p-6 rounded-lg mb-6 shadow-sm relative z-10">
+            <div className="flex items-center mb-4">
+              <CircleDollarSign className="h-6 w-6 text-blue-700 mr-3" />
+              <h4 className="text-lg font-semibold text-blue-700">Premium Reduction Opportunities</h4>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex">
+                <div className="flex-shrink-0 mr-3 mt-0.5">
+                  <div className="bg-green-100 text-green-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                    12%
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900">Install Fire Suppression System</h4>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Modern automatic sprinkler system could reduce premium by up to 12% and significantly mitigate fire damage risk.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex">
+                <div className="flex-shrink-0 mr-3 mt-0.5">
+                  <div className="bg-green-100 text-green-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                    8%
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900">Upgrade Security System</h4>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Adding 24/7 monitored alarm system with armed response could reduce theft-related premiums by approximately 8%.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex">
+                <div className="flex-shrink-0 mr-3 mt-0.5">
+                  <div className="bg-green-100 text-green-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                    5%
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900">Install Backup Power System</h4>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Backup generator with automatic transfer switch could reduce business interruption coverage costs by approximately 5%.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <div className="bg-blue-50 p-6 rounded-lg relative z-10">
             <h4 className="text-blue-600 font-semibold text-lg mb-3">
               Insurance Considerations
