@@ -95,6 +95,9 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
+            <Link href="/blog" className="text-sm font-medium hover:text-proply-blue transition-colors">
+              Blog
+            </Link>
             <Link href="#contact" className="text-sm font-medium hover:text-proply-blue transition-colors">
               Contact
             </Link>
@@ -157,6 +160,9 @@ export default function HomePage() {
                   </Link>
                 </div>
               </div>
+              <Link href="/blog" className="block py-2 text-sm font-medium hover:text-proply-blue">
+                Blog
+              </Link>
               <Link href="#contact" className="block py-2 text-sm font-medium hover:text-proply-blue">
                 Contact
               </Link>
@@ -657,13 +663,9 @@ export default function HomePage() {
                     About
                   </Link>
                 </li>
+
                 <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Careers
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
+                  <Link href="/blog" className="hover:text-proply-blue">
                     Blog
                   </Link>
                 </li>
