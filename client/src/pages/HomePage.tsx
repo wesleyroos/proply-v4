@@ -617,6 +617,12 @@ export default function HomePage() {
               <p className="mt-4 text-sm text-gray-500">
                 The intelligence layer for the real estate and insurance industries.
               </p>
+              <p className="mt-2 text-sm text-gray-500">
+                Address: Innovation City, Darter Road, Longkloof Gardens, Cape Town, 8001
+              </p>
+              <p className="mt-2 text-sm text-gray-500">
+                Email: <a href="mailto:hello@proply.co.za" className="hover:text-proply-blue hover:underline">hello@proply.co.za</a>
+              </p>
             </div>
             <div>
               <h3 className="mb-4 text-lg font-medium">Products</h3>
