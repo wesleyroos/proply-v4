@@ -139,13 +139,14 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Hero Image - positioned absolutely to cover most of the section */}
-            <div className="absolute top-[40%] right-0 transform -translate-y-1/2 h-full w-[90%] md:w-[85%] z-10">
-              <div className="relative h-full w-full">
+            {/* Hero Image - positioned absolutely with no gap on the right */}
+            <div className="absolute top-[40%] right-0 transform -translate-y-1/2 h-full w-full z-10">
+              <div className="relative h-full w-full flex justify-end">
                 <img
                   src="/images/property-technology.png"
                   alt="AI Technology for Real Estate"
-                  className="object-contain object-right"
+                  className="object-contain object-right h-full"
+                  style={{ position: 'absolute', right: 0 }}
                 />
               </div>
             </div>
