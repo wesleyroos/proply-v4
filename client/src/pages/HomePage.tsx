@@ -46,13 +46,13 @@ export default function HomePage() {
         <meta property="og:description" content="AI-powered data tools for property buyers, agents, and insurers." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://proply.com" />
-        <meta property="og:image" content="/images/robot-hand.svg" />
+        <meta property="og:image" content="/images/property-technology.png" />
 
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Proply - An Intelligence Layer for Real Estate" />
         <meta name="twitter:description" content="AI-powered data tools for property buyers, agents, and insurers." />
-        <meta name="twitter:image" content="/images/robot-hand.svg" />
+        <meta name="twitter:image" content="/images/property-technology.png" />
 
         {/* Add structured data */}
         <script type="application/ld+json">
@@ -143,7 +143,7 @@ export default function HomePage() {
             <div className="absolute top-[40%] right-0 transform -translate-y-1/2 h-full w-[90%] md:w-[85%] z-10">
               <div className="relative h-full w-full">
                 <img
-                  src="/images/robot-hand.svg"
+                  src="/images/property-technology.png"
                   alt="AI Technology for Real Estate"
                   className="object-contain object-right"
                 />
